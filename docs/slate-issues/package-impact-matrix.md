@@ -26,7 +26,7 @@ The point is not to assign every bug to exactly one box and pretend boundaries d
 
 - source of truth: [open-issues-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-issues/open-issues-ledger.md)
 - theme map: [issue-clusters.md](/Users/zbeyens/git/plate-2/docs/slate-issues/issue-clusters.md)
-- package boundaries from the local `.tmp/slate-v2/packages/*` repo layout
+- package boundaries from the local `packages/*` repo layout
 
 ## Top-Line Package Pressure
 

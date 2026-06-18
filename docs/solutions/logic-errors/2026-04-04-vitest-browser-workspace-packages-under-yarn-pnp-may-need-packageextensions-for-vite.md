@@ -30,7 +30,7 @@ undeclared.
 
 ## What fixed it
 
-The minimal fix was a Yarn package extension in [`.tmp/slate-v2/.yarnrc.yml`](/Users/zbeyens/git/slate-v2/.yarnrc.yml):
+The minimal fix was a Yarn package extension in [`Plate repo root/.yarnrc.yml`](/Users/zbeyens/git/slate-v2/.yarnrc.yml):
 
 ```yml
 packageExtensions:

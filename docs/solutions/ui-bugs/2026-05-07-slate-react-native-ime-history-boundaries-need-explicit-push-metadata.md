@@ -50,7 +50,7 @@ Track the last browser-native text input time inside `slate-react` and attach
 after the merge interval.
 
 The policy lives in
-`.tmp/slate-v2/packages/slate-react/src/editable/input-history.ts`:
+`packages/slate-react/src/editable/input-history.ts`:
 
 ```ts
 export const getNativeTextInputHistoryMetadata = (

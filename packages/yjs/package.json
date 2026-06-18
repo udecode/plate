@@ -1,11 +1,11 @@
 {
   "name": "@platejs/yjs",
   "version": "54.0.0-beta.0",
-  "description": "Yjs plugin for Plate",
+  "description": "Yjs collaboration bindings for Slate.",
   "keywords": [
-    "plate",
-    "plugin",
-    "slate",
+    "collaboration",
+    "editor",
+    "@platejs/slate",
     "yjs"
   ],
   "homepage": "https://platejs.org",
@@ -19,48 +19,62 @@
   },
   "license": "MIT",
   "sideEffects": false,
+  "type": "module",
   "exports": {
-    ".": "./dist/index.js",
-    "./react": "./dist/react/index.js",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "import": "./dist/core/index.js",
+      "default": "./dist/core/index.js"
+    },
+    "./internal": {
+      "types": "./dist/internal/index.d.ts",
+      "import": "./dist/internal/index.js",
+      "default": "./dist/internal/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "import": "./dist/react/index.js",
+      "default": "./dist/react/index.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist/**/*"
   ],
   "scripts": {
-    "brl": "plate-pkg p:brl",
-    "build": "plate-pkg p:build",
-    "build:watch": "plate-pkg p:build:watch",
-    "clean": "plate-pkg p:clean",
+    "brl": "echo 'No barrels to generate'",
+    "build": "tsdown --config ./tsdown.config.mts --log-level warn",
+    "clean": "rimraf dist lib",
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",
-    "test": "plate-pkg p:test",
-    "test:watch": "plate-pkg p:test:watch",
-    "typecheck": "plate-pkg p:typecheck"
-  },
-  "dependencies": {
-    "@slate-yjs/core": "^1.0.2",
-    "react-compiler-runtime": "^1.0.0",
-    "y-protocols": "^1.0.7",
-    "y-indexeddb": "^9.0.12",
-    "yjs": "^13.6.29"
+    "test": "bun test --preload ../../config/slate-source-test-setup.ts ./test --path-ignore-patterns ''",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "devDependencies": {
+    "@types/node": "24.12.0",
+    "@types/react": "19.2.7",
+    "react": "19.2.4",
+    "@platejs/slate": "workspace:^",
+    "@platejs/slate-history": "workspace:^",
+    "@platejs/slate-react": "workspace:^",
     "@plate/scripts": "workspace:*",
-    "platejs": "workspace:^"
+    "yjs": "13.6.30"
   },
   "peerDependencies": {
-    "@hocuspocus/provider": "^3.4.0",
-    "platejs": ">=54.0.0-beta.0",
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0",
-    "y-webrtc": "10.3.0"
+    "react": ">=19.2.0",
+    "@platejs/slate": ">=54.0.0-beta.0",
+    "@platejs/slate-react": ">=54.0.0-beta.0",
+    "yjs": "13.6.30"
   },
   "publishConfig": {
     "access": "public"
-  },
-  "type": "module",
-  "module": "./dist/index.js"
+  }
 }

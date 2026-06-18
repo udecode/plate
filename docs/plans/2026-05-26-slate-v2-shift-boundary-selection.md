@@ -41,7 +41,7 @@ Verification surface:
 - Lint: scoped `bunx biome check ...`; scoped `bunx eslint ...`.
 
 Constraints:
-- Work in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`.
+- Work in `/Users/zbeyens/git/plate-2/Plate repo root`.
 - Preserve current boundary, materialize, and model-backed policies.
 - Do not create commits, pushes, PRs, or tracker comments.
 
@@ -107,7 +107,7 @@ Work Checklist:
 - [x] Final handoff shape decided: concise bug fix summary plus verification.
 - [x] Branch handling recorded: N/A, no branch/PR requested.
 - [x] Local-env-rot retry policy recorded: N/A, no env-rot failure.
-- [x] Workspace authority recorded: commands ran in `.tmp/slate-v2`; Browser route proof used live app.
+- [x] Workspace authority recorded: commands ran in `Plate repo root`; Browser route proof used live app.
 - [x] High-risk note recorded: native DOM selection cannot safely represent hidden boundary-spanning model ranges, so Slate keeps them model-backed instead of projecting through UI chrome.
 - [x] Review/autoreview target selected: local checkout with scoped prompt for this hidden-content shifted boundary selection fix.
 - [x] Agent-native review decision recorded: N/A, no agent/tooling changes.
@@ -133,7 +133,7 @@ Completion Gates:
 | Package exports or file layout changed | no | N/A | No public export/barrel layout change. |
 | Package manifests, lockfile, or install graph changed | no | N/A | No manifest or lockfile change. |
 | Agent rules or skills changed | no | N/A | No agent/tooling change. |
-| Workspace authority proof | yes | Run proof in owning workspace | All commands ran in `.tmp/slate-v2`; plan/check in `plate-2`. |
+| Workspace authority proof | yes | Run proof in owning workspace | All commands ran in `Plate repo root`; plan/check in `plate-2`. |
 | Browser surface changed | yes | Browser proof | In-app Browser proof passed on live route. |
 | Browser final proof | yes | Record exact browser outcome | Empty native selection, active Overview, inactive Details, no hidden secrets for both key paths. |
 | CI-controlled template output changed | no | N/A | No template output touched. |

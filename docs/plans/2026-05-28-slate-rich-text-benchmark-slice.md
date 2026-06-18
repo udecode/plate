@@ -21,7 +21,7 @@ Applied packs:
 
 Major source:
 - type: local repo source and generated benchmark artifact
-- id / link: `.tmp/slate-v2` + `benchmarks/editor`
+- id / link: `Plate repo root` + `benchmarks/editor`
 - title: Slate v2 vs Slate rich-text operations benchmark slice
 - decision to make: which benchmark slice is useful enough to add now before
   ProseMirror/Lexical/Plate/Tiptap adapters.
@@ -34,15 +34,15 @@ Major lane:
 - output type: runnable benchmark script, JSON artifact, Evidence Kit rows, HTML
   viewer data
 - implementation expected: yes
-- affected packages / surfaces: `.tmp/slate-v2/scripts/benchmarks`,
-  `.tmp/slate-v2/package.json`, `benchmarks/editor/src`,
+- affected packages / surfaces: `benchmarks/slate-v2/donor`,
+  `Plate repo root/package.json`, `benchmarks/editor/src`,
   `benchmarks/editor/benchmarks`, generated `benchmarks/editor/docs/perf`
 - dominant risk: noisy or asymmetric Slate API coverage producing fake
   comparability.
 
 Completion threshold:
 - The new `bench:core:rich-text-operations:compare:local` command writes
-  `.tmp/slate-v2/tmp/slate-rich-text-operations-compare-benchmark.json`.
+  `tmp/slate-rich-text-operations-compare-benchmark.json`.
 - `benchmarks/editor` ingests that artifact under
   `slate-core-rich-text-operations-compare`.
 - Generated rich-text data has `slate` labels and no `legacy-slate` labels.
@@ -52,7 +52,7 @@ Completion threshold:
   passes.
 
 Verification surface:
-- `.tmp/slate-v2` benchmark command and artifact.
+- `Plate repo root` benchmark command and artifact.
 - `benchmarks/editor` package check, generated Evidence Kit result, generated
   ugly HTML table, served JSON smoke.
 
@@ -63,7 +63,7 @@ Constraints:
 - Do not widen to ProseMirror, Lexical, Plate, or Tiptap adapters in this slice.
 
 Boundaries:
-- Source of truth: `.tmp/slate-v2` benchmark/test corpus and
+- Source of truth: `Plate repo root` benchmark/test corpus and
   `benchmarks/editor` Evidence Kit ingestion.
 - Allowed edit scope: benchmark scripts, benchmark package metadata, Evidence
   Kit ingestion/tests/generated docs/research artifacts.
@@ -103,14 +103,14 @@ Start Gates:
 |------|---------|----------|
 | `major-task` loaded | yes | Used for benchmark architecture/execution lane |
 | Active goal checked or created | yes | Active goal created for this benchmark slice |
-| Source of truth read before analysis | yes | Read `.tmp/slate-v2` compare/current benchmark scripts and `benchmarks/editor/src/index.mjs` |
+| Source of truth read before analysis | yes | Read `Plate repo root` compare/current benchmark scripts and `benchmarks/editor/src/index.mjs` |
 | Major lane selected | yes | Benchmark implementation |
 | Decision criteria stated | yes | Completion threshold above |
 | Existing repo patterns / prior decisions checked | yes | Reused `repo-compare.mjs`, `stats.mjs`, compare artifact schema, and Evidence Kit normalizers |
 | Helper stack selected | yes | Existing compare harness plus Evidence Kit renderer |
 | External research decision recorded | yes | N/A: local repos and generated artifacts were enough |
 | Implementation expectation recorded | yes | Implementation expected and completed |
-| Workspace authority selected | yes | `.tmp/slate-v2` owns benchmark command; `benchmarks/editor` owns ingestion/docs |
+| Workspace authority selected | yes | `Plate repo root` owns benchmark command; `benchmarks/editor` owns ingestion/docs |
 | Branch / PR expectation decided | yes | N/A: no PR requested |
 | Browser pack selected | yes | Static route smoke selected |
 | Browser route / app surface identified | yes | `http://127.0.0.1:8765/rich-text.html` |
@@ -188,7 +188,7 @@ Findings:
   before/after walk, unhangRange, and selectAll.
 
 Decisions and tradeoffs:
-- Chosen: reuse the existing `.tmp/slate-v2` compare harness so the artifact has
+- Chosen: reuse the existing `Plate repo root` compare harness so the artifact has
   the same `current`, `legacy`, `deltaMeanMs`, and stats shape as existing
   Evidence Kit ingestion.
 - Rejected: a separate ad hoc benchmark format. It would make the table harder
@@ -201,7 +201,7 @@ Decisions and tradeoffs:
 
 Facts:
 - The new artifact has 15 metric lanes and writes to
-  `.tmp/slate-v2/tmp/slate-rich-text-operations-compare-benchmark.json`.
+  `tmp/slate-rich-text-operations-compare-benchmark.json`.
 - `rich-text-data.json` reports 30 rows for
   `slate-core-rich-text-operations-compare`: 15 Slate v2 rows and 15 Slate
   baseline rows.
@@ -218,12 +218,12 @@ Inference:
 Recommendation:
 - Use this as the baseline Slate-v2-vs-Slate table row set.
 - Next benchmark layer should be browser editing/navigation replay from
-  `.tmp/slate-v2/playwright/integration/examples` before widening to
+  `apps/www/tests/slate-browser/donor/examples` before widening to
   ProseMirror/Lexical/Plate/Tiptap.
 
 Implementation notes:
-- Added `.tmp/slate-v2/scripts/benchmarks/core/compare/rich-text-operations.mjs`.
-- Added `.tmp/slate-v2` package script
+- Added `benchmarks/slate-v2/donor/core/compare/rich-text-operations.mjs`.
+- Added `Plate repo root` package script
   `bench:core:rich-text-operations:compare:local`.
 - Added `slate-core-rich-text-operations-compare` artifact ingestion.
 - Added `core-rich-text-operations-compare` workload coverage row.
@@ -232,7 +232,7 @@ Implementation notes:
   `legacy-slate-package.json` to `slate-package.json`.
 
 Review fixes:
-- Fixed benchmark default Slate repo path for `.tmp/slate-v2` layout by falling
+- Fixed benchmark default Slate repo path for `Plate repo root` layout by falling
   back from `../slate` to `../../../slate`.
 - Moved nested-list blocks off point-based anchor paths.
 - Changed expanded delete to a plain paragraph fixture because rich/nested
@@ -252,9 +252,9 @@ Error attempts:
 | Fuzz expected `legacy-slate` labels | 1 | Update contract to `slate` | Fixed |
 
 Verification evidence:
-- `cwd=.tmp/slate-v2`: `node --check scripts/benchmarks/core/compare/rich-text-operations.mjs` passed.
-- `cwd=.tmp/slate-v2`: `bunx biome check package.json scripts/benchmarks/core/compare/rich-text-operations.mjs --fix` passed.
-- `cwd=.tmp/slate-v2`: `bun run bench:core:rich-text-operations:compare:local` passed and wrote the artifact.
+- `cwd=Plate repo root`: `node --check scripts/benchmarks/core/compare/rich-text-operations.mjs` passed.
+- `cwd=Plate repo root`: `bunx biome check package.json scripts/benchmarks/core/compare/rich-text-operations.mjs --fix` passed.
+- `cwd=Plate repo root`: `bun run bench:core:rich-text-operations:compare:local` passed and wrote the artifact.
 - `cwd=benchmarks/editor`: `npx biome check src/index.mjs benchmarks/render-rich-text-viewer.mjs --fix` passed.
 - `cwd=benchmarks/editor`: `npm run research:editor-frameworks:fetch` passed.
 - `cwd=benchmarks/editor`: `npm run check` passed.

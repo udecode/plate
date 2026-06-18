@@ -1,7 +1,7 @@
 # slate v2 cva cn class sweep
 
 Objective:
-Sweep `.tmp/slate-v2/site/examples/ts` for manual class string builders and
+Sweep `apps/www/src/app/(app)/examples/slate/_examples` for manual class string builders and
 replace class composition with `cva()` / `cn()` where class names are involved.
 
 Goal plan:
@@ -29,7 +29,7 @@ Completion threshold:
 - Remaining `.join(' ')` hits are documented as non-class data strings.
 - Class composition uses `cva()` or `cn()` where applicable.
 - Emotion remains absent from source.
-- `.tmp/slate-v2` source audits, lint/typecheck/check, and focused browser
+- `Plate repo root` source audits, lint/typecheck/check, and focused browser
   proof pass.
 - Task closure is legal only when the source-of-truth acceptance criteria are
   satisfied or explicitly narrowed, required verification evidence is recorded,
@@ -38,8 +38,8 @@ Completion threshold:
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-slate-v2-cva-cn-class-sweep.md` passes.
 
 Verification surface:
-- Source audits over `.tmp/slate-v2/site/examples/ts`.
-- `.tmp/slate-v2`: `bun lint:fix`, `bun typecheck:site`, `bun lint`,
+- Source audits over `apps/www/src/app/(app)/examples/slate/_examples`.
+- `Plate repo root`: `bun lint:fix`, `bun typecheck:site`, `bun lint`,
   `bun check`.
 - Focused browser smoke on changed routes.
 
@@ -52,8 +52,8 @@ Constraints:
 
 Boundaries:
 - Source of truth: user correction in chat.
-- Allowed edit scope: `.tmp/slate-v2/site/examples/ts`,
-  `.tmp/slate-v2/site/public/index.css` only if styles need pairing, and this
+- Allowed edit scope: `apps/www/src/app/(app)/examples/slate/_examples`,
+  `apps/www/public/index.css` only if styles need pairing, and this
   plan.
 - Browser surface: changed example routes.
 - Tracker sync: N/A, chat-only task.
@@ -146,7 +146,7 @@ Completion Gates:
 | Package exports or file layout changed | no | Run `pnpm brl` before final verification and keep generated barrel updates | N/A: no package exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | Run `pnpm install` and relevant package checks | N/A: no manifests or lockfile changed. |
 | Agent rules or skills changed | no | Run `pnpm install` and verify generated skill sync | N/A: no agent rules or skills changed. |
-| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | All checks ran in `.tmp/slate-v2`; plan checker runs from `plate-2`. |
+| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | All checks ran in `Plate repo root`; plan checker runs from `plate-2`. |
 | Browser surface changed | yes | Capture Browser Use proof or record explicit waiver/blocker | Local Chromium smoke used; repo browser tool unavailable in this turn. |
 | Browser final proof | yes | Attach screenshot or exact browser verification caveat when browser proof applies | `/tmp/slate-v2-cva-cn-class-sweep-markdown-preview.png`; JSON smoke result recorded. |
 | CI-controlled template output changed | no | Restore generated template output or record why it is intentionally kept | N/A: no template output touched. |
@@ -208,17 +208,17 @@ Error attempts:
 | None yet | 0 | | |
 
 Verification evidence:
-- `.tmp/slate-v2`: `rg -n 'filter\\(Boolean\\)|\\.join\\('\\'' '\\''\\)|const\\s+className\\s*=\\s*\\[|className=\\{[^}]*\\?[^}]*:' site/examples/ts`
+- `Plate repo root`: `rg -n 'filter\\(Boolean\\)|\\.join\\('\\'' '\\''\\)|const\\s+className\\s*=\\s*\\[|className=\\{[^}]*\\?[^}]*:' site/examples/ts`
   returned only `site/examples/ts/multi-root-document.tsx:38`, where
   `.join(' ')` builds document text for a status label, not class names.
-- `.tmp/slate-v2`: `rg -n '@emotion|emotion|css\\(|cx\\(' . --glob '!site/.next/**' --glob '!site/out/**'`
+- `Plate repo root`: `rg -n '@emotion|emotion|css\\(|cx\\(' . --glob '!site/.next/**' --glob '!site/out/**'`
   returned no matches.
-- `.tmp/slate-v2`: `bun lint:fix` passed.
-- `.tmp/slate-v2`: `bun typecheck:site` passed.
-- `.tmp/slate-v2`: `bun lint` passed.
-- `.tmp/slate-v2`: `bun check` passed: lint, package/site/root typecheck, Bun
+- `Plate repo root`: `bun lint:fix` passed.
+- `Plate repo root`: `bun typecheck:site` passed.
+- `Plate repo root`: `bun lint` passed.
+- `Plate repo root`: `bun check` passed: lint, package/site/root typecheck, Bun
   tests, and Slate React Vitest suite.
-- `.tmp/slate-v2`: focused Chromium smoke against `localhost:3210` passed:
+- `Plate repo root`: focused Chromium smoke against `localhost:3210` passed:
   `/examples/markdown-preview`, `/examples/code-highlighting`,
   `/examples/inlines`; markdown segments 5, code blocks 2, positioned code
   elements 33, inline badges 1, editor visible true, `appErrors: []`.

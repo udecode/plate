@@ -587,9 +587,9 @@ Actions:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/**`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/site/examples/ts/**`
+- `packages/slate-react/src/editable/**`
+- `packages/slate-react/src/components/editable.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/**`
 
 Gates:
 
@@ -613,9 +613,9 @@ Actions:
 - Reset `active goal state` from the closed controller lane to this
   active editing-kernel rewrite lane.
 - Inventoried direct editing/timing ownership across:
-  - `.tmp/slate-v2/packages/slate-react/src/**`
-  - `.tmp/slate-v2/site/examples/ts/**`
-  - `.tmp/slate-v2/playwright/integration/examples/**`
+  - `packages/slate-react/src/**`
+  - `apps/www/src/app/(app)/examples/slate/_examples/**`
+  - `apps/www/tests/slate-browser/donor/examples/**`
 - Queried direct calls/writes for:
   - `Transforms.select`
   - `Transforms.deselect`
@@ -741,7 +741,7 @@ Decision:
 Next owner:
 
 - Phase 1: define compile-only `EditableEditingKernel` API in
-  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`.
+  `packages/slate-react/src/editable/editing-kernel.ts`.
 
 ## Phase 1: Define EditableEditingKernel API
 
@@ -751,7 +751,7 @@ Goal:
 
 New file:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/editable/editing-kernel.ts`
 
 Define:
 
@@ -788,7 +788,7 @@ Status: complete.
 Actions:
 
 - Added
-  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`.
+  `packages/slate-react/src/editable/editing-kernel.ts`.
 - Defined compile-only kernel types:
   - `EditableBrowserEventFamily`
   - `EditableKernelState`
@@ -805,7 +805,7 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/editable/editing-kernel.ts`
 
 Evidence:
 
@@ -877,7 +877,7 @@ Status: complete for keydown.
 Actions:
 
 - Added trace storage helpers to
-  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`:
+  `packages/slate-react/src/editable/editing-kernel.ts`:
   - `mapSelectionSourceToKernelState(...)`
   - `getEditableKernelTrace(...)`
   - `clearEditableKernelTrace(...)`
@@ -897,8 +897,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -963,7 +963,7 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1014,11 +1014,11 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/editable/browser-handle.ts`
+- `packages/slate-react/src/editable/dom-repair-queue.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/browser/src/playwright/index.ts`
 
 Evidence:
 
@@ -1099,7 +1099,7 @@ Actions:
 
 - Added `EditableKeyDownKernelDecision`.
 - Added `prepareEditableKeyDownKernel(...)` in
-  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`.
+  `packages/slate-react/src/editable/editing-kernel.ts`.
 - Moved keydown decision prep into the kernel:
   - intent classification
   - internal target detection
@@ -1116,8 +1116,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1154,7 +1154,7 @@ Actions:
 
 - Added `EditableBeforeInputKernelDecision`.
 - Added `prepareEditableBeforeInputKernel(...)` in
-  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`.
+  `packages/slate-react/src/editable/editing-kernel.ts`.
 - Moved native `beforeinput` decision prep into the kernel:
   - intent classification
   - internal target detection
@@ -1171,8 +1171,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1215,7 +1215,7 @@ Actions:
 
 - Added `EditableClipboardKernelDecision`.
 - Added `prepareEditableClipboardKernel(...)` in
-  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`.
+  `packages/slate-react/src/editable/editing-kernel.ts`.
 - Moved clipboard-family decision prep into the kernel for:
   - paste
   - copy
@@ -1234,8 +1234,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1271,7 +1271,7 @@ Actions:
 
 - Added `EditableCompositionKernelDecision`.
 - Added `prepareEditableCompositionKernel(...)` in
-  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`.
+  `packages/slate-react/src/editable/editing-kernel.ts`.
 - Moved composition event decision prep into the kernel for:
   - `compositionstart`
   - `compositionupdate`
@@ -1284,8 +1284,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1323,7 +1323,7 @@ Actions:
 
 - Added `EditableFocusMouseKernelDecision`.
 - Added `prepareEditableFocusMouseKernel(...)` in
-  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`.
+  `packages/slate-react/src/editable/editing-kernel.ts`.
 - Moved focus/mouse decision prep into the kernel for:
   - focus
   - blur
@@ -1338,8 +1338,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1375,7 +1375,7 @@ Actions:
 
 - Added `EditableInputKernelDecision`.
 - Added `prepareEditableInputKernel(...)` in
-  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`.
+  `packages/slate-react/src/editable/editing-kernel.ts`.
 - Moved React `input` and `inputCapture` decision prep into the kernel:
   - internal target detection
   - target owner classification
@@ -1391,9 +1391,9 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -1480,8 +1480,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1542,13 +1542,13 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/input-state.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/caret-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `packages/slate-react/src/editable/input-state.ts`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/editable/mutation-controller.ts`
+- `packages/slate-react/src/editable/model-input-strategy.ts`
+- `packages/slate-react/src/editable/caret-engine.ts`
+- `packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -1593,9 +1593,9 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/input-state.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+- `packages/slate-react/src/editable/input-state.ts`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/editable/selection-reconciler.ts`
 
 Evidence:
 
@@ -1642,10 +1642,10 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/selection-controller.ts`
+- `packages/slate-react/src/editable/selection-reconciler.ts`
+- `packages/slate-react/src/editable/input-controller.ts`
+- `packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -1689,7 +1689,7 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+- `packages/slate-react/src/editable/mutation-controller.ts`
 
 Evidence:
 
@@ -1864,11 +1864,11 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/editable/mutation-controller.ts`
+- `packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -1932,9 +1932,9 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/editable/model-input-strategy.ts`
+- `packages/slate-react/src/editable/mutation-controller.ts`
 
 Evidence:
 
@@ -1994,7 +1994,7 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
+- `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
 
 Evidence:
 
@@ -2058,8 +2058,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `packages/slate-react/src/editable/browser-handle.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -2257,13 +2257,13 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/editable/browser-handle.ts`
+- `packages/slate-react/src/editable/model-input-strategy.ts`
+- `packages/slate-react/src/index.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx`
+- `apps/www/tests/slate-browser/donor/examples/markdown-shortcuts.test.ts`
 
 Evidence:
 
@@ -2332,8 +2332,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/site/examples/ts/check-lists.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/check-lists.test.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/check-lists.tsx`
+- `apps/www/tests/slate-browser/donor/examples/check-lists.test.ts`
 
 Evidence:
 
@@ -2387,11 +2387,11 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/site/examples/ts/check-lists.tsx`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `packages/slate-react/src/index.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/check-lists.tsx`
 
 Evidence:
 
@@ -2449,8 +2449,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/site/examples/ts/tables.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/tables.test.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/tables.tsx`
+- `apps/www/tests/slate-browser/donor/examples/tables.test.ts`
 
 Evidence:
 
@@ -2505,8 +2505,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/site/examples/ts/inlines.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx`
+- `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`
 
 Evidence:
 
@@ -2653,10 +2653,10 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/dom-repair-queue.ts`
+- `packages/slate-react/src/editable/model-input-strategy.ts`
+- `apps/www/tests/slate-browser/donor/examples/markdown-shortcuts.test.ts`
 
 Evidence:
 
@@ -2799,10 +2799,10 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -2957,8 +2957,8 @@ Each generated scenario must assert:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/**`
-- `.tmp/slate-v2/playwright/integration/examples/**`
+- `packages/browser/src/playwright/**`
+- `apps/www/tests/slate-browser/donor/examples/**`
 
 Exit:
 

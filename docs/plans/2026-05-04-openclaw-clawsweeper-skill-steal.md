@@ -37,7 +37,7 @@ adapt it for the Slate v2 issue-ledger workflow in this repo.
 - Use `docs/slate-issues/open-issues-ledger.md` as frozen corpus truth.
 - Use `docs/plans/2026-05-04-slate-v2-full-issue-ledger-architecture-ralplan.md`
   and its issue matrix as architecture classification truth.
-- Use `.tmp/slate-v2` only for current implementation proof.
+- Use `Plate repo root` only for current implementation proof.
 - Exact `Fixes #...` remains forbidden unless the original issue repro is
   proved end to end.
 - Add compiled issue dossier mode for one section per issue, without GitHub

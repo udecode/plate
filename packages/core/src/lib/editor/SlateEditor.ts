@@ -4,7 +4,7 @@ import type {
   EditorTransforms,
   TRange,
   Value,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 import type { UnionToIntersection } from '@udecode/utils';
 import type { KeyboardEventLike } from 'is-hotkey';
 import type { Draft } from 'mutative';

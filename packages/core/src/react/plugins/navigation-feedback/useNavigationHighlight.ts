@@ -1,6 +1,11 @@
 import React from 'react';
 
-import { type Path, PathApi, type TElement, type TText } from '@platejs/slate';
+import {
+  type Path,
+  PathApi,
+  type TElement,
+  type TText,
+} from '@platejs/slate-legacy';
 
 import { useEditorSelector } from '../../stores';
 

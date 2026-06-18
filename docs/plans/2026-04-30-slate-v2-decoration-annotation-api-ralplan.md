@@ -79,34 +79,34 @@ Unresolved user-decision points:
 Current live Slate v2 already has the right foundation:
 
 - `SlateAnnotation` is id-bearing but currently requires `bookmark: Bookmark`
-  (`.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:14-18`).
+  (`packages/slate-react/src/annotation-store.ts:14-18`).
 - The annotation store resolves bookmarks into snapshots and projections
-  (`.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:146-168`,
+  (`packages/slate-react/src/annotation-store.ts:146-168`,
   `:240-279`).
 - Candidate rebuild exists for editor changes when impacted annotation ids can
-  be computed (`.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:177-224`,
+  be computed (`packages/slate-react/src/annotation-store.ts:177-224`,
   `:516-545`).
 - Selection-only and unrelated text changes are skipped
-  (`.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:556-568`;
-  `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx:185-260`).
+  (`packages/slate-react/src/annotation-store.ts:556-568`;
+  `packages/slate-react/test/annotation-store-contract.tsx:185-260`).
 - The store now listens through `Editor.subscribeSource`, not broad
-  `editor.subscribe` (`.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:668-682`;
-  `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx:263-308`).
+  `editor.subscribe` (`packages/slate-react/src/annotation-store.ts:668-682`;
+  `packages/slate-react/test/annotation-store-contract.tsx:263-308`).
 - Projection stores already support source dirtiness, source ids, runtime-id
   subscriptions, and explicit refresh reasons
-  (`.tmp/slate-v2/packages/slate-react/src/projection-store.ts:31-72`,
+  (`packages/slate-react/src/projection-store.ts:31-72`,
   `:343-459`, `:489-503`).
 - `<Slate>` composes annotation store projections with decoration sources
-  (`.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:38-50`,
+  (`packages/slate-react/src/components/slate.tsx:38-50`,
   `:151-160`).
 - `Bookmark` is a hidden, op-rebased range anchor with `resolve()` and
-  `unref()` (`.tmp/slate-v2/packages/slate/src/editor/bookmark.ts:42-75`).
+  `unref()` (`packages/slate/src/editor/bookmark.ts:42-75`).
 - Bookmark tests prove hidden range-ref backing, rebasing, and inward boundary
-  behavior (`.tmp/slate-v2/packages/slate/test/bookmark-contract.ts:55-160`).
+  behavior (`packages/slate/test/bookmark-contract.ts:55-160`).
 - The review-comments example uses bookmarks plus annotation store data
-  (`.tmp/slate-v2/site/examples/ts/review-comments.tsx:213-235`, `:508-521`).
+  (`apps/www/src/app/(app)/examples/slate/_examples/review-comments.tsx:213-235`, `:508-521`).
 - The persistent anchor example proves bookmark-backed annotations and widgets
-  (`.tmp/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx:379-405`,
+  (`apps/www/src/app/(app)/examples/slate/_examples/persistent-annotation-anchors.tsx:379-405`,
   `:499-539`).
 
 Current gap:
@@ -115,9 +115,9 @@ Current gap:
   describes the local editor anchor case.
 - External annotation changes cannot target candidate ids through the public
   annotation store `refresh()` API; `refresh` is currently `() => void`
-  (`.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:47-55`).
+  (`packages/slate-react/src/annotation-store.ts:47-55`).
 - Projection building currently spreads the whole annotation `data` object into
-  inline projection data (`.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:252-269`).
+  inline projection data (`packages/slate-react/src/annotation-store.ts:252-269`).
   That is too broad for comment systems where body/sidebar data changes more
   often than inline paint metadata.
 - The examples demonstrate local bookmarks, not a read-only/comment-only user
@@ -131,8 +131,8 @@ Updated: 2026-04-30T15:34:16Z
 Boundary decisions:
 
 - Hard-cut `bookmark` to `anchor` before public lock. The package is still
-  pre-1.0/beta (`.tmp/slate-v2/README.md:42`) and `slate-react` is published as
-  `0.124.0` (`.tmp/slate-v2/packages/slate-react/package.json:1-5`), so carrying
+  pre-1.0/beta (`Plate repo root/README.md:42`) and `slate-react` is published as
+  `0.124.0` (`packages/slate-react/package.json:1-5`), so carrying
   the wrong noun forward is more expensive than a minor-version break.
 - Do not add a compatibility alias by default. Add one only if release review
   finds real external adoption of the current annotation API.
@@ -447,7 +447,7 @@ Proof rows:
 
 Add a final-state Slate v2 doc after the plan closes:
 
-- `.tmp/slate-v2/docs/libraries/slate-react/annotations.md`
+- `content/docs/slate/libraries/slate-react/annotations.md`
 
 Minimum content:
 
@@ -568,13 +568,13 @@ Trigger:
 
 Blast radius:
 
-- `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotation-store.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/site/examples/ts/review-comments.tsx`
-- `.tmp/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx`
-- `.tmp/slate-v2/docs/libraries/slate-react/annotations.md`
+- `packages/slate-react/src/annotation-store.ts`
+- `packages/slate-react/src/hooks/use-slate-annotation-store.tsx`
+- `packages/slate-react/src/hooks/use-slate-annotations.tsx`
+- `packages/slate-react/src/index.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/review-comments.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/persistent-annotation-anchors.tsx`
+- `content/docs/slate/libraries/slate-react/annotations.md`
 - future Plate/slate-yjs comment adapters
 
 Three-scenario pre-mortem:
@@ -719,8 +719,8 @@ Completion threshold is met:
 | steelman-pass                        | complete | Accepted hard-cut `anchor`, external channel default, `data`/`projection`, and id-targeted refresh after challenge.                                                                                                                                                                     |
 | high-risk-deliberate-pass            | complete | Expanded blast radius, pre-mortem, proof plan, rollback answer, and keep verdict.                                                                                                                                                                                                       |
 | closure-score                        | complete | Score `0.93`; plan is ready for user review before implementation.                                                                                                                                                                                                                      |
-| implementation-slice-api-store       | complete | Started 2026-04-30T16:46:34Z after the user asked to build from the plan. Owner: `.tmp/slate-v2/packages/slate-react`; target: `anchor`, `data`/`projection`, and `refresh({ ids })`. Evidence: focused annotation-store Vitest, package typecheck, site typecheck, and `bun lint:fix`. |
-| docs-examples-collaboration-proof    | complete | Started 2026-04-30T16:54:03Z. Added `.tmp/slate-v2/docs/libraries/slate-react/annotations.md` and `.tmp/slate-v2/site/examples/ts/collaborative-comments.tsx`, with route registration.                                                                                                 |
+| implementation-slice-api-store       | complete | Started 2026-04-30T16:46:34Z after the user asked to build from the plan. Owner: `packages/slate-react`; target: `anchor`, `data`/`projection`, and `refresh({ ids })`. Evidence: focused annotation-store Vitest, package typecheck, site typecheck, and `bun lint:fix`. |
+| docs-examples-collaboration-proof    | complete | Started 2026-04-30T16:54:03Z. Added `content/docs/slate/libraries/slate-react/annotations.md` and `apps/www/src/app/(app)/examples/slate/_examples/collaborative-comments.tsx`, with route registration.                                                                                                 |
 | browser-and-stress-closure           | complete | Browser proof passed in `collaborative-comments`; screenshot saved at `/Users/zbeyens/.dev-browser/tmp/slate-collaborative-comments-proof.png`. `bun run bench:react:rerender-breadth:local` passed. `bun check` passed.                                                                |
 
 ## Next Pass

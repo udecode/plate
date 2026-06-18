@@ -1,0 +1,355 @@
+---
+title: "Extensions"
+---
+
+# Extensions
+
+Extensions package reusable Slate behavior that should be installed, ordered,
+and removed as one unit. Use them when plain app functions are no longer enough.
+Plate uses plugins for product-level configured features; raw Slate calls this
+runtime unit an extension.
+
+## Smallest Extension
+
+Most extensions start as a named schema rule. `defineEditorExtension(...)`
+preserves the literal extension name and lets `createEditor(...)` infer the
+installed surface.
+
+```ts
+import { createEditor, defineEditorExtension } from '@platejs/slate'
+
+const links = defineEditorExtension({
+  name: 'links',
+  elements: [{ type: 'link', inline: true }],
+})
+
+const editor = createEditor({
+  extensions: [links],
+})
+```
+
+That is enough when the extension only teaches Slate how to treat a node type.
+Add helper groups only when callers need a shared read or write API.
+
+## Read And Write Helpers
+
+Use `state` for read helpers. Use `tx` for writes that belong inside
+`editor.update(...)`.
+
+```ts
+import { createEditor, defineEditorExtension } from '@platejs/slate'
+
+const linkTools = defineEditorExtension({
+  name: 'link-tools',
+  state: {
+    link(state) {
+      return {
+        hasSelection() {
+          return state.selection.get() !== null
+        },
+      }
+    },
+  },
+  tx: {
+    link(tx) {
+      return {
+        setHref(href: string) {
+          tx.nodes.set({ url: href })
+        },
+      }
+    },
+  },
+})
+
+const editor = createEditor({
+  extensions: [linkTools],
+})
+
+const canEditLink = editor.read(state => state.link.hasSelection())
+
+editor.update(tx => {
+  tx.link.setHref('https://example.com')
+})
+```
+
+This split is the normal authoring path. Reads cannot write by accident, and
+writes can still read transaction-local state after earlier writes in the same
+update. A `tx` helper should exist to perform Slate model writes. If a helper
+only opens UI, reads layout, talks to the network, or coordinates host state,
+keep it out of `tx`.
+
+## Extension Order
+
+Extensions are named so Slate can compose them deterministically. Use
+`dependencies` when one extension needs another installed first.
+
+```ts
+const mentions = defineEditorExtension({
+  name: 'mentions',
+  dependencies: ['links'],
+  tx: {
+    mention(tx) {
+      return {
+        insert(character: string) {
+          tx.nodes.insert({
+            type: 'mention',
+            character,
+            children: [{ text: '' }],
+          })
+        },
+      }
+    },
+  },
+})
+
+const editor = createEditor({
+  extensions: [mentions, links],
+})
+```
+
+Slate installs `links` before `mentions` because `mentions` declares the
+dependency. Use `peerDependencies` when a companion extension must be present
+without forcing order. Use `conflicts` when two extensions cannot be installed
+together.
+
+## Runtime Setup
+
+Use `setup(context)` when an extension needs install-time options, local runtime
+state, cleanup, or multiple slots that share the same setup context.
+
+```ts
+const tableNavigation = defineEditorExtension({
+  name: 'table-navigation',
+  options: { initialMode: 'text' as const },
+  setup(context) {
+    const mode = context.runtimeState(context.options.initialMode)
+
+    context.signal.addEventListener('abort', () => {
+      mode.set('text')
+    })
+
+    return {
+      state: {
+        table() {
+          return {
+            mode: () => mode.get(),
+          }
+        },
+      },
+      tx: {
+        table(tx) {
+          return {
+            insertRow() {
+              tx.nodes.insert({
+                type: 'table-row',
+                children: [{ type: 'table-cell', children: [{ text: '' }] }],
+              })
+            },
+          }
+        },
+      },
+      cleanup() {
+        mode.set('text')
+      },
+    }
+  },
+})
+```
+
+The cleanup function returned by `editor.extend(...)` aborts `context.signal`,
+runs setup cleanup, removes extension-local state, and unregisters the extension
+slots.
+
+## Element Specs
+
+Use `elements` when an extension owns editor behavior for an element type.
+
+```ts
+import { defineEditorExtension, elementProperty } from '@platejs/slate'
+
+const tables = defineEditorExtension({
+  name: 'tables',
+  elements: [
+    {
+      type: 'table-cell',
+      isolating: true,
+      keyboardSelectable: true,
+      properties: {
+        colSpan: elementProperty.number({ default: 1 }),
+        rowSpan: elementProperty.number({ default: 1 }),
+      },
+    },
+  ],
+  state: {
+    table(state) {
+      return {
+        selectedCellColSpan(element) {
+          return state.schema.getElementProperty(element, 'colSpan')
+        },
+      }
+    },
+  },
+})
+```
+
+Specs can describe behavior such as `inline`, `void`, `atom`, `isolating`,
+`keyboardSelectable`, `readOnly`, `selectable`, and `markableVoid`.
+`void: 'editable-island'` keeps the element void for rendering policy while
+allowing Slate cursor projection to enter its text children. `contentRoot: {
+slot }` declares that the element owns an editable child root stored at
+`element.childRoots[slot]`. See [Roots](13-roots#content-roots) for
+rendering and root ownership.
+
+`properties` are descriptors for extension-owned element fields. A descriptor
+can provide a default and equality function. Defaults are read through
+`state.schema` or `tx.schema`; they do not mutate the document unless a
+transaction writes the property.
+
+## Transform Middleware
+
+Use `transforms` when an extension changes the behavior of a Slate transform.
+Backspace, Delete, Enter, paste insertion, and text insertion policies belong
+here when the behavior should apply beyond one React keyboard handler.
+
+```ts
+import { defineEditorExtension, ElementApi, PointApi, RangeApi } from '@platejs/slate'
+
+const table = defineEditorExtension({
+  name: 'table',
+  transforms: {
+    deleteBackward({ editor, next, unit }) {
+      const selection = editor.read(state => state.selection.get())
+
+      if (selection && RangeApi.isCollapsed(selection)) {
+        const cell = editor.read(state =>
+          state.nodes.find({
+            match: node =>
+              ElementApi.isElement(node) && node.type === 'table-cell',
+          })
+        )
+
+        if (cell) {
+          const [, cellPath] = cell
+          const start = editor.read(state => state.points.start(cellPath))
+
+          if (PointApi.equals(selection.anchor, start)) {
+            return true
+          }
+        }
+      }
+
+      return next({ unit })
+    },
+  },
+})
+```
+
+Use `Editable onKeyDown` for UI shortcuts that are specifically keyboard
+commands. Use transform middleware for behavior equivalent to Slate transform
+names such as `deleteBackward`, `deleteForward`, `insertBreak`, and
+`insertText`.
+
+## Clipboard And Fragment Policy
+
+Use `clipboard.insertData` for paste/drop ingress. The handler receives the
+`DataTransfer`, may apply a document update, and returns `true` when it handles
+the payload. Return `next()` to keep Slate's fragment and plain-text fallback.
+
+Use `queries.fragment.get` to sanitize copied or dragged Slate fragments, such
+as removing local preview marks before DOM clipboard serialization. Product
+formats belong in those extension policies, not in Slate core.
+
+Slate's core fragment insertion stays structural. Grid-aware table paste, such
+as mapping copied cells onto existing target cells by row and column, belongs in
+the table extension's clipboard or fragment policy.
+
+## Slot Reference
+
+Start with `elements`, `state`, and `tx`. Reach for the other slots only when
+the behavior needs that runtime phase.
+
+| Slot | Use it for |
+| --- | --- |
+| `elements` | element schema specs |
+| `state` | read helpers available inside `editor.read(...)` |
+| `tx` | write helpers available inside `editor.update(...)` |
+| `normalizers` | named editor or node normalizer entries |
+| `transforms` | middleware for Slate transform behavior |
+| `queries` | middleware for Slate query behavior |
+| `operations.apply` | operation import/export policy |
+| `clipboard.insertData` | DataTransfer ingress hooks |
+| `onCommit` | observing committed changes |
+| `api` | mounted host/runtime services exposed through `editor.api` |
+| `setup` | shared options, runtime state, cleanup, and install-time wiring |
+
+Do not use `api` as a product command bus. A checklist toggle that changes the
+document belongs in `tx.checklist.toggle()`. Host services such as DOM focus,
+clipboard ingress, history batching, overlays, measurements, or framework
+bridges belong in `api`.
+
+Keep product-specific APIs above these raw slots. Frameworks can build richer
+feature conventions on top of Slate's smaller extension substrate.
+
+## Advanced TypeScript
+
+The simple form should be your default:
+
+```ts
+const images = defineEditorExtension({
+  name: 'images',
+  elements: [{ type: 'image', void: true }],
+})
+```
+
+Use the curried generic form when library code must bind an extension to a
+custom editor type before passing the descriptor.
+
+```ts
+import { type Editor, defineEditorExtension } from '@platejs/slate'
+
+type ImageElement = {
+  type: 'image'
+  url: string
+  children: [{ text: '' }]
+}
+
+type CustomEditor = Editor<ImageElement[]>
+
+const images = defineEditorExtension<CustomEditor>()({
+  name: 'images',
+  tx: {
+    image(tx) {
+      return {
+        insert(url: string) {
+          tx.nodes.insert({
+            type: 'image',
+            url,
+            children: [{ text: '' }],
+          })
+        },
+      }
+    },
+  },
+})
+```
+
+Use module augmentation when you need ambient `state.*`, `tx.*`, or `api.*`
+names across editor values instead of relying on the inferred editor instance.
+That is a library-authoring move, not the first step for an app.
+
+## Helper Namespaces
+
+Plain helper namespaces are still the right shape for stateless checks.
+
+```ts
+import { ElementApi } from '@platejs/slate'
+
+const MyElement = {
+  isImage(value: unknown) {
+    return ElementApi.isElement(value) && value.type === 'image'
+  },
+}
+```
+
+Use helper namespaces for pure utilities. Use `editor.extend(...)` for behavior
+that changes how the editor reads, writes, normalizes, or renders content.

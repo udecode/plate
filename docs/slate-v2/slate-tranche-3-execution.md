@@ -11,7 +11,7 @@ status: superseded
 Do an honest tranche-3 review for `packages/slate` against:
 
 - live `plate-2` tranche/ledger docs
-- current `.tmp/slate-v2/packages/slate/**`
+- current `packages/slate/**`
 - missing draft-backed proof owners under `.tmp/slate-v2-draft/packages/slate/**`
 - missing perf gate ownership
 
@@ -24,8 +24,8 @@ The mutable execution-state owner was moved to:
 ## Execution Model
 
 - control/docs repo: `plate-2`
-- execution repo: `.tmp/slate-v2`
-- package scope: `.tmp/slate-v2/packages/slate/**`
+- execution repo: `Plate repo root`
+- package scope: `packages/slate/**`
 
 ## Current Tactic
 
@@ -103,7 +103,7 @@ The corpus doc says tranche 3 keeps these proof-owner lanes alive:
 - package-local correctness/build/type/lint gates are green
 - the `#6038` benchmark lane exists and runs
 - the broad standalone oracle file
-  `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
+  `packages/slate/test/snapshot-contract.ts`
   is **not** part of the package-closeout proof by default and is currently red
   when run directly
 
@@ -124,13 +124,13 @@ The corpus doc says tranche 3 keeps these proof-owner lanes alive:
 ## Current Gates
 
 - targeted correctness:
-  - `cd .tmp/slate-v2 && bun test ./packages/slate/test/text-units-contract.ts`
+  - `cd Plate repo root && bun test ./packages/slate/test/text-units-contract.ts`
 - package closeout gates:
-  - `cd .tmp/slate-v2 && bun test ./packages/slate/test`
-  - `cd .tmp/slate-v2 && bunx turbo build --filter=./packages/slate`
-  - `cd .tmp/slate-v2 && bunx turbo typecheck --filter=./packages/slate`
-  - `cd .tmp/slate-v2 && bun run lint:fix`
-  - `cd .tmp/slate-v2 && bun run lint`
+  - `cd Plate repo root && bun test ./packages/slate/test`
+  - `cd Plate repo root && bunx turbo build --filter=./packages/slate`
+  - `cd Plate repo root && bunx turbo typecheck --filter=./packages/slate`
+  - `cd Plate repo root && bun run lint:fix`
+  - `cd Plate repo root && bun run lint`
 
 ## Latest Slice
 

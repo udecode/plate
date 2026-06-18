@@ -1,0 +1,176 @@
+---
+title: "Locations"
+---
+
+# Locations
+
+Locations tell Slate where to read or write inside an editor root. The core
+location types are `Path`, `Point`, and `Range`.
+
+Rootless locations resolve against the current editor or view root. The base
+editor uses the primary document; root-bound views use their own root.
+Locations in extra roots carry the root key on their points.
+
+## Path
+
+A path is an array of indexes from a root to a node.
+
+```ts
+type Path = number[]
+```
+
+In this root value, the paragraph has path `[0]` and the text node has path
+`[0, 0]`.
+
+```ts
+const children = [
+  {
+    type: 'paragraph',
+    children: [{ text: 'A line of text!' }],
+  },
+]
+```
+
+Use `[]` for the root itself. For example, this selects the current root.
+
+```ts
+editor.update((tx) => {
+  tx.selection.set([])
+})
+```
+
+Use `PathApi` for path math.
+
+```ts
+import { PathApi } from '@platejs/slate'
+
+const parent = PathApi.parent([0, 0])
+const common = PathApi.common([0, 0], [0, 2])
+```
+
+## Point
+
+A point targets an offset inside a text node.
+
+```ts
+interface Point {
+  path: Path
+  offset: number
+  root?: string
+}
+```
+
+The start of the first text node is:
+
+```ts
+const start = {
+  path: [0, 0],
+  offset: 0,
+}
+```
+
+A point in a named root carries that root key.
+
+```ts
+const headerStart = {
+  path: [0, 0],
+  offset: 0,
+  root: 'header',
+}
+```
+
+Points always resolve to text nodes. Elements do not have cursor offsets.
+
+## Range
+
+A range spans between two points.
+
+```ts
+interface Range {
+  anchor: Point
+  focus: Point
+}
+```
+
+The anchor is where the user started the selection. The focus is where the user
+ended it. A backward range can have an anchor that appears after the focus in
+document order.
+
+Use `RangeApi` when you need ordered edges or direction checks.
+
+```ts
+import { RangeApi } from '@platejs/slate'
+
+const [start, end] = RangeApi.edges(range)
+const collapsed = RangeApi.isCollapsed(range)
+const backward = RangeApi.isBackward(range)
+```
+
+Both points in a range must resolve inside the same root. For named roots, put
+the same `root` on both points.
+
+```ts
+const headerRange = {
+  anchor: { path: [0, 0], offset: 0, root: 'header' },
+  focus: { path: [0, 0], offset: 6, root: 'header' },
+}
+```
+
+## Selection
+
+The editor selection is a `Range | null`. Read it from the editor state and
+write it inside `editor.update(...)`.
+
+```ts
+const selection = editor.read((state) => state.selection.get())
+```
+
+```ts
+editor.update((tx) => {
+  tx.selection.set({
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 15 },
+  })
+})
+```
+
+Set the selection to `null` to clear it.
+
+```ts
+editor.update((tx) => {
+  tx.selection.set(null)
+})
+```
+
+Use read helpers for common editor-derived points and ranges.
+
+```ts
+const start = editor.read((state) => state.points.start([0]))
+const end = editor.read((state) => state.points.end([0]))
+const unhung = editor.read((state) => {
+  const selection = state.selection.get()
+
+  return selection ? state.ranges.unhang(selection, { voids: true }) : null
+})
+```
+
+Use [Path API](../api/locations/path), [Point API](../api/locations/point),
+and [Range API](../api/locations/range) for the full helper list.
+
+## Bookmarks
+
+Use bookmarks for local annotation-like anchors that rebase as operations
+apply. A bookmark hides its backing range ref from the public ref set and
+exposes `resolve()` plus `unref()`.
+
+```ts
+const bookmark = editor.read((state) =>
+  state.ranges.bookmark({
+    anchor: { path: [0, 0], offset: 2 },
+    focus: { path: [0, 0], offset: 8 },
+  })
+)
+
+const range = bookmark.resolve()
+bookmark.unref()
+```

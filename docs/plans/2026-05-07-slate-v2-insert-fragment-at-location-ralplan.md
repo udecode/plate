@@ -34,8 +34,8 @@ Desired outcome:
 
 In scope:
 
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`;
-- package tests under `.tmp/slate-v2/packages/slate/test/`;
+- `packages/slate/src/transforms-text/insert-fragment.ts`;
+- package tests under `packages/slate/test/`;
 - issue ledger, fork dossier, and PR reference accounting.
 
 Non-goals:
@@ -92,19 +92,19 @@ empty-node caret placement.
 
 Current source:
 
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts` owns
+- `packages/slate/src/transforms-text/insert-fragment.ts` owns
   `insertFragment`.
 - `applyInsertFragment` resolves `options.at` through
   `tx.resolveTarget({ at: options.at })`.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts` returns explicit
+- `packages/slate/src/core/public-state.ts` returns explicit
   `options.at` unchanged from `resolveTarget`.
 - `insert-fragment.ts` has several fast replacement paths before the legacy
   split/insert path, then only performs final `transforms.select(end)` when
   `!options.at`.
-- `.tmp/slate-v2/packages/slate/test/primitive-method-runtime-contract.ts` covers
+- `packages/slate/test/primitive-method-runtime-contract.ts` covers
   omitted transaction targets for `tx.fragment.insert`, not the explicit `at`
   issue.
-- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts` covers many fragment
+- `packages/slate/test/clipboard-contract.ts` covers many fragment
   replacement shapes, including target-block preservation, but not `#5412`.
 
 Live current shape exists. This is not a fake migration from old Slate; it is a
@@ -210,7 +210,7 @@ proof before any fixed browser claim.
 | related issue discovery | complete | Reviewed `#5089`, `#4542`, `#5151`, `#3557`, `#3155`, `#5080`, `#3891`, `#5129`.                                                                                                                                                                   | Kept non-targets bounded.                                                                 | Ralph TDD                             |
 | closure score           | complete | Score `0.92`, no dimension below `0.90`.                                                                                                                                                                                                           | Ready for execution.                                                                      | Ralph                                 |
 | Ralph execution start   | complete | `.tmp/completion-checks/slate-v2-insert-fragment-at-location-execution.md`; `active goal state`.                                                                                                                                                    | Activated TDD pass for `#5412` and `#5429`.                                               | Package tests                         |
-| TDD proof               | complete | `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts` adds exact package proof for explicit `insertFragment({ at })` and empty-block caret placement.                                                                                          | Current source already satisfies both issue-shaped contracts; no production patch needed. | Verification sweep                    |
+| TDD proof               | complete | `packages/slate/test/clipboard-contract.ts` adds exact package proof for explicit `insertFragment({ at })` and empty-block caret placement.                                                                                          | Current source already satisfies both issue-shaped contracts; no production patch needed. | Verification sweep                    |
 | Verification sweep      | complete | `bun test ./packages/slate/test/clipboard-contract.ts -t "insertFragment"`; `bun test ./packages/slate/test/primitive-method-runtime-contract.ts -t "insertFragment"`; `bun --filter slate typecheck`; `bun lint:fix`; `bun run completion-check`. | `#5412` and `#5429` moved to `Fixes`; non-target rows remain bounded.                     | Next `slate-ralplan` bucket selection |
 
 ## 11. Final Completion Gates

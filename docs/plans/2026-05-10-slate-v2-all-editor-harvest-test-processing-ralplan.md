@@ -65,7 +65,7 @@ In scope:
 
 Non-goals:
 
-- No broad `.tmp/slate-v2` implementation edits from the review pass.
+- No broad `Plate repo root` implementation edits from the review pass.
 - No GitHub issue comments.
 - No `Fixes #...` claim without exact repro proof.
 - No ProseMirror schema-expression, Step JSON, PluginView, NodeView, MarkView,
@@ -127,15 +127,15 @@ The current owner scan found these relevant tests:
 
 | Owner                         | Current evidence                                                                         | Plan use                                                     |
 | ----------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Input strategy                | `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:23-400`   | PM-09 and PM-10 package routing rows.                        |
-| Editing kernel                | `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:39-419`              | Ownership/trace rows for DOM-change and composition routing. |
-| Selection reconciler          | `.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts:27-95`         | PM-10 target-range import and substitution rows.             |
-| History                       | `.tmp/slate-v2/packages/slate-history/test/history-contract.ts:56-710`                   | PM-07 history and composition undo rows.                     |
-| Collaboration/history runtime | `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:29-382`            | PM-08 peer convergence additions.                            |
-| Projections                   | `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx:105-999` | PM-12 moved-node projection rows.                            |
-| Annotation store              | `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx:126-824`          | PM-12 projection/data wake rows.                             |
-| Widget layer                  | `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx:88-209`               | PM-12 widget boundary rows.                                  |
-| Browser selection             | `.tmp/slate-v2/packages/slate-browser/test/browser/selection.browser.test.ts:8-45`       | PM-13 currently thin; needs geometry/RTL browser proof.      |
+| Input strategy                | `packages/slate-react/test/model-input-strategy-contract.test.ts:23-400`   | PM-09 and PM-10 package routing rows.                        |
+| Editing kernel                | `packages/slate-react/test/editing-kernel-contract.ts:39-419`              | Ownership/trace rows for DOM-change and composition routing. |
+| Selection reconciler          | `packages/slate-react/test/selection-reconciler-contract.ts:27-95`         | PM-10 target-range import and substitution rows.             |
+| History                       | `packages/slate-history/test/history-contract.ts:56-710`                   | PM-07 history and composition undo rows.                     |
+| Collaboration/history runtime | `packages/slate/test/collab-history-runtime-contract.ts:29-382`            | PM-08 peer convergence additions.                            |
+| Projections                   | `packages/slate-react/test/projections-and-selection-contract.tsx:105-999` | PM-12 moved-node projection rows.                            |
+| Annotation store              | `packages/slate-react/test/annotation-store-contract.tsx:126-824`          | PM-12 projection/data wake rows.                             |
+| Widget layer                  | `packages/slate-react/test/widget-layer-contract.tsx:88-209`               | PM-12 widget boundary rows.                                  |
+| Browser selection             | `packages/browser/test/browser/selection.browser.test.ts:8-45`       | PM-13 currently thin; needs geometry/RTL browser proof.      |
 
 ## Ecosystem Strategy Synthesis
 
@@ -164,11 +164,11 @@ product policy.
 
 | Priority | Source rows                                                                  | Slate owner                                                                                                                                | Action                                                                                                                                                                               | Fast gate                                                                                                                                                     | Final gate                                                                                                                                 |
 | -------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1        | PM-10 composition lifecycle plus the already-known Lexical IME proof lessons | `model-input-strategy-contract.test.ts`, `selection-reconciler-contract.ts`, `dom-coverage-boundaries.test.ts`, `slate-browser/playwright` | Add package routing for empty block, mark/cursor-wrapper, overlap cancel, rapid follow-up, and cross-paragraph composition; add one honest browser composition row before expanding. | `cd .tmp/slate-v2 && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/selection-reconciler-contract.ts` | `cd .tmp/slate-v2 && playwright test playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium` plus `bun check`. |
-| 2        | PM-09 DOM-change disambiguation                                              | `model-input-strategy-contract.test.ts`, `editing-kernel-contract.ts`, `generated-editing.test.ts`                                         | Add ambiguous add/remove/backspace/enter/replacement routing rows before one browser stress replay.                                                                                  | `cd .tmp/slate-v2 && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/editing-kernel-contract.ts`       | Focused generated stress row plus `bun check`.                                                                                             |
-| 3        | PM-08 collaboration convergence                                              | `collab-history-runtime-contract.ts`                                                                                                       | Add two/three-peer convergence for delayed local changes, simultaneous typing, deleted content, block movement, mark changes, and undo/redo.                                         | `cd .tmp/slate-v2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts`                                                                       | Same focused test plus later slate-yjs browser proof if a browser collaboration claim is made.                                             |
-| 4        | PM-12 projection/decorator/widget mapping                                    | `projections-and-selection-contract.tsx`, `annotation-store-contract.tsx`, `widget-layer-contract.tsx`                                     | Add moved-node projection, widget side/boundary ordering, and lifecycle-cleanup rows without cloning PM NodeView/MarkView.                                                           | `cd .tmp/slate-v2/packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`              | `cd .tmp/slate-v2 && bun check`.                                                                                                           |
-| 5        | PM-13 geometry/RTL/browser selection                                         | `slate-browser/test/browser/selection.browser.test.ts`, `richtext.test.ts`, `generated-editing.test.ts`                                    | Add browser-only coords, RTL/bidi, wrapped line, block-boundary rect, atom arrow-motion rows.                                                                                        | `cd .tmp/slate-v2 && bun --filter slate-browser test:selection`                                                                                               | Browser proof on the specific example/stress target plus `bun check`.                                                                      |
+| 1        | PM-10 composition lifecycle plus the already-known Lexical IME proof lessons | `model-input-strategy-contract.test.ts`, `selection-reconciler-contract.ts`, `dom-coverage-boundaries.test.ts`, `slate-browser/playwright` | Add package routing for empty block, mark/cursor-wrapper, overlap cancel, rapid follow-up, and cross-paragraph composition; add one honest browser composition row before expanding. | `cd Plate repo root && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/selection-reconciler-contract.ts` | `cd Plate repo root && playwright test playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium` plus `bun check`. |
+| 2        | PM-09 DOM-change disambiguation                                              | `model-input-strategy-contract.test.ts`, `editing-kernel-contract.ts`, `generated-editing.test.ts`                                         | Add ambiguous add/remove/backspace/enter/replacement routing rows before one browser stress replay.                                                                                  | `cd Plate repo root && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/editing-kernel-contract.ts`       | Focused generated stress row plus `bun check`.                                                                                             |
+| 3        | PM-08 collaboration convergence                                              | `collab-history-runtime-contract.ts`                                                                                                       | Add two/three-peer convergence for delayed local changes, simultaneous typing, deleted content, block movement, mark changes, and undo/redo.                                         | `cd Plate repo root && bun test ./packages/slate/test/collab-history-runtime-contract.ts`                                                                       | Same focused test plus later slate-yjs browser proof if a browser collaboration claim is made.                                             |
+| 4        | PM-12 projection/decorator/widget mapping                                    | `projections-and-selection-contract.tsx`, `annotation-store-contract.tsx`, `widget-layer-contract.tsx`                                     | Add moved-node projection, widget side/boundary ordering, and lifecycle-cleanup rows without cloning PM NodeView/MarkView.                                                           | `cd packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`              | `cd Plate repo root && bun check`.                                                                                                           |
+| 5        | PM-13 geometry/RTL/browser selection                                         | `slate-browser/test/browser/selection.browser.test.ts`, `richtext.test.ts`, `generated-editing.test.ts`                                    | Add browser-only coords, RTL/bidi, wrapped line, block-boundary rect, atom arrow-motion rows.                                                                                        | `cd Plate repo root && bun --filter slate-browser test:selection`                                                                                               | Browser proof on the specific example/stress target plus `bun check`.                                                                      |
 | 6        | PM-01/02/03/11 structural and clipboard context                              | `clipboard-contract.ts`, `clipboard-boundary.ts`, `paste-html.test.ts`, transform/operation tests                                          | Add only missing open-edge, comment-wrapper, impossible insert/delete, and context-wrapper rows.                                                                                     | Focused clipboard/operation package tests.                                                                                                                    | Paste-html browser proof if external HTML transport changes.                                                                               |
 | 7        | PM-05/06 operation mapping and range/selection refs                          | `operations-contract.ts`, `transaction-contract.ts`, `range-ref-contract.ts`, `selection-rebase-contract.ts`                               | Add replace-around-like wrap/unwrap conflict and atom-boundary rebase rows.                                                                                                          | Focused package tests.                                                                                                                                        | `bun check`.                                                                                                                               |
 | 8        | PM-07 history rebase                                                         | `history-contract.ts`, `collab-history-runtime-contract.ts`                                                                                | Add simultaneous-edit and remote-rebase history rows only after PM-08 target shape is stable.                                                                                        | Focused history/collab tests.                                                                                                                                 | `bun check`.                                                                                                                               |
@@ -250,15 +250,15 @@ ProseMirror composition rows:
 
 - start, inside, end, emoji, overlap cancellation, rapid follow-up, and
   cross-paragraph replacement in
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - bold/mark/cursor-wrapper and multiple formatted-node composition in
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 - decorated text composition in
-  `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts`.
 - placeholder empty-state composition in
-  `.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/placeholder.test.ts`.
 - inline-boundary composition in
-  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`.
 
 Changes made in `/Users/zbeyens/git/slate-v2`:
 
@@ -291,14 +291,14 @@ Live source reread found existing coverage for the first DOM-change
 disambiguation set:
 
 - target-range browser substitutions in
-  `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/plaintext.test.ts`.
 - browser text mutations inside bold markup and ambiguous mark-boundary
-  insertion in `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  insertion in `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 - browser Backspace after selected text and selected ranges in
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 - package-level target-range import and command-routing rows in
-  `.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts` and
-  `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`.
+  `packages/slate-react/test/selection-reconciler-contract.ts` and
+  `packages/slate-react/test/model-input-strategy-contract.test.ts`.
 
 Verification:
 
@@ -316,7 +316,7 @@ closure.
 Status: complete for this all-harvest milestone.
 
 Live source reread found existing collaboration coverage in
-`.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts` for:
+`packages/slate/test/collab-history-runtime-contract.ts` for:
 
 - deterministic remote operation replay.
 - typed remote collaboration metadata that skips local undo history.
@@ -325,7 +325,7 @@ Live source reread found existing collaboration coverage in
 - local runtime-id behavior for remote remove and move operations.
 
 The PM-08 gap was peer breadth. This pass added a focused three-peer convergence
-matrix in `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
+matrix in `packages/slate/test/collab-history-runtime-contract.ts`
 for text insert, mark change, cross-block range delete, and block move commits.
 Each case verifies both remote peers converge to the source children while
 remote collaboration metadata keeps their local undo stacks empty.
@@ -351,14 +351,14 @@ Status: complete for this all-harvest milestone.
 
 Live source reread found existing projection, annotation, and widget coverage in:
 
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
   for decoration sources, cross-node projection, runtime-id subscriber locality,
   source-bus refresh, and top-level structural path changes.
-- `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx` for
+- `packages/slate-react/test/annotation-store-contract.tsx` for
   annotation projection/data wakeups and changed runtime buckets.
-- `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx` for
+- `packages/slate-react/test/widget-layer-contract.tsx` for
   selection widget visibility and unrelated text-change isolation.
-- `.tmp/slate-v2/packages/slate-react/src/widget-store.ts`, which exposes
+- `packages/slate-react/src/widget-store.ts`, which exposes
   selection, annotation, and runtime-id node widgets. It is not a ProseMirror
   widget-decoration side-position API.
 
@@ -391,7 +391,7 @@ parity are not claimed.
 Status: complete for this all-harvest milestone.
 
 Live source reread found existing `slate-browser` selection proof in
-`.tmp/slate-v2/packages/slate-browser/test/browser/selection.browser.test.ts` for:
+`packages/browser/test/browser/selection.browser.test.ts` for:
 
 - simple DOM selection snapshot import/export.
 - zero-width FEFF offset normalization back to editor offset zero.
@@ -429,7 +429,7 @@ milestone.
 
 | PM rows                                                       | Current Slate owner evidence                                                                                                                                                                                                                                                                                                                                                                | Closure decision                                                                                                                              |
 | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| PM-01 structural fit                                          | `.tmp/slate-v2/packages/slate/test/transforms/**`, `clipboard-contract.ts`, and `operations-contract.ts` cover structural insert, delete, split, merge, wrap, unwrap, move, void, list, table, and invalid-operation pressure.                                                                                                                                                              | Deferred. Do not clone ProseMirror content expressions or filler policy. Future work should be a focused Slate structural-normalization lane. |
+| PM-01 structural fit                                          | `packages/slate/test/transforms/**`, `clipboard-contract.ts`, and `operations-contract.ts` cover structural insert, delete, split, merge, wrap, unwrap, move, void, list, table, and invalid-operation pressure.                                                                                                                                                              | Deferred. Do not clone ProseMirror content expressions or filler policy. Future work should be a focused Slate structural-normalization lane. |
 | PM-02/03/11 fragment, DOM parse/export, and clipboard context | `clipboard-contract.ts`, `packages/slate-dom/test/clipboard-boundary.ts`, and `playwright/integration/examples/paste-html.test.ts` cover fragment extraction/insertion, list/table fitting, custom fragment MIME, embedded HTML fragments, malformed payload fallback, multiline text fallback, Google Docs/Sheets, Quip, lists, tables, images, links, and generated paste/drop gauntlets. | Deferred. Remaining comment-wrapper/parser-context rows are real but belong to a dedicated clipboard/HTML import pass.                        |
 | PM-05/06 operation mapping and selection/range refs           | `operations-contract.ts`, `range-ref-contract.ts`, `selection-rebase-contract.ts`, `selection-controller-contract.ts`, and transform fixtures cover replay/inversion, `replace_children`, `move_node`, split/merge/remove rebasing, nested range refs, native/model selection ownership, and broad transform edge cases.                                                                    | Deferred. Wrap/unwrap conflict and atom-boundary rows need a focused structural-selection pass, not all-harvest closure churn.                |
 | PM-07 history rebase                                          | `history-contract.ts` covers grouping, redo clearing, selection restoration, composition undo, deleteFragment undo, blur/refocus selection, multi-block insertBreak undo, marked Enter undo, move undo, reverse joins, same-text deletes, and insertBreak undo; PM-08 added three-peer replay convergence in `collab-history-runtime-contract.ts`.                                          | Deferred. Simultaneous remote history rebase needs a future collab/history lane and should not be claimed from package replay alone.          |

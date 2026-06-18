@@ -195,16 +195,16 @@ Use the narrower source pages for actual topic reads:
 - compiled pages inspected: none
 - raw paths inspected:
   `../slate`,
-  `.tmp/slate-v2/packages/slate/src`,
-  `.tmp/slate-v2/packages/slate-react/src`,
+  `packages/slate/src`,
+  `packages/slate-react/src`,
   local plan docs under `docs/plans`
 - direct raw files actually read:
   - `../slate/Readme.md`
-  - `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-  - `.tmp/slate-v2/packages/slate/src/editor.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/draft-helpers.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
-  - `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+  - `packages/slate/src/interfaces/editor.ts`
+  - `packages/slate/src/editor.ts`
+  - `packages/slate/src/core/draft-helpers.ts`
+  - `packages/slate-react/src/projection-store.ts`
+  - `packages/slate-react/test/projections-and-selection-contract.tsx`
   - `docs/slate-v2/decorations-annotations-cluster.md`
 - official source entrypoints checked:
   - `../slate/Readme.md`

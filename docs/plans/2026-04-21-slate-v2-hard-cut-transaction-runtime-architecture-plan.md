@@ -850,13 +850,13 @@ Do not rely on chat history.
     - added public surface proof for `getLastCommit`
     - added a `slate` patch changeset
   - Changed files:
-    - `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-    - `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-    - `.tmp/slate-v2/packages/slate/src/core/apply.ts`
-    - `.tmp/slate-v2/packages/slate/src/create-editor.ts`
-    - `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
-    - `.tmp/slate-v2/packages/slate/test/surface-contract.ts`
-    - `.tmp/slate-v2/.changeset/slate-commit-metadata.md`
+    - `packages/slate/src/interfaces/editor.ts`
+    - `packages/slate/src/core/public-state.ts`
+    - `packages/slate/src/core/apply.ts`
+    - `packages/slate/src/create-editor.ts`
+    - `packages/slate/test/transaction-contract.ts`
+    - `packages/slate/test/surface-contract.ts`
+    - `Plate repo root/.changeset/slate-commit-metadata.md`
     - `docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md`
   - Evidence:
     - `bun test ./packages/slate/test/transaction-contract.ts --bail 1`
@@ -945,9 +945,9 @@ Do not rely on chat history.
       `insert_node`, `remove_node`, `move_node`, `merge_node`, `split_node`.
     - avoid public indexed runtime-id lookup in text commit dirtiness.
   - Changed files:
-    - `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-    - `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-    - `.tmp/slate-v2/packages/slate/test/surface-contract.ts`
+    - `packages/slate/src/core/public-state.ts`
+    - `packages/slate/src/interfaces/editor.ts`
+    - `packages/slate/test/surface-contract.ts`
   - Evidence:
     - `bun test ./packages/slate/test/surface-contract.ts --bail 1`
       passed, `10` tests
@@ -1219,10 +1219,10 @@ Do not rely on chat history.
       callback into projection slices keyed by runtime id
     - added a `slate-react` patch changeset
   - Changed files:
-    - `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
-    - `.tmp/slate-v2/packages/slate-react/src/index.ts`
-    - `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
-    - `.tmp/slate-v2/.changeset/slate-react-decoration-source-adapter.md`
+    - `packages/slate-react/src/projection-store.ts`
+    - `packages/slate-react/src/index.ts`
+    - `packages/slate-react/test/projections-and-selection-contract.tsx`
+    - `Plate repo root/.changeset/slate-react-decoration-source-adapter.md`
   - Evidence:
     - `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx --bail 1`
       passed, `5` tests
@@ -1255,7 +1255,7 @@ Do not rely on chat history.
     - moved highlight rendering to `renderSegment`
     - kept mark rendering in `renderLeaf`
   - Changed files:
-    - `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`
+    - `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx`
   - Evidence:
     - `bunx playwright test ./playwright/integration/examples/search-highlighting.test.ts --project=chromium`
       passed
@@ -1285,7 +1285,7 @@ Do not rely on chat history.
     - rendered markdown projection payload through `renderSegment`
     - kept placeholder behavior on the current `EditableBlocks` surface
   - Changed files:
-    - `.tmp/slate-v2/site/examples/ts/markdown-preview.tsx`
+    - `apps/www/src/app/(app)/examples/slate/_examples/markdown-preview.tsx`
   - Evidence:
     - `bunx playwright test ./playwright/integration/examples/markdown-preview.test.ts --project=chromium`
       passed
@@ -1324,7 +1324,7 @@ Do not rely on chat history.
     - kept element rendering and keyboard handling on the current example
       surface
   - Changed files:
-    - `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
+    - `apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx`
   - Evidence:
     - `bunx playwright test ./playwright/integration/examples/code-highlighting.test.ts --project=chromium`
       passed, `3` tests

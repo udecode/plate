@@ -45,15 +45,15 @@ Accepted target:
 
 | Surface                  | Current owner                                                                                                     | Current shape                                                                                                    | Verdict                                                                                                                                                             |
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Public export            | `.tmp/slate-v2/packages/slate-react/src/index.ts:12-21`, `:70-74`                                                 | Exports `EditableInputRule*` types and `editableInputRules` / capability key from `slate-react`.                 | Too public and too React/beforeinput-shaped for raw Slate model behavior.                                                                                           |
-| Rule type                | `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:186-199`                                          | Context is `{ data, editor, event?, inputType: string, selection }`.                                             | Browser event vocabulary leaks into model-command customization.                                                                                                    |
-| Capability helper        | `.tmp/slate-v2/packages/slate-react/src/editable/editable-input-rules.ts:1-33`                                    | Stores functions under a `slate-react.editable.inputRule` capability and merges prop rules plus extension rules. | Plate-style plugin rule registry hiding inside Slate React.                                                                                                         |
-| Runtime invocation       | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:250-292`                                  | Runs rules during editable runtime input handling, prevents default, then requests DOM repair.                   | Good low-level pipeline, bad public customization surface for delete semantics.                                                                                     |
-| Checklist example        | `.tmp/slate-v2/site/examples/ts/check-lists.tsx:96-145`                                                           | Checks `inputType === 'deleteContentBackward'`, passes `selection`, then mutates checklist nodes.                | Wrong layer. Backspace behavior is a `delete` command policy, not a DOM input rule.                                                                                 |
-| Markdown/inline examples | `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx:52-61`, `.tmp/slate-v2/site/examples/ts/inlines.tsx:82-96` | Use `EditableInputRule[]` for typed text shortcuts.                                                              | Better as `transforms.insertText(...)` over the insert-text command substrate, or plain `onDOMBeforeInput` only when the behavior is truly browser-format specific. |
-| Core command registry    | `.tmp/slate-v2/packages/slate/src/core/command-registry.ts:36-92`                                                 | `registerCommand` installs priority-ordered middleware with `next`.                                              | This is the right Slate substrate.                                                                                                                                  |
-| Delete command path      | `.tmp/slate-v2/packages/slate/src/editor/delete-backward.ts:9-34`                                                 | `deleteBackward` dispatches a `delete` command before default deletion.                                          | Checklist Backspace can hook this once and cover DOM, keydown fallback, Android route, browser handles, and programmatic calls.                                     |
-| Public static API        | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1559-1567`                                                 | `Editor.registerCommand` is already public.                                                                      | Missing pieces are transform middleware as the normal authoring DX plus exported built-in command definitions/types for the low-level substrate.                    |
+| Public export            | `packages/slate-react/src/index.ts:12-21`, `:70-74`                                                 | Exports `EditableInputRule*` types and `editableInputRules` / capability key from `slate-react`.                 | Too public and too React/beforeinput-shaped for raw Slate model behavior.                                                                                           |
+| Rule type                | `packages/slate-react/src/components/editable.tsx:186-199`                                          | Context is `{ data, editor, event?, inputType: string, selection }`.                                             | Browser event vocabulary leaks into model-command customization.                                                                                                    |
+| Capability helper        | `packages/slate-react/src/editable/editable-input-rules.ts:1-33`                                    | Stores functions under a `slate-react.editable.inputRule` capability and merges prop rules plus extension rules. | Plate-style plugin rule registry hiding inside Slate React.                                                                                                         |
+| Runtime invocation       | `packages/slate-react/src/editable/runtime-root-engine.ts:250-292`                                  | Runs rules during editable runtime input handling, prevents default, then requests DOM repair.                   | Good low-level pipeline, bad public customization surface for delete semantics.                                                                                     |
+| Checklist example        | `apps/www/src/app/(app)/examples/slate/_examples/check-lists.tsx:96-145`                                                           | Checks `inputType === 'deleteContentBackward'`, passes `selection`, then mutates checklist nodes.                | Wrong layer. Backspace behavior is a `delete` command policy, not a DOM input rule.                                                                                 |
+| Markdown/inline examples | `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx:52-61`, `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx:82-96` | Use `EditableInputRule[]` for typed text shortcuts.                                                              | Better as `transforms.insertText(...)` over the insert-text command substrate, or plain `onDOMBeforeInput` only when the behavior is truly browser-format specific. |
+| Core command registry    | `packages/slate/src/core/command-registry.ts:36-92`                                                 | `registerCommand` installs priority-ordered middleware with `next`.                                              | This is the right Slate substrate.                                                                                                                                  |
+| Delete command path      | `packages/slate/src/editor/delete-backward.ts:9-34`                                                 | `deleteBackward` dispatches a `delete` command before default deletion.                                          | Checklist Backspace can hook this once and cover DOM, keydown fallback, Android route, browser handles, and programmatic calls.                                     |
+| Public static API        | `packages/slate/src/interfaces/editor.ts:1559-1567`                                                 | `Editor.registerCommand` is already public.                                                                      | Missing pieces are transform middleware as the normal authoring DX plus exported built-in command definitions/types for the low-level substrate.                    |
 | Plate input rules        | `../plate/packages/core/src/lib/plugins/input-rules/internal/InputRulesPlugin.ts:1-169`                           | Plate has typed rule contexts, cached selection helpers, triggers, `enabled`, `resolve`, `apply`, priorities.    | This is the rich input-rule layer; raw Slate should not duplicate it.                                                                                               |
 | Plate rule resolution    | `../plate/packages/core/src/internal/plugin/resolvePlugins.ts:351-433`                                            | Resolves plugin-owned input rules by target/trigger/plugin/priority.                                             | Confirms input-rule families are Plate product/plugin DX.                                                                                                           |
 
@@ -218,7 +218,7 @@ Related rows read from durable ledgers:
 
 | Issue         | Cluster                     | Claim   | Why                                                                                                                                      | Proof route                                                                     | V2 sync ledger | PR line             |
 | ------------- | --------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- | -------------- | ------------------- |
-| #3384         | checklist/example           | Related | Checklist example behavior is directly affected, but this plan changes API ownership and does not claim the original repro fixed.        | `.tmp/slate-v2/playwright/integration/examples/check-lists.test.ts` after Ralph | unchanged      | related matrix only |
+| #3384         | checklist/example           | Related | Checklist example behavior is directly affected, but this plan changes API ownership and does not claim the original repro fixed.        | `apps/www/tests/slate-browser/donor/examples/check-lists.test.ts` after Ralph | unchanged      | related matrix only |
 | #4528         | checklist/browser-selection | Related | Checklist DOM structure/browser selection remains adjacent; command API ownership does not prove triple-click behavior.                  | browser selection row required if touched                                       | unchanged      | related matrix only |
 | #3408         | delete-backward             | Related | Transform middleware over the delete-command substrate may improve delete customization, but no exact empty-list/table repro is claimed. | package delete tests plus issue repro if claimed                                | unchanged      | related matrix only |
 | #3568 / #3586 | beforeinput-formatting      | Related | Formatting via `onDOMBeforeInput` remains browser-specific; this plan does not claim those crash rows fixed.                             | exact browser proof if later claimed                                            | unchanged      | related matrix only |
@@ -375,7 +375,7 @@ bun run completion-check
 - No new fixed issue claim is made.
 - PR reference records the transform-middleware public DX over command-substrate ownership target; final proof-row refresh is assigned to Ralph because live implementation still exposes the old public API.
 - Implementation phases and driver gates are explicit.
-- Slate Ralplan did not edit `.tmp/slate-v2` implementation.
+- Slate Ralplan did not edit `Plate repo root` implementation.
 
 ## 2026-05-15 Revalidation Pass
 
@@ -404,12 +404,12 @@ Live source re-read:
 
 | Surface                 | Current owner                                                                      | Current shape                                                                                                                        | Revalidation verdict                                                                                                                                      |
 | ----------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Checklist example       | `.tmp/slate-v2/site/examples/ts/check-lists.tsx:89-97`                             | Registers `editableInputRules(({ editor, inputType, selection }) => ...)` and checks `inputType !== 'deleteContentBackward'`.        | `revise`; this is DOM-input vocabulary for a model delete policy.                                                                                         |
-| Input rule prop/type    | `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:87-98`, `:192-204` | `Editable` exposes `inputRules`, and `EditableInputRuleContext` includes `event?: InputEvent`, `inputType: string`, and `selection`. | `cut public API`; too React/browser-shaped for raw Slate extension behavior.                                                                              |
-| Input rule capability   | `.tmp/slate-v2/packages/slate-react/src/editable/editable-input-rules.ts:4-33`     | Stores rule callbacks under `slate-react.editable.inputRule` and merges prop rules with extension capabilities.                      | `cut`; Plate-style rule registry is hiding inside Slate React.                                                                                            |
-| Core command middleware | `.tmp/slate-v2/packages/slate/src/core/command-registry.ts:36-120`                 | Priority-ordered command handlers with cleanup and `next`.                                                                           | `keep as substrate`; normal examples should go through transform middleware.                                                                              |
-| Delete command route    | `.tmp/slate-v2/packages/slate/src/editor/delete-backward.ts:31-42`                 | `deleteBackward` dispatches `{ type: 'delete', direction: 'backward', unit }` before default mutation.                               | `use`; checklist behavior can hook the semantic command once.                                                                                             |
-| Command tests           | `.tmp/slate-v2/packages/slate/test/transaction-contract.ts:720-790`, `:1023-1090`  | Tests prove delete and insert-text commands route through middleware and typed command definitions work.                             | `already enough substrate`; implementation needs transform middleware public DX, built-in command tokens, and example migration, not another rule family. |
+| Checklist example       | `apps/www/src/app/(app)/examples/slate/_examples/check-lists.tsx:89-97`                             | Registers `editableInputRules(({ editor, inputType, selection }) => ...)` and checks `inputType !== 'deleteContentBackward'`.        | `revise`; this is DOM-input vocabulary for a model delete policy.                                                                                         |
+| Input rule prop/type    | `packages/slate-react/src/components/editable.tsx:87-98`, `:192-204` | `Editable` exposes `inputRules`, and `EditableInputRuleContext` includes `event?: InputEvent`, `inputType: string`, and `selection`. | `cut public API`; too React/browser-shaped for raw Slate extension behavior.                                                                              |
+| Input rule capability   | `packages/slate-react/src/editable/editable-input-rules.ts:4-33`     | Stores rule callbacks under `slate-react.editable.inputRule` and merges prop rules with extension capabilities.                      | `cut`; Plate-style rule registry is hiding inside Slate React.                                                                                            |
+| Core command middleware | `packages/slate/src/core/command-registry.ts:36-120`                 | Priority-ordered command handlers with cleanup and `next`.                                                                           | `keep as substrate`; normal examples should go through transform middleware.                                                                              |
+| Delete command route    | `packages/slate/src/editor/delete-backward.ts:31-42`                 | `deleteBackward` dispatches `{ type: 'delete', direction: 'backward', unit }` before default mutation.                               | `use`; checklist behavior can hook the semantic command once.                                                                                             |
+| Command tests           | `packages/slate/test/transaction-contract.ts:720-790`, `:1023-1090`  | Tests prove delete and insert-text commands route through middleware and typed command definitions work.                             | `already enough substrate`; implementation needs transform middleware public DX, built-in command tokens, and example migration, not another rule family. |
 
 Decision after revalidation:
 
@@ -490,7 +490,7 @@ Final user-review handoff outline:
   become Ralph implementation targets.
 - Issue accounting: no new fixed/improved issue claims until implementation
   proof exists.
-- Gates: implementation must run the `.tmp/slate-v2` command/browser gates listed
+- Gates: implementation must run the `Plate repo root` command/browser gates listed
   in Fast Driver Gates.
 
 ## Full 12-Pass Slate Ralplan Rerun - 2026-05-15
@@ -511,30 +511,30 @@ Fresh current-state read:
 
 | Surface                     | Current source                                                                                                                                                            | Fresh finding                                                                                                  | Decision                                                                                                                                                 |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `EditableInputRule` exports | `.tmp/slate-v2/packages/slate-react/src/index.ts:17-32`, `:75-78`                                                                                                         | `EditableInputRule*` and `editableInputRules` are still public from `slate-react`.                             | `cut` public API in Ralph.                                                                                                                               |
-| `Editable.inputRules` prop  | `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:87-106`                                                                                                   | Raw `Editable` accepts `inputRules?: readonly EditableInputRule[]`.                                            | `cut`; prop exposes Plate-like rule registry in Slate React.                                                                                             |
-| Input-rule context          | `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:192-204`                                                                                                  | Rule authors receive `event`, `inputType`, `selection`, and `data`.                                            | `cut`; DOM event vocabulary is wrong for model behavior.                                                                                                 |
-| Input-rule capability       | `.tmp/slate-v2/packages/slate-react/src/editable/editable-input-rules.ts:4-34`                                                                                            | Extension capabilities merge input rules into Slate React runtime.                                             | `cut`; this is product/plugin rule ownership.                                                                                                            |
-| Runtime invocation          | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:264-310`                                                                                          | Runtime loops over effective input rules, prevents default, and schedules repair.                              | `keep` runtime pipeline, remove public semantic rule surface.                                                                                            |
-| Checklist example           | `.tmp/slate-v2/site/examples/ts/check-lists.tsx:89-139`                                                                                                                   | Checklist Backspace checks `inputType === 'deleteContentBackward'` and accepts DOM-derived `selection`.        | `revise`; move to `transforms.deleteBackward(...)` and read selection from editor state.                                                                 |
-| Markdown example            | `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx:90-123`                                                                                                            | Some behavior already uses `onCommand`, but typed shortcuts still use `editableInputRules`.                    | `revise`; use `transforms.insertText(...)` or a browser-only DOM handler only where needed.                                                              |
-| Inline URL example          | `.tmp/slate-v2/site/examples/ts/inlines.tsx:123-140`                                                                                                                      | URL wrapping still uses `editableInputRules` for `insertText`.                                                 | `revise`; use `transforms.insertText(...)` or keep URL paste in clipboard capability.                                                                    |
-| Command substrate           | `.tmp/slate-v2/packages/slate/src/core/command-registry.ts:32-120`                                                                                                        | `defineCommand`, priority-ordered `registerCommand`, `executeCommand`, cleanup, and `next` exist.              | `keep`; this is the runtime primitive, not the normal teaching DX.                                                                                       |
-| Delete command route        | `.tmp/slate-v2/packages/slate/src/editor/delete-backward.ts:31-42`                                                                                                        | `deleteBackward` dispatches `{ type: 'delete', direction: 'backward', unit }`.                                 | `use`; checklist Backspace belongs here.                                                                                                                 |
-| Typed command API           | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1561-1575`                                                                                                         | `Editor.defineCommand` and `Editor.registerCommand` are public.                                                | `keep`; add exported built-in command definitions for substrate/advanced use, while examples use transform middleware.                                   |
-| Command tests               | `.tmp/slate-v2/packages/slate/test/transaction-contract.ts:720-801`, `:1023-1105`                                                                                         | Delete, insert-text, and typed command definitions have package proof.                                         | `keep`; substrate is real, not aspirational.                                                                                                             |
-| `editableKeyCommands`       | `.tmp/slate-v2/packages/slate-react/src/editable/editable-key-commands.ts:7-35`, `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:125-149`     | Extension-owned hotkeys route through Slate React keyboard handling and repair.                                | `keep in slate-react`, not core Slate and not Plate-only; use only for keyboard/native escape glue, not model commands already covered by core commands. |
-| Key-command examples        | `.tmp/slate-v2/site/examples/ts/images.tsx:91-108`, `.tmp/slate-v2/site/examples/ts/richtext.tsx:391-410`, `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx:142-160` | Examples use key commands to remove raw `Editable onKeyDown` glue.                                             | `keep`; this fits Slate React example extension glue.                                                                                                    |
-| `editableRenderers`         | `.tmp/slate-v2/packages/slate-react/src/editable/editable-renderers.ts:14-89`, `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1392-1408`     | Extension renderers merge element, leaf, segment, text, and void renderers; direct render props override them. | `keep in slate-react`; core Slate stays non-React, Plate can layer product registries above it.                                                          |
+| `EditableInputRule` exports | `packages/slate-react/src/index.ts:17-32`, `:75-78`                                                                                                         | `EditableInputRule*` and `editableInputRules` are still public from `slate-react`.                             | `cut` public API in Ralph.                                                                                                                               |
+| `Editable.inputRules` prop  | `packages/slate-react/src/components/editable.tsx:87-106`                                                                                                   | Raw `Editable` accepts `inputRules?: readonly EditableInputRule[]`.                                            | `cut`; prop exposes Plate-like rule registry in Slate React.                                                                                             |
+| Input-rule context          | `packages/slate-react/src/components/editable.tsx:192-204`                                                                                                  | Rule authors receive `event`, `inputType`, `selection`, and `data`.                                            | `cut`; DOM event vocabulary is wrong for model behavior.                                                                                                 |
+| Input-rule capability       | `packages/slate-react/src/editable/editable-input-rules.ts:4-34`                                                                                            | Extension capabilities merge input rules into Slate React runtime.                                             | `cut`; this is product/plugin rule ownership.                                                                                                            |
+| Runtime invocation          | `packages/slate-react/src/editable/runtime-root-engine.ts:264-310`                                                                                          | Runtime loops over effective input rules, prevents default, and schedules repair.                              | `keep` runtime pipeline, remove public semantic rule surface.                                                                                            |
+| Checklist example           | `apps/www/src/app/(app)/examples/slate/_examples/check-lists.tsx:89-139`                                                                                                                   | Checklist Backspace checks `inputType === 'deleteContentBackward'` and accepts DOM-derived `selection`.        | `revise`; move to `transforms.deleteBackward(...)` and read selection from editor state.                                                                 |
+| Markdown example            | `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx:90-123`                                                                                                            | Some behavior already uses `onCommand`, but typed shortcuts still use `editableInputRules`.                    | `revise`; use `transforms.insertText(...)` or a browser-only DOM handler only where needed.                                                              |
+| Inline URL example          | `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx:123-140`                                                                                                                      | URL wrapping still uses `editableInputRules` for `insertText`.                                                 | `revise`; use `transforms.insertText(...)` or keep URL paste in clipboard capability.                                                                    |
+| Command substrate           | `packages/slate/src/core/command-registry.ts:32-120`                                                                                                        | `defineCommand`, priority-ordered `registerCommand`, `executeCommand`, cleanup, and `next` exist.              | `keep`; this is the runtime primitive, not the normal teaching DX.                                                                                       |
+| Delete command route        | `packages/slate/src/editor/delete-backward.ts:31-42`                                                                                                        | `deleteBackward` dispatches `{ type: 'delete', direction: 'backward', unit }`.                                 | `use`; checklist Backspace belongs here.                                                                                                                 |
+| Typed command API           | `packages/slate/src/interfaces/editor.ts:1561-1575`                                                                                                         | `Editor.defineCommand` and `Editor.registerCommand` are public.                                                | `keep`; add exported built-in command definitions for substrate/advanced use, while examples use transform middleware.                                   |
+| Command tests               | `packages/slate/test/transaction-contract.ts:720-801`, `:1023-1105`                                                                                         | Delete, insert-text, and typed command definitions have package proof.                                         | `keep`; substrate is real, not aspirational.                                                                                                             |
+| `editableKeyCommands`       | `packages/slate-react/src/editable/editable-key-commands.ts:7-35`, `packages/slate-react/src/editable/keyboard-input-strategy.ts:125-149`     | Extension-owned hotkeys route through Slate React keyboard handling and repair.                                | `keep in slate-react`, not core Slate and not Plate-only; use only for keyboard/native escape glue, not model commands already covered by core commands. |
+| Key-command examples        | `apps/www/src/app/(app)/examples/slate/_examples/images.tsx:91-108`, `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx:391-410`, `apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx:142-160` | Examples use key commands to remove raw `Editable onKeyDown` glue.                                             | `keep`; this fits Slate React example extension glue.                                                                                                    |
+| `editableRenderers`         | `packages/slate-react/src/editable/editable-renderers.ts:14-89`, `packages/slate-react/src/components/editable-text-blocks.tsx:1392-1408`     | Extension renderers merge element, leaf, segment, text, and void renderers; direct render props override them. | `keep in slate-react`; core Slate stays non-React, Plate can layer product registries above it.                                                          |
 | Plate input rules           | `../plate/packages/core/src/lib/plugins/input-rules/internal/InputRulesPlugin.ts:94-190`, `../plate/packages/core/src/internal/plugin/resolvePlugins.ts:352-433`          | Plate resolves plugin input rules by target, trigger, priority, owner, `enabled`, `resolve`, and `apply`.      | `keep in Plate`; do not clone this into raw Slate React.                                                                                                 |
 
 Fresh verification:
 
 | Command                                                                                                                                                                      | Cwd             | Result                                  | What it proves                                                                                                            |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `bun test packages/slate/test/transaction-contract.ts --test-name-pattern "routes delete commands\|stores command handlers\|registers typed internal command definitions"`   | `.tmp/slate-v2` | failed: Bun required `./` path syntax.  | Tooling syntax failure only; rerun below.                                                                                 |
-| `bun test ./packages/slate/test/transaction-contract.ts --test-name-pattern "routes delete commands\|stores command handlers\|registers typed internal command definitions"` | `.tmp/slate-v2` | green: 3 passed, 25 filtered.           | Command middleware and typed command substrate are executable.                                                            |
-| `bun --filter slate-react test:vitest -- editable-behavior surface-contract keyboard-input-strategy-contract`                                                                | `.tmp/slate-v2` | green: 3 files passed, 39 tests passed. | Slate React editable behavior, public surface, and key-command/keyboard strategy contracts are not imaginary plan claims. |
+| `bun test packages/slate/test/transaction-contract.ts --test-name-pattern "routes delete commands\|stores command handlers\|registers typed internal command definitions"`   | `Plate repo root` | failed: Bun required `./` path syntax.  | Tooling syntax failure only; rerun below.                                                                                 |
+| `bun test ./packages/slate/test/transaction-contract.ts --test-name-pattern "routes delete commands\|stores command handlers\|registers typed internal command definitions"` | `Plate repo root` | green: 3 passed, 25 filtered.           | Command middleware and typed command substrate are executable.                                                            |
+| `bun --filter slate-react test:vitest -- editable-behavior surface-contract keyboard-input-strategy-contract`                                                                | `Plate repo root` | green: 3 files passed, 39 tests passed. | Slate React editable behavior, public surface, and key-command/keyboard strategy contracts are not imaginary plan claims. |
 
 Key-command/renderers ownership answer:
 
@@ -593,7 +593,7 @@ Fresh 12-pass ledger:
 |   9 | Ecosystem maintainer pass                                             | complete | Plate/plugin answer: Plate keeps rule families; Slate exposes transform middleware over the command substrate plus React renderer/key glue. Collab answer: model commands stay core and deterministic.                      | Added render/key distinction so Plate does not absorb every React extension surface.                                                                                     | None.                                  | none                                               |
 |  10 | Revision pass                                                         | complete | Revised plan language to include key-command/renderers ownership and current-source verification.                                                                                                                           | Added this full rerun section.                                                                                                                                           | None.                                  | none                                               |
 |  11 | Issue sync accounting pass                                            | complete | PR reference updated for 6.2, with 6.2.1 and renderers still current; issue ledgers unchanged because no claims changed.                                                                                                    | Recorded `pr-description updated: Section 6.2 now teaches transform middleware over command substrate, key commands, renderers, and not-complete implementation status`. | None.                                  | Ralph after implementation.                        |
-|  12 | Closure score and final gates                                         | complete | All pass rows complete; fresh `.tmp/slate-v2` targeted tests green; completion state can be `done` only with final Done Handoff.                                                                                            | Plan is ready for user review; implementation still belongs to Ralph.                                                                                                    | None.                                  | user / Ralph                                       |
+|  12 | Closure score and final gates                                         | complete | All pass rows complete; fresh `Plate repo root` targeted tests green; completion state can be `done` only with final Done Handoff.                                                                                            | Plan is ready for user review; implementation still belongs to Ralph.                                                                                                    | None.                                  | user / Ralph                                       |
 
 Fresh score after full rerun:
 
@@ -602,7 +602,7 @@ Fresh score after full rerun:
 | React 19.2 runtime performance                           |  0.93 | Semantic model behavior moves out of React `beforeinput` rule callbacks; key-command/renderers stay in Slate React where they are event/render glue.                                                       |
 | Slate-close unopinionated DX                             |  0.96 | Raw Slate exposes transform middleware that feels like structured `withX(editor)` overrides, while command middleware stays the substrate and Slate React does not expose Plate-style input-rule families. |
 | Plate and slate-yjs migration-backbone shape             |  0.93 | Plate keeps rich input rules; Slate keeps command/tx substrate; render/key React extension surfaces stay outside core and do not affect collab determinism.                                                |
-| Regression-proof testing strategy                        |  0.92 | Fresh `.tmp/slate-v2` command and Slate React contract tests passed; browser rows remain Ralph implementation gates.                                                                                       |
+| Regression-proof testing strategy                        |  0.92 | Fresh `Plate repo root` command and Slate React contract tests passed; browser rows remain Ralph implementation gates.                                                                                       |
 | Research evidence completeness                           |  0.93 | Compiled Lexical/ProseMirror/Tiptap/state-tx research and live Slate/Plate source agree.                                                                                                                   |
 | shadcn-style composability and hook/component minimalism |  0.93 | Public surface shrinks by cutting input rules while keeping focused transform, render, and key extension helpers.                                                                                          |
 
@@ -616,7 +616,7 @@ Completion gates:
   until implementation proof exists.
 - `pr-description updated: Section 6.2 now records transform middleware as the
 public Slate-close DX over command middleware substrate`.
-- No `.tmp/slate-v2` implementation file was edited.
+- No `Plate repo root` implementation file was edited.
 - Remaining work is implementation by `ralph`, not Slate Ralplan review.
 
 Final user-review handoff outline for this rerun:
@@ -640,7 +640,7 @@ Final user-review handoff outline for this rerun:
   registries above it.
 - Issue accounting: `#3384`, `#4528`, `#3408`, `#4532`, `#3568`, and `#3586`
   stay related/not fixed.
-- Proof gates: Ralph must run the `.tmp/slate-v2` command/browser gates before
+- Proof gates: Ralph must run the `Plate repo root` command/browser gates before
   implementation can claim release-ready.
 
 ## Transform Middleware DX Revision - 2026-05-15
@@ -715,7 +715,7 @@ Status: `done`
 
 Goal:
 
-- Land the editable input-rule ownership plan in `.tmp/slate-v2`: transform
+- Land the editable input-rule ownership plan in `Plate repo root`: transform
   middleware public DX with `next()` forwarding/overrides, command middleware
   substrate, public `editableInputRules` cut, example migration, reference sync,
   issue accounting, and passing focused/closeout gates.
@@ -727,7 +727,7 @@ Continuation prompt:
 Current pass:
 
 - `tdd-pass`
-- Owner: `.tmp/slate-v2/packages/slate` extension runtime
+- Owner: `packages/slate` extension runtime
 - Scope: add transform middleware public DX for `deleteBackward` and
   `insertText`, including `next()` default forwarding and partial overrides.
 - Trigger: public API behavior requires red-green-refactor proof.
@@ -735,7 +735,7 @@ Current pass:
 First runnable slice:
 
 - Add a public behavior test in
-  `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts` proving
+  `packages/slate/test/extension-methods-contract.ts` proving
   extension transform middleware can delegate unchanged and override
   `insertText` args through `next({ text })`.
 - Confirm RED before implementation.
@@ -749,7 +749,7 @@ Status: `done`
 Implemented:
 
 - Added `extension.transforms.deleteBackward` and `extension.transforms.insertText`
-  to `.tmp/slate-v2/packages/slate`, backed by the existing command middleware
+  to `packages/slate`, backed by the existing command middleware
   substrate.
 - Added `next()` forwarding and `next(overrides)` shallow override behavior,
   with a double-`next()` guard.
@@ -760,7 +760,7 @@ Implemented:
 - Kept `onDOMBeforeInput`, `onCommand`, `editableKeyCommands`, and
   `editableRenderers` in Slate React; those are browser/render/key glue, not
   Plate semantic input-rule families.
-- Added changesets for `slate` and `slate-react` in `.tmp/slate-v2/.changeset`.
+- Added changesets for `slate` and `slate-react` in `Plate repo root/.changeset`.
 - Updated this plan, the Ralph continuation prompt, completion state, and
   `docs/slate-v2/references/pr-description.md`.
 
@@ -786,7 +786,7 @@ Verification:
 - `bun lint:fix`: pass.
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun x playwright test playwright/integration/examples/check-lists.test.ts playwright/integration/examples/markdown-shortcuts.test.ts playwright/integration/examples/inlines.test.ts --project=chromium`: pass.
 - `bun check`: pass.
-- `rg -n "EditableInputRule|editableInputRules|EDITABLE_INPUT_RULE|inputRules" .tmp/slate-v2/packages/slate-react/src .tmp/slate-v2/packages/slate-react/test .tmp/slate-v2/site/examples/ts .tmp/slate-v2/packages/slate/src .tmp/slate-v2/packages/slate/test`: no matches.
+- `rg -n "EditableInputRule|editableInputRules|EDITABLE_INPUT_RULE|inputRules" packages/slate-react/src packages/slate-react/test apps/www/src/app/(app)/examples/slate/_examples packages/slate/src packages/slate/test`: no matches.
 - `pnpm lint:fix`: pass in `/Users/zbeyens/git/plate-2`.
 - `node tooling/scripts/completion-check.mjs`: pass in
   `/Users/zbeyens/git/plate-2`.
@@ -847,22 +847,22 @@ raw command registry helpers.
 | Desired outcome      | A Ralph execution can make `extension.transforms` cover all public mutating transform families without regressing current command/runtime behavior.                         |
 | In scope             | `EditorTransformMiddlewareMap`, transform context arg types, command substrate coverage, tests, examples/docs, PR reference, and issue accounting.                          |
 | Non-goals            | Backward compatibility with `editableInputRules`, legacy `methods`, public extension `commands`, or root-level command registry exports.                                    |
-| Decision boundary    | This plan may hard-cut public API shape and require command/transform refactors in `.tmp/slate-v2`; it may not change Slate v2 implementation from this Slate Ralplan lane. |
+| Decision boundary    | This plan may hard-cut public API shape and require command/transform refactors in `Plate repo root`; it may not change Slate v2 implementation from this Slate Ralplan lane. |
 | User decision needed | None. The hard-cut direction is explicit: full coverage, no regression, no backward-compat shim.                                                                            |
 
 ### Live Source Evidence
 
 | Surface                   | Source                                                                                                                                                                                                                                                                                                                                                                                                                            | Current shape                                                                                                                   | Verdict                                                                                          |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Transform registry        | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:508-618`                                                                                                                                                                                                                                                                                                                                                                   | `EditorTransformApi` contains mark, text/delete, fragment, break, node, selection, normalization-control, and bookmark methods. | Full coverage must be measured against this list, not against example needs.                     |
-| Current middleware map    | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:620-656`                                                                                                                                                                                                                                                                                                                                                                   | Only `deleteBackward` and `insertText` are accepted.                                                                            | Under-scoped.                                                                                    |
-| Runtime binding           | `.tmp/slate-v2/packages/slate/src/create-editor.ts:355-397`                                                                                                                                                                                                                                                                                                                                                                       | The transform registry binds all transform methods into the editor runtime.                                                     | Coverage can be driven from the registry surface.                                                |
-| Current extension bridge  | `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:297-370`                                                                                                                                                                                                                                                                                                                                                               | Registration has bespoke branches for only `deleteBackward` and `insertText`.                                                   | Replace with a generic transform-middleware registration table.                                  |
-| Command substrate         | `.tmp/slate-v2/packages/slate/src/core/command-registry.ts:69-120`                                                                                                                                                                                                                                                                                                                                                                | Command middleware is priority ordered, supports `next(overrideCommand)`, and runs in command context.                          | Keep as substrate.                                                                               |
-| Existing command dispatch | `.tmp/slate-v2/packages/slate/src/editor/add-mark.ts:69-79`, `remove-mark.ts:62-72`, `toggle-mark.ts:46-60`, `delete-backward.ts:31-42`, `delete-forward.ts:31-42`, `delete-fragment.ts:33-45`, `insert-break.ts:13-18`, `insert-text.ts:45-93`, `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:1565-1577`, `.tmp/slate-v2/packages/slate/src/transforms-selection/move.ts:57-69`, `set-selection.ts:18-25` | Several transform families already dispatch commands; node transforms and some selection/break aliases do not.                  | Ralph must complete the command substrate before exposing full middleware.                       |
-| Public root guard         | `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts:381-398`                                                                                                                                                                                                                                                                                                                                                            | Root package does not export legacy transform namespaces or command registry helpers.                                           | Keep this. Full transform middleware makes root command exports unnecessary.                     |
-| Legacy extension hard cut | `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts:15-71`                                                                                                                                                                                                                                                                                                                                                           | Legacy `methods` and public `commands` slots are rejected.                                                                      | Keep. Do not reopen old plugin slots.                                                            |
-| Current proof             | `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts:227-282`                                                                                                                                                                                                                                                                                                                                                         | Tests prove only `insertText` and `deleteBackward`.                                                                             | Add coverage tests for every accepted transform key.                                             |
+| Transform registry        | `packages/slate/src/interfaces/editor.ts:508-618`                                                                                                                                                                                                                                                                                                                                                                   | `EditorTransformApi` contains mark, text/delete, fragment, break, node, selection, normalization-control, and bookmark methods. | Full coverage must be measured against this list, not against example needs.                     |
+| Current middleware map    | `packages/slate/src/interfaces/editor.ts:620-656`                                                                                                                                                                                                                                                                                                                                                                   | Only `deleteBackward` and `insertText` are accepted.                                                                            | Under-scoped.                                                                                    |
+| Runtime binding           | `packages/slate/src/create-editor.ts:355-397`                                                                                                                                                                                                                                                                                                                                                                       | The transform registry binds all transform methods into the editor runtime.                                                     | Coverage can be driven from the registry surface.                                                |
+| Current extension bridge  | `packages/slate/src/core/editor-extension.ts:297-370`                                                                                                                                                                                                                                                                                                                                                               | Registration has bespoke branches for only `deleteBackward` and `insertText`.                                                   | Replace with a generic transform-middleware registration table.                                  |
+| Command substrate         | `packages/slate/src/core/command-registry.ts:69-120`                                                                                                                                                                                                                                                                                                                                                                | Command middleware is priority ordered, supports `next(overrideCommand)`, and runs in command context.                          | Keep as substrate.                                                                               |
+| Existing command dispatch | `packages/slate/src/editor/add-mark.ts:69-79`, `remove-mark.ts:62-72`, `toggle-mark.ts:46-60`, `delete-backward.ts:31-42`, `delete-forward.ts:31-42`, `delete-fragment.ts:33-45`, `insert-break.ts:13-18`, `insert-text.ts:45-93`, `packages/slate/src/transforms-text/insert-fragment.ts:1565-1577`, `packages/slate/src/transforms-selection/move.ts:57-69`, `set-selection.ts:18-25` | Several transform families already dispatch commands; node transforms and some selection/break aliases do not.                  | Ralph must complete the command substrate before exposing full middleware.                       |
+| Public root guard         | `packages/slate/test/public-surface-contract.ts:381-398`                                                                                                                                                                                                                                                                                                                                                            | Root package does not export legacy transform namespaces or command registry helpers.                                           | Keep this. Full transform middleware makes root command exports unnecessary.                     |
+| Legacy extension hard cut | `packages/slate/test/extension-methods-contract.ts:15-71`                                                                                                                                                                                                                                                                                                                                                           | Legacy `methods` and public `commands` slots are rejected.                                                                      | Keep. Do not reopen old plugin slots.                                                            |
+| Current proof             | `packages/slate/test/extension-methods-contract.ts:227-282`                                                                                                                                                                                                                                                                                                                                                         | Tests prove only `insertText` and `deleteBackward`.                                                                             | Add coverage tests for every accepted transform key.                                             |
 | Issue pressure            | `docs/slate-v2/ledgers/fork-issue-dossier.md:4029-4054`                                                                                                                                                                                                                                                                                                                                                                           | `#3557` asks for insert-node/insert-fragment override extension points and remains related.                                     | Full transform coverage directly addresses the pressure, but no claim changes until proof lands. |
 
 ### Decision Brief
@@ -1192,14 +1192,14 @@ Weighted total: `0.94`.
 
 ### Fast Driver Gates
 
-- cwd `.tmp/slate-v2`: `bun test ./packages/slate/test/extension-methods-contract.ts --test-name-pattern "transform middleware"`
-- cwd `.tmp/slate-v2`: `bun test ./packages/slate/test/transaction-contract.ts --test-name-pattern "routes delete commands|stores command handlers|registers typed internal command definitions"`
-- cwd `.tmp/slate-v2`: package tests covering the new transform middleware family matrix.
-- cwd `.tmp/slate-v2`: `bun --filter slate typecheck`
-- cwd `.tmp/slate-v2`: `bun --filter slate-react test:vitest -- editable-behavior surface-contract keyboard-input-strategy-contract`
-- cwd `.tmp/slate-v2`: `bun x tsc --project site/tsconfig.json --noEmit`
-- cwd `.tmp/slate-v2`: relevant Playwright example rows for checklist, markdown-shortcuts, inlines, richtext, paste-html/images if affected.
-- cwd `.tmp/slate-v2`: `bun check`
+- cwd `Plate repo root`: `bun test ./packages/slate/test/extension-methods-contract.ts --test-name-pattern "transform middleware"`
+- cwd `Plate repo root`: `bun test ./packages/slate/test/transaction-contract.ts --test-name-pattern "routes delete commands|stores command handlers|registers typed internal command definitions"`
+- cwd `Plate repo root`: package tests covering the new transform middleware family matrix.
+- cwd `Plate repo root`: `bun --filter slate typecheck`
+- cwd `Plate repo root`: `bun --filter slate-react test:vitest -- editable-behavior surface-contract keyboard-input-strategy-contract`
+- cwd `Plate repo root`: `bun x tsc --project site/tsconfig.json --noEmit`
+- cwd `Plate repo root`: relevant Playwright example rows for checklist, markdown-shortcuts, inlines, richtext, paste-html/images if affected.
+- cwd `Plate repo root`: `bun check`
 - cwd `plate-2`: `pnpm lint:fix`
 - cwd `plate-2`: `node tooling/scripts/completion-check.mjs`
 
@@ -1207,20 +1207,20 @@ Weighted total: `0.94`.
 
 - Public API: `EditorTransformMiddlewareMap` two-key shape -> type-driven full
   mutating transform coverage; status `revise`; before
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:641-656`.
+  `packages/slate/src/interfaces/editor.ts:641-656`.
 - Exclusions: `bookmark`, `normalize`, `setNormalizing`,
   `withoutNormalizing`; status `cut` from middleware; proof
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:508-618`.
+  `packages/slate/src/interfaces/editor.ts:508-618`.
 - Command substrate: keep internal command middleware; status `keep`; proof
-  `.tmp/slate-v2/packages/slate/src/core/command-registry.ts:69-120`.
+  `packages/slate/src/core/command-registry.ts:69-120`.
 - Root command exports: keep absent; status `cut`; proof
-  `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts:381-398`.
+  `packages/slate/test/public-surface-contract.ts:381-398`.
 - Legacy extension `methods` and public `commands`: keep rejected; status
   `cut`; proof
-  `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts:15-71`.
+  `packages/slate/test/extension-methods-contract.ts:15-71`.
 - Runtime bridge: bespoke two-key registration -> table-driven registration;
   status `revise`; before
-  `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:297-370`.
+  `packages/slate/src/core/editor-extension.ts:297-370`.
 - Drift guard: manual map -> key equality contract against accepted transform
   set; status `add`.
 - Mark middleware: add `addMark`, `removeMark`, `toggleMark`; status `add`.
@@ -1257,7 +1257,7 @@ Status: `pending`
 
 Goal:
 
-- Implement full hard-cut transform middleware coverage in `.tmp/slate-v2`, with
+- Implement full hard-cut transform middleware coverage in `Plate repo root`, with
   every public mutating transform except engine controls available through
   `extension.transforms`, no backward-compat shims, preserved no-middleware
   behavior, synced reference docs, and passing focused plus broad gates.
@@ -1269,7 +1269,7 @@ Continuation prompt:
 Current pass:
 
 - `tdd-pass`
-- Owner: `.tmp/slate-v2/packages/slate` extension runtime and type surface.
+- Owner: `packages/slate` extension runtime and type surface.
 - Scope: add failing type/runtime coverage for transform middleware keys beyond
   `deleteBackward` and `insertText`, then implement the full keyed bridge.
 
@@ -1289,10 +1289,10 @@ TDD pass:
 
 - Public behavior: `extension.transforms` covers every public mutating transform
   except `bookmark`, `normalize`, `setNormalizing`, and `withoutNormalizing`.
-- RED runtime command: cwd `.tmp/slate-v2`, `bun test ./packages/slate/test/extension-methods-contract.ts --test-name-pattern "transform middleware"`.
+- RED runtime command: cwd `Plate repo root`, `bun test ./packages/slate/test/extension-methods-contract.ts --test-name-pattern "transform middleware"`.
 - RED runtime failure: `addMark` defaulted without calling transform middleware;
   spy saw `[]` instead of `["addMark"]`.
-- RED type command: cwd `.tmp/slate-v2`, `bun --filter slate typecheck`.
+- RED type command: cwd `Plate repo root`, `bun --filter slate typecheck`.
 - RED type failure: root `slate` export lacked
   `EditorPublicTransformMiddlewareKey`.
 - GREEN implementation: added `EditorPublicTransformMiddlewareKey`,
@@ -1307,24 +1307,24 @@ TDD pass:
 
 Verification so far:
 
-- cwd `.tmp/slate-v2`, `bun test ./packages/slate/test/extension-methods-contract.ts --test-name-pattern "transform middleware"`: pass, `5` tests.
-- cwd `.tmp/slate-v2`, `bun test ./packages/slate/test/extension-methods-contract.ts`: pass, `12` tests.
-- cwd `.tmp/slate-v2`, `bun test ./packages/slate/test/public-surface-contract.ts ./packages/slate/test/generic-extension-namespace-contract.ts`: pass, `361` tests.
-- cwd `.tmp/slate-v2`, `bun test ./packages/slate/test/transforms-contract.ts`: pass, `15` tests.
-- cwd `.tmp/slate-v2`, `bun test ./packages/slate/test/transaction-contract.ts --test-name-pattern "routes delete commands|stores command handlers|registers typed internal command definitions"`: pass, `3` tests.
-- cwd `.tmp/slate-v2`, `bun --filter slate typecheck`: pass.
-- cwd `.tmp/slate-v2`, `bun lint:fix`: pass; Biome fixed formatting in touched files.
+- cwd `Plate repo root`, `bun test ./packages/slate/test/extension-methods-contract.ts --test-name-pattern "transform middleware"`: pass, `5` tests.
+- cwd `Plate repo root`, `bun test ./packages/slate/test/extension-methods-contract.ts`: pass, `12` tests.
+- cwd `Plate repo root`, `bun test ./packages/slate/test/public-surface-contract.ts ./packages/slate/test/generic-extension-namespace-contract.ts`: pass, `361` tests.
+- cwd `Plate repo root`, `bun test ./packages/slate/test/transforms-contract.ts`: pass, `15` tests.
+- cwd `Plate repo root`, `bun test ./packages/slate/test/transaction-contract.ts --test-name-pattern "routes delete commands|stores command handlers|registers typed internal command definitions"`: pass, `3` tests.
+- cwd `Plate repo root`, `bun --filter slate typecheck`: pass.
+- cwd `Plate repo root`, `bun lint:fix`: pass; Biome fixed formatting in touched files.
 
 Changed Slate v2 files:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-- `.tmp/slate-v2/packages/slate/src/core/transform-middleware.ts`
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
-- `.tmp/slate-v2/packages/slate/src/index.ts`
-- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts`
-- `.tmp/slate-v2/.changeset/full-transform-middleware.md`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/core/editor-extension.ts`
+- `packages/slate/src/core/transform-middleware.ts`
+- `packages/slate/src/create-editor.ts`
+- `packages/slate/src/index.ts`
+- `packages/slate/test/extension-methods-contract.ts`
+- `packages/slate/test/generic-extension-namespace-contract.ts`
+- `Plate repo root/.changeset/full-transform-middleware.md`
 
 Reference sync:
 
@@ -1353,7 +1353,7 @@ Diff review:
 
 Status: `done`
 
-Implemented in `.tmp/slate-v2`:
+Implemented in `Plate repo root`:
 
 - Full `extension.transforms` coverage for every public mutating
   `EditorTransformApi` key except `bookmark`, `normalize`, `setNormalizing`,
@@ -1365,18 +1365,18 @@ Implemented in `.tmp/slate-v2`:
 - Default guard: internal transform aliases do not accidentally double-fire
   public transform middleware while defaulting.
 - `insertNode` static API now forwards `options` to the transform registry.
-- Changeset: `.tmp/slate-v2/.changeset/full-transform-middleware.md`.
+- Changeset: `Plate repo root/.changeset/full-transform-middleware.md`.
 
 Proof:
 
-- cwd `.tmp/slate-v2`, `bun test ./packages/slate/test/extension-methods-contract.ts --test-name-pattern "transform middleware"`: pass, `5` tests.
-- cwd `.tmp/slate-v2`, `bun test ./packages/slate/test/extension-methods-contract.ts`: pass, `12` tests.
-- cwd `.tmp/slate-v2`, `bun test ./packages/slate/test/public-surface-contract.ts ./packages/slate/test/generic-extension-namespace-contract.ts`: pass, `361` tests.
-- cwd `.tmp/slate-v2`, `bun test ./packages/slate/test/transforms-contract.ts`: pass, `15` tests.
-- cwd `.tmp/slate-v2`, `bun test ./packages/slate/test/transaction-contract.ts --test-name-pattern "routes delete commands|stores command handlers|registers typed internal command definitions"`: pass, `3` tests.
-- cwd `.tmp/slate-v2`, `bun --filter slate typecheck`: pass.
-- cwd `.tmp/slate-v2`, `bun lint:fix`: pass.
-- cwd `.tmp/slate-v2`, `bun check`: pass.
+- cwd `Plate repo root`, `bun test ./packages/slate/test/extension-methods-contract.ts --test-name-pattern "transform middleware"`: pass, `5` tests.
+- cwd `Plate repo root`, `bun test ./packages/slate/test/extension-methods-contract.ts`: pass, `12` tests.
+- cwd `Plate repo root`, `bun test ./packages/slate/test/public-surface-contract.ts ./packages/slate/test/generic-extension-namespace-contract.ts`: pass, `361` tests.
+- cwd `Plate repo root`, `bun test ./packages/slate/test/transforms-contract.ts`: pass, `15` tests.
+- cwd `Plate repo root`, `bun test ./packages/slate/test/transaction-contract.ts --test-name-pattern "routes delete commands|stores command handlers|registers typed internal command definitions"`: pass, `3` tests.
+- cwd `Plate repo root`, `bun --filter slate typecheck`: pass.
+- cwd `Plate repo root`, `bun lint:fix`: pass.
+- cwd `Plate repo root`, `bun check`: pass.
 - cwd `plate-2`, `pnpm lint:fix`: pass.
 - cwd `plate-2`, `node tooling/scripts/completion-check.mjs`: pass.
 - Knowledge capture: added
@@ -1419,15 +1419,15 @@ Anything else is a regression hiding behind nicer type names.
 | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | Legacy overrideable methods  | `../slate/packages/slate/src/interfaces/editor.ts:49-179`                                                                    | Old `BaseEditor` grouped overrideable core methods, transforms, and queries, including `getDirtyPaths`, `getFragment`, schema predicates, `normalizeNode`, `shouldNormalize`, all transform families, `node`, `nodes`, `pathRef`, `pointRef`, `rangeRef`, `string`, and `void`. | Transform-only coverage is incomplete.                                                 |
 | Legacy default editor object | `../slate/packages/slate/src/create-editor.ts:97-125`                                                                        | The default editor instance installed functions directly on the editor object.                                                                                                                                                                                                  | Plugin authors could monkeypatch method slots.                                         |
-| V2 base editor               | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:490-500`                                                              | Public editor object only has `read`, `subscribe`, `update`, and `extend`.                                                                                                                                                                                                      | V2 intentionally removed direct method monkeypatch slots.                              |
-| V2 transform middleware      | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:508-782`                                                              | `extension.transforms` now covers mutating transform keys and excludes `bookmark`, `normalize`, `setNormalizing`, and `withoutNormalizing`.                                                                                                                                     | Keep for writes only.                                                                  |
-| V2 extension slots           | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1046-1081`                                                            | Extensions can register `editor`, `state`, `tx`, `elements`, `normalizers`, `operationMiddlewares`, `commitListeners`, and `transforms`.                                                                                                                                        | Missing slot: first-class pure query middleware.                                       |
-| Static read/query API        | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1294-1885`                                                            | `EditorStaticApi` still exposes many public read/query methods.                                                                                                                                                                                                                 | These need classification, not accidental omission.                                    |
-| Internal query runtime       | `.tmp/slate-v2/packages/slate/src/core/editor-runtime.ts:49-91`                                                              | Query runtime owns structural reads like `above`, `after`, `before`, `levels`, `positions`, `string`, `void`, and `shouldMergeNodesRemovePrevNode`.                                                                                                                             | This is the right substrate for query middleware.                                      |
-| State read view              | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:955-1105`                                                             | `editor.read` exposes grouped read APIs: `fragment`, `marks`, `nodes`, `points`, `ranges`, `runtime`, `schema`, `selection`, `text`, and `value`.                                                                                                                               | Full read coverage must account for grouped state methods, not only static `Editor.*`. |
-| State-to-runtime bypasses    | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:965-1041`                                                             | Some state reads call runtime, while `nodes.children`, `nodes.get`, `nodes.entries`, `nodes.find`, `nodes.some`, and `nodes.toArray` call direct helpers.                                                                                                                       | A query plan must route or explicitly exclude these.                                   |
-| Schema predicates            | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:348-438`, `.tmp/slate-v2/packages/slate/src/create-editor.ts:222-338` | Element specs own `inline`, `void`, `markableVoid`, `readOnly`, `selectable`, `keyboardSelectable`, and related behavior.                                                                                                                                                       | Old predicate overrides map to `elements` / `schema.define`, not query middleware.     |
-| Transaction write view       | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:1127-1219`                                                            | `tx` write APIs delegate to the transform registry.                                                                                                                                                                                                                             | Write overrides remain covered by `extension.transforms`.                              |
+| V2 base editor               | `packages/slate/src/interfaces/editor.ts:490-500`                                                              | Public editor object only has `read`, `subscribe`, `update`, and `extend`.                                                                                                                                                                                                      | V2 intentionally removed direct method monkeypatch slots.                              |
+| V2 transform middleware      | `packages/slate/src/interfaces/editor.ts:508-782`                                                              | `extension.transforms` now covers mutating transform keys and excludes `bookmark`, `normalize`, `setNormalizing`, and `withoutNormalizing`.                                                                                                                                     | Keep for writes only.                                                                  |
+| V2 extension slots           | `packages/slate/src/interfaces/editor.ts:1046-1081`                                                            | Extensions can register `editor`, `state`, `tx`, `elements`, `normalizers`, `operationMiddlewares`, `commitListeners`, and `transforms`.                                                                                                                                        | Missing slot: first-class pure query middleware.                                       |
+| Static read/query API        | `packages/slate/src/interfaces/editor.ts:1294-1885`                                                            | `EditorStaticApi` still exposes many public read/query methods.                                                                                                                                                                                                                 | These need classification, not accidental omission.                                    |
+| Internal query runtime       | `packages/slate/src/core/editor-runtime.ts:49-91`                                                              | Query runtime owns structural reads like `above`, `after`, `before`, `levels`, `positions`, `string`, `void`, and `shouldMergeNodesRemovePrevNode`.                                                                                                                             | This is the right substrate for query middleware.                                      |
+| State read view              | `packages/slate/src/core/public-state.ts:955-1105`                                                             | `editor.read` exposes grouped read APIs: `fragment`, `marks`, `nodes`, `points`, `ranges`, `runtime`, `schema`, `selection`, `text`, and `value`.                                                                                                                               | Full read coverage must account for grouped state methods, not only static `Editor.*`. |
+| State-to-runtime bypasses    | `packages/slate/src/core/public-state.ts:965-1041`                                                             | Some state reads call runtime, while `nodes.children`, `nodes.get`, `nodes.entries`, `nodes.find`, `nodes.some`, and `nodes.toArray` call direct helpers.                                                                                                                       | A query plan must route or explicitly exclude these.                                   |
+| Schema predicates            | `packages/slate/src/interfaces/editor.ts:348-438`, `packages/slate/src/create-editor.ts:222-338` | Element specs own `inline`, `void`, `markableVoid`, `readOnly`, `selectable`, `keyboardSelectable`, and related behavior.                                                                                                                                                       | Old predicate overrides map to `elements` / `schema.define`, not query middleware.     |
+| Transaction write view       | `packages/slate/src/core/public-state.ts:1127-1219`                                                            | `tx` write APIs delegate to the transform registry.                                                                                                                                                                                                                             | Write overrides remain covered by `extension.transforms`.                              |
 
 ### Intent Boundary
 
@@ -1731,18 +1731,18 @@ Weighted total: `0.94`.
      or lifecycle middleware slots.
 7. Verification:
    - Run focused query/schema/normalizer/operation contracts, `bun --filter slate
-typecheck`, and `bun check` from `.tmp/slate-v2`.
+typecheck`, and `bun check` from `Plate repo root`.
    - Run `slate-react` and browser rows only if React or example files change.
 
 ### Fast Driver Gates
 
-- cwd `.tmp/slate-v2`: `bun test ./packages/slate/test/query-extension-contract.ts`
-- cwd `.tmp/slate-v2`: `bun test ./packages/slate/test/schema-contract.ts`
-- cwd `.tmp/slate-v2`: `bun test ./packages/slate/test/extension-methods-contract.ts --test-name-pattern "query middleware|normalizer|operation middleware|commit listener"`
-- cwd `.tmp/slate-v2`: `bun test ./packages/slate/test/query-contract.ts`
-- cwd `.tmp/slate-v2`: `bun test ./packages/slate/test/snapshot-contract.ts`
-- cwd `.tmp/slate-v2`: `bun --filter slate typecheck`
-- cwd `.tmp/slate-v2`: `bun check`
+- cwd `Plate repo root`: `bun test ./packages/slate/test/query-extension-contract.ts`
+- cwd `Plate repo root`: `bun test ./packages/slate/test/schema-contract.ts`
+- cwd `Plate repo root`: `bun test ./packages/slate/test/extension-methods-contract.ts --test-name-pattern "query middleware|normalizer|operation middleware|commit listener"`
+- cwd `Plate repo root`: `bun test ./packages/slate/test/query-contract.ts`
+- cwd `Plate repo root`: `bun test ./packages/slate/test/snapshot-contract.ts`
+- cwd `Plate repo root`: `bun --filter slate typecheck`
+- cwd `Plate repo root`: `bun check`
 - cwd `plate-2`: `pnpm lint:fix`
 - cwd `plate-2`: `COMPLETION_CHECK_ID=019e1fc0-dba0-7de1-9236-b484a144cda6 node tooling/scripts/completion-check.mjs`
 
@@ -1804,7 +1804,7 @@ const withTables = <T extends Editor>(editor: T): T => {
 
 Ralph next owner:
 
-- Implement `extension.queries` in `.tmp/slate-v2/packages/slate`.
+- Implement `extension.queries` in `packages/slate`.
 - Start with RED tests for query key coverage and state-read bypasses.
 - Do not touch React/browser examples unless the implementation changes those
   paths.
@@ -1831,7 +1831,7 @@ TDD pass:
 - Public behavior: extensions can register grouped pure-read middleware under
   `extension.queries`, and the first read paths invoke it without method
   monkeypatching.
-- RED command: cwd `.tmp/slate-v2`,
+- RED command: cwd `Plate repo root`,
   `bun test ./packages/slate/test/query-extension-contract.ts`.
 - RED failure: `state.text.string([0])` returned `one` instead of `one!`,
   proving `extension.queries.text.string` was not on the read path.
@@ -1870,52 +1870,52 @@ TDD pass:
 
 Changed Slate v2 files:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/index.ts`
-- `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-- `.tmp/slate-v2/packages/slate/src/core/query-middleware.ts`
-- `.tmp/slate-v2/packages/slate/src/core/normalize-node.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
-- `.tmp/slate-v2/packages/slate/test/query-extension-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/normalization-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/apply-onchange-hard-cut-contract.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/index.ts`
+- `packages/slate/src/core/extension-registry.ts`
+- `packages/slate/src/core/editor-extension.ts`
+- `packages/slate/src/core/query-middleware.ts`
+- `packages/slate/src/core/normalize-node.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/create-editor.ts`
+- `packages/slate/test/query-extension-contract.ts`
+- `packages/slate/test/normalization-contract.ts`
+- `packages/slate/test/apply-onchange-hard-cut-contract.ts`
 - `docs/slate-v2/references/pr-description.md`
 - `active goal state`
 - `active goal state`
 
 Verification:
 
-- cwd `.tmp/slate-v2`,
+- cwd `Plate repo root`,
   `bun test ./packages/slate/test/query-extension-contract.ts`: pass, `5`
   tests.
-- cwd `.tmp/slate-v2`,
+- cwd `Plate repo root`,
   `bun test ./packages/slate/test/normalization-contract.ts`: pass, `11`
   tests.
-- cwd `.tmp/slate-v2`, `bun test ./packages/slate/test/query-contract.ts`: pass,
+- cwd `Plate repo root`, `bun test ./packages/slate/test/query-contract.ts`: pass,
   `80` tests.
-- cwd `.tmp/slate-v2`, `bun test ./packages/slate/test/snapshot-contract.ts`:
+- cwd `Plate repo root`, `bun test ./packages/slate/test/snapshot-contract.ts`:
   pass, `201` tests.
-- cwd `.tmp/slate-v2`,
+- cwd `Plate repo root`,
   `bun test ./packages/slate/test/extension-methods-contract.ts`: pass, `12`
   tests.
-- cwd `.tmp/slate-v2`, `bun --filter slate typecheck`: pass.
-- cwd `.tmp/slate-v2`,
+- cwd `Plate repo root`, `bun --filter slate typecheck`: pass.
+- cwd `Plate repo root`,
   `bun test ./packages/slate/test/schema-contract.ts`: pass, `9` tests.
-- cwd `.tmp/slate-v2`,
+- cwd `Plate repo root`,
   `bun test ./packages/slate/test/transaction-contract.ts --test-name-pattern
 "operation middleware|commit listeners|normalizer|extension registry"`: pass,
   `4` tests.
-- cwd `.tmp/slate-v2`,
+- cwd `Plate repo root`,
   `bun test ./packages/slate/test/apply-onchange-hard-cut-contract.ts`: pass,
   `4` tests.
-- cwd `.tmp/slate-v2`,
+- cwd `Plate repo root`,
   `bun test ./packages/slate/test/public-field-hard-cut-contract.ts
 ./packages/slate/test/public-surface-contract.ts`: pass, `364` tests.
-- cwd `.tmp/slate-v2`, `bun lint:fix`: pass after formatting; Biome checked
+- cwd `Plate repo root`, `bun lint:fix`: pass after formatting; Biome checked
   `1622` files.
-- cwd `.tmp/slate-v2`, `bun check`: pass; package typechecks, site/root
+- cwd `Plate repo root`, `bun check`: pass; package typechecks, site/root
   typechecks, `1008` Bun tests passed with `95` skipped, and Slate React Vitest
   passed `267` tests across `26` files.
 
@@ -1951,7 +1951,7 @@ Implemented:
 
 Verification:
 
-- `.tmp/slate-v2`: focused query, normalization, schema, snapshot,
+- `Plate repo root`: focused query, normalization, schema, snapshot,
   operation/change, public-surface, typecheck, lint, and `bun check` all pass.
 - `plate-2`: planning/reference artifacts updated; run `pnpm lint:fix` and the
   scoped completion check after the completion file is set to `done`.

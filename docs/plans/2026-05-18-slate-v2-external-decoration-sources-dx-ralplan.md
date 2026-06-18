@@ -43,7 +43,7 @@ Non-goals:
 
 Execution scope:
 
-- Rewrite `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx` into
+- Rewrite `apps/www/src/app/(app)/examples/slate/_examples/external-decoration-sources.tsx` into
   the user-facing `Linting` example while keeping the stable route id.
 - Update the example label, Playwright coverage, and browser contract metadata.
 - Follow-up: change the linting example from stored range diagnostics to
@@ -51,29 +51,29 @@ Execution scope:
 
 ## Live Source Evidence
 
-- `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx:2-9` imports
+- `apps/www/src/app/(app)/examples/slate/_examples/external-decoration-sources.tsx:2-9` imports
   `useRef`, raw `SlateProjection`, and `useSlateDecorationSource`.
-- `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx:73-112`
+- `apps/www/src/app/(app)/examples/slate/_examples/external-decoration-sources.tsx:73-112`
   hand-builds projection objects with `key`, `data`, and explicit `range`.
-- `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx:114-133`
+- `apps/www/src/app/(app)/examples/slate/_examples/external-decoration-sources.tsx:114-133`
   formats a projection snapshot string for debug UI.
-- `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx:159-184`
+- `apps/www/src/app/(app)/examples/slate/_examples/external-decoration-sources.tsx:159-184`
   mirrors state into `externalSnapshotRef`, writes React state separately, then
   calls `externalSource.refresh({ reason: 'external', sourceId:
 'external-diagnostics' })`.
-- `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx:189-198`
+- `apps/www/src/app/(app)/examples/slate/_examples/external-decoration-sources.tsx:189-198`
   teaches `projectionStore.refresh(...)`, but the file's public object is
   `externalSource`.
-- `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx:260-264`
+- `apps/www/src/app/(app)/examples/slate/_examples/external-decoration-sources.tsx:260-264`
   displays debug snapshot state and passes the source through
   `<Slate decorationSources={[externalSource]} editor={editor}>`.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts:13-27`
+- `packages/slate-react/src/hooks/use-slate-decoration-source.ts:13-27`
   already exposes `deps` on both low-level and range-decoration hooks.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts:77-82`
+- `packages/slate-react/src/hooks/use-slate-decoration-source.ts:77-82`
   and `:123-128` refresh source data from `deps` without recreating the source.
-- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts:20-54` already
+- `packages/slate-react/src/decoration-source.ts:20-54` already
   defines `SlateRangeDecoration` and `SlateRangeDecorationSourceOptions`.
-- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts:141-160` maps
+- `packages/slate-react/src/decoration-source.ts:141-160` maps
   range entries into projected decorations with stable keys.
 - `docs/slate-v2/references/pr-description.md:890-919` records the accepted
   public shape: low-level source API remains, `deps` is first-class, range
@@ -213,7 +213,7 @@ source's own id.
 
 ## Concrete Cleanup List For Ralph
 
-Change `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx`:
+Change `apps/www/src/app/(app)/examples/slate/_examples/external-decoration-sources.tsx`:
 
 - Replace `SlateProjection` / `DiagnosticProjection` with
   `SlateRangeDecoration`.
@@ -241,7 +241,7 @@ Update tests:
 
 Optional API follow-up:
 
-- If not already implemented in `.tmp/slate-v2`, make `source.refresh()` default
+- If not already implemented in `Plate repo root`, make `source.refresh()` default
   `sourceId` to its own `id`. That keeps advanced examples from repeating the
   same identifier.
 
@@ -286,17 +286,17 @@ Implemented target:
 
 Current gap found on 2026-05-19:
 
-- Live `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx:221-230`
+- Live `apps/www/src/app/(app)/examples/slate/_examples/external-decoration-sources.tsx:221-230`
   stores `readonly LintIssueDecoration[]` in React state and passes
   `deps: [diagnostics]`, `dirtiness: 'external'`, `read: () => diagnostics`.
-- Live `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx:126-175`
+- Live `apps/www/src/app/(app)/examples/slate/_examples/external-decoration-sources.tsx:126-175`
   already derives diagnostics from an `EditorSnapshot`, so the clean target is
   available locally.
-- Live `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:255-268`
+- Live `packages/slate-react/src/projection-store.ts:255-268`
   makes `'text'` dirty on text commits and `'external'` dirty only for external
   refresh. Therefore the current lint source will not recompute on normal text
   edits.
-- Live `.tmp/slate-v2/site/examples/ts/review-comments.tsx:420-430` stores
+- Live `apps/www/src/app/(app)/examples/slate/_examples/review-comments.tsx:420-430` stores
   comments as `state.ranges.bookmark(range)`, which is correct for durable user
   comments but the wrong default for ephemeral lint diagnostics.
 
@@ -346,7 +346,7 @@ Required proof for Ralph:
   document, and assert the highlight still wraps the intended words.
 - Keep the existing stress row; it should still assert two lint slices after
   `Run linter`.
-- Run from `.tmp/slate-v2`: touched-file Biome, `bun typecheck:site`,
+- Run from `Plate repo root`: touched-file Biome, `bun typecheck:site`,
   `bun typecheck:root`, focused Playwright linting spec, focused stress row,
   and `bun lint:fix`.
 
@@ -366,12 +366,12 @@ Tiptap comparison applied:
 Latest Ralph execution proof:
 
 ```bash
-cd .tmp/slate-v2 && bunx biome check site/examples/ts/external-decoration-sources.tsx playwright/integration/examples/external-decoration-sources.test.ts playwright/stress/generated-editing.test.ts --fix
-cd .tmp/slate-v2 && bun typecheck:site
-cd .tmp/slate-v2 && bun typecheck:root
-cd .tmp/slate-v2 && bun lint:fix
-cd .tmp/slate-v2 && PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/external-decoration-sources.test.ts --project=chromium
-cd .tmp/slate-v2 && STRESS_ROUTES=external-decoration-sources STRESS_FAMILIES=overlay-many-decoration-sources PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/stress/generated-editing.test.ts --project=chromium
+cd Plate repo root && bunx biome check site/examples/ts/external-decoration-sources.tsx playwright/integration/examples/external-decoration-sources.test.ts playwright/stress/generated-editing.test.ts --fix
+cd Plate repo root && bun typecheck:site
+cd Plate repo root && bun typecheck:root
+cd Plate repo root && bun lint:fix
+cd Plate repo root && PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/external-decoration-sources.test.ts --project=chromium
+cd Plate repo root && STRESS_ROUTES=external-decoration-sources STRESS_FAMILIES=overlay-many-decoration-sources PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/stress/generated-editing.test.ts --project=chromium
 ```
 
 Notes:
@@ -400,11 +400,11 @@ Notes:
 | -------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Skill reload                     | complete | Reloaded `slate-ralplan`, `ce-review`, `learnings-researcher`, and `goal workflow` after compaction.                                                                  |
 | Completion reset                 | complete | Reset `active goal state` to pending for this activation.                                                                       |
-| Live source review               | complete | Read the live example plus `use-slate-decoration-source.ts` and `decoration-source.ts` from `.tmp/slate-v2`.                                                                |
+| Live source review               | complete | Read the live example plus `use-slate-decoration-source.ts` and `decoration-source.ts` from `Plate repo root`.                                                                |
 | Institutional knowledge          | complete | Read the relevant projection/range and stable-reference solution notes.                                                                                                     |
 | Ecosystem comparison             | complete | Checked current Context7 docs for Lexical, ProseMirror, and Tiptap decoration/plugin patterns.                                                                              |
 | API verdict                      | complete | Accepted range-decoration + `deps` main path; rejected product wrapper and raw projection as the primary example.                                                           |
-| Implementation                   | complete | Replaced the synthetic external-source demo with the `Linting` example in `.tmp/slate-v2`.                                                                                  |
+| Implementation                   | complete | Replaced the synthetic external-source demo with the `Linting` example in `Plate repo root`.                                                                                  |
 | Verification                     | complete | Latest Ralph proof passed touched-file Biome, site/root typechecks, lint fix, focused Playwright, stress route, Plate lint, and completion check.                           |
 | 2026-05-19 position drift review | complete | Live source shows lint ranges are stored in state while comments use bookmarks; plan now accepts recompute-on-text for linting and reserves bookmarks for durable comments. |
 | 2026-05-19 Ralph execution       | complete | Executed the `lintMode` / `dirtiness: ['text', 'external']` target and added browser proof for typing before a lint issue.                                                  |

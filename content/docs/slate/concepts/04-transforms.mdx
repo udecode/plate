@@ -1,0 +1,250 @@
+---
+title: "Transforms"
+---
+
+# Transforms
+
+Slate changes the document inside `editor.update(...)`. The callback receives a
+transaction object named `tx`. Use `tx` for writes and for reads that belong to
+the command you are running.
+
+```javascript
+editor.update(tx => {
+  tx.nodes.unwrap({
+    at: [],
+    match: node =>
+      ElementApi.isElement(node) &&
+      node.children.every(child => ElementApi.isElement(child)),
+    mode: 'all',
+  })
+})
+```
+
+The core transaction groups are:
+
+- `tx.nodes` for inserting, removing, moving, wrapping, unwrapping, and setting
+  nodes
+- `tx.fragment` for reading, inserting, and deleting fragments
+- `tx.text` for inserting and deleting text
+- `tx.break` for inserting block and soft breaks
+- `tx.selection` for changing the model selection
+- `tx.marks` for changing text marks
+- `tx.value` and `tx.roots` for whole-root or whole-document replacement
+- `tx.setField` and `tx.statePatches` for persistent state fields
+- `tx.normalize` and `tx.withoutNormalizing` for explicit normalization control
+- `tx.operations` for replaying operation batches
+
+Commands should stay inside one update when the changes belong to one user
+action. Slate records the operations and publishes one commit when the update
+finishes.
+
+See [Transforms API](../api/transforms) for method options and the complete
+transaction reference.
+
+## Selection
+
+Use `tx.selection` to set, clear, collapse, or move the selection.
+
+```javascript
+editor.update(tx => {
+  tx.selection.set({
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [1, 0], offset: 2 },
+  })
+})
+```
+
+Move the cursor backward by three words:
+
+```javascript
+editor.update(tx => {
+  tx.selection.move({
+    distance: 3,
+    reverse: true,
+    unit: 'word',
+  })
+})
+```
+
+Read selection with `editor.read(...)` when you are outside an update:
+
+```javascript
+const selection = editor.read(state => state.selection.get())
+```
+
+## Text
+
+Insert text at the current transaction target:
+
+```javascript
+editor.update(tx => {
+  tx.text.insert('some words')
+})
+```
+
+Insert text at an explicit point:
+
+```javascript
+editor.update(tx => {
+  tx.text.insert('some words', {
+    at: { path: [0, 0], offset: 3 },
+  })
+})
+```
+
+Delete a range:
+
+```javascript
+editor.update(tx => {
+  tx.text.delete({
+    at: {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [1, 0], offset: 2 },
+    },
+  })
+})
+```
+
+## Nodes
+
+Insert a text node at an explicit path:
+
+```javascript
+editor.update(tx => {
+  tx.nodes.insert(
+    {
+      text: 'A new string of text.',
+    },
+    {
+      at: [0, 1],
+    }
+  )
+})
+```
+
+Move a node:
+
+```javascript
+editor.update(tx => {
+  tx.nodes.move({
+    at: [0, 0],
+    to: [0, 1],
+  })
+})
+```
+
+Set a property on matching text nodes:
+
+```javascript
+editor.update(tx => {
+  tx.nodes.set(
+    { bold: true },
+    {
+      at: [],
+      match: node => TextApi.isText(node) && node.italic !== true,
+    }
+  )
+})
+```
+
+## Marks
+
+Use `tx.marks` for text formatting commands.
+
+```javascript
+editor.update(tx => {
+  tx.marks.toggle('bold')
+})
+```
+
+You can read marks inside the same command:
+
+```javascript
+editor.update(tx => {
+  const marks = tx.marks.get()
+
+  if (marks?.code) {
+    tx.marks.remove('code')
+  } else {
+    tx.marks.add('code', true)
+  }
+})
+```
+
+## Operations
+
+Operation replay is still a transaction. Import remote or stored operations
+through `tx.operations.replay(...)` so replay follows the same commit,
+normalization, history, and subscription boundary as local commands.
+
+```javascript
+editor.update(tx => {
+  tx.operations.replay(remoteOperations, {
+    tag: 'remote-import',
+  })
+})
+```
+
+## The `at` Option
+
+When `at` is omitted, selection-sensitive methods use the transaction target.
+When `at` is provided, Slate uses that exact location and does not import or
+refresh browser selection.
+
+```javascript
+editor.update(tx => {
+  tx.text.insert('some words')
+})
+
+editor.update(tx => {
+  tx.text.insert('some words', {
+    at: { path: [0, 0], offset: 3 },
+  })
+})
+```
+
+`at` can be a `Path`, `Point`, or `Range`.
+
+```javascript
+editor.update(tx => {
+  tx.text.insert('some words', {
+    at: {
+      anchor: { path: [0, 0], offset: 0 },
+      focus: { path: [0, 0], offset: 3 },
+    },
+  })
+})
+```
+
+## The `match` Option
+
+Node methods accept a `match` function to restrict which nodes are changed.
+
+```javascript
+editor.update(tx => {
+  tx.nodes.move({
+    at: [2],
+    match: (node, path) => path.length === 2,
+    to: [5],
+  })
+})
+```
+
+The `match` function can examine the node, the path, or surrounding structure
+through transaction read helpers.
+
+## Normalization
+
+Keep structural commands in one `editor.update(...)` call. Slate normalizes the
+result before publishing the commit.
+
+```javascript
+editor.update(tx => {
+  tx.nodes.unwrap({ match: isList })
+  tx.nodes.set({ type: 'list-item' })
+  tx.nodes.wrap({ type: 'bulleted-list', children: [] })
+})
+```
+
+Runtime internals may use lower-level helpers, but public document changes and
+operation replay stay inside the transaction boundary.

@@ -10,7 +10,7 @@ import type {
   TextOperation,
   TText,
   Value,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
 import type {

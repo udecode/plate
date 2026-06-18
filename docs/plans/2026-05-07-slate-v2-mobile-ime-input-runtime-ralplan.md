@@ -51,7 +51,7 @@ into the matrix and aligned the four matrix/dossier drift rows down to
 `related`.
 
 The pass-5 refresh confirms the earlier architecture call. Current
-`.tmp/slate-v2` source still owns Mobile/IME through the shared input runtime, not
+`Plate repo root` source still owns Mobile/IME through the shared input runtime, not
 through one-off per-device patches: root runtime state and owners live in
 `runtime-root-engine.ts:136`, `:188`, `:199`, `:246`, `:253`, `:283`, `:289`,
 and `:345`; event-family routing lives in `runtime-event-engine.ts:162`, `:194`,
@@ -332,27 +332,27 @@ The north star is already visible in live source.
 - Root runtime owns `isComposing`, input controller state, Android manager ref,
   selection reconciler, repair runtime, kernel trace runtime, event runtime, and
   event bindings in
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:136`,
+  `packages/slate-react/src/editable/runtime-root-engine.ts:136`,
   `:188`, `:199`, `:246`, `:253`, `:283`, `:289`, and `:345`.
 - Event runtime fans out to beforeinput, input, clipboard, drag, composition,
   focus/mouse, and keyboard handlers through one runtime object in
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:162`
+  `packages/slate-react/src/editable/runtime-event-engine.ts:162`
   and `:194`.
 - Input classification handles composition, paste/drop, delete, insert, format,
   and internal controls in
-  `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts:121`,
+  `packages/slate-react/src/editable/input-controller.ts:121`,
   `:170`, and `:246`.
 - Composition events run through `prepareEditableCompositionKernel`, trace
   ownership, and apply start/update/end in
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts:36`,
+  `packages/slate-react/src/editable/runtime-composition-events.ts:36`,
   `:71`, and `:106`.
 - Android runtime is a first-class adapter to `useAndroidInputManager` in
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts:8`.
+  `packages/slate-react/src/editable/runtime-android-engine.ts:8`.
 - Native DOM `beforeinput` and `input` are attached outside React's polyfill in
-  `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts:91`.
+  `packages/slate-react/src/editable/input-router.ts:91`.
 - `slate-dom` exposes composing state, Android flush hooks, and Android
   zero-width handling in
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:82`,
+  `packages/slate-dom/src/plugin/dom-editor.ts:82`,
   `:166`, `:811`, `:1207`, and `:1511`.
 
 Decision: keep this owner model. The Ralplan work is to make it issue-grade and
@@ -397,7 +397,7 @@ Pass-9 ecosystem maintainer ledger:
 
 | Audience                              | Likely reading                                                               | Accepted wording                                                                                                          | Must not imply                                                                                      | Evidence                                                                                                                                                                                           | Verdict |
 | ------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| Raw Slate extension authors           | "Can I extend input behavior without monkeypatching the editor?"             | Use typed `state` / `tx` extension groups, runtime registration, commit listeners, and narrow input hooks.                | Public command slots, Mobile/IME product policy, or device flags.                                   | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:433`, `:480`, `:804`, `:859`, `:872`, `:886`, `:1589`, `:1594`; `generic-extension-namespace-contract.ts:22`, `:56`, `:118`, `:160`, `:187` | keep    |
+| Raw Slate extension authors           | "Can I extend input behavior without monkeypatching the editor?"             | Use typed `state` / `tx` extension groups, runtime registration, commit listeners, and narrow input hooks.                | Public command slots, Mobile/IME product policy, or device flags.                                   | `packages/slate/src/interfaces/editor.ts:433`, `:480`, `:804`, `:859`, `:872`, `:886`, `:1589`, `:1594`; `generic-extension-namespace-contract.ts:22`, `:56`, `:118`, `:160`, `:187` | keep    |
 | Plate maintainers                     | "Can Plate build richer UX on this without raw Slate becoming Plate-shaped?" | Plate wraps primitive composition/focus/selection/input hooks and `state` / `tx` substrate.                               | Current-version Plate adapter compatibility or `api` / `tf` fields on raw Slate.                    | `migration-backbone-contract.ts:33`, `:41`, `:52`, `:73`, `:162`; `hooks.md:7`, `:25`                                                                                                              | keep    |
 | slate-yjs / collaboration maintainers | "Will IME/runtime fixes replay deterministically?"                           | Rely on commit metadata, operation replay, commit listeners, and typed remote metadata; browser event timing stays local. | yjs-specific fields on raw Slate, remote inference of DOM timing, or exact adapter closure.         | `collab-history-runtime-contract.ts:30`, `:114`, `:155`; `migration-backbone-contract.ts:171`; `editor.ts:700`, `:1217`                                                                            | keep    |
 | React shell authors                   | "Can toolbar/shell UI observe state without rerendering the editor body?"    | Use selector hooks and `editor.read`; keep composition/focus/selection reads out of large node trees.                     | Per-node subscriptions or product controls stealing composition/input ownership.                    | `hooks.md:7`, `:13`, `:25`, `:37`; `runtime-root-engine.ts:136`, `:188`, `:266`                                                                                                                    | keep    |
@@ -470,9 +470,9 @@ Target:
 Evidence:
 
 - internal control classification lives in
-  `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts:89`;
+  `packages/slate-react/src/editable/input-controller.ts:89`;
 - `useEditorComposing` is public docs surface in
-  `.tmp/slate-v2/docs/libraries/slate-react/hooks.md:7`.
+  `content/docs/slate/libraries/slate-react/hooks.md:7`.
 
 Gap:
 
@@ -499,13 +499,13 @@ scope.
 
 Evidence:
 
-- `.tmp/slate-v2/packages/slate/test/migration-backbone-contract.ts:33` proves
+- `packages/slate/test/migration-backbone-contract.ts:33` proves
   extension `state` / `tx` namespaces and schema specs without adapter-shaped
   `api`, `tf`, `plate`, `yjs`, or feature fields on the editor surface.
-- `.tmp/slate-v2/packages/slate/src/core/editor-runtime.ts:97` exposes snapshot,
+- `packages/slate/src/core/editor-runtime.ts:97` exposes snapshot,
   runtime-id, selection, subscribe, read, and update runtime groups behind one
   internal runtime.
-- `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts:18` and `:109`
+- `packages/slate/test/commit-metadata-contract.ts:18` and `:109`
   prove update tags, selection before/after, dirty runtime IDs, and typed
   metadata.
 
@@ -531,12 +531,12 @@ of scope.
 
 Evidence:
 
-- `.tmp/slate-v2/packages/slate/test/migration-backbone-contract.ts:171` replays
+- `packages/slate/test/migration-backbone-contract.ts:171` replays
   deterministic operations with commit tags and local-only runtime targets.
-- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:30`
+- `packages/slate/test/collab-history-runtime-contract.ts:30`
   publishes one commit truth for collab subscribers, extension listeners, and
   history.
-- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:155`
+- `packages/slate/test/collab-history-runtime-contract.ts:155`
   uses typed remote collaboration metadata to skip local undo history.
 
 Decision: yjs/collab needs deterministic operations, commit metadata, and
@@ -744,13 +744,13 @@ PR description:
 
 | Class                                 | Current evidence                                                                                                                                                                                                      | Gap                              | Claim rule                              |
 | ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | --------------------------------------- |
-| Desktop IME commit                    | `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:401` composes Japanese text and asserts model text at `:428`                                                                        | Does not prove Android/iOS       | Desktop IME only                        |
-| Generated composition trace           | `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:431` runs composition gauntlet; mobile claim is explicitly `mobile-synthetic-composition` at `:477`                                 | Needs raw-device promotion       | Architecture confidence only for mobile |
-| Selection repair during composition   | `.tmp/slate-v2/playwright/stress/generated-editing.test.ts:1027` synthetic stress row                                                                                                                                 | Needs language/device rows       | Stress confidence only                  |
-| DOM coverage + composition            | `.tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts:248` skips mobile for IME; `.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts:347` blocks boundary materialization while composing | Mobile hidden-boundary IME proof | Desktop/unit proof only                 |
-| Mobile touch around hidden boundaries | `.tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts:283` is mobile touch proof, not IME proof                                                                                              | Needs IME/device input rows      | Touch usability only                    |
-| Android zero-width / composition      | `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:1207` carries Android zero-width composition handling                                                                                                      | Needs issue exactness            | Source evidence, not closure            |
-| Android manager                       | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts:8` delegates to Android input manager                                                                                                      | Needs feature-specific rows      | Owner evidence, not closure             |
+| Desktop IME commit                    | `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:401` composes Japanese text and asserts model text at `:428`                                                                        | Does not prove Android/iOS       | Desktop IME only                        |
+| Generated composition trace           | `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:431` runs composition gauntlet; mobile claim is explicitly `mobile-synthetic-composition` at `:477`                                 | Needs raw-device promotion       | Architecture confidence only for mobile |
+| Selection repair during composition   | `apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts:1027` synthetic stress row                                                                                                                                 | Needs language/device rows       | Stress confidence only                  |
+| DOM coverage + composition            | `apps/www/tests/slate-browser/donor/examples/dom-coverage-boundaries.test.ts:248` skips mobile for IME; `packages/slate-dom/test/dom-coverage.ts:347` blocks boundary materialization while composing | Mobile hidden-boundary IME proof | Desktop/unit proof only                 |
+| Mobile touch around hidden boundaries | `apps/www/tests/slate-browser/donor/examples/dom-coverage-boundaries.test.ts:283` is mobile touch proof, not IME proof                                                                                              | Needs IME/device input rows      | Touch usability only                    |
+| Android zero-width / composition      | `packages/slate-dom/src/plugin/dom-editor.ts:1207` carries Android zero-width composition handling                                                                                                      | Needs issue exactness            | Source evidence, not closure            |
+| Android manager                       | `packages/slate-react/src/editable/runtime-android-engine.ts:8` delegates to Android input manager                                                                                                      | Needs feature-specific rows      | Owner evidence, not closure             |
 
 ## 14. Browser Stress / Parity Strategy
 
@@ -852,36 +852,36 @@ Current high-risk source owners refreshed in pass 8:
 
 - root runtime state, input controller, Android manager, selection import,
   repair, kernel trace, and event runtime:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:136`,
+  `packages/slate-react/src/editable/runtime-root-engine.ts:136`,
   `:188`, `:199`, `:214`, `:246`, `:253`, `:283`, `:289`, and `:345`;
 - input handling and DOM input repair:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-input-events.ts:52`,
+  `packages/slate-react/src/editable/runtime-input-events.ts:52`,
   `:79`, `:89`, `:106`, and `:135`;
 - composition start/update/end ownership:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts:36`,
+  `packages/slate-react/src/editable/runtime-composition-events.ts:36`,
   `:71`, and `:106`;
 - internal-control, keyboard, beforeinput, composition, and composing-state
   classification:
-  `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts:75`,
+  `packages/slate-react/src/editable/input-controller.ts:75`,
   `:121`, `:170`, `:230`, and `:246`;
 - DOM bridge composing state, Android pending diff hooks, Android zero-width
   handling, point/range translation, and public DOM capability:
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:82`, `:161`,
+  `packages/slate-dom/src/plugin/dom-editor.ts:82`, `:161`,
   `:811`, `:1207`, `:1227`, `:1440`, and `:1511`;
 - current proof scripts and proof split:
-  `.tmp/slate-v2/package.json:58`, `:59`, `:60`, and `:63`;
+  `Plate repo root/package.json:58`, `:59`, `:60`, and `:63`;
 - browser proof labels:
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:401`,
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:401`,
   `:431`, and `:477`;
 - hidden-boundary split between desktop IME and mobile touch:
-  `.tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts:248`
+  `apps/www/tests/slate-browser/donor/examples/dom-coverage-boundaries.test.ts:248`
   and `:283`;
 - commit/collab substrate:
-  `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts:18`, `:84`,
+  `packages/slate/test/commit-metadata-contract.ts:18`, `:84`,
   `:109`, and `:144`;
-  `.tmp/slate-v2/packages/slate/test/migration-backbone-contract.ts:33` and
+  `packages/slate/test/migration-backbone-contract.ts:33` and
   `:171`;
-  `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:30`,
+  `packages/slate/test/collab-history-runtime-contract.ts:30`,
   `:114`, and `:155`.
 
 Blast radius:
@@ -970,9 +970,9 @@ Rejected:
 | Keep exact mobile closures gated on raw-device proof             | Maintainers, users waiting on Android/iOS fixes | "This slows closure."                                                      | Desktop proof catches many bugs faster.                                | Some rows stay pending longer.                                                  | Better slow than dishonest. Mobile keyboard behavior is the bug.                                                                                                         | `docs/research/decisions/slate-v2-post-closure-architecture-review.md:58`                                   | keep    |
 | Keep product input policy out of raw Slate                       | App authors                                     | "I need autocomplete/text-limit/slash command behavior."                   | Product hooks are useful.                                              | Apps must compose behavior above Slate.                                         | Raw Slate should expose safe runtime primitives; Plate can package product UX.                                                                                           | `docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md:80`                         | keep    |
 | Use current runtime owner graph rather than restart architecture | Browser/runtime maintainers                     | "Existing runtime may still have holes."                                   | A cleaner rewrite could be tempting.                                   | We inherit current source constraints.                                          | The live graph already matches the issue pressure; proof/accounting is weaker than architecture direction.                                                               | `runtime-root-engine.ts:136`, `runtime-event-engine.ts:162`                                                 | keep    |
-| Keep raw-device proof as the closure gate                        | Release maintainers                             | "Device proof is too slow for a plan with `44` long-form rows."            | Synthetic mobile and desktop IME proof would let the team ship faster. | Real device rows need hardware, tooling, or lab work.                           | Synthetic rows can route architecture, but PR text must not claim Android/iOS/Samsung/Firefox Android/voice closure until raw-device or matching manual artifacts exist. | `.tmp/slate-v2/package.json:59`, `:60`, `:63`; `rendering-strategy-runtime.test.ts:477`                     | keep    |
+| Keep raw-device proof as the closure gate                        | Release maintainers                             | "Device proof is too slow for a plan with `44` long-form rows."            | Synthetic mobile and desktop IME proof would let the team ship faster. | Real device rows need hardware, tooling, or lab work.                           | Synthetic rows can route architecture, but PR text must not claim Android/iOS/Samsung/Firefox Android/voice closure until raw-device or matching manual artifacts exist. | `Plate repo root/package.json:59`, `:60`, `:63`; `rendering-strategy-runtime.test.ts:477`                     | keep    |
 | Stop after proof-heavy batches instead of all `44` rows          | Plan/execution maintainers                      | "The dossier will drown the implementation before code starts."            | Full accounting up front sounds safer.                                 | Some related rows stay matrix-only longer.                                      | Batch the highest-proof rows first, then sync claim text. Long-form text without proof routes is theater.                                                                | Section 12 pass-3 routing matrix; Section 14 proof tiers                                                    | revise  |
-| Keep Android-specific ownership centralized                      | Browser/runtime maintainers                     | "The architecture already has Android special casing, so it is not clean." | A generic runtime with no platform owner sounds purer.                 | Android remains a named runtime owner.                                          | The honest architecture has a small Android owner wired through the root runtime, not scattered public device APIs.                                                      | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts:8`; `runtime-root-engine.ts:246` | keep    |
+| Keep Android-specific ownership centralized                      | Browser/runtime maintainers                     | "The architecture already has Android special casing, so it is not clean." | A generic runtime with no platform owner sounds purer.                 | Android remains a named runtime owner.                                          | The honest architecture has a small Android owner wired through the root runtime, not scattered public device APIs.                                                      | `packages/slate-react/src/editable/runtime-android-engine.ts:8`; `runtime-root-engine.ts:246` | keep    |
 | Reject a broad Mobile/IME public namespace                       | API maintainers, app authors                    | "Without a public namespace, authors cannot solve local input bugs."       | More public hooks can feel more empowering.                            | Some app escape hatches stay lower-level.                                       | Add a new primitive only when a routed issue proves `onDOMBeforeInput`, composing state, input rules, and internal-control classification cannot express the behavior.   | Section 7 public API target; `input-router.ts:91`; `input-controller.ts:89`                                 | keep    |
 | Require cohort plus repeated-unit performance evidence           | Performance reviewers                           | "This is too much process for input bugs."                                 | A targeted browser repro can catch the visible bug.                    | More evidence work before large/stress claims.                                  | Input fixes can silently add repeated listeners, subscriptions, or DOM churn; large/stress claims need cohort, DOM/component/listener/memory, and native-behavior rows.  | Section 14 pass-6 performance contract; `runtime-root-engine.ts:136`, `:188`, `:266`                        | revise  |
 | Keep Plate/yjs adapters out of raw Slate closure                 | Plate/yjs maintainers                           | "Migration talk without adapters is evasive."                              | Adapter fixtures would make adoption feel real.                        | Raw Slate cannot prove current Plate/yjs integration end-to-end from this plan. | This plan owns the substrate: `state` / `tx`, deterministic commits, local-only targets, commit metadata, and typed remote metadata. Adapter work is a later owner.      | `migration-backbone-contract.ts:33`, `:171`; `collab-history-runtime-contract.ts:30`, `:155`                | keep    |
@@ -1155,7 +1155,7 @@ Dropped in pass 7:
 
 Added in pass 8:
 
-- refreshed current high-risk owners in `.tmp/slate-v2` source and proof files;
+- refreshed current high-risk owners in `Plate repo root` source and proof files;
 - expanded the high-risk section into trigger, blast radius, seven-scenario
   pre-mortem, proof-tier table, rollback/remediation answer, and keep/revise
   verdict;
@@ -1248,7 +1248,7 @@ Added in pass 13:
   regression, Android/iOS timing, autocorrect, and Korean backspace evidence;
 - read local `../prosemirror` transaction metadata, DOM-change, composition
   viewdesc, and DOM-change webtest evidence;
-- compared that evidence to current `.tmp/slate-v2` composition proof and added a
+- compared that evidence to current `Plate repo root` composition proof and added a
   stolen-test execution backlog for missing rows.
 
 Dropped in pass 13:
@@ -1296,7 +1296,7 @@ Owners:
 - issue discovery owner: `clawsweeper` for pass 2, complete;
 - execution owner after user approval: later `ralph` continuation;
 - implementation owner after plan acceptance: `slate-react-v2` and
-  `slate-dom-v2` packages in `.tmp/slate-v2`.
+  `slate-dom-v2` packages in `Plate repo root`.
 
 ## 23. Fast Driver Gates
 
@@ -1420,8 +1420,8 @@ Activation:
 
 Slice 1 owner:
 
-- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`.
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts` only if the
+- `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`.
+- `packages/browser/src/playwright/ime.ts` only if the
   existing IME helper cannot express the translated Lexical row.
 
 Slice 1 target:
@@ -1455,7 +1455,7 @@ Slice 1 required evidence:
 Slice 1 result:
 
 - Added `commits staged IME composition before a markable inline mention` to
-  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`.
 - The row translates Lexical's CDP staged IME pattern into Slate v2's mentions
   example and asserts inserted model text, preserved inline mention, final
   selection, and allowed `compositionend` kernel trace.
@@ -1474,14 +1474,14 @@ Next slice:
 
 - `slice-2-lexical-ime-history-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - Target: translate Lexical's IME history grouping rows so composed text forms
   the right undo group and canceled composition does not enter history.
 
 Slice 2 result:
 
 - Added `undoes committed IME composition as one history step` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row translates Lexical's IME history proof into Slate v2's runtime
   example: staged native composition commits text, one undo removes the
   committed text, selection returns to the original caret, and `compositionend`
@@ -1501,14 +1501,14 @@ Next slice:
 
 - `slice-3-lexical-ime-cancel-history-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - Target: translate Lexical's canceled-composition history row so canceled
   composition does not enter undo history.
 
 Slice 3 result:
 
 - Added `does not push canceled IME composition onto history` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - Added local `cancelNativeComposition` CDP helper because the shared
   `editor.ime.compose` helper only expresses committed composition.
 - Initial proof attempt used `a` as a sentinel and failed because the full model
@@ -1529,7 +1529,7 @@ Next slice:
 
 - `slice-4-lexical-safari-ime-delete-selection-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`
   or a narrower WebKit/Safari-capable example test.
 - Target: translate Lexical regression `8153-safari-ime-delete-selection` so a
   selection can be deleted after composition ends without extra deletion or
@@ -1538,7 +1538,7 @@ Next slice:
 Slice 4 result:
 
 - Added `deletes shell-backed selection after WebKit compositionend` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - Added local `dispatchCompositionEnd` helper to mirror Lexical regression
   `8153-safari-ime-delete-selection`: WebKit fires `compositionend`, browser
   select-all creates shell-backed selection, then Backspace deletes the selected
@@ -1560,7 +1560,7 @@ Next slice:
 
 - `slice-5-prosemirror-dom-change-markup-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts` or a narrower
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts` or a narrower
   low-level Slate DOM/browser test.
 - Target: translate ProseMirror DOM-change tests for text deletion/typing inside
   markup and active text-node preservation.
@@ -1568,7 +1568,7 @@ Next slice:
 Slice 5 result:
 
 - Added `syncs browser text mutations inside bold markup` to
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 - The row translates ProseMirror's markup DOM-change rows into Slate's browser
   contract: typing inside bold `rich` produces `riZch`, preserves the bold
   markup, advances Slate selection inside the marked text, then Backspace
@@ -1594,7 +1594,7 @@ Next slice:
 
 - `slice-6-prosemirror-ambiguous-replacement-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 - Target: translate ProseMirror's ambiguous text replacement row around marked
   text, proving typed-over text lands in the intended marked node instead of
   duplicating adjacent content.
@@ -1602,7 +1602,7 @@ Next slice:
 Slice 6 result:
 
 - Added `resolves ambiguous browser insertion at a mark boundary` to
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 - The row translates ProseMirror's ambiguous replacement pressure into Slate's
   marked-boundary contract: inserting a space at the end of bold `rich` before
   the adjacent unmarked space keeps the inserted character inside the bold leaf,
@@ -1625,7 +1625,7 @@ Next slice:
 
 - `slice-7-lexical-ios-autocorrect-plain-text-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts` or a narrower
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts` or a narrower
   clipboard/native-input test.
 - Target: translate Lexical's iOS word prediction/autocorrect plain-text row so
   identical `text/html` and `text/plain` prediction payloads do not inject HTML
@@ -1634,8 +1634,8 @@ Next slice:
 Slice 7 result:
 
 - Added `treats iOS prediction payload as plain text inside formatted selection`
-  to `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`.
-- Updated `.tmp/slate-v2/site/examples/ts/paste-html.tsx` so the HTML-paste
+  to `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`.
+- Updated `apps/www/src/app/(app)/examples/slate/_examples/paste-html.tsx` so the HTML-paste
   example detects real identical `text/html` + `text/plain` payloads and routes
   them through text insertion, preserving current selection formatting instead
   of parsing plain prediction text as an HTML fragment.
@@ -1664,7 +1664,7 @@ Next slice:
 
 - `slice-8-prosemirror-composition-commit-metadata-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`
   or the narrowest existing commit/kernel metadata contract.
 - Target: translate ProseMirror's composition transaction metadata pressure into
   a Slate v2 proof that composition commits carry explicit runtime metadata /
@@ -1673,7 +1673,7 @@ Next slice:
 Slice 8 result:
 
 - Added `records runtime metadata for committed IME composition` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row translates ProseMirror's composition transaction metadata pressure
   into Slate v2's runtime proof shape: native Chromium IME composition must
   produce explicit `compositionstart`, `compositionupdate`, and
@@ -1695,8 +1695,8 @@ Next slice:
 
 - `slice-9-prosemirror-android-virtual-keyboard-fallback-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`,
-  `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`, or the
+  `packages/slate-react/test/model-input-strategy-contract.test.ts`,
+  `packages/slate-react/test/editing-kernel-contract.ts`, or the
   narrowest existing Android input-manager contract.
 - Target: translate ProseMirror's Android virtual-keyboard fallback pressure
   into a unit/browser-contract proof for Android `insertReplacementText` /
@@ -1706,7 +1706,7 @@ Next slice:
 Slice 9 result:
 
 - Added Android-style replacement/backspace beforeinput coverage to
-  `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`.
+  `packages/slate-react/test/model-input-strategy-contract.test.ts`.
 - The row translates ProseMirror's Android virtual-keyboard fallback pressure
   into Slate v2's model-owned input contract: `insertReplacementText` replaces
   the current selection through the beforeinput command path, and
@@ -1721,7 +1721,7 @@ Slice 9 result:
   Vitest runner is the correct focused gate.
 - Focused proof passed:
   `bun test:vitest test/model-input-strategy-contract.test.ts` from
-  `.tmp/slate-v2/packages/slate-react`.
+  `packages/slate-react`.
 - Lint/format focused gate passed:
   `bun run lint:fix packages/slate-react/test/model-input-strategy-contract.test.ts`.
 - TypeScript root gate passed:
@@ -1733,7 +1733,7 @@ Next slice:
 
 - `slice-10-lexical-ime-formatting-boundary-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 - Target: translate Lexical's staged CDP IME formatting-boundary rows so native
   composition inside marked text preserves the mark, advances selection inside
   the marked leaf, and records composition trace ownership without exact mobile
@@ -1742,7 +1742,7 @@ Next slice:
 Slice 10 result:
 
 - Added `commits IME composition inside bold markup` to
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 - The row translates ProseMirror's `handles composition inside marks` pressure
   into Slate's marked-text contract: DOM composition inside bold `rich` at
   offset 2 produces `riすしch`, preserves the bold mark, advances selection
@@ -1772,7 +1772,7 @@ Next slice:
 
 - `slice-11-prosemirror-ime-decoration-boundary-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts`.
 - Target: translate ProseMirror's composition-with-decorations rows so IME
   composition inside decorated/highlighted text is not interrupted or
   overwritten by decoration rendering. This is browser proof only, not exact
@@ -1781,7 +1781,7 @@ Next slice:
 Slice 11 result:
 
 - Added `commits IME composition inside decorated text` to
-  `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts`.
 - The row translates ProseMirror's composition-with-decorations pressure into
   Slate's highlighted-text contract: DOM composition inside decorated `lph`
   inserts `すし` at the selected offset, preserves `data-tone="warm"`,
@@ -1804,7 +1804,7 @@ Next slice:
 
 - `slice-12-prosemirror-ime-spanning-nodes-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts` or the
+  `apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts` or the
   narrowest existing browser example that exposes adjacent decorated text
   nodes.
 - Target: translate ProseMirror's composition-spanning-multiple-nodes row so a
@@ -1815,7 +1815,7 @@ Next slice:
 Slice 12 result:
 
 - Added `commits IME composition spanning decorated text nodes` to
-  `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts`.
 - Factored the local DOM composition helper in the highlighted-text suite so the
   inside-decoration and spanning-decoration rows share the same event/mutation
   proof shape.
@@ -1824,7 +1824,7 @@ Slice 12 result:
 - Debug evidence showed the Slate model was already correct at `alすしbeta`;
   the duplicate was a stale unmanaged browser text node outside
   `[data-slate-string="true"]` in the projected text host.
-- Fixed `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts` so
+- Fixed `packages/slate-react/src/editable/composition-state.ts` so
   the Chrome composition-end fallback removes unmanaged composition text nodes
   after writing the committed text into the model.
 - Runtime code changes: Chrome composition fallback DOM cleanup for unmanaged
@@ -1852,7 +1852,7 @@ Next slice:
 
 - `slice-13-prosemirror-ime-widget-adjacent-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts` or the
+  `apps/www/tests/slate-browser/donor/examples/mentions.test.ts` or the
   narrowest existing inline-void/widget browser example.
 - Target: translate ProseMirror's `doesn't overwrite widgets next to the
 composition` row so IME composition next to an inline widget/void preserves
@@ -1861,7 +1861,7 @@ composition` row so IME composition next to an inline widget/void preserves
 Slice 13 result:
 
 - Added `commits IME composition between inline mentions without overwriting
-them` to `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`.
+them` to `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`.
 - The row translates ProseMirror's widget-adjacent composition pressure into
   Slate's markable-inline mention contract: DOM composition inside the text
   node between two inline mentions commits `すし`, preserves both mention
@@ -1893,7 +1893,7 @@ Next slice:
 
 - `slice-14-prosemirror-ime-overlap-cancel-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`
   or the narrowest existing browser/runtime test that can apply a model change
   during composition.
 - Target: translate ProseMirror's composition-cancel rows for overlapping model
@@ -1904,7 +1904,7 @@ Next slice:
 Slice 14 result:
 
 - Added `drops active IME composition when a model change overlaps it` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row translates ProseMirror's `cancels composition when a change fully
 overlaps with it` pressure into Slate's input-runtime contract: a real DOM
   composition starts inside `default block 1`, a model-owned replacement
@@ -1913,8 +1913,8 @@ overlaps with it` pressure into Slate's input-runtime contract: a real DOM
 - The first proof failed with `---すし`, proving Chrome's composition-end
   fallback still wrote the stale composition payload after the overlapping
   model change had already replaced the range.
-- Fixed `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
-  and `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`
+- Fixed `packages/slate-react/src/editable/composition-state.ts`
+  and `packages/slate-react/src/editable/runtime-composition-events.ts`
   so the Chrome composition-end fallback skips model insertion when the active
   composition has been superseded by a model-owned command, while still cleaning
   unmanaged composition DOM text.
@@ -1951,7 +1951,7 @@ Next slice:
 
 - `slice-15-prosemirror-ime-non-overlap-change-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - Target: translate ProseMirror's `doesn't cancel composition when a change
 happens elsewhere` row so a non-overlapping model change during composition
   does not cancel, duplicate, or misplace the committed composition text. This
@@ -1960,7 +1960,7 @@ happens elsewhere` row so a non-overlapping model change during composition
 Slice 15 result:
 
 - Added `keeps active IME composition when a model change happens elsewhere` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row translates ProseMirror's `doesn't cancel composition when a change
 happens elsewhere` pressure into Slate's runtime contract: a real DOM
   composition starts inside `default block 1`, a non-overlapping model operation
@@ -1992,7 +1992,7 @@ Next slice:
 
 - `slice-16-prosemirror-ime-partial-overlap-cancel-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - Target: translate ProseMirror's partial-overlap / inside-composition cancel
   rows so a model-owned change that intersects only part of the active
   composition still cancels the stale Chrome compositionend payload without
@@ -2001,7 +2001,7 @@ Next slice:
 Slice 16 result:
 
 - Added `drops active IME composition when a model change partially overlaps it`
-  to `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  to `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row translates ProseMirror's partial-overlap composition-cancel pressure:
   a real DOM composition starts inside `default block 1`, a nearby model-owned
   replacement intersects only part of the active composition neighborhood, and
@@ -2034,7 +2034,7 @@ Next slice:
 
 - `slice-17-prosemirror-ime-inside-change-cancel-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - Target: translate ProseMirror's `cancels composition when a change happens
 inside of it` row so an inside-range model-owned change cancels the stale
   Chrome compositionend payload without exact Android/iOS device closure.
@@ -2043,7 +2043,7 @@ Slice 17 result:
 
 - Added `drops active IME composition when a model change happens at its
 insertion point` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row translates ProseMirror's inside-composition cancel pressure into a
   Slate runtime row: a real DOM composition starts at the `default block 1`
   insertion point, a model-owned insert happens at that same point, and the
@@ -2073,7 +2073,7 @@ Next slice:
 
 - `slice-18-prosemirror-ime-rapid-following-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - Target: translate ProseMirror's `handles compositions rapidly following each
 other` row so two back-to-back DOM compositions in separate text blocks commit
   without stale composing state, text loss, or caret drift. This is browser
@@ -2082,7 +2082,7 @@ other` row so two back-to-back DOM compositions in separate text blocks commit
 Slice 18 result:
 
 - Added `commits rapidly following IME compositions in separate text blocks` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row translates ProseMirror's rapidly-following composition pressure into
   Slate's runtime contract: native Chromium IME composition commits at the end
   of `default block 1`, immediately followed by another native composition at
@@ -2112,7 +2112,7 @@ Next slice:
 
 - `slice-19-prosemirror-ime-cross-paragraph-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - Target: translate ProseMirror's `can handle cross-paragraph compositions` row
   into a Slate browser proof for composition spanning block boundaries without
   text loss, duplicated committed text, or exact Android/iOS device closure.
@@ -2121,7 +2121,7 @@ Slice 19 result:
 
 - Added `commits cross-paragraph IME composition as one replacement` plus a
   local `selectDOMTextRange` helper to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row translates ProseMirror's cross-paragraph composition pressure into a
   Slate runtime row: a browser DOM composition spanning from `default block 1`
   into `default block 2` replaces the selected block range, merges the remaining
@@ -2151,7 +2151,7 @@ Next slice:
 
 - `slice-20-lexical-ios-korean-backspace-native-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`.
+  `packages/slate-react/src/editable/keyboard-input-strategy.ts`.
 - Target: translate Lexical's iOS Korean Backspace exception into a narrow Slate
   runtime contract: iOS + `ko-KR` + Backspace should defer to native input
   instead of becoming model-owned from keydown. This is runtime proof only, not
@@ -2160,9 +2160,9 @@ Next slice:
 Slice 20 result:
 
 - Added `shouldDeferBackspaceToNativeInput` to
-  `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`.
+  `packages/slate-react/src/editable/keyboard-input-strategy.ts`.
 - Added
-  `.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts`.
+  `packages/slate-react/test/keyboard-input-strategy-contract.test.ts`.
 - The row translates Lexical's iOS Korean Backspace guard from
   `../lexical/packages/lexical-plain-text/src/index.ts:286` and
   `../lexical/packages/lexical-rich-text/src/index.ts:893` into Slate's runtime
@@ -2194,7 +2194,7 @@ Next slice:
 
 - `slice-21-lexical-ime-typeahead-menu-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`.
 - Target: translate Lexical's `Typeahead menu should not close during IME
 composition` row so the mentions portal stays visible while Chromium IME
   composition is active. This is desktop Chromium overlay proof only, not exact
@@ -2203,7 +2203,7 @@ composition` row so the mentions portal stays visible while Chromium IME
 Slice 21 result:
 
 - Added `keeps mention portal open during IME composition` to
-  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`.
 - The row translates Lexical's typeahead/IME overlay pressure into Slate's
   mentions example: after `@ma` opens the portal, active Chromium IME composition
   must not close it while composition text is still in progress.
@@ -2227,7 +2227,7 @@ Slice 21 result:
 Slice 22 result:
 
 - Added `replaces multiple formatted text nodes with Korean IME composition` to
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 - The row translates Lexical's
   `Can replace multiple formatted text nodes with IME composition (Korean)`
   into a Slate rich-text proof using Chromium CDP `Input.imeSetComposition`.
@@ -2238,12 +2238,12 @@ Slice 22 result:
   while composing, and cleanup of stale browser-owned composition text in
   managed Slate strings.
 - Runtime changes:
-  `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts` now
+  `packages/slate-react/src/editable/composition-state.ts` now
   gates expanded-selection pre-delete on trusted native composition, captures
   composition marks synchronously, tracks latest composition text, and repairs
   stale composition text left inside managed DOM strings.
 - Runtime changes:
-  `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts` now
+  `packages/slate-react/src/editable/mutation-controller.ts` now
   requests a render after model-owned text insertion during composition.
 - The adjacent bold IME row now asserts semantic mark preservation across split
   bold leaves instead of requiring React to merge adjacent `<strong>` output.
@@ -2268,7 +2268,7 @@ Next slice:
 - `slice-23-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   cross-editor backlog.
 - Target: choose the next missing Mobile/IME proof route after the ProseMirror
   composition rows, Lexical iOS Korean native-backspace contract, Lexical
@@ -2289,7 +2289,7 @@ Slice 23 result:
 Slice 24 result:
 
 - Added `dispatchWebKitCompositionEnd` to
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 - Added `deletes rich text selection after WebKit compositionend`.
 - Added `deletes rich text line selection after WebKit compositionend`.
 - The rows translate Lexical regression #8153 into Slate richtext browser
@@ -2325,7 +2325,7 @@ Next slice:
 - `slice-25-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the ProseMirror
   composition rows, Lexical iOS Korean native-backspace contract, Lexical
@@ -2346,7 +2346,7 @@ Slice 25 result:
 Slice 26 result:
 
 - Added `restores expanded selection after undoing IME replacement` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row translates Lexical's undo-selection pressure into Slate's runtime
   contract: replacing the selected `b` in `ab` with IME text yields `aす`, and
   one undo restores both `ab` and the original backward selection.
@@ -2354,7 +2354,7 @@ Slice 26 result:
   pre-delete and the Chrome composition-end fallback insert were separate
   history batches.
 - Runtime change:
-  `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts` now
+  `packages/slate-react/src/editable/composition-state.ts` now
   tracks trusted native expanded-selection pre-delete and merges the following
   Chrome composition-end fallback insert into that history batch.
 - Issue claims changed: none.
@@ -2379,7 +2379,7 @@ Next slice:
 
 - `slice-27-lexical-floating-toolbar-ime-proof`.
 - Candidate owner:
-  `.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/hovering-toolbar.test.ts`.
 - Target: translate Lexical's `Floating toolbar should not be displayed when
 using IME` row so the hovering toolbar stays hidden while Chromium IME
   composition is active, then appears for a real expanded selection after commit.
@@ -2396,7 +2396,7 @@ Slice 27 result:
 Slice 28 result:
 
 - Added `keeps hovering toolbar hidden during IME composition` to
-  `.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/hovering-toolbar.test.ts`.
 - The row proves active Chromium IME composition does not display the hovering
   toolbar, while a real expanded DOM selection after commit still displays it.
 - Runtime code changes: none.
@@ -2423,7 +2423,7 @@ Next slice:
 - `slice-29-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the covered
   ProseMirror composition rows, Lexical iOS Korean native-backspace contract,
@@ -2446,7 +2446,7 @@ Slice 30 result:
 
 - Added `undoes native text and immediately following IME composition together`
   to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row proves that browser-native `Input.insertText("a")` followed by
   Chromium IME composition `す` becomes one undoable action, restoring the
   original text and caret after a single undo.
@@ -2472,7 +2472,7 @@ Next slice:
 - `slice-31-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the covered
   ProseMirror composition rows, Lexical iOS Korean native-backspace contract,
@@ -2498,7 +2498,7 @@ Slice 31 result:
 Slice 32 result:
 
 - Added `keeps text stable after type-delete-cancel IME composition` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row proves a staged Hiragana composition that types, deletes back to a
   shorter candidate, then cancels leaves the model text stable and keeps the
   selection stable both at the end of text and before a following space.
@@ -2524,7 +2524,7 @@ Next slice:
 - `slice-33-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the covered
   ProseMirror composition rows, Lexical iOS Korean native-backspace contract,
@@ -2544,7 +2544,7 @@ Slice 33 result:
 Slice 34 result:
 
 - Added `replaces an existing word with IME composition` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row proves selecting `two` in `one two three` and committing IME text
   replaces only that word, preserves surrounding text, advances selection after
   the committed text, and records an allowed `compositionend` trace.
@@ -2570,7 +2570,7 @@ Next slice:
 - `slice-35-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the covered
   ProseMirror composition rows, ProseMirror existing-word replacement row,
@@ -2591,7 +2591,7 @@ Slice 35 result:
 Slice 36 result:
 
 - Added `commits IME composition through an active mark in an empty block` to
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 - The row proves an empty richtext block with active bold mark accepts Chromium
   IME composition, inserts `abc`, renders the committed text as `<strong>`,
   advances selection after the committed text, and records an allowed
@@ -2618,7 +2618,7 @@ Next slice:
 - `slice-37-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the covered
   ProseMirror composition rows, ProseMirror existing-word replacement row,
@@ -2641,7 +2641,7 @@ Slice 37 result:
 Slice 38 result:
 
 - Added `commits IME composition through an active mark before a formatted sibling`
-  to `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  to `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 - First attempt failed because the collapsed boundary did not implicitly carry
   italic in Slate's flat mark model; the browser inserted standalone `code`.
   The test was corrected to make the active italic+code mark set explicit
@@ -2672,7 +2672,7 @@ Next slice:
 - `slice-39-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the covered
   ProseMirror composition rows, ProseMirror existing-word replacement row,
@@ -2694,7 +2694,7 @@ Slice 39 result:
 Slice 40 result:
 
 - Added `commits IME composition at the start of a text block` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row proves direct DOM composition at offset `0` inserts `!?` before
   `foo`, preserves the following text, advances both model and DOM caret after
   the committed prefix, and records an allowed `compositionend` trace.
@@ -2721,7 +2721,7 @@ Next slice:
 - `slice-41-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the covered
   ProseMirror composition rows, ProseMirror existing-word replacement row,
@@ -2742,7 +2742,7 @@ Slice 41 result:
 Slice 42 result:
 
 - Added `commits IME composition inside existing text` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row proves direct DOM composition at offset `1` in `foo` inserts `xyz`,
   yields `fxyzoo`, advances both model and DOM caret after the committed
   composition, and records an allowed `compositionend` trace.
@@ -2770,7 +2770,7 @@ Next slice:
 - `slice-43-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the covered
   ProseMirror composition rows, ProseMirror existing-word replacement row,
@@ -2792,7 +2792,7 @@ Slice 43 result:
 Slice 44 result:
 
 - Added `commits IME composition at the end of a text block` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row proves direct DOM composition at the end of `foo` inserts `!?`,
   yields `foo!?`, advances both model and DOM caret after the committed text,
   and records an allowed `compositionend` trace.
@@ -2819,7 +2819,7 @@ Next slice:
 - `slice-45-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the covered
   ProseMirror composition rows, ProseMirror existing-word replacement row,
@@ -2842,7 +2842,7 @@ Slice 45 result:
 Slice 46 result:
 
 - Added `commits IME composition from the custom placeholder empty state` to
-  `.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/placeholder.test.ts`.
 - The row proves a collapsed empty placeholder selection commits `abc`, yields
   model text `abc`, advances selection to offset `3`, hides the placeholder,
   and records an allowed `compositionend` trace.
@@ -2871,7 +2871,7 @@ Next slice:
 - `slice-47-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the covered
   ProseMirror composition rows, ProseMirror existing-word replacement row,
@@ -2895,14 +2895,14 @@ Slice 47 result:
 Slice 48 result:
 
 - Added `undoes delayed Hiragana IME compositions as separate history steps` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - First proof failed usefully: after `すし もじあ`, one undo returned to the
   initial document instead of stopping at `すし `. Root cause:
   browser-native text imports reached `slate-history` only as adjacent
   `insert_text` operations, so the generic adjacent-text merge heuristic had no
   user-pause boundary.
 - Runtime fix added
-  `.tmp/slate-v2/packages/slate-react/src/editable/input-history.ts` and applies
+  `packages/slate-react/src/editable/input-history.ts` and applies
   delayed native-text `history: { mode: 'push' }` metadata from
   `composition-state.ts` and `dom-repair-queue.ts`. Immediate native text plus
   immediate IME composition still merges.
@@ -2928,7 +2928,7 @@ Next slice:
 - `slice-49-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the covered
   ProseMirror composition rows, ProseMirror existing-word replacement row,
@@ -2951,7 +2951,7 @@ Slice 49 result:
 Slice 50 result:
 
 - Added `commits IME composition between emoji text` to
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - The row proves composing `すし` between two `🙂` characters yields
   `🙂すし🙂`, preserves the second emoji, advances the selection after the
   committed text at the correct UTF-16 offset, and records an allowed
@@ -2979,7 +2979,7 @@ Next slice:
 - `slice-51-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the covered
   ProseMirror composition rows, ProseMirror existing-word replacement row,
@@ -3003,7 +3003,7 @@ Slice 51 result:
 Slice 52 result:
 
 - Added `commits IME composition immediately after an inline mention` to
-  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`.
 - The row proves composing `すし` immediately after the first mention preserves
   both inline mentions, inserts into the following text node, advances selection
   after the committed text, and records an allowed `compositionend` trace.
@@ -3031,7 +3031,7 @@ Next slice:
 - `slice-53-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the covered
   ProseMirror composition rows, ProseMirror existing-word replacement row,
@@ -3075,7 +3075,7 @@ Next slice:
 - `slice-55-mobile-ime-next-proof-route-selection`.
 - Candidate owner:
   `docs/plans/2026-05-07-slate-v2-mobile-ime-input-runtime-ralplan.md` plus
-  the narrowest matching `.tmp/slate-v2` source/test owner selected from the
+  the narrowest matching `Plate repo root` source/test owner selected from the
   remaining Lexical/ProseMirror Mobile/IME backlog.
 - Target: choose the next missing Mobile/IME proof route after the translated
   ProseMirror composition rows, the covered or classified Lexical
@@ -3149,7 +3149,7 @@ Slice 60 result:
 
 - Added `routes Android-style first-line autocorrect through empty-state
 replacement text` to
-  `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`.
+  `packages/slate-react/test/model-input-strategy-contract.test.ts`.
 - The row proves `insertReplacementText` at an empty first-line selection
   inserts the replacement text, advances model selection after the inserted
   text, and returns no repair request.
@@ -3185,7 +3185,7 @@ Slice 62 result:
 
 - Added `keeps Android-style empty-state backspace from mutating placeholder
 text` to
-  `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`.
+  `packages/slate-react/test/model-input-strategy-contract.test.ts`.
 - The row proves model-owned empty-state `deleteContentBackward` leaves editor
   text empty, keeps selection at `[0,0]/0`, and requests only caret repair.
 - Runtime code changes: none.
@@ -3220,7 +3220,7 @@ Slice 64 result:
 
 - Added `replaces expanded CJK composition selection once` and
   `deletes expanded CJK composition selection once` to
-  `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`.
+  `packages/slate-react/test/model-input-strategy-contract.test.ts`.
 - The rows prove `insertFromComposition` over an expanded CJK selection inserts
   one replacement string without duplicate text, and `deleteByComposition` over
   an expanded CJK selection deletes one selected unit without requiring a second
@@ -3284,7 +3284,7 @@ Slice 67 result:
 Slice 68 result:
 
 - Added `replaces an autocorrect prefix without appending after it` to
-  `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`.
+  `packages/slate-react/test/model-input-strategy-contract.test.ts`.
 - The row proves a native-style character insert followed by replacement text
   over the intended prefix range yields `IS`, not an appended duplicate, and
   leaves model selection after the replacement prefix.
@@ -3315,7 +3315,7 @@ deleteContentBackward`, then `beforeinput insertText`.
   Slate's own beforeinput selection reconciliation.
 - Added red proof `imports expanded delete target ranges from blur-time IME
 cleanup events` to
-  `.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts`.
+  `packages/slate-react/test/selection-reconciler-contract.ts`.
 - Red result: the focused proof failed because `syncSelectionForBeforeInput`
   ignored expanded target ranges for `deleteContentBackward` and kept the old
   collapsed model selection.
@@ -3323,7 +3323,7 @@ cleanup events` to
 Slice 70 result:
 
 - Updated
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts` so
+  `packages/slate-react/src/editable/selection-reconciler.ts` so
   expanded beforeinput delete target ranges are imported even for
   forward/backward delete cleanup events. Collapsed delete target ranges still
   fall back to command-derived behavior.
@@ -3369,7 +3369,7 @@ Slice 71 result:
 Slice 72 result:
 
 - Added `splits a custom block on Enter without dropping follow-up text` to
-  `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`.
+  `packages/slate-react/test/model-input-strategy-contract.test.ts`.
 - The row proves raw model-owned `insertParagraph` splits a custom block, moves
   selection into the inserted block, and preserves the first follow-up inserted
   character. It intentionally does not force heading-to-paragraph product
@@ -3422,13 +3422,13 @@ Slice 74 result:
 - Decision: do not add a new implementation row for `#4693` / `#4136` in this
   slice. The architecture route is already represented by existing Slate v2
   browser rows:
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts` covers active
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts` covers active
   mark cursor-wrapper composition and Korean replacement across formatted
-  nodes; `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts` covers
+  nodes; `apps/www/tests/slate-browser/donor/examples/mentions.test.ts` covers
   composition before, between, and after inline mentions;
-  `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts`
   covers decorated-text and spanning-decorator composition; and
-  `.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts` covers
+  `apps/www/tests/slate-browser/donor/examples/placeholder.test.ts` covers
   custom-placeholder empty-state composition.
 - Runtime code changes: none.
 - Issue claims changed: none. This is architecture coverage only; exact
@@ -3469,7 +3469,7 @@ Slice 75 result:
 Slice 76 result:
 
 - Added `commits IME composition in an empty rich text block` to
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 - The row clears the richtext example, proves the placeholder-backed empty block
   accepts a native Chromium IME commit, asserts final model text `すし`,
   selection after the committed text, and an allowed `compositionend` trace.
@@ -3514,7 +3514,7 @@ Slice 77 result:
 Slice 78 result:
 
 - Added `replaces select-all rich text with IME composition` to
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 - The row selects all in the richtext example, starts native Chromium IME
   composition, commits `すし`, and asserts the full selection is replaced by one
   text node with selection after the committed text and an allowed
@@ -3563,9 +3563,9 @@ Slice 79 result:
 Slice 80 result:
 
 - Added `fires blur when focus leaves during placeholder IME composition` to
-  `.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/placeholder.test.ts`.
 - Added a non-visual public `Editable.onBlur` counter to
-  `.tmp/slate-v2/site/examples/ts/custom-placeholder.tsx` so the browser row
+  `apps/www/src/app/(app)/examples/slate/_examples/custom-placeholder.tsx` so the browser row
   proves the user callback route, not only a native DOM blur listener.
 - The row starts Chromium CDP IME composition from the empty custom-placeholder
   editor, moves focus to an outside button mid-composition, asserts the outside

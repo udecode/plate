@@ -1,0 +1,111 @@
+---
+title: "Slate"
+---
+
+# Slate
+
+`@platejs/slate` is the core editor runtime. It owns the document model, operations,
+paths, points, ranges, transactions, state fields, schema extensions, and pure
+node/location helper namespaces.
+
+Use `createEditor` to create an editor.
+
+```ts
+import { createEditor } from '@platejs/slate'
+
+const editor = createEditor({
+  initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
+})
+```
+
+Use `isEditor` when library code needs to validate an unknown value before
+treating it as an editor.
+
+Use `createEditorRuntime` and `createEditorView` when framework/runtime packages
+need multiple root-scoped editor views over one committed editor runtime. App UI
+should normally use the framework package helpers, such as `useSlateEditor` in
+`@platejs/slate-react`.
+
+Read committed state with `editor.read(...)`.
+
+```ts
+const value = editor.read((state) => state.value.get())
+const selection = editor.read((state) => state.selection.get())
+```
+
+Write document, selection, mark, root, state-field, and operation changes inside
+`editor.update(...)`.
+
+```ts
+editor.update((tx) => {
+  tx.text.insert('Hello')
+})
+```
+
+## Public Type Groups
+
+Core document and editor shapes include `Editor`, `BaseEditor`, `Value`,
+`InitialValue`, `Selection`, `RootKey`, and `RuntimeId`.
+
+Runtime, view, snapshot, and commit types include `EditorRuntime`,
+`EditorView`, `EditorSnapshot`, `EditorCommit`, `EditorCommitClass`,
+`SnapshotInput`, and `SnapshotListener`.
+
+Read/update API types include `EditorStateView`, `EditorStateValueApi`,
+`EditorUpdateTransaction`, `EditorTransactionValueApi`, `EditorUpdateOptions`,
+and `EditorUpdateMetadata`.
+
+Extension and schema types include `EditorExtension`, `EditorExtensionInput`,
+`EditorExtensionSetupContext`, `EditorExtensionSetupOutput`,
+`EditorExtensionRuntimeState`, `EditorExtensionStateGroup`,
+`EditorExtensionStateGroups`, `EditorExtensionTxGroup`,
+`EditorExtensionTxGroups`, `EditorExtensionOperations`, `EditorElementSpec`,
+`EditorElementBehavior`, `EditorElementContentRootSpec`,
+`EditorElementPropertyDescriptor`, `EditorElementPropertyKind`,
+`EditorElementVoidKind`, `StateFieldDescriptor`, `StateFieldValueInput`, and
+`EditorStateField`.
+
+Middleware and debug APIs include `EditorTransformApi`,
+`EditorTransformMiddlewareArgs`, `EditorTransformMiddlewareContext`,
+`EditorTransformMiddlewareMap`, `EditorQueryGroup`,
+`EditorQueryMiddlewareContext`, `EditorQueryMiddlewareMap`,
+`EditorQueryMiddlewareResult`, `EditorOperationApplyContext`,
+`EditorOperationApplyHandler`, `setDebugValueScrubber`, and
+`DebugValueScrubber`.
+
+## Extension Authoring
+
+Extensions register schema facts, state groups, transaction groups,
+normalizers, operation middleware, commit listeners, and runtime APIs.
+
+Use `api` for mounted host/runtime services. Use `tx` for feature commands that
+change Slate model state.
+
+```ts
+import { defineEditorExtension, defineStateField, elementProperty } from '@platejs/slate'
+```
+
+## Helper Namespaces
+
+Pure data helpers live on `ElementApi`, `LocationApi`, `NodeApi`,
+`OperationApi`, `PathApi`, `PathRefApi`, `PointApi`, `PointRefApi`, `RangeApi`,
+`RangeRefApi`, `SpanApi`, and `TextApi`.
+
+Inside `editor.read(...)` and `editor.update(...)`, prefer the grouped
+`state.*` and `tx.*` APIs. Use the helper namespaces when library code needs
+pure operations on Slate data outside an editor transaction.
+
+## Internal Subpath
+
+The `/internal` package subpath is reserved for sibling Slate packages in this
+repo. Applications, extension libraries, and framework adapters outside this
+workspace should use the root `@platejs/slate` export.
+
+## Related Docs
+
+- [Editor](../api/nodes/editor)
+- [Transforms](../api/transforms)
+- [Interfaces](../concepts/01-interfaces)
+- [Locations](../concepts/03-locations)
+- [Commands](../concepts/06-commands)
+- [Extensions](../concepts/08-extensions)

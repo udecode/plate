@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { NodeApi } from '@platejs/slate';
+import { NodeApi } from '@platejs/slate-legacy';
 
 import type { PlateEditor } from '../editor/PlateEditor';
 import type { AnyEditorPlatePlugin } from '../plugin/PlatePlugin';

@@ -1,4 +1,7 @@
-import { type EditorAboveOptions, combineMatchOptions } from '@platejs/slate';
+import {
+  type EditorAboveOptions,
+  combineMatchOptions,
+} from '@platejs/slate-legacy';
 
 import type { SlateEditor } from '../../../editor';
 

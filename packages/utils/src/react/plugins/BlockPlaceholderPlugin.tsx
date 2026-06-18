@@ -8,7 +8,7 @@ import {
   useFocused,
   usePluginOption,
 } from '@platejs/core/react';
-import type { Path, TElement } from '@platejs/slate';
+import type { Path, TElement } from '@platejs/slate-legacy';
 import React from 'react';
 
 import { KEYS } from '../../lib';

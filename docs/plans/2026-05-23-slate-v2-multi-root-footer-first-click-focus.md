@@ -16,7 +16,7 @@ body editor padding from another root instead of moving to the clicked body end.
   selection stayed in `#multi-root-main`.
 - The same footer click works on the second attempt.
 - Regression added in
-  `.tmp/slate-v2/playwright/integration/examples/multi-root-document.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/multi-root-document.test.ts`
   first failed on `expect(footer).toBeFocused()`.
 - The focused row now passes after root chrome adds a native-descendant
   mouseup recovery that only fires when browser focus stayed on the previous

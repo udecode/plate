@@ -1,0 +1,105 @@
+---
+title: "Docs Proof Map"
+---
+
+# Docs Proof Map
+
+This page maps the public docs to the source contracts that keep them honest.
+Use it when a guide, concept page, or API page makes a runtime claim. The proof
+source should be code, tests, or a browser contract row.
+
+## Source Ledger
+
+| Docs claim | Public docs | Source proof |
+| --- | --- | --- |
+| Core Slate owns the editor runtime, transaction boundary, helper namespaces, and sibling-package-only internal bridge. | `libraries/slate.md`, `api/nodes/editor.md`, `concepts/07-editor.md` | `packages/slate/src/index.ts`, `packages/slate/src/internal/index.ts`, `packages/slate/test/public-surface-contract.ts` |
+| Slate DOM owns DOM bridge helpers and keeps its internal bridge reserved for sibling packages. | `libraries/slate-dom.md`, `libraries/slate-react/dom-coverage-boundaries.md`, `libraries/slate-react/react-editor.md` | `packages/slate-dom/src/index.ts`, `packages/slate-dom/src/internal/index.ts`, `packages/slate/test/public-surface-contract.ts`, `packages/slate-react/test/surface-contract.tsx` |
+| Editors are created with `createEditor`, read through `editor.read`, and written through `editor.update`. | `walkthroughs/01-installing-slate.md`, `concepts/07-editor.md` | `packages/slate/test/read-update-contract.ts`, `packages/slate/test/write-boundary-contract.ts`, `packages/slate/src/interfaces/editor.ts` |
+| Transaction helpers live on the `tx` object inside `editor.update`. | `walkthroughs/04-applying-custom-formatting.md`, `walkthroughs/05-executing-commands.md`, `concepts/07-editor.md` | `packages/slate/test/read-update-contract.ts`, `packages/slate/test/transforms-contract.ts`, `packages/slate/src/interfaces/editor.ts` |
+| Extension helpers are grouped under `state` and `tx`, not added as adapter namespaces on the editor object. | `concepts/08-extensions.md`, `walkthroughs/07-operation-replay-substrate.md` | `packages/slate/test/extension-namespaces-contract.ts`, `packages/slate/test/editor-foundation-contract.ts`, `packages/slate/src/core/editor-extension.ts` |
+| React-owned setup uses `useSlateEditor`; lower-level setup uses `createReactEditor`, `react()`, and `history()` instead of mutating wrapper functions. | `libraries/slate-react/react-editor-setup.md`, `libraries/slate-history/history-extension-setup.md`, `libraries/slate-history/history-editor.md` | `packages/slate-react/src/plugin/with-react.ts`, `packages/slate-history/src/index.ts`, `packages/slate-react/test/generic-react-editor-contract.tsx`, `packages/slate-history/test/generic-history-contract.ts` |
+| Debug value scrubbing uses `setDebugValueScrubber` before default text redaction. | `api/scrubber.md` | `packages/slate/src/utils/format-debug-value.ts`, `packages/slate/test/format-debug-value-contract.ts` |
+| Schema behavior describes inline, void, selectable, and markable void nodes. | `api/nodes/editor.md`, `api/nodes/element.md`, `concepts/08-extensions.md` | `packages/slate/test/schema-contract.ts`, `packages/slate/test/public-element-void-kind-contract.ts`, `packages/slate/test/editor-foundation-contract.ts`, `packages/slate/src/interfaces/editor.ts` |
+| Slate React owns void shells, hidden anchors, editable roots, and DOM repair. App void renderers return visible content. | `api/nodes/element.md`, `libraries/slate-react/editable.md` | `packages/slate-react/src/components/slate-void-shell.tsx`, `packages/slate-react/test/slate-void-shell-contract.test.tsx`, `packages/slate-react/test/rendered-dom-shape-contract.test.tsx` |
+| Element selection UI is target-scoped instead of subscribed through the whole editor. | `api/nodes/element.md`, `concepts/09-rendering.md`, `libraries/slate-react/editable.md` | `packages/slate-react/src/hooks/use-editor-selection.tsx`, `packages/slate-react/src/components/editable-text-blocks.tsx`, `packages/slate-react/test/projections-and-selection-contract.test.tsx` |
+| Slate React root exports expose the current hook names only. | `libraries/slate-react/hooks.md`, `libraries/slate-react/react-editor.md` | `packages/slate-react/src/index.ts`, `packages/slate-react/test/generic-react-editor-contract.tsx`, `packages/slate-react/test/surface-contract.tsx` |
+| Public package READMEs describe the latest package surface only. | `packages/slate/Readme.md`, `packages/slate-react/Readme.md`, `packages/slate-dom/README.md`, `packages/browser/README.md`, `packages/slate-history/Readme.md`, `packages/slate-hyperscript/Readme.md`, `packages/slate-layout/README.md`, `packages/yjs/README.md` | `packages/slate/test/public-surface-contract.ts`, `packages/slate-react/test/surface-contract.tsx`, `packages/slate-layout/test/page-layout-contract.test.ts`, `packages/yjs/test/package-config-contract.spec.ts` |
+| Public package import paths, export targets, build entries, README casing, docs/example import specifiers, runtime imports, and strict TypeScript export/type declaration resolution stay exact. | `Readme.md`, `docs/**`, `packages/*/README.md`, `packages/*/Readme.md`, `site/examples/ts/**`, `package.json` | `packages/slate/test/public-surface-contract.ts`, `packages/slate/test/public-package-import-smoke.test.ts`, `packages/slate/test/public-package-types-smoke.ts`, `packages/slate/test/tsconfig.public-package-types.json`, `config/typescript/tsconfig.dts.json` |
+| Release scripts version packages before direct publish, publish-only scripts stay reserved for CI, sibling runtime package edges are exact before Changesets advances them, and public package npm metadata/readmes are complete. | `releases/slate-v2.md`, `.changeset/*.md`, `package.json`, `packages/*/package.json`, `packages/*/README.md`, `packages/*/Readme.md` | `packages/slate/test/release-scripts-contract.ts`, `packages/slate/test/public-surface-contract.ts`, `packages/slate-react/test/surface-contract.tsx`, temp-copy `changeset version` plus `npm pack --dry-run --json` release simulation |
+| Slate Browser is public test infrastructure, not the editor runtime API. | `libraries/slate-browser.md`, `packages/browser/README.md`, `releases/slate-v2.md` | `packages/browser/test/core/package-scripts.test.ts`, `packages/slate/test/public-package-import-smoke.test.ts`, `packages/slate/test/public-package-types-smoke.ts`, `packages/slate/test/public-surface-contract.ts` |
+| Public Markdown TS/JS snippets parse, avoid `any`, and stay off internal package paths. | `Readme.md`, `docs/**`, `packages/*/README.md`, `packages/*/Readme.md` | `packages/slate/test/public-surface-contract.ts` |
+| Slate React docs and package README route runtime/root hooks explicitly. | `libraries/slate-react/README.md`, `libraries/slate-react/hooks.md`, `packages/slate-react/Readme.md` | `packages/slate-react/src/hooks/use-slate-runtime.tsx`, `packages/slate-react/src/index.ts`, `packages/slate-react/test/surface-contract.tsx` |
+| Slate React runtime hooks use root terminology, projection-entry reads, and shared focus-preserve values. | `libraries/slate-react/hooks.md`, `libraries/slate-react/README.md`, `concepts/13-roots.md` | `packages/slate-react/src/hooks/use-slate-runtime.tsx`, `packages/slate-react/src/hooks/use-slate-projection-entries.tsx`, `packages/slate-react/src/hooks/use-slate-history.ts`, `packages/slate-react/test/surface-contract.tsx`, `packages/slate-react/test/use-slate-history.test.tsx` |
+| Editable DOM strategy layout is an explicit raw Editable prop; page layout stays in the Slate Layout wrapper. | `libraries/slate-react/editable.md`, `libraries/slate-layout/README.md`, `packages/slate-layout/README.md` | `packages/slate-react/src/components/editable-text-blocks.tsx`, `packages/slate-react/src/index.ts`, `packages/slate-react/test/surface-contract.tsx`, `packages/slate-layout/src/react.tsx`, `packages/slate-layout/test/page-layout-contract.test.ts` |
+| Slate provider projection props distribute decoration and annotation sources; widget stores are hook-owned. | `libraries/slate-react/slate.md`, `libraries/slate-react/hooks.md`, `libraries/slate-react/annotations.md` | `packages/slate-react/src/components/slate.tsx`, `packages/slate-react/src/hooks/use-slate-widget-store.tsx`, `packages/slate-react/test/surface-contract.tsx`, `packages/slate-react/test/annotation-store-contract.test.tsx` |
+| Decorations and annotations use projection infrastructure and source-scoped subscriptions. | `libraries/slate-react/slate.md`, `libraries/slate-react/annotations.md`, `libraries/slate-react/editable.md`, `concepts/09-rendering.md` | `packages/slate-react/src/decoration-source.ts`, `packages/slate-react/src/annotation-store.ts`, `packages/slate-react/test/annotation-store-contract.test.tsx` |
+| Operation replay exports commit operations and imports remote operations through explicit replay. | `walkthroughs/07-operation-replay-substrate.md` | `packages/slate/test/collab-history-runtime-contract.ts`, `packages/slate/test/commit-metadata-contract.ts`, `packages/slate/test/editor-foundation-contract.ts` |
+| `@platejs/yjs` owns the Yjs adapter while provider packages, auth, persistence, room naming, and server scaling stay in application code. | `libraries/slate-yjs.md`, `walkthroughs/07-operation-replay-substrate.md`, `releases/slate-v2.md`, `packages/yjs/README.md` | `packages/yjs/test/package-config-contract.spec.ts`, `packages/yjs/test/provider-contract.spec.ts`, `packages/yjs/test/react-contract.spec.tsx`, `scripts/proof/yjs-hocuspocus-production-soak.mjs` |
+| Full document persistence uses `state.value.get()` so saved values include primary children, extra roots, and persistent state fields. | `walkthroughs/06-saving-to-a-database.md`, `concepts/14-document-state.md`, `api/nodes/editor.md`, `libraries/slate-react/slate.md` | `packages/slate/src/interfaces/editor.ts`, `packages/slate/src/core/public-state.ts`, `packages/slate/test/document-state-contract.ts`, `packages/slate/test/document-state-patch-contract.ts`, `site/examples/ts/document-state.tsx` |
+| Runtime ids are local projection handles, not persistence ids. | `walkthroughs/07-operation-replay-substrate.md`, `libraries/slate-react/editable.md` | `packages/slate/test/collab-history-runtime-contract.ts`, `packages/slate/test/editor-foundation-contract.ts`, `packages/slate-react/test/runtime-live-state-contract.ts` |
+| DOM strategy mounts stable projection segments and keeps React off hot editor paths. | `walkthroughs/09-performance.md`, `libraries/slate-react/editable.md`, `concepts/09-rendering.md` | `packages/slate-react/src/dom-strategy`, `packages/slate-react/test/render-profiler-contract.test.tsx`, `playwright/integration/examples/huge-document.test.ts` |
+| Document roots keep one editor runtime across the primary document, extra roots, content roots, and rooted operations. | `concepts/13-roots.md`, `api/nodes/editor.md`, `api/locations/point.md`, `api/operations/operation.md` | `packages/slate/src/interfaces/editor.ts`, `packages/slate/test/rooted-operation-contract.ts`, `packages/slate-react/test/content-root-navigation-contract.test.ts`, `site/examples/ts/multi-root-document.tsx`, `site/examples/ts/synced-blocks.tsx` |
+| DOM coverage boundaries model hidden same-root content with selection, copy, find, and materialization policies. | `libraries/slate-react/dom-coverage-boundaries.md`, `libraries/slate-react/editable.md`, `libraries/slate-react/experimental-virtualized-rendering.md` | `packages/slate-dom/src/plugin/dom-coverage.ts`, `packages/slate-react/src/components/dom-coverage-boundary.tsx`, `packages/slate-react/test/dom-coverage-boundary-contract.tsx`, `playwright/integration/examples/hidden-content-blocks.test.ts` |
+| Page layout derives paginated geometry and page-level mount plans outside the document tree. | `libraries/slate-layout/README.md`, `walkthroughs/09-performance.md` | `packages/slate-layout/src/index.ts`, `packages/slate-layout/src/react.tsx`, `packages/slate-layout/test/page-layout-contract.test.ts`, `site/examples/ts/pagination.tsx` |
+| Pasted HTML is plain text by default unless an extension-owned `clipboard.insertData` handler consumes the `DataTransfer`. | `general/faq.md`, `libraries/slate-react/react-editor.md`, `Introduction.md` | `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`, `site/examples/ts/paste-html-import.ts`, `playwright/integration/examples/paste-html.test.ts` |
+
+## Browser Contract Map
+
+`@platejs/browser` owns browser proof. The docs should point browser-sensitive
+behavior at these operation families instead of relying on example screenshots
+or one-off manual checks.
+
+| Behavior family | Routes | Contract source |
+| --- | --- | --- |
+| Inline void boundary navigation | `mentions` | `packages/browser/src/core/first-party-browser-contracts.ts` |
+| Markable inline void formatting | `mentions` | `packages/browser/src/core/first-party-browser-contracts.ts` |
+| Block void navigation | `images`, `embeds` | `packages/browser/src/core/first-party-browser-contracts.ts` |
+| Paste HTML image void | `paste-html` | `packages/browser/src/core/first-party-browser-contracts.ts` |
+| Editable island native focus | `editable-voids` | `packages/browser/src/core/first-party-browser-contracts.ts` |
+| Huge document DOM strategy | `huge-document` | `playwright/integration/examples/huge-document.test.ts` |
+| Table cell boundary navigation | `tables` | `packages/browser/src/core/first-party-browser-contracts.ts` |
+| External decoration refresh | `search-highlighting` | `packages/browser/src/core/first-party-browser-contracts.ts` |
+| Annotation anchor rebase | `comment-mode`, `persistent-annotation-anchors` | `packages/browser/src/core/first-party-browser-contracts.ts` |
+| Mouse selection toolbar | `hovering-toolbar` | `packages/browser/src/core/first-party-browser-contracts.ts` |
+| Paste, normalize, undo | `richtext`, `plaintext`, `forced-layout` | `playwright/stress/generated-editing.test.ts` |
+| DOM text mutation import | `richtext` | `playwright/stress/generated-editing.test.ts`, `packages/browser/src/playwright/index.ts`, `packages/slate-react/test/dom-repair-policy-contract.test.ts` |
+| Selection repair and IME | `richtext` | `playwright/stress/generated-editing.test.ts`, `packages/browser/src/playwright/ime.ts` |
+| Keyboard input oracle discipline | non-pagination example specs | `packages/browser/test/core/keyboard-oracle-audit.test.ts` |
+| Example route proof coverage | all example routes, route mappings, and utility specs | `packages/slate/test/public-surface-contract.ts`, `site/constants/examples.ts`, `playwright/integration/examples` |
+| Example navigation metadata | global examples menu | `playwright/integration/examples/example-navigation.test.ts`, `packages/slate/test/public-surface-contract.ts` |
+| Visual/native selection screenshots | `richtext`, `plaintext`, `custom-placeholder`, `dom-coverage-boundaries`, `images`, `inlines`, `tables` | `playwright/integration/examples/visual-native-selection-smoke.test.ts`, `packages/browser/src/playwright/index.ts` |
+| Hidden same-root content | `hidden-content-blocks`, `dom-coverage-boundaries` | `playwright/integration/examples/hidden-content-blocks.test.ts`, `playwright/integration/examples/dom-coverage-boundaries.test.ts` |
+| Multi-root and content-root selection | `multi-root-document`, `synced-blocks` | `playwright/integration/examples/multi-root-document.test.ts`, `playwright/integration/examples/synced-blocks.test.ts`, `packages/slate-react/test/content-root-navigation-contract.test.ts` |
+| Yjs collaboration and Hocuspocus provider proof | `yjs-collaboration`, `yjs-hocuspocus` | `packages/yjs/test`, `scripts/proof/yjs-hocuspocus-production-soak.mjs` |
+| Paginated editor layout | `pagination` | `playwright/integration/examples/pagination.test.ts`, `packages/slate-layout/test/page-layout-contract.test.ts` |
+
+## Fast Gates
+
+Use the focused source and docs gates during docs work.
+
+```bash
+rg -n "createEditor<|initialValue|renderVoid|useElementSelected|decorationSources|annotationStore|operations\\.replay|editor\\.update|editor\\.read" docs packages
+```
+
+Use the browser contract registry when a browser-sensitive claim changes.
+
+```bash
+bun run test:slate-browser
+```
+
+Use Chromium stress for fast generated operation proof. Use desktop stress when
+the claim needs browser-wide generated operation proof.
+
+```bash
+bun test:stress
+bun test:stress:audit
+bun test:stress:desktop
+bun test:stress:audit:desktop
+STRESS_REPLAY=<chromium-artifact.json> bun test:stress:replay
+STRESS_REPLAY=<firefox-artifact.json> bun test:stress:replay:firefox
+STRESS_REPLAY=<webkit-artifact.json> bun test:stress:replay:webkit
+STRESS_REPLAY=<firefox-artifact.json> STRESS_REDUCTION=<candidate-label> bun test:stress:replay:firefox
+```
+
+Keep `bun check` fast. Full browser sweeps belong to the full browser proof
+gate, not the normal docs edit loop.

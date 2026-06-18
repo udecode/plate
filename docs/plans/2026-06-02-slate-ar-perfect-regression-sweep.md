@@ -22,7 +22,7 @@ Task source:
 - acceptance criteria: focused AR status, quality scan, behavior gates, perf gates, concrete fixes for P0/P1 regressions found, and final goal-plan check.
 
 Completion threshold:
-- Current Slate AR status is read from `.tmp/slate-v2`.
+- Current Slate AR status is read from `Plate repo root`.
 - Focused regression scan covers huge document, virtualization, and new examples.
 - Focused browser/editor behavior gates run for the affected examples, or are marked N/A with evidence.
 - Focused perf gates run for huge document / virtualization, or are marked N/A with evidence.
@@ -34,9 +34,9 @@ Completion threshold:
   `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-02-slate-ar-perfect-regression-sweep.md` passes.
 
 Verification surface:
-- `.tmp/slate-v2` AR state and focused benchmark/test commands discovered from current scripts.
+- `Plate repo root` AR state and focused benchmark/test commands discovered from current scripts.
 - Focused Playwright/example gates for `huge-document`, pagination/virtualization, and new examples.
-- `bun check` in `.tmp/slate-v2` if source changes land.
+- `bun check` in `Plate repo root` if source changes land.
 - Browser proof for the relevant localhost examples if code/UI changes land and a dev server is usable.
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-02-slate-ar-perfect-regression-sweep.md`.
 
@@ -48,7 +48,7 @@ Constraints:
 - Do not add broad ceremony when the task is trivial or docs-only.
 
 Boundaries:
-- Source of truth: `/Users/zbeyens/git/plate-2/.tmp/slate-v2` for Slate runtime/examples/tests; `/Users/zbeyens/git/plate-2/.agents/rules` only if skill workflow bugs are discovered.
+- Source of truth: `/Users/zbeyens/git/plate-2/Plate repo root` for Slate runtime/examples/tests; `/Users/zbeyens/git/plate-2/.agents/rules` only if skill workflow bugs are discovered.
 - Allowed edit scope: Slate v2 source, tests, examples, and local AR notes needed for this sweep.
 - Browser surface: `/examples/huge-document`, `/examples/pagination`, and any new example with a discovered regression.
 - Tracker sync: N/A, no issue/Linear/PR requested.
@@ -88,7 +88,7 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | Read `slate-ar-perfect`, `slate-ar-quality`, `slate-ar-gate`, and `slate-ar-perf`; routed status -> gates -> patch -> perf. |
 | Active goal checked or created | yes | Created active Autogoal for this sweep. |
-| Source of truth read before edits | yes | Read `.tmp/slate-v2` package scripts, focused Playwright tests, benchmark scripts, and examples. |
+| Source of truth read before edits | yes | Read `Plate repo root` package scripts, focused Playwright tests, benchmark scripts, and examples. |
 | Tracker comments and attachments read | N/A | Chat request only; no issue tracker item. |
 | Video transcript evidence required | N/A | No new video evidence requested for this pass. |
 | `docs/solutions` checked for non-trivial existing-code work | N/A | Regression sweep used current tests/benchmarks; no solution archaeology needed. |
@@ -150,7 +150,7 @@ Completion Gates:
 | Package exports or file layout changed | N/A | No package exports or file layout changed | No barrels needed. |
 | Package manifests, lockfile, or install graph changed | N/A | No manifest/install graph changes | No install needed. |
 | Agent rules or skills changed | N/A | No agent rules changed in this goal | Skill sync not needed. |
-| Workspace authority proof | yes | Run proof in owning checkout | All proof commands ran in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`. |
+| Workspace authority proof | yes | Run proof in owning checkout | All proof commands ran in `/Users/zbeyens/git/plate-2/Plate repo root`. |
 | Browser surface changed | yes | Use browser automation gates | Playwright exercised `/examples/huge-document`, `/examples/pagination`, and `/examples/editable-voids`. |
 | Browser final proof | yes | Record exact browser proof caveat | Browser proof is Playwright output/traces, not manual screenshot. |
 | CI-controlled template output changed | N/A | No template output touched | N/A. |
@@ -195,9 +195,9 @@ Decisions and tradeoffs:
 - Huge-doc full smoke is regression evidence only; previous accepted full-run AR baseline remains the promotion-grade result.
 
 Implementation notes:
-- Edited `/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/stress/generated-editing.test.ts`.
-- Edited `/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/browser/react/pagination-virtualized-char-burst.mjs`.
-- Edited `/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`.
+- Edited `/Users/zbeyens/git/plate-2/apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts`.
+- Edited `/Users/zbeyens/git/plate-2/benchmarks/slate-v2/donor/browser/react/pagination-virtualized-char-burst.mjs`.
+- Edited `/Users/zbeyens/git/plate-2/benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx`.
 
 Review fixes:
 - N/A: user asked to stop autoreviews; focused gates caught and verified concrete fixes.
@@ -210,12 +210,12 @@ Error attempts:
 | Huge-doc overlay smoke missing placeholder | 1 | Inspect segment picker and patch smoke warmup logic | Overlay smoke and composite huge-doc smoke passed. |
 
 Verification evidence:
-- `node /Users/zbeyens/git/codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs state --cwd /Users/zbeyens/git/plate-2/.tmp/slate-v2 --compact`: current huge-doc AR state accepted/current; source drift clean.
+- `node /Users/zbeyens/git/codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs state --cwd /Users/zbeyens/git/plate-2/Plate repo root --compact`: current huge-doc AR state accepted/current; source drift clean.
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright -- playwright/stress/generated-editing.test.ts --project=chromium -g "editable-voids editable-island-native-focus"`: 1 passed.
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright -- playwright/integration/examples/huge-document.test.ts playwright/integration/examples/pagination.test.ts playwright/integration/examples/query-controls.test.ts playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium -g "<focused regression regex>"`: 45 passed.
 - `bun run bench:react:pagination-virtualized-char-burst:local`: `pagination_virtualized_failed=0`, `pagination_virtualized_p95_typing_ms=12`, `pagination_virtualized_load_after_dom_ms=570.3`, `pagination_virtualized_dom_nodes=630`.
 - `HUGE_DOC_FULL_SMOKE=1 bun run bench:react:huge-document:full:local`: `react_huge_doc_full_failure_count=0`, `react_huge_doc_full_virtualized_type_to_paint_p95_ms=22.5`, `react_huge_doc_full_dom_nodes_p95=290`.
-- `bun check`: passed; lint had one warning in `/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/pagination.tsx` about a pre-existing hook deps warning, zero errors.
+- `bun check`: passed; lint had one warning in `/Users/zbeyens/git/plate-2/apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx` about a pre-existing hook deps warning, zero errors.
 
 Final handoff contract:
 - PR line: N/A, no PR requested.

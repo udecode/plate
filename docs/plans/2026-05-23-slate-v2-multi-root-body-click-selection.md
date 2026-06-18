@@ -32,14 +32,14 @@ after typing in the header leaves DOM focus/selection in the header.
 ## Result
 
 - Added a browser regression in
-  `.tmp/slate-v2/playwright/integration/examples/multi-root-document.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/multi-root-document.test.ts`
   for header native typing followed by a body text-line click.
 - Kept true blank-root restore intact while treating Slate element line boxes as
   native editable descendants in
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-root-chrome.ts`.
+  `packages/slate-react/src/hooks/use-slate-root-chrome.ts`.
 - Added hook-level coverage in
-  `.tmp/slate-v2/packages/slate-react/test/use-slate-root-chrome.test.tsx`.
-- Added `.tmp/slate-v2/.changeset/native-root-line-clicks.md`.
+  `packages/slate-react/test/use-slate-root-chrome.test.tsx`.
+- Added `Plate repo root/.changeset/native-root-line-clicks.md`.
 
 ## Evidence
 

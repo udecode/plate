@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { TRange } from '@platejs/slate';
+import type { TRange } from '@platejs/slate-legacy';
 
 import { act, renderHook } from '@testing-library/react';
 

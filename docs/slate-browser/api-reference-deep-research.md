@@ -7,11 +7,11 @@ topic: slate-browser-api-reference-deep-research
 
 > Specialist testing/proof doc. For current queue and roadmap truth, see [master-roadmap.md](/Users/zbeyens/git/plate-2/docs/slate-v2/master-roadmap.md).
 >
-> Proposed API research only. This file does not define the current shipped `slate-browser` surface.
+> Proposed API research only. This file does not define the current shipped `@platejs/browser` surface.
 
 ## Purpose
 
-This doc compares `slate-browser` against the local reference repos in
+This doc compares `@platejs/browser` against the local reference repos in
 [editor-architecture-candidates.md](/Users/zbeyens/git/plate-2/docs/analysis/editor-architecture-candidates.md),
 with the specific goal of improving the public testing API.
 
@@ -25,11 +25,12 @@ It is a focused API and test-lane design read:
 
 ## Current Slate Browser Read
 
-Current public `slate-browser` shape in `.tmp/slate-v2`:
+Current public `@platejs/browser` shape in the Plate repo:
 
-- `slate-browser/core`
-- `slate-browser/browser`
-- `slate-browser/playwright`
+- `@platejs/browser/core`
+- `@platejs/browser/browser`
+- `@platejs/browser/playwright`
+- `@platejs/browser/transports`
 
 Strengths:
 
@@ -139,7 +140,7 @@ Best steals:
 
 Important take:
 
-- this supports keeping `slate-browser/browser` crisp and narrow
+- this supports keeping `@platejs/browser/browser` crisp and narrow
 - placeholder and zero-width helpers should stay explicit and configuration-led
 
 ## Premirror

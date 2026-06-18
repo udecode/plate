@@ -47,13 +47,13 @@ Desired outcome:
 
 In scope:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-- `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`
-- `.tmp/slate-v2/packages/slate/test/interfaces-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/generic-operation-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/generic-extension-contract.ts`
+- `packages/slate/src/interfaces/operation.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/core/editor-extension.ts`
+- `packages/slate/src/core/extension-registry.ts`
+- `packages/slate/test/interfaces-contract.ts`
+- `packages/slate/test/generic-operation-contract.ts`
+- `packages/slate/test/generic-extension-contract.ts`
 - DOM bridge smoke only if current `slate-dom` still consults editor predicates
   on the exact path.
 
@@ -68,7 +68,7 @@ Non-goals:
 
 Decision boundaries:
 
-- Ralph may add tests and implementation in `.tmp/slate-v2`.
+- Ralph may add tests and implementation in `Plate repo root`.
 - Ralph may update docs/ledgers and PR description claim counts.
 - Ralph may claim `Fixes #5977` only if the original editor-detection failure is
   proven impossible through an issue-shaped test.
@@ -167,16 +167,16 @@ Total: `0.93`.
 
 Current live source:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:147` defines
+- `packages/slate/src/interfaces/operation.ts:147` defines
   `Operation` as a built-in union only.
-- `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:200` validates
+- `packages/slate/src/interfaces/operation.ts:200` validates
   built-in operation shapes with a switch and rejects unknown types at
-  `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:266`.
-- `.tmp/slate-v2/packages/slate/src/editor/is-editor.ts:3` now checks internal
+  `packages/slate/src/interfaces/operation.ts:266`.
+- `packages/slate/src/editor/is-editor.ts:3` now checks internal
   editor state, not `Operation.isOperationList`.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts:1367` already routes
+- `packages/slate/src/core/public-state.ts:1367` already routes
   operations through extension operation middleware.
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:294` already
+- `packages/slate/src/core/editor-extension.ts:294` already
   registers extension operation middleware.
 - `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md:65`
   accepts extension namespaces on `state` and `tx`.
@@ -197,7 +197,7 @@ strict built-in operation contract
 | Lexical          | `../lexical/packages/lexical/src/LexicalCommands.ts:17`; `docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md:53` | Commands are reference-typed and listeners are partitioned; update tags carry lifecycle metadata.         | Use tags/metadata for app-specific events. Do not turn custom operations into app command events. | partial |
 | ProseMirror      | `../prosemirror/transform/src/step.ts:11`; `../prosemirror/state/src/transaction.ts:26`                                                          | Custom steps require registered classes with apply/invert/map/JSON behavior; transactions carry metadata. | Steal registered custom semantics and transaction metadata, reject class/position model.          | agree   |
 | Tiptap           | `../tiptap/packages/core/src/commands/setMeta.ts:5`; `../tiptap/packages/core/__tests__/dispatchTransaction.spec.ts:7`                           | Extension hooks wrap transactions and commands can set metadata.                                          | Keep extension operation middleware, but keep raw Slate writes inside `editor.update`.            | partial |
-| Slate v2 current | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:1367`; `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:294`                    | Operation middleware already exists.                                                                      | Use current middleware as the first proof owner; add specs only if necessary.                     | agree   |
+| Slate v2 current | `packages/slate/src/core/public-state.ts:1367`; `packages/slate/src/core/editor-extension.ts:294`                    | Operation middleware already exists.                                                                      | Use current middleware as the first proof owner; add specs only if necessary.                     | agree   |
 
 ## 7. Public API Target
 
@@ -551,7 +551,7 @@ Do not support custom document mutation in this phase.
 
 ## 23. Fast Driver Gates
 
-Run from `.tmp/slate-v2`:
+Run from `Plate repo root`:
 
 ```bash
 bun test ./packages/slate/test/interfaces-contract.ts ./packages/slate/test/generic-operation-contract.ts ./packages/slate/test/generic-extension-contract.ts
@@ -595,6 +595,6 @@ The execution lane is complete only when:
 
 | Pass                  | Status   | Owner                                                                                  | Evidence                                                                                                                                                                                                | Next owner                             |
 | --------------------- | -------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| Ralph activation      | started  | `.tmp/slate-v2/packages/slate`                                                         | `.tmp/completion-checks/slate-v2-operation-extensibility-validation-execution.md` created; `active goal state` refreshed for this lane.                                                                  | TDD red proof for `#5977`.             |
-| TDD red proof         | complete | `.tmp/slate-v2/packages/slate`; `.tmp/slate-v2/packages/slate-dom`                     | Focused tests first failed on missing concrete guards and silent unknown replay, then passed after adding guards and fail-closed replay validation.                                                     | Verification closeout.                 |
-| Verification closeout | complete | `.tmp/slate-v2/packages/slate`; `.tmp/slate-v2/packages/slate-dom`; `docs/slate-v2/**` | Focused package tests, transaction/collab metadata tests, `slate` and `slate-dom` typecheck, `bun lint:fix`, issue matrix, fork dossier, PR reference, changeset, and full execution ledger are synced. | Next `slate-ralplan` bucket selection. |
+| Ralph activation      | started  | `packages/slate`                                                         | `.tmp/completion-checks/slate-v2-operation-extensibility-validation-execution.md` created; `active goal state` refreshed for this lane.                                                                  | TDD red proof for `#5977`.             |
+| TDD red proof         | complete | `packages/slate`; `packages/slate-dom`                     | Focused tests first failed on missing concrete guards and silent unknown replay, then passed after adding guards and fail-closed replay validation.                                                     | Verification closeout.                 |
+| Verification closeout | complete | `packages/slate`; `packages/slate-dom`; `docs/slate-v2/**` | Focused package tests, transaction/collab metadata tests, `slate` and `slate-dom` typecheck, `bun lint:fix`, issue matrix, fork dossier, PR reference, changeset, and full execution ledger are synced. | Next `slate-ralplan` bucket selection. |

@@ -43,12 +43,12 @@ Read surfaces:
 - `docs/solutions/performance-issues/2026-04-11-slate-v2-huge-document-typing-needs-selector-fanout-cuts-before-islands.md`
 - `docs/solutions/performance-issues/2026-05-01-slate-v2-text-snapshots-should-be-path-stable-for-large-document-typing.md`
 - `docs/solutions/developer-experience/2026-04-19-slate-public-single-op-writes-should-use-editor-apply-and-keep-onchange-behind-subscribers.md`
-- `.tmp/slate-v2/scripts/benchmarks/core/compare/huge-document.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/slate/6038-transaction-execution.mjs`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/core/apply.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/insert-text.ts`
+- `benchmarks/slate-v2/donor/core/compare/huge-document.mjs`
+- `benchmarks/slate-v2/donor/core/current/transaction-execution.mjs`
+- `benchmarks/slate-v2/donor/slate/6038-transaction-execution.mjs`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/core/apply.ts`
+- `packages/slate/src/editor/insert-text.ts`
 - `docs/slate-v2/ledgers/fork-issue-dossier.md`
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md`
 - `docs/slate-issues/gitcrawl-v2-sync-ledger.md`
@@ -57,7 +57,7 @@ Read surfaces:
 Fresh command:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 CORE_HUGE_BENCH_LEGACY_REPO=/Users/zbeyens/git/slate CORE_HUGE_BENCH_ITERATIONS=1 CORE_HUGE_BENCH_BLOCKS=1000 CORE_HUGE_BENCH_TYPE_OPS=5 bun run bench:core:huge-document:compare:local
 ```
 
@@ -83,7 +83,7 @@ the common small-write path.
 These are hypotheses for Ralph to verify with profiling before editing.
 
 - `runEditorTransaction(...)` in
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts` builds transaction
+  `packages/slate/src/core/public-state.ts` builds transaction
   root indexes for every root at transaction start.
 - The same transaction snapshot keeps cloned root state for rollback even when
   the operation is a path-stable text insert.
@@ -201,7 +201,7 @@ Target budget:
 Baseline and closeout:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 CORE_HUGE_BENCH_LEGACY_REPO=/Users/zbeyens/git/slate CORE_HUGE_BENCH_BLOCKS=1000 CORE_HUGE_BENCH_TYPE_OPS=20 bun run bench:core:huge-document:compare:local
 CORE_HUGE_BENCH_LEGACY_REPO=/Users/zbeyens/git/slate CORE_HUGE_BENCH_BLOCKS=5000 CORE_HUGE_BENCH_TYPE_OPS=10 bun run bench:core:huge-document:compare:local
 bun run bench:core:transaction:local
@@ -285,7 +285,7 @@ Owner: `#6038`, `slate-history`, collab contracts.
 Required before marking the lane done:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun test ./packages/slate/test
 bun test ./packages/slate-history/test
 bun run bench:core:transaction:local
@@ -336,14 +336,14 @@ Lane status: pending.
 
 Next pass: `ralph-core-operation-performance-execution`.
 
-Next action: run Ralph execution against this plan in `.tmp/slate-v2`; start
+Next action: run Ralph execution against this plan in `Plate repo root`; start
 with baseline/profiling, then fix the measured core owner.
 
 ## Ralph Execution Closeout - 2026-05-23
 
 Status: complete.
 
-Implementation owner: `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+Implementation owner: `packages/slate/src/core/public-state.ts`
 plus benchmark scripts.
 
 What landed:
@@ -377,7 +377,7 @@ Fresh benchmark evidence:
 Fresh verification:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun test ./packages/slate/test/state-tx-public-api-contract.ts ./packages/slate/test/core-benchmark-scripts-contract.ts
 bun test ./packages/slate/test/snapshot-contract.ts -t "path-stable"
 bun test ./packages/slate/test

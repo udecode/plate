@@ -770,24 +770,24 @@ Started by `complete-plan` on 2026-04-28.
 Scope:
 
 - Update Slate React docs, performance docs, walkthroughs, public examples, and
-  release-discipline guards in `.tmp/slate-v2`.
+  release-discipline guards in `Plate repo root`.
 - Cut stale normal docs for `onValueChange`, `onSelectionChange`,
   `onSnapshotChange`, `onKeyCommand`, `useSlateStatic`, broad eager
   `useSelected` / `useFocused`, and app-owned markable-void hidden children.
 
 Driver gates:
 
-- stale public API grep over `.tmp/slate-v2/docs`
+- stale public API grep over `content/docs/slate`
 - `bun test:release-discipline`
 
 Files changed:
 
-- `.tmp/slate-v2/docs/libraries/slate-react/slate.md`
-- `.tmp/slate-v2/docs/libraries/slate-react/hooks.md`
-- `.tmp/slate-v2/docs/walkthroughs/06-saving-to-a-database.md`
-- `.tmp/slate-v2/docs/walkthroughs/09-performance.md`
-- `.tmp/slate-v2/docs/api/nodes/element.md`
-- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`
+- `content/docs/slate/libraries/slate-react/slate.md`
+- `content/docs/slate/libraries/slate-react/hooks.md`
+- `content/docs/slate/walkthroughs/06-saving-to-a-database.md`
+- `content/docs/slate/walkthroughs/09-performance.md`
+- `content/docs/slate/api/nodes/element.md`
+- `packages/slate/test/public-surface-contract.ts`
 
 Verification:
 
@@ -833,20 +833,20 @@ Driver gates:
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/transform-registry.ts`
-- `.tmp/slate-v2/packages/slate/src/core/index.ts`
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/write-boundary-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/escape-hatch-inventory-contract.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts`
-- `.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts`
-- `.tmp/slate-v2/packages/slate-history/src/history-editor.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/core/transform-registry.ts`
+- `packages/slate/src/core/index.ts`
+- `packages/slate/src/create-editor.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/test/public-field-hard-cut-contract.ts`
+- `packages/slate/test/write-boundary-contract.ts`
+- `packages/slate/test/state-tx-public-api-contract.ts`
+- `packages/slate/test/generic-extension-namespace-contract.ts`
+- `packages/slate/test/escape-hatch-inventory-contract.ts`
+- `packages/slate-dom/src/plugin/dom-editor.ts`
+- `packages/slate-dom/src/plugin/with-dom.ts`
+- `packages/slate-react/src/plugin/with-react.ts`
+- `packages/slate-history/src/history-editor.ts`
 
 Verification:
 
@@ -904,20 +904,20 @@ Driver gates:
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/packages/slate-react/test/primitives-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-leaf.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-text.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/text-string.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/zero-width-string.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-placeholder.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/restore-dom/restore-dom.tsx`
+- `packages/slate-react/test/surface-contract.tsx`
+- `packages/slate-react/src/index.ts`
+- `packages/slate-react/test/primitives-contract.tsx`
+- `packages/slate-react/test/render-profiler-contract.test.tsx`
+- `packages/slate-react/src/components/slate-leaf.tsx`
+- `packages/slate-react/src/components/slate-text.tsx`
+- `packages/slate-react/src/components/text-string.tsx`
+- `packages/slate-react/src/components/zero-width-string.tsx`
+- `packages/slate-react/src/components/slate-element.tsx`
+- `packages/slate-react/src/components/slate-placeholder.tsx`
+- `packages/slate-react/src/components/editable-element.tsx`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/slate.tsx`
+- `packages/slate-react/src/components/restore-dom/restore-dom.tsx`
 
 Verification:
 
@@ -972,9 +972,9 @@ Driver gates:
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/runtime-root-engine.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Verification:
 
@@ -1032,12 +1032,12 @@ Driver gates:
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-browser/src/core/plugin-contracts.ts`
-- `.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts`
-- `.tmp/slate-v2/packages/slate-browser/src/core/index.ts`
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts`
-- `.tmp/slate-v2/playwright/stress/generated-editing.test.ts`
+- `packages/browser/src/core/plugin-contracts.ts`
+- `packages/browser/src/core/first-party-browser-contracts.ts`
+- `packages/browser/src/core/index.ts`
+- `packages/browser/src/playwright/index.ts`
+- `packages/browser/test/core/scenario.test.ts`
+- `apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts`
 
 Verification:
 
@@ -1098,8 +1098,8 @@ Driver gates:
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate/test/migration-backbone-contract.ts`
-- `.tmp/slate-v2/package.json`
+- `packages/slate/test/migration-backbone-contract.ts`
+- `Plate repo root/package.json`
 
 Verification:
 

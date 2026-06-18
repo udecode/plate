@@ -4,7 +4,7 @@ Status: complete
 
 ## Goal
 
-Identify `.tmp/slate-v2` Playwright integration rows that are redundant, low-value,
+Identify `Plate repo root` Playwright integration rows that are redundant, low-value,
 or better covered by generated stress / package contracts, so
 `bun test:integration-local` can shrink without gutting browser-regression
 coverage.
@@ -38,7 +38,7 @@ coverage.
 - Biggest immediate waste: `playwright/stress/**` was included in
   `test:integration-local`, even though `test:stress` and
   `test:stress:replay` already own that lane.
-- Updated `.tmp/slate-v2/package.json` so `test:integration` and
+- Updated `Plate repo root/package.json` so `test:integration` and
   `test:integration-local` run `playwright/integration` only.
 - `bunx playwright test playwright/integration --list` after cleanup: 588 rows,
   28 files, 147 rows per project.
@@ -47,7 +47,7 @@ coverage.
   `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration
 --max-failures=1 --reporter=line` passes 588/588 across Chromium, Firefox,
   mobile, and WebKit.
-- Final fast gate: `bun check` passes in `.tmp/slate-v2`.
+- Final fast gate: `bun check` passes in `Plate repo root`.
 
 ## Safe Cuts Found
 

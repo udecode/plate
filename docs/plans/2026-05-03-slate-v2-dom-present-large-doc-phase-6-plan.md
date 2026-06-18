@@ -1,7 +1,7 @@
 ---
 status: done
 owner: slate-v2-dom-present-large-doc-phase-6
-source_repo: .tmp/slate-v2
+source_repo: Plate repo root
 created: 2026-05-03
 ---
 
@@ -41,12 +41,12 @@ migration, no behavior change, no virtualization.
 Current source facts from the live sibling checkout:
 
 - `LargeDocumentMode` is `auto | dom-present | off | shell`.
-  Source: `.tmp/slate-v2/packages/slate-react/src/large-document/create-island-plan.ts`.
+  Source: `packages/slate-react/src/large-document/create-island-plan.ts`.
 - Shell islands are planned separately from DOM-present root groups.
   `createIslandPlan` marks active islands and leaves far islands with no mounted
   runtime ids.
 - DOM-present grouping currently lives inside
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`.
+  `packages/slate-react/src/components/editable-text-blocks.tsx`.
   Root groups use `ROOT_GROUP_SIZE = 50`, `ROOT_GROUP_THRESHOLD = 1000`,
   background initial delay `250ms`, interval `16ms`, and batch size `8`.
 - DOM-present pending root groups render coalesced hidden placeholders:
@@ -93,11 +93,11 @@ Status: complete for this activation.
 Evidence:
 
 - Read live large-doc owners:
-  - `.tmp/slate-v2/packages/slate-react/src/large-document/create-island-plan.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-  - `.tmp/slate-v2/packages/slate-react/src/large-document/large-document-commands.ts`
-  - `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts`
-  - `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs`
+  - `packages/slate-react/src/large-document/create-island-plan.ts`
+  - `packages/slate-react/src/components/editable-text-blocks.tsx`
+  - `packages/slate-react/src/large-document/large-document-commands.ts`
+  - `packages/slate-dom/src/plugin/dom-coverage.ts`
+  - `benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs`
 - Read prior hidden-subtree plan and solution note.
 - Confirmed Phase 6 entry gaps: stale full-doc replace, background max latency,
   large-doc selection/copy, browser find classification, IME/mobile target
@@ -288,18 +288,18 @@ Required before even considering a product mode:
 
 ## Changed Files
 
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `packages/slate-dom/src/plugin/dom-coverage.ts`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `packages/slate-react/src/editable/root-selector-sources.ts`
+- `packages/slate-react/src/editable/runtime-event-engine.ts`
+- `packages/slate-react/src/editable/runtime-keyboard-events.ts`
+- `packages/slate-react/src/editable/runtime-root-engine.ts`
+- `packages/slate-react/src/editable/selection-controller.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/test/large-doc-and-scroll.tsx`
+- `packages/slate-react/test/surface-contract.tsx`
 - `docs/plans/2026-05-03-slate-v2-dom-present-large-doc-phase-6-plan.md`
 - `docs/solutions/performance-issues/2026-05-03-slate-dom-present-staging-needs-document-epoch-and-range-materialization.md`
 - `active goal state`

@@ -36,21 +36,20 @@ the right long-term shape, verify, autoreview, hand off. It does not mean
 
 - The user asks only for an architecture plan or proposal. Use `slate-plan`.
 - The user asks for a normal diff review. Use `autoreview`.
-- The target is not Slate v2 or `.tmp/slate-v2`.
+- The target is not Slate v2 or `Plate repo root`.
 - The repair belongs to every goal-backed workflow. Use `autogoal repair`.
 - The only honest next step is a multi-pass public API RFC with user review.
   Say that and route to `slate-plan`.
 
 ## Hard Rules
 
-- Current `.tmp/slate-v2` source wins over memory, old plans, and prior
+- Current `Plate repo root` source wins over memory, old plans, and prior
   diagnosis.
-- Run Slate v2 commands from `.tmp/slate-v2`. `plate-2` commands do not prove
-  Slate v2 behavior.
+- Run Slate v2 proof from the Plate repo root, targeting the package/app owner.
 - Benchmark target work runs from `plate-2` through
   `benchmarks/targets/slate-v2.json` and `pnpm bench:targets:*`. It can route
   next work, expose benchmark gaps, and hand optimization to `slate-ar-perf`,
-  but it never replaces `.tmp/slate-v2` reproduction, tests, or browser proof.
+  but it never replaces `Plate repo root` reproduction, tests, or browser proof.
 - Reproduce first whenever practical. For browser routes, use the real route and
   behavior-level interaction, not only model-state calls.
 - Add a behavior-level regression test when sane. Prefer tests that cover the
@@ -104,7 +103,7 @@ Use it for misses like:
 
 Do not use it for:
 
-- runtime/product bugs in `.tmp/slate-v2`;
+- runtime/product bugs in `Plate repo root`;
 - one-off wording preferences;
 - unrelated goal lifecycle misses that belong to `autogoal repair`;
 - hand-editing generated `.agents/skills/*/SKILL.md`.
@@ -137,7 +136,7 @@ Goal handle:
 
 ```txt
 Fix Slate Patch <bug/cluster>; done when repro, behavior coverage, Slate v2
-proof, and autoreview pass; target `.tmp/slate-v2`.
+proof, and autoreview pass; target `Plate repo root`.
 ```
 
 Do not create a Slate Plan pass schedule. This skill is one implementation
@@ -148,7 +147,7 @@ slice, not a planning lane.
 ### 1. Reproduce And Bound
 
 1. Read the latest user report, attached media, route, issue, or failing test.
-2. Inspect the live owner in `.tmp/slate-v2`.
+2. Inspect the live owner in `Plate repo root`.
 3. Reproduce with the narrowest honest path:
    - browser route and real keyboard/mouse input for UI bugs;
    - package/unit test for pure model behavior;
@@ -290,7 +289,7 @@ Verdict must be one of:
 
 ### 6. Verify
 
-Run focused gates from `.tmp/slate-v2`.
+Run focused gates from `Plate repo root`.
 
 Pick the relevant set:
 
@@ -343,7 +342,7 @@ Final checklist item for non-trivial implementation changes:
 
 1. Load `.agents/skills/autoreview/SKILL.md`.
 2. Run the helper from the checkout that owns the patch.
-3. For `.tmp/slate-v2` patches, cwd must be `.tmp/slate-v2`:
+3. For Slate package/app patches, run proof from the Plate repo root:
 
 ```bash
 /Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local
@@ -354,8 +353,7 @@ Final checklist item for non-trivial implementation changes:
 6. Rerun focused proof and autoreview until no accepted/actionable findings
    remain.
 
-Do not run dirty-local autoreview from `plate-2` for `.tmp/slate-v2` patches.
-That reviews the wrong checkout.
+Run autoreview against the current checkout when Slate package/app patches are dirty.
 
 ## Final Response
 

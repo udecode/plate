@@ -28,6 +28,16 @@ const getIndexEntry = (dir: string) => {
   return null;
 };
 
+const WORKSPACE_ALIAS_SUBPATHS = [
+  'browser',
+  'core',
+  'internal',
+  'playwright',
+  'react',
+  'static',
+  'transports',
+];
+
 const addAliasEntries = (
   aliases: Record<string, string>,
   importPath: string,
@@ -36,13 +46,15 @@ const addAliasEntries = (
 ) => {
   const rootDir = path.join(packageDir, rootDirName);
   const rootEntry = getIndexEntry(rootDir);
-  const reactEntry = getIndexEntry(path.join(rootDir, 'react'));
-  const staticEntry = getIndexEntry(path.join(rootDir, 'static'));
 
   if (rootEntry) aliases[importPath] = toAppImportPath(rootEntry);
-  if (reactEntry) aliases[`${importPath}/react`] = toAppImportPath(reactEntry);
-  if (staticEntry) {
-    aliases[`${importPath}/static`] = toAppImportPath(staticEntry);
+
+  for (const subpath of WORKSPACE_ALIAS_SUBPATHS) {
+    const subpathEntry = getIndexEntry(path.join(rootDir, subpath));
+
+    if (subpathEntry) {
+      aliases[`${importPath}/${subpath}`] = toAppImportPath(subpathEntry);
+    }
   }
 };
 

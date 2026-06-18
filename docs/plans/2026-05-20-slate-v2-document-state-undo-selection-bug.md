@@ -3,7 +3,7 @@
 status: done
 created: 2026-05-20
 completion_id: 019e3627-238b-7993-a8cf-26be45504c47
-scope: .tmp/slate-v2/site/examples/ts/document-state.tsx, .tmp/slate-v2/packages/slate-react/src/editable
+scope: apps/www/src/app/(app)/examples/slate/_examples/document-state.tsx, packages/slate-react/src/editable
 
 ## Goal
 

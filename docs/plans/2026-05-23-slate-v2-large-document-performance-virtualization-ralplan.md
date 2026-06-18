@@ -49,7 +49,7 @@ virtualization issue family:
 - TanStack Virtual internal usage rules.
 - Performance cohorts, repeated-unit budgets, memory tags, and interaction rows.
 - Issue-ledger and PR-reference wording for the current perf state.
-- Ralph handoff for implementation/test/proof execution in `.tmp/slate-v2`.
+- Ralph handoff for implementation/test/proof execution in `Plate repo root`.
 
 ## Non-goals
 
@@ -72,12 +72,12 @@ Read surfaces:
 - `docs/slate-v2/ledgers/fork-issue-dossier.md`
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md`
 - `docs/slate-v2/references/pr-description.md`
-- `.tmp/slate-v2/site/examples/ts/huge-document.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs`
-- `.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts`
-- `.tmp/slate-v2/docs/libraries/slate-react/experimental-virtualized-rendering.md`
+- `apps/www/src/app/(app)/examples/slate/_examples/huge-document.tsx`
+- `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs`
+- `apps/www/tests/slate-browser/donor/examples/huge-document.test.ts`
+- `content/docs/slate/libraries/slate-react/experimental-virtualized-rendering.md`
 
 Reusable learnings applied:
 
@@ -303,7 +303,7 @@ Owner: benchmark/docs.
 Verification:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local
 ```
 
@@ -321,7 +321,7 @@ Owner: slate-react performance.
 Verification:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 REACT_HUGE_COMPARE_BLOCKS=10000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local
 ```
 
@@ -341,7 +341,7 @@ Owner: slate-react DOM strategy.
 Verification:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 cd packages/slate-react
 bun run test:vitest test/dom-strategy-and-scroll.test.tsx
 cd ../..
@@ -367,7 +367,7 @@ Add or refresh browser rows for:
 Verification:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 STRESS_FAMILIES=huge-document-cut,paste-normalize-undo PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/stress/generated-editing.test.ts -g "huge-document-cut|paste-normalize-undo" --project=chromium
 ```
 
@@ -378,7 +378,7 @@ Owner: slate core / slate-dom.
 Refresh issue-size clipboard artifacts before any maintainer-facing claim text:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun run bench:slate:5945:issue
 SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun ./scripts/benchmarks/slate/5945-large-plaintext-paste.mjs
 ```
@@ -396,7 +396,7 @@ Do not promote them to `Fixes` without browser reproduction acceptance.
 Required before the lane can be marked done:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun run bench:react:rerender-breadth:local
 bun run bench:react:huge-document-overlays:local
 CORE_HUGE_BENCH_LEGACY_REPO=<legacy-slate-checkout> bun run bench:core:huge-document:compare:local
@@ -441,7 +441,7 @@ Breakdown:
 Ralph execution patched the current huge-document React benchmark harness and
 closed the verification lane with scoped proof.
 
-Implementation changes in `.tmp/slate-v2`:
+Implementation changes in `Plate repo root`:
 
 - `scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs` imports
   `createReactEditor` from the current `slate-react` package instead of the

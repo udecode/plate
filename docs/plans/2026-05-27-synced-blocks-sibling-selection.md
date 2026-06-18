@@ -49,7 +49,7 @@ Completion threshold:
   still pass.
 - Focused package tests for changed Slate React/DOM internals pass.
 - Owning package typecheck and scoped lint/format pass.
-- Local autoreview for `.tmp/slate-v2` reports no accepted/actionable findings.
+- Local autoreview for `Plate repo root` reports no accepted/actionable findings.
 - Release artifact decision is closed with patch changesets if published
   package behavior changed.
 - Task closure is legal only when the source-of-truth acceptance criteria are
@@ -59,16 +59,16 @@ Completion threshold:
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-synced-blocks-sibling-selection.md` passes.
 
 Verification surface:
-- `.tmp/slate-v2/playwright/integration/examples/synced-blocks.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/synced-blocks.test.ts`
   failing-then-passing rows for Shift+Arrow and mouse selection.
-- `.tmp/slate-v2/playwright/integration/examples/hidden-content-blocks.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/hidden-content-blocks.test.ts`
   shifted-boundary focused row.
-- `.tmp/slate-v2/playwright/integration/examples/multi-root-document.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/multi-root-document.test.ts`
   affected focused rows.
 - Focused `packages/slate-react/test/*` contract tests for view-boundary,
   content-root navigation, keyboard input, selection, projected commands, or
   mouse/import behavior changed by this task.
-- `.tmp/slate-v2`: owning package typecheck, build if needed, scoped lint/format,
+- `Plate repo root`: owning package typecheck, build if needed, scoped lint/format,
   and local autoreview.
 - `plate-2`: this plan and final autogoal checker.
 
@@ -89,12 +89,12 @@ Constraints:
 
 Boundaries:
 - Source of truth: latest user prompt, active goal, prior unified
-  view-boundary plan, and live `.tmp/slate-v2` source/tests.
-- Allowed edit scope: `.tmp/slate-v2/packages/slate-react/**`,
-  `.tmp/slate-v2/packages/slate-dom/**` if DOM selection/root helpers require
-  it, `.tmp/slate-v2/playwright/integration/examples/**`,
-  `.tmp/slate-v2/site/examples/ts/synced-blocks.tsx` only if fixture coverage
-  genuinely needs more data, `.tmp/slate-v2/.changeset/**`, and this plan.
+  view-boundary plan, and live `Plate repo root` source/tests.
+- Allowed edit scope: `packages/slate-react/**`,
+  `packages/slate-dom/**` if DOM selection/root helpers require
+  it, `apps/www/tests/slate-browser/donor/examples/**`,
+  `apps/www/src/app/(app)/examples/slate/_examples/synced-blocks.tsx` only if fixture coverage
+  genuinely needs more data, `Plate repo root/.changeset/**`, and this plan.
 - Browser surface: `/examples/synced-blocks`, plus regression proof on
   `/examples/hidden-content-blocks` and `/examples/multi-root-document`.
 - Tracker sync: N/A, no tracker item.
@@ -106,7 +106,7 @@ Blocked condition:
 - Block only if three distinct implementation/proof attempts show the current
   Slate model cannot make Synced Blocks match sibling block selection without a
   new public API or an unavoidable browser-native limitation, or if required
-  `.tmp/slate-v2` verification cannot run because of a persistent environment
+  `Plate repo root` verification cannot run because of a persistent environment
   blocker that survives the repo-approved retry.
 
 Task state:
@@ -118,7 +118,7 @@ Task state:
 - goal_status: ready for checker
 
 Current verdict:
-- verdict: fixed in `.tmp/slate-v2`
+- verdict: fixed in `Plate repo root`
 - confidence: high for covered desktop Chromium behavior; mobile/native
   affordance gaps remain explicitly classified by existing test matrix.
 - next owner: final response
@@ -147,17 +147,17 @@ Start Gates:
 | `docs/solutions` checked for non-trivial existing-code work | yes | Searched solution notes for content-root, view-selection, Shift+Arrow, mouse selection, multi-root, and DOM selection ownership. |
 | TDD decision before behavior change or bug fix | yes | Add failing Synced Blocks Playwright rows before runtime edits; browser proof is the primary behavior guard. |
 | Branch decision for code-changing task | no | N/A: no branch/PR requested and repo says no proactive git hygiene. |
-| Release artifact decision | yes | Published `slate-react` runtime behavior changed; added `.tmp/slate-v2/.changeset/synced-block-selection.md`. |
-| Browser tool decision for browser surface | yes | Use owning `.tmp/slate-v2` Playwright Chromium rows for route proof. |
+| Release artifact decision | yes | Published `slate-react` runtime behavior changed; added `Plate repo root/.changeset/synced-block-selection.md`. |
+| Browser tool decision for browser surface | yes | Use owning `Plate repo root` Playwright Chromium rows for route proof. |
 | PR expectation decision | no | N/A: no PR requested. |
 | Tracker sync expectation decision | no | N/A: no tracker item. |
 | Browser pack selected | yes | `browser` pack applied. |
 | Browser route / app surface identified | yes | `/examples/synced-blocks`, with hidden-content and multi-root regression routes. |
-| Browser tool decision recorded | yes | Playwright integration tests are the owning browser proof for `.tmp/slate-v2`. |
+| Browser tool decision recorded | yes | Playwright integration tests are the owning browser proof for `Plate repo root`. |
 | Console/network caveat policy recorded | yes | Runtime/page errors fail targeted rows when relevant; final evidence records console/network caveat. |
 | Package/API pack selected | yes | `package-api` pack applied. |
 | Public surface or package boundary identified | yes | `slate-react` runtime behavior is in scope; `slate-dom` only if DOM selection bridge needs edits. Public API should stay stable. |
-| Release artifact path selected | yes | `.tmp/slate-v2/.changeset/**` if package runtime behavior changes. |
+| Release artifact path selected | yes | `Plate repo root/.changeset/**` if package runtime behavior changes. |
 | `changeset` skill loaded when `.changeset` is required | yes | Loaded `/Users/zbeyens/git/plate-2/.agents/skills/changeset/SKILL.md`; changeset uses one package, patch bump, user-impact wording. |
 | Barrel/export impact decision recorded | yes | No package export or exported file-layout change; `pnpm brl` N/A. |
 
@@ -177,10 +177,10 @@ Work Checklist:
 - [x] Branch handling recorded as N/A: no branch, commit, push, or PR requested.
 - [x] Local-env-rot retry policy recorded as N/A: no corruption-shaped failure.
 - [x] Workspace authority recorded: all runtime/browser proof ran in
-      `.tmp/slate-v2`; autogoal checker runs in `plate-2`.
+      `Plate repo root`; autogoal checker runs in `plate-2`.
 - [x] High-risk note recorded: runtime selection/focus/history behavior changed;
       proof covers package contracts, typecheck, lint, and browser routes.
-- [x] Autoreview target selected from actual dirty local `.tmp/slate-v2` diff.
+- [x] Autoreview target selected from actual dirty local `Plate repo root` diff.
 - [x] Agent-native review marked N/A: no `.agents`, `.claude`, `.codex`, skill,
       hook, command, prompt, or user-action tooling changed.
 - [x] Browser pack: route, interaction path, and visible outcomes recorded.
@@ -206,11 +206,11 @@ Completion Gates:
 | Named verification threshold | yes | Focused Synced Blocks rows passed; full affected Chromium sweep passed 37/37; package contracts, typecheck, lint, autoreview, changeset, and plan checker are recorded. |
 | Bug reproduced before fix | yes | Pre-fix browser rows failed: repeated Shift+ArrowDown stayed at `[0,0]` instead of moving to `[1,0]`; mouse drag across root boundary produced native `"\n"`/no view selection; Cmd+Shift reverse wrote selection to the child copy instead of shared runtime. |
 | Targeted behavior verification | yes | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/synced-blocks.test.ts --project=chromium --grep "keeps ordinary Shift\\+Arrow|extends Shift\\+Arrow through synced|extends Shift\\+ArrowLeft|Cmd\\+Shift\\+Arrow|mouse selection across synced"` passed 5/5. |
-| TypeScript or typed config changed | yes | `bun --filter slate-react typecheck && bun typecheck:site` passed in `.tmp/slate-v2`. |
+| TypeScript or typed config changed | yes | `bun --filter slate-react typecheck && bun typecheck:site` passed in `Plate repo root`. |
 | Package exports or file layout changed | no | N/A: no exports or exported file layout changed; `pnpm brl` not needed. |
 | Package manifests, lockfile, or install graph changed | no | N/A: no manifests, lockfile, or install graph changed. |
 | Agent rules or skills changed | no | N/A: no agent rules or skills changed. |
-| Workspace authority proof | yes | All Slate runtime/browser checks ran from `.tmp/slate-v2`; autogoal checker runs from `plate-2`. |
+| Workspace authority proof | yes | All Slate runtime/browser checks ran from `Plate repo root`; autogoal checker runs from `plate-2`. |
 | Browser surface changed | yes | Synced Blocks example changed; Chromium integration proof passed on target and sibling-risk routes. |
 | Browser final proof | yes | Exact browser command below passed 37/37; no screenshot needed because repo-owned Playwright is the authoritative interaction proof. |
 | CI-controlled template output changed | no | N/A: no template output touched. |
@@ -232,7 +232,7 @@ Completion Gates:
 | Browser final proof artifact | yes | Command output is the final proof artifact; no visual screenshot required for this behavior test. |
 | Public API / package boundary proof | yes | Source audit: public `<Editable root>`, `slots.contentRoot`, and `slots.contentBoundary` stay intact; no exported barrels changed. |
 | Release artifact classification | yes | Published runtime behavior delta in `slate-react`; not registry-only, docs-only, or agent-only. |
-| Published package changeset | yes | `.tmp/slate-v2/.changeset/synced-block-selection.md` uses `"slate-react": patch`; no forbidden minor on core packages. |
+| Published package changeset | yes | `Plate repo root/.changeset/synced-block-selection.md` uses `"slate-react": patch`; no forbidden minor on core packages. |
 | Registry changelog | no | N/A: no registry-only work. |
 | No release artifact | no | N/A: release artifact exists. |
 | Package typecheck/build/test | yes | 64 Slate React contract tests passed; `slate-react` and site typechecks passed. |
@@ -318,14 +318,14 @@ Error attempts:
 | Default autoreview hung with no structured output | 2 | Keep Codex engine but lower reasoning effort and write output files | `--thinking low` produced one P2, then clean after fix. |
 
 Verification evidence:
-- `.tmp/slate-v2/packages/slate-react`: `bun test:vitest test/content-root-navigation-contract.test.ts test/focus-slate-editable-contract.test.ts test/keyboard-input-strategy-contract.test.ts test/view-boundary-graph-contract.test.ts test/view-selection-contract.test.ts test/projected-command-contract.test.ts test/projected-clipboard-contract.test.ts test/use-slate-history.test.tsx test/root-interaction-resolver.test.ts test/browser-handle-contract.test.ts test/target-runtime-contract.tsx test/use-slate-root-chrome.test.tsx` passed: 11 files, 64 tests.
-- `.tmp/slate-v2`: `bun --filter slate-react typecheck && bun typecheck:site` passed.
-- `.tmp/slate-v2`: `bun biome check --fix packages/slate-react/src/editable/browser-handle.ts packages/slate-react/src/editable/content-root-navigation.ts packages/slate-react/src/editable/root-interaction-controller.ts packages/slate-react/src/editable/selection-controller.ts packages/slate-react/src/editable/keyboard-input-strategy.ts packages/slate-react/src/editable/runtime-before-input-events.ts packages/slate-react/src/hooks/focus-slate-editable.ts packages/slate-react/src/view-selection.ts packages/slate-react/src/components/slate.tsx packages/slate-react/src/hooks/use-slate-runtime.tsx packages/slate-react/src/components/editable-text-blocks.tsx packages/slate-react/test/focus-slate-editable-contract.test.ts packages/slate-react/test/use-slate-root-chrome.test.tsx site/examples/ts/synced-blocks.tsx playwright/integration/examples/synced-blocks.test.ts` passed: 15 files checked, no fixes on final run.
-- `.tmp/slate-v2`: debug-marker scan over touched files returned no matches.
-- `.tmp/slate-v2`: focused Synced Blocks parity grep passed 5/5; additional word-extension row passed 1/1.
-- `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/synced-blocks.test.ts playwright/integration/examples/hidden-content-blocks.test.ts playwright/integration/examples/multi-root-document.test.ts --project=chromium` passed 37/37.
-- `.tmp/slate-v2`: `PYTHONUNBUFFERED=1 /Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local --no-web-search --thinking low --output /tmp/slate-v2-autoreview.txt --json-output /tmp/slate-v2-autoreview.json` passed clean: no accepted/actionable findings.
-- `.tmp/slate-v2`: `.changeset/synced-block-selection.md` added for `slate-react` patch.
+- `packages/slate-react`: `bun test:vitest test/content-root-navigation-contract.test.ts test/focus-slate-editable-contract.test.ts test/keyboard-input-strategy-contract.test.ts test/view-boundary-graph-contract.test.ts test/view-selection-contract.test.ts test/projected-command-contract.test.ts test/projected-clipboard-contract.test.ts test/use-slate-history.test.tsx test/root-interaction-resolver.test.ts test/browser-handle-contract.test.ts test/target-runtime-contract.tsx test/use-slate-root-chrome.test.tsx` passed: 11 files, 64 tests.
+- `Plate repo root`: `bun --filter slate-react typecheck && bun typecheck:site` passed.
+- `Plate repo root`: `bun biome check --fix packages/slate-react/src/editable/browser-handle.ts packages/slate-react/src/editable/content-root-navigation.ts packages/slate-react/src/editable/root-interaction-controller.ts packages/slate-react/src/editable/selection-controller.ts packages/slate-react/src/editable/keyboard-input-strategy.ts packages/slate-react/src/editable/runtime-before-input-events.ts packages/slate-react/src/hooks/focus-slate-editable.ts packages/slate-react/src/view-selection.ts packages/slate-react/src/components/slate.tsx packages/slate-react/src/hooks/use-slate-runtime.tsx packages/slate-react/src/components/editable-text-blocks.tsx packages/slate-react/test/focus-slate-editable-contract.test.ts packages/slate-react/test/use-slate-root-chrome.test.tsx site/examples/ts/synced-blocks.tsx playwright/integration/examples/synced-blocks.test.ts` passed: 15 files checked, no fixes on final run.
+- `Plate repo root`: debug-marker scan over touched files returned no matches.
+- `Plate repo root`: focused Synced Blocks parity grep passed 5/5; additional word-extension row passed 1/1.
+- `Plate repo root`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/synced-blocks.test.ts playwright/integration/examples/hidden-content-blocks.test.ts playwright/integration/examples/multi-root-document.test.ts --project=chromium` passed 37/37.
+- `Plate repo root`: `PYTHONUNBUFFERED=1 /Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local --no-web-search --thinking low --output /tmp/slate-v2-autoreview.txt --json-output /tmp/slate-v2-autoreview.json` passed clean: no accepted/actionable findings.
+- `Plate repo root`: `.changeset/synced-block-selection.md` added for `slate-react` patch.
 
 Final handoff contract:
 - PR line: N/A, no PR requested.

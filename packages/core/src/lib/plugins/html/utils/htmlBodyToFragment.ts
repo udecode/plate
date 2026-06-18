@@ -1,4 +1,4 @@
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/slate-legacy';
 
 import { jsx } from 'slate-hyperscript';
 

@@ -17,25 +17,20 @@ Slate v2 program.
 
 ## Current State
 
-`slate-browser` already has the first tranche it needed:
+`@platejs/browser` already has the first tranche it needed:
 
 - real workspace package under
-  [/Users/zbeyens/git/slate-v2/packages/slate-browser](/Users/zbeyens/git/slate-v2/packages/slate-browser)
+  [/Users/zbeyens/git/plate-2/packages/browser](/Users/zbeyens/git/plate-2/packages/browser)
 - public split:
-  - `slate-browser`
-  - `slate-browser/core`
-  - `slate-browser/browser`
-  - `slate-browser/playwright`
+  - `@platejs/browser/core`
+  - `@platejs/browser/browser`
+  - `@platejs/browser/playwright`
+  - `@platejs/browser/transports`
 - live root commands:
-  - `yarn test:slate-browser`
-  - `yarn test:slate-browser:core`
-  - `yarn test:slate-browser:dom`
-  - `yarn test:slate-browser:selection`
-  - `yarn test:slate-browser:e2e`
-  - `yarn test:slate-browser:e2e:local`
-  - `yarn test:slate-browser:ime`
-  - `yarn test:slate-browser:ime:local`
-  - `yarn test:slate-browser:anchors`
+  - `pnpm slate:browser:test`
+  - `pnpm slate:browser:test:proof`
+  - `pnpm slate:browser:test:selection`
+  - `PLAYWRIGHT_BASE_URL=http://localhost:3100 pnpm --filter www test:slate-browser`
 - public Playwright surface already includes:
   - getter namespace
   - selection namespace
@@ -151,7 +146,7 @@ This is the wrong move today.
 Why:
 
 - there is one real public backend today:
-  `slate-browser/playwright`
+  `@platejs/browser/playwright`
 - building a generic `EditorDriver` now would be abstraction cosplay
 - the package already has the right split:
   - lane-neutral nouns in `core` and `browser`

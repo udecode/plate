@@ -1,7 +1,7 @@
 # slate v2 integration failures
 
 Objective:
-Fix every current full local integration failure in `.tmp/slate-v2`, using the async integration runner as the source of truth.
+Fix every current full local integration failure in `Plate repo root`, using the async integration runner as the source of truth.
 
 Goal plan:
 docs/plans/2026-05-27-slate-v2-integration-failures.md
@@ -22,15 +22,15 @@ Task source:
 - acceptance criteria: fresh full `bun test:integration-local:async` run for the current source stamp reports `failures: 0`; focused repros for repaired specs pass; this plan passes `check-complete`.
 
 Completion threshold:
-- `.tmp/slate-v2` has no current full local integration failures.
+- `Plate repo root` has no current full local integration failures.
 - Repaired rows have focused reproducer/proof commands recorded.
 - Final full async run is fresh for the current source stamp and reports `status: passed`, `failures: 0`.
 - Root autogoal checker passes for this plan.
 
 Verification surface:
-- `.tmp/slate-v2`: `bun test:integration-local:async`
-- `.tmp/slate-v2`: `bun test:integration-local:status <run-id>`
-- `.tmp/slate-v2`: focused Playwright/package/unit commands for repaired failure rows.
+- `Plate repo root`: `bun test:integration-local:async`
+- `Plate repo root`: `bun test:integration-local:status <run-id>`
+- `Plate repo root`: focused Playwright/package/unit commands for repaired failure rows.
 - Root: `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-slate-v2-integration-failures.md`
 
 Constraints:
@@ -40,8 +40,8 @@ Constraints:
 - Do not run root git hygiene.
 
 Boundaries:
-- Source of truth: latest full async integration run under `.tmp/slate-v2/.tmp/integration-runs`.
-- Allowed edit scope: `.tmp/slate-v2` source/tests/docs plus this root plan.
+- Source of truth: latest full async integration run under `Plate repo root/.tmp/integration-runs`.
+- Allowed edit scope: `Plate repo root` source/tests/docs plus this root plan.
 - Browser surface: Slate v2 Playwright integration examples served by the async runner.
 - Tracker sync: N/A, no external issue/Linear ticket in this request.
 - Non-goals: no PR, no root git hygiene, no release/registry/template work.
@@ -71,7 +71,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Skill analysis before edits | yes | autogoal/task flow used for one-shot repair with full integration closure gate |
-| Active goal checked or created | yes | active goal objective targets `.tmp/slate-v2` full async integration failures |
+| Active goal checked or created | yes | active goal objective targets `Plate repo root` full async integration failures |
 | Source of truth read before edits | yes | full async run `2026-05-27T13-14-05-589Z` read as the current red baseline |
 | Tracker comments and attachments read | N/A | no tracker or attachment source in request |
 | Video transcript evidence required | N/A | no video input |
@@ -83,7 +83,7 @@ Start Gates:
 | PR expectation decision | N/A | no PR requested |
 | Tracker sync expectation decision | N/A | no tracker requested |
 | Browser pack selected | yes | browser pack applies to browser-surface integration failures |
-| Browser route / app surface identified | yes | `.tmp/slate-v2` Playwright integration examples via async runner base URL |
+| Browser route / app surface identified | yes | `Plate repo root` Playwright integration examples via async runner base URL |
 | Browser tool decision recorded | yes | async Playwright runner used as the approved browser proof surface |
 | Console/network caveat policy recorded | yes | Playwright traces/logs are the evidence source for this repair |
 
@@ -97,7 +97,7 @@ Work Checklist:
 - [x] Final handoff shape decided: concise bug-fix outcome with exact tests.
 - [x] Branch handling recorded for code-changing work: N/A, no branch requested.
 - [x] Local-env-rot retry policy recorded: N/A, failures matched current runtime/test behavior.
-- [x] Workspace authority recorded: every proof command names `.tmp/slate-v2` or root plan checker cwd.
+- [x] Workspace authority recorded: every proof command names `Plate repo root` or root plan checker cwd.
 - [x] High-risk note recorded for runtime/browser behavior.
 - [x] Review/autoreview target selected: N/A for this one-shot local repair; full integration proof is the closure gate requested by the user.
 - [x] Agent-native review decision recorded: N/A, no agent/action tooling changed.
@@ -109,16 +109,16 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | yes | Run the named full async integration command | `.tmp/slate-v2`: `bun test:integration-local:async` -> run `2026-05-27T13-28-11-218Z`, passed, `failureCount: 0` |
-| Bug reproduced before fix | yes | Record failing test/repro | `.tmp/slate-v2`: full run `2026-05-27T13-14-05-589Z` failed with 10 current failures |
-| Targeted behavior verification | yes | Run focused proof for changed behavior | `.tmp/slate-v2`: focused run `2026-05-27T13-27-17-666Z` passed with 0 failures |
-| TypeScript or typed config changed | yes | Run relevant typecheck | `.tmp/slate-v2`: `bun --filter slate-react typecheck`, `bun --filter slate-dom typecheck`, `bun --filter slate-browser typecheck` all passed |
+| Named verification threshold | yes | Run the named full async integration command | `Plate repo root`: `bun test:integration-local:async` -> run `2026-05-27T13-28-11-218Z`, passed, `failureCount: 0` |
+| Bug reproduced before fix | yes | Record failing test/repro | `Plate repo root`: full run `2026-05-27T13-14-05-589Z` failed with 10 current failures |
+| Targeted behavior verification | yes | Run focused proof for changed behavior | `Plate repo root`: focused run `2026-05-27T13-27-17-666Z` passed with 0 failures |
+| TypeScript or typed config changed | yes | Run relevant typecheck | `Plate repo root`: `bun --filter slate-react typecheck`, `bun --filter slate-dom typecheck`, `bun --filter slate-browser typecheck` all passed |
 | Package exports or file layout changed | N/A | No export or layout change | No barrel work required |
 | Package manifests, lockfile, or install graph changed | N/A | No manifest or lockfile change | Install graph untouched |
 | Agent rules or skills changed | N/A | No agent rules or skills changed | No sync required |
-| Workspace authority proof | yes | Verify in owning repo/tool | All runtime/browser proof commands ran in `.tmp/slate-v2`; plan checker runs from root |
+| Workspace authority proof | yes | Verify in owning repo/tool | All runtime/browser proof commands ran in `Plate repo root`; plan checker runs from root |
 | Browser surface changed | yes | Capture browser proof or caveat | Full Playwright integration proof is the browser artifact |
-| Browser final proof | yes | Record final browser artifact | `.tmp/slate-v2/.tmp/integration-runs/2026-05-27T13-28-11-218Z/failures.md` says `No failures.` |
+| Browser final proof | yes | Record final browser artifact | `Plate repo root/.tmp/integration-runs/2026-05-27T13-28-11-218Z/failures.md` says `No failures.` |
 | CI-controlled template output changed | N/A | No templates changed | No restore required |
 | Package behavior or public API changed | N/A | No changeset requested for sibling repair | No package release flow in scope |
 | Registry-only component work changed | N/A | No registry component work | No registry changelog required |
@@ -131,11 +131,11 @@ Completion Gates:
 | PR proof image hosting | N/A | No PR body | No hosted image required |
 | Tracker sync-back | N/A | No tracker | No sync required |
 | Final handoff contract | yes | Fill final handoff fields | Final handoff fields below are complete |
-| Final lint | yes | Run scoped formatter/lint equivalent | `.tmp/slate-v2`: `bunx biome check --write` on touched files passed |
+| Final lint | yes | Run scoped formatter/lint equivalent | `Plate repo root`: `bunx biome check --write` on touched files passed |
 | Goal plan complete | yes | Run autogoal checker | Root: `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-slate-v2-integration-failures.md` passed |
 | Browser interaction proof | yes | Exercise target route/interaction with approved browser tool | Playwright integration routes exercised by async runner |
 | Browser console/network check | yes | Record console/network state | No failing console/network artifact in final run; failure artifact says no failures |
-| Browser final proof artifact | yes | Record trace/run proof | `.tmp/slate-v2/.tmp/integration-runs/2026-05-27T13-28-11-218Z` |
+| Browser final proof artifact | yes | Record trace/run proof | `Plate repo root/.tmp/integration-runs/2026-05-27T13-28-11-218Z` |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
@@ -158,11 +158,11 @@ Decisions and tradeoffs:
 - Keep the async runner artifact-facing by building packages before the static site and keying source stamps on `packages`.
 
 Implementation notes:
-- `.tmp/slate-v2/scripts/integration-local-async.mjs` owns server lifecycle, skips occupied ports, includes `packages` in the source stamp, and builds package artifacts before `bun build:next`.
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts` uses semantic handles for selection/focus where DOM selection is not observable, including WebKit Shadow DOM.
-- `.tmp/slate-v2/packages/slate-react/src/editable/root-interaction-controller.ts` restricts projected drag selection to cross-root/different-owner drags and DOM coverage boundary drags.
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts` resolves DOM coverage boundary event targets before generic DOM event range resolution.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx` marks content-root slots as non-editable islands.
+- `tooling/slate-v2/donor/integration-local-async.mjs` owns server lifecycle, skips occupied ports, includes `packages` in the source stamp, and builds package artifacts before `bun build:next`.
+- `packages/browser/src/playwright/index.ts` uses semantic handles for selection/focus where DOM selection is not observable, including WebKit Shadow DOM.
+- `packages/slate-react/src/editable/root-interaction-controller.ts` restricts projected drag selection to cross-root/different-owner drags and DOM coverage boundary drags.
+- `packages/slate-dom/src/plugin/dom-editor.ts` resolves DOM coverage boundary event targets before generic DOM event range resolution.
+- `packages/slate-react/src/components/editable-text-blocks.tsx` marks content-root slots as non-editable islands.
 
 Review fixes:
 - Type-depth issue in the Playwright harness was fixed by using a small local synthetic-key type instead of `KeyboardEventInit` in locator serialization.
@@ -174,19 +174,19 @@ Error attempts:
 | Fresh full run exposed over-broad projected drag handling | 1 | Split native same-root, model boundary, and view-projected drag paths | Focused run `2026-05-27T13-27-17-666Z` and full run `2026-05-27T13-28-11-218Z` passed |
 
 Verification evidence:
-- `.tmp/slate-v2`: `bun test ./scripts/integration-local-async.spec.ts` passed with 10 tests.
-- `.tmp/slate-v2`: `bun --filter slate-react test:vitest -- root-interaction-resolver browser-handle-contract` passed.
-- `.tmp/slate-v2`: `bun --filter slate-react typecheck` passed.
-- `.tmp/slate-v2`: `bun --filter slate-dom typecheck` passed.
-- `.tmp/slate-v2`: `bun --filter slate-browser typecheck` passed.
-- `.tmp/slate-v2`: `bunx biome check --write` passed on touched files.
-- `.tmp/slate-v2`: focused run `2026-05-27T12-23-12-503Z` for mobile async decorations passed with 0 failures.
-- `.tmp/slate-v2`: focused run `2026-05-27T12-31-58-146Z` for huge-document refocus passed with 0 failures.
-- `.tmp/slate-v2`: focused run `2026-05-27T12-47-19-466Z` for synced-block focus history passed with 0 failures.
-- `.tmp/slate-v2`: focused run `2026-05-27T13-01-21-485Z` for synced-block mouse selection passed with 0 failures.
-- `.tmp/slate-v2`: focused run `2026-05-27T13-13-17-201Z` for Shadow DOM WebKit ArrowLeft passed with 0 failures.
-- `.tmp/slate-v2`: focused run `2026-05-27T13-27-17-666Z` for comment-mode, DOM coverage boundary, and table drag passed with 0 failures.
-- `.tmp/slate-v2`: full run `2026-05-27T13-28-11-218Z`, source stamp `sha256:e38bb0e85a62d712b14ca1abf80293d4c3f0852c892ede816b44727a0a0924cb`, passed with `failureCount: 0`; failures artifact says `No failures.`
+- `Plate repo root`: `bun test ./scripts/integration-local-async.spec.ts` passed with 10 tests.
+- `Plate repo root`: `bun --filter slate-react test:vitest -- root-interaction-resolver browser-handle-contract` passed.
+- `Plate repo root`: `bun --filter slate-react typecheck` passed.
+- `Plate repo root`: `bun --filter slate-dom typecheck` passed.
+- `Plate repo root`: `bun --filter slate-browser typecheck` passed.
+- `Plate repo root`: `bunx biome check --write` passed on touched files.
+- `Plate repo root`: focused run `2026-05-27T12-23-12-503Z` for mobile async decorations passed with 0 failures.
+- `Plate repo root`: focused run `2026-05-27T12-31-58-146Z` for huge-document refocus passed with 0 failures.
+- `Plate repo root`: focused run `2026-05-27T12-47-19-466Z` for synced-block focus history passed with 0 failures.
+- `Plate repo root`: focused run `2026-05-27T13-01-21-485Z` for synced-block mouse selection passed with 0 failures.
+- `Plate repo root`: focused run `2026-05-27T13-13-17-201Z` for Shadow DOM WebKit ArrowLeft passed with 0 failures.
+- `Plate repo root`: focused run `2026-05-27T13-27-17-666Z` for comment-mode, DOM coverage boundary, and table drag passed with 0 failures.
+- `Plate repo root`: full run `2026-05-27T13-28-11-218Z`, source stamp `sha256:e38bb0e85a62d712b14ca1abf80293d4c3f0852c892ede816b44727a0a0924cb`, passed with `failureCount: 0`; failures artifact says `No failures.`
 
 Final handoff contract:
 - PR line: N/A, no PR requested.
@@ -205,7 +205,7 @@ Final handoff contract:
 - Verified: focused repros plus final full async run.
 
 Reboot status:
-The goal is ready for completion. The authoritative green run is `.tmp/slate-v2/.tmp/integration-runs/2026-05-27T13-28-11-218Z`, and the root autogoal checker passed for this plan.
+The goal is ready for completion. The authoritative green run is `Plate repo root/.tmp/integration-runs/2026-05-27T13-28-11-218Z`, and the root autogoal checker passed for this plan.
 
 Open risks:
 None known. The remaining risk is ordinary browser flake, covered by the final full run and focused repros.

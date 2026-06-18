@@ -1,4 +1,4 @@
-import type { TElement, TText } from '@platejs/slate';
+import type { TElement, TText } from '@platejs/slate-legacy';
 
 import {
   type AnyEditorPlugin,

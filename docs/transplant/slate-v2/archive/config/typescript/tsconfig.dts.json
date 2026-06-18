@@ -1,0 +1,30 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "slate": ["packages/slate/dist/index.d.ts"],
+      "slate/internal": ["packages/slate/dist/internal/index.d.ts"],
+      "@slate/yjs": ["packages/slate-yjs/dist/index.d.ts"],
+      "@slate/yjs/core": ["packages/slate-yjs/dist/core/index.d.ts"],
+      "@slate/yjs/internal": ["packages/slate-yjs/dist/internal/index.d.ts"],
+      "@slate/yjs/react": ["packages/slate-yjs/dist/react/index.d.ts"],
+      "slate-browser/browser": [
+        "packages/slate-browser/dist/browser/index.d.ts"
+      ],
+      "slate-browser/core": ["packages/slate-browser/dist/core/index.d.ts"],
+      "slate-browser/playwright": [
+        "packages/slate-browser/dist/playwright/index.d.ts"
+      ],
+      "slate-browser/transports": [
+        "packages/slate-browser/dist/transports/index.d.ts"
+      ],
+      "slate-dom": ["packages/slate-dom/dist/index.d.ts"],
+      "slate-dom/internal": ["packages/slate-dom/dist/internal/index.d.ts"],
+      "slate-history": ["packages/slate-history/dist/index.d.ts"],
+      "slate-hyperscript": ["packages/slate-hyperscript/dist/index.d.ts"],
+      "slate-layout": ["packages/slate-layout/dist/index.d.ts"],
+      "slate-layout/react": ["packages/slate-layout/dist/react.d.ts"],
+      "slate-react": ["packages/slate-react/dist/index.d.ts"]
+    }
+  }
+}

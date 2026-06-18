@@ -81,7 +81,7 @@ Intent/boundary hardening pass, 2026-05-11:
   measured React and browser proof gaps faster.
 - decision boundary accepted: the plan may recommend `keep`, `revise`, `gate`,
   or `cut`; it may not mark implementation complete, close issues, or mutate
-  `.tmp/slate-v2` code.
+  `Plate repo root` code.
 - remaining ambiguity: none that requires the user. The next useful work is
   research/source refresh, not a clarification question.
 
@@ -147,19 +147,19 @@ Follow-ups:
 
 | Surface                        | Current owner                                                                                | Read                                                                                    |
 | ------------------------------ | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Core public lifecycle          | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:480`                                  | `BaseEditor` exposes `read`, `subscribe`, `update`, and `extend`.                       |
-| Internal transforms            | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:493`                                  | transform API is explicitly internal runtime implementation.                            |
-| Extension shape                | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:890`                                  | extension fields include `editor`, `state`, and `tx`; no public `methods`.              |
-| Legacy extension rejection     | `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:60`                               | `methods` and public `commands` throw with state/tx guidance.                           |
-| Internal command registry      | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1551`                                 | `defineCommand` and `registerCommand` remain internal/static APIs.                      |
-| Main editor selector substrate | `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:22`                   | custom selector hook uses refs plus reducer `forceRender`.                              |
-| Runtime-id selector fanout     | `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:189`                   | selector context owns global, runtime-id, and deferred listener sets.                   |
-| Root runtime coordinator       | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:1`                   | imports selection, Android, composition, event, repair, trace, and input owners.        |
-| Root runtime global listeners  | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:412`                 | attaches document selectionchange and global drag lifecycle listeners.                  |
-| Void renderer                  | `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:450`             | `renderVoid` receives `{ element, path }`; runtime wraps shell/spacer.                  |
-| Void contract proof            | `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:492`                           | tests prove no `target`, `actions`, `selected`, `focused`, `children`, or `attributes`. |
-| Rendering strategy API         | `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3`         | `virtualized` is part of public `RenderingStrategyType`.                                |
-| Virtualized implementation     | `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/use-virtualized-root-plan.ts:181` | viewport-only plan is implemented with retained selected/promoted rows.                 |
+| Core public lifecycle          | `packages/slate/src/interfaces/editor.ts:480`                                  | `BaseEditor` exposes `read`, `subscribe`, `update`, and `extend`.                       |
+| Internal transforms            | `packages/slate/src/interfaces/editor.ts:493`                                  | transform API is explicitly internal runtime implementation.                            |
+| Extension shape                | `packages/slate/src/interfaces/editor.ts:890`                                  | extension fields include `editor`, `state`, and `tx`; no public `methods`.              |
+| Legacy extension rejection     | `packages/slate/src/core/editor-extension.ts:60`                               | `methods` and public `commands` throw with state/tx guidance.                           |
+| Internal command registry      | `packages/slate/src/interfaces/editor.ts:1551`                                 | `defineCommand` and `registerCommand` remain internal/static APIs.                      |
+| Main editor selector substrate | `packages/slate-react/src/hooks/use-generic-selector.tsx:22`                   | custom selector hook uses refs plus reducer `forceRender`.                              |
+| Runtime-id selector fanout     | `packages/slate-react/src/hooks/use-editor-selector.tsx:189`                   | selector context owns global, runtime-id, and deferred listener sets.                   |
+| Root runtime coordinator       | `packages/slate-react/src/editable/runtime-root-engine.ts:1`                   | imports selection, Android, composition, event, repair, trace, and input owners.        |
+| Root runtime global listeners  | `packages/slate-react/src/editable/runtime-root-engine.ts:412`                 | attaches document selectionchange and global drag lifecycle listeners.                  |
+| Void renderer                  | `packages/slate-react/src/components/editable-text-blocks.tsx:450`             | `renderVoid` receives `{ element, path }`; runtime wraps shell/spacer.                  |
+| Void contract proof            | `packages/slate-react/test/surface-contract.tsx:492`                           | tests prove no `target`, `actions`, `selected`, `focused`, `children`, or `attributes`. |
+| Rendering strategy API         | `packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3`         | `virtualized` is part of public `RenderingStrategyType`.                                |
+| Virtualized implementation     | `packages/slate-react/src/rendering-strategy/use-virtualized-root-plan.ts:181` | viewport-only plan is implemented with retained selected/promoted rows.                 |
 | Stale release claim            | `docs/slate-v2/absolute-architecture-release-claim.md:72`                                    | docs still teach `editor.extend({ methods })`.                                          |
 | Stale readiness claim          | `docs/slate-v2/release-readiness-decision.md:56`                                             | docs still say extension methods compose through `methods`.                             |
 | Perf red lane                  | `docs/slate-v2/slate-react-perf-loop-context.md:75`                                          | shell wins startup/full-doc lanes but loses steady typing/select lanes.                 |
@@ -259,7 +259,7 @@ renderer-shaped document model.
 
 Refresh scope:
 
-- live `.tmp/slate-v2` source for extension slots, selector hooks, root runtime,
+- live `Plate repo root` source for extension slots, selector hooks, root runtime,
   adjacent external stores, and virtualized rendering;
 - compiled React, ProseMirror, Tiptap, Lexical, and virtualized research pages;
 - active Slate v2 release/readiness docs that still carry old extension text.
@@ -267,22 +267,22 @@ Refresh scope:
 Findings:
 
 - extension decision unchanged. Live source rejects `methods` and public
-  `commands` in `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:60`,
+  `commands` in `packages/slate/src/core/editor-extension.ts:60`,
   while the current extension type exposes `editor`, `state`, and `tx` groups in
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:886`.
+  `packages/slate/src/interfaces/editor.ts:886`.
 - docs truth sync remains P0. `docs/slate-v2/absolute-architecture-release-claim.md:72`
   and `docs/slate-v2/release-readiness-decision.md:56` still teach
   `editor.extend({ methods })`.
 - selector decision unchanged. The main selector path still uses
   `useGenericSelector` with refs plus reducer-driven `forceRender` in
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:22`,
+  `packages/slate-react/src/hooks/use-generic-selector.tsx:22`,
   and runtime-id/deferred fanout is still owned by
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:189`.
+  `packages/slate-react/src/hooks/use-editor-selector.tsx:189`.
 - external-store pressure is stronger, not weaker. Adjacent annotation, widget,
   and projection stores use `useSyncExternalStore` in
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx:65`,
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-widgets.tsx:68`, and
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx:53`.
+  `packages/slate-react/src/hooks/use-slate-annotations.tsx:65`,
+  `packages/slate-react/src/hooks/use-slate-widgets.tsx:68`, and
+  `packages/slate-react/src/hooks/use-slate-projections.tsx:53`.
 - React research still says the same thing:
   `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md:31`
   makes external-store subscription the React-native baseline, while
@@ -291,13 +291,13 @@ Findings:
   selection, Android, composition, repair, trace, input rules, event runtime,
   root refs, DOM export, global selection listeners, drag lifecycle listeners,
   and pending marks across
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:1`,
+  `packages/slate-react/src/editable/runtime-root-engine.ts:1`,
   `:200`, `:284`, `:346`, and `:412`.
 - virtualized policy unchanged. The public option is still present beside stable
   modes in
-  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3`,
+  `packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3`,
   and test coverage proves viewport DOM coverage/materialization behavior in
-  `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:197`;
+  `packages/slate-react/test/rendering-strategy-and-scroll.tsx:197`;
   that proof supports an explicit experimental mode, not stable native-behavior
   parity.
 - virtualized research agrees:
@@ -529,13 +529,13 @@ Pre-mortem, revised 2026-05-11:
 1. Extension docs cleanup is treated as a source API change and accidentally
    reopens the removed `methods` model. That would be backwards. This is a docs
    truth-sync slice: live code already rejects `methods` and `commands` in
-   `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:60`, and the live
+   `packages/slate/src/core/editor-extension.ts:60`, and the live
    extension type already exposes `editor`, `state`, and `tx` groups at
-   `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:886`.
+   `packages/slate/src/interfaces/editor.ts:886`.
 2. Selector rewrite regresses runtime-id fanout, deferred flush behavior, or
    selector error replay. The proof spike must compare the current
    `useGenericSelector` path in
-   `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:22`
+   `packages/slate-react/src/hooks/use-generic-selector.tsx:22`
    against an external-store adapter before replacing it.
 3. Root runtime split moves code without reducing ordering risk. Splitting is
    allowed only around tested owners: selection import/export, input and
@@ -736,45 +736,45 @@ Scope:
 
 - compare the live selector substrate with a React external-store adapter
   direction;
-- record the proof shape before changing `.tmp/slate-v2` implementation code;
+- record the proof shape before changing `Plate repo root` implementation code;
 - keep completion `pending` because selector contracts, root runtime split,
   rendering policy, perf proof, and issue sync still have runnable owners.
 
 Live source read:
 
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:22`
-  through `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:85`
+- `packages/slate-react/src/hooks/use-generic-selector.tsx:22`
+  through `packages/slate-react/src/hooks/use-generic-selector.tsx:85`
   owns selector result reuse, equality filtering, cached selector identity,
   subscription error capture, render-time error replay, and intentionally stable
   `update`.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:68`
-  through `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:120`
+- `packages/slate-react/src/hooks/use-editor-selector.tsx:68`
+  through `packages/slate-react/src/hooks/use-editor-selector.tsx:120`
   threads editor commit operations into selectors before calling the generic
   selector update path.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:189`
-  through `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:343`
+- `packages/slate-react/src/hooks/use-editor-selector.tsx:189`
+  through `packages/slate-react/src/hooks/use-editor-selector.tsx:343`
   owns global selector listeners, runtime-id listener maps, deferred microtask
   flush, stale runtime-id fanout skipping, `shouldUpdate`, and selector profiler
   markers.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx:65`,
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-widgets.tsx:68`, and
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx:53`
+- `packages/slate-react/src/hooks/use-slate-annotations.tsx:65`,
+  `packages/slate-react/src/hooks/use-slate-widgets.tsx:68`, and
+  `packages/slate-react/src/hooks/use-slate-projections.tsx:53`
   show adjacent external-store usage for annotation, widget, and projection
   stores.
 
 Existing proof read:
 
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:89`
-  through `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:127`
+- `packages/slate-react/test/provider-hooks-contract.tsx:89`
+  through `packages/slate-react/test/provider-hooks-contract.tsx:127`
   already locks equality behavior across selector identity changes.
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:253`
-  through `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:416`
+- `packages/slate-react/test/provider-hooks-contract.tsx:253`
+  through `packages/slate-react/test/provider-hooks-contract.tsx:416`
   locks runtime-id locality and profiler evidence for unrelated runtime commits.
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:541`
-  through `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:606`
+- `packages/slate-react/test/provider-hooks-contract.tsx:541`
+  through `packages/slate-react/test/provider-hooks-contract.tsx:606`
   locks root-order and full-document fanout expectations.
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:613`
-  through `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:689`
+- `packages/slate-react/test/provider-hooks-contract.tsx:613`
+  through `packages/slate-react/test/provider-hooks-contract.tsx:689`
   locks mounted render selectors skipping synced text commits while catching
   later node commits.
 
@@ -811,7 +811,7 @@ Current status: `complete`.
 
 Files updated:
 
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `packages/slate-react/test/provider-hooks-contract.tsx`
 
 Result:
 
@@ -822,12 +822,12 @@ Result:
 - added a deferred selector contract proving two same-turn commits coalesce to
   one selected render update while still preserving `check` and `notify`
   profiler markers;
-- left `.tmp/slate-v2` selector implementation code unchanged.
+- left `Plate repo root` selector implementation code unchanged.
 
 Verification:
 
 ```sh
-cd .tmp/slate-v2
+cd Plate repo root
 bun test ./packages/slate-react/test/provider-hooks-contract.tsx
 bun --filter slate-react typecheck
 bunx biome check packages/slate-react/test/provider-hooks-contract.tsx --fix
@@ -853,10 +853,10 @@ Current status: `complete`.
 
 Files updated:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-lifecycle.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-selection-export.ts`
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/src/editable/runtime-root-engine.ts`
+- `packages/slate-react/src/editable/runtime-root-lifecycle.ts`
+- `packages/slate-react/src/editable/runtime-root-selection-export.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Result:
 
@@ -873,7 +873,7 @@ Result:
 Verification:
 
 ```sh
-cd .tmp/slate-v2
+cd Plate repo root
 bun test ./packages/slate-react/test/kernel-authority-audit-contract.ts ./packages/slate-react/test/provider-hooks-contract.tsx
 bun test ./packages/slate-react/test/kernel-authority-audit-contract.ts ./packages/slate-react/test/provider-hooks-contract.tsx ./packages/slate-react/test/selection-runtime-contract.test.ts
 bun --filter slate-react typecheck
@@ -907,9 +907,9 @@ Current status: `complete`.
 
 Files updated:
 
-- `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/test/surface-contract.tsx`
 
 Result:
 
@@ -924,7 +924,7 @@ Result:
 Verification:
 
 ```sh
-cd .tmp/slate-v2
+cd Plate repo root
 bun test ./packages/slate-react/test/rendering-strategy-and-scroll.tsx ./packages/slate-react/test/surface-contract.tsx
 bun --filter slate-react typecheck
 bunx biome check packages/slate-react/src/rendering-strategy/create-segment-plan.ts packages/slate-react/src/components/editable-text-blocks.tsx packages/slate-react/test/surface-contract.tsx --fix
@@ -951,7 +951,7 @@ Current status: `complete`.
 Commands run:
 
 ```sh
-cd .tmp/slate-v2
+cd Plate repo root
 bun run bench:react:rerender-breadth:local
 REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local
 ```
@@ -964,7 +964,7 @@ Result:
   selection changes woke selection rows only, and external refreshes did not
   recompute text or selection rows;
 - huge-document compare wrote
-  `.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark.json`
+  `tmp/slate-react-huge-document-legacy-compare-benchmark.json`
   with 5,000 blocks, 5 iterations, and 10 type ops per run;
 - `v2DefaultRenderAuto` beat `legacyChunkOn` on the main huge-doc means:
   ready `17.01ms` vs `298.87ms`, start type `15.64ms` vs `36.66ms`,
@@ -1029,7 +1029,7 @@ rg -n "\.tmp/completion-check\.md" .agents docs
 bun run completion-check
 ```
 
-Slate v2 gates, cwd `.tmp/slate-v2`, when implementation starts:
+Slate v2 gates, cwd `Plate repo root`, when implementation starts:
 
 ```sh
 bun test ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/public-surface-contract.ts
@@ -1040,7 +1040,7 @@ REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPAR
 bun check
 ```
 
-Browser/device gates, cwd `.tmp/slate-v2`, only when the touched slice claims
+Browser/device gates, cwd `Plate repo root`, only when the touched slice claims
 browser behavior:
 
 ```sh

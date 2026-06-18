@@ -1,6 +1,6 @@
 import type { Point } from 'slate';
 
-import { ElementApi, NodeApi } from '@platejs/slate';
+import { ElementApi, NodeApi } from '@platejs/slate-legacy';
 
 import type { SlateEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';

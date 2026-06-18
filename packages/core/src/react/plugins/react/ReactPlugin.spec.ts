@@ -1,4 +1,4 @@
-import type { LegacyEditorMethods } from '@platejs/slate';
+import type { LegacyEditorMethods } from '@platejs/slate-legacy';
 
 import type { PlateEditor } from '../../editor/PlateEditor';
 

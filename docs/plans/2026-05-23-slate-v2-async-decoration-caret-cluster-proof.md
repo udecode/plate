@@ -34,9 +34,9 @@ If any part is missing, keep the issue as `Improves #5987`.
 
 ## Changeset
 
-No changeset is required if this pass only adds a site example, tests, and ledger updates. If package runtime code changes under `.tmp/slate-v2/packages`, decide changeset necessity before closeout.
+No changeset is required if this pass only adds a site example, tests, and ledger updates. If package runtime code changes under `Plate repo root/packages`, decide changeset necessity before closeout.
 
-Package runtime code changed under `.tmp/slate-v2/packages/slate-react`, so the
+Package runtime code changed under `packages/slate-react`, so the
 Slate v2 checkout includes `.changeset/async-decorate-caret.md`. No Plate
 changeset is required.
 

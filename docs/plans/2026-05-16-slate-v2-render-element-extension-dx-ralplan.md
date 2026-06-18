@@ -92,30 +92,30 @@ Decision boundaries:
 
 Renderer registration already exists.
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editable-renderers.ts:34-43`
+- `packages/slate-react/src/editable/editable-renderers.ts:34-43`
   defines renderer maps for elements, leaves, text, segment, and voids.
-- `.tmp/slate-v2/packages/slate-react/src/editable/editable-renderers.ts:47-54`
+- `packages/slate-react/src/editable/editable-renderers.ts:47-54`
   registers those maps through the `slate-react.editable.renderers` capability.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1390-1404`
+- `packages/slate-react/src/components/editable-text-blocks.tsx:1390-1404`
   reads registered renderers and disables element or void maps when raw
   `Editable` render props are supplied.
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:523-597`
+- `packages/slate-react/test/surface-contract.tsx:523-597`
   proves `Editable` consumes extension-registered element, leaf, text, segment,
   and void renderers.
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:599-635`
+- `packages/slate-react/test/surface-contract.tsx:599-635`
   proves raw `Editable` render props override extension-registered renderers.
 
 The public type export is not the main problem.
 
-- `.tmp/slate-v2/packages/slate-react/src/index.ts:42-53` exports
+- `packages/slate-react/src/index.ts:42-53` exports
   `EditableRenderElementProps` as `RenderElementProps`.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:538-559`
+- `packages/slate-react/src/components/editable-text-blocks.tsx:538-559`
   shows that public element renderer props include `attributes`, `children`,
   `element`, `isInline`, and `slots`.
 
 The fallback matters.
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:892-898`
+- `packages/slate-react/src/components/editable-text-blocks.tsx:892-898`
   falls back to `EditableElement as={inline ? 'span' : 'div'}`. If first-party
   examples cut their raw paragraph fallback, they need a registered paragraph
   renderer where `<p>` matters.
@@ -124,42 +124,42 @@ The fallback matters.
 
 These examples combine extension-owned behavior with raw render props:
 
-- `.tmp/slate-v2/site/examples/ts/check-lists.tsx:77-88` passes
+- `apps/www/src/app/(app)/examples/slate/_examples/check-lists.tsx:77-88` passes
   `renderElement={Element}` while `withChecklists` calls `editor.extend(...)`.
-- `.tmp/slate-v2/site/examples/ts/check-lists.tsx:138-146` uses a raw switch with
+- `apps/www/src/app/(app)/examples/slate/_examples/check-lists.tsx:138-146` uses a raw switch with
   a default `<p>`.
-- `.tmp/slate-v2/site/examples/ts/images.tsx:74-108` registers image schema and
+- `apps/www/src/app/(app)/examples/slate/_examples/images.tsx:74-108` registers image schema and
   paste/key behavior through `editor.extend(...)`, but still passes
   `renderElement` and inline `renderVoid`.
-- `.tmp/slate-v2/site/examples/ts/images.tsx:155-159` has a top-level `Element`
+- `apps/www/src/app/(app)/examples/slate/_examples/images.tsx:155-159` has a top-level `Element`
   whose only job is `<p {...attributes}>{children}</p>`.
-- `.tmp/slate-v2/site/examples/ts/embeds.tsx:47-64` registers video schema with
+- `apps/www/src/app/(app)/examples/slate/_examples/embeds.tsx:47-64` registers video schema with
   `editor.extend(...)`, then uses raw `renderElement` and raw `renderVoid`.
-- `.tmp/slate-v2/site/examples/ts/embeds.tsx:69-73` repeats the trivial paragraph
+- `apps/www/src/app/(app)/examples/slate/_examples/embeds.tsx:69-73` repeats the trivial paragraph
   renderer.
-- `.tmp/slate-v2/site/examples/ts/inlines.tsx:112-143` registers inline schema
+- `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx:112-143` registers inline schema
   and paste/insert behavior through `editor.extend(...)`, then passes raw
   `renderElement` and `renderLeaf`.
-- `.tmp/slate-v2/site/examples/ts/inlines.tsx:363-374` uses a raw switch for
+- `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx:363-374` uses a raw switch for
   link, button, badge, and paragraph fallback.
 
 Docs also send mixed signals:
 
-- `.tmp/slate-v2/docs/libraries/slate-react/editable.md:54-58` says
+- `content/docs/slate/libraries/slate-react/editable.md:54-58` says
   `editableRenderers(...)` is for extension-owned document rendering and raw
   props take precedence.
-- `.tmp/slate-v2/docs/libraries/slate-react/editable.md:83-102` still leads a
+- `content/docs/slate/libraries/slate-react/editable.md:83-102` still leads a
   dedicated `renderElement` section with a normal-element switch.
-- `.tmp/slate-v2/docs/walkthroughs/03-defining-custom-elements.md:81-109`
+- `content/docs/slate/walkthroughs/03-defining-custom-elements.md:81-109`
   teaches extension renderers.
-- `.tmp/slate-v2/docs/walkthroughs/04-applying-custom-formatting.md:9-55`
+- `content/docs/slate/walkthroughs/04-applying-custom-formatting.md:9-55`
   starts from a raw `renderElement` callback, then
-  `.tmp/slate-v2/docs/walkthroughs/04-applying-custom-formatting.md:70-85`
+  `content/docs/slate/walkthroughs/04-applying-custom-formatting.md:70-85`
   switches to extension renderers.
 
 The fake example type helper is worse than the `Element` callback:
 
-- `.tmp/slate-v2/site/examples/ts/custom-types.d.ts:188` defines
+- `apps/www/src/app/(app)/examples/slate/_examples/custom-types.d.ts:188` defines
   `RenderElementPropsFor<T extends Element> = RenderElementProps<any>`.
 
 That generic parameter is theater. It gives the appearance of per-element
@@ -227,14 +227,14 @@ authoring paths. They are not equal:
 
 Live source makes the distinction concrete:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editable-renderers.ts:34-54`
+- `packages/slate-react/src/editable/editable-renderers.ts:34-54`
   stores extension renderers as maps keyed by element/leaf/void names.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1398-1405`
+- `packages/slate-react/src/components/editable-text-blocks.tsx:1398-1405`
   keeps registered leaf/text/segment renderers unless raw props are supplied,
   and disables element/void maps when `renderElement` or `renderVoid` is passed.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:856-865`
+- `packages/slate-react/src/components/editable-text-blocks.tsx:856-865`
   resolves a node renderer from either the raw prop or the typed extension map.
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:523-635`
+- `packages/slate-react/test/surface-contract.tsx:523-635`
   already proves both registered renderer consumption and raw-prop override
   behavior.
 
@@ -498,10 +498,10 @@ planning move.
 
 | Dimension                              | Score | Evidence                                                                                                                                                                                                                                                                   |
 | -------------------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| React runtime performance              |  0.92 | Registered renderers are editor-owned and raw props disable maps only when explicitly supplied: `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1398-1405`; rejecting `next()` middleware avoids new render-path callback chains.              |
-| Slate-close unopinionated DX           |  0.94 | Raw render props remain public and tested as override escape hatches: `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:599-635`; typed maps remove fake example typing without removing the escape hatch.                                                     |
+| React runtime performance              |  0.92 | Registered renderers are editor-owned and raw props disable maps only when explicitly supplied: `packages/slate-react/src/components/editable-text-blocks.tsx:1398-1405`; rejecting `next()` middleware avoids new render-path callback chains.              |
+| Slate-close unopinionated DX           |  0.94 | Raw render props remain public and tested as override escape hatches: `packages/slate-react/test/surface-contract.tsx:599-635`; typed maps remove fake example typing without removing the escape hatch.                                                     |
 | Plate and slate-yjs migration backbone |  0.91 | Research target keeps feature package ownership together without requiring current Plate API compatibility: `docs/research/decisions/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md:176-186`.                                                  |
-| Regression-proof testing strategy      |  0.92 | Plan names type contracts, surface-contract preservation, docs/example guard, and browser smoke for rewritten examples. Existing surface tests cover registered renderers and override precedence: `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:523-635`. |
+| Regression-proof testing strategy      |  0.92 | Plan names type contracts, surface-contract preservation, docs/example guard, and browser smoke for rewritten examples. Existing surface tests cover registered renderers and override precedence: `packages/slate-react/test/surface-contract.tsx:523-635`. |
 | Research evidence completeness         |  0.91 | Corpus result favors spec-first extension APIs plus runtime-owned DOM and app-owned React renderers: `docs/research/sources/editor-architecture/node-text-mark-render-dx-corpus-ledger.md:200-215`; no new external source read was needed for this scoped review.         |
 | shadcn-style composability             |  0.93 | Target preserves normal React components for visible UI and keeps runtime browser ownership separate: `docs/research/systems/editor-node-text-mark-dx-landscape.md:21-30`.                                                                                                 |
 

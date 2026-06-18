@@ -3,7 +3,7 @@
 Date: 2026-05-18
 Status: complete
 Owner: Slate Ralplan planning only
-Execution owner: `ralph` in `.tmp/slate-v2`
+Execution owner: `ralph` in `Plate repo root`
 Completion id: `019e1fc0-dba0-7de1-9236-b484a144cda6`
 Current pass: closure-final-gates
 Score: 0.94, ready for Ralph execution
@@ -241,7 +241,7 @@ No new fixed or improved issue claim is accepted by this plan.
 
 | Issue                       | Cluster                     | Claim                      | Why                                                                                                                                                                  | Proof route                                                                                             | V2 sync ledger                                                   | PR line                         |
 | --------------------------- | --------------------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------- |
-| `#6034`                     | table DOM selection         | existing `Fixes` unchanged | Existing claim is ArrowDown at the final table cell. This plan changes Backspace/Delete/Enter authoring ownership and must not broaden that claim.                   | Existing `.tmp/slate-v2/playwright/integration/examples/tables.test.ts` row plus issue coverage matrix. | unchanged `fixes-claimed`                                        | existing fixed line only        |
+| `#6034`                     | table DOM selection         | existing `Fixes` unchanged | Existing claim is ArrowDown at the final table cell. This plan changes Backspace/Delete/Enter authoring ownership and must not broaden that claim.                   | Existing `apps/www/tests/slate-browser/donor/examples/tables.test.ts` row plus issue coverage matrix. | unchanged `fixes-claimed`                                        | existing fixed line only        |
 | `#4658`                     | table boundary / DOM import | Related, unchanged         | Local table transform policy can reduce table escape routes, but the issue asks about text outside a custom table and needs its exact repro.                         | Future browser repro or DOM bridge proof.                                                               | unchanged `cluster-synced`                                       | related matrix already has row  |
 | `#5355`                     | table DOM shape             | Not claimed, unchanged     | `colgroup` / `col` crash depends on app-rendered DOM without editable descendants, not Backspace/Delete/Enter transform ownership.                                   | Existing DOM selection boundary plan.                                                                   | unchanged `issue-reviewed`                                       | not-claimed row already has row |
 | `#2558`                     | table selection model       | Not claimed, unchanged     | Multi-cell selection requires a real table selection model. This plan does not add one.                                                                              | Future table-selection model proof.                                                                     | unchanged `cluster-synced`                                       | not-claimed row already has row |
@@ -309,8 +309,8 @@ PR reference sync:
 
 | Dimension                             | Score | Evidence                                                                                                                                                                                                                     |
 | ------------------------------------- | ----: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| React/runtime performance             |  0.93 | Model behavior leaves component-level key branching and uses existing transform middleware dispatch at `.tmp/slate-v2/packages/slate/src/create-editor.ts:391`; no new registry or global listener.                          |
-| Slate-close unopinionated DX          |  0.96 | Keeps old Slate mental model through current `transforms.deleteBackward`, `deleteForward`, and `insertBreak` middleware at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:655`, without `onCommand` or a keymap DSL. |
+| React/runtime performance             |  0.93 | Model behavior leaves component-level key branching and uses existing transform middleware dispatch at `packages/slate/src/create-editor.ts:391`; no new registry or global listener.                          |
+| Slate-close unopinionated DX          |  0.96 | Keeps old Slate mental model through current `transforms.deleteBackward`, `deleteForward`, and `insertBreak` middleware at `packages/slate/src/interfaces/editor.ts:655`, without `onCommand` or a keymap DSL. |
 | Plate/slate-yjs migration backbone    |  0.91 | Raw Slate stays low-level; Plate owns product keymaps/table plugins per `docs/slate-v2/references/pr-description.md:227` and `:240`. No collab/data-model change is introduced.                                              |
 | Regression-proof testing strategy     |  0.94 | Tests must invoke `Editor.deleteBackward`, `Editor.deleteForward`, and `Editor.insertBreak` / equivalent public commands, plus surface docs contracts and site typecheck.                                                    |
 | Research evidence completeness        |  0.93 | Ecosystem synthesis cites compiled Lexical, ProseMirror, and Tiptap pages plus live Slate v2 source and current issue ledgers.                                                                                               |
@@ -319,7 +319,7 @@ PR reference sync:
 Total score: `0.94`.
 
 Status is `complete` for planning. The next owner is Ralph implementation in
-`.tmp/slate-v2`.
+`Plate repo root`.
 
 ## Ralph Implementation Phases
 

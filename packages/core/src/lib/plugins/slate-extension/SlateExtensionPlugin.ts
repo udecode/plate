@@ -7,7 +7,7 @@ import {
   NodeApi,
   OperationApi,
   PathApi,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 import { type OmitFirst, bindFirst } from '@udecode/utils';
 
 import type { SlateEditor } from '../../editor';

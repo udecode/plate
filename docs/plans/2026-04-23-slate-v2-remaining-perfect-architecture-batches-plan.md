@@ -170,9 +170,9 @@ Do not:
 
 Primary files:
 
-- `.tmp/slate-v2/site/examples/ts/mentions.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx` only if the
+- `apps/www/src/app/(app)/examples/slate/_examples/mentions.tsx`
+- `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`
+- `packages/slate-react/src/components/editable.tsx` only if the
   failing proof proves runtime ownership
 
 Gates:
@@ -271,10 +271,10 @@ Do not:
 
 Primary files:
 
-- `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
-- `.tmp/slate-v2/site/examples/ts/large-document-runtime.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/large-document/**`
+- `apps/www/tests/slate-browser/donor/examples/large-document-runtime.test.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/large-document-runtime.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/large-document/**`
 
 Gates:
 
@@ -364,10 +364,10 @@ Do not:
 
 Primary files:
 
-- `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`
-- `.tmp/slate-v2/site/examples/ts/editable-voids.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `.tmp/slate-v2/packages/slate-dom/**` only if DOM bridge ownership is proven
+- `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx`
+- `packages/slate-react/src/editable/selection-controller.ts`
+- `packages/slate-dom/**` only if DOM bridge ownership is proven
 
 Gates:
 
@@ -535,8 +535,8 @@ Do not:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
-- `.tmp/slate-v2/site/examples/ts/**`
+- `packages/slate-react/src/projection-store.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/**`
 - docs under `docs/slate-v2/**`
 
 #### Decorate Public Surface Result
@@ -546,7 +546,7 @@ Status: complete.
 Actions:
 
 - Added explicit compat namespace:
-  `.tmp/slate-v2/packages/slate-react/src/compat/index.ts`.
+  `packages/slate-react/src/compat/index.ts`.
 - Removed `createSlateDecorateCompatSource` and related compat types from the
   primary `slate-react` root export list.
 - Added `SlateReactCompat` namespace export from root.
@@ -560,7 +560,7 @@ Evidence:
 bun test ./packages/slate-react/test/projections-and-selection-contract.tsx --bail 1
 bunx turbo build --filter=./packages/slate-dom --filter=./packages/slate-react --force
 bunx turbo typecheck --filter=./packages/slate-dom --filter=./packages/slate-react --force
-rg -n "createSlateDecorateCompatSource|SlateDecorateCompat" .tmp/slate-v2/packages/slate-react/src/index.ts .tmp/slate-v2/packages/slate-react/test .tmp/slate-v2/site/examples/ts -g "*.ts" -g "*.tsx"
+rg -n "createSlateDecorateCompatSource|SlateDecorateCompat" packages/slate-react/src/index.ts packages/slate-react/test apps/www/src/app/(app)/examples/slate/_examples -g "*.ts" -g "*.tsx"
 bun run lint:fix
 bun run lint
 ```
@@ -605,11 +605,11 @@ Do not:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/**`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate-react/src/editable/selection-reconciler.ts`
+- `packages/slate-react/src/editable/composition-state.ts`
+- `packages/slate-react/src/hooks/android-input-manager/**`
 
 #### Mutable Editor Mirrors Result
 
@@ -635,7 +635,7 @@ bun test ./packages/slate-react/test/dom-repair-policy-contract.ts --bail 1
 bun test ./packages/slate-react/test/large-doc-and-scroll.tsx --bail 1
 bunx turbo build --filter=./packages/slate-dom --filter=./packages/slate-react --force
 bunx turbo typecheck --filter=./packages/slate-dom --filter=./packages/slate-react --force
-rg -n "editor\\.selection\\s*=|editor\\.marks\\s*=" .tmp/slate-v2/packages/slate-react/src -g "*.ts" -g "*.tsx"
+rg -n "editor\\.selection\\s*=|editor\\.marks\\s*=" packages/slate-react/src -g "*.ts" -g "*.tsx"
 bun run lint:fix
 ```
 
@@ -671,9 +671,9 @@ Do not:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate.tsx`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `packages/slate-react/src/components/slate.tsx`
+- `packages/slate-react/src/hooks/use-slate.tsx`
+- `packages/slate/src/core/public-state.ts`
 
 #### `editor.onChange` Patching Result
 
@@ -696,7 +696,7 @@ bun test ./packages/slate-react/test/surface-contract.tsx --bail 1
 bun test ./packages/slate-react/test/projections-and-selection-contract.tsx --bail 1
 bunx turbo build --filter=./packages/slate-dom --filter=./packages/slate-react --force
 bunx turbo typecheck --filter=./packages/slate-dom --filter=./packages/slate-react --force
-rg -n "editor\\.onChange\\s*=" .tmp/slate-v2/packages/slate-react/src -g "*.ts" -g "*.tsx"
+rg -n "editor\\.onChange\\s*=" packages/slate-react/src -g "*.ts" -g "*.tsx"
 bun run lint:fix
 bun run lint
 ```
@@ -732,8 +732,8 @@ Do:
 
 Files:
 
-- `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx`
+- `packages/slate-react/src/editable/model-input-strategy.ts`
 
 #### Example Mutation Bypasses Result
 
@@ -837,8 +837,8 @@ Target:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/core/apply.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/core/apply.ts`
 
 Gates:
 
@@ -858,8 +858,8 @@ Target:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate/src/core/get-dirty-paths.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `packages/slate/src/core/get-dirty-paths.ts`
+- `packages/slate/src/core/public-state.ts`
 
 Gates:
 
@@ -878,8 +878,8 @@ Target:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate/src/utils/runtime-ids.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `packages/slate/src/utils/runtime-ids.ts`
+- `packages/slate/src/core/public-state.ts`
 
 Gates:
 
@@ -899,8 +899,8 @@ Target:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate-react/src/**` only if a core API change needs
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate-react/src/**` only if a core API change needs
   consumer updates
 
 Gates:
@@ -1081,7 +1081,7 @@ Legacy `../slate`:
   `ReactEditor.findPath(editor, node)`, but legacy's render binding usually
   refreshes the map when node object identity changes.
 
-Current `.tmp/slate-v2`:
+Current `Plate repo root`:
 
 - `packages/slate-react/src/hooks/use-slate-node-ref.tsx` binds DOM nodes by
   `runtimeId` and DOM element, not by the current live Slate node object.
@@ -1187,8 +1187,8 @@ stack must catch visible caret/cursor regressions instead of only model drift.
 
    Primary files:
 
-   - `.tmp/slate-v2/packages/slate-browser/**`
-   - `.tmp/slate-v2/playwright/integration/examples/**`
+   - `packages/browser/**`
+   - `apps/www/tests/slate-browser/donor/examples/**`
 
 2. Characterize the reported class.
 
@@ -1224,8 +1224,8 @@ stack must catch visible caret/cursor regressions instead of only model drift.
 
    Primary files:
 
-   - `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
-   - `.tmp/slate-v2/packages/slate-browser/**`
+   - `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
+   - `packages/browser/**`
 
 3. Replace stale object binding with live bridge binding.
 
@@ -1243,10 +1243,10 @@ stack must catch visible caret/cursor regressions instead of only model drift.
 
    Primary files:
 
-   - `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
-   - `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx`
-   - `.tmp/slate-v2/packages/slate-react/src/components/slate-element.tsx`
-   - `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+   - `packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+   - `packages/slate-react/src/components/editable-text.tsx`
+   - `packages/slate-react/src/components/slate-element.tsx`
+   - `packages/slate-react/src/components/editable-text-blocks.tsx`
 
 4. Add safe bridge resolution.
 
@@ -1267,9 +1267,9 @@ stack must catch visible caret/cursor regressions instead of only model drift.
 
    Primary files:
 
-   - `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
-   - `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-   - `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+   - `packages/slate-dom/src/plugin/dom-editor.ts`
+   - `packages/slate-react/src/editable/selection-reconciler.ts`
+   - `packages/slate-react/src/hooks/use-slate-node-ref.tsx`
 
 5. Move ordinary click and selection import onto explicit authority rules.
 
@@ -1289,9 +1289,9 @@ stack must catch visible caret/cursor regressions instead of only model drift.
 
    Primary files:
 
-   - `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-   - `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-   - `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
+   - `packages/slate-react/src/editable/selection-reconciler.ts`
+   - `packages/slate-react/src/editable/selection-controller.ts`
+   - `packages/slate-react/src/editable/editing-kernel.ts`
 
 6. Audit all editable user-event bridge calls.
 
@@ -1362,8 +1362,8 @@ stack must catch visible caret/cursor regressions instead of only model drift.
 
    - `../slate/packages/slate-react/src/components/editable.tsx`
    - `../slate/packages/slate-dom/src/plugin/dom-editor.ts`
-   - matching current v2 files under `.tmp/slate-v2/packages/slate-react/src/**`
-     and `.tmp/slate-v2/packages/slate-dom/src/**`
+   - matching current v2 files under `packages/slate-react/src/**`
+     and `packages/slate-dom/src/**`
 
 9. Preserve React-perfect runtime performance.
 
@@ -1537,12 +1537,12 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `packages/browser/src/playwright/index.ts`
+- `packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `packages/slate-react/src/components/editable-text.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/editable/selection-reconciler.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 - generated dist files for rebuilt packages
 - `active goal state`
 

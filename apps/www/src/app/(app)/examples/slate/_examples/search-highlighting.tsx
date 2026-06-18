@@ -1,0 +1,141 @@
+import { SearchIcon } from 'lucide-react';
+import { parseAsString, useQueryState } from 'nuqs';
+import { memo } from 'react';
+import { NodeApi } from '@platejs/slate';
+import {
+  Editable,
+  type EditableProps,
+  type ReactEditor,
+  Slate,
+  type SlateDecorationSource,
+  useSlateEditor,
+  useSlateRangeDecorationSource,
+} from '@platejs/slate-react';
+
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/components/ui/input-group';
+import { cn } from '@/utils/cn';
+
+import { Toolbar } from './components';
+import type { CustomText, CustomValue } from './custom-types.d';
+import { replaceQueryOptions } from './query-controls';
+
+const SearchHighlightingExample = () => {
+  const [search, setSearch] = useQueryState(
+    'q',
+    parseAsString.withDefault('').withOptions(replaceQueryOptions)
+  );
+  const editor = useSlateEditor<CustomValue>({
+    initialValue: [
+      {
+        type: 'paragraph',
+        children: [
+          {
+            text: 'This is editable text that you can search. As you search, it looks for matching strings of text, and adds ',
+          },
+          { text: 'decorations', bold: true },
+          { text: ' to them in realtime.' },
+        ],
+      },
+      {
+        type: 'paragraph',
+        children: [
+          {
+            text: 'Try it out for yourself by typing in the search box above!',
+          },
+        ],
+      },
+    ],
+  });
+  const searchSource = useSlateRangeDecorationSource<{ highlight: true }>(
+    editor,
+    {
+      data: { highlight: true },
+      deps: [search],
+      id: 'search-highlighting',
+      dirtiness: 'text',
+      read: ({ snapshot }) =>
+        search
+          ? NodeApi.findTextRanges({ children: snapshot.children }, search, {
+              caseSensitive: false,
+            })
+          : [],
+    }
+  );
+
+  return (
+    <>
+      <Toolbar>
+        <InputGroup className="!flex max-w-sm">
+          <InputGroupInput
+            onChange={(event) => {
+              void setSearch(event.target.value);
+            }}
+            placeholder="Search the text..."
+            type="search"
+            value={search}
+          />
+          <InputGroupAddon>
+            <SearchIcon aria-hidden />
+          </InputGroupAddon>
+        </InputGroup>
+      </Toolbar>
+      <SearchHighlightingEditor editor={editor} searchSource={searchSource} />
+    </>
+  );
+};
+
+const SearchHighlightingEditor = memo(
+  ({
+    editor,
+    searchSource,
+  }: {
+    editor: ReactEditor<CustomValue>;
+    searchSource: SlateDecorationSource<{ highlight: true }>;
+  }) => (
+    <Slate decorationSources={[searchSource]} editor={editor}>
+      <Editable
+        id="search-highlighting"
+        renderLeaf={Leaf}
+        renderSegment={(segment, children) =>
+          segment.slices.some(
+            (slice) =>
+              (slice.data as { highlight?: true } | undefined)?.highlight
+          ) ? (
+            <span
+              className="slate-search-highlighting-highlight"
+              data-cy="search-highlighted"
+            >
+              {children}
+            </span>
+          ) : (
+            children
+          )
+        }
+      />
+    </Slate>
+  )
+);
+
+interface HighlightLeaf extends CustomText {
+  highlight?: boolean;
+}
+
+type SearchLeafProps = Parameters<NonNullable<EditableProps['renderLeaf']>>[0];
+
+const Leaf = ({ attributes, children, leaf }: SearchLeafProps) => {
+  const highlightLeaf = leaf as HighlightLeaf;
+  return (
+    <span
+      {...attributes}
+      className={cn(highlightLeaf.bold && 'slate-search-highlighting-bold')}
+    >
+      {children}
+    </span>
+  );
+};
+
+export default SearchHighlightingExample;

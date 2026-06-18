@@ -1,0 +1,76 @@
+---
+title: "History Editor API"
+---
+
+# History Editor API
+
+History adds read, transaction, and editor API groups instead of mutating the
+root editor object.
+
+## State API
+
+#### `state.history.get(): History`
+
+Read the full history value.
+
+#### `state.history.undos(): Batch[]`
+
+Read the undo stack.
+
+#### `state.history.redos(): Batch[]`
+
+Read the redo stack.
+
+## Transaction API
+
+#### `tx.history.undo(): void`
+
+Undo the previous history batch.
+
+#### `tx.history.redo(): void`
+
+Redo the next history batch.
+
+## Editor API
+
+#### `editor.api.history.withMerging(fn: () => void): void`
+
+Run updates that merge into the previous history batch.
+
+#### `editor.api.history.withNewBatch(fn: () => void): void`
+
+Run updates where the first operation starts a new history batch.
+
+#### `editor.api.history.withoutMerging(fn: () => void): void`
+
+Run updates without merging new operations into the previous history batch.
+
+#### `editor.api.history.withoutSaving(fn: () => void): void`
+
+Run updates without saving operations to history.
+
+#### `editor.api.history.isMerging(): boolean | undefined`
+
+Read the current merge flag.
+
+#### `editor.api.history.isSaving(): boolean | undefined`
+
+Read the current saving flag.
+
+## Types
+
+```typescript
+import type { EditorStatePatch, Operation, Range } from '@platejs/slate'
+
+type History = {
+  redos: Batch[]
+  undos: Batch[]
+}
+
+type Batch = {
+  operations: Operation[]
+  selectionBefore: Range | null
+  selectionBeforeRoot?: string
+  statePatches: EditorStatePatch[]
+}
+```

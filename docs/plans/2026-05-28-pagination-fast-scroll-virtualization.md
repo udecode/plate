@@ -30,15 +30,15 @@ Completion threshold:
 
 Verification surface:
 - Planning checks run in `plate-2`.
-- Slate v2 source/runtime/browser claims must cite live `.tmp/slate-v2` files.
-- Execution proof, when accepted later, runs from `.tmp/slate-v2` and must cover
+- Slate v2 source/runtime/browser claims must cite live `Plate repo root` files.
+- Execution proof, when accepted later, runs from `Plate repo root` and must cover
   browser scroll replay, frame/long-task budget, DOM/page/row/cell budget,
   bounded memory/element churn, typecheck, lint, and focused Playwright rows.
 
 Constraints:
 - Planning mode may edit only planning, research, issue-ledger, and PR-reference
   artifacts.
-- Do not touch `.tmp/slate-v2` implementation again until this plan is ready and
+- Do not touch `Plate repo root` implementation again until this plan is ready and
   the user explicitly accepts execution mode.
 - Keep core Slate unopinionated. The example can expose stress controls; the
   package API should stay small and Slate-shaped.
@@ -49,11 +49,11 @@ Boundaries:
   `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`,
   `docs/slate-v2/references/**`.
 - Current live source owner:
-  `.tmp/slate-v2/packages/slate-layout/src/react.tsx`.
+  `packages/slate-layout/src/react.tsx`.
 - Current example owner:
-  `.tmp/slate-v2/site/examples/ts/pagination.tsx`.
+  `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx`.
 - Current browser proof owner:
-  `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/pagination.test.ts`.
 - Video evidence:
   `/Users/zbeyens/Library/Application Support/CleanShot/media/media_p2a87hYOIr/2026-05-28 at 09.18.04.mp4`.
 
@@ -67,7 +67,7 @@ Slate Plan lane state:
 - current_pass_status: complete
 - next_pass: none
 - next_action: none; if the user accepts this plan, start a separate execution
-  goal for the implementation queue in `.tmp/slate-v2`
+  goal for the implementation queue in `Plate repo root`
 - final_handoff_status: complete
 
 Current verdict:
@@ -95,9 +95,9 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | `slate-plan` read from `.agents/skills/slate-plan/SKILL.md`. |
 | Active goal checked or created | yes | Goal created in the first activation; current activation rechecked the active goal before this pass. |
-| Source of truth read before edits | yes | Read user video metadata/contact sheet, research index/log, issue references, live `.tmp/slate-v2` source/tests, `../virtual`, and `../pierre`. |
+| Source of truth read before edits | yes | Read user video metadata/contact sheet, research index/log, issue references, live `Plate repo root` source/tests, `../virtual`, and `../pierre`. |
 | `docs/solutions` checked for non-trivial existing-code work | yes | Read `docs/solutions/workflow-issues/2026-05-23-slate-v2-issue-claims-need-exact-browser-proof-and-honest-input-contracts.md`. |
-| Live `.tmp/slate-v2` grounding needed for current-state claims | yes | Source rows below cite exact `.tmp/slate-v2` files/lines. |
+| Live `Plate repo root` grounding needed for current-state claims | yes | Source rows below cite exact `Plate repo root` files/lines. |
 
 Work Checklist:
 - [x] Objective includes lane outcome, full pass schedule, one-pass-per-
@@ -128,9 +128,9 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run plan check at closure | final closure pass runs `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-28-pagination-fast-scroll-virtualization.md`; result recorded in Verification evidence |
-| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | yes | Record live `.tmp/slate-v2` source reads now; execution proof after accepted implementation | source read complete; execution proof explicitly deferred |
+| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | yes | Record live `Plate repo root` source reads now; execution proof after accepted implementation | source read complete; execution proof explicitly deferred |
 | Issue ledger or PR reference changed | yes | Sync issue/reference rows after issue pass | final v2 sync ledger note updated; matrix/dossier/PR unchanged after audit because existing rows already match |
-| Autoreview for uncommitted implementation changes | execution only | Run from `.tmp/slate-v2` after accepted implementation | N/A for planning closure; no implementation files were edited in this final planning pass |
+| Autoreview for uncommitted implementation changes | execution only | Run from `Plate repo root` after accepted implementation | N/A for planning closure; no implementation files were edited in this final planning pass |
 | Final user-review handoff | yes | Emit after closure pass | final handoff outline completed below and summarized in final response |
 | Goal plan complete | yes | Run `check-complete` | final closure checker command recorded in Verification evidence |
 
@@ -141,7 +141,7 @@ Phase / pass table:
 | Related issue discovery | complete | gitcrawl status/doctor/search, `#790`/`#5944` threads and neighbors, existing coverage/sync/dossier rows reused | issue-ledger pass |
 | Issue-ledger pass | complete | appended 2026-05-28 sync note; audited live ledger, v2 sync ledger, frozen ledger, clusters, fork dossier, coverage matrix, and PR reference | intent/boundary pass |
 | Intent/boundary and decision brief | complete | clarified owner split, invariants, hard non-goals, selected two-window architecture, and rejected alternatives | research refresh |
-| Research, ecosystem strategy, live-source refresh | complete | refreshed TanStack Virtual API/source, Pretext source/status, Tiptap Pages docs, `../virtual` browser tests, `../pierre` tree/diff virtualization tests, and current `.tmp/slate-v2` owners | pressure passes |
+| Research, ecosystem strategy, live-source refresh | complete | refreshed TanStack Virtual API/source, Pretext source/status, Tiptap Pages docs, `../virtual` browser tests, `../pierre` tree/diff virtualization tests, and current `Plate repo root` owners | pressure passes |
 | Performance/DX/migration/regression/simplicity pressure passes | complete | applied performance, performance-oracle, Vercel React, react-useeffect, tdd, and simplicity lenses; revised plan toward one shared page-window authority, indexed mount helpers, real scroll INP/DOM budgets, and eager hidden-child rendering proof | objection ledger |
 | Slate maintainer objection ledger | complete | tested core objections against public API minimalism, shared window authority, renderer child windowing, native-behavior degradation, browser-proof scope, collab/export fidelity, and example ownership; demoted public child-window slot to last resort behind an internal `EditableLayout` child-range plan | high-risk pass |
 | High-risk deliberate mode | complete | stress-tested the plan against blank-page races, false green scroll tests, overscan overfitting, dual-window drift, eager child allocation, native-behavior degradation, sparse-fixture confusion, selection retention, proof flakiness, and CI/runtime cost | ecosystem maintainer pass |
@@ -157,7 +157,7 @@ Scorecard:
 | Slate-close unopinionated DX | 0.20 | 0.94 | Public API stays at `domStrategy={{ type: 'virtualized', overscan }}`; `pageVirtualization`, public TanStack options, public renderer child-window slots, AST table splitting, and product TableKit dependency are rejected from the accepted plan. |
 | Plate and slate-yjs migration backbone | 0.15 | 0.92 | Page windows, child ranges, and mounted ranges remain derived/local; Plate can layer row/unit policy later; slate-yjs syncs document ops and optional page-break snapshots, not viewport churn or client page windows. |
 | Regression-proof testing strategy | 0.20 | 0.94 | Execution acceptance requires wheel/continuous-scroll replay, visible-label/no-blank assertions after every burst, shared window coherence, child-range materialization counters, selected-row editing, event-to-paint/long-task sampling, DOM/page/row/cell budgets, and native-behavior classification. |
-| Research evidence completeness | 0.15 | 0.95 | TanStack Virtual, Pretext/Premirror, Tiptap Pages, `../virtual`, `../pierre`, current `.tmp/slate-v2` runtime/test owners, issue ledgers, and PR reference were rechecked after high-risk hardening and revision. |
+| Research evidence completeness | 0.15 | 0.95 | TanStack Virtual, Pretext/Premirror, Tiptap Pages, `../virtual`, `../pierre`, current `Plate repo root` runtime/test owners, issue ledgers, and PR reference were rechecked after high-risk hardening and revision. |
 | shadcn-style composability and minimalism | 0.10 | 0.92 | Example controls stay URL-backed, virtualized-only, and proof-driven; core gets no product settings, no public virtualizer manager, and no UI policy beyond the existing Slate-shaped DOM strategy. |
 
 Final weighted score: 0.935. This is the plan-readiness score, not a shipped
@@ -170,10 +170,10 @@ Source-backed architecture north star:
   corridor plus selected/composing/promoted paths.
 - source evidence: current context already carries `visiblePageIndexes`,
   `visibleContentRange`, and `selectedPaths` in
-  `.tmp/slate-v2/packages/slate-layout/src/react.tsx:46-61`.
+  `packages/slate-layout/src/react.tsx:46-61`.
 - source evidence: current `useSlateLayoutFragments` filters units by visible
   content range or selected path overlap in
-  `.tmp/slate-v2/packages/slate-layout/src/react.tsx:217-226`.
+  `packages/slate-layout/src/react.tsx:217-226`.
 - rejected drift: do not split table nodes in the AST just to paginate; derived
   layout fragments/pages stay separate from model nodes.
 - migration posture: Plate/table plugins should provide row/unit layout policy;
@@ -182,25 +182,25 @@ Source-backed architecture north star:
 Public API target:
 | Surface | Proposed shape | User-facing DX | Compatibility / migration | Evidence | Verdict |
 |---------|----------------|----------------|---------------------------|----------|---------|
-| `Editable domStrategy` | Keep Slate-shaped `type: 'virtualized'`, `overscan`, `threshold`, `estimatedBlockSize`; do not leak TanStack options | Existing DX remains familiar and compact | No public migration if runtime internals change | `.tmp/slate-v2/site/examples/ts/pagination.tsx:995-1005` | keep |
-| Pagination example controls | Keep URL-backed stress controls; execution may add a fast-scroll preset only to stabilize the repro URL | Example is inspectable without hidden fixtures | Example-only, not core API | `.tmp/slate-v2/site/examples/ts/pagination.tsx:98-137`, `1264-1291` | revise |
+| `Editable domStrategy` | Keep Slate-shaped `type: 'virtualized'`, `overscan`, `threshold`, `estimatedBlockSize`; do not leak TanStack options | Existing DX remains familiar and compact | No public migration if runtime internals change | `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:995-1005` | keep |
+| Pagination example controls | Keep URL-backed stress controls; execution may add a fast-scroll preset only to stabilize the repro URL | Example is inspectable without hidden fixtures | Example-only, not core API | `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:98-137`, `1264-1291` | revise |
 | Scroll test harness | Add internal Playwright helper, not public runtime API | Tests express user paths: wheel, jump, continuous scroll, no blanks | Test-only | `../virtual/packages/react-virtual/e2e/app/test/scroll.spec.ts:54-112` | add |
 
 Internal runtime target:
 | Layer | Current owner | Target mechanism | Avoids | Evidence | Verdict |
 |-------|---------------|------------------|--------|----------|---------|
-| Shared page-window authority | `PagedEditable` plus `Editable` virtualized plan | Compute one page-window snapshot keyed by visible page item indexes and reuse it for page chrome, editable top-level rows, and page-derived content range | Independent windows drifting under fast scroll and producing blank page chrome or row/chrome mismatch | `.tmp/slate-v2/packages/slate-layout/src/react.tsx:550-620`; `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:407-422` | add |
-| Page mount plan | `.tmp/slate-v2/packages/slate-layout/src/page-mount-plan.ts` | Index fragments by page once, build page/spread items in O(pages + fragments + units), and derive visible item ranges by page-window key/binary range instead of filtering every item on every raw scroll tick | O(pageGroups * fragments) plan creation and O(pageItems) viewport filtering as the default hot scroll path | lines 57-125 and 177-205 | revise |
-| Scroll viewport update | `.tmp/slate-v2/packages/slate-layout/src/react.tsx` | Store raw scroll geometry in refs, schedule one rAF update, and set React state only when the page-window key or content corridor changes | Pixel-level React renders during fast scroll | lines 509-536; React/useEffect lens | revise |
-| Fragment unit materialization | `.tmp/slate-v2/packages/slate-layout/src/react.tsx` | Unit corridor based on shared page window plus selected/composing/promoted paths; keep selected deep rows mounted through indexed path-to-page lookup | Full multi-page table materialization or selected row unmount | lines 217-226 and 609-620; `use-virtualized-root-plan.ts:371-397` | keep/revise |
-| Renderer child windowing | `EditableLayout` plus `EditableDescendantNode` internal child ranges | Add a layout-owned child-range plan so core creates only visible child ranges plus selected/composing/promoted paths; public renderer child-window API is not part of the accepted plan | React element allocation proportional to table row count on every visible table render, without widening unstable renderer API | `.tmp/slate-v2/site/examples/ts/pagination.tsx:228-290`; `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1030-1148`; `docs/slate-v2/references/pr-description.md:1327-1418` | revise |
-| Stress document tail | `.tmp/slate-v2/site/examples/ts/pagination.tsx` | Stress pages should render clear content or deliberate sparse diagnostic placeholders, and the proof must assert visible stress labels after fast scroll | False positives where blank pages look like virtualization failure | lines 426-431 and 614-622 | revise |
+| Shared page-window authority | `PagedEditable` plus `Editable` virtualized plan | Compute one page-window snapshot keyed by visible page item indexes and reuse it for page chrome, editable top-level rows, and page-derived content range | Independent windows drifting under fast scroll and producing blank page chrome or row/chrome mismatch | `packages/slate-layout/src/react.tsx:550-620`; `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:407-422` | add |
+| Page mount plan | `packages/slate-layout/src/page-mount-plan.ts` | Index fragments by page once, build page/spread items in O(pages + fragments + units), and derive visible item ranges by page-window key/binary range instead of filtering every item on every raw scroll tick | O(pageGroups * fragments) plan creation and O(pageItems) viewport filtering as the default hot scroll path | lines 57-125 and 177-205 | revise |
+| Scroll viewport update | `packages/slate-layout/src/react.tsx` | Store raw scroll geometry in refs, schedule one rAF update, and set React state only when the page-window key or content corridor changes | Pixel-level React renders during fast scroll | lines 509-536; React/useEffect lens | revise |
+| Fragment unit materialization | `packages/slate-layout/src/react.tsx` | Unit corridor based on shared page window plus selected/composing/promoted paths; keep selected deep rows mounted through indexed path-to-page lookup | Full multi-page table materialization or selected row unmount | lines 217-226 and 609-620; `use-virtualized-root-plan.ts:371-397` | keep/revise |
+| Renderer child windowing | `EditableLayout` plus `EditableDescendantNode` internal child ranges | Add a layout-owned child-range plan so core creates only visible child ranges plus selected/composing/promoted paths; public renderer child-window API is not part of the accepted plan | React element allocation proportional to table row count on every visible table render, without widening unstable renderer API | `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:228-290`; `packages/slate-react/src/components/editable-text-blocks.tsx:1030-1148`; `docs/slate-v2/references/pr-description.md:1327-1418` | revise |
+| Stress document tail | `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx` | Stress pages should render clear content or deliberate sparse diagnostic placeholders, and the proof must assert visible stress labels after fast scroll | False positives where blank pages look like virtualization failure | lines 426-431 and 614-622 | revise |
 
 Hook / component / render DX target:
 | Surface | Call-site shape | Composition rule | Performance rule | Evidence | Verdict |
 |---------|-----------------|------------------|------------------|----------|---------|
-| `PagedEditable` | `layout`, `pageView`, `domStrategy`, `renderPage` | Page chrome belongs outside document content | React projects layout; Slate model stays source of truth | `.tmp/slate-v2/site/examples/ts/pagination.tsx:1346-1352` | keep |
-| `useSlateLayoutFragments` | renderer reads fragments for its own path | Renderers should not compute global pagination | Returned fragments must already be windowed | `.tmp/slate-v2/packages/slate-layout/src/react.tsx:197-235` | keep |
+| `PagedEditable` | `layout`, `pageView`, `domStrategy`, `renderPage` | Page chrome belongs outside document content | React projects layout; Slate model stays source of truth | `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:1346-1352` | keep |
+| `useSlateLayoutFragments` | renderer reads fragments for its own path | Renderers should not compute global pagination | Returned fragments must already be windowed | `packages/slate-layout/src/react.tsx:197-235` | keep |
 
 Plate migration-backbone target:
 | Pressure | Slate substrate target | Plate adaptation route | Non-goal | Evidence | Verdict |
@@ -212,7 +212,7 @@ slate-yjs migration-backbone target:
 | Pressure | Slate substrate target | Collaboration route | Non-goal | Evidence | Verdict |
 |----------|------------------------|---------------------|----------|---------|---------|
 | Page/window churn | Keep as derived client view state | Do not sync mounted page/window state through Yjs | Cross-client identical page breaks by default | Pretext drift research | keep |
-| Strict pagination fidelity | Optional authoritative page-break snapshot later | Sync snapshot/profile only when app opts in | Promise strict export/collab fidelity by default | `docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md`; `.tmp/slate-v2/packages/slate-layout/src/index.ts:2369-2413` | keep |
+| Strict pagination fidelity | Optional authoritative page-break snapshot later | Sync snapshot/profile only when app opts in | Promise strict export/collab fidelity by default | `docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md`; `packages/slate-layout/src/index.ts:2369-2413` | keep |
 
 Intent / boundary record:
 - intent: make `/examples/pagination?strategy=virtualized` survive real fast
@@ -336,7 +336,7 @@ Ecosystem strategy synthesis:
 | `../virtual` browser tests | `../virtual/packages/react-virtual/e2e/app/test/scroll.spec.ts:54-112`, `measure-element.spec.ts:3-42`, `stale-index.spec.ts:3-38` | Playwright tests start at offset, perform user-like scroll, assert visible indexes and contiguous geometry, then stress resize/delete/stale-key paths | Passing only programmatic `scrollToIndex` or one `scrollTop` jump | Add video-class wheel/repeated-scroll rows, no gaps/overlaps, visible-content assertions, dynamic resize/delete proof, and stale path/key guards | Fixed sleeps as primary proof; list-only assumptions | Poll geometry, DOM counts, frame/long-task budgets, and editor state after real scroll sequences | agree |
 | `../pierre` trees | `../pierre/packages/trees/test/file-tree-virtualization-window.test.ts:38-85`, `87-188`, `189-329`, `331-443`, `445-532` | Deterministic unit tests for visible window math, selected/focused retention, scroll-to-path without DOM focus theft, offsets, invisible projection paths, sticky ancestors, scrolling state, and collapse coherence | Browser-only tests hiding broken range math | Add pure page-mount/window tests for viewport/overscan, selected/composing/promoted retention, invisible projection no-ops, sticky/page chrome offsets, and collapse/edit coherence | Treat jsdom/unit proof as browser perf proof | Split math tests from browser replay: fast unit tests prove range decisions; Playwright proves human scroll and rendering | agree |
 | `../pierre` diffs | `../pierre/packages/diffs/src/components/Virtualizer.ts:20-38`, `76-117`, `288-385`, `387-437`; `../pierre/packages/diffs/src/react/CodeView.tsx:762-800` | Pragmatic large diff virtualizer: passive scroll listeners, queued render, dirty flags, big pixel overscan, scroll anchors/repair, and user intent cancellation | Programmatic scroll fighting user scroll; Safari blanking in huge code views | Keep scroll ownership explicit, queue/coalesce range recompute, anchor visible content when measurements shift, cancel pending programmatic scroll on real user intent | Blindly copy 1000px overscan/Safari hacks into core Slate; expose debug globals | Core proof should make blanking impossible by window correctness first; browser-specific hacks stay gated fallback evidence | partial |
-| `.tmp/slate-v2` current owners | `.tmp/slate-v2/packages/slate-layout/src/react.tsx:46-61`, `197-226`, `509-620`; `.tmp/slate-v2/packages/slate-layout/src/page-mount-plan.ts:57-205`; `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:660-691` | Existing Slate code already has page indexes, content range filtering, selected-path retention, derived page mount plans, and bounded-DOM one-jump proof | Starting from scratch | Preserve the owner split and add coalesced viewport/window-index updates plus stronger browser tests | Treat the current one-jump test as release proof | Execute against existing `slate-layout`/example/test owners after user accepts the plan | revise |
+| `Plate repo root` current owners | `packages/slate-layout/src/react.tsx:46-61`, `197-226`, `509-620`; `packages/slate-layout/src/page-mount-plan.ts:57-205`; `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:660-691` | Existing Slate code already has page indexes, content range filtering, selected-path retention, derived page mount plans, and bounded-DOM one-jump proof | Starting from scratch | Preserve the owner split and add coalesced viewport/window-index updates plus stronger browser tests | Treat the current one-jump test as release proof | Execute against existing `slate-layout`/example/test owners after user accepts the plan | revise |
 
 Ecosystem maintainer pass:
 | System | High-risk pressure checked | Keep | Tighten | Reject / do not copy | Result |
@@ -373,13 +373,13 @@ Revision pass final architecture:
 Performance / DX / migration / regression / simplicity pressure pass:
 | Lens | Pressure applied | Keep | Revise / add | Reject | Evidence |
 |------|------------------|------|--------------|--------|----------|
-| Performance cohorting | The plan needs named cohorts, not "large doc" vibes | normal/medium stay native or staged; virtualized paged mode is for stress/pathological examples | Define default proof cohort as `~1000 pages + 10-page table`; pathological cohort is `>2000 pages`, custom renderers, comments/annotations, mobile/IME, or collab churn | Claiming generic large-doc readiness from one pagination example | `performance` cohort rule; example defaults/maxes at `.tmp/slate-v2/site/examples/ts/pagination.tsx:83-124` |
-| Repeated-unit budget | The hot units are page surfaces, top-level virtual rows, table rows/cells, hidden boundaries, and DOM nodes | Current proof already tracks pages/rows/cells/DOM | Add target budgets: default stress page surfaces <= 8, overscan-4 <= 14, visible table rows <= 80 default, selected-row retention <= 220 rows / <= 660 cells, DOM < 1400 default and < 3600 overscan-4; browser trace must record heap/listener/boundary tags | Broad overscan as the fix | `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:632-759`; memory/DOM tagging rule |
-| Interaction metrics | Scroll breakage is an interaction problem, not a static DOM-count problem | Keep bounded DOM checks as necessary but insufficient | Add p50/p75/p95/p99 event-to-paint for wheel/continuous scroll, max long task, dropped-frame count, and no visible blank/gap/overlap after every scroll burst | Average-only compose timing or one `scrollTop` jump as proof | `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:660-691`; interaction INP rule |
-| React runtime | Visible editor content is urgent; page/window recompute is scroll-external sync | Keep passive scroll listeners and TanStack range extraction | Use rAF coalescing, refs for raw transient scroll values, stable window keys, and React Performance Tracks when render breadth is suspicious; do not rely on `startTransition` to hide a broken visible window | React `Activity` or transitions as editor-body virtualization primitives | `.tmp/slate-v2/packages/slate-layout/src/react.tsx:496-549`; react-useeffect and React 19 runtime rules |
-| Algorithmic complexity | Current helpers still have broad scans that are acceptable at 1k but not the best architecture | Keep derived page items and maps | Build page/fragments/unit indexes once; derive visible page item range by key/binary lookup; index path-to-page for selected deep rows | Per-scroll filtering of all page items or per-selection scans through every page item as the durable design | `.tmp/slate-v2/packages/slate-layout/src/page-mount-plan.ts:73-83`, `177-205`; `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:244-270` |
-| Renderer DX | Example renderers should receive only the child ranges core intends to materialize, not hand-roll row slicing after eager child creation | Keep `slots.contentBoundary` semantics for native-behavior contracts | Add internal `EditableLayout` child-range planning first; reopen public renderer API only with failing proof plus a separate maintainer review | Public table-specific API, TableKit, app-only slicing, or public renderer slots as the default solution | `.tmp/slate-v2/site/examples/ts/pagination.tsx:228-290`; `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:454-568`, `1030-1148` |
-| Migration | Layout windows must remain derived/local | Keep page-break snapshot as optional authoritative state | Plate can provide row/unit layout policy through node layout units; slate-yjs should sync document ops and optional page-break snapshots, not viewport windows | AST table splitting or synced viewport/mount state | `.tmp/slate-v2/packages/slate-layout/src/index.ts:2369-2413`; Tiptap research |
+| Performance cohorting | The plan needs named cohorts, not "large doc" vibes | normal/medium stay native or staged; virtualized paged mode is for stress/pathological examples | Define default proof cohort as `~1000 pages + 10-page table`; pathological cohort is `>2000 pages`, custom renderers, comments/annotations, mobile/IME, or collab churn | Claiming generic large-doc readiness from one pagination example | `performance` cohort rule; example defaults/maxes at `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:83-124` |
+| Repeated-unit budget | The hot units are page surfaces, top-level virtual rows, table rows/cells, hidden boundaries, and DOM nodes | Current proof already tracks pages/rows/cells/DOM | Add target budgets: default stress page surfaces <= 8, overscan-4 <= 14, visible table rows <= 80 default, selected-row retention <= 220 rows / <= 660 cells, DOM < 1400 default and < 3600 overscan-4; browser trace must record heap/listener/boundary tags | Broad overscan as the fix | `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:632-759`; memory/DOM tagging rule |
+| Interaction metrics | Scroll breakage is an interaction problem, not a static DOM-count problem | Keep bounded DOM checks as necessary but insufficient | Add p50/p75/p95/p99 event-to-paint for wheel/continuous scroll, max long task, dropped-frame count, and no visible blank/gap/overlap after every scroll burst | Average-only compose timing or one `scrollTop` jump as proof | `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:660-691`; interaction INP rule |
+| React runtime | Visible editor content is urgent; page/window recompute is scroll-external sync | Keep passive scroll listeners and TanStack range extraction | Use rAF coalescing, refs for raw transient scroll values, stable window keys, and React Performance Tracks when render breadth is suspicious; do not rely on `startTransition` to hide a broken visible window | React `Activity` or transitions as editor-body virtualization primitives | `packages/slate-layout/src/react.tsx:496-549`; react-useeffect and React 19 runtime rules |
+| Algorithmic complexity | Current helpers still have broad scans that are acceptable at 1k but not the best architecture | Keep derived page items and maps | Build page/fragments/unit indexes once; derive visible page item range by key/binary lookup; index path-to-page for selected deep rows | Per-scroll filtering of all page items or per-selection scans through every page item as the durable design | `packages/slate-layout/src/page-mount-plan.ts:73-83`, `177-205`; `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:244-270` |
+| Renderer DX | Example renderers should receive only the child ranges core intends to materialize, not hand-roll row slicing after eager child creation | Keep `slots.contentBoundary` semantics for native-behavior contracts | Add internal `EditableLayout` child-range planning first; reopen public renderer API only with failing proof plus a separate maintainer review | Public table-specific API, TableKit, app-only slicing, or public renderer slots as the default solution | `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:228-290`; `packages/slate-react/src/components/editable-text-blocks.tsx:454-568`, `1030-1148` |
+| Migration | Layout windows must remain derived/local | Keep page-break snapshot as optional authoritative state | Plate can provide row/unit layout policy through node layout units; slate-yjs should sync document ops and optional page-break snapshots, not viewport windows | AST table splitting or synced viewport/mount state | `packages/slate-layout/src/index.ts:2369-2413`; Tiptap research |
 | Simplicity | The best fix is one small shared window contract, not a new virtualization framework | Keep `domStrategy` as the public knob | Add private page-window helpers and internal child-range planning; inline example-only stress logic stays local | `pageVirtualization` prop, public TanStack config, public child-window slot as the starting point, giant "virtualization manager" abstraction | Slate Plan simplicity lens |
 
 Performance pass record:
@@ -431,7 +431,7 @@ Legacy regression proof matrix:
 Browser stress / parity strategy:
 | Surface | Scenario | Browser/device | Command or proof route | Expected signal | Status |
 |---------|----------|----------------|------------------------|-----------------|--------|
-| Pagination table fast scroll | Replay video: continuous wheel/trackpad-like scroll from table start into tail | Chromium first; Safari/WebKit later if stable | `.tmp/slate-v2` Playwright focused test | no visible blank page windows, p95 event-to-paint <= 32ms, no long task > 50ms, dropped frames recorded | execution gate |
+| Pagination table fast scroll | Replay video: continuous wheel/trackpad-like scroll from table start into tail | Chromium first; Safari/WebKit later if stable | `Plate repo root` Playwright focused test | no visible blank page windows, p95 event-to-paint <= 32ms, no long task > 50ms, dropped frames recorded | execution gate |
 | 1000-page tail | Jump and continuous scroll across sparse tail | Chromium | Playwright with DOM counters and visible-label assertions | page surfaces <= budget, rows/cells <= budget, visible stress content present, no accidental blank page | execution gate |
 | Window math | Page/spread item range for viewport and overscan | bun/jsdom/unit | `slate-layout` page-mount-plan test | exact item indexes; old windows unmount; selected/composing/promoted paths retained | execution gate |
 | Renderer child windowing | Multi-page table row window | unit plus Playwright | internal `EditableLayout` child-range path proves hidden rows are not mounted and not eagerly rendered as row components; public slot only if internal proof fails | row/cell component budget follows visible ranges, not total table rows | execution gate |
@@ -439,15 +439,15 @@ Browser stress / parity strategy:
 Verification workspace gate:
 | Claim | Workspace | Command | Result | Owner |
 |-------|-----------|---------|--------|-------|
-| Current source has page surface and unit windowing owners | plate-2 read of `.tmp/slate-v2` | `nl -ba .tmp/slate-v2/packages/slate-layout/src/react.tsx ...` | read | current pass |
+| Current source has page surface and unit windowing owners | plate-2 read of `Plate repo root` | `nl -ba packages/slate-layout/src/react.tsx ...` | read | current pass |
 | User video repro evidence exists | plate-2 temp read | `ffprobe ... 2026-05-28 at 09.18.04.mp4`; contact sheet via `/tmp` | 4.625s, 2178x1838, table fast-scroll into blank page windows | current pass |
-| Runtime behavior fixed | `.tmp/slate-v2` | focused browser replay | not claimed by planning; required after accepted execution | execution |
+| Runtime behavior fixed | `Plate repo root` | focused browser replay | not claimed by planning; required after accepted execution | execution |
 
 Autoreview workspace gate:
 | Reviewed patch owner | Cwd | Command | Result | Notes |
 |----------------------|-----|---------|--------|-------|
 | planning-only current pass | plate-2 | N/A | N/A | no new implementation execution after this plan activation |
-| accepted Slate v2 implementation | `.tmp/slate-v2` | `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local` | execution gate | execution-only |
+| accepted Slate v2 implementation | `Plate repo root` | `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local` | execution gate | execution-only |
 
 Applicable implementation-skill review matrix:
 | Lens | Applies | Status | Findings | Plan delta |
@@ -463,16 +463,16 @@ Applicable implementation-skill review matrix:
 High-risk deliberate-mode pre-mortem:
 | Risk | Temptation | Worst failure | Source pressure | Mitigation | Proof gate | Verdict |
 |------|------------|---------------|-----------------|------------|------------|---------|
-| Blank visible pages during fast scroll | Treat it as fixture sparsity or increase overscan | User scrolls into an accidental empty page window while the editor still reports bounded DOM | `PagedEditable` updates viewport from scroll/resize at `.tmp/slate-v2/packages/slate-layout/src/react.tsx:509-536`; current browser proof jumps once at `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:660-670` | Distinguish deliberate sparse fixture from missing materialization with visible stress labels and no-blank viewport assertions after each scroll burst | Playwright wheel/continuous-scroll replay asserts visible page/table/stress labels in the viewport after every burst | complete: must fail on blanks, not just count DOM |
-| False green scroll proof | Keep the existing direct `scrollTop` jump | Test passes while real trackpad/wheel scroll freezes | Existing test mutates `scrollTop` and waits two rAFs at `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:660-670`; memory notes say static bounded-DOM claims are not enough | Add a reusable user-scroll helper with repeated wheel deltas, sampled frames, and poll-based geometry/content assertions | Browser row records p50/p75/p95/p99 event-to-paint, max long task, dropped-frame count, and final visible content | complete: direct jump can remain as secondary proof only |
-| Overscan overfitting | Hide the race by mounting more pages | DOM/memory grows and still blanks on fast machines, slow machines, or huge docs | Page overscan is URL-backed at `.tmp/slate-v2/site/examples/ts/pagination.tsx:111-136`; current proof checks more pages at `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:708-732` | Keep overscan as a knob, not the fix; correctness comes from shared window state and child ranges | Overscan-1 and overscan-4 both pass no-blank and bounded DOM/page/row/cell budgets | complete: overscan is diagnostic/escape hatch |
-| Dual-window drift | Let `PagedEditable` and `Editable` each compute their own virtual ranges | Page chrome and editable content disagree during fast scroll | `PagedEditable` exposes page layout items at `.tmp/slate-v2/packages/slate-layout/src/react.tsx:550-592`; `Editable` builds a separate virtualizer at `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:407-422` | Use one layout-owned page-window snapshot through `EditableLayout`; compare mounted page indexes against visible editable ranges | Unit contract plus browser assertion proves page surface indexes, editable page items, and visible labels agree | complete: shared authority stays mandatory |
-| Eager child allocation behind sliced rows | Stop at app-renderer `Children.toArray(children).slice(...)` | Hidden table rows still create React elements, so scrolling stays expensive | Example slices children at `.tmp/slate-v2/site/examples/ts/pagination.tsx:237-265`; core creates child elements before renderers at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1030-1148` | Implement internal `EditableLayout` child-range planning; do not add public renderer API in this plan | Row/cell component counters follow visible/selected/composing ranges, not total table rows | complete: internal first |
-| Selected/composing content unmounts | Filter only by viewport | User loses caret/edit state when the selected row exits the normal corridor | Current retained range logic maps selected paths to page items at `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:371-397`; layout unit tests retain selected/promoted/composing pages at `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts:1744-1778` | Preserve selected/composing/promoted paths through both page-window and child-range plans | Edit row 120 and composing-path proof remains mounted with bounded rows/cells | complete: retention is non-negotiable |
-| Native behavior degradation hidden behind "virtualized" | Claim browser-native parity for unmounted content | Find, a11y, copy, selection, IME, or mobile regressions become surprise bugs | Current hidden boundaries set `findPolicy: 'not-native-until-mounted'` and `selectionPolicy: 'materialize'` in `.tmp/slate-v2/site/examples/ts/pagination.tsx:243-258`, `270-285` | Classify each behavior as native, model-backed, materialize-first, unsupported, or opt-in-only before claiming parity | Degradation matrix is part of execution acceptance; no production-ready claim until rows are proven | complete: degraded mode stays explicit |
-| Sparse fixture confused with runtime blank | Count stress pages but render blank-looking pages | The test cannot tell expected sparse pages from broken materialization | Stress pages currently render labels at `.tmp/slate-v2/site/examples/ts/pagination.tsx:426-431`; current proof counts stress pages at `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:642-646` | Assert actual visible text/geometry, not just total page count | Browser replay checks viewport text or page labels after fast scroll into stress tail | complete: visible labels required |
-| Proof flakiness | Use fixed sleeps or two-rAF waits as the main signal | CI alternates between false pass and false fail | Current jump waits two rAFs at `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:666-669`; scaled test also waits two rAFs at lines 850-852 | Prefer `expect.poll` over stable geometry/content/counters and collect perf samples separately | Tests poll for stable state, then report sampled frame/long-task metrics | complete: fixed rAF is only a settling helper |
-| CI/runtime cost explosion | Put a 1000-page wheel trace in every browser/profile | Slow suite trains everyone to skip the proof | Example defaults to 990 stress pages and max 2000 at `.tmp/slate-v2/site/examples/ts/pagination.tsx:89-96`, `121-124` | Keep one focused Chromium stress row in iteration; wider browser/device proof is release-gated | Focused test is tagged/isolated, with smaller unit range tests covering most permutations | complete: expensive proof is scoped |
+| Blank visible pages during fast scroll | Treat it as fixture sparsity or increase overscan | User scrolls into an accidental empty page window while the editor still reports bounded DOM | `PagedEditable` updates viewport from scroll/resize at `packages/slate-layout/src/react.tsx:509-536`; current browser proof jumps once at `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:660-670` | Distinguish deliberate sparse fixture from missing materialization with visible stress labels and no-blank viewport assertions after each scroll burst | Playwright wheel/continuous-scroll replay asserts visible page/table/stress labels in the viewport after every burst | complete: must fail on blanks, not just count DOM |
+| False green scroll proof | Keep the existing direct `scrollTop` jump | Test passes while real trackpad/wheel scroll freezes | Existing test mutates `scrollTop` and waits two rAFs at `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:660-670`; memory notes say static bounded-DOM claims are not enough | Add a reusable user-scroll helper with repeated wheel deltas, sampled frames, and poll-based geometry/content assertions | Browser row records p50/p75/p95/p99 event-to-paint, max long task, dropped-frame count, and final visible content | complete: direct jump can remain as secondary proof only |
+| Overscan overfitting | Hide the race by mounting more pages | DOM/memory grows and still blanks on fast machines, slow machines, or huge docs | Page overscan is URL-backed at `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:111-136`; current proof checks more pages at `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:708-732` | Keep overscan as a knob, not the fix; correctness comes from shared window state and child ranges | Overscan-1 and overscan-4 both pass no-blank and bounded DOM/page/row/cell budgets | complete: overscan is diagnostic/escape hatch |
+| Dual-window drift | Let `PagedEditable` and `Editable` each compute their own virtual ranges | Page chrome and editable content disagree during fast scroll | `PagedEditable` exposes page layout items at `packages/slate-layout/src/react.tsx:550-592`; `Editable` builds a separate virtualizer at `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:407-422` | Use one layout-owned page-window snapshot through `EditableLayout`; compare mounted page indexes against visible editable ranges | Unit contract plus browser assertion proves page surface indexes, editable page items, and visible labels agree | complete: shared authority stays mandatory |
+| Eager child allocation behind sliced rows | Stop at app-renderer `Children.toArray(children).slice(...)` | Hidden table rows still create React elements, so scrolling stays expensive | Example slices children at `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:237-265`; core creates child elements before renderers at `packages/slate-react/src/components/editable-text-blocks.tsx:1030-1148` | Implement internal `EditableLayout` child-range planning; do not add public renderer API in this plan | Row/cell component counters follow visible/selected/composing ranges, not total table rows | complete: internal first |
+| Selected/composing content unmounts | Filter only by viewport | User loses caret/edit state when the selected row exits the normal corridor | Current retained range logic maps selected paths to page items at `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:371-397`; layout unit tests retain selected/promoted/composing pages at `packages/slate-layout/test/page-layout-contract.test.ts:1744-1778` | Preserve selected/composing/promoted paths through both page-window and child-range plans | Edit row 120 and composing-path proof remains mounted with bounded rows/cells | complete: retention is non-negotiable |
+| Native behavior degradation hidden behind "virtualized" | Claim browser-native parity for unmounted content | Find, a11y, copy, selection, IME, or mobile regressions become surprise bugs | Current hidden boundaries set `findPolicy: 'not-native-until-mounted'` and `selectionPolicy: 'materialize'` in `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:243-258`, `270-285` | Classify each behavior as native, model-backed, materialize-first, unsupported, or opt-in-only before claiming parity | Degradation matrix is part of execution acceptance; no production-ready claim until rows are proven | complete: degraded mode stays explicit |
+| Sparse fixture confused with runtime blank | Count stress pages but render blank-looking pages | The test cannot tell expected sparse pages from broken materialization | Stress pages currently render labels at `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:426-431`; current proof counts stress pages at `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:642-646` | Assert actual visible text/geometry, not just total page count | Browser replay checks viewport text or page labels after fast scroll into stress tail | complete: visible labels required |
+| Proof flakiness | Use fixed sleeps or two-rAF waits as the main signal | CI alternates between false pass and false fail | Current jump waits two rAFs at `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:666-669`; scaled test also waits two rAFs at lines 850-852 | Prefer `expect.poll` over stable geometry/content/counters and collect perf samples separately | Tests poll for stable state, then report sampled frame/long-task metrics | complete: fixed rAF is only a settling helper |
+| CI/runtime cost explosion | Put a 1000-page wheel trace in every browser/profile | Slow suite trains everyone to skip the proof | Example defaults to 990 stress pages and max 2000 at `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:89-96`, `121-124` | Keep one focused Chromium stress row in iteration; wider browser/device proof is release-gated | Focused test is tagged/isolated, with smaller unit range tests covering most permutations | complete: expensive proof is scoped |
 | Measurement/collab overclaim | Promise identical page breaks across peers | Local browser measurement drift leaks into collab/export claims | Plan already records Pretext canvas/browser-profile drift and `slate-layout` page-break snapshot support | Keep viewport/window state local; strict page-break fidelity uses optional authoritative snapshots only | PR/reference rows keep production-ready virtualization and deterministic export/collab unclaimed | complete: no claim promotion |
 
 Slate maintainer objection ledger:
@@ -569,19 +569,19 @@ Implementation phases with owners:
 |-------|-------|-------|----------------|---------------|--------------|
 | 1. Test harness | slate-plan execution mode | Add scroll replay helper with wheel/continuous scroll, frame sampler, DOM/page/row/cell counters, no-visible-blank assertion | accepted plan | failing/passing browser row matches video class | focused Playwright |
 | 2. Unit window math | slate-plan execution mode | Add page-mount-plan/window tests inspired by `../pierre`, including indexed build/range helpers and selected/composing retention | phase 1 shape accepted | exact page item ranges, old windows unmount, retained paths survive | `bun test ./packages/slate-layout/...` |
-| 3. Runtime windowing | slate-plan execution mode | One shared page-window authority, rAF/window-key scroll update gating, selected/composing retention | failing tests | browser and unit budgets green | `.tmp/slate-v2` focused gates |
+| 3. Runtime windowing | slate-plan execution mode | One shared page-window authority, rAF/window-key scroll update gating, selected/composing retention | failing tests | browser and unit budgets green | `Plate repo root` focused gates |
 | 4. Renderer child windowing | slate-plan execution mode | Remove eager hidden-row child rendering if confirmed by failing proof; implement internal `EditableLayout` child-range planning first | runtime window proof green | hidden table rows do not create/mount row/cell components during scroll; no public renderer slot added in this plan | unit plus Playwright budget |
 | 5. Example DX | slate-plan execution mode | Clear virtualized stress content and controls | runtime proof green | user can inspect 1000-page stress/doc state from URL | Playwright route proof |
-| 6. Sync/review | slate-plan execution mode | changeset, ledgers, PR reference, autoreview | implementation green | no accepted/actionable autoreview findings | autoreview from `.tmp/slate-v2` |
+| 6. Sync/review | slate-plan execution mode | changeset, ledgers, PR reference, autoreview | implementation green | no accepted/actionable autoreview findings | autoreview from `Plate repo root` |
 
 Fast driver gates:
 | Gate | Cwd | Command / artifact | Proves | Status |
 |------|-----|--------------------|--------|--------|
 | planning artifact check | plate-2 | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-28-pagination-fast-scroll-virtualization.md` | closure state only | closure pass |
-| Slate v2 current source read | plate-2 | `nl -ba .tmp/slate-v2/packages/slate-layout/src/react.tsx ...` | source owners | complete |
+| Slate v2 current source read | plate-2 | `nl -ba packages/slate-layout/src/react.tsx ...` | source owners | complete |
 | Video evidence | plate-2 | `ffprobe` plus `/tmp/codex-pagination-scroll-video/contact.jpg` | table fast scroll into blank windows | complete |
-| Browser replay | `.tmp/slate-v2` | focused Playwright scroll replay | real regression proof | execution gate |
-| Package proof | `.tmp/slate-v2` | `bun --filter slate-layout typecheck` and focused tests | runtime/type safety | execution gate |
+| Browser replay | `Plate repo root` | focused Playwright scroll replay | real regression proof | execution gate |
+| Package proof | `Plate repo root` | `bun --filter slate-layout typecheck` and focused tests | runtime/type safety | execution gate |
 
 High-risk execution acceptance gates:
 | Gate | Must prove | Rejects | Owner | Status |
@@ -612,9 +612,9 @@ Final user-review handoff outline:
   remain owned by their prior proof rows.
 - proof gates: execution starts with failing browser replay for the attached
   video class, then page-window/unit tests, runtime windowing, child-range
-  materialization, example DX, sync, and autoreview from `.tmp/slate-v2`.
+  materialization, example DX, sync, and autoreview from `Plate repo root`.
 - accepted-plan execution handoff: create a separate execution goal only after
-  user acceptance; run implementation and proof from `.tmp/slate-v2`.
+  user acceptance; run implementation and proof from `Plate repo root`.
 
 Final completion gates:
 | Gate | Required evidence | Status |
@@ -622,9 +622,9 @@ Final completion gates:
 | score >= 0.92 and no dimension below 0.85 | scorecard rows cite evidence; weighted total is 0.935 and lowest dimension is 0.92 | complete |
 | all pass rows complete or skipped with evidence | phase/pass table closed through closure score and final gates | complete |
 | issue/reference sync closed | issue-ledger sync status closed; final v2 sync note added with no PR/matrix/dossier changes | complete |
-| live source grounding complete | source-backed rows cite current `.tmp/slate-v2` owners and sibling references | complete |
+| live source grounding complete | source-backed rows cite current `Plate repo root` owners and sibling references | complete |
 | workspace verification recorded | verification workspace gate distinguishes planning evidence from deferred execution proof | complete |
-| autoreview clean or N/A | N/A for planning closure because no implementation files were edited in this final pass; execution requires autoreview from `.tmp/slate-v2` | complete |
+| autoreview clean or N/A | N/A for planning closure because no implementation files were edited in this final pass; execution requires autoreview from `Plate repo root` | complete |
 | final handoff emitted or lane remains pending | final handoff outline is filled and final response summarizes it | complete |
 | `check-complete` passes | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-28-pagination-fast-scroll-virtualization.md` | complete |
 
@@ -666,7 +666,7 @@ Timeline:
   goal, read research/issue references, inspected the video, scanned
   `../virtual`/`../pierre`, and grounded current Slate v2 owners.
 - 2026-05-28 Research pass refreshed TanStack Virtual, Pretext, Tiptap Pages,
-  `../virtual`, `../pierre`, and current `.tmp/slate-v2` source/test evidence.
+  `../virtual`, `../pierre`, and current `Plate repo root` source/test evidence.
 - 2026-05-28 Pressure pass applied performance, DX, migration, regression, and
   simplicity lenses and revised the architecture toward one shared page-window
   authority plus indexed range helpers.
@@ -691,53 +691,53 @@ Timeline:
   user review, with no implementation edits and no new issue claim.
 
 Verification evidence:
-- `nl -ba .tmp/slate-v2/packages/slate-layout/src/react.tsx | sed -n '1,90p'`
+- `nl -ba packages/slate-layout/src/react.tsx | sed -n '1,90p'`
   - Result: current fragment context carries `selectedPaths`,
     `visibleContentRange`, and `visiblePageIndexes`.
-- `nl -ba .tmp/slate-v2/packages/slate-layout/src/react.tsx | sed -n '190,245p'`
+- `nl -ba packages/slate-layout/src/react.tsx | sed -n '190,245p'`
   - Result: `useSlateLayoutFragments` filters by visible page index, visible
     content range, and selected-path overlap.
-- `nl -ba .tmp/slate-v2/packages/slate-layout/src/react.tsx | sed -n '500,635p'`
+- `nl -ba packages/slate-layout/src/react.tsx | sed -n '500,635p'`
   - Result: current viewport updates attach directly to scroll/resize and feed
     page surface items plus context `visibleContentRange`; this is the runtime
     owner for later coalescing proof.
-- `nl -ba .tmp/slate-v2/packages/slate-layout/src/page-mount-plan.ts | sed -n '1,230p'`
+- `nl -ba packages/slate-layout/src/page-mount-plan.ts | sed -n '1,230p'`
   - Result: page mount items are derived from page groups, fragments, top-level
     indexes, unit paths, and viewport plus overscan filtering.
-- `nl -ba .tmp/slate-v2/site/examples/ts/pagination.tsx | sed -n '80,150p'`
+- `nl -ba apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx | sed -n '80,150p'`
   - Result: example owns URL-backed stress/default controls including 240
     default table rows, 1000 max table rows, 990 default stress pages, and 2000
     max stress pages.
-- `nl -ba .tmp/slate-v2/site/examples/ts/pagination.tsx | sed -n '970,1015p'`
+- `nl -ba apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx | sed -n '970,1015p'`
   - Result: public example maps virtualized strategy to
     `{ type: 'virtualized', overscan, threshold, estimatedBlockSize }`.
-- `nl -ba .tmp/slate-v2/site/examples/ts/pagination.tsx | sed -n '1240,1305p'`
+- `nl -ba apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx | sed -n '1240,1305p'`
   - Result: example exposes page overscan and stress pages only when virtualized.
-- `nl -ba .tmp/slate-v2/playwright/integration/examples/pagination.test.ts | sed -n '640,710p'`
+- `nl -ba apps/www/tests/slate-browser/donor/examples/pagination.test.ts | sed -n '640,710p'`
   - Result: current browser test covers bounded DOM and one programmatic
     `scrollTop` jump, not real wheel/trackpad fast-scroll replay.
-- `nl -ba .tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts | sed -n '1,720p'`
+- `nl -ba packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts | sed -n '1,720p'`
   - Result: `Editable` already uses TanStack Virtual, retained range extraction,
     selected-path retention, page item mapping, and page-layout item sizes; it
     is a second window authority alongside `PagedEditable` page chrome.
-- `nl -ba .tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx | sed -n '900,1195p'`
+- `nl -ba packages/slate-react/src/components/editable-text-blocks.tsx | sed -n '900,1195p'`
   - Result: `EditableDescendantNode` creates React children for every child
     runtime id before `renderElement` can slice table children; this is the
     candidate hidden-row allocation pressure.
-- `nl -ba .tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx | sed -n '1720,1845p;2080,2265p'`
+- `nl -ba packages/slate-react/src/components/editable-text-blocks.tsx | sed -n '1720,1845p;2080,2265p'`
   - Result: `Editable` virtualized mode builds metrics and mounts virtual rows
     from `useVirtualizedRootPlan`, including DOM strategy counts and
     virtualizer rows.
-- `nl -ba .tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts | sed -n '1545,1795p'`
+- `nl -ba packages/slate-layout/test/page-layout-contract.test.ts | sed -n '1545,1795p'`
   - Result: page mount plan tests already cover single/spread grouping,
     viewport-null behavior, split-block retention, and selected/promoted/
     composing page retention; they do not yet prove indexed range helpers or
     scroll-window key stability.
-- `nl -ba .tmp/slate-v2/packages/slate-react/test/dom-strategy-page-virtualization.test.tsx | sed -n '1,245p'`
+- `nl -ba packages/slate-react/test/dom-strategy-page-virtualization.test.tsx | sed -n '1,245p'`
   - Result: React unit tests cover page item retention, selected split-table
     path mapping, outer scroll containers, and metrics de-duping; they do not
     cover fast scroll or shared page-window drift.
-- `nl -ba .tmp/slate-v2/packages/slate-layout/src/index.ts | sed -n '2320,2510p'`
+- `nl -ba packages/slate-layout/src/index.ts | sed -n '2320,2510p'`
   - Result: layout refresh composes on editor/settings changes and writes
     optional page-break snapshots; viewport/window state should remain derived
     local state, not collaboration/document state.
@@ -801,20 +801,20 @@ Verification evidence:
   - Result: PR reference states virtualized rendering is explicit and
     experimental, virtualized editing still needs stricter caret/IME/mobile/copy
     and find proof, and production-ready virtualization is not claimed.
-- `rg -n "EditableRenderElementProps|EditableElementSlots|contentBoundary|EditableDescendantNode|createEditableElementSlots" .tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `rg -n "EditableRenderElementProps|EditableElementSlots|contentBoundary|EditableDescendantNode|createEditableElementSlots" packages/slate-react/src/components/editable-text-blocks.tsx`
   - Result: current renderer/slot surface exists but is unstable enough that
     adding a new public child-window slot would be an API expansion, not a
     private performance repair.
-- `nl -ba .tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx | sed -n '430,575p;850,885p;1125,1155p'`
+- `nl -ba packages/slate-react/src/components/editable-text-blocks.tsx | sed -n '430,575p;850,885p;1125,1155p'`
   - Result: `EditableElementSlots` owns content-boundary composition, while
     `EditableDescendantNode` still constructs child elements before renderer
     code can slice them; the execution target should be internal child-range
     planning before public slot design.
-- `nl -ba .tmp/slate-v2/packages/slate-layout/src/react.tsx | sed -n '306,365p;403,438p;496,620p'`
+- `nl -ba packages/slate-layout/src/react.tsx | sed -n '306,365p;403,438p;496,620p'`
   - Result: `PagedEditable` owns paged layout context, viewport state, page
     surface items, and visible page indexes; this is the right place to source
     a shared page-window snapshot instead of letting each consumer drift.
-- `nl -ba .tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts | sed -n '312,422p;515,618p'`
+- `nl -ba packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts | sed -n '312,422p;515,618p'`
   - Result: `Editable` already owns retained range extraction, page-layout
     item mapping, total size, and path scrolling; public TanStack passthrough is
     unnecessary.
@@ -822,23 +822,23 @@ Verification evidence:
   - Result: PR reference keeps virtualized rendering explicit/experimental and
     does not claim stable DOM coverage slot API or production-ready
     virtualization.
-- `nl -ba .tmp/slate-v2/packages/slate-layout/src/react.tsx | sed -n '496,630p'`
+- `nl -ba packages/slate-layout/src/react.tsx | sed -n '496,630p'`
   - Result: high-risk pass confirmed current viewport state still derives from
     raw scroll/resize and feeds both page surface filtering and
     `visibleContentRange`, so fast-scroll proof must detect delayed
     materialization, not just low DOM counts.
-- `nl -ba .tmp/slate-v2/packages/slate-layout/src/page-mount-plan.ts | sed -n '1,230p'`
+- `nl -ba packages/slate-layout/src/page-mount-plan.ts | sed -n '1,230p'`
   - Result: page mount plan builds items from page groups and filters visible
     items by viewport/overscan; execution proof must guard both range math and
     page/editable coherence.
-- `nl -ba .tmp/slate-v2/playwright/integration/examples/pagination.test.ts | sed -n '632,930p'`
+- `nl -ba apps/www/tests/slate-browser/donor/examples/pagination.test.ts | sed -n '632,930p'`
   - Result: existing browser proof covers bounded DOM, overscan, row 120
     editing, and scaled-page alignment, but its fast path still uses direct
     `scrollTop` plus two-rAF settling instead of wheel/trackpad replay.
-- `nl -ba .tmp/slate-v2/site/examples/ts/pagination.tsx | sed -n '80,140p;228,290p;420,435p;1260,1295p'`
+- `nl -ba apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx | sed -n '80,140p;228,290p;420,435p;1260,1295p'`
   - Result: example exposes URL-backed stress controls and labeled stress
     pages; table child windowing still slices after `Children.toArray(children)`.
-- `nl -ba .tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts | sed -n '1545,1795p'`
+- `nl -ba packages/slate-layout/test/page-layout-contract.test.ts | sed -n '1545,1795p'`
   - Result: page mount contract tests cover grouping, null viewport, split
     block retention, and selected/promoted/composing page retention, but not
     indexed range helpers or shared window coherence.
@@ -928,15 +928,15 @@ Verification evidence:
 - `ffmpeg ... -vf "fps=4,scale=480:-1,tile=4x5" /tmp/codex-pagination-scroll-video/contact.jpg`
   - Result: contact sheet created for plan evidence.
 - Source reads:
-  - `.tmp/slate-v2/packages/slate-layout/src/react.tsx`
-  - `.tmp/slate-v2/packages/slate-layout/src/page-mount-plan.ts`
-  - `.tmp/slate-v2/packages/slate-layout/src/index.ts`
-  - `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts`
-  - `.tmp/slate-v2/site/examples/ts/pagination.tsx`
-  - `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-  - `.tmp/slate-v2/packages/slate-react/test/dom-strategy-page-virtualization.test.tsx`
+  - `packages/slate-layout/src/react.tsx`
+  - `packages/slate-layout/src/page-mount-plan.ts`
+  - `packages/slate-layout/src/index.ts`
+  - `packages/slate-layout/test/page-layout-contract.test.ts`
+  - `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx`
+  - `apps/www/tests/slate-browser/donor/examples/pagination.test.ts`
+  - `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`
+  - `packages/slate-react/src/components/editable-text-blocks.tsx`
+  - `packages/slate-react/test/dom-strategy-page-virtualization.test.tsx`
   - `../virtual/packages/react-virtual/e2e/app/test/scroll.spec.ts`
   - `../virtual/packages/react-virtual/e2e/app/test/measure-element.spec.ts`
   - `../virtual/packages/react-virtual/e2e/app/test/stale-index.spec.ts`
@@ -958,7 +958,7 @@ Reboot status:
 | Question | Answer |
 |----------|--------|
 | Where am I? | Closure score and final gates complete |
-| Where am I going? | User review; if accepted, start a separate execution goal in `.tmp/slate-v2` |
+| Where am I going? | User review; if accepted, start a separate execution goal in `Plate repo root` |
 | What is the goal? | A user-review-ready Slate Plan for robust pagination fast-scroll virtualization/testing |
 | What have I learned? | The plan should keep page virtualization internal behind virtualized `domStrategy`; the durable architecture is one shared Slate-owned page-window authority plus content-unit corridor; public renderer child-window API is not in the accepted plan; the test strategy must combine pure range/window math with real browser wheel/continuous-scroll geometry proof, visible no-blank assertions, perf samples, and explicit degraded-native behavior rows; external systems remain mechanism references, not public API or model-semantics sources |
 | What have I done? | Created the plan and closed current-state read, related issue discovery, issue-ledger accounting, intent/decision briefing, research/ecosystem/live-source refresh, performance/DX/migration/regression/simplicity pressure, Slate maintainer objection ledger, high-risk deliberate mode, ecosystem maintainer, revision, issue-sync accounting, and final closure passes |
@@ -971,7 +971,7 @@ Open risks:
 - Execution can reopen issue/reference sync only if the API, runtime target, or
   issue claim set changes.
 - Runtime performance remains unclaimed until browser replay records
-  frame/long-task numbers from `.tmp/slate-v2`.
+  frame/long-task numbers from `Plate repo root`.
 - Internal child-range planning may still fail to preserve custom renderer
   composition; that would require a separate public-API maintainer review.
 
@@ -984,7 +984,7 @@ Execution activation:
 | Page surface policy | Page chrome can still use configured page overscan, while editable content uses the actual visible page corridor plus selected-path retention. |
 | Table policy | Virtualized table renderers use the block box as the table origin so filtered row boxes do not shift rows above the viewport. |
 | Public API | No new public TanStack passthrough, no public renderer child-window API, no AST table splitting. |
-| Changesets | `.tmp/slate-v2/.changeset/paged-fast-scroll-window.md`; `.tmp/slate-v2/.changeset/slate-react-shared-page-window.md`. |
+| Changesets | `Plate repo root/.changeset/paged-fast-scroll-window.md`; `Plate repo root/.changeset/slate-react-shared-page-window.md`. |
 
 Execution verification:
 - `bun --filter slate-layout test`

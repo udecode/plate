@@ -43,7 +43,7 @@ Status: `complete`
 The follow-up scan expands the ledger beyond the editor initialization/value
 slice. The rule for this pass is intentionally strict:
 
-- exact `fixes-claimed` only when current `.tmp/slate-v2` source has a named
+- exact `fixes-claimed` only when current `Plate repo root` source has a named
   contract, browser test, or benchmark that covers the original issue behavior;
 - `improves-claimed` when v2 materially improves the failure class but does not
   prove the original repro end to end;
@@ -52,11 +52,11 @@ slice. The rule for this pass is intentionally strict:
 
 Evidence owners reviewed:
 
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`
-- `.tmp/slate-v2/packages/slate-browser/test/browser/zero-width.browser.test.ts`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
+- `packages/slate-react/test/provider-hooks-contract.tsx`
+- `packages/slate-dom/test/bridge.ts`
+- `packages/browser/test/browser/zero-width.browser.test.ts`
+- `benchmarks/slate-v2/donor/core/current/transaction-execution.mjs`
+- `benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx`
 - `docs/plans/2026-04-02-slate-dom-v2-bridge-proof-ralph.md`
 - `docs/plans/2026-04-03-slate-dom-v2-zero-width-selection-proof-plan.md`
 - `docs/plans/2026-04-03-slate-react-v2-projection-proof-plan.md`

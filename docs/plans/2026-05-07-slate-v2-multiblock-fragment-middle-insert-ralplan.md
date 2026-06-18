@@ -41,9 +41,9 @@ Desired outcome:
 
 In scope:
 
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`
-- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`
-- `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts` if the claim uses
+- `packages/slate/src/transforms-text/insert-fragment.ts`
+- `packages/slate/test/clipboard-contract.ts`
+- `packages/slate-dom/test/clipboard-boundary.ts` if the claim uses
   clipboard/paste wording.
 - issue coverage matrix, fork dossier, PR reference, and completion state.
 
@@ -79,7 +79,7 @@ Top drivers:
 - `#5089` is `ready-now` in
   `docs/slate-issues/test-candidate-map/5129-5066.md`.
 - Live source already has special fragment fitting logic in
-  `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`.
+  `packages/slate/src/transforms-text/insert-fragment.ts`.
 - A runtime probe against current source produced the desired split shape:
   `before one` / `twoafter` from a collapsed middle insertion.
 - Existing `clipboard-contract.ts` has no exact `#5089` middle-paragraph
@@ -111,11 +111,11 @@ Consequences:
 
 Current source owners:
 
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts` owns
+- `packages/slate/src/transforms-text/insert-fragment.ts` owns
   fragment fitting.
 - `insert-fragment.ts` partitions fragment content into `starts`, `middles`,
   and `ends`, with middle block preservation around the destination split.
-- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts` currently covers
+- `packages/slate/test/clipboard-contract.ts` currently covers
   explicit target insertion, empty-block selection placement, single-block
   fitting, and target-block preservation, but not the exact `#5089`
   middle-paragraph multi-block insertion shape.
@@ -227,13 +227,13 @@ Total: `0.93`.
 Ralph execution is complete.
 
 - Added package proof in
-  `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts` for a multi-block
+  `packages/slate/test/clipboard-contract.ts` for a multi-block
   fragment inserted at `[0,0]@7` in `before after`.
 - Added DOM clipboard boundary proof in
-  `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts` for a rich
+  `packages/slate-dom/test/clipboard-boundary.ts` for a rich
   multi-block Slate fragment paste into the same middle text point.
 - Current source already satisfies the model shape, so
-  `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts` was not
+  `packages/slate/src/transforms-text/insert-fragment.ts` was not
   patched.
 - `#5089` moved to `Fixes`; `#4542` and `#3155` stay related.
 
@@ -253,11 +253,11 @@ All passed on 2026-05-07.
 ## 10. Implementation Phases Draft
 
 1. Add exact package proof in
-   `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`:
+   `packages/slate/test/clipboard-contract.ts`:
    multi-block fragment inserted at `[0,0]@7` in `before after` produces
    `before one` and `twoafter`.
 2. If that package proof fails, patch only
-   `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`.
+   `packages/slate/src/transforms-text/insert-fragment.ts`.
 3. Add DOM clipboard boundary proof before claiming `Fixes #5089`.
 4. Add browser paste proof only if DOM boundary proof cannot model the payload
    or implementation touches browser/example paste code.

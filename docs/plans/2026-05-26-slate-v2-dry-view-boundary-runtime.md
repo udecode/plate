@@ -2,14 +2,14 @@
 
 Objective:
 Implement the accepted DRY Slate v2 view-boundary runtime slice in
-`.tmp/slate-v2`, complete only when public API stays stable (`<Editable root>`,
+`Plate repo root`, complete only when public API stays stable (`<Editable root>`,
 `slots.contentRoot`, `slots.contentBoundary`), duplicated content-root /
 hidden-boundary navigation-selection-command-history ownership is consolidated
 into one internal graph/target owner where feasible, shared conformance coverage
 proves `examples/multi-root-document`, `examples/synced-blocks`, and
 `examples/hidden-content-blocks` across arrow navigation, Shift selection,
 Cmd/Meta boundaries, history restore, copy/delete/type behavior or explicit
-degraded capability rows, focused `.tmp/slate-v2`
+degraded capability rows, focused `Plate repo root`
 package/browser/typecheck/lint verification passes, autoreview has no
 accepted/actionable findings, changesets exist if published package behavior
 changes, and
@@ -42,7 +42,7 @@ Task source:
   package/browser/typecheck/lint/review gates pass.
 
 Completion threshold:
-- DRY runtime implementation lands in `.tmp/slate-v2` without replacing public
+- DRY runtime implementation lands in `Plate repo root` without replacing public
   `Editable root`, `slots.contentRoot`, or `slots.contentBoundary`.
 - Shared tests or helpers prove the common view-boundary laws across
   `multi-root-document`, `synced-blocks`, and `hidden-content-blocks`; any
@@ -50,9 +50,9 @@ Completion threshold:
   row.
 - Focused package tests for the changed Slate React/DOM internals pass.
 - Focused Playwright for the affected examples passes at least on Chromium.
-- Relevant `.tmp/slate-v2` typecheck/lint gates pass or any failure is proven
+- Relevant `Plate repo root` typecheck/lint gates pass or any failure is proven
   unrelated with exact evidence.
-- Autoreview for the `.tmp/slate-v2` implementation diff returns no
+- Autoreview for the `Plate repo root` implementation diff returns no
   accepted/actionable findings.
 - Package release artifact decision is closed: changeset added when published
   package behavior changes, or exact no-artifact reason recorded.
@@ -63,12 +63,12 @@ Completion threshold:
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-dry-view-boundary-runtime.md` passes.
 
 Verification surface:
-- `.tmp/slate-v2/packages/slate-react/test/*projection*`,
+- `packages/slate-react/test/*projection*`,
   `*content-root*`, `*keyboard-input*`, `*clipboard*`, or new focused contract
   tests for view-boundary graph/selection/command behavior.
-- `.tmp/slate-v2/playwright/integration/examples/multi-root-document.test.ts`,
+- `apps/www/tests/slate-browser/donor/examples/multi-root-document.test.ts`,
   `synced-blocks.test.ts`, and `hidden-content-blocks.test.ts` focused rows.
-- `.tmp/slate-v2`: owning package typecheck, site typecheck if examples change,
+- `Plate repo root`: owning package typecheck, site typecheck if examples change,
   scoped lint/format, and final focused browser route proof.
 - `plate-2`: this goal plan and final autogoal checker.
 
@@ -89,11 +89,11 @@ Constraints:
 Boundaries:
 - Source of truth: latest user command, this goal, and
   `docs/plans/2026-05-26-slate-v2-unified-view-boundary-navigation-architecture.md`.
-- Allowed edit scope: `.tmp/slate-v2/packages/slate-react/**`,
-  `.tmp/slate-v2/packages/slate-dom/**` if hidden-boundary helper changes are
-  required, `.tmp/slate-v2/playwright/integration/examples/**`,
-  `.tmp/slate-v2/site/examples/ts/**` only when fixture/proof needs it,
-  `.tmp/slate-v2/.changeset/**` if package behavior changes, and this plan.
+- Allowed edit scope: `packages/slate-react/**`,
+  `packages/slate-dom/**` if hidden-boundary helper changes are
+  required, `apps/www/tests/slate-browser/donor/examples/**`,
+  `apps/www/src/app/(app)/examples/slate/_examples/**` only when fixture/proof needs it,
+  `Plate repo root/.changeset/**` if package behavior changes, and this plan.
 - Browser surface: `/examples/multi-root-document`, `/examples/synced-blocks`,
   `/examples/hidden-content-blocks`.
 - Tracker sync: N/A, no tracker item.
@@ -104,7 +104,7 @@ Boundaries:
 Blocked condition:
 - Block only if the current Slate model cannot represent the required DRY
   behavior without a new public API or user-owned product decision after three
-  distinct implementation/proof attempts, or if required `.tmp/slate-v2`
+  distinct implementation/proof attempts, or if required `Plate repo root`
   verification cannot run because of a persistent tool/environment blocker that
   survives the repo-approved local-env retry.
 
@@ -133,7 +133,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Skill analysis before edits | yes | Loaded `autogoal`, `task`, and `changeset`; user explicitly invoked autogoal. |
-| Active goal checked or created | yes | Active goal continued with `.tmp/slate-v2` objective and this plan. |
+| Active goal checked or created | yes | Active goal continued with `Plate repo root` objective and this plan. |
 | Source of truth read before edits | yes | Read accepted unified view-boundary plan and current goal prompt. |
 | Tracker comments and attachments read | no | N/A: no tracker item. |
 | Video transcript evidence required | no | N/A: no video evidence. |
@@ -146,11 +146,11 @@ Start Gates:
 | Tracker sync expectation decision | no | N/A: no tracker item. |
 | Browser pack selected | yes | `browser` pack applied. |
 | Browser route / app surface identified | yes | `/examples/multi-root-document`, `/examples/synced-blocks`, `/examples/hidden-content-blocks`. |
-| Browser tool decision recorded | yes | Playwright is the owning browser proof for `.tmp/slate-v2` integration examples. |
+| Browser tool decision recorded | yes | Playwright is the owning browser proof for `Plate repo root` integration examples. |
 | Console/network caveat policy recorded | yes | Playwright page-level failures would fail the rows; no console/network failure surfaced in passed runs. |
 | Package/API pack selected | yes | `package-api` pack applied. |
 | Public surface or package boundary identified | yes | `slate-react` and `slate-dom` runtime behavior changed; public API names stayed stable. |
-| Release artifact path selected | yes | `.tmp/slate-v2/.changeset/focused-roots-restore-selection.md` and `.tmp/slate-v2/.changeset/dom-focus-sync-selection.md`. |
+| Release artifact path selected | yes | `Plate repo root/.changeset/focused-roots-restore-selection.md` and `Plate repo root/.changeset/dom-focus-sync-selection.md`. |
 | `changeset` skill loaded when `.changeset` is required | yes | Loaded `.agents/skills/changeset/SKILL.md` and used patch changesets, one package per file. |
 | Barrel/export impact decision recorded | yes | No public exports or exported file layout changed; no barrel generation needed. |
 
@@ -201,11 +201,11 @@ Completion Gates:
 | Named verification threshold | yes | Run named package/browser/lint/review/checker gates | Focused tests/typechecks/lint/browser proof and clean autoreview are recorded below; checker is the remaining command. |
 | Bug reproduced before fix | yes | Record failing repro | Reproduced stale focus/selection with Playwright rows and manual instrumentation; final rows pass. |
 | Targeted behavior verification | yes | Run focused test/proof | `slate-react` vitest contracts: 9 files, 59 tests passed. |
-| TypeScript or typed config changed | yes | Run relevant typecheck | `bun --filter slate-dom typecheck` and `bun --filter slate-react typecheck` passed in `.tmp/slate-v2`. |
+| TypeScript or typed config changed | yes | Run relevant typecheck | `bun --filter slate-dom typecheck` and `bun --filter slate-react typecheck` passed in `Plate repo root`. |
 | Package exports or file layout changed | no | Barrel generation decision | N/A: no public exports or exported file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | Install graph check | N/A: no manifest or lockfile changes. |
 | Agent rules or skills changed | no | Agent sync check | N/A: no agent files changed. |
-| Workspace authority proof | yes | Run checks in owning repo | All package/browser commands ran from `.tmp/slate-v2`, the owning workspace. |
+| Workspace authority proof | yes | Run checks in owning repo | All package/browser commands ran from `Plate repo root`, the owning workspace. |
 | Browser surface changed | yes | Prove route interactions | Playwright Chromium: 31/31 passed across the three affected example files. |
 | Browser final proof | yes | Record artifact/caveat | Playwright trace would attach on failure; final passed run has command evidence and no failure artifact. |
 | CI-controlled template output changed | no | Restore or record reason | N/A: no templates touched. |
@@ -215,7 +215,7 @@ Completion Gates:
 | High-risk mini gate | yes | Record failure mode and proof plan | Failure mode: stale native selection overwrites model/restored root selection; proof: unit contracts, repeated flaky row, and three-example browser sweep. Boundary is right because root focus and DOM selection export own the issue, not each example. |
 | Agent-native review for agent/tooling changes | no | Agent-native decision | N/A: no agent/tooling files changed. |
 | Local install corruption suspected | no | Reinstall decision | N/A: failures matched runtime behavior and were fixed in code. |
-| Autoreview for non-trivial implementation changes | yes | Run autoreview local mode | `.tmp/slate-v2`: local autoreview rerun clean with no accepted/actionable findings. |
+| Autoreview for non-trivial implementation changes | yes | Run autoreview local mode | `Plate repo root`: local autoreview rerun clean with no accepted/actionable findings. |
 | PR create or update | no | PR decision | N/A: no PR requested. |
 | PR proof image hosting | no | PR image decision | N/A: no PR requested. |
 | Tracker sync-back | no | Tracker decision | N/A: no tracker item. |
@@ -278,7 +278,7 @@ Review fixes:
 - First local autoreview found one unrelated generated-file churn issue:
   `site/next-env.d.ts` imported the dev-only `.next/dev/types/routes.d.ts`.
   Restored it to `.next/types/routes.d.ts`.
-- Rerun local autoreview in `.tmp/slate-v2` returned clean: no
+- Rerun local autoreview in `Plate repo root` returned clean: no
   accepted/actionable findings.
 
 Error attempts:
@@ -289,13 +289,13 @@ Error attempts:
 | Hidden-content materialize row failed once in full sweep | 1 | Repeat focused row and rerun full sweep | Focused row passed 5/5; final full sweep passed 31/31. |
 
 Verification evidence:
-- `.tmp/slate-v2/packages/slate-react`: `bun test:vitest test/view-boundary-graph-contract.test.ts test/view-selection-contract.test.ts test/projected-command-contract.test.ts test/projected-clipboard-contract.test.ts test/content-root-navigation-contract.test.ts test/keyboard-input-strategy-contract.test.ts test/use-slate-root-chrome.test.tsx test/use-slate-history.test.tsx test/root-interaction-resolver.test.ts` -> 9 files, 59 tests passed.
-- `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/multi-root-document.test.ts playwright/integration/examples/synced-blocks.test.ts playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium` -> 31 passed in 25.8s.
-- `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium --grep "visible root chrome restores" --repeat-each=10` -> 10 passed.
-- `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium --grep "controls selection policy" --repeat-each=5` -> 5 passed.
-- `.tmp/slate-v2`: `bun --filter slate-dom typecheck`, `bun --filter slate-react typecheck`, `bun --filter slate-dom build`, and `bun --filter slate-react build` passed.
-- `.tmp/slate-v2`: scoped `bunx biome check ... --fix` passed with no fixes; scoped `bunx eslint ...` returned 0 errors and ignored-file warnings for unmatched config files.
-- `.tmp/slate-v2`: local autoreview initially reported one generated
+- `packages/slate-react`: `bun test:vitest test/view-boundary-graph-contract.test.ts test/view-selection-contract.test.ts test/projected-command-contract.test.ts test/projected-clipboard-contract.test.ts test/content-root-navigation-contract.test.ts test/keyboard-input-strategy-contract.test.ts test/use-slate-root-chrome.test.tsx test/use-slate-history.test.tsx test/root-interaction-resolver.test.ts` -> 9 files, 59 tests passed.
+- `Plate repo root`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/multi-root-document.test.ts playwright/integration/examples/synced-blocks.test.ts playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium` -> 31 passed in 25.8s.
+- `Plate repo root`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium --grep "visible root chrome restores" --repeat-each=10` -> 10 passed.
+- `Plate repo root`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium --grep "controls selection policy" --repeat-each=5` -> 5 passed.
+- `Plate repo root`: `bun --filter slate-dom typecheck`, `bun --filter slate-react typecheck`, `bun --filter slate-dom build`, and `bun --filter slate-react build` passed.
+- `Plate repo root`: scoped `bunx biome check ... --fix` passed with no fixes; scoped `bunx eslint ...` returned 0 errors and ignored-file warnings for unmatched config files.
+- `Plate repo root`: local autoreview initially reported one generated
   `site/next-env.d.ts` dev-route type path; after restoring the production path,
   local autoreview rerun passed with no accepted/actionable findings.
 

@@ -1,6 +1,6 @@
 import { createSlatePlugin } from '@platejs/core';
 
-import { TextApi } from '@platejs/slate';
+import { TextApi } from '@platejs/slate-legacy';
 import { KEYS } from '../../plate-keys';
 
 /** Forces editor to only have one line. */

@@ -37,7 +37,7 @@ Instead:
 1. add a targeted build command for the package
 2. run that command before the Playwright slices that import the built subpath
 
-In `.tmp/slate-v2` that became:
+In `Plate repo root` that became:
 
 - `yarn build:slate-browser`
 - then `yarn test:slate-browser:e2e`

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import type { TElement } from '@platejs/slate';
+import type { TElement } from '@platejs/slate-legacy';
 
 import { act, render } from '@testing-library/react';
 

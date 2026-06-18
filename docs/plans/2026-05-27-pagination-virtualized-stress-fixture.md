@@ -6,7 +6,7 @@ Objective: make `/examples/pagination` show a realistic virtualized stress docum
 
 Source of truth:
 - User request: "when virtualized i want to see huge document with ~1k page, a table going spanning 10 pages"
-- Workspace: `/Users/zbeyens/git/plate-2/.tmp/slate-v2`
+- Workspace: `/Users/zbeyens/git/plate-2/Plate repo root`
 - Browser surface: `http://localhost:3100/examples/pagination`
 
 Decision:
@@ -32,4 +32,4 @@ Verification:
 Result:
 - 20 focused Chromium tests passed.
 - The new stress test verifies 950-1050 total pages, 8-12 table pages, at least 900 stress pages, page virtualization enabled, and bounded mounted DOM.
-- Autoreview was attempted with `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local` from `.tmp/slate-v2`; it produced no stdout for several minutes and was stopped. Manual closeout used source inspection plus the focused browser/typecheck/lint proof above.
+- Autoreview was attempted with `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local` from `Plate repo root`; it produced no stdout for several minutes and was stopped. Manual closeout used source inspection plus the focused browser/typecheck/lint proof above.

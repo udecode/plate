@@ -60,7 +60,7 @@ Every idea should land in exactly one bucket:
 
 ## Current Baseline
 
-Already proven in `.tmp/slate-v2`:
+Already proven in `Plate repo root`:
 
 - `slate-v2`
 - `slate-dom-v2`

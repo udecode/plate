@@ -17,7 +17,7 @@ origin_refs:
 
 ## Goal
 
-Before leaving `.tmp/slate-v2/packages/slate`, land a real core-performance
+Before leaving `packages/slate`, land a real core-performance
 benchmark package that covers the hot `slate` engine families instead of one
 lonely `#6038` lane.
 
@@ -68,7 +68,7 @@ legacy Yarn without lying”.
 
 ## Latest Slice
 
-- landed live benchmark package structure in `.tmp/slate-v2/scripts/benchmarks/`
+- landed live benchmark package structure in `benchmarks/slate-v2/donor/`
 - landed shared helpers:
   - `shared/stats.mjs`
   - `shared/repo-compare.mjs`
@@ -142,14 +142,14 @@ That means:
 - compare lanes are runnable
 - benchmark-owner ledger is empty
 - package-local closeout gate is still green:
-  - `cd .tmp/slate-v2 && bun test ./packages/slate/test`
-  - `cd .tmp/slate-v2 && bunx turbo build --filter=./packages/slate`
-  - `cd .tmp/slate-v2 && bunx turbo typecheck --filter=./packages/slate`
-  - `cd .tmp/slate-v2 && bun run lint:fix`
-  - `cd .tmp/slate-v2 && bun run lint`
+  - `cd Plate repo root && bun test ./packages/slate/test`
+  - `cd Plate repo root && bunx turbo build --filter=./packages/slate`
+  - `cd Plate repo root && bunx turbo typecheck --filter=./packages/slate`
+  - `cd Plate repo root && bun run lint:fix`
+  - `cd Plate repo root && bun run lint`
 - the earliest standalone core owner gate for the next engine pivot is still
   red on the current tree:
-  - `cd .tmp/slate-v2 && bun test ./packages/slate/test/snapshot-contract.ts --bail 1`
+  - `cd Plate repo root && bun test ./packages/slate/test/snapshot-contract.ts --bail 1`
 - this benchmark-coverage lane is complete
 - any remaining performance gap now needs explicit accept/defer judgment, not
   more benchmark farming by default
@@ -206,8 +206,8 @@ That means:
 
 In scope:
 
-- `.tmp/slate-v2/scripts/benchmarks/**`
-- `.tmp/slate-v2/package.json`
+- `benchmarks/slate-v2/donor/**`
+- `Plate repo root/package.json`
 - benchmark-related docs in `plate-2`
 - core `slate` lanes only
 
@@ -300,7 +300,7 @@ Surfaces covered:
 
 Current owner input:
 
-- `.tmp/slate-v2/scripts/benchmarks/slate/6038-transaction-execution.mjs`
+- `benchmarks/slate-v2/donor/slate/6038-transaction-execution.mjs`
 
 ### Family 2: Normalization
 
@@ -485,10 +485,10 @@ Draft source:
 
 Files:
 
-- `.tmp/slate-v2/scripts/benchmarks/README.md`
-- `.tmp/slate-v2/scripts/benchmarks/shared/stats.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/shared/repo-compare.mjs`
-- `.tmp/slate-v2/package.json`
+- `benchmarks/slate-v2/donor/README.md`
+- `benchmarks/slate-v2/donor/shared/stats.mjs`
+- `benchmarks/slate-v2/donor/shared/repo-compare.mjs`
+- `Plate repo root/package.json`
 
 Plan:
 
@@ -515,11 +515,11 @@ Verification:
 
 Files:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`
+- `benchmarks/slate-v2/donor/core/current/transaction-execution.mjs`
   or equivalent wrapper for `#6038`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/normalization.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/query-ref-observation.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/node-transforms.mjs`
+- `benchmarks/slate-v2/donor/core/current/normalization.mjs`
+- `benchmarks/slate-v2/donor/core/current/query-ref-observation.mjs`
+- `benchmarks/slate-v2/donor/core/current/node-transforms.mjs`
 
 Plan:
 
@@ -536,9 +536,9 @@ Verification:
 
 Files:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/text-selection.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/editor-store.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/refs-projection.mjs`
+- `benchmarks/slate-v2/donor/core/current/text-selection.mjs`
+- `benchmarks/slate-v2/donor/core/current/editor-store.mjs`
+- `benchmarks/slate-v2/donor/core/current/refs-projection.mjs`
 
 Plan:
 
@@ -561,9 +561,9 @@ Verification:
 
 Files:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/compare/normalization.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/compare/observation.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/compare/huge-document.mjs`
+- `benchmarks/slate-v2/donor/core/compare/normalization.mjs`
+- `benchmarks/slate-v2/donor/core/compare/observation.mjs`
+- `benchmarks/slate-v2/donor/core/compare/huge-document.mjs`
 
 Plan:
 
@@ -585,7 +585,7 @@ Verification:
 
 Files:
 
-- `.tmp/slate-v2/package.json`
+- `Plate repo root/package.json`
 
 Plan:
 
@@ -611,7 +611,7 @@ Verification:
 
 Files:
 
-- `.tmp/slate-v2/scripts/benchmarks/README.md`
+- `benchmarks/slate-v2/donor/README.md`
 - `/Users/zbeyens/git/plate-2/docs/slate-v2/replacement-gates-scoreboard.md`
 - `/Users/zbeyens/git/plate-2/docs/slate-v2/true-slate-rc-proof-ledger.md`
 - `/Users/zbeyens/git/plate-2/docs/slate-v2/slate-tranche-3-execution.md`
@@ -653,11 +653,11 @@ Benchmark infra/package verification:
 
 Regression verification:
 
-- `cd .tmp/slate-v2 && bun test ./packages/slate/test`
-- `cd .tmp/slate-v2 && bunx turbo build --filter=./packages/slate`
-- `cd .tmp/slate-v2 && bunx turbo typecheck --filter=./packages/slate`
-- `cd .tmp/slate-v2 && bun run lint:fix`
-- `cd .tmp/slate-v2 && bun run lint`
+- `cd Plate repo root && bun test ./packages/slate/test`
+- `cd Plate repo root && bunx turbo build --filter=./packages/slate`
+- `cd Plate repo root && bunx turbo typecheck --filter=./packages/slate`
+- `cd Plate repo root && bun run lint:fix`
+- `cd Plate repo root && bun run lint`
 
 ## Exit Criteria
 

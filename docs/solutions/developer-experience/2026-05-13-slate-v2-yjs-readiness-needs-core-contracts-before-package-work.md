@@ -131,12 +131,12 @@ export const shouldSkipSelectionScroll = (editor: ReactEditor) => {
 
 The final lane added these proof owners:
 
-- `.tmp/slate-v2/packages/slate/test/collab-adapter-extension-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/collab-selection-stress-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/collab-bookmark-position-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/collab-canonical-reconcile-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/test/selection-side-effect-policy-contract.ts`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/collab-readiness.mjs`
+- `packages/slate/test/collab-adapter-extension-contract.ts`
+- `packages/slate/test/collab-selection-stress-contract.ts`
+- `packages/slate/test/collab-bookmark-position-contract.ts`
+- `packages/slate/test/collab-canonical-reconcile-contract.ts`
+- `packages/slate-react/test/selection-side-effect-policy-contract.ts`
+- `benchmarks/slate-v2/donor/core/current/collab-readiness.mjs`
 
 Issue accounting moved #5771 only to `Improves`, not `Fixes`.
 

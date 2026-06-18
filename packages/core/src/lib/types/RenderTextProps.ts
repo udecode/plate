@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { Path, TText } from '@platejs/slate';
+import type { Path, TText } from '@platejs/slate-legacy';
 
 export type RenderTextFn = (props: RenderTextProps) => React.ReactElement<any>;
 export type RenderTextProps<N extends TText = TText> = {

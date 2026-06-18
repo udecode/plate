@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { Path, TElement } from '@platejs/slate';
+import type { Path, TElement } from '@platejs/slate-legacy';
 
 export type RenderElementFn = (
   props: RenderElementProps

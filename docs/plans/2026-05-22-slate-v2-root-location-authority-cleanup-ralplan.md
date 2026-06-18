@@ -22,7 +22,7 @@ The root-location cleanup is its own core Slate lane:
 - internal ref metadata ownership;
 - replayable state-field patch policy.
 
-The live `.tmp/slate-v2` source already implements most of the intended
+The live `Plate repo root` source already implements most of the intended
 architecture: `packages/slate/src/internal/root-location.ts` centralizes root
 inference and implicit-root stripping, point/range refs consume it, and the
 accepted state-field replay-policy P2 is fixed.
@@ -32,7 +32,7 @@ The implementation and verification are closed for this lane:
 - accepted Codex review findings were fixed at the owner boundary;
 - ref root metadata no longer leaks onto public `PointRef` / `RangeRef`
   interfaces;
-- focused and broad gates pass in `.tmp/slate-v2`;
+- focused and broad gates pass in `Plate repo root`;
 - the remaining broad `codex review --uncommitted` loop was explicitly stopped
   by the user, so this closeout records the verified local evidence instead of
   pretending a final clean review verdict exists.
@@ -110,14 +110,14 @@ the core cleanup and final review gate.
 
 | Surface | Current live source | Verdict |
 | --- | --- | --- |
-| Internal root authority | `.tmp/slate-v2/packages/slate/src/internal/root-location.ts:7` defines `MAIN_ROOT_KEY`; `:24`-`:27` stores ref metadata in WeakMaps; `:29`-`:69` owns operation/point/range/selection-patch root inference; `:72`-`:99` owns implicit root injection and stripping. | keep |
-| `PointRef` transform | `.tmp/slate-v2/packages/slate/src/interfaces/point-ref.ts:40` reads root metadata; `:43` ignores sibling-root operations; `:47`-`:50` injects then strips implicit roots. | keep |
-| `RangeRef` transform | `.tmp/slate-v2/packages/slate/src/interfaces/range-ref.ts:46` reads root metadata; `:49` ignores sibling-root operations; `:53`-`:60` transforms and drafts public refs. | keep |
-| Point ref creation | `.tmp/slate-v2/packages/slate/src/editor/point-ref.ts:12` uses active operation root fallback; `:26` writes root metadata. | keep |
-| Range ref creation/publication | `.tmp/slate-v2/packages/slate/src/editor/range-ref.ts:72` uses active operation root fallback; `:97`-`:98` writes metadata; `:125`-`:155` publishes/resets public drafts. | keep |
-| Selection inverse | `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:12` imports `getSelectionPatchRoot`; `:530` and `:537` derive inverse root from the restored selection patch. | keep |
-| State-field replay policy | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:335` requires patch hooks when `history !== 'skip'` or `collab === 'shared'`; `:348` rejects oversized unpatchable replay state. | keep |
-| State-field regression | `.tmp/slate-v2/packages/slate/test/document-state-patch-contract.ts:102` rejects large omitted-history fields without patch hooks. | keep |
+| Internal root authority | `packages/slate/src/internal/root-location.ts:7` defines `MAIN_ROOT_KEY`; `:24`-`:27` stores ref metadata in WeakMaps; `:29`-`:69` owns operation/point/range/selection-patch root inference; `:72`-`:99` owns implicit root injection and stripping. | keep |
+| `PointRef` transform | `packages/slate/src/interfaces/point-ref.ts:40` reads root metadata; `:43` ignores sibling-root operations; `:47`-`:50` injects then strips implicit roots. | keep |
+| `RangeRef` transform | `packages/slate/src/interfaces/range-ref.ts:46` reads root metadata; `:49` ignores sibling-root operations; `:53`-`:60` transforms and drafts public refs. | keep |
+| Point ref creation | `packages/slate/src/editor/point-ref.ts:12` uses active operation root fallback; `:26` writes root metadata. | keep |
+| Range ref creation/publication | `packages/slate/src/editor/range-ref.ts:72` uses active operation root fallback; `:97`-`:98` writes metadata; `:125`-`:155` publishes/resets public drafts. | keep |
+| Selection inverse | `packages/slate/src/interfaces/operation.ts:12` imports `getSelectionPatchRoot`; `:530` and `:537` derive inverse root from the restored selection patch. | keep |
+| State-field replay policy | `packages/slate/src/core/public-state.ts:335` requires patch hooks when `history !== 'skip'` or `collab === 'shared'`; `:348` rejects oversized unpatchable replay state. | keep |
+| State-field regression | `packages/slate/test/document-state-patch-contract.ts:102` rejects large omitted-history fields without patch hooks. | keep |
 
 Review cleanup applied:
 
@@ -253,7 +253,7 @@ before closeout.
 
 | Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
 | --- | --- | --- | --- | --- | --- |
-| current-state read | complete | Live `.tmp/slate-v2` source and tests listed above | Created standalone root-location plan | none | plan split |
+| current-state read | complete | Live `Plate repo root` source and tests listed above | Created standalone root-location plan | none | plan split |
 | plan split | complete | This plan owns root-location; old plan will point here | Pretext/layout plan no longer owns root-location closeout | none | final review |
 | final-codex-review-closeout | stopped by user | Partial review sweeps ran; user explicitly stopped the broad review loop | Recorded no clean final review verdict claim | residual broad-review risk accepted by user stop | completion state |
 | completion-closeout | complete | `node tooling/scripts/completion-check.mjs` passes after scoped state update | Completion file points at this plan with `status: done` | none | none |
@@ -263,7 +263,7 @@ before closeout.
 Focused gates:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun test ./packages/slate/test/document-state-patch-contract.ts ./packages/slate/test/collab-document-state-contract.ts ./packages/slate/test/root-location-contract.ts ./packages/slate/test/editor-runtime-view-contract.ts ./packages/slate/test/rooted-operation-contract.ts ./packages/slate/test/range-ref-contract.ts ./packages/slate/test/transaction-contract.ts ./packages/slate/test/interfaces-contract.ts ./packages/slate-history/test/document-state-history-contract.ts
 bun typecheck:packages
 bun lint:fix
@@ -273,7 +273,7 @@ codex review --uncommitted
 Broad gates before done:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun test:bun
 bun typecheck:packages
 bun lint

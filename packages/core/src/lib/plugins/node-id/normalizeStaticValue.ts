@@ -1,4 +1,4 @@
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/slate-legacy';
 
 import type { NormalizeNodeIdOptions } from './NodeIdPlugin';
 

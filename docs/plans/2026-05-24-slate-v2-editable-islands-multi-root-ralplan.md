@@ -27,8 +27,8 @@ Completion threshold:
 
 Verification surface:
 - Planning-only checks run in `plate-2`.
-- Current Slate v2 source/runtime/API claims must cite live `.tmp/slate-v2`
-  source or a `.tmp/slate-v2` command.
+- Current Slate v2 source/runtime/API claims must cite live `Plate repo root`
+  source or a `Plate repo root` command.
 - Issue claims are verified from `docs/slate-issues/gitcrawl-live-open-ledger.md`,
   `docs/slate-issues/gitcrawl-v2-sync-ledger.md`,
   `docs/slate-v2/ledgers/fork-issue-dossier.md`,
@@ -41,7 +41,7 @@ Constraints:
 - Planning mode may edit only `docs/plans/**`, `docs/research/**`,
   `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`, and
   `docs/slate-v2/references/**`.
-- Do not patch `.tmp/slate-v2` implementation in planning mode.
+- Do not patch `Plate repo root` implementation in planning mode.
 - Keep raw Slate unopinionated. Plate may own product-level forms/widgets.
 - Do not widen `renderVoid` with path/actions/children/focus prop bags.
 
@@ -54,11 +54,11 @@ Boundaries:
   current-version slate-yjs adapters, automatic child roots for every island,
   rich child-root content as normal void element children, and implementation
   before user acceptance.
-- Allowed sources: live `.tmp/slate-v2` source/tests/examples, compiled
+- Allowed sources: live `Plate repo root` source/tests/examples, compiled
   research, local reference repos, and durable issue ledgers.
 
 Blocked condition:
-- Block only if live `.tmp/slate-v2` source or required issue ledgers are
+- Block only if live `Plate repo root` source or required issue ledgers are
   unavailable after three consecutive attempts and no alternate source-grounding,
   research, ledger, or plan-hardening move remains runnable.
 
@@ -94,9 +94,9 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | User invoked `slate-plan` and then corrected the lane to be template-first plus goal-backed. |
 | Active goal checked or created | yes | `get_goal` returned no active goal on 2026-05-24 resumed run; `create_goal` recreated the Slate Plan lane objective. |
-| Source of truth read before edits | yes | Read existing plan, generated `slate-plan` scratchpad, live `.tmp/slate-v2` sources, and issue ledgers before migrating. |
+| Source of truth read before edits | yes | Read existing plan, generated `slate-plan` scratchpad, live `Plate repo root` sources, and issue ledgers before migrating. |
 | `docs/solutions` checked for non-trivial existing-code work | N/A: planning-only | No implementation code is being edited in this planning activation. |
-| Live `.tmp/slate-v2` grounding needed for current-state claims | yes | Current-state claims cite exact live source rows below. |
+| Live `Plate repo root` grounding needed for current-state claims | yes | Current-state claims cite exact live source rows below. |
 
 Work Checklist:
 - [x] Objective includes lane outcome, full pass schedule, one-pass-per-
@@ -136,9 +136,9 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run final score, pass, issue/reference, and handoff gates. | Final weighted score is 0.925; no dimension is below 0.89; all scheduled planning pass rows are complete or explicitly deferred to execution. |
-| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | yes | Record live `.tmp/slate-v2` source/command proof for every claim. | Source reads recorded for Pass 1, Pass 4, Pass 5, and Pass 6. No implemented behavior or browser-fix claim is made; browser proof is an execution gate. |
+| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | yes | Record live `Plate repo root` source/command proof for every claim. | Source reads recorded for Pass 1, Pass 4, Pass 5, and Pass 6. No implemented behavior or browser-fix claim is made; browser proof is an execution gate. |
 | Issue ledger or PR reference changed | yes | Sync the relevant ledger/reference rows or record unchanged reason. | Pass 2 updated `#5212`; Pass 3 expanded conservative buckets in manual sync, fork dossier, and coverage matrix; final sync keeps PR description unchanged because there is no fixed/improved claim. |
-| Autoreview for uncommitted implementation changes | no | Record N/A for planning-only work. | N/A: no `.tmp/slate-v2` implementation patch in planning mode |
+| Autoreview for uncommitted implementation changes | no | Record N/A for planning-only work. | N/A: no `Plate repo root` implementation patch in planning mode |
 | Final user-review handoff | yes | Emit final handoff after closure gates. | Recorded in the final handoff section below. |
 | Goal plan complete | yes | Run `node .agents/rules/goal/scripts/check-complete.mjs docs/plans/2026-05-24-slate-v2-editable-islands-multi-root-ralplan.md`. | Passed on 2026-05-24. |
 | Knowledge extraction | yes | Evaluate whether research/decision extraction is useful after closure. | N/A for now: this planning doc is the durable extraction; create a `docs/solutions` note only after implementation proof produces reusable behavior facts. |
@@ -151,7 +151,7 @@ Phase / pass table:
 | Issue-ledger pass | complete | Read live gitcrawl rows, current v2 sync rows, frozen corpus rows, cluster overlays, requirements, package-impact, test-candidate maps, benchmark map, fork dossier, and coverage matrix; expanded the related set into direct, void-boundary, clipboard/drop, deletion, mobile/IME, and non-claim buckets. | intent/boundary pass |
 | Intent/boundary and decision brief | complete | Finalized the ownership split, root ordering boundary, non-goals, decision drivers, chosen option, rejected alternatives, and decision-changing evidence. | research refresh |
 | Research, ecosystem strategy, live-source refresh | complete | Focused local source reads covered React 19.2 external-store/event rules, ProseMirror NodeView/transaction boundaries, Lexical DecoratorNode/state/command/update discipline, Tiptap commands/node-view DX, Plate plugin/React wrapper pressure, and slate-yjs shared-root/origin/deterministic-state pressure. | pressure passes |
-| Performance/DX/migration/regression/simplicity pressure passes | complete | Read performance, TDD, React effect, React runtime, shadcn, and performance-review skill lenses plus focused `.tmp/slate-v2` root-operation, snapshot, dirtiness, root-view, selector, and contract sources; hardened the helper name, lifecycle, serialization, repeated-unit cost, and proof gates. | objection ledger |
+| Performance/DX/migration/regression/simplicity pressure passes | complete | Read performance, TDD, React effect, React runtime, shadcn, and performance-review skill lenses plus focused `Plate repo root` root-operation, snapshot, dirtiness, root-view, selector, and contract sources; hardened the helper name, lifecycle, serialization, repeated-unit cost, and proof gates. | objection ledger |
 | Slate maintainer objection ledger | complete | Filled and resolved objections for child-root concept, content-only renderer, state fields, opt-in roots, root-order scope, and collab gating. | high-risk pass |
 | High-risk deliberate mode | complete | Closed proof-plan rows for stale root undo, serialization ambiguity, and API overreach; behavior proof stays in execution gates. | ecosystem maintainer pass |
 | Ecosystem maintainer pass | complete | Plate/plugin, slate-yjs/collab, React runtime, and external-editor comparison reviewed; no raw Slate product API added. | revision pass |
@@ -162,8 +162,8 @@ Phase / pass table:
 Scorecard:
 | Dimension | Weight | Score | Evidence |
 |-----------|-------:|------:|----------|
-| React 19.2 runtime performance | 0.20 | 0.94 | Same-runtime roots avoid duplicate nested editor runtime/render work; current root-scoped selectors already gate wakeups through `useSlateViewState` and `isRootAffected` in `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:639`; closure keeps O(1) child-root lookup, no roots for native controls, and no every-root/every-island commit scans. |
-| Slate-close unopinionated DX | 0.20 | 0.93 | `<Editable root={root}>` exists in `.tmp/slate-v2/site/examples/ts/multi-root-document.tsx:204`; closure chooses provisional `useSlateChildRoot(element, slot)` and keeps `renderVoid` content-only. |
+| React 19.2 runtime performance | 0.20 | 0.94 | Same-runtime roots avoid duplicate nested editor runtime/render work; current root-scoped selectors already gate wakeups through `useSlateViewState` and `isRootAffected` in `packages/slate-react/src/hooks/use-slate-runtime.tsx:639`; closure keeps O(1) child-root lookup, no roots for native controls, and no every-root/every-island commit scans. |
+| Slate-close unopinionated DX | 0.20 | 0.93 | `<Editable root={root}>` exists in `apps/www/src/app/(app)/examples/slate/_examples/multi-root-document.tsx:204`; closure chooses provisional `useSlateChildRoot(element, slot)` and keeps `renderVoid` content-only. |
 | Plate and slate-yjs migration backbone | 0.15 | 0.91 | Plate source supports plugin/wrapper adaptation; slate-yjs source proves shared-root/origin/deterministic-state pressure; closure explicitly gates collab claims on deterministic child-root payload/lifecycle policy. |
 | Regression-proof testing strategy | 0.20 | 0.89 | Proof matrix is vertical-slice specific and blocks execution claims until child-root lifecycle, browser delete/undo, clipboard, mobile, and collab replay proof exists. This is strong enough for planning closure, not implementation closure. |
 | Research evidence completeness | 0.15 | 0.95 | Pass 5 focused source reads plus Pass 6 skill/source pressure and maintainer/ecosystem objection passes cover the architecture direction. |
@@ -173,10 +173,10 @@ Source-backed architecture north star:
 - target shape: `editable-island` remains atomic in the parent flow; optional
   rich content inside the island is rendered as a same-runtime child root/view.
 - source evidence: `editable-island` kind exists in
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:481`; root views exist
-  in `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:712`;
+  `packages/slate/src/interfaces/editor.ts:481`; root views exist
+  in `packages/slate-react/src/hooks/use-slate-runtime.tsx:712`;
   current example embeds a nested editor in
-  `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:147`.
+  `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:147`.
 - rejected drift: nested independent editors as canonical rich island content;
   path-derived root keys; fat `renderVoid` props; rich island content under
   void element children.
@@ -186,50 +186,50 @@ Source-backed architecture north star:
 Current-state source facts:
 | Surface | Current source | Fact | Plan implication |
 |---------|----------------|------|------------------|
-| Editable void editor | `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:22` | Creates one outer editor with `useSlateEditor`. | The example already has a runtime that can own child roots. |
-| Editable island spec | `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:64` | Defines `editable-void` with `void: 'editable-island'`. | The substrate exists; rich child-root ownership is missing. |
-| Void renderer | `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:83` | `renderVoid` renders `EditableVoid`. | Keep renderer content-only. |
-| Local scalar state | `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:103` | `Name` input uses React local state. | Document-owned scalar metadata should use state fields. |
-| Nested editor | `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:147` | Rich section embeds `<RichTextEditor />`. | Wrong canonical story after multi-root support. |
-| State field pattern | `.tmp/slate-v2/site/examples/ts/multi-root-document.tsx:16` | Defines persisted/shared/history-push document title. | Scalar island data can reuse state-field pattern. |
-| Root chrome | `.tmp/slate-v2/site/examples/ts/multi-root-document.tsx:195` | Uses `useSlateRootChrome(rootKey)`. | Island child roots should reuse package-owned root activation/chrome mechanics. |
-| Root view rendering | `.tmp/slate-v2/site/examples/ts/multi-root-document.tsx:204` | Renders `<Editable root={root} />`. | Rich island content should be a same-runtime root view. |
-| Multi-root value | `.tmp/slate-v2/site/examples/ts/multi-root-document.tsx:303` | `initialValue.roots` stores named roots. | Data model already supports named roots. |
-| Root value type | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:89` | `EditorDocumentValue` stores `roots: Record<RootKey, V>`. | This plan should not smuggle an ordered roots-array migration into the island work. |
-| Initial root value | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:94` | `InitialValue` accepts single-root children or keyed `roots`. | Child-root identity can build on keyed roots without forcing all callers into document-value syntax. |
-| Root change metadata | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1748` | Commits expose `rootRuntimeIdsChanged` and `topLevelOrderChanged`. | Root lifecycle/order dirtiness exists; child roots must integrate with it rather than invent side channels. |
-| Root dirtiness | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:3426` | `topLevelOrderChanged` drives `rootRuntimeIdsChanged`. | Child root lifecycle must have deterministic commit metadata for undo/collab/subscribers. |
-| Root view API | `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:712` | `useSlateRootEditor(root)` returns a root view editor. | Child-root helper can build on root views. |
-| Root state selector | `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:639` | `useSlateViewState(root, selector)` gates selectors through `isRootAffected`. | Child roots should reuse root-scoped subscriptions instead of creating render-prop/path subscriptions. |
-| Runtime root view | `.tmp/slate-v2/packages/slate/src/editor-runtime-view.ts:765` | `createEditorView` stores root in view state. | Child roots need stable root keys and lifecycle. |
-| Root-scoped node reads | `.tmp/slate-v2/packages/slate/src/editor-runtime-view.ts:335` | Node reads are root-scoped through view state. | Root-scoped child content can avoid parent path contamination. |
-| Root snapshots | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:3936` | Snapshot restore handles `roots` and root indexes. | Delete/undo/restore child-root proof is mandatory. |
-| `renderVoid` contract | `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:919` | Locks content-only props and runtime-owned void spacer/anchor. | Do not widen render props. |
-| Void kind type | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:481` | `EditorElementVoidKind` includes `editable-island`. | Extend model; do not casually rename primitive. |
-| Void kind contract | `.tmp/slate-v2/packages/slate/test/public-element-void-kind-contract.ts:31` | Tests include an `editable-island` spec. | Public type contract already names the primitive. |
+| Editable void editor | `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:22` | Creates one outer editor with `useSlateEditor`. | The example already has a runtime that can own child roots. |
+| Editable island spec | `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:64` | Defines `editable-void` with `void: 'editable-island'`. | The substrate exists; rich child-root ownership is missing. |
+| Void renderer | `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:83` | `renderVoid` renders `EditableVoid`. | Keep renderer content-only. |
+| Local scalar state | `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:103` | `Name` input uses React local state. | Document-owned scalar metadata should use state fields. |
+| Nested editor | `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:147` | Rich section embeds `<RichTextEditor />`. | Wrong canonical story after multi-root support. |
+| State field pattern | `apps/www/src/app/(app)/examples/slate/_examples/multi-root-document.tsx:16` | Defines persisted/shared/history-push document title. | Scalar island data can reuse state-field pattern. |
+| Root chrome | `apps/www/src/app/(app)/examples/slate/_examples/multi-root-document.tsx:195` | Uses `useSlateRootChrome(rootKey)`. | Island child roots should reuse package-owned root activation/chrome mechanics. |
+| Root view rendering | `apps/www/src/app/(app)/examples/slate/_examples/multi-root-document.tsx:204` | Renders `<Editable root={root} />`. | Rich island content should be a same-runtime root view. |
+| Multi-root value | `apps/www/src/app/(app)/examples/slate/_examples/multi-root-document.tsx:303` | `initialValue.roots` stores named roots. | Data model already supports named roots. |
+| Root value type | `packages/slate/src/interfaces/editor.ts:89` | `EditorDocumentValue` stores `roots: Record<RootKey, V>`. | This plan should not smuggle an ordered roots-array migration into the island work. |
+| Initial root value | `packages/slate/src/interfaces/editor.ts:94` | `InitialValue` accepts single-root children or keyed `roots`. | Child-root identity can build on keyed roots without forcing all callers into document-value syntax. |
+| Root change metadata | `packages/slate/src/interfaces/editor.ts:1748` | Commits expose `rootRuntimeIdsChanged` and `topLevelOrderChanged`. | Root lifecycle/order dirtiness exists; child roots must integrate with it rather than invent side channels. |
+| Root dirtiness | `packages/slate/src/core/public-state.ts:3426` | `topLevelOrderChanged` drives `rootRuntimeIdsChanged`. | Child root lifecycle must have deterministic commit metadata for undo/collab/subscribers. |
+| Root view API | `packages/slate-react/src/hooks/use-slate-runtime.tsx:712` | `useSlateRootEditor(root)` returns a root view editor. | Child-root helper can build on root views. |
+| Root state selector | `packages/slate-react/src/hooks/use-slate-runtime.tsx:639` | `useSlateViewState(root, selector)` gates selectors through `isRootAffected`. | Child roots should reuse root-scoped subscriptions instead of creating render-prop/path subscriptions. |
+| Runtime root view | `packages/slate/src/editor-runtime-view.ts:765` | `createEditorView` stores root in view state. | Child roots need stable root keys and lifecycle. |
+| Root-scoped node reads | `packages/slate/src/editor-runtime-view.ts:335` | Node reads are root-scoped through view state. | Root-scoped child content can avoid parent path contamination. |
+| Root snapshots | `packages/slate/src/core/public-state.ts:3936` | Snapshot restore handles `roots` and root indexes. | Delete/undo/restore child-root proof is mandatory. |
+| `renderVoid` contract | `packages/slate-react/test/surface-contract.tsx:919` | Locks content-only props and runtime-owned void spacer/anchor. | Do not widen render props. |
+| Void kind type | `packages/slate/src/interfaces/editor.ts:481` | `EditorElementVoidKind` includes `editable-island`. | Extend model; do not casually rename primitive. |
+| Void kind contract | `packages/slate/test/public-element-void-kind-contract.ts:31` | Tests include an `editable-island` spec. | Public type contract already names the primitive. |
 
 Public API target:
 | Surface | Proposed shape | User-facing DX | Compatibility / migration | Evidence | Verdict |
 |---------|----------------|----------------|---------------------------|----------|---------|
-| Child root identity | Provisional target: `useSlateChildRoot(element, slot = 'default')` | One call returns a stable root key/view target for `<Editable root={childRoot} />`. | Existing apps can keep nested editors; canonical examples migrate to child roots. | gap: no helper exists; root view API exists at `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:712`; Pass 6 rejects path-derived names and chooses child-root wording because the root is owned by the island element plus slot. | keep provisional, objection pass can still rename |
-| Rich island editor | `<Editable root={childRoot} />` | Same editor runtime, root-scoped selection/history/value. | No second `useSlateEditor` inside the void. | Current multi-root example uses `<Editable root={root} />` at `.tmp/slate-v2/site/examples/ts/multi-root-document.tsx:204`. | keep |
-| Scalar island data | `defineStateField` plus state-field hooks | Document-owned scalar data participates in history/persistence/collab. | Local React state remains fine for ephemeral UI. | `documentTitle` state field at `.tmp/slate-v2/site/examples/ts/multi-root-document.tsx:16`. | keep |
-| Void renderer | `renderVoid(props)` remains content-only | Render island content only. | Use hooks/context for runtime identity. | Surface contract rejects `path`, `target`, `actions`, `selected`, `focused`, `children`, and `attributes` at `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:956`. | keep |
+| Child root identity | Provisional target: `useSlateChildRoot(element, slot = 'default')` | One call returns a stable root key/view target for `<Editable root={childRoot} />`. | Existing apps can keep nested editors; canonical examples migrate to child roots. | gap: no helper exists; root view API exists at `packages/slate-react/src/hooks/use-slate-runtime.tsx:712`; Pass 6 rejects path-derived names and chooses child-root wording because the root is owned by the island element plus slot. | keep provisional, objection pass can still rename |
+| Rich island editor | `<Editable root={childRoot} />` | Same editor runtime, root-scoped selection/history/value. | No second `useSlateEditor` inside the void. | Current multi-root example uses `<Editable root={root} />` at `apps/www/src/app/(app)/examples/slate/_examples/multi-root-document.tsx:204`. | keep |
+| Scalar island data | `defineStateField` plus state-field hooks | Document-owned scalar data participates in history/persistence/collab. | Local React state remains fine for ephemeral UI. | `documentTitle` state field at `apps/www/src/app/(app)/examples/slate/_examples/multi-root-document.tsx:16`. | keep |
+| Void renderer | `renderVoid(props)` remains content-only | Render island content only. | Use hooks/context for runtime identity. | Surface contract rejects `path`, `target`, `actions`, `selected`, `focused`, `children`, and `attributes` at `packages/slate-react/test/surface-contract.tsx:956`. | keep |
 
 Internal runtime target:
 | Layer | Current owner | Target mechanism | Avoids | Evidence | Verdict |
 |-------|---------------|------------------|--------|----------|---------|
-| Root storage | `slate` runtime roots | Child roots stored as named roots with lifecycle tied to stable element identity plus slot; lifecycle changes must be explicit operation payloads or transaction metadata, not hidden React effects. | Path-derived identity breakage on move/undo/collab. | Root document value type at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:89`; current operations carry optional `root?: string` but no child-root lifecycle op in `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:14`. | keep with lifecycle-op gate |
-| Root view | `slate-react` root view hooks | Use existing root view machinery for embedded child roots. | Nested editor split-brain selection/history/collab. | `useSlateRootEditor` at `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:712`. | keep |
+| Root storage | `slate` runtime roots | Child roots stored as named roots with lifecycle tied to stable element identity plus slot; lifecycle changes must be explicit operation payloads or transaction metadata, not hidden React effects. | Path-derived identity breakage on move/undo/collab. | Root document value type at `packages/slate/src/interfaces/editor.ts:89`; current operations carry optional `root?: string` but no child-root lifecycle op in `packages/slate/src/interfaces/operation.ts:14`. | keep with lifecycle-op gate |
+| Root view | `slate-react` root view hooks | Use existing root view machinery for embedded child roots. | Nested editor split-brain selection/history/collab. | `useSlateRootEditor` at `packages/slate-react/src/hooks/use-slate-runtime.tsx:712`. | keep |
 | Island shell | `slate` element spec plus `slate-react` void rendering | Parent sees island as atomic; child root receives input through its own view. | Parent path contamination and illegal descendant reads. | `editable-island` kind and renderVoid contract. | keep |
-| Snapshot/history | core transaction snapshot restore | Delete/undo/restore must include child-root presence/value deterministically. Mixed-root undo must never replay paths against the wrong root. | Stale root values or descendant path crashes. | Snapshot restore roots path at `.tmp/slate-v2/packages/slate/src/core/public-state.ts:3936`; operation-root snapshots and unknown-runtime-impact handling live at `.tmp/slate-v2/packages/slate/src/core/public-state.ts:4070`. | gate |
+| Snapshot/history | core transaction snapshot restore | Delete/undo/restore must include child-root presence/value deterministically. Mixed-root undo must never replay paths against the wrong root. | Stale root values or descendant path crashes. | Snapshot restore roots path at `packages/slate/src/core/public-state.ts:3936`; operation-root snapshots and unknown-runtime-impact handling live at `packages/slate/src/core/public-state.ts:4070`. | gate |
 
 Hook / component / render DX target:
 | Surface | Call-site shape | Composition rule | Performance rule | Evidence | Verdict |
 |---------|-----------------|------------------|------------------|----------|---------|
-| Native island controls | `<input>` / app widgets inside island shell | Slate ignores native control text as parent text; app decides ephemeral vs state field. | No root created unless rich text is needed. | Current editable void uses native inputs at `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:113`. | keep |
-| Child rich root | `<Editable root={childRoot} />` | Rich editable content is a Slate root view inside the same runtime. | Root-scoped subscriptions only. | `useSlateRootState` and root view selectors in `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:643`. | add |
-| Render void | `renderVoid` returns content only | No `actions`, `children`, `attributes`, `path`, `selected`, or `focused`. | Avoid render-time path subscriptions. | Surface contract at `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:919`. | keep |
+| Native island controls | `<input>` / app widgets inside island shell | Slate ignores native control text as parent text; app decides ephemeral vs state field. | No root created unless rich text is needed. | Current editable void uses native inputs at `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:113`. | keep |
+| Child rich root | `<Editable root={childRoot} />` | Rich editable content is a Slate root view inside the same runtime. | Root-scoped subscriptions only. | `useSlateRootState` and root view selectors in `packages/slate-react/src/hooks/use-slate-runtime.tsx:643`. | add |
+| Render void | `renderVoid` returns content only | No `actions`, `children`, `attributes`, `path`, `selected`, or `focused`. | Avoid render-time path subscriptions. | Surface contract at `packages/slate-react/test/surface-contract.tsx:919`. | keep |
 
 Plate migration-backbone target:
 | Pressure | Slate substrate target | Plate adaptation route | Non-goal | Evidence | Verdict |
@@ -398,7 +398,7 @@ Research/live-source refresh notes:
 Pass 6 pressure synthesis:
 | Lens | Decision | Evidence | Plan result |
 |------|----------|----------|-------------|
-| Performance | Accept same-runtime child roots only with a repeated-unit budget. Native controls get no child root; rich child roots are opt-in and looked up by O(1) root/slot maps; no render path may scan every root or island per commit. | Root-scoped selectors/wakeups in `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:639`; mounted root view maps and root selection cache in `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:389`; root-order fanout test in `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:820`. | Add perf proof rows for repeated islands and no broad root fanout before closure. |
+| Performance | Accept same-runtime child roots only with a repeated-unit budget. Native controls get no child root; rich child roots are opt-in and looked up by O(1) root/slot maps; no render path may scan every root or island per commit. | Root-scoped selectors/wakeups in `packages/slate-react/src/hooks/use-slate-runtime.tsx:639`; mounted root view maps and root selection cache in `packages/slate-react/src/components/slate.tsx:389`; root-order fanout test in `packages/slate-react/test/provider-hooks-contract.tsx:820`. | Add perf proof rows for repeated islands and no broad root fanout before closure. |
 | DX | Choose `useSlateChildRoot(element, slot = 'default')` as the provisional public helper. `useSlateElementRoot` is too vague; `Root.child` hides the React/root-view context. | Existing public rendering shape is already `<Editable root={root}>`; no helper exists yet. | Public API target updated; maintainer objection pass may rename only with a better call-site. |
 | Unopinionated core | Raw Slate owns only identity, lifecycle, root views, state-field substrate, DOM/runtime boundaries, and proof hooks. Plate/app owns labels, validation, menus, layouts, and product widgets. | Plate plugin wrapper/source rows and shadcn lens both push product UX out of raw Slate. | Keep one primitive hook, no form-builder API, no fat `renderVoid` props. |
 | Migration | Keep nested independent editors as interop/regression proof, not the canonical story. Scalar document-owned data uses state fields; rich island content uses child roots; collaboration waits for deterministic child-root payload policy. | Current example embeds `<RichTextEditor />`; slate-yjs binds one shared root today and has move/undo caveats. | Migration backbone score moves above 0.85, but collab remains a gate. |
@@ -420,7 +420,7 @@ Legacy regression proof matrix:
 Browser stress / parity strategy:
 | Surface | Scenario | Browser/device | Command or proof route | Expected signal | Status |
 |---------|----------|----------------|------------------------|-----------------|--------|
-| Editable island native controls | Click input, type, undo, redo, paste/drop. | Chromium, Firefox if available, mobile smoke. | `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts` plus new rows. | Parent value stable; input behavior native-owned. | pending |
+| Editable island native controls | Click input, type, undo, redo, paste/drop. | Chromium, Firefox if available, mobile smoke. | `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts` plus new rows. | Parent value stable; input behavior native-owned. | pending |
 | Child root in island | Click child root, type, undo/redo, follow-up type. | Chromium and mobile smoke. | New `multi-root-islands` or `editable-voids` rows. | Selection/history root policy correct. | pending |
 | Parent atomic selection | Click before/after/across island. | Chromium. | New browser rows. | Parent treats island as atom; child root unchanged. | pending |
 | Delete/undo restore | Delete island, undo, click child root and type. | Chromium. | New browser row. | No stale descendant path; child content restored by policy. | pending |
@@ -429,10 +429,10 @@ Browser stress / parity strategy:
 Verification workspace gate:
 | Claim | Workspace | Command | Result | Owner |
 |-------|-----------|---------|--------|-------|
-| Current editable-voids source embeds nested rich editor. | `.tmp/slate-v2` source read from `plate-2` | `nl -ba .tmp/slate-v2/site/examples/ts/editable-voids.tsx \| sed -n '1,230p'` | observed line 147 `<RichTextEditor />` | complete for Pass 1 |
-| Current multi-root example renders root views and state fields. | `.tmp/slate-v2` source read from `plate-2` | `nl -ba .tmp/slate-v2/site/examples/ts/multi-root-document.tsx \| sed -n '1,380p'` | observed state field, root chrome, `<Editable root={root} />`, and `initialValue.roots` | complete for Pass 1 |
-| Current renderVoid is content-only. | `.tmp/slate-v2` source read from `plate-2` | `nl -ba .tmp/slate-v2/packages/slate-react/test/surface-contract.tsx \| sed -n '880,990p'` | observed content-only prop assertions | complete for Pass 1 |
-| Current root view API exists. | `.tmp/slate-v2` source read from `plate-2` | `nl -ba .tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx \| sed -n '660,760p'` | observed `useSlateRootEditor` and root state APIs | complete for Pass 1 |
+| Current editable-voids source embeds nested rich editor. | `Plate repo root` source read from `plate-2` | `nl -ba apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx \| sed -n '1,230p'` | observed line 147 `<RichTextEditor />` | complete for Pass 1 |
+| Current multi-root example renders root views and state fields. | `Plate repo root` source read from `plate-2` | `nl -ba apps/www/src/app/(app)/examples/slate/_examples/multi-root-document.tsx \| sed -n '1,380p'` | observed state field, root chrome, `<Editable root={root} />`, and `initialValue.roots` | complete for Pass 1 |
+| Current renderVoid is content-only. | `Plate repo root` source read from `plate-2` | `nl -ba packages/slate-react/test/surface-contract.tsx \| sed -n '880,990p'` | observed content-only prop assertions | complete for Pass 1 |
+| Current root view API exists. | `Plate repo root` source read from `plate-2` | `nl -ba packages/slate-react/src/hooks/use-slate-runtime.tsx \| sed -n '660,760p'` | observed `useSlateRootEditor` and root state APIs | complete for Pass 1 |
 | React runtime policy is external-store and event-boundary aligned. | local `../react` plus `plate-2` research source reads | `nl -ba packages/use-subscription/README.md \| sed -n '1,18p'`; `nl -ba packages/use-subscription/src/useSubscription.js \| sed -n '1,42p'`; `nl -ba docs/slate-v2/references/architecture-contract.md \| sed -n '375,452p;1440,1460p;1688,1718p;1987,1996p'` | observed `useSyncExternalStore` wrapper and Slate v2 hard rules for selector-first snapshots and event-handler writes | complete for Pass 5 |
 | ProseMirror supports explicit widget/content boundary and transaction ownership. | local `../prosemirror` source read | `nl -ba view/src/viewdesc.ts \| sed -n '28,90p;488,504p;682,724p;986,1034p'`; `nl -ba view/src/index.ts \| sed -n '459,513p;727,752p;820,826p'`; `nl -ba state/src/transaction.ts \| sed -n '1,80p'` | observed NodeView `dom`/`contentDOM`/selection/mutation hooks and transaction dispatch/apply flow | complete for Pass 5 |
 | Lexical supports stable decorator/state and update-scoped command discipline. | local `../lexical` source read | `nl -ba packages/lexical-list/src/index.ts \| sed -n '60,132p;270,298p'`; `nl -ba packages/lexical-playground/src/nodes/PollNode.tsx \| sed -n '1,155p'` | observed `DecoratorNode`, `createState`, command registration, and `editor.update` wrappers | complete for Pass 5 |
@@ -440,8 +440,8 @@ Verification workspace gate:
 | Plate migration pressure supports wrapper/plugin ownership, not raw Slate product APIs. | `plate-2` source reads | `nl -ba packages/core/src/lib/plugin/BasePlugin.ts \| sed -n '86,126p;237,266p;209,212p'`; `nl -ba packages/core/src/lib/plugin/SlatePlugin.ts \| sed -n '281,292p;457,486p;502,655p'`; `nl -ba packages/core/src/react/plugin/toPlatePlugin.ts \| sed -n '57,105p;145,208p'`; `nl -ba packages/media/src/react/placeholder/PlaceholderPlugin.tsx \| sed -n '29,145p'` | observed plugin key/options/API/transforms/selectors, React plugin wrapping, editor extension, and product plugin state/handler layering | complete for Pass 5 |
 | slate-yjs migration pressure requires deterministic child-root payload/replay policy. | local `../slate-yjs` and `plate-2` source reads | `nl -ba packages/core/src/plugins/withYjs.ts \| sed -n '29,44p;156,181p;204,226p;232,278p'`; `nl -ba docs/concepts/stored-positions.md \| sed -n '49,68p'`; `nl -ba packages/yjs/src/utils/slateToDeterministicYjsState.ts \| sed -n '1,65p'` | observed single shared-root binding, origin-grouped transactions, move/undo caveats, and deterministic initial Yjs state helper | complete for Pass 5 |
 | Pass 6 implementation-skill lenses applied. | `plate-2` skill reads | `sed -n` reads of `.agents/skills/performance-oracle/SKILL.md`, `.agents/skills/tdd/SKILL.md`, `.agents/skills/react-useeffect/SKILL.md`, `.agents/skills/vercel-react-best-practices/SKILL.md`, `.agents/skills/shadcn/SKILL.md`, and `.agents/skills/performance/SKILL.md` | translated lenses into bounded-complexity, TDD, effect-ownership, selector, UI-minimalism, and perf-proof gates | complete for Pass 6 |
-| Pass 6 root-operation and snapshot pressure applied. | `.tmp/slate-v2` source reads from `plate-2` | focused reads of `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts`, `.tmp/slate-v2/packages/slate/src/core/public-state.ts`, `.tmp/slate-v2/packages/slate/src/editor-runtime-view.ts`, `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx`, `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`, and root contract tests | observed root-optional operations, operation-root context, root-children swapping, snapshot restore, root dirtiness, root-scoped views/selectors, mounted view maps, and explicit-root tests; no child-root lifecycle op exists yet | complete for Pass 6 |
-| Child-root behavior works. | `.tmp/slate-v2` | command pending | not implemented/proven yet | execution |
+| Pass 6 root-operation and snapshot pressure applied. | `Plate repo root` source reads from `plate-2` | focused reads of `packages/slate/src/interfaces/operation.ts`, `packages/slate/src/core/public-state.ts`, `packages/slate/src/editor-runtime-view.ts`, `packages/slate-react/src/hooks/use-slate-runtime.tsx`, `packages/slate-react/src/components/slate.tsx`, and root contract tests | observed root-optional operations, operation-root context, root-children swapping, snapshot restore, root dirtiness, root-scoped views/selectors, mounted view maps, and explicit-root tests; no child-root lifecycle op exists yet | complete for Pass 6 |
+| Child-root behavior works. | `Plate repo root` | command pending | not implemented/proven yet | execution |
 
 Applicable implementation-skill review matrix:
 | Lens | Applies | Status | Findings | Plan delta |
@@ -463,11 +463,11 @@ High-risk deliberate-mode pre-mortem:
 Slate maintainer objection ledger:
 | Change | Objection | Tradeoff | Evidence | Migration/docs/proof answer | Verdict |
 |--------|-----------|----------|----------|-----------------------------|---------|
-| Add child-root primitive for islands | "Nested editors already work; why add another concept?" | More core lifecycle responsibility. | Current example embeds independent editor at `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:147`, while root views already exist. | Keep nested editor as interop test; teach child root only for same-runtime rich content. | keep |
-| Keep `renderVoid` content-only | "Apps need path/actions to wire child roots." | Requires a hook/helper rather than convenient render props. | Surface contract rejects fat props at `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:956`. | Provide `useSlateChildRoot(element, slot)` from context/root view machinery instead of renderer props. | keep |
-| State fields for scalar data | "Local React state is simpler." | More Slate concepts in the example. | Multi-root state field pattern exists at `.tmp/slate-v2/site/examples/ts/multi-root-document.tsx:16`. | Use local React state only for ephemeral UI; state fields for document-owned data. | keep |
+| Add child-root primitive for islands | "Nested editors already work; why add another concept?" | More core lifecycle responsibility. | Current example embeds independent editor at `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:147`, while root views already exist. | Keep nested editor as interop test; teach child root only for same-runtime rich content. | keep |
+| Keep `renderVoid` content-only | "Apps need path/actions to wire child roots." | Requires a hook/helper rather than convenient render props. | Surface contract rejects fat props at `packages/slate-react/test/surface-contract.tsx:956`. | Provide `useSlateChildRoot(element, slot)` from context/root view machinery instead of renderer props. | keep |
+| State fields for scalar data | "Local React state is simpler." | More Slate concepts in the example. | Multi-root state field pattern exists at `apps/www/src/app/(app)/examples/slate/_examples/multi-root-document.tsx:16`. | Use local React state only for ephemeral UI; state fields for document-owned data. | keep |
 | Child roots are opt-in | "Why not automatically create a root for every editable island?" | Authors must choose when rich content exists. | Current editable-void native controls need no root and should not pay lifecycle/serialization cost. | Native/app controls stay normal DOM; child root is only for rich Slate content. | keep |
-| Keep root ordering out of scope | "Child roots prove roots need an ordered model." | Root ordering may deserve its own plan, but mixing it here bloats the lane. | Current `EditorDocumentValue` stores `roots: Record<RootKey, V>` at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:89`. | Child-root display order follows parent island position; top-level root order remains separate architecture work. | keep |
+| Keep root ordering out of scope | "Child roots prove roots need an ordered model." | Root ordering may deserve its own plan, but mixing it here bloats the lane. | Current `EditorDocumentValue` stores `roots: Record<RootKey, V>` at `packages/slate/src/interfaces/editor.ts:89`. | Child-root display order follows parent island position; top-level root order remains separate architecture work. | keep |
 | Collab support is gated | "Do not ship a primitive that yjs cannot replay." | This delays any collab claim. | slate-yjs currently binds one shared root and groups by origin; child-root payload ordering is not proven. | Raw Slate may add lifecycle substrate, but collab claim waits for deterministic payload/replay proof. | keep gate |
 | Lifecycle op/metadata requirement | "This is too much machinery for an example fix." | More substrate work than a local example patch. | Current operations support `root?: string` but no child-root lifecycle op; snapshot restore already handles roots. | The example fix should not be a hack. The primitive needs deterministic delete/undo/copy/collab behavior or should not ship. | keep |
 
@@ -492,7 +492,7 @@ Revision pass:
 Hard cuts and rejected alternatives:
 | Option / API | Keep / cut / reject | Why | Migration cost | Evidence | Follow-up |
 |--------------|---------------------|-----|----------------|----------|-----------|
-| Nested independent editor as canonical editable-void rich-content example | reject | Duplicates runtime/history/collab/serialization and hides multi-root support. | Existing example rewrite. | Current nested editor at `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:147`. | Keep regression interop row. |
+| Nested independent editor as canonical editable-void rich-content example | reject | Duplicates runtime/history/collab/serialization and hides multi-root support. | Existing example rewrite. | Current nested editor at `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:147`. | Keep regression interop row. |
 | Rich child content as `element.children` under a void | reject | Void semantics and child rich descendants fight parent selection/delete/normalization. | Avoided by root model. | `editable-island` is still a void kind. | Need proof rows. |
 | Path-derived child root ids | reject | Paths move under editing/collab. | Need stable id/slot primitive. | Runtime id APIs exist, but exact child-root API is gap. | Provisional public helper is `useSlateChildRoot(element, slot)`. |
 | Automatic child root for every island | reject | Most islands are native controls; roots cost lifecycle and serialization work. | Apps opt into child roots. | Current native controls need no root. | Keep helper opt-in. |
@@ -524,7 +524,7 @@ Open questions and decision-changing evidence:
 Implementation phases with owners:
 | Phase | Owner | Scope | Entry criteria | Exit criteria | Verification |
 |-------|-------|-------|----------------|---------------|--------------|
-| API naming and runtime substrate | future execution | Child-root primitive and lifecycle. | Closed plan accepted by user. | Unit contracts pass. | `.tmp/slate-v2` package tests |
+| API naming and runtime substrate | future execution | Child-root primitive and lifecycle. | Closed plan accepted by user. | Unit contracts pass. | `Plate repo root` package tests |
 | Example rewrite | future execution | Canonical editable island example with native controls, state fields, child root. | API substrate available. | Example usable and source docs updated. | Playwright focused rows |
 | Regression proof | future execution | Existing nested-editor/internal-control rows plus new child-root rows. | Example compiled. | Focus/selection/history/clipboard/delete/move rows pass. | Playwright Chromium/mobile/Firefox as applicable |
 | Ledger/reference sync | future execution or final planning | Update fixed/improved/related claims conservatively. | Proof results known. | PR reference and ledgers current. | text checks and closure check |
@@ -533,14 +533,14 @@ Fast driver gates:
 | Gate | Cwd | Command / artifact | Proves | Status |
 |------|-----|--------------------|--------|--------|
 | template scratchpad creation | plate-2 | `node .agents/rules/goal/scripts/create-goal-scratchpad.mjs --template slate-plan --title "Slate v2 editable islands multi-root"` | A fresh `slate-plan` shell was generated and used for migration. | complete |
-| current source read | plate-2 | `nl -ba .tmp/slate-v2/site/examples/ts/editable-voids.tsx \| sed -n '1,230p'` | Current editable-voids example shape. | complete |
-| current multi-root source read | plate-2 | `nl -ba .tmp/slate-v2/site/examples/ts/multi-root-document.tsx \| sed -n '1,380p'` | Current root/state-field example shape. | complete |
-| render contract read | plate-2 | `nl -ba .tmp/slate-v2/packages/slate-react/test/surface-contract.tsx \| sed -n '880,990p'` | `renderVoid` content-only contract. | complete |
+| current source read | plate-2 | `nl -ba apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx \| sed -n '1,230p'` | Current editable-voids example shape. | complete |
+| current multi-root source read | plate-2 | `nl -ba apps/www/src/app/(app)/examples/slate/_examples/multi-root-document.tsx \| sed -n '1,380p'` | Current root/state-field example shape. | complete |
+| render contract read | plate-2 | `nl -ba packages/slate-react/test/surface-contract.tsx \| sed -n '880,990p'` | `renderVoid` content-only contract. | complete |
 | issue-ledger pass | plate-2 | `rg`/`sed` reads across `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`, plus ledger updates in this plan and the issue matrices | Full issue corpus accounting for editable islands and void-boundary pressure. | complete |
-| intent/boundary decision pass | plate-2 | `nl -ba .tmp/slate-v2/packages/slate/src/interfaces/editor.ts \| sed -n '80,108p;470,486p;1740,1752p'`; `nl -ba .tmp/slate-v2/packages/slate/src/core/public-state.ts \| sed -n '536,595p;1428,1450p;3418,3452p'`; `nl -ba .tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx \| sed -n '630,748p'`; `nl -ba .tmp/slate-v2/packages/slate-react/test/surface-contract.tsx \| sed -n '919,964p'` | Roots are keyed records, root dirtiness metadata exists, root-scoped view subscriptions exist, and `renderVoid` stays content-only. | complete |
+| intent/boundary decision pass | plate-2 | `nl -ba packages/slate/src/interfaces/editor.ts \| sed -n '80,108p;470,486p;1740,1752p'`; `nl -ba packages/slate/src/core/public-state.ts \| sed -n '536,595p;1428,1450p;3418,3452p'`; `nl -ba packages/slate-react/src/hooks/use-slate-runtime.tsx \| sed -n '630,748p'`; `nl -ba packages/slate-react/test/surface-contract.tsx \| sed -n '919,964p'` | Roots are keyed records, root dirtiness metadata exists, root-scoped view subscriptions exist, and `renderVoid` stays content-only. | complete |
 | research/ecosystem source refresh | plate-2 plus local sibling repos | focused `nl`/`rg` reads in `../react`, `../prosemirror`, `../lexical`, `../tiptap`, `../slate-yjs`, `packages/core`, `packages/media`, and `packages/yjs` | External systems support explicit boundary, selector, transaction/update, plugin wrapper, and deterministic-collab pressure; none justify a fat raw Slate renderer API. | complete |
-| pressure-pass bundle | plate-2 plus `.tmp/slate-v2` source reads | skill-lens reads plus focused source reads in Slate v2 operation, transaction, snapshot, root-view, selector, Slate provider, and root contract tests | Performance, DX, migration, regression, research, and simplicity pressure applied; provisional API helper selected; unresolved behavior proof stays gated. | complete |
-| Slate v2 behavior check | .tmp/slate-v2 | focused package/browser commands after implementation accepted | Child-root behavior. | deferred to execution; N/A for planning closure |
+| pressure-pass bundle | plate-2 plus `Plate repo root` source reads | skill-lens reads plus focused source reads in Slate v2 operation, transaction, snapshot, root-view, selector, Slate provider, and root contract tests | Performance, DX, migration, regression, research, and simplicity pressure applied; provisional API helper selected; unresolved behavior proof stays gated. | complete |
+| Slate v2 behavior check | Plate repo root | focused package/browser commands after implementation accepted | Child-root behavior. | deferred to execution; N/A for planning closure |
 | goal closure check | plate-2 | `node .agents/rules/goal/scripts/check-complete.mjs docs/plans/2026-05-24-slate-v2-editable-islands-multi-root-ralplan.md` | Plan closure. | complete |
 
 Final user-review handoff:
@@ -564,7 +564,7 @@ Final user-review handoff:
   `Fixes` or `Improves` line is legal before implementation and browser proof.
 
 Findings:
-- Live `.tmp/slate-v2` source already has an `editable-island` void kind and
+- Live `Plate repo root` source already has an `editable-island` void kind and
   multi-root root view machinery.
 - The canonical editable-voids example still embeds an independent nested
   `RichTextEditor` for rich content.
@@ -630,7 +630,7 @@ Verification evidence:
   for model-shape, mobile inline-void, clipboard, drop/drag,
   void-delete/selection, spacer/cursor/insert-break, and external-focus
   pressure, still with no fixed/improved claim.
-- Pass 4 decision evidence: live `.tmp/slate-v2` reads confirmed keyed root
+- Pass 4 decision evidence: live `Plate repo root` reads confirmed keyed root
   values in `interfaces/editor.ts:89`, root change metadata in
   `interfaces/editor.ts:1748`, root dirtiness handling in
   `core/public-state.ts:3426`, root-scoped selectors/views in

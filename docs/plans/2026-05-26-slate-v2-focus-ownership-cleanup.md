@@ -24,7 +24,7 @@ Completion threshold:
 - Related issue and reference ledgers are synchronized for any claimed issue,
   behavior, public API, or non-claim.
 - Browser proof exists for the comment-mode focus/blur behavior in the live
-  `.tmp/slate-v2` workspace.
+  `Plate repo root` workspace.
 - Execution mode, if accepted, starts with a failing Playwright regression for
   edit-mode click -> header click retaining focus.
 - `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-focus-ownership-cleanup.md`
@@ -34,15 +34,15 @@ Verification surface:
 - Planning artifact: this file plus relevant source/research/issue ledger reads
   in `plate-2`.
 - Live bug proof: `http://localhost:3100/examples/comment-mode` through
-  Playwright browsers using `.tmp/slate-v2/node_modules`.
-- Live source grounding: `.tmp/slate-v2/packages/slate-react/**` and
-  `.tmp/slate-v2/playwright/integration/examples/comment-mode.test.ts`.
+  Playwright browsers using `Plate repo root/node_modules`.
+- Live source grounding: `packages/slate-react/**` and
+  `apps/www/tests/slate-browser/donor/examples/comment-mode.test.ts`.
 - Execution proof, after user acceptance: focused comment-mode Playwright test,
   focused `slate-react` typecheck/test, lint fix, then the repo-defined Slate v2
   check gate required by the accepted plan.
 
 Constraints:
-- Planning mode only in this activation. No `.tmp/slate-v2` implementation or
+- Planning mode only in this activation. No `Plate repo root` implementation or
   test patches.
 - Prefer the long-term runtime ownership fix over a local route/example patch.
 - Keep raw Slate unopinionated; Plate owns product-level toolbar APIs.
@@ -53,7 +53,7 @@ Boundaries:
 - Editable planning scope: `docs/plans/**`, `docs/research/**`,
   `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`,
   `docs/slate-v2/references/**`.
-- Source reads are allowed in `.tmp/slate-v2`; implementation writes are not
+- Source reads are allowed in `Plate repo root`; implementation writes are not
   allowed until a ready plan is accepted.
 - This plan targets `slate-react` focus/selection runtime behavior, not Plate
   comment UI, not Yjs adapter implementation, and not a rewrite of comment
@@ -97,9 +97,9 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | complete | `.agents/skills/slate-plan/SKILL.md` read; planning mode forbids Slate v2 source/test patches |
 | Active goal checked or created | complete | active goal names this focus-ownership cleanup lane and keeps closure pending |
-| Source of truth read before edits | complete | live route, `.tmp/slate-v2` source, current plan template, research notes, and issue ledgers read |
+| Source of truth read before edits | complete | live route, `Plate repo root` source, current plan template, research notes, and issue ledgers read |
 | `docs/solutions` checked for existing-code work | complete | focus/selection solution notes from 2026-05-20, 2026-05-21, 2026-05-03, 2026-04-24 read |
-| Live `.tmp/slate-v2` grounding needed for current-state claims | complete | browser proof and source line reads recorded below |
+| Live `Plate repo root` grounding needed for current-state claims | complete | browser proof and source line reads recorded below |
 
 Work Checklist:
 - [x] Objective includes lane outcome, pass schedule, one-pass-per-activation
@@ -128,9 +128,9 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Close remaining plan passes and run `check-complete` | score is 0.92, every dimension is at least 0.91, all pass rows are complete, and the checker is the final command for this closure pass |
-| Slate v2 source/runtime/browser claim | yes | Record live `.tmp/slate-v2` source and browser proof | current-state and research rows record live browser/source proof; no implementation proof is claimed in planning mode |
+| Slate v2 source/runtime/browser claim | yes | Record live `Plate repo root` source and browser proof | current-state and research rows record live browser/source proof; no implementation proof is claimed in planning mode |
 | Issue ledger or PR reference changed | complete | Sync ledger/reference rows after revision pass | `gitcrawl-v2-sync-ledger.md`, `issue-coverage-matrix.md`, `fork-issue-dossier.md`, and `pr-description.md` all preserve zero new fixed/improved claims |
-| Autoreview for uncommitted implementation changes | N/A | N/A for planning-only; required in execution mode if code changes | no `.tmp/slate-v2` implementation patch exists in this planning lane |
+| Autoreview for uncommitted implementation changes | N/A | N/A for planning-only; required in execution mode if code changes | no `Plate repo root` implementation patch exists in this planning lane |
 | Final user-review handoff | yes | Emit final handoff only after closure pass | final handoff outline and accepted-plan execution entry are recorded below |
 | Goal plan complete | yes | Run `check-complete` | `[autogoal] complete: docs/plans/2026-05-26-slate-v2-focus-ownership-cleanup.md` |
 
@@ -166,19 +166,19 @@ Source-backed architecture north star:
   interactions for all editable roots, read-only and editable, then delegates to
   the same reconciler policy for DOM focus, DOM selection, and model selection.
 - source evidence: `EditableDOMRoot` owns a read-only-only document listener at
-  `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:349`; runtime
+  `packages/slate-react/src/components/editable.tsx:349`; runtime
   focus/mouse ownership already flows through
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-focus-mouse-events.ts:27`;
+  `packages/slate-react/src/editable/runtime-focus-mouse-events.ts:27`;
   focus state mutation already lives in
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:227`;
+  `packages/slate-react/src/editable/selection-reconciler.ts:227`;
   root runtime/global lifecycle already owns document-level selection/drag
-  listeners in `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-lifecycle.ts:7`;
+  listeners in `packages/slate-react/src/editable/runtime-root-lifecycle.ts:7`;
   `useEditableRootRuntime` wires event runtime plus lifecycle at
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:265`
-  and `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:331`;
+  `packages/slate-react/src/editable/runtime-root-engine.ts:265`
+  and `packages/slate-react/src/editable/runtime-root-engine.ts:331`;
   provider focus subscriptions already project `ReactEditor.isFocused` from
   document `focusin` / `focusout` in
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:613`.
+  `packages/slate-react/src/hooks/use-slate-runtime.tsx:613`.
 - rejected drift: do not patch comment-mode route blur manually, do not add a
   Plate-style toolbar API to raw Slate, and do not duplicate outside-click logic
   per example.
@@ -411,14 +411,14 @@ Revision pass deltas:
 Live source refresh:
 | Owner | Current source shape | Plan consequence | Evidence | Verdict |
 |-------|----------------------|------------------|----------|---------|
-| `EditableDOMRoot` | read-only-only outside pointer listener blurs active child, clears DOM selection, and clears model selection from a layout effect | delete this path during execution; it is the dirty fix | `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:349-409` | cut |
-| `useEditableRootRuntime` | composes selection import/export, repair, event runtime, ref binding, event bindings, and global lifecycle | outside focus boundary belongs here or in a small sibling consumed here | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:92-347` | target |
-| `runtime-root-lifecycle` | already registers document-level `selectionchange` and drag lifecycle once through root runtime wiring | add outside-focus listener ownership here if the fanout budget is one per runtime/document | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-lifecycle.ts:7-35` | target |
-| `runtime-focus-mouse-events` | React focus/mouse events already classify focus/mouse intent and delegate to reconciler | outside pointer/focus boundary should share the same classification/reconciler concepts | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-focus-mouse-events.ts:27-254` | extend |
-| `input-controller` | internal target classifier already recognizes nested editables and internal native controls | reuse this so void/internal controls do not get treated as inert page chrome | `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts:112-146` | reuse |
-| `selection-reconciler` | `applyEditableBlur` owns `IS_FOCUSED.delete(editor)` and WebKit DOM-selection cleanup | outside blur must call into this policy rather than duplicating focus mutation | `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:227-304` | reuse |
-| provider focus subscription | `useSlateRuntime` listens to document `focusin` / `focusout` and projects `ReactEditor.isFocused` | fixing `IS_FOCUSED` centrally fixes the visible blinking-cursor/stale-focus signal | `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:613-642` | keep |
-| side-effect policy | commit tags/metadata suppress DOM selection, focus, and scroll side effects | collaboration/history-safe local focus behavior already has the right metadata vocabulary | `.tmp/slate-v2/packages/slate-react/src/editable/selection-side-effect-policy.ts:15-30` | keep |
+| `EditableDOMRoot` | read-only-only outside pointer listener blurs active child, clears DOM selection, and clears model selection from a layout effect | delete this path during execution; it is the dirty fix | `packages/slate-react/src/components/editable.tsx:349-409` | cut |
+| `useEditableRootRuntime` | composes selection import/export, repair, event runtime, ref binding, event bindings, and global lifecycle | outside focus boundary belongs here or in a small sibling consumed here | `packages/slate-react/src/editable/runtime-root-engine.ts:92-347` | target |
+| `runtime-root-lifecycle` | already registers document-level `selectionchange` and drag lifecycle once through root runtime wiring | add outside-focus listener ownership here if the fanout budget is one per runtime/document | `packages/slate-react/src/editable/runtime-root-lifecycle.ts:7-35` | target |
+| `runtime-focus-mouse-events` | React focus/mouse events already classify focus/mouse intent and delegate to reconciler | outside pointer/focus boundary should share the same classification/reconciler concepts | `packages/slate-react/src/editable/runtime-focus-mouse-events.ts:27-254` | extend |
+| `input-controller` | internal target classifier already recognizes nested editables and internal native controls | reuse this so void/internal controls do not get treated as inert page chrome | `packages/slate-react/src/editable/input-controller.ts:112-146` | reuse |
+| `selection-reconciler` | `applyEditableBlur` owns `IS_FOCUSED.delete(editor)` and WebKit DOM-selection cleanup | outside blur must call into this policy rather than duplicating focus mutation | `packages/slate-react/src/editable/selection-reconciler.ts:227-304` | reuse |
+| provider focus subscription | `useSlateRuntime` listens to document `focusin` / `focusout` and projects `ReactEditor.isFocused` | fixing `IS_FOCUSED` centrally fixes the visible blinking-cursor/stale-focus signal | `packages/slate-react/src/hooks/use-slate-runtime.tsx:613-642` | keep |
+| side-effect policy | commit tags/metadata suppress DOM selection, focus, and scroll side effects | collaboration/history-safe local focus behavior already has the right metadata vocabulary | `packages/slate-react/src/editable/selection-side-effect-policy.ts:15-30` | keep |
 
 Performance / DX / migration / regression / simplicity pressure pass:
 | Lens | Pressure question | Decision | Evidence | Plan delta |
@@ -482,22 +482,22 @@ Browser stress / parity strategy:
 Verification workspace gate:
 | Claim | Workspace | Command | Result | Owner |
 |-------|-----------|---------|--------|-------|
-| edit-mode comment editor keeps focus after header click | `.tmp/slate-v2` live app via localhost:3100 | node_repl Playwright script loading `@playwright/test` from `.tmp/slate-v2/node_modules` | Chromium, Firefox, WebKit all left `document.activeElement.id === "comment-mode-document"` after header click | current-state pass |
-| read-only outside-click handling is read-only-only | `.tmp/slate-v2` source | `nl -ba .tmp/slate-v2/packages/slate-react/src/components/editable.tsx | sed -n '349,409p'` | listener returns unless `readOnly` and manually blurs/clears selection | current-state pass |
-| focus/blur already has runtime owner | `.tmp/slate-v2` source | `nl -ba .tmp/slate-v2/packages/slate-react/src/editable/runtime-focus-mouse-events.ts | sed -n '27,254p'` | focus/mouse runtime delegates to reconciler | current-state pass |
-| root runtime already wires event and global lifecycle owners | `.tmp/slate-v2` source | `nl -ba .tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts | sed -n '92,347p'` | event runtime, selection import/export, repair, and `useEditableRootGlobalLifecycle` are composed in one root runtime | research/source pass |
-| global lifecycle is existing document-listener owner | `.tmp/slate-v2` source | `nl -ba .tmp/slate-v2/packages/slate-react/src/editable/runtime-root-lifecycle.ts | sed -n '1,35p'` | document `selectionchange` and drag lifecycle registration already belongs outside JSX | research/source pass |
-| provider focus state is projected from document focus events | `.tmp/slate-v2` source | `nl -ba .tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx | sed -n '613,642p'` | `focusin` / `focusout` update `ReactEditor.isFocused` projections and versions | research/source pass |
-| internal target classifier exists | `.tmp/slate-v2` source | `nl -ba .tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts | sed -n '112,146p'` | nested editables and internal native controls can be reused instead of reclassified ad hoc | research/source pass |
-| comment-mode existing proof surface | `.tmp/slate-v2` source/tests | `nl -ba .tmp/slate-v2/playwright/integration/examples/comment-mode.test.ts | sed -n '1,228p'` | read-only pointer selection/Add Comment, read-only outside blur, document/comment/read-only write counters already exist | high-risk pass |
-| editable blur guardrail proof surface | `.tmp/slate-v2` tests | `nl -ba .tmp/slate-v2/playwright/integration/examples/document-state.test.ts | sed -n '59,140p'` | focused editor blur preserves model selection and unfocused updates do not import external selection | high-risk pass |
-| content-root/multi-root guardrail proof surface | `.tmp/slate-v2` tests | `nl -ba .tmp/slate-v2/packages/slate-react/test/content-root-navigation-contract.test.ts | sed -n '157,351p'` and `nl -ba .tmp/slate-v2/playwright/integration/examples/multi-root-document.test.ts | sed -n '141,280p'` | same-runtime content-root navigation and multi-root undo/follow-up typing are existing guardrails | high-risk pass |
-| IME blur guardrail proof surface | `.tmp/slate-v2` tests | `nl -ba .tmp/slate-v2/playwright/integration/examples/placeholder.test.ts | sed -n '100,159p'` | blur fires while IME composition is active | high-risk pass |
+| edit-mode comment editor keeps focus after header click | `Plate repo root` live app via localhost:3100 | node_repl Playwright script loading `@playwright/test` from `Plate repo root/node_modules` | Chromium, Firefox, WebKit all left `document.activeElement.id === "comment-mode-document"` after header click | current-state pass |
+| read-only outside-click handling is read-only-only | `Plate repo root` source | `nl -ba packages/slate-react/src/components/editable.tsx | sed -n '349,409p'` | listener returns unless `readOnly` and manually blurs/clears selection | current-state pass |
+| focus/blur already has runtime owner | `Plate repo root` source | `nl -ba packages/slate-react/src/editable/runtime-focus-mouse-events.ts | sed -n '27,254p'` | focus/mouse runtime delegates to reconciler | current-state pass |
+| root runtime already wires event and global lifecycle owners | `Plate repo root` source | `nl -ba packages/slate-react/src/editable/runtime-root-engine.ts | sed -n '92,347p'` | event runtime, selection import/export, repair, and `useEditableRootGlobalLifecycle` are composed in one root runtime | research/source pass |
+| global lifecycle is existing document-listener owner | `Plate repo root` source | `nl -ba packages/slate-react/src/editable/runtime-root-lifecycle.ts | sed -n '1,35p'` | document `selectionchange` and drag lifecycle registration already belongs outside JSX | research/source pass |
+| provider focus state is projected from document focus events | `Plate repo root` source | `nl -ba packages/slate-react/src/hooks/use-slate-runtime.tsx | sed -n '613,642p'` | `focusin` / `focusout` update `ReactEditor.isFocused` projections and versions | research/source pass |
+| internal target classifier exists | `Plate repo root` source | `nl -ba packages/slate-react/src/editable/input-controller.ts | sed -n '112,146p'` | nested editables and internal native controls can be reused instead of reclassified ad hoc | research/source pass |
+| comment-mode existing proof surface | `Plate repo root` source/tests | `nl -ba apps/www/tests/slate-browser/donor/examples/comment-mode.test.ts | sed -n '1,228p'` | read-only pointer selection/Add Comment, read-only outside blur, document/comment/read-only write counters already exist | high-risk pass |
+| editable blur guardrail proof surface | `Plate repo root` tests | `nl -ba apps/www/tests/slate-browser/donor/examples/document-state.test.ts | sed -n '59,140p'` | focused editor blur preserves model selection and unfocused updates do not import external selection | high-risk pass |
+| content-root/multi-root guardrail proof surface | `Plate repo root` tests | `nl -ba packages/slate-react/test/content-root-navigation-contract.test.ts | sed -n '157,351p'` and `nl -ba apps/www/tests/slate-browser/donor/examples/multi-root-document.test.ts | sed -n '141,280p'` | same-runtime content-root navigation and multi-root undo/follow-up typing are existing guardrails | high-risk pass |
+| IME blur guardrail proof surface | `Plate repo root` tests | `nl -ba apps/www/tests/slate-browser/donor/examples/placeholder.test.ts | sed -n '100,159p'` | blur fires while IME composition is active | high-risk pass |
 
 Autoreview workspace gate:
 | Reviewed patch owner | Cwd | Command | Result | Notes |
 |----------------------|-----|---------|--------|-------|
-| none in this activation | N/A | N/A | N/A | planning-only; execution mode must run local autoreview if it patches `.tmp/slate-v2` |
+| none in this activation | N/A | N/A | N/A | planning-only; execution mode must run local autoreview if it patches `Plate repo root` |
 
 Applicable implementation-skill review matrix:
 | Lens | Applies | Status | Findings | Plan delta |
@@ -630,7 +630,7 @@ Fast driver gates:
 | Gate | Cwd | Command / artifact | Proves | Status |
 |------|-----|--------------------|--------|--------|
 | planning artifact check | plate-2 | `rg -n "slate_plan_lane_status: complete|current_pass: closure-score-and-final-gates|final_handoff_status: complete|Goal plan complete|Weighted total" docs/plans/2026-05-26-slate-v2-focus-ownership-cleanup.md` | closure score and final gates captured | complete |
-| Slate v2 behavior check | .tmp/slate-v2 | focused Playwright comment-mode grep after execution | runtime/API/browser behavior | pending |
+| Slate v2 behavior check | Plate repo root | focused Playwright comment-mode grep after execution | runtime/API/browser behavior | pending |
 
 Final user-review handoff:
 - accepted plan items: central runtime focus-boundary owner, no new public API
@@ -655,7 +655,7 @@ Final completion gates:
 | issue/reference sync closed | four issue/reference artifacts verified; zero new fixed/improved claims | complete |
 | live source grounding complete | source-backed rows cite current owners | complete for planning |
 | workspace verification recorded | verification workspace gate recorded; no implementation proof claimed because execution mode is not accepted | complete for planning |
-| autoreview clean or N/A | no `.tmp/slate-v2` implementation patch in planning mode | N/A for planning |
+| autoreview clean or N/A | no `Plate repo root` implementation patch in planning mode | N/A for planning |
 | final handoff emitted or lane remains pending | final user-review handoff recorded above | complete |
 | `check-complete` passes | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-focus-ownership-cleanup.md` | complete: `[autogoal] complete: docs/plans/2026-05-26-slate-v2-focus-ownership-cleanup.md` |
 

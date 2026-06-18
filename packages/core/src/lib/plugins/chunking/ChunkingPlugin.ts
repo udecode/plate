@@ -1,4 +1,4 @@
-import { type Ancestor, NodeApi } from '@platejs/slate';
+import { type Ancestor, NodeApi } from '@platejs/slate-legacy';
 
 import type { PluginConfig } from '../../plugin/BasePlugin';
 

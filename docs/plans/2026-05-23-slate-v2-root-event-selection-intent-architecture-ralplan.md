@@ -81,23 +81,23 @@ Decision boundary:
 
 Fragile current code:
 
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-root-chrome.ts:19-22` defines selector strings for chrome and native editable targets.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-root-chrome.ts:59-80` classifies event targets locally.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-root-chrome.ts:93-94` tracks pending mouse state with booleans.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-root-chrome.ts:96-191` owns focus, restore, native recovery, and editable-root click placement.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-root-chrome.ts:194-263` branches across mouse down/up capture and calls `preventDefault`.
+- `packages/slate-react/src/hooks/use-slate-root-chrome.ts:19-22` defines selector strings for chrome and native editable targets.
+- `packages/slate-react/src/hooks/use-slate-root-chrome.ts:59-80` classifies event targets locally.
+- `packages/slate-react/src/hooks/use-slate-root-chrome.ts:93-94` tracks pending mouse state with booleans.
+- `packages/slate-react/src/hooks/use-slate-root-chrome.ts:96-191` owns focus, restore, native recovery, and editable-root click placement.
+- `packages/slate-react/src/hooks/use-slate-root-chrome.ts:194-263` branches across mouse down/up capture and calls `preventDefault`.
 
 Better substrate already exists:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:231-287` already composes selection reconciliation, selection export/import, repair, trace, and event runtime.
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:299-324` already returns central editable event bindings.
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:88-164` already defines the editable event runtime shape.
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:181-220` already bridges browser handles, target runtime, and beforeinput flow.
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:692-775` already resolves DOM event coordinates into Slate ranges.
+- `packages/slate-react/src/editable/runtime-root-engine.ts:231-287` already composes selection reconciliation, selection export/import, repair, trace, and event runtime.
+- `packages/slate-react/src/editable/runtime-root-engine.ts:299-324` already returns central editable event bindings.
+- `packages/slate-react/src/editable/runtime-event-engine.ts:88-164` already defines the editable event runtime shape.
+- `packages/slate-react/src/editable/runtime-event-engine.ts:181-220` already bridges browser handles, target runtime, and beforeinput flow.
+- `packages/slate-dom/src/plugin/dom-editor.ts:692-775` already resolves DOM event coordinates into Slate ranges.
 
 Regression pressure:
 
-- `.tmp/slate-v2/playwright/integration/examples/multi-root-document.test.ts:367-580` now contains several root chrome click regressions: inactive surface clicks, body line-end clicks, body-to-footer first-click, and stale body padding selection.
+- `apps/www/tests/slate-browser/donor/examples/multi-root-document.test.ts:367-580` now contains several root chrome click regressions: inactive surface clicks, body line-end clicks, body-to-footer first-click, and stale body padding selection.
 - This is a smell. Each new browser sequence should not require a new branch in a hook.
 
 Research pressure:

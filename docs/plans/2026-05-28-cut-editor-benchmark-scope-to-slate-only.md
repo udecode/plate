@@ -12,7 +12,7 @@ Completion threshold:
   libraries.
 - The active rich-text result contains no ProseMirror, Lexical, Tiptap,
   chunk-off, legacyChunkOff, runtime-adapter, or non-Slate adapter rows.
-- `.tmp/slate-v2` Slate browser trace and legacy-compare runners default to
+- `Plate repo root` Slate browser trace and legacy-compare runners default to
   chunk-on only for legacy Slate.
 - Benchmark package scripts, lockfile, research sources, registry, notes, and
   generated docs match the Slate-only scope.
@@ -86,7 +86,7 @@ Work Checklist:
 - [x] Final handoff shape decided: concise outcome, verification, and reload URL.
 - [x] Branch handling recorded as N/A because no branch or PR was requested.
 - [x] Local-env-rot retry policy recorded as N/A; no install corruption signal.
-- [x] Workspace authority recorded through `/benchmarks/editor` and `.tmp/slate-v2`
+- [x] Workspace authority recorded through `/benchmarks/editor` and `Plate repo root`
       commands.
 - [x] High-risk command-contract note recorded: legacy Slate runner now measures
       chunk-on only.
@@ -103,7 +103,7 @@ Completion Gates:
 | Package exports or file layout changed | no | N/A | No package exports changed. |
 | Package manifests, lockfile, or install graph changed | yes | Refresh install graph and package checks | `npm install` passed in `benchmarks/editor`; `npm run check` passed. |
 | Agent rules or skills changed | no | N/A | No `.agents` files changed. |
-| Workspace authority proof | yes | Run commands in owning workspaces | `.tmp/slate-v2` runner commands passed; `benchmarks/editor` check passed. |
+| Workspace authority proof | yes | Run commands in owning workspaces | `Plate repo root` runner commands passed; `benchmarks/editor` check passed. |
 | Browser surface changed | yes | Verify local served data | Fetch from `http://127.0.0.1:8765/rich-text-data.json` passed. |
 | Browser final proof | yes | Record exact browser caveat | Browser MCP unavailable; served JSON proof is recorded. |
 | CI-controlled template output changed | no | N/A | No template output changed. |
@@ -148,7 +148,7 @@ Implementation notes:
 - Removed adapter scripts, generated adapter JSON, adapter deps, adapter package
   scripts, and stale research data.
 - `legacy-slate` remains renamed to `slate` in active output.
-- `.tmp/slate-v2` legacy compare and browser trace no longer run chunk-off.
+- `Plate repo root` legacy compare and browser trace no longer run chunk-off.
 
 Review fixes:
 - Fixed `slate-v2-legacy-benchmark.mjs` to accept plain `slate` as the legacy
@@ -166,10 +166,10 @@ Verification evidence:
   removed 22 out-of-scope packages.
 - `/Users/zbeyens/git/plate-2/benchmarks/editor`: `npm run research:editor-frameworks:fetch`
   passed with only `slate-v2-package` and `slate-package`.
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`:
+- `/Users/zbeyens/git/plate-2/Plate repo root`:
   `REACT_HUGE_COMPARE_LEGACY_REPO=../../../slate bun run bench:react:huge-document:legacy-compare:local`
   passed and wrote chunk-on-only legacy compare output.
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`:
+- `/Users/zbeyens/git/plate-2/Plate repo root`:
   `SLATE_LEGACY_BROWSER_TRACE_SURFACES=legacyChunkOn bun run bench:react:huge-document:slate-browser-trace:local`
   passed and wrote `surfaces-legacyChunkOn`.
 - `/Users/zbeyens/git/plate-2/benchmarks/editor`: `npm run check` passed.

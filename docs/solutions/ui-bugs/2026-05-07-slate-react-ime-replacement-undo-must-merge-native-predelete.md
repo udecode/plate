@@ -62,7 +62,7 @@ editor.update(
 ```
 
 The regression row lives in
-`.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`
+`apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`
 as `restores expanded selection after undoing IME replacement`. It uses
 Chromium CDP IME composition over a backward DOM selection and asserts text plus
 selection after undo.

@@ -1,4 +1,4 @@
-import { type Editor, type Value, createEditor } from '@platejs/slate';
+import { type Editor, type Value, createEditor } from '@platejs/slate-legacy';
 
 import type { AnyPluginConfig } from '../../lib/plugin';
 import type { CorePlugin } from '../../lib/plugins';

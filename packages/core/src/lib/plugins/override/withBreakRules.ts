@@ -1,4 +1,4 @@
-import { PathApi } from '@platejs/slate';
+import { PathApi } from '@platejs/slate-legacy';
 
 import type { OverrideEditor } from '../../plugin';
 

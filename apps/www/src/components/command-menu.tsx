@@ -111,12 +111,14 @@ export function CommandMenu({
         <span className="inline-flex xl:hidden">{content.searchShort}</span>
       </Button>
 
-      <CommandMenuDialog
-        navItems={navItems}
-        open={open}
-        sidebarNav={sidebarNav}
-        onOpenChange={updateOpen}
-      />
+      {open ? (
+        <CommandMenuDialog
+          navItems={navItems}
+          open={open}
+          sidebarNav={sidebarNav}
+          onOpenChange={updateOpen}
+        />
+      ) : null}
     </>
   );
 }

@@ -1,6 +1,11 @@
 import type { JSX } from 'react';
 
-import type { DOMRange, Editor, NodeEntry, TRange } from '@platejs/slate';
+import type {
+  DOMRange,
+  Editor,
+  NodeEntry,
+  TRange,
+} from '@platejs/slate-legacy';
 
 import type { RenderChunkFn } from './RenderChunkProps';
 import type { RenderElementFn } from './RenderElementProps';

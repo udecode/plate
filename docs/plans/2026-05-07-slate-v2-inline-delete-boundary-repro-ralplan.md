@@ -24,7 +24,7 @@ Do not take the mobile/IME cluster next. It is larger, but exact closure needs r
 - desired outcome: Backspace after clearing the editable inline in `/examples/inlines` removes the empty inline without deleting the preceding character in the simple case.
 - in scope:
   - #5972 current gitcrawl thread.
-  - current `.tmp/slate-v2` inlines example and browser tests.
+  - current `Plate repo root` inlines example and browser tests.
   - model-owned delete command path in `slate` and `slate-react`.
   - DOM selection import/repair only if the browser trace proves the model target is imported wrong.
 - non-goals:
@@ -48,24 +48,24 @@ Issue evidence:
 
 Live Slate v2 evidence:
 
-- `.tmp/slate-v2/site/examples/ts/inlines.tsx:29` defines the inlines example with `link`, editable `button`, and read-only `badge` inline children.
-- `.tmp/slate-v2/site/examples/ts/inlines.tsx:149` registers `link`, `button`, and `badge` as inline elements.
-- `.tmp/slate-v2/site/examples/ts/inlines.tsx:105` customizes only left/right movement to `unit: 'offset'`; Backspace is left to the runtime.
-- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:34` already proves editable inline end typing.
-- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:65` proves following text start is distinct from inline end.
-- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:178` proves cut of inline link text keeps the caret editable.
+- `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx:29` defines the inlines example with `link`, editable `button`, and read-only `badge` inline children.
+- `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx:149` registers `link`, `button`, and `badge` as inline elements.
+- `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx:105` customizes only left/right movement to `unit: 'offset'`; Backspace is left to the runtime.
+- `apps/www/tests/slate-browser/donor/examples/inlines.test.ts:34` already proves editable inline end typing.
+- `apps/www/tests/slate-browser/donor/examples/inlines.test.ts:65` proves following text start is distinct from inline end.
+- `apps/www/tests/slate-browser/donor/examples/inlines.test.ts:178` proves cut of inline link text keeps the caret editable.
 - Exact #5972 browser row now exists in
-  `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`.
 
 Likely owner files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts:148` classifies Backspace/Delete as delete intent.
-- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:241` turns destructive keydown into a model-owned command.
-- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts:95` maps default Backspace to `tx.text.deleteBackward({ unit: 'character' })`.
-- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts:421` already contains inline point relocation helpers.
-- `.tmp/slate-v2/packages/slate/src/core/leaf-lifecycle.ts:72` owns cleanup of empty text leaves while preserving required inline spacers.
-- `.tmp/slate-v2/packages/slate/src/core/normalize-node.ts:263` owns explicit inline children normalization and spacer insertion.
-- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:207` already has cut-specific empty inline removal and caret reset logic; that is a useful pattern, not proof that Backspace is fixed.
+- `packages/slate-react/src/editable/input-controller.ts:148` classifies Backspace/Delete as delete intent.
+- `packages/slate-react/src/editable/keyboard-input-strategy.ts:241` turns destructive keydown into a model-owned command.
+- `packages/slate-react/src/editable/mutation-controller.ts:95` maps default Backspace to `tx.text.deleteBackward({ unit: 'character' })`.
+- `packages/slate/src/transforms-text/delete-text.ts:421` already contains inline point relocation helpers.
+- `packages/slate/src/core/leaf-lifecycle.ts:72` owns cleanup of empty text leaves while preserving required inline spacers.
+- `packages/slate/src/core/normalize-node.ts:263` owns explicit inline children normalization and spacer insertion.
+- `packages/slate-react/src/editable/clipboard-input-strategy.ts:207` already has cut-specific empty inline removal and caret reset logic; that is a useful pattern, not proof that Backspace is fixed.
 
 ## Decision Brief
 
@@ -249,7 +249,7 @@ Do not use mobile viewport as raw mobile proof. It can be a smoke row only.
 
 ### Phase 1: Red Browser Row
 
-Owner: `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
+Owner: `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`
 
 Work:
 
@@ -286,10 +286,10 @@ Use only if the model delete target crosses into preceding text.
 
 Likely files:
 
-- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`
-- `.tmp/slate-v2/packages/slate/src/core/leaf-lifecycle.ts`
-- `.tmp/slate-v2/packages/slate/src/core/normalize-node.ts`
-- `.tmp/slate-v2/packages/slate/test/delete-contract.ts`
+- `packages/slate/src/transforms-text/delete-text.ts`
+- `packages/slate/src/core/leaf-lifecycle.ts`
+- `packages/slate/src/core/normalize-node.ts`
+- `packages/slate/test/delete-contract.ts`
 
 Target:
 
@@ -303,11 +303,11 @@ Use only if DOM selection import/repair is wrong.
 
 Likely files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/**`
+- `packages/slate-react/src/editable/input-controller.ts`
+- `packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `packages/slate-react/src/editable/model-input-strategy.ts`
+- `packages/slate-react/src/editable/selection-controller.ts`
+- `packages/slate-dom/src/**`
 
 Target:
 
@@ -459,8 +459,8 @@ Total: `0.93`.
 | Issue sync accounting               | complete | coverage/dossier/PR pointers                                                                                              | generated live corpus unchanged by design                                                                     | none        | Ralplan             |
 | Closure score                       | complete | score `0.93` with no dimension below `0.90`                                                                               | ready for execution                                                                                           | none        | Ralph               |
 | Ralph execution start               | complete | `.tmp/completion-checks/slate-v2-inline-delete-boundary-repro-ralplan.md` moved to `pending`                              | red browser row became the active pass                                                                        | none        | execution agent     |
-| Red browser row                     | complete | `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`                                                           | #5972 reproduced: Backspace after clearing the inline deleted the preceding space                             | none        | core delete planner |
-| Core fix                            | complete | `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`; `.tmp/slate-v2/packages/slate/test/delete-contract.ts` | Backspace at the start of an empty editable inline routes to path delete instead of previous-character delete | none        | verification        |
+| Red browser row                     | complete | `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`                                                           | #5972 reproduced: Backspace after clearing the inline deleted the preceding space                             | none        | core delete planner |
+| Core fix                            | complete | `packages/slate/src/transforms-text/delete-text.ts`; `packages/slate/test/delete-contract.ts` | Backspace at the start of an empty editable inline routes to path delete instead of previous-character delete | none        | verification        |
 | Verification and issue sync         | complete | package test, browser parity, typecheck, lint, issue ledgers, PR reference                                                | #5972 moved from Related to Fixes                                                                             | none        | done                |
 
 ## Plan Deltas From Review
@@ -483,7 +483,7 @@ Total: `0.93`.
 
 Use `[$ralph](/Users/zbeyens/git/plate-2/.agents/skills/ralph/SKILL.md)` on this plan.
 
-Start execution in `.tmp/slate-v2` with the red Chromium browser row for #5972. Do not patch before the red row classifies owner. After the first red row, choose the narrow owner branch:
+Start execution in `Plate repo root` with the red Chromium browser row for #5972. Do not patch before the red row classifies owner. After the first red row, choose the narrow owner branch:
 
 - core delete target;
 - React/DOM selection import/repair;

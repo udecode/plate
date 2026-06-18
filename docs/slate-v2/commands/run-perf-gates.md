@@ -16,14 +16,14 @@ This command now has one job:
 
 ## Existing Runnable Gates
 
-Run from `.tmp/slate-v2`:
+Run from `/Users/zbeyens/git/plate-2`:
 
 ```sh
-bun run test
-bun run test:integration-local
-bun run bench:react:rerender-breadth:local
-bun run bench:react:huge-document-overlays:local
-bun run bench:react:huge-document:legacy-compare:local
+pnpm slate:packages:test
+pnpm --filter www test:slate-browser
+pnpm bench:targets:run -- react-rerender-breadth
+pnpm bench:targets:run -- react-huge-document-overlays
+pnpm bench:targets:run -- react-huge-document-legacy-compare
 ```
 
 The legacy compare owner is currently red for the stronger v2 perf-superiority

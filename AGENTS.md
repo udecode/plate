@@ -87,15 +87,15 @@ Browser testing:
 
 ## Commands
 
-### Slate v2 sibling repo
+### Slate v2 packages in Plate repo
 
-- In `.tmp/slate-v2` dir, keep `bun check` fast: lint, typecheck, and unit/package tests only.
-- Do not put `bun test:integration-local` in `bun check`; it is a closure/release gate, not an iteration gate.
-- Use `bun check:full` when a local full browser sweep is needed.
-- `bun check:full` must include release-proof guards before the full browser sweep: release discipline, slate-browser proof contracts, scoped mobile proof, persistent-profile soak, then `bun test:integration-local`.
+- Use root Slate package commands for Slate v2 iteration: `pnpm slate:packages:typecheck`, `pnpm slate:packages:test`, and focused `pnpm --filter www test:slate-browser` when browser proof is needed.
+- Do not put broad browser sweeps in the fast package loop; they are closure gates.
+- Use `pnpm --filter www test:slate-browser` for the Slate browser proof lane.
+- `pnpm --filter www test:slate-browser` must be paired with package proof when making release-quality Slate behavior claims.
 - Use `bun test:mobile-device-proof:raw` only on a machine/device lane that can provide real Appium Android/iOS proof artifacts. Do not let semantic mobile handles or Playwright mobile viewport rows satisfy raw-device claims.
 - During editor-kernel/browser work, use focused package tests and focused Playwright greps first.
-- Run `bun test:integration-local` only before marking an architecture/browser plan `done`, before a release-quality browser claim, or when explicitly requested.
+- Run broad app browser proof only before marking an architecture/browser plan `done`, before a release-quality browser claim, or when explicitly requested.
 
 ### Development
 

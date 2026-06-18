@@ -3,7 +3,7 @@
 Date: 2026-05-17
 Status: done
 Owner: Slate Ralplan planning only
-Execution owner: `ralph` in `.tmp/slate-v2`
+Execution owner: `ralph` in `Plate repo root`
 Completion id: `019e1fc0-dba0-7de1-9236-b484a144cda6`
 Score: 0.93, closed for Ralph execution
 
@@ -50,17 +50,17 @@ That cast is the DX failure in one line.
 
 | Surface                     | Current source                                                                                                                                                         | Finding                                                                                                                                                                                              |
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Core extension output       | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1292-1305`, `:1308-1331`                                                                                        | `EditorExtension` and `register(...)` outputs both expose `capabilities?: Record<string, unknown \| readonly unknown[]>`.                                                                            |
-| Capability registration     | `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:347-405`                                                                                                    | Core loops through `slots.capabilities` and registers every named value into the extension registry.                                                                                                 |
-| Runtime registry            | `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts:31-43`, `:169-196`                                                                                        | `capabilities` are stored as `Map<string, unknown[]>`; ordered providers and installed handles share the same generic bucket.                                                                        |
-| Public `editor.api`         | `.tmp/slate-v2/packages/slate/src/create-editor.ts:813-865`                                                                                                            | `editor.api.<name>` is a proxy over registered capabilities; `editor.getApi(extension)` also resolves from extension capability names. This is the right public place for installed runtime handles. |
-| Public key helper           | `.tmp/slate-v2/packages/slate-react/src/editable/editable-key-commands.ts:7-23`                                                                                        | `editableKeyCommands(...)` returns a magic-key record: `'slate-react.editable.keyCommand' -> commands`.                                                                                              |
-| Key helper consumption      | `.tmp/slate-v2/packages/slate-react/src/editable/editable-key-commands.ts:28-35`, `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:125-149` | Slate React reads the capability registry and calls each command with `{ editor, event, selection }`.                                                                                                |
-| Public renderer helper      | `.tmp/slate-v2/packages/slate-react/src/editable/editable-renderers.ts:14-81`                                                                                          | `editableRenderers(...)` has the same public-helper-over-registry shape.                                                                                                                             |
-| Export surface              | `.tmp/slate-v2/packages/slate-react/src/index.ts:73-89`                                                                                                                | `EDITABLE_KEY_COMMAND_CAPABILITY`, `editableKeyCommands`, `EDITABLE_RENDERERS_CAPABILITY`, and `editableRenderers` are public exports.                                                               |
-| Example failure             | `.tmp/slate-v2/site/examples/ts/iframe.tsx:94-120`                                                                                                                     | First-party example spreads render/key capability helpers and casts `editor` to `CustomEditor`.                                                                                                      |
-| More example failure        | `.tmp/slate-v2/site/examples/ts/richtext.tsx:293-330`                                                                                                                  | Richtext repeats the same shape and casts because the handler sees only `ReactEditor`.                                                                                                               |
-| Test locking current bad DX | `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:459-468`                                                                                                 | Contract test explicitly expects examples to use `editableKeyCommands` and not raw `onKeyDown`. It locks the wrong public helper, even though the intent is right.                                   |
+| Core extension output       | `packages/slate/src/interfaces/editor.ts:1292-1305`, `:1308-1331`                                                                                        | `EditorExtension` and `register(...)` outputs both expose `capabilities?: Record<string, unknown \| readonly unknown[]>`.                                                                            |
+| Capability registration     | `packages/slate/src/core/editor-extension.ts:347-405`                                                                                                    | Core loops through `slots.capabilities` and registers every named value into the extension registry.                                                                                                 |
+| Runtime registry            | `packages/slate/src/core/extension-registry.ts:31-43`, `:169-196`                                                                                        | `capabilities` are stored as `Map<string, unknown[]>`; ordered providers and installed handles share the same generic bucket.                                                                        |
+| Public `editor.api`         | `packages/slate/src/create-editor.ts:813-865`                                                                                                            | `editor.api.<name>` is a proxy over registered capabilities; `editor.getApi(extension)` also resolves from extension capability names. This is the right public place for installed runtime handles. |
+| Public key helper           | `packages/slate-react/src/editable/editable-key-commands.ts:7-23`                                                                                        | `editableKeyCommands(...)` returns a magic-key record: `'slate-react.editable.keyCommand' -> commands`.                                                                                              |
+| Key helper consumption      | `packages/slate-react/src/editable/editable-key-commands.ts:28-35`, `packages/slate-react/src/editable/keyboard-input-strategy.ts:125-149` | Slate React reads the capability registry and calls each command with `{ editor, event, selection }`.                                                                                                |
+| Public renderer helper      | `packages/slate-react/src/editable/editable-renderers.ts:14-81`                                                                                          | `editableRenderers(...)` has the same public-helper-over-registry shape.                                                                                                                             |
+| Export surface              | `packages/slate-react/src/index.ts:73-89`                                                                                                                | `EDITABLE_KEY_COMMAND_CAPABILITY`, `editableKeyCommands`, `EDITABLE_RENDERERS_CAPABILITY`, and `editableRenderers` are public exports.                                                               |
+| Example failure             | `apps/www/src/app/(app)/examples/slate/_examples/iframe.tsx:94-120`                                                                                                                     | First-party example spreads render/key capability helpers and casts `editor` to `CustomEditor`.                                                                                                      |
+| More example failure        | `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx:293-330`                                                                                                                  | Richtext repeats the same shape and casts because the handler sees only `ReactEditor`.                                                                                                               |
+| Test locking current bad DX | `packages/slate-react/test/surface-contract.tsx:459-468`                                                                                                 | Contract test explicitly expects examples to use `editableKeyCommands` and not raw `onKeyDown`. It locks the wrong public helper, even though the intent is right.                                   |
 
 ## Why the current API happened
 
@@ -456,7 +456,7 @@ Ledger sync performed:
 
 ## Verification plan
 
-Planning-only current pass did not edit `.tmp/slate-v2`.
+Planning-only current pass did not edit `Plate repo root`.
 
 Ralph execution gates:
 
@@ -484,10 +484,10 @@ Ralph execution gates:
    - no first-party `editable.onKeyDown` unless the example records why command
      modeling cannot express it
 5. Commands:
-   - `cd .tmp/slate-v2 && bun --filter slate-react test:vitest -- surface-contract keyboard-input-strategy-contract generic-react-editor-contract`
-   - `cd .tmp/slate-v2 && bun --filter slate-react typecheck`
-   - `cd .tmp/slate-v2 && bun --filter slate-dom test`
-   - `cd .tmp/slate-v2 && bun check`
+   - `cd Plate repo root && bun --filter slate-react test:vitest -- surface-contract keyboard-input-strategy-contract generic-react-editor-contract`
+   - `cd Plate repo root && bun --filter slate-react typecheck`
+   - `cd Plate repo root && bun --filter slate-dom test`
+   - `cd Plate repo root && bun check`
 
 ## Closure Final Gates
 
@@ -499,7 +499,7 @@ Closure assertions:
 - Related issue/research sync is complete.
 - Maintainer objection pass is complete.
 - No pass row remains pending with a runnable planning move.
-- No `.tmp/slate-v2` implementation, test, example, package, build, or config file
+- No `Plate repo root` implementation, test, example, package, build, or config file
   was edited by this Slate Ralplan.
 - No new fixed/improved issue claim was added.
 - #3177 stays related/planning-reviewed.

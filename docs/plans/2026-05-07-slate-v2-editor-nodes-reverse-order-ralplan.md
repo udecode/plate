@@ -8,7 +8,7 @@ Done.
 
 `#5080` is the next right owner. The fragment cluster is closed enough for now,
 and this is a clean package-only traversal contract bug with a live mismatch in
-current `.tmp/slate-v2`.
+current `Plate repo root`.
 
 The v2 target is not "bring back legacy `Editor.nodes` as a static API." Current
 v2 exposes this through `editor.read((state) => state.nodes.match(...))`, which
@@ -39,10 +39,10 @@ Desired outcome:
 
 In scope:
 
-- `.tmp/slate-v2/packages/slate/src/editor/nodes.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/test/query-contract.ts`
+- `packages/slate/src/editor/nodes.ts`
+- `packages/slate/src/interfaces/node.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/test/query-contract.ts`
 - `Node.nodes` only if the later source refresh deliberately escalates the
   owner beyond the editor query layer
 - issue coverage, fork dossier, PR reference, and completion state sync
@@ -62,7 +62,7 @@ Non-goals:
 Decision boundaries:
 
 - Ralph may add the red test through current public v2 read API.
-- Ralph may patch `.tmp/slate-v2/packages/slate/src/editor/nodes.ts`, because it
+- Ralph may patch `packages/slate/src/editor/nodes.ts`, because it
   is the current editor query owner behind `state.nodes.match`.
 - Ralph may patch `Node.nodes` only after the source-refresh pass accepts the
   broader raw iterator contract change and updates direct iterator fixtures.
@@ -88,10 +88,10 @@ Top drivers:
 - `docs/slate-issues/test-candidate-map/5129-5066.md:277` marks the public test
   route as `Editor.nodes` reverse traversal ordering.
 - Current v2 exposes the path as `state.nodes.match` in
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts:943`.
-- `.tmp/slate-v2/packages/slate/src/editor/nodes.ts:37` flips `from` / `to` and
+  `packages/slate/src/core/public-state.ts:943`.
+- `packages/slate/src/editor/nodes.ts:37` flips `from` / `to` and
   delegates `reverse` to `Node.nodes`.
-- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts:669` yields a node before
+- `packages/slate/src/interfaces/node.ts:669` yields a node before
   descent, and `interfaces/node.ts:686` only flips child order in reverse mode.
   That explains the exact mixed order from the issue.
 - Direct `Node.descendants(..., { reverse: true })` fixtures currently expect a
@@ -136,26 +136,26 @@ Consequences:
 
 Current public v2 owner:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:180` defines
+- `packages/slate/src/interfaces/editor.ts:180` defines
   `EditorStateNodesApi`.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:200` names the public
+- `packages/slate/src/interfaces/editor.ts:200` names the public
   read API as `nodes.match`.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts:943` implements
+- `packages/slate/src/core/public-state.ts:943` implements
   `state.nodes.match` by calling `getNodes(editor, options)`.
 
 Current traversal owner:
 
-- `.tmp/slate-v2/packages/slate/src/editor/nodes.ts:37` sets `from = reverse ?
+- `packages/slate/src/editor/nodes.ts:37` sets `from = reverse ?
 last : first`.
-- `.tmp/slate-v2/packages/slate/src/editor/nodes.ts:41` delegates to
+- `packages/slate/src/editor/nodes.ts:41` delegates to
   `Node.nodes(editor, { reverse, from, to, pass })`.
-- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts:669` breaks on range
+- `packages/slate/src/interfaces/node.ts:669` breaks on range
   bounds.
-- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts:674` yields before
+- `packages/slate/src/interfaces/node.ts:674` yields before
   descending.
-- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts:686` chooses the last child
+- `packages/slate/src/interfaces/node.ts:686` chooses the last child
   first when `reverse` is true.
-- `.tmp/slate-v2/packages/slate/test/interfaces/Node/descendants/reverse.tsx`
+- `packages/slate/test/interfaces/Node/descendants/reverse.tsx`
   currently expects a parent entry before reversed child text entries, proving
   raw `Node.nodes` has existing direct-fixture pressure.
 - Reverse editor-query callers include `delete-text.ts`, `unwrap-nodes.ts`,
@@ -208,7 +208,7 @@ Verdict: the bug reproduces in current v2 through the current read API.
 
 Current test gap:
 
-- `.tmp/slate-v2/packages/slate/test/query-contract.ts:74` has a helper for
+- `packages/slate/test/query-contract.ts:74` has a helper for
   `state.nodes.match`.
 - `query-contract.ts:1219` covers `Editor.positions(... reverse: true)`.
 - `query-contract.ts:2163` covers `Editor.levels(... reverse: true)`.
@@ -249,7 +249,7 @@ Rejected alternatives:
 Red/green proof order for Ralph:
 
 1. Add one failing public query test in
-   `.tmp/slate-v2/packages/slate/test/query-contract.ts` through
+   `packages/slate/test/query-contract.ts` through
    `editor.read((state) => state.nodes.match(...))`.
 2. Use nested matching elements where a parent and descendant both match; assert
    `reverse` equals `[...forward].reverse()`.
@@ -373,7 +373,7 @@ implementation proof.
 ## 10. Implementation Phases Draft
 
 1. Add a failing test in
-   `.tmp/slate-v2/packages/slate/test/query-contract.ts` using
+   `packages/slate/test/query-contract.ts` using
    `editor.read((state) => state.nodes.match(...))`.
 2. Assert that `reverse: true` returns exactly `[...forward].reverse()` for
    nested matching elements where a parent and descendant both match.
@@ -415,7 +415,7 @@ Steelman antithesis:
 - That argument loses for the editor query API because `#5080` reports the
   public matched traversal contract, and current v2 exposes that through
   `state.nodes.match` in
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts:942-943`.
+  `packages/slate/src/core/public-state.ts:942-943`.
 - Keeping the old order would make `reverse` impossible to explain without
   apologizing for it. That is bad DX.
 
@@ -423,9 +423,9 @@ High-risk trigger: public traversal behavior and shared package helper change.
 
 Blast radius:
 
-- Files: `.tmp/slate-v2/packages/slate/src/editor/nodes.ts`,
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts`, and
-  `.tmp/slate-v2/packages/slate/test/query-contract.ts`.
+- Files: `packages/slate/src/editor/nodes.ts`,
+  `packages/slate/src/core/public-state.ts`, and
+  `packages/slate/test/query-contract.ts`.
 - Callers: public `editor.read((state) => state.nodes.match(...))`, plus package
   callers that request reverse editor queries such as `previous`, `unhangRange`,
   leaf cleanup, and transform cleanup.
@@ -544,8 +544,8 @@ Status: done.
 | Slice                       | Status                | Evidence                                                                                                                                                                         | Plan delta                                                                                       | Next owner                     |
 | --------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------ |
 | activation                  | complete              | User invoked `ralph`; checkpoint set back to `pending`; `active goal state` regenerated for implementation.                                                                       | Ralph execution started from the accepted `#5080` Ralplan.                                       | red public query-contract test |
-| red query-contract test     | complete              | `bun test ./packages/slate/test/query-contract.ts -t "nodes reverse"` failed before the fix with reverse paths `["1", "0", "0.3", "0.1"]` instead of `["1", "0.3", "0.1", "0"]`. | Added a public nested-match regression in `.tmp/slate-v2/packages/slate/test/query-contract.ts`. | editor query implementation    |
-| editor query implementation | complete              | `.tmp/slate-v2/packages/slate/src/editor/nodes.ts` traverses the forward range through existing filtering/mode logic, then reverses emitted matches for `reverse: true`.         | Raw `Node.nodes` remains unchanged; `#5080` is fixed at the public query layer.                  | scoped verification            |
+| red query-contract test     | complete              | `bun test ./packages/slate/test/query-contract.ts -t "nodes reverse"` failed before the fix with reverse paths `["1", "0", "0.3", "0.1"]` instead of `["1", "0.3", "0.1", "0"]`. | Added a public nested-match regression in `packages/slate/test/query-contract.ts`. | editor query implementation    |
+| editor query implementation | complete              | `packages/slate/src/editor/nodes.ts` traverses the forward range through existing filtering/mode logic, then reverses emitted matches for `reverse: true`.         | Raw `Node.nodes` remains unchanged; `#5080` is fixed at the public query layer.                  | scoped verification            |
 | scoped verification         | complete              | Focused reverse query proof passed; full `query-contract.ts` passed with `74 pass`; `bun --filter slate typecheck` passed; `bun lint:fix` passed with no final fixes.            | Required package proof for the `#5080` lane is complete.                                         | issue claim sync               |
 | full check baseline         | accepted external red | `bun check` failed in delete/insertFragment transform fixtures; the same failures reproduced with `editor/nodes.ts` temporarily restored to the pre-fix traversal.               | The full-suite red is baseline transform debt outside this query-order lane.                     | none                           |
 | issue claim sync            | complete              | Matrix, PR reference, fork dossier, open issue ledger, checkpoint, continuation prompt, and solution note were synced after proof.                                               | `#5080` moved from planned to fixed; `#5684`, `#5028`, and `#3885` stay bounded.                 | none                           |

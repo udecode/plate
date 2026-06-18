@@ -172,10 +172,10 @@ Acceptance:
 
 Likely files:
 
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/editable/root-selector-sources.ts`
 
 Driver gates:
 
@@ -261,13 +261,13 @@ Acceptance:
 
 Likely files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-kernel-trace.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
+- `packages/slate-react/src/editable/runtime-root-engine.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `packages/slate-react/src/editable/runtime-repair-engine.ts`
+- `packages/slate-react/src/editable/runtime-kernel-trace.ts`
+- `packages/slate-react/src/editable/runtime-android-engine.ts`
+- `packages/slate-react/src/editable/root-selector-sources.ts`
 
 Driver gates:
 
@@ -436,7 +436,7 @@ Actions:
 - Set `active goal state` to `status: pending`.
 - Refreshed `active goal state` for this lane.
 - Added root selector source ownership guards to
-  `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`.
+  `packages/slate-react/test/kernel-authority-audit-contract.ts`.
 - Added current `EditableDOMRoot` root runtime orchestration inventory for the
   Phase 2 burn-down.
 - Classified the existing `Editor.getSnapshot(...)` read in
@@ -458,7 +458,7 @@ Changed files:
 - `active goal state`
 - `active goal state`
 - `docs/plans/2026-04-28-slate-v2-root-runtime-selector-guard-hard-cut-plan.md`
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Decision:
 
@@ -502,7 +502,7 @@ Evidence:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `packages/slate-react/test/provider-hooks-contract.tsx`
 - `docs/plans/2026-04-28-slate-v2-root-runtime-selector-guard-hard-cut-plan.md`
 
 Decision:
@@ -526,7 +526,7 @@ Next action:
 
 Actions:
 
-- Added `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`.
+- Added `packages/slate-react/src/editable/runtime-root-engine.ts`.
 - Moved root runtime orchestration behind `useEditableRootRuntime(...)`.
 - Kept event handler assembly behind `useEditableEventRuntime(...)`.
 - Reduced `EditableDOMRoot` to root facade wiring, event facade wiring, refs,
@@ -534,7 +534,7 @@ Actions:
 - Updated authority guards so root policy imports and calls fail if they return
   to `EditableDOMRoot`.
 - Kept root selector sources fenced to
-  `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`.
+  `packages/slate-react/src/editable/root-selector-sources.ts`.
 - Updated the release escape-hatch inventory after the extraction removed one
   stale `slate-react/src` core-field reference.
 
@@ -556,11 +556,11 @@ Evidence:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `.tmp/slate-v2/packages/slate/test/escape-hatch-inventory-contract.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/runtime-root-engine.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/test/provider-hooks-contract.tsx`
+- `packages/slate/test/escape-hatch-inventory-contract.ts`
 - `docs/plans/2026-04-28-slate-v2-root-runtime-selector-guard-hard-cut-plan.md`
 
 Decision:

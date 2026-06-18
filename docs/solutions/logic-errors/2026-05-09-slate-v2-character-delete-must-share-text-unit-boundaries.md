@@ -45,11 +45,11 @@ destructive delete still corrupted the behavior.
 Make `unit: "character"` deletion obey the same boundary owner everywhere.
 
 The fix removed the complex-script reverse-delete reinsertion path from
-`.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`, then updated
+`packages/slate/src/transforms-text/delete-text.ts`, then updated
 the Thai fixtures to expect a whole text-unit deletion.
 
 The regression lock lives in
-`.tmp/slate-v2/packages/slate/test/text-units-contract.ts`:
+`packages/slate/test/text-units-contract.ts`:
 
 ```ts
 const assertUnitCharacterDeletion = (

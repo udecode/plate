@@ -24,7 +24,7 @@ Actual: the second typed update does not autoscroll.
 
 ## Investigation
 
-- Relevant source owner: `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`.
+- Relevant source owner: `packages/slate-react/src/components/editable.tsx`.
 - `defaultScrollSelectionIntoView` temporarily assigns
   `leafEl.getBoundingClientRect` so `scroll-into-view-if-needed` measures the
   focus point.

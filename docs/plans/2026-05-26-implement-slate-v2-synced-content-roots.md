@@ -2,7 +2,7 @@
 
 Objective:
 Implement the accepted Slate v2 Synced Blocks / content-root projection plan in
-`.tmp/slate-v2`. The implementation must add the canonical
+`Plate repo root`. The implementation must add the canonical
 `props.slots.contentRoot('body', options)` React DX, add runtime-local active
 projection identity for repeated mounts of one root, add a Notion-style
 `/examples/synced-blocks` route with duplicate/share and unsync behavior, and
@@ -38,16 +38,16 @@ Major lane:
 - output type: code, example route, tests, release artifact if required, and
   execution evidence
 - implementation expected: yes
-- affected packages / surfaces: `.tmp/slate-v2/packages/slate-react`,
-  `.tmp/slate-v2/packages/slate`, `.tmp/slate-v2/site/examples`,
-  `.tmp/slate-v2/site/pages/examples/[example].tsx`,
-  `.tmp/slate-v2/site/constants/examples.ts`,
-  `.tmp/slate-v2/playwright/integration/examples`, and this execution plan.
+- affected packages / surfaces: `packages/slate-react`,
+  `packages/slate`, `apps/www/examples`,
+  `apps/www/src/app/(app)/examples/slate/[example].tsx`,
+  `apps/www/constants/examples.ts`,
+  `apps/www/tests/slate-browser/donor/examples`, and this execution plan.
 - dominant risk: same-root multiple projections focusing or restoring history
   to the wrong mounted copy.
 
 Completion threshold:
-- The accepted plan is implemented in `.tmp/slate-v2`: content-root slot API,
+- The accepted plan is implemented in `Plate repo root`: content-root slot API,
   active projection identity, Synced Blocks route, duplicate/share and unsync
   behavior, focused unit tests, focused Playwright tests, and no ordinary-void
   behavior regression.
@@ -62,7 +62,7 @@ Completion threshold:
   passes.
 
 Verification surface:
-- Source audit and implementation in `.tmp/slate-v2`.
+- Source audit and implementation in `Plate repo root`.
 - Focused package tests for `slate-react` content-root slots, active projection
   lookup, content-root navigation, and history focus restoration.
 - `site` typecheck/lint or owning repo equivalents.
@@ -87,9 +87,9 @@ Constraints:
 Boundaries:
 - Source of truth: accepted plan
   `docs/plans/2026-05-26-slate-v2-synced-content-roots.md`.
-- Allowed edit scope: `.tmp/slate-v2/packages/slate/**`,
-  `.tmp/slate-v2/packages/slate-react/**`, `.tmp/slate-v2/site/**`,
-  `.tmp/slate-v2/playwright/**`, `.tmp/slate-v2/.changeset/**` if required,
+- Allowed edit scope: `packages/slate/**`,
+  `packages/slate-react/**`, `apps/www/**`,
+  `Plate repo root/playwright/**`, `Plate repo root/.changeset/**` if required,
   this execution plan, and issue/reference ledgers only if implementation proof
   changes claim accounting.
 - External sources: N/A unless current local repo and accepted plan disagree.
@@ -101,7 +101,7 @@ Boundaries:
   product parity, Plate wrappers, changing all void semantics, and PR creation.
 
 Blocked condition:
-- Block only if current `.tmp/slate-v2` source makes the accepted architecture
+- Block only if current `Plate repo root` source makes the accepted architecture
   impossible without changing a user-owned boundary, or a required package or
   browser gate fails in a way that cannot be reduced after three distinct fix
   attempts. Do not mark blocked while source reads, implementation, targeted
@@ -148,7 +148,7 @@ Start Gates:
 | Helper stack selected | yes | `major-task` + `autogoal`; browser and package-api packs are materialized. `testing`, `tdd`, `changeset`, and browser tool will be loaded only when their gate is reached. |
 | External research decision recorded | yes | N/A: accepted plan already used local sibling/source research; implementation starts from repo evidence. |
 | Implementation expectation recorded | yes | This goal explicitly includes implementation. |
-| Workspace authority selected | yes | `.tmp/slate-v2` owns source, package, site, and browser behavior; `plate-2` owns this execution plan and issue/reference ledgers. |
+| Workspace authority selected | yes | `Plate repo root` owns source, package, site, and browser behavior; `plate-2` owns this execution plan and issue/reference ledgers. |
 | Branch / PR expectation decided | yes | No PR requested; do not commit, push, or open PR. |
 | Browser pack selected | yes | Browser pack selected for `/examples/synced-blocks` and editable-void regression proof. |
 | Browser route / app surface identified | yes | `http://localhost:3100/examples/synced-blocks`; `http://localhost:3100/examples/editable-voids`. |
@@ -157,7 +157,7 @@ Start Gates:
 | Package/API pack selected | yes | Package/API pack selected because `slate-react` public render props/slots change. |
 | Public surface or package boundary identified | yes | `packages/slate-react` render-element slots and runtime projection lookup; possible `packages/slate` type touch. |
 | Release artifact path selected | yes | `.changeset` expected if `slate-react` public behavior/types change; classify again after final diff. |
-| `changeset` skill loaded when `.changeset` is required | yes | `.agents/skills/changeset/SKILL.md` loaded before adding `.tmp/slate-v2/.changeset/synced-content-root-slots.md`. |
+| `changeset` skill loaded when `.changeset` is required | yes | `.agents/skills/changeset/SKILL.md` loaded before adding `Plate repo root/.changeset/synced-content-root-slots.md`. |
 | Barrel/export impact decision recorded | yes | No new exported file expected yet; run `bun`/repo barrel command only if exports or exported folders change. |
 
 Work Checklist:
@@ -208,17 +208,17 @@ Completion Gates:
 | External-source audit | yes | Cite official/local clone/external sources when used, or record N/A | N/A: implementation used accepted local plan and live repo source |
 | Implementation gates | yes | If code changed, close primary-template and touched-surface gates; otherwise N/A | code, example, tests, changeset, browser proof, and `bun check` complete |
 | Final handoff contract | yes | Record recommendation, evidence, caveats, residual risk, and next owner | filled below |
-| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent when files changed | `.tmp/slate-v2`: `bun lint:fix` passed |
+| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent when files changed | `Plate repo root`: `bun lint:fix` passed |
 | Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-implement-slate-v2-synced-content-roots.md` | final checker evidence below |
 | Browser interaction proof | yes | Exercise the target route/interaction with the approved browser tool or record blocker | in-app Browser and Playwright evidence recorded below |
 | Browser console/network check | yes | Record console/network state or why it is not applicable | Playwright runtime error guard passed for Synced Blocks undo/redo focus row; no in-app route/runtime error surfaced during manual proof |
 | Browser final proof artifact | yes | Record screenshot/trace/route proof or exact caveat | route proof is DOM/interaction evidence plus Playwright pass; no screenshot needed |
 | Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | `slate-react` slot type changed in existing exported file; no new export/barrel needed |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | published `slate-react` API/runtime delta |
-| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | `.tmp/slate-v2/.changeset/synced-content-root-slots.md` adds a `slate-react` minor; forbidden `@platejs/*` rule does not apply |
+| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | `Plate repo root/.changeset/synced-content-root-slots.md` adds a `slate-react` minor; forbidden `@platejs/*` rule does not apply |
 | Registry changelog | no | If the change is registry-only under `apps/www/src/registry/**`, update `docs/components/changelog.mdx` and do not add a package changeset | N/A: not registry-only |
 | No release artifact | no | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | N/A: release artifact added |
-| Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | `.tmp/slate-v2`: `bun --filter slate-react typecheck`, focused Vitest, and `bun check` passed |
+| Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | `Plate repo root`: `bun --filter slate-react typecheck`, focused Vitest, and `bun check` passed |
 | Barrel/export generation | no | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | N/A: no new exported file or exported folder layout change |
 
 Phase / pass table:
@@ -256,17 +256,17 @@ Decisions and tradeoffs:
   pass.
 
 Implementation notes:
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx` and
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`: active mounted
+- `packages/slate-react/src/hooks/use-slate-runtime.tsx` and
+  `packages/slate-react/src/components/slate.tsx`: active mounted
   view tracking, active fallback, and unmount rotation.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`: editable
+- `packages/slate-react/src/components/editable.tsx`: editable
   roots mark their view active on focus, mouse-down, and mouse-up.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`:
+- `packages/slate-react/src/components/editable-text-blocks.tsx`:
   `EditableElementSlots.contentRoot(slot, options)` plus internal
   `EditableContentRootSlot` / `EditableContentRootView`.
-- `.tmp/slate-v2/site/examples/ts/synced-blocks.tsx`: Notion-style local
+- `apps/www/src/app/(app)/examples/slate/_examples/synced-blocks.tsx`: Notion-style local
   chrome, two shared copies, duplicate/share, and unsync clone.
-- `.tmp/slate-v2/playwright/integration/examples/synced-blocks.test.ts`: route,
+- `apps/www/tests/slate-browser/donor/examples/synced-blocks.test.ts`: route,
   shared edit, active-copy undo/redo, ArrowUp/Down, click outside,
   duplicate/share, and unsync proof.
 
@@ -287,27 +287,27 @@ Error attempts:
 | Codex autoreview helper hung with no output | 2 | Stop stale helper processes and use helper's no-tools engine fallback with explicit scope | Final scoped autoreview clean. |
 
 Verification evidence:
-- `.tmp/slate-v2`: `bun lint:fix` passed.
-- `.tmp/slate-v2`: `bun lint` passed.
-- `.tmp/slate-v2`: `bun --filter slate-react typecheck` passed.
-- `.tmp/slate-v2/packages/slate-react`:
+- `Plate repo root`: `bun lint:fix` passed.
+- `Plate repo root`: `bun lint` passed.
+- `Plate repo root`: `bun --filter slate-react typecheck` passed.
+- `packages/slate-react`:
   `bun test:vitest -- test/slate-runtime-provider-contract.test.tsx test/use-slate-history.test.tsx`
   passed, `41` tests.
-- `.tmp/slate-v2`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/synced-blocks.test.ts --project=chromium`
+- `Plate repo root`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/synced-blocks.test.ts --project=chromium`
   passed, `6` tests.
-- `.tmp/slate-v2`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/synced-blocks.test.ts`
+- `Plate repo root`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/synced-blocks.test.ts`
   passed, `18` passed and `6` intentionally skipped geometry/click rows outside
   Chromium.
-- `.tmp/slate-v2`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium --grep "content root|vertically|clicking outside"`
+- `Plate repo root`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium --grep "content root|vertically|clicking outside"`
   passed, `3` tests.
-- `.tmp/slate-v2`: source DX audit
+- `Plate repo root`: source DX audit
   `rg -n "useSlate(ContentRoot|ChildRoot)|<Editable[^>]*root" site/examples/ts/synced-blocks.tsx`
   returned no matches.
 - In-app Browser at `http://localhost:3100/examples/synced-blocks`: route showed
   two synced blocks; typing `Live ` in the first synced root updated the second;
   clicking `p2` made the active root `main`.
-- `.tmp/slate-v2`: `bun check` passed.
-- `.tmp/slate-v2`: final scoped autoreview command:
+- `Plate repo root`: `bun check` passed.
+- `Plate repo root`: final scoped autoreview command:
   `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local --engine claude --no-tools --prompt "<touched-file scope>"`
   returned `autoreview clean: no accepted/actionable findings reported`.
 - `plate-2`: final checker passed:

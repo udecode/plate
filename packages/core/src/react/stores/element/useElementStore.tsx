@@ -8,7 +8,7 @@ import {
   type Path,
   type TElement,
   PathApi,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 
 import { createAtomStore } from '../../libs/jotai';
 import { useComposing, useReadOnly } from '../../slate-react';

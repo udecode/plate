@@ -42,7 +42,7 @@ React hooks or `read` / `update`.
 
 Live source:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/interfaces/editor.ts`
   - `BaseEditor` exposes direct reads: `getChildren`, `getFragment`,
     `getLastCommit`, `getOperations`, `getSelection`, `getSnapshot`,
     `getRuntimeId`, and `getPathByRuntimeId`.
@@ -53,10 +53,10 @@ Live source:
     `void`.
   - Those aliases are typed through `OmitFirstArg<typeof Editor.*>`, keeping
     the internal static `Editor` table embedded in the public editor type.
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
+- `packages/slate/src/create-editor.ts`
   - `createEditor()` still attaches every direct query/read alias onto the
     editor object.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `packages/slate/src/core/public-state.ts`
   - `state` / `tx` groups already exist, but they are incomplete; they call
     back through direct editor aliases for several reads.
 - Current call-site pressure includes `slate-history`, `slate-dom`, site
@@ -489,7 +489,7 @@ in the normal iteration loop.
 - Docs/examples teach one public lifecycle.
 - No compatibility bridge, alias, deprecated shim, or fallback remains.
 - Focused contract tests pass.
-- `bun check` passes in `.tmp/slate-v2`.
+- `bun check` passes in `Plate repo root`.
 
 ## 10. Next Move
 
@@ -502,7 +502,7 @@ No runnable in-scope owner remains for this plan.
 - Set `active goal state` to `pending`.
 - Regenerated `active goal state` for the active execution lane.
 - Started Phase 1: red public-surface and state/tx contracts in
-  `.tmp/slate-v2/packages/slate`.
+  `packages/slate`.
 
 ### 2026-04-29 Phase 1 Red Contracts
 
@@ -526,7 +526,7 @@ No runnable in-scope owner remains for this plan.
 
 ### 2026-04-29 Public Surface, Docs, And Guard Sweep
 
-- Completed the public runtime hard cut in `.tmp/slate-v2`:
+- Completed the public runtime hard cut in `Plate repo root`:
   - `BaseEditor` public methods are `read`, `update`, `subscribe`, and
     `extend`.
   - `createEditor()` no longer attaches public direct read/query/schema/ref
@@ -546,8 +546,8 @@ No runnable in-scope owner remains for this plan.
   - docs examples use `tx.schema` / `state.*` groups for queries.
 - Verification:
   - `bun test:vitest test/surface-contract.test.tsx` in
-    `.tmp/slate-v2/packages/slate-react`: `1 passed`, `9 tests passed`.
-  - `bun check` in `.tmp/slate-v2`: lint, package/site/root typecheck,
+    `packages/slate-react`: `1 passed`, `9 tests passed`.
+  - `bun check` in `Plate repo root`: lint, package/site/root typecheck,
     Bun tests, and Vitest all passed.
   - Guard sweep has no banned hits for direct public editor aliases in
     package sources, site examples, or current docs.
@@ -565,7 +565,7 @@ No runnable in-scope owner remains for this plan.
 ### 2026-04-29 Phase 6 Fixture Bridge Cut
 
 - Removed the remaining test-only legacy editor-method bridge in
-  `.tmp/slate-v2/packages/slate/test/support/with-test.js`.
+  `packages/slate/test/support/with-test.js`.
 - The fixture helper now exposes only the grouped transaction API, current
   `extend(...)`, and runtime registration needed by old internal query
   callbacks. It no longer exposes `getChildren`, `getSelection`,
@@ -577,7 +577,7 @@ No runnable in-scope owner remains for this plan.
   - `tx.nodes.*`, `tx.selection.*`, `tx.withoutNormalizing(...)`, and
     `tx.normalize(...)` for transform intent
   - `editor.extend(...)` for fixture schema setup
-- Verification in `.tmp/slate-v2`:
+- Verification in `Plate repo root`:
   - `bun test packages/slate/test/index.spec.ts`: `964 pass`, `94 skip`.
   - `bun test packages/slate/test/index.spec.ts packages/slate-hyperscript/test/index.spec.ts`: `993 pass`, `94 skip`.
   - `bun test ./packages/slate/test/public-surface-contract.ts ./packages/slate/test/state-tx-public-api-contract.ts`: `168 pass`.
@@ -597,17 +597,17 @@ No runnable in-scope owner remains for this plan.
 ### 2026-04-29 Stale Contract Cleanup
 
 - Removed stale contract files whose purpose was the deleted API:
-  - `.tmp/slate-v2/packages/slate/test/surface-contract.ts`
-  - `.tmp/slate-v2/packages/slate/test/extension-contract.ts`
+  - `packages/slate/test/surface-contract.ts`
+  - `packages/slate/test/extension-contract.ts`
 - Migrated kept path-runnable contract files from direct public editor aliases
   to current APIs:
   - reads through `editor.read(...)` or explicit `slate/internal` helpers
   - writes through `editor.update((tx) => ...)`
   - schema setup through `editor.extend(...)`
   - test-only schema setup through
-    `.tmp/slate-v2/packages/slate/test/support/schema.ts`
+    `packages/slate/test/support/schema.ts`
 - Updated explicit contract inventory counts after the stale API burn-down.
-- Verification in `.tmp/slate-v2`:
+- Verification in `Plate repo root`:
   - `bun test ./packages/slate/test/*contract.ts ./packages/slate-hyperscript/test/smoke-contract.ts`: `591 pass`.
   - `bun test packages/slate/test/index.spec.ts packages/slate-hyperscript/test/index.spec.ts`: `993 pass`, `94 skip`.
   - Direct public editor alias grep over `packages/slate/test` and

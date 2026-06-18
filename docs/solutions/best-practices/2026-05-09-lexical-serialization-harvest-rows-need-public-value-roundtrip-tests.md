@@ -82,4 +82,4 @@ without pretending Slate should serialize like Lexical.
 ## Related Issues
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalSerialization.test.ts`
-- `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`
+- `packages/slate/test/state-tx-public-api-contract.ts`

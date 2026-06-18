@@ -3,7 +3,7 @@ import {
   type PluginConfig,
   type SlateEditor,
 } from '@platejs/core';
-import type { Path, QueryNodeOptions } from '@platejs/slate';
+import type { Path, QueryNodeOptions } from '@platejs/slate-legacy';
 
 import { KEYS } from '../../plate-keys';
 import { withTrailingBlock } from './withTrailingBlock';

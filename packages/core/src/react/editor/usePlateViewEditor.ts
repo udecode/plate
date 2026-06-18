@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/slate-legacy';
 
 import type { AnyPluginConfig } from '../../lib';
 

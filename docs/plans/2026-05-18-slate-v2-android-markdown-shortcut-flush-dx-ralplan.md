@@ -51,22 +51,22 @@ Current score: `0.92` as an implemented local-regression slice. Exact
 | Desired outcome      | The markdown example has no Android-specific helper, no microtask, and no pending-diff reads. App logic remains a normal Slate extension.                                                       |
 | In scope             | `site/examples/ts/markdown-shortcuts.tsx`, Android pending diff flush timing, transform middleware dispatch, focused tests/proof plan, and issue `#4532` accounting.                            |
 | Non-goals            | Building the fix in this Ralplan pass; adding product markdown APIs to raw Slate; adding Plate-style input rules to `slate-react`; claiming Android issue closure without device/browser proof. |
-| Decision boundary    | This plan may choose an internal Slate React bridge and test route. It may not edit `.tmp/slate-v2` source during Ralplan.                                                                      |
+| Decision boundary    | This plan may choose an internal Slate React bridge and test route. It may not edit `Plate repo root` source during Ralplan.                                                                      |
 | User decision needed | None for this pass. The current helper is too low-level for canonical DX.                                                                                                                       |
 
 ## Live source evidence
 
 | Surface                    | Evidence                                                                                          | Current shape                                                                                                                | Verdict                                                                               |
 | -------------------------- | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Markdown example call site | `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx:89`                                        | `<Editable onDOMBeforeInput={() => scheduleAndroidMarkdownShortcutFlush(editor)} ... />`                                     | Bad canonical DX.                                                                     |
-| Markdown behavior          | `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx:100` and `:195`                            | `markdownShortcuts()` owns `insertText({ editor, next, text })` transform logic.                                             | Keep this as public authoring shape.                                                  |
-| Android helper             | `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx:293`                                       | Reads `editor.api.dom.androidPendingDiffs()`, reconstructs `beforeText`, then calls `androidScheduleFlush()`.                | Move this timing concern into runtime.                                                |
-| Raw Android APIs           | `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:69` and `:185`                         | `androidPendingDiffs` and `androidScheduleFlush` are public DOM capability methods marked experimental and Android-specific. | Keep as low-level escape hatch only, not example DX.                                  |
-| Runtime beforeinput        | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:231`              | Android manager handles beforeinput before generic `applyInputRules`.                                                        | Any future rule bridge must be Android-aware, not bolted on after this return.        |
-| Internal input-rule hook   | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:256`                      | `applyInputRules` is currently hardcoded to `false`.                                                                         | Do not revive as public API without overturning prior plan.                           |
-| Browser handle             | `.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts:272`                           | Programmatic `insertText` can call `applyInputRules` before command dispatch.                                                | Historical pressure point, but current accepted public shape is transform middleware. |
-| Android manager            | `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:825` | Storable Android text input becomes pending diffs, then later flush applies an `insert-text` command.                        | Correct owner for flush timing.                                                       |
-| Transform middleware       | `.tmp/slate-v2/packages/slate/src/core/transform-middleware.ts:117`                               | Runtime can know when `transform:insertText` handlers exist.                                                                 | Good internal detection point for eager Android flush.                                |
+| Markdown example call site | `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx:89`                                        | `<Editable onDOMBeforeInput={() => scheduleAndroidMarkdownShortcutFlush(editor)} ... />`                                     | Bad canonical DX.                                                                     |
+| Markdown behavior          | `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx:100` and `:195`                            | `markdownShortcuts()` owns `insertText({ editor, next, text })` transform logic.                                             | Keep this as public authoring shape.                                                  |
+| Android helper             | `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx:293`                                       | Reads `editor.api.dom.androidPendingDiffs()`, reconstructs `beforeText`, then calls `androidScheduleFlush()`.                | Move this timing concern into runtime.                                                |
+| Raw Android APIs           | `packages/slate-dom/src/plugin/dom-editor.ts:69` and `:185`                         | `androidPendingDiffs` and `androidScheduleFlush` are public DOM capability methods marked experimental and Android-specific. | Keep as low-level escape hatch only, not example DX.                                  |
+| Runtime beforeinput        | `packages/slate-react/src/editable/runtime-before-input-events.ts:231`              | Android manager handles beforeinput before generic `applyInputRules`.                                                        | Any future rule bridge must be Android-aware, not bolted on after this return.        |
+| Internal input-rule hook   | `packages/slate-react/src/editable/runtime-root-engine.ts:256`                      | `applyInputRules` is currently hardcoded to `false`.                                                                         | Do not revive as public API without overturning prior plan.                           |
+| Browser handle             | `packages/slate-react/src/editable/browser-handle.ts:272`                           | Programmatic `insertText` can call `applyInputRules` before command dispatch.                                                | Historical pressure point, but current accepted public shape is transform middleware. |
+| Android manager            | `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:825` | Storable Android text input becomes pending diffs, then later flush applies an `insert-text` command.                        | Correct owner for flush timing.                                                       |
+| Transform middleware       | `packages/slate/src/core/transform-middleware.ts:117`                               | Runtime can know when `transform:insertText` handlers exist.                                                                 | Good internal detection point for eager Android flush.                                |
 | Prior hard cut             | `docs/slate-v2/references/pr-description.md:656`                                                  | Public `EditableInputRule*`, `editableInputRules(...)`, and `Editable inputRules` are absent by design.                      | Do not reopen this unless a later pass proves transform middleware cannot solve it.   |
 
 ## Before and after target
@@ -271,33 +271,33 @@ Implementation cannot be accepted from code review alone.
 
 Required proof candidates:
 
-- `.tmp/slate-v2/packages/slate-react/test/android-input-manager-contract.test.ts`
+- `packages/slate-react/test/android-input-manager-contract.test.ts`
   or equivalent: Android manager schedules the existing flush when an
   `insertText` transform middleware is installed and a non-empty Android
   storable text diff lands.
-- `.tmp/slate-v2/packages/slate-react/test/android-input-manager-contract.test.ts`
+- `packages/slate-react/test/android-input-manager-contract.test.ts`
   or equivalent: plain editors without `insertText` transform middleware keep
   the existing deferred pending-diff path.
-- `.tmp/slate-v2/packages/slate-react/test/android-input-manager-contract.test.ts`
+- `packages/slate-react/test/android-input-manager-contract.test.ts`
   or equivalent: empty delete diffs do not take the text-middleware fast-flush
   path.
-- `.tmp/slate-v2/packages/slate-react/test/android-input-manager-contract.test.ts`
+- `packages/slate-react/test/android-input-manager-contract.test.ts`
   or equivalent: composition/SwiftKey insert-position hint handling still
   schedules its existing flush and is not replaced by the middleware trigger.
-- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`: the internal
+- `packages/slate/test/extension-methods-contract.ts`: the internal
   middleware-presence helper returns true only for registered
   `transform:insertText` handlers and false for unrelated transform middleware.
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`: the markdown
+- `packages/slate-react/test/surface-contract.tsx`: the markdown
   example still uses `deleteBackward`, `insertBreak`, and `insertText`
   transform middleware; it does not use `onKeyDown`; it also must not use
   `onDOMBeforeInput`, `androidPendingDiffs`, `androidScheduleFlush`, or
   `scheduleAndroidMarkdownShortcutFlush`.
-- `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`: app-owned
+- `packages/slate-react/test/app-owned-customization.tsx`: app-owned
   markdown shortcuts remain expressible through editor-owned model behavior.
-- `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`:
+- `apps/www/tests/slate-browser/donor/examples/markdown-shortcuts.test.ts`:
   desktop and mobile projects still create blockquote, unordered list, ordered
   list, and heading shortcuts from the public example.
-- `.tmp/slate-v2`: raw Android Chrome/device proof before claiming `#4532` fixed.
+- `Plate repo root`: raw Android Chrome/device proof before claiming `#4532` fixed.
 
 Planning-only verification for this Ralplan:
 
@@ -327,7 +327,7 @@ Regression risks to lock:
 Minimum implementation gate:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun test packages/slate/test/extension-methods-contract.ts \
   packages/slate-react/test/surface-contract.tsx \
   packages/slate-react/test/app-owned-customization.tsx \
@@ -345,7 +345,7 @@ bun typecheck:site
 Issue-closure gate:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 SLATE_BROWSER_RAW_MOBILE_REQUIRED=1 bun test:mobile-device-proof:raw
 ```
 
@@ -359,16 +359,16 @@ Pass result: complete.
 
 Implementation files:
 
-- `.tmp/slate-v2/packages/slate/src/core/transform-middleware.ts`
-- `.tmp/slate-v2/packages/slate/src/internal/index.ts`
-- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-editor-api.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
-- `.tmp/slate-v2/packages/slate-react/test/android-input-manager-contract.test.ts`
-- `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
+- `packages/slate/src/core/transform-middleware.ts`
+- `packages/slate/src/internal/index.ts`
+- `packages/slate/test/extension-methods-contract.ts`
+- `packages/slate-react/src/editable/runtime-before-input-events.ts`
+- `packages/slate-react/src/editable/runtime-editor-api.ts`
+- `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
+- `packages/slate-react/test/android-input-manager-contract.test.ts`
+- `packages/slate-react/test/model-input-strategy-contract.test.ts`
+- `packages/slate-react/test/surface-contract.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx`
 
 Behavior landed:
 
@@ -464,9 +464,9 @@ Weighted total: `0.92`.
 | issue-sync-accounting-pass           | complete | Ledger, coverage matrix, fork dossier, and PR reference already updated.                                                                                                                                   | Fixed/improved claims stay zero; related row count stays `192`.                                                                                           | None.                                                                              | closure-final-gates-pass            |
 | closure-final-gates-pass             | complete | This plan plus scoped completion state.                                                                                                                                                                    | Plan ready for user review or later Ralph execution.                                                                                                      | None.                                                                              | none                                |
 | regression-proof-review-pass         | complete | Existing test anchors inspected: `surface-contract.tsx`, `app-owned-customization.tsx`, `model-input-strategy-contract.test.ts`, core extension middleware tests, and Playwright markdown-shortcuts tests. | Regression matrix tightened with exact files, commands, no-regression locks, and raw mobile closure gate.                                                 | None.                                                                              | none                                |
-| ralph-execution-activation           | complete | `active goal state`; `active goal state`.                                                                                  | Execution lane opened against `.tmp/slate-v2`; completion reset to `pending`; first owner is TDD for Android stored text diff middleware flush.           | None.                                                                              | tdd-pass                            |
+| ralph-execution-activation           | complete | `active goal state`; `active goal state`.                                                                                  | Execution lane opened against `Plate repo root`; completion reset to `pending`; first owner is TDD for Android stored text diff middleware flush.           | None.                                                                              | tdd-pass                            |
 | tdd-pass                             | complete | Added red tests for transform middleware detection, Android stored text diff flush policy, and markdown example surface cleanup.                                                                           | Used a small package-internal Android policy helper instead of brittle full DOM-event simulation.                                                         | None.                                                                              | implementation-green-pass           |
-| implementation-green-pass            | complete | Runtime/helper/example changes landed in `.tmp/slate-v2`.                                                                                                                                                  | Discovered and fixed native chromium bypass by treating registered `insertText` middleware as app input policy.                                           | None.                                                                              | diff-review-pass                    |
+| implementation-green-pass            | complete | Runtime/helper/example changes landed in `Plate repo root`.                                                                                                                                                  | Discovered and fixed native chromium bypass by treating registered `insertText` middleware as app input policy.                                           | None.                                                                              | diff-review-pass                    |
 | diff-review-pass                     | complete | Changed-files diff reviewed for correctness, public API overreach, and issue-claim scope.                                                                                                                  | No public API added; no markdown-specific runtime predicate; issue claims unchanged.                                                                      | None.                                                                              | verification-sweep-pass             |
 | verification-sweep-pass              | complete | Focused tests, Playwright, typechecks, lint, completion-check.                                                                                                                                             | Local regression slice is complete; raw Android proof remains a separate issue-closure gate.                                                              | None.                                                                              | none                                |
 

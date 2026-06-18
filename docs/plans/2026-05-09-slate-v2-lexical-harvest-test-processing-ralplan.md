@@ -36,9 +36,9 @@ ready for `ralph` execution.
 Ralph execution update on 2026-05-09: the first package-only slice is complete.
 Lexical #7163 now has explicit Slate text-unit distances plus real forward and
 backward `unit: "character"` deletion proof in
-`.tmp/slate-v2/packages/slate/test/text-units-contract.ts`. The implementation
+`packages/slate/test/text-units-contract.ts`. The implementation
 also removed the stale complex-script reverse-delete restoration in
-`.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`, so deletion now
+`packages/slate/src/transforms-text/delete-text.ts`, so deletion now
 uses the same text-unit boundary law as `getCharacterDistance`. The Thai
 unit-character fixtures were updated to match that law. No browser, raw mobile,
 table, collaboration, or issue claim changed.
@@ -49,75 +49,75 @@ The row-level decisions are recorded in
 `Clipboard HTML Row-Level Source Drill`. The accepted next code slice is
 text-format HTML only: Google Docs-style BIU spans plus safe semantic `<b>`
 handling if the first red row proves it. Links, lists, and table rows are
-mapped but stay out of the next slice. No `.tmp/slate-v2` code, browser, raw
+mapped but stay out of the next slice. No `Plate repo root` code, browser, raw
 mobile, table-model, collaboration, or issue claim changed during source-drill.
 
 Ralph execution update on 2026-05-09: paste-html text-format residual is
-complete. `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts` now
+complete. `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts` now
 proves Google Docs BIU spans and standard semantic `<b>` paste. The parser fix
-in `.tmp/slate-v2/site/examples/ts/paste-html-import.ts` keeps Google Docs
+in `apps/www/src/app/(app)/examples/slate/_examples/paste-html-import.ts` keeps Google Docs
 `<b style="font-weight:normal">` wrappers non-bold, maps normal semantic `<b>`
 to bold, and converts body-level inline strings into text nodes before wrapping
-them in paragraphs. Focused Playwright proof and `.tmp/slate-v2` `bun check`
+them in paragraphs. Focused Playwright proof and `Plate repo root` `bun check`
 passed. No link, list, table, raw mobile, collaboration, table-model, or issue
 claim changed.
 
 Ralph execution update on 2026-05-09: paste-html simple anchor import residual
-is complete. `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
+is complete. `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
 now proves `<a href="https://facebook.com">Facebook!</a>` imports as one safe
-link in the paste-html example. Focused Playwright proof and `.tmp/slate-v2`
+link in the paste-html example. Focused Playwright proof and `Plate repo root`
 `bun check` passed. No parser change, list, table, paste-into-existing-link,
 raw mobile, collaboration, table-model, or issue claim changed.
 
 Ralph execution update on 2026-05-09: paste-html noisy link-in-list residual is
-complete. `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts` now
+complete. `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts` now
 proves a minimized Lexical #3193-style fixture keeps the leading block, two
 list items, and a safe link inside the first list item. Focused Playwright proof
-and `.tmp/slate-v2` `bun check` passed. No parser change, generic list claim,
+and `Plate repo root` `bun check` passed. No parser change, generic list claim,
 table, paste-into-existing-link, raw mobile, collaboration, table-model, or
 issue claim changed.
 
 Ralph execution update on 2026-05-09: paste-html basic unordered-list import
-residual is complete. `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
+residual is complete. `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
 now proves `<ul><li>Hello</li><li>world!</li></ul>` imports as one list with
-two items. Focused Playwright proof and `.tmp/slate-v2` `bun check` passed. No
+two items. Focused Playwright proof and `Plate repo root` `bun check` passed. No
 parser change, nested-list claim, table, paste-into-existing-link, raw mobile,
 collaboration, table-model, or issue claim changed.
 
 Ralph execution update on 2026-05-09: paste-html compact nested-list import
-residual is complete. `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
+residual is complete. `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
 now proves the three Lexical nested-list variants keep visible text and nested
 list structure. The test resets the example between variants so proof does not
 accidentally stack lists inside the previous paste. Focused Playwright proof and
-`.tmp/slate-v2` `bun check` passed. No parser change, nested-div list claim,
+`Plate repo root` `bun check` passed. No parser change, nested-div list claim,
 table, paste-into-existing-link, raw mobile, collaboration, table-model, or
 issue claim changed.
 
 Ralph execution update on 2026-05-09: paste-html nested `div` list-boundary
-residual is complete. `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
+residual is complete. `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
 now proves `<ol><li>1<div>2</div>3</li><li>A<div>B</div>C</li></ol>` keeps one
 ordered list, two list items, and Slate paragraph boundaries for the nested
-block content. `.tmp/slate-v2/site/examples/ts/paste-html-import.ts` preserves
+block content. `apps/www/src/app/(app)/examples/slate/_examples/paste-html-import.ts` preserves
 sibling-bounded `DIV` children inside `LI` as paragraph children. Focused
-Playwright proof and `.tmp/slate-v2` `bun check` passed. No table,
+Playwright proof and `Plate repo root` `bun check` passed. No table,
 paste-into-existing-link, raw mobile, collaboration, table-model, or issue
 claim changed.
 
 Ralph execution update on 2026-05-09: paste-html Google Docs table residual is
-complete. `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts` now
+complete. `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts` now
 proves Google Docs-style table HTML imports one 2x3 table, keeps the
 multi-paragraph second cell, and preserves `11pt` text styling. Existing
-`.tmp/slate-v2/site/examples/ts/paste-html-import.ts` already handled the parser
-shape, so no importer code changed. Focused Playwright proof and `.tmp/slate-v2`
+`apps/www/src/app/(app)/examples/slate/_examples/paste-html-import.ts` already handled the parser
+shape, so no importer code changed. Focused Playwright proof and `Plate repo root`
 `bun check` passed. No column-width, table-layout, table-model,
 paste-into-existing-link, raw mobile, collaboration, or issue claim changed.
 
 Ralph execution update on 2026-05-09: paste-html Quip table residual is
-complete. `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts` now
+complete. `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts` now
 proves Quip-style 2x3 table HTML imports rows/cells and preserves `b<br>b` as
 newline text content inside the second cell. Existing
-`.tmp/slate-v2/site/examples/ts/paste-html-import.ts` already handled the parser
-shape, so no importer code changed. Focused Playwright proof and `.tmp/slate-v2`
+`apps/www/src/app/(app)/examples/slate/_examples/paste-html-import.ts` already handled the parser
+shape, so no importer code changed. Focused Playwright proof and `Plate repo root`
 `bun check` passed. No column-width, table-layout, table-model,
 paste-into-existing-link, raw mobile, collaboration, or issue claim changed.
 
@@ -125,29 +125,29 @@ Ralph execution update on 2026-05-09: DOM mutation repair residual is complete
 for the accepted Slate owners. Source-read Lexical `Mutations.spec.mjs`: its
 portable rows are native text-node mutation with selection clamp, and structural
 DOM rollback. Current `richtext.test.ts` already covers browser text mutation,
-selection, and repair traces. `.tmp/slate-v2/packages/slate-react/test/dom-repair-policy-contract.ts`
+selection, and repair traces. `packages/slate-react/test/dom-repair-policy-contract.ts`
 now adds the missing structural restore-manager policy proof: child-list
 mutations are rolled back, while character-data mutations stay available for
-text sync. Focused package proof passed; `.tmp/slate-v2` `bun check` passed. No
+text sync. Focused package proof passed; `Plate repo root` `bun check` passed. No
 desktop structural repair, raw Android device, raw mobile, collaboration,
 table-model, or issue claim changed.
 
 Ralph execution update on 2026-05-09: focus/autoscroll residual is complete for
 accepted raw Slate behavior. Source-read Lexical `Focus.spec.mjs` and
-`AutoScroll.spec.mjs`. `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+`AutoScroll.spec.mjs`. `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 now proves Slate keeps model selection when focus moves outside the editor and
 keeps the caret visible while typing through line breaks in both a scrollable
 editor root and scrollable parent. The first autoscroll proof failed because
 Chrome returned a zero rect for an empty-line caret and
-`defaultScrollSelectionIntoView` no-oped; `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+`defaultScrollSelectionIntoView` no-oped; `packages/slate-react/src/components/editable.tsx`
 now falls back to scrolling the leaf rect. Focused Playwright proof passed. No
 Lexical playground tab-out, raw mobile, collaboration, table-model, or issue
 claim changed.
 
 Ralph execution update on 2026-05-09: inline paste/mention/link/HR boundary
-source-read is complete. `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
+source-read is complete. `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`
 now proves plain-text and rich-HTML paste at inline-link boundaries stays
-outside the link, and `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`
+outside the link, and `packages/slate/test/clipboard-contract.ts`
 now proves partial link fragment copy/paste preserves link attributes. Lexical
 `Links.spec.mjs`, `Mentions.spec.mjs`, `HorizontalRule.spec.mjs`, and deferred
 `LinksHTMLCopyAndPaste.spec.mjs` rows were split by owner: accepted raw link
@@ -157,7 +157,7 @@ text and toolbar/autolink/link-image behavior are rejected as product policy,
 paste-inside-link splitting is deferred to an explicit link-plugin policy, and
 HR rows are deferred because this checkout has generic block-void proof but no
 HR owner. Focused package proof, focused Playwright proof, `bun run lint:fix`,
-and `.tmp/slate-v2` `bun check` passed. No raw mobile, collaboration,
+and `Plate repo root` `bun check` passed. No raw mobile, collaboration,
 table-model, or issue claim changed.
 
 Ralph execution update on 2026-05-09: delete-character/selection-boundary
@@ -165,16 +165,16 @@ source-read is complete for the selected regression files. Lexical #1258 and
 #1730 are already covered by Slate's unit-character delete fixtures. Lexical
 #6974 is already covered by the existing inline-void reverse point-delete
 fixture. Lexical #7246 is now locked by
-`.tmp/slate-v2/packages/slate/test/delete-contract.ts`, proving Backspace at a
+`packages/slate/test/delete-contract.ts`, proving Backspace at a
 following paragraph start merges into the previous list item. Lexical #7319 is
 split: HR styling and Lexical NodeSelection classes stay rejected, while the
-portable block-void behavior exposed a real gap. `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`
+portable block-void behavior exposed a real gap. `packages/slate/src/transforms-text/delete-text.ts`
 now treats a collapsed delete target inside an adjacent void/read-only element
 as a path delete and keeps the fallback caret point through operation
 transforming, so adjacent block voids delete one at a time. The regression lock
-lives in `.tmp/slate-v2/packages/slate/test/transforms/delete/voids-false/block-after-multiple-reverse.tsx`.
+lives in `packages/slate/test/transforms/delete/voids-false/block-after-multiple-reverse.tsx`.
 Focused delete contract, text-unit contract, full delete fixture sweep, lint,
-and `.tmp/slate-v2` `bun check` passed. The reusable rule is captured in
+and `Plate repo root` `bun check` passed. The reusable rule is captured in
 `docs/solutions/logic-errors/2026-05-09-slate-v2-adjacent-block-void-delete-must-path-delete-one-target.md`.
 No browser, raw mobile, collaboration, table-model, HR owner, or issue claim
 changed.
@@ -184,7 +184,7 @@ source-read is complete for the selected files. Lexical `Navigation.spec.mjs`
 maps mostly to existing Slate query contracts: offset, character, word, block,
 inline-fragmentation, atomic void, non-selectable, and top-level boundary
 traversal are already covered in
-`.tmp/slate-v2/packages/slate/test/query-contract.ts`. Lexical
+`packages/slate/test/query-contract.ts`. Lexical
 `Selection.spec.mjs` is split: existing Slate browser/package owners already
 cover no focus-on-load, triple-click block selection, table containment,
 inline-boundary insertion, blurred-editor selection preservation, and package
@@ -193,8 +193,8 @@ collapsible/date-time product nodes, and mark/style persistence stay deferred
 to their own owners. The useful package gap was the selection-rebase invariant
 from Lexical's selection helper/unit tests: when a selected leaf disappears,
 the selection must land on the nearest surviving inline point. That proof now
-lives in `.tmp/slate-v2/packages/slate/test/selection-rebase-contract.ts`.
-Focused package proof, `bun run lint:fix`, and `.tmp/slate-v2` `bun check`
+lives in `packages/slate/test/selection-rebase-contract.ts`.
+Focused package proof, `bun run lint:fix`, and `Plate repo root` `bun check`
 passed. No browser, raw mobile, collaboration, table-model, product-decorator,
 or issue claim changed.
 
@@ -203,14 +203,14 @@ Lexical `LexicalCaret.test.ts` splits into five groups: caret object
 construction/splice/remove internals, selection-to-caret-range conversion,
 destructive range deletion, point ordering/common ancestor helpers, and
 split-at-caret helpers. Slate already covers traversal/order behavior through
-`.tmp/slate-v2/packages/slate/test/query-contract.ts`, raw split operation rows in
-`.tmp/slate-v2/packages/slate/test/operations-contract.ts`, transform split rows
-in `.tmp/slate-v2/packages/slate/test/transforms-contract.ts`, and text-unit
-movement in `.tmp/slate-v2/packages/slate/test/text-units-contract.ts`. The useful
+`packages/slate/test/query-contract.ts`, raw split operation rows in
+`packages/slate/test/operations-contract.ts`, transform split rows
+in `packages/slate/test/transforms-contract.ts`, and text-unit
+movement in `packages/slate/test/text-units-contract.ts`. The useful
 portable gap was the destructive caret-range edge matrix, so
-`.tmp/slate-v2/packages/slate/test/delete-contract.ts` now proves expanded range
+`packages/slate/test/delete-contract.ts` now proves expanded range
 deletion trims both sibling-leaf edges and cross-block edges before collapsing
-at the anchor. Focused package proof, `bun run lint:fix`, and `.tmp/slate-v2`
+at the anchor. Focused package proof, `bun run lint:fix`, and `Plate repo root`
 `bun check` passed. The reusable harvesting rule is captured in
 `docs/solutions/best-practices/2026-05-09-lexical-caret-harvest-rows-need-range-edge-contracts.md`.
 
@@ -218,11 +218,11 @@ Ralph execution update on 2026-05-09: docs-traversals source-read is complete.
 Lexical `docs-traversals.test.ts` splits into sibling iteration, root child
 iteration, depth-first caret order, and "wholly included" range traversal.
 Lexical caret enter/exit helpers are not Slate API, but the portable behavior
-belongs in Slate's query contract. `.tmp/slate-v2/packages/slate/test/query-contract.ts`
+belongs in Slate's query contract. `packages/slate/test/query-contract.ts`
 now proves sibling order, reverse child order, descendant depth-first paths,
 lowest leaf range traversal, and lowest element range traversal for the same
 nested inline document shape. Focused package proof, `bun run lint:fix`, and
-`.tmp/slate-v2` `bun check` passed. No browser, raw mobile, collaboration,
+`Plate repo root` `bun check` passed. No browser, raw mobile, collaboration,
 table-model, or issue claim changed.
 Lexical caret class internals, node-key mechanics, decorator payloads,
 token/segmented modes, browser, raw mobile, collaboration, table-model, and
@@ -233,13 +233,13 @@ Ralph execution update on 2026-05-09: LexicalElementNode source-read is
 complete. The file splits into Lexical JSON schema, child/text query helpers,
 splice/selection behavior, transform scheduling, DOM slot behavior, and DOM
 `indexPath` helpers. The portable gap was query/text traversal, not Lexical
-node lifecycle. `.tmp/slate-v2/packages/slate/test/query-contract.ts` now proves
+node lifecycle. `packages/slate/test/query-contract.ts` now proves
 nested text-leaf traversal with `Node.texts`, first/last leaf lookup, and
 `Node.string` text content for the same nested element family. Splice/selection
 behavior routes to existing operation and selection owners; DOM slot, indexPath,
 Lexical JSON schema, node-key, lifecycle, browser, raw mobile, collaboration,
 table-model, and issue claims stayed out. Focused package proof, `bun run
-lint:fix`, and `.tmp/slate-v2` `bun check` passed. The reusable harvesting rule
+lint:fix`, and `Plate repo root` `bun check` passed. The reusable harvesting rule
 is captured in
 `docs/solutions/best-practices/2026-05-09-lexical-element-node-harvest-rows-need-api-shape-splitting.md`.
 
@@ -250,7 +250,7 @@ class, so Lexical type/schema/update/type-guard rows stay out. The accepted
 behavior is already covered by the Quip paste-html browser row preserving
 `b<br>b` as newline text, `ZeroWidthString` line-break placeholder proof,
 structural `insertBreak` contracts, and Android newline-to-soft-break input
-handling. No `.tmp/slate-v2` code or tests changed, and no browser, raw mobile,
+handling. No `Plate repo root` code or tests changed, and no browser, raw mobile,
 collaboration, table-model, or issue claim changed.
 
 Ralph execution update on 2026-05-09: LexicalParagraphNode source-read is
@@ -258,13 +258,13 @@ complete. The file splits into Lexical node class/schema/DOM helper rows,
 paragraph split/insert behavior, and paragraph DOM import alignment. Slate's
 existing insert-break, split/merge, and normalization owners already cover the
 accepted split/merge behavior, so the useful gap was paste-html import:
-`.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts` now proves
+`apps/www/tests/slate-browser/donor/examples/paste-html.test.ts` now proves
 legacy `align`, CSS `text-align` precedence, and invalid align rejection.
-`.tmp/slate-v2/site/examples/ts/paste-html-import.ts` imports valid paragraph
-alignment and `.tmp/slate-v2/site/examples/ts/paste-html.tsx` renders the existing
+`apps/www/src/app/(app)/examples/slate/_examples/paste-html-import.ts` imports valid paragraph
+alignment and `apps/www/src/app/(app)/examples/slate/_examples/paste-html.tsx` renders the existing
 `align` field. The red browser proof first failed on missing alignment, then
 passed after the importer/rendering change. Focused Playwright proof,
-`.tmp/slate-v2` `bun run lint:fix`, and `.tmp/slate-v2` `bun check` passed. No raw
+`Plate repo root` `bun run lint:fix`, and `Plate repo root` `bun check` passed. No raw
 mobile, collaboration, table-model, or issue claim changed. The reusable
 harvesting rule is captured in
 `docs/solutions/best-practices/2026-05-09-lexical-paragraph-node-harvest-rows-need-dom-import-splitting.md`.
@@ -276,10 +276,10 @@ selection repair. Slate has no root selection point and `Editor.string` is
 explicitly block-separator-free, so Lexical cached-text/decorator/root API rows
 stay out. Existing root normalization/top-level cleanup and string owners cover
 the Slate root behavior. The useful gap was selected top-level child removal:
-`.tmp/slate-v2/packages/slate/test/selection-rebase-contract.ts` now proves
+`packages/slate/test/selection-rebase-contract.ts` now proves
 removing the selected first block rebases selection to the next surviving block,
 and removing the selected only block clears selection. Focused package proof
-passed, followed by `.tmp/slate-v2` `bun run lint:fix`, `.tmp/slate-v2` `bun
+passed, followed by `Plate repo root` `bun run lint:fix`, `Plate repo root` `bun
 check`, and `plate-2` `pnpm lint:fix`. No browser, raw mobile, collaboration,
 table-model, or issue claim changed.
 
@@ -289,11 +289,11 @@ format helper flags, selection helpers, split/merge behavior, DOM
 create/update/export rendering policy, and composition-key/node-state internals.
 Slate already has owners for text-unit deletion, compatible text normalization,
 mark add/remove/toggle, and rich HTML mark import. The useful gap was raw text
-operation selection repair: `.tmp/slate-v2/packages/slate/test/operations-contract.ts`
+operation selection repair: `packages/slate/test/operations-contract.ts`
 now proves `split_node` rebases an expanded selection across split text branches,
 and `merge_node` rebases selection into the surviving text branch. Focused
-package proof passed, followed by `.tmp/slate-v2` `bun run lint:fix`,
-`.tmp/slate-v2` `bun check`, and `plate-2` `pnpm lint:fix`. Lexical JSON schema,
+package proof passed, followed by `Plate repo root` `bun run lint:fix`,
+`Plate repo root` `bun check`, and `plate-2` `pnpm lint:fix`. Lexical JSON schema,
 node-key, mode/detail/style, DOM rendering, node-state, and composition-key rows
 stay out. No browser, raw mobile, collaboration, table-model, or issue claim
 changed.
@@ -395,29 +395,29 @@ Current Slate v2 proof owners found in live source:
 
 | Behavior                        | Current owner                                                                                                                                                                                                                       | Current status                                         |
 | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| IME through browser runtime     | `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:1274`, `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:291`, `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:244` | strong existing/apply coverage                         |
-| IME inline-void and undo stress | `.tmp/slate-v2/playwright/stress/generated-editing.test.ts:1114`, `.tmp/slate-v2/playwright/stress/generated-editing.test.ts:1169`                                                                                                  | selected apply lane covered                            |
-| Composition history             | `.tmp/slate-v2/packages/slate-history/test/history-contract.ts:286`                                                                                                                                                                 | selected apply lane covered                            |
-| Browser insert transport        | `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:23`                                                                                                                                                                | selected apply lane covered                            |
-| Synthetic paste compatibility   | `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:45`                                                                                                                                                                | selected apply lane covered; Firefox skip is honest    |
-| Google Docs font-size paste     | `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:142`                                                                                                                                                              | selected apply lane covered                            |
-| Google Sheets table paste       | `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:174`                                                                                                                                                              | selected apply lane covered                            |
-| Table triple-click containment  | `.tmp/slate-v2/playwright/integration/examples/tables.test.ts:129`                                                                                                                                                                  | selected apply lane covered                            |
-| Table drag containment          | `.tmp/slate-v2/playwright/integration/examples/tables.test.ts:146`                                                                                                                                                                  | selected apply lane covered; not whole-table selection |
-| DOM coverage IME                | `.tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts:248`                                                                                                                                                 | useful proof owner                                     |
+| IME through browser runtime     | `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:1274`, `apps/www/tests/slate-browser/donor/examples/richtext.test.ts:291`, `apps/www/tests/slate-browser/donor/examples/mentions.test.ts:244` | strong existing/apply coverage                         |
+| IME inline-void and undo stress | `apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts:1114`, `apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts:1169`                                                                                                  | selected apply lane covered                            |
+| Composition history             | `packages/slate-history/test/history-contract.ts:286`                                                                                                                                                                 | selected apply lane covered                            |
+| Browser insert transport        | `apps/www/tests/slate-browser/donor/examples/plaintext.test.ts:23`                                                                                                                                                                | selected apply lane covered                            |
+| Synthetic paste compatibility   | `apps/www/tests/slate-browser/donor/examples/plaintext.test.ts:45`                                                                                                                                                                | selected apply lane covered; Firefox skip is honest    |
+| Google Docs font-size paste     | `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts:142`                                                                                                                                                              | selected apply lane covered                            |
+| Google Sheets table paste       | `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts:174`                                                                                                                                                              | selected apply lane covered                            |
+| Table triple-click containment  | `apps/www/tests/slate-browser/donor/examples/tables.test.ts:129`                                                                                                                                                                  | selected apply lane covered                            |
+| Table drag containment          | `apps/www/tests/slate-browser/donor/examples/tables.test.ts:146`                                                                                                                                                                  | selected apply lane covered; not whole-table selection |
+| DOM coverage IME                | `apps/www/tests/slate-browser/donor/examples/dom-coverage-boundaries.test.ts:248`                                                                                                                                                 | useful proof owner                                     |
 
 Live-source refresh added on 2026-05-09:
 
 | Family                 | Live owner read                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Current shape                                                                                                                                                                                                     | Processing decision                                                                                                                                                                                  |
 | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Text units and delete  | `.tmp/slate-v2/packages/slate/test/text-units-contract.ts:7`, `.tmp/slate-v2/packages/slate/test/text-units-contract.ts:14`, `.tmp/slate-v2/packages/slate/test/text-units-contract.ts:33`; existing `transforms/delete/unit-character` fixtures found in the live test tree; Lexical source `../lexical/packages/lexical-playground/__tests__/regression/7163-graphemes.spec.mjs:25`                                                                                                                                                            | Slate has basic grapheme, RTL, word, punctuation, and keycap contracts plus many delete fixtures, but not the full Lexical #7163 destructive matrix in one clear owner.                                           | First apply slice. Refactor the existing text-unit owner and add only missing portable matrix rows. Start package-only; add browser proof only if the package matrix exposes a browser-specific gap. |
-| Clipboard and paste    | `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:117`, `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:163`, `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:324`, `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:411`, `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:623`, `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:796`, `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:142`, `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:174` | Current package and DOM tests already cover rich fragments, list fragments, inline void copy/paste, multiline plaintext, and undo batching. Browser paste has Google Docs font-size and Google Sheets table rows. | Second apply slice. Do not duplicate current coverage. Add focused browser HTML residuals only: links, lists, text-format HTML, and Google Docs table if distinct from Sheets.                       |
-| DOM mutation repair    | `.tmp/slate-v2/packages/slate-react/test/dom-repair-policy-contract.ts:9`, `.tmp/slate-v2/packages/slate-react/test/dom-repair-policy-contract.ts:22`, `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:247`, `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1876`, `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:3267`; Lexical source `../lexical/packages/lexical-playground/__tests__/e2e/Mutations.spec.mjs:53`                                                                           | Unit policy exists and richtext browser rows already exercise DOM mutation, browser editing state, and selection repair.                                                                                          | Downgrade from `create-new` to `refactor-existing`. Strengthen `richtext` or stress coverage only after pressure pass confirms a missing invariant.                                                  |
-| IME and input          | `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:71`, `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:137`, `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:189`, `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:205`, `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:244`, `.tmp/slate-v2/packages/slate-history/test/history-contract.ts:259`                                                                    | Android replacement, custom Enter, empty/backspace policy, mention IME, and composition history are already covered.                                                                                              | Treat high-value IME rows as already applied or proof-route. Raw WebKit/mobile rows stay deferred.                                                                                                   |
-| Focus and scroll       | `.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts:44`, `.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts:80`, `.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:7`; Lexical sources `../lexical/packages/lexical-playground/__tests__/e2e/AutoScroll.spec.mjs:17`, `../lexical/packages/lexical-playground/__tests__/e2e/Focus.spec.mjs:20`                                                                                                                                                 | Placeholder IME/focus proof exists and huge document renders, but caret autoscroll and tab/outside-selection persistence are not directly proven.                                                                 | Later browser slice. Create focused rows only after the pressure pass separates raw editor behavior from app scroll policy.                                                                          |
-| Inline atoms and links | `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:34`, `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:65`, `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:134`, `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:189`, `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:233`, `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:337`, `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:796`                                                   | Inline edit, caret, empty inline removal, read-only inline navigation, inline cut, mention navigation, and inline void clipboard proof are strong.                                                                | Later refactor-existing slice. Paste-over-link/mention residuals need exact raw invariant rows, not product-shell link toolbar behavior.                                                             |
-| Tables                 | `.tmp/slate-v2/playwright/integration/examples/tables.test.ts:19`, `.tmp/slate-v2/playwright/integration/examples/tables.test.ts:79`, `.tmp/slate-v2/playwright/integration/examples/tables.test.ts:129`, `.tmp/slate-v2/playwright/integration/examples/tables.test.ts:146`, `.tmp/slate-v2/playwright/integration/examples/tables.test.ts:181`, `.tmp/slate-v2/playwright/integration/examples/tables.test.ts:197`                                                                                                                             | Backspace/delete containment, last-cell navigation, triple-click containment, drag containment, Enter, and empty-cell navigation are already covered.                                                             | Keep table rows as containment proof. Defer whole-table, merged-cell, and multi-cell model rows.                                                                                                     |
-| Collaboration          | `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:29`, `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:114`, `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:155`, `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:200`                                                                                                                                                                                                                                    | Collaboration/history substrate proof exists at package level.                                                                                                                                                    | Defer browser/yjs rows until a real browser collaboration owner exists.                                                                                                                              |
+| Text units and delete  | `packages/slate/test/text-units-contract.ts:7`, `packages/slate/test/text-units-contract.ts:14`, `packages/slate/test/text-units-contract.ts:33`; existing `transforms/delete/unit-character` fixtures found in the live test tree; Lexical source `../lexical/packages/lexical-playground/__tests__/regression/7163-graphemes.spec.mjs:25`                                                                                                                                                            | Slate has basic grapheme, RTL, word, punctuation, and keycap contracts plus many delete fixtures, but not the full Lexical #7163 destructive matrix in one clear owner.                                           | First apply slice. Refactor the existing text-unit owner and add only missing portable matrix rows. Start package-only; add browser proof only if the package matrix exposes a browser-specific gap. |
+| Clipboard and paste    | `packages/slate/test/clipboard-contract.ts:117`, `packages/slate/test/clipboard-contract.ts:163`, `packages/slate/test/clipboard-contract.ts:324`, `packages/slate/test/clipboard-contract.ts:411`, `packages/slate-dom/test/clipboard-boundary.ts:623`, `packages/slate-dom/test/clipboard-boundary.ts:796`, `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts:142`, `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts:174` | Current package and DOM tests already cover rich fragments, list fragments, inline void copy/paste, multiline plaintext, and undo batching. Browser paste has Google Docs font-size and Google Sheets table rows. | Second apply slice. Do not duplicate current coverage. Add focused browser HTML residuals only: links, lists, text-format HTML, and Google Docs table if distinct from Sheets.                       |
+| DOM mutation repair    | `packages/slate-react/test/dom-repair-policy-contract.ts:9`, `packages/slate-react/test/dom-repair-policy-contract.ts:22`, `apps/www/tests/slate-browser/donor/examples/richtext.test.ts:247`, `apps/www/tests/slate-browser/donor/examples/richtext.test.ts:1876`, `apps/www/tests/slate-browser/donor/examples/richtext.test.ts:3267`; Lexical source `../lexical/packages/lexical-playground/__tests__/e2e/Mutations.spec.mjs:53`                                                                           | Unit policy exists and richtext browser rows already exercise DOM mutation, browser editing state, and selection repair.                                                                                          | Downgrade from `create-new` to `refactor-existing`. Strengthen `richtext` or stress coverage only after pressure pass confirms a missing invariant.                                                  |
+| IME and input          | `packages/slate-react/test/model-input-strategy-contract.test.ts:71`, `packages/slate-react/test/model-input-strategy-contract.test.ts:137`, `packages/slate-react/test/model-input-strategy-contract.test.ts:189`, `apps/www/tests/slate-browser/donor/examples/mentions.test.ts:205`, `apps/www/tests/slate-browser/donor/examples/mentions.test.ts:244`, `packages/slate-history/test/history-contract.ts:259`                                                                    | Android replacement, custom Enter, empty/backspace policy, mention IME, and composition history are already covered.                                                                                              | Treat high-value IME rows as already applied or proof-route. Raw WebKit/mobile rows stay deferred.                                                                                                   |
+| Focus and scroll       | `apps/www/tests/slate-browser/donor/examples/placeholder.test.ts:44`, `apps/www/tests/slate-browser/donor/examples/placeholder.test.ts:80`, `apps/www/tests/slate-browser/donor/examples/huge-document.test.ts:7`; Lexical sources `../lexical/packages/lexical-playground/__tests__/e2e/AutoScroll.spec.mjs:17`, `../lexical/packages/lexical-playground/__tests__/e2e/Focus.spec.mjs:20`                                                                                                                                                 | Placeholder IME/focus proof exists and huge document renders, but caret autoscroll and tab/outside-selection persistence are not directly proven.                                                                 | Later browser slice. Create focused rows only after the pressure pass separates raw editor behavior from app scroll policy.                                                                          |
+| Inline atoms and links | `apps/www/tests/slate-browser/donor/examples/inlines.test.ts:34`, `apps/www/tests/slate-browser/donor/examples/inlines.test.ts:65`, `apps/www/tests/slate-browser/donor/examples/inlines.test.ts:134`, `apps/www/tests/slate-browser/donor/examples/inlines.test.ts:189`, `apps/www/tests/slate-browser/donor/examples/inlines.test.ts:233`, `apps/www/tests/slate-browser/donor/examples/mentions.test.ts:337`, `packages/slate-dom/test/clipboard-boundary.ts:796`                                                   | Inline edit, caret, empty inline removal, read-only inline navigation, inline cut, mention navigation, and inline void clipboard proof are strong.                                                                | Later refactor-existing slice. Paste-over-link/mention residuals need exact raw invariant rows, not product-shell link toolbar behavior.                                                             |
+| Tables                 | `apps/www/tests/slate-browser/donor/examples/tables.test.ts:19`, `apps/www/tests/slate-browser/donor/examples/tables.test.ts:79`, `apps/www/tests/slate-browser/donor/examples/tables.test.ts:129`, `apps/www/tests/slate-browser/donor/examples/tables.test.ts:146`, `apps/www/tests/slate-browser/donor/examples/tables.test.ts:181`, `apps/www/tests/slate-browser/donor/examples/tables.test.ts:197`                                                                                                                             | Backspace/delete containment, last-cell navigation, triple-click containment, drag containment, Enter, and empty-cell navigation are already covered.                                                             | Keep table rows as containment proof. Defer whole-table, merged-cell, and multi-cell model rows.                                                                                                     |
+| Collaboration          | `packages/slate/test/collab-history-runtime-contract.ts:29`, `packages/slate/test/collab-history-runtime-contract.ts:114`, `packages/slate/test/collab-history-runtime-contract.ts:155`, `packages/slate/test/collab-history-runtime-contract.ts:200`                                                                                                                                                                                                                                    | Collaboration/history substrate proof exists at package level.                                                                                                                                                    | Defer browser/yjs rows until a real browser collaboration owner exists.                                                                                                                              |
 
 Issue ledger facts:
 
@@ -484,11 +484,11 @@ Family accounting from the harvest inventory:
 ## Pressure Pass Results
 
 The pressure pass keeps the plan conservative. It does not add issue claims and
-does not edit `.tmp/slate-v2`.
+does not edit `Plate repo root`.
 
 | Lane                                 | Pressure verdict              | Reason                                                                                                                                                                                                                                                                                | Ralph readiness                                                                                                                                                                                                                            |
 | ------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Text-unit/delete package parity      | keep first                    | Lexical #7163 has a dense portable Unicode matrix, current Slate has a clear owner in `text-units-contract.ts`, and package proof avoids browser flake/build cost. Existing delete fixtures are broad but scattered, so a compact contract row adds value without architecture churn. | Ready after objection pass. Owner: `.tmp/slate-v2/packages/slate/test/text-units-contract.ts`; verification: `cd .tmp/slate-v2 && bun test ./packages/slate/test/text-units-contract.ts` plus targeted unit-character fixtures if touched. |
+| Text-unit/delete package parity      | keep first                    | Lexical #7163 has a dense portable Unicode matrix, current Slate has a clear owner in `text-units-contract.ts`, and package proof avoids browser flake/build cost. Existing delete fixtures are broad but scattered, so a compact contract row adds value without architecture churn. | Ready after objection pass. Owner: `packages/slate/test/text-units-contract.ts`; verification: `cd Plate repo root && bun test ./packages/slate/test/text-units-contract.ts` plus targeted unit-character fixtures if touched. |
 | Clipboard HTML residual              | keep second, narrower         | Current Slate already covers rich fragments, inline void copy/paste, multiline plaintext, Google Docs font-size, Google Sheets table, and generated paste gauntlets. Blindly porting Lexical link/list files would duplicate coverage and import product toolbar policy.              | Not first. Next `ralph` slice must source-drill exact link/list/text-format rows and add only raw parser/browser corpus gaps.                                                                                                              |
 | DOM mutation repair                  | refactor existing             | `richtext.test.ts` already syncs browser text mutations inside bold markup and records selectionchange/repair kernel results. A new standalone owner would be duplicate unless Lexical `Mutations.spec.mjs` exposes a missing assertion.                                              | Not create-new. Strengthen `richtext.test.ts`, generated stress, or the slate-react policy contract only after naming the missing invariant.                                                                                               |
 | Focus/autoscroll                     | keep later browser slice      | Placeholder focus/IME exists and huge-document only proves visibility. Lexical AutoScroll/Focus rows are valuable, but they mix raw editor behavior with app scroll/focus policy.                                                                                                     | Later create/refactor slice. Needs browser proof and must not claim raw mobile.                                                                                                                                                            |
@@ -524,13 +524,13 @@ Regression pressure:
 
 | Decision                                           | Strongest fair objection                                                                                                                                         | Steelman antithesis                                                                                             | Accepted revision                                                                                                                                                                                                          | Proof required                                                                                                                                  | Verdict |
 | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| Start `ralph` with text-unit/delete package parity | This can look like test-count vanity. Slate already has grapheme and delete fixtures, so adding a Unicode matrix could be busywork.                              | Do nothing until a user-facing delete bug appears; broad Unicode matrices can fossilize implementation details. | Keep the slice, but cap it to the missing Lexical #7163 cases and existing `getCharacterDistance` / delete behavior. No browser row unless package proof exposes a browser-only gap.                                       | `cd .tmp/slate-v2 && bun test ./packages/slate/test/text-units-contract.ts`; add targeted unit-character fixture commands only if touched.      | keep    |
+| Start `ralph` with text-unit/delete package parity | This can look like test-count vanity. Slate already has grapheme and delete fixtures, so adding a Unicode matrix could be busywork.                              | Do nothing until a user-facing delete bug appears; broad Unicode matrices can fossilize implementation details. | Keep the slice, but cap it to the missing Lexical #7163 cases and existing `getCharacterDistance` / delete behavior. No browser row unless package proof exposes a browser-only gap.                                       | `cd Plate repo root && bun test ./packages/slate/test/text-units-contract.ts`; add targeted unit-character fixture commands only if touched.      | keep    |
 | Put clipboard HTML residual second                 | The words "links/lists/text-format" are still too broad. One `ralph` could sprawl across parser policy, example app behavior, lists, links, and tables.          | Drop clipboard until exact source rows are drilled, because current Slate paste coverage is already broad.      | Keep as second lane, not next implementation. Before code, require a source-drill slice that names exact Lexical rows, expected Slate value/DOM output, and whether each row is raw parser behavior or example app policy. | Focused `paste-html.test.ts` grep plus `clipboard-boundary.ts` only for parser/DOM contract gaps; sequential Playwright for browser rows.       | revise  |
 | Keep DOM mutation repair as `refactor-existing`    | Lexical `Mutations.spec.mjs` could expose a stricter external DOM import invariant than Slate's current richtext row. Calling it refactor-only might hide a gap. | Create a new standalone mutation suite so the invariant is visible and not buried in richtext.                  | Keep refactor-existing, but require the next owner to name the missing assertion before changing code. If it is not missing from `richtext.test.ts` or generated stress, drop the row as covered.                          | Existing owner check against `richtext.test.ts` and `dom-repair-policy-contract.ts`; add Playwright only for a named missing browser invariant. | keep    |
 | Defer focus/autoscroll to a later browser slice    | This can become permanent backlog. Lexical has direct AutoScroll and Focus rows, while Slate huge-document only proves visibility.                               | Promote focus/autoscroll immediately because users feel scroll and focus bugs hard.                             | Keep later, but split it from IME/input and from app layout. The accepted row must prove caret visibility or tab/outside focus ownership in a raw Slate example, not product shell behavior.                               | Browser proof in the relevant example/stress owner; no raw mobile claim.                                                                        | revise  |
 | Keep inline atom/link paste later                  | Inline paste/delete is user-facing and often fragile. Deferring it risks losing high-value regression coverage.                                                  | Move inline atom/link paste ahead of clipboard or DOM mutation.                                                 | Keep later because current `inlines`, `mentions`, and inline void clipboard coverage is strong. The next pass must split paste-over-link/mention from product toolbar/autolink behavior before implementation.             | Focused rows against `inlines.test.ts`, `mentions.test.ts`, and clipboard owner.                                                                | keep    |
 | Defer table model rows                             | This looks like dodging table bugs. Lexical has table selection coverage and Slate has old table issue pressure.                                                 | Accept a table selection model now and port the table rows.                                                     | Keep defer. Current Slate rows prove containment and navigation, not whole-table, merged-cell, or multi-cell model behavior. Any table model work needs a separate plan and issue claim sync.                              | Do not promote #2558-like claims without an explicit table model plus browser proof.                                                            | keep    |
-| Defer raw mobile rows                              | The harvest was partly about mobile/IME; deferring raw mobile can look like a loophole.                                                                          | Use Playwright mobile viewports as good enough smoke and move on.                                               | Keep defer. Viewport proof is not raw device proof. Mobile rows need the raw-device/Appium lane named in the plan.                                                                                                         | `SLATE_BROWSER_RAW_MOBILE_REQUIRED=1 bun test:mobile-device-proof:raw` in `.tmp/slate-v2` for raw device claims.                                | keep    |
+| Defer raw mobile rows                              | The harvest was partly about mobile/IME; deferring raw mobile can look like a loophole.                                                                          | Use Playwright mobile viewports as good enough smoke and move on.                                               | Keep defer. Viewport proof is not raw device proof. Mobile rows need the raw-device/Appium lane named in the plan.                                                                                                         | `SLATE_BROWSER_RAW_MOBILE_REQUIRED=1 bun test:mobile-device-proof:raw` in `Plate repo root` for raw device claims.                                | keep    |
 | Defer collaboration browser rows                   | Package substrate proof may not catch real collaborative browser failures.                                                                                       | Create slate-yjs browser rows before any release confidence.                                                    | Keep defer for this Lexical-processing plan. Collaboration browser parity needs a real slate-yjs/browser owner, not opportunistic test copying from Lexical.                                                               | Dedicated collaboration browser owner plus substrate commands before any claim.                                                                 | keep    |
 
 Accepted maintainer revisions:
@@ -554,11 +554,11 @@ Blast radius:
 
 | Surface                                          | Blast radius                                                                                                                           | Guard                                                                                                                                                                                                      |
 | ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Text-unit/delete package parity                  | `.tmp/slate-v2/packages/slate/test/text-units-contract.ts` and possibly focused delete fixtures; user-facing delete/grapheme behavior. | First `ralph` slice may start from focused package proof. It makes no browser, mobile, table, or issue claim. Broad `.tmp/slate-v2` `bun check` is required after implementation before execution closure. |
+| Text-unit/delete package parity                  | `packages/slate/test/text-units-contract.ts` and possibly focused delete fixtures; user-facing delete/grapheme behavior. | First `ralph` slice may start from focused package proof. It makes no browser, mobile, table, or issue claim. Broad `Plate repo root` `bun check` is required after implementation before execution closure. |
 | Clipboard HTML source-drill and residuals        | `slate-dom` clipboard contracts, `paste-html` browser rows, parser output, external-app paste behavior, and issue-claim pressure.      | Source-drill comes before code. No ClawSweeper sync is needed before source-drill if no claim changes. Later code needs focused package/browser proof and issue sync only for exact promoted claims.       |
 | DOM mutation, focus/autoscroll, inline atom rows | Browser-only behavior, DOM authority, native selection/focus ownership, and example/stress test stability.                             | Browser rows cannot be closed by package tests. Add or refactor Playwright rows only after naming the missing invariant.                                                                                   |
 | Table, raw mobile, collaboration browser         | User-visible but currently not accepted by this plan as closure targets.                                                               | Keep as explicit non-claims. #2558 is not claimed; raw mobile requires the raw-device/Appium gate; collaboration browser needs a real slate-yjs/browser owner.                                             |
-| Planning and verification gates                  | `plate-2` completion files, Slate v2 commands, PR/issue wording, and future `ralph` prompts.                                           | `plate-2` completion-check proves planning state only. Any Slate v2 behavior claim must cite a command run from `.tmp/slate-v2`.                                                                           |
+| Planning and verification gates                  | `plate-2` completion files, Slate v2 commands, PR/issue wording, and future `ralph` prompts.                                           | `plate-2` completion-check proves planning state only. Any Slate v2 behavior claim must cite a command run from `Plate repo root`.                                                                           |
 
 Three-scenario pre-mortem:
 
@@ -572,11 +572,11 @@ Expanded proof plan:
 
 | Lane                                   | Unit/package proof                                                                                                             | Browser/device proof                                                                        | Ledger/claim gate                                                                                                | Closure gate                                                                      |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Text-unit/delete                       | `cd .tmp/slate-v2 && bun test ./packages/slate/test/text-units-contract.ts`; targeted delete fixture commands only if touched. | None unless implementation exposes a browser-only gap.                                      | No issue promotion from the first slice unless exact repro and proof are added.                                  | `cd .tmp/slate-v2 && bun check` after implementation before execution closure.    |
+| Text-unit/delete                       | `cd Plate repo root && bun test ./packages/slate/test/text-units-contract.ts`; targeted delete fixture commands only if touched. | None unless implementation exposes a browser-only gap.                                      | No issue promotion from the first slice unless exact repro and proof are added.                                  | `cd Plate repo root && bun check` after implementation before execution closure.    |
 | Clipboard source-drill                 | No code gate; source-drill is a planning/research slice. Later parser work uses `clipboard-boundary.ts`.                       | Later browser work uses focused `paste-html` greps run sequentially.                        | No sync before source-drill if claims stay unchanged; sync required if later rows claim or improve exact issues. | Focused package/browser proof plus `bun check` before execution closure.          |
 | DOM mutation/focus/inline browser rows | Unit contracts can support policy only; they do not close browser behavior.                                                    | Focused Playwright rows in the owning example/stress file.                                  | Promote no DOM/focus/inline issue without exact repro parity.                                                    | Browser proof and `bun check`; `bun check:full` only for release/browser closure. |
 | Table model                            | Current containment rows remain useful package/browser evidence.                                                               | Existing table Playwright rows are containment proof only.                                  | #2558 and whole-table/multi-cell selection stay not claimed.                                                     | Separate table-model plan before any table-selection claim.                       |
-| Raw mobile                             | None.                                                                                                                          | `cd .tmp/slate-v2 && SLATE_BROWSER_RAW_MOBILE_REQUIRED=1 bun test:mobile-device-proof:raw`. | No viewport row can satisfy raw device claims.                                                                   | Raw-device artifact required.                                                     |
+| Raw mobile                             | None.                                                                                                                          | `cd Plate repo root && SLATE_BROWSER_RAW_MOBILE_REQUIRED=1 bun test:mobile-device-proof:raw`. | No viewport row can satisfy raw device claims.                                                                   | Raw-device artifact required.                                                     |
 | Collaboration browser                  | Existing package substrate proof only.                                                                                         | Dedicated slate-yjs/browser owner required.                                                 | No collaboration issue closure from package substrate alone.                                                     | Separate collaboration browser plan and proof.                                    |
 
 High-risk verdicts:
@@ -586,7 +586,7 @@ High-risk verdicts:
 | Are browser-only rows split enough to avoid false proof from unit tests?                      | yes, with guard              | The plan now names proof owners by behavior type and rejects unit-only closure for browser/device rows.                                                            |
 | Are table, raw mobile, and collaboration non-claims protected in every handoff surface?       | yes after this pass          | The plan, checkpoint, and continuation prompt all restate them.                                                                                                    |
 | Does clipboard source-drill need issue-ledger sync before implementation?                     | no, if claims stay unchanged | Source-drill changes understanding, not Slate behavior or issue claims. Sync becomes mandatory when exact claims change.                                           |
-| Does the first text-unit slice need broad `.tmp/slate-v2` verification before `ralph` starts? | no                           | Focused package proof is enough to start. Broad `bun check` belongs after implementation before execution closure.                                                 |
+| Does the first text-unit slice need broad `Plate repo root` verification before `ralph` starts? | no                           | Focused package proof is enough to start. Broad `bun check` belongs after implementation before execution closure.                                                 |
 | Does ClawSweeper need another pass before closure if no issue claims changed?                 | no                           | ClawSweeper reruns when public behavior, issue claims, or the related surface changes materially. Zero claim changes means final accounting can be a no-op review. |
 
 Keep/revise/drop verdict: keep the plan, with proof-type guards. The plan stays
@@ -603,8 +603,8 @@ Ralph-ready slices:
 
 | Order | Slice                                | Allowed work                                                                                                    | Forbidden work                                                                                     | Required proof                                                                                                                                                                      |
 | ----- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1     | Text-unit/delete package parity      | Add only missing portable Lexical #7163 destructive Unicode rows to the existing Slate text-unit/delete owners. | No browser, raw mobile, table, collaboration, or issue claim. No broad rewrite of delete behavior. | `cd .tmp/slate-v2 && bun test ./packages/slate/test/text-units-contract.ts`; targeted delete fixture commands if touched; `cd .tmp/slate-v2 && bun check` before execution closure. |
-| 2     | Clipboard HTML source-drill          | Read exact Lexical link/list/text-format/table rows and map each to expected Slate value/DOM output plus owner. | No `.tmp/slate-v2` code change. No ClawSweeper rerun if claims stay unchanged.                     | Planning artifact only; later code needs `clipboard-boundary.ts` and focused sequential `paste-html` browser proof.                                                                 |
+| 1     | Text-unit/delete package parity      | Add only missing portable Lexical #7163 destructive Unicode rows to the existing Slate text-unit/delete owners. | No browser, raw mobile, table, collaboration, or issue claim. No broad rewrite of delete behavior. | `cd Plate repo root && bun test ./packages/slate/test/text-units-contract.ts`; targeted delete fixture commands if touched; `cd Plate repo root && bun check` before execution closure. |
+| 2     | Clipboard HTML source-drill          | Read exact Lexical link/list/text-format/table rows and map each to expected Slate value/DOM output plus owner. | No `Plate repo root` code change. No ClawSweeper rerun if claims stay unchanged.                     | Planning artifact only; later code needs `clipboard-boundary.ts` and focused sequential `paste-html` browser proof.                                                                 |
 | 3     | Clipboard residual implementation    | Add only named parser/browser gaps from the source-drill.                                                       | No product toolbar/autolink behavior and no duplicate rows already covered by current Slate tests. | Focused package/browser proof, then `bun check`; issue sync only if exact claims change.                                                                                            |
 | 4     | DOM mutation/focus/inline residuals  | Strengthen existing browser or policy owners after naming a missing invariant.                                  | No unit-only closure of browser behavior. No raw mobile claim.                                     | Focused Playwright owner plus package policy proof where relevant.                                                                                                                  |
 | 5     | Table/raw mobile/collaboration lanes | Separate future plans only.                                                                                     | No hidden whole-table selection, raw-device, or slate-yjs/browser claim in this plan.              | Table model, raw-device, or collaboration-browser proof owner must exist first.                                                                                                     |
@@ -671,7 +671,7 @@ Final score: `0.92`.
 | Final score at least `0.92`                    | pass   | Prepared score is `0.92`; score dimensions range from `0.90` to `0.95`.                     |
 | No dimension below `0.85`                      | pass   | Lowest dimension is maintainability at `0.90`.                                              |
 | Scheduled passes complete                      | pass   | Passes 1-10 are complete and pass 11 is this closure.                                       |
-| No hidden `.tmp/slate-v2` implementation claim | pass   | This lane edited planning/accounting artifacts only and records `0` new exact issue claims. |
+| No hidden `Plate repo root` implementation claim | pass   | This lane edited planning/accounting artifacts only and records `0` new exact issue claims. |
 | First `ralph` handoff narrow enough            | pass   | First execution slice is text-unit/delete package parity from Lexical #7163 only.           |
 
 Next execution handoff:
@@ -679,13 +679,13 @@ Next execution handoff:
 - owner: `ralph`;
 - target: first Ralph-ready slice, text-unit/delete package parity;
 - primary Slate v2 owner:
-  `.tmp/slate-v2/packages/slate/test/text-units-contract.ts`;
+  `packages/slate/test/text-units-contract.ts`;
 - Lexical source:
   `../lexical/packages/lexical-playground/__tests__/regression/7163-graphemes.spec.mjs`;
 - first proof:
-  `cd .tmp/slate-v2 && bun test ./packages/slate/test/text-units-contract.ts`;
+  `cd Plate repo root && bun test ./packages/slate/test/text-units-contract.ts`;
 - closure proof after implementation:
-  `cd .tmp/slate-v2 && bun check`;
+  `cd Plate repo root && bun check`;
 - scope lock: no browser, raw mobile, table, collaboration, or issue claim from
   the first slice unless exact proof is added and the plan is reopened.
 
@@ -695,7 +695,7 @@ Phase 0: processing ledger only.
 
 - Create `docs/editor-test-harvester/lexical/slate-processing-ledger.md`.
 - Account for every portable and portable-mixed source file.
-- Do not touch `.tmp/slate-v2`.
+- Do not touch `Plate repo root`.
 
 Phase 1: text-unit and destructive-delete package parity.
 
@@ -705,8 +705,8 @@ Phase 1: text-unit and destructive-delete package parity.
 - Keep this first slice package-only unless a browser-specific gap appears.
 - Do not claim issue closure from this slice unless an exact issue repro and
   matching Slate v2 proof are added.
-- First required command: `cd .tmp/slate-v2 && bun test ./packages/slate/test/text-units-contract.ts`.
-- Closure command after implementation: `cd .tmp/slate-v2 && bun check`.
+- First required command: `cd Plate repo root && bun test ./packages/slate/test/text-units-contract.ts`.
+- Closure command after implementation: `cd Plate repo root && bun check`.
 
 Phase 2: clipboard HTML source-drill.
 
@@ -714,7 +714,7 @@ Phase 2: clipboard HTML source-drill.
 - For each row, name expected Slate value/DOM output and whether it is raw
   parser behavior or example app policy.
 - Only after this slice may a later `ralph` add focused browser/package rows.
-- Do not edit `.tmp/slate-v2` in this phase.
+- Do not edit `Plate repo root` in this phase.
 - Do not run ClawSweeper for this phase unless the source-drill changes an
   issue claim or classification.
 - Status: complete on 2026-05-09. Exact accepted/rejected/deferred rows are in
@@ -724,8 +724,8 @@ Phase 3: clipboard HTML corpus residual.
 
 - First slice: text-format HTML only. Complete on 2026-05-09. Google Docs-style
   BIU spans and safe semantic `<b>` handling are covered in
-  `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts` and
-  `.tmp/slate-v2/site/examples/ts/paste-html-import.ts`.
+  `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts` and
+  `apps/www/src/app/(app)/examples/slate/_examples/paste-html-import.ts`.
 - Next slice: simple anchor import only. Complete on 2026-05-09. A browser row
   proves `<a href="https://facebook.com">Facebook!</a>` imports as a safe link
   in the paste-html example.
@@ -887,11 +887,11 @@ Issue sync results from pass 4:
 
 | Lane                | First proof target                                                                                         | Broad gate before closure                                 |
 | ------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
-| Package invariants  | `cd .tmp/slate-v2 && bun test ./packages/slate/test/text-units-contract.ts` plus target unit files         | `cd .tmp/slate-v2 && bun check`                           |
-| Clipboard corpus    | `cd .tmp/slate-v2 && bun test ./packages/slate-dom/test/clipboard-boundary.ts` and paste-html browser grep | `cd .tmp/slate-v2 && bun check`                           |
-| IME/input transport | focused Chromium/WebKit/Firefox rows by family                                                             | `cd .tmp/slate-v2 && bun check:full` before release claim |
+| Package invariants  | `cd Plate repo root && bun test ./packages/slate/test/text-units-contract.ts` plus target unit files         | `cd Plate repo root && bun check`                           |
+| Clipboard corpus    | `cd Plate repo root && bun test ./packages/slate-dom/test/clipboard-boundary.ts` and paste-html browser grep | `cd Plate repo root && bun check`                           |
+| IME/input transport | focused Chromium/WebKit/Firefox rows by family                                                             | `cd Plate repo root && bun check:full` before release claim |
 | Tables              | focused `tables.test.ts` and generated table stress rows                                                   | table-model decision before #2558-like claims             |
-| Raw mobile          | `cd .tmp/slate-v2 && SLATE_BROWSER_RAW_MOBILE_REQUIRED=1 bun test:mobile-device-proof:raw`                 | real device artifacts only                                |
+| Raw mobile          | `cd Plate repo root && SLATE_BROWSER_RAW_MOBILE_REQUIRED=1 bun test:mobile-device-proof:raw`                 | real device artifacts only                                |
 | Collaboration       | substrate unit contracts first                                                                             | yjs browser proof only after owner exists                 |
 
 ## Browser Stress Strategy
@@ -951,7 +951,7 @@ architecture choice
 | 9. Revision pass                                     | complete | Re-read plan, checkpoint, continuation prompt, high-risk gate, implementation phases, issue accounting, proof matrix, and stale wording search.                                                                                                           | Folded high-risk guards into Ralph-ready slices and implementation phases; prepared score dimensions; kept first `ralph` narrow and protected table/raw-mobile/collab non-claims.                                                                                                  | issue accounting handled in pass 10                                                             | `slate-ralplan` |
 | 10. Issue sync accounting                            | complete | Re-read plan claim rows, PR reference summary, issue coverage matrix rows, fork dossier rows, and live/open ledger policy.                                                                                                                                | Recorded no-op sync: no claims, PR counts, or related classifications changed after revision.                                                                                                                                                                                      | closure handled in pass 11                                                                      | `clawsweeper`   |
 | 11. Closure score and final gates                    | complete | Re-read prepared score dimensions, pass schedule, completion file, continuation prompt, and final gates.                                                                                                                                                  | Marked the ralplan `done`; prepared `active goal state` for the first `ralph` execution slice.                                                                                                                                                                                      | no open planning pass                                                                           | `ralph`         |
-| 12. Ralph execution: text-unit/delete package parity | complete | Added Lexical #7163 Unicode text-unit/delete rows; removed complex-script reverse-delete restoration; updated Thai delete fixtures; ran focused text-unit proof, unit-character fixtures, `bun run lint:fix`, and `bun check` in `.tmp/slate-v2`.         | Marked Lexical #7163 `already-applied` in the processing ledger; left issue claims unchanged.                                                                                                                                                                                      | clipboard source-drill remains runnable                                                         | `ralph`         |
+| 12. Ralph execution: text-unit/delete package parity | complete | Added Lexical #7163 Unicode text-unit/delete rows; removed complex-script reverse-delete restoration; updated Thai delete fixtures; ran focused text-unit proof, unit-character fixtures, `bun run lint:fix`, and `bun check` in `Plate repo root`.         | Marked Lexical #7163 `already-applied` in the processing ledger; left issue claims unchanged.                                                                                                                                                                                      | clipboard source-drill remains runnable                                                         | `ralph`         |
 
 ## Plan Deltas
 
@@ -971,7 +971,7 @@ architecture choice
 - Added matrix/dossier coverage for #5894, #4730, #3387, and #3872; corrected
   stale dossier claim levels for #5355 and #4716; updated the PR reference
   related-row count without changing fixed claims.
-- Completed live-source refresh against current `.tmp/slate-v2` owners.
+- Completed live-source refresh against current `Plate repo root` owners.
 - Resolved the ordering conflict between the broad implementation phases and
   `slate-processing-ledger.md`: first apply slice is now text-unit/delete
   package parity, clipboard HTML source-drill comes before clipboard code, and
@@ -1010,22 +1010,22 @@ architecture choice
 - Completed the first `ralph` execution slice. Lexical #7163 is now applied in
   Slate's text-unit contract, reverse complex-script deletion follows the same
   text-unit law as forward deletion, Thai unit-character fixtures are aligned,
-  and `.tmp/slate-v2` `bun check` passes.
+  and `Plate repo root` `bun check` passes.
 - Completed the lexical-history LexicalHistory source-read slice.
-  `.tmp/slate-v2/packages/slate-history/test/history-contract.ts` now proves
+  `packages/slate-history/test/history-contract.ts` now proves
   redo-stack clearing after undo plus a new edit, selected block property
   undo/redo, and node-property history capture while ignoring empty updates.
   Lexical command notification APIs, clear-history command shape, React harness
   details, shared nested-editor history, raw mobile, collaboration,
   table-model, and issue claims stayed out. Focused package proof and
-  `.tmp/slate-v2` `bun check` passed. The reusable harvest boundary is captured
+  `Plate repo root` `bun check` passed. The reusable harvest boundary is captured
   in
   `docs/solutions/best-practices/2026-05-09-lexical-history-harvest-rows-need-stack-law-contracts.md`.
 - Kept completion `pending` for the broader execution lane because
   lexical-html LexicalHtml source-read is the next runnable slice.
 - Completed the lexical-html LexicalHtml source-read slice with no Slate v2
   code/test change. Selected-fragment export is already covered by
-  `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`, and paragraph
+  `packages/slate-dom/test/clipboard-boundary.ts`, and paragraph
   alignment import is already covered by the paste-html browser row and
   importer. Standalone full-editor HTML serialization and custom node
   `DocumentFragment` export stay rejected/deferred until a generic Slate HTML
@@ -1036,10 +1036,10 @@ architecture choice
   lexical-list utils source-read is the next runnable slice.
 - Completed the lexical-list utils source-read slice. The accepted Slate row is
   public path/query behavior, not Lexical helper API shape:
-  `.tmp/slate-v2/packages/slate/test/query-contract.ts` now proves nested list
+  `packages/slate/test/query-contract.ts` now proves nested list
   depth, non-root top list ancestry, descendant list ancestors, and terminal
   versus non-terminal list-item paths through `Path` and `Node` APIs. Focused
-  query proof, `bun run lint:fix`, and `.tmp/slate-v2` `bun check` passed. The
+  query proof, `bun run lint:fix`, and `Plate repo root` `bun check` passed. The
   reusable harvest rule is captured in
   `docs/solutions/best-practices/2026-05-09-lexical-list-utils-harvest-rows-need-path-ancestry-contracts.md`.
 - Kept completion `pending` for the broader execution lane because Lexical
@@ -1102,25 +1102,25 @@ This plan can become `done` only when:
 - no raw mobile, whole-table selection, or yjs browser claim is made without the
   matching proof owner;
 - any implementation slice executed under this plan has passed its relevant
-  `.tmp/slate-v2` gates;
+  `Plate repo root` gates;
 - final score is at least `0.92` with no dimension below `0.85`.
 
 Closure status: all gates above are satisfied for the planning lane. Executed
 implementation slices have passed their focused proof, lint where relevant, and
-`.tmp/slate-v2` `bun check`. Broader Lexical apply work remains pending because
+`Plate repo root` `bun check`. Broader Lexical apply work remains pending because
 later runnable slices still exist.
 
 Ralph execution update on 2026-05-09: LexicalTabNode source-read is complete.
-`.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts` now proves
+`packages/slate-dom/test/clipboard-boundary.ts` now proves
 multiline plain-text fallback preserves literal tabs while splitting blocks, and
-`.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts` now proves
+`apps/www/tests/slate-browser/donor/examples/paste-html.test.ts` now proves
 Google Docs `Apple-tab-span` HTML preserves two visible `Hello\tworld` lines
 from the paragraph plus loose-line source shape. A trial switch from
 `tx.nodes.insert` to `tx.fragment.insert` in the paste-html example removed the
 empty paragraph but broke existing nested-list import proof, so the importer
 path stayed unchanged and the new browser assertion targets the visible
 tab/newline invariant. Focused package proof, full paste-html Chromium proof,
-post-format focused Playwright proof, lint, and `.tmp/slate-v2` `bun check`
+post-format focused Playwright proof, lint, and `Plate repo root` `bun check`
 passed. The reusable rule is captured in
 `docs/solutions/best-practices/2026-05-09-lexical-tab-node-harvest-rows-need-clipboard-browser-proof-boundaries.md`.
 Lexical TabNode class/schema/serialization/command API rows stay out; tab-indent
@@ -1128,7 +1128,7 @@ and adjacent literal-tab selection rows are deferred to later owners. No raw
 mobile, collaboration, table-model, or issue claim changed.
 
 Ralph execution update on 2026-05-09: LexicalEditor source-read is complete.
-`.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx` now
+`packages/slate-react/test/rendered-dom-shape-contract.tsx` now
 proves that an empty inline element inside a non-empty block does not render a
 visual line break placeholder. Source-read classified the rest of
 `LexicalEditor.test.tsx` conservatively: Slate's `read-update-contract`,
@@ -1138,11 +1138,11 @@ read/update, batching, command, normalization, move, and state invariants.
 Lexical editor API shape, node-key maps, listener/mutation registration,
 Lexical update tags, decorator rendering, root mounting, DOM reconciliation,
 and product-shell rows stay out or remain separate runtime owners. Focused
-React test proof, `bun run lint:fix`, and `.tmp/slate-v2` `bun check` passed. No
+React test proof, `bun run lint:fix`, and `Plate repo root` `bun check` passed. No
 raw mobile, collaboration, table-model, or issue claim changed.
 
 Ralph execution update on 2026-05-09: LexicalEditorState source-read is
-complete. `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts` now proves
+complete. `packages/slate/test/snapshot-contract.ts` now proves
 that removing a node purges the removed block and text runtime IDs from both
 current `idToPath` and `pathToId`. Source-read classified the rest of
 `LexicalEditorState.test.ts`: snapshot immutability and read/update boundaries
@@ -1151,7 +1151,7 @@ frozen node-map identity, JSON schema, node keys, and parser/editor-context API
 rows stay out. The first focused Bun command used a name-filter path and failed
 before execution; rerunning with `./packages/slate/test/snapshot-contract.ts`
 passed all 196 tests. `bun run lint:fix && bun check` passed from
-`.tmp/slate-v2`, the focused snapshot test passed again after formatting, and
+`Plate repo root`, the focused snapshot test passed again after formatting, and
 `pnpm lint:fix` passed in `plate-2`. No browser, raw mobile, collaboration,
 table-model, or issue claim changed.
 
@@ -1165,7 +1165,7 @@ classification. No browser, raw mobile, collaboration, table-model, or issue
 claim changed.
 
 Ralph execution update on 2026-05-09: LexicalNode source-read is complete.
-`.tmp/slate-v2/packages/slate/test/query-contract.ts` now proves the portable
+`packages/slate/test/query-contract.ts` now proves the portable
 node-shape part of LexicalNode: ancestry order, reverse ancestry, sibling path
 order, common ancestor resolution, previous/next path helpers, and
 parent/ancestor predicates. Source-read classified the rest conservatively:
@@ -1175,18 +1175,18 @@ existing Slate query, normalization, operation, transform, and selection
 contracts. Lexical class APIs, node keys, clone/config/JSON, live-node read
 throws, DOM rendering, token/segmented/directionless text modes, and
 `selectNext` helper shape stay out or route to later keyboard/selection owners.
-Focused query proof, `bun run lint:fix`, and `.tmp/slate-v2` `bun check` passed.
+Focused query proof, `bun run lint:fix`, and `Plate repo root` `bun check` passed.
 No browser, raw mobile, collaboration, table-model, or issue claim changed.
 
 Ralph execution update on 2026-05-09: LexicalNormalization source-read is
 complete. The file only tests Lexical `$normalizeSelection`, so the accepted
 Slate behavior is query/location edge resolution rather than tree repair.
-`.tmp/slate-v2/packages/slate/test/query-contract.ts` now proves that element
+`packages/slate/test/query-contract.ts` now proves that element
 paths, nested element paths, and backward ranges resolve to stable text points
 through `Editor.range`, `Editor.edges`, and `Editor.point`. Lexical decorator
 endpoint semantics and element-point API shape stay out or route to a future
 decorator/void/browser selection owner. Focused query proof, `bun run lint:fix`,
-and `.tmp/slate-v2` `bun check` passed. The reusable rule is captured in
+and `Plate repo root` `bun check` passed. The reusable rule is captured in
 `docs/solutions/best-practices/2026-05-09-lexical-normalization-harvest-rows-need-selection-query-boundaries.md`.
 No browser, raw mobile, collaboration, table-model, or issue claim changed.
 
@@ -1194,19 +1194,19 @@ Ralph execution update on 2026-05-09: LexicalSerialization source-read is
 complete. The file is one large Lexical editor-state JSON snapshot plus a
 parse/stringify round-trip. The accepted Slate behavior is not Lexical's
 editor-state schema; it is raw document value JSON portability through the
-public state API. `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`
+public state API. `packages/slate/test/state-tx-public-api-contract.ts`
 now proves rich raw document values round-trip through JSON, can be rehydrated
 as `initialValue`, and do not serialize runtime index metadata such as
 `pathToId` or `idToPath`. Lexical node keys, parser API shape, class schema,
 and code/list/table metadata stay out. Focused public API proof,
-`bun run lint:fix`, and `.tmp/slate-v2` `bun check` passed. The reusable rule is
+`bun run lint:fix`, and `Plate repo root` `bun check` passed. The reusable rule is
 captured in
 `docs/solutions/best-practices/2026-05-09-lexical-serialization-harvest-rows-need-public-value-roundtrip-tests.md`.
 No browser, raw mobile, collaboration, table-model, or issue claim changed.
 
 Ralph execution update on 2026-05-09: LexicalUtils source-read is complete.
 The useful missing row was generic shortcut matching, not Lexical node utility
-internals. `.tmp/slate-v2/packages/slate-dom/test/hotkeys.ts` now proves direct
+internals. `packages/slate-dom/test/hotkeys.ts` now proves direct
 `isHotkey` calls match semantic letter keys before physical-code fallback,
 handle uppercase keys, reject ASCII remapped-layout physical keys, and still
 fallback to `event.code` for non-English single-letter layouts. Existing Slate
@@ -1217,20 +1217,20 @@ node replacement/copy class APIs, listener-order internals, and generic DOM
 helpers stay out or route to later dedicated owners. The first focused command
 hit Bun's ignored `.test.ts` wrapper filter; rerunning the real source file
 `./packages/slate-dom/test/hotkeys.ts` passed. `bun run lint:fix` and
-`.tmp/slate-v2` `bun check` passed. No browser, raw mobile, collaboration,
+`Plate repo root` `bun check` passed. No browser, raw mobile, collaboration,
 table-model, or issue claim changed.
 
 Ralph execution update on 2026-05-09: LexicalUtilsInsertNodeToNearestRoot
 source-read is complete. The portable row maps to Slate's existing
 `insertNodes` `mode: 'highest'` transform behavior, not to Lexical's helper API.
-`.tmp/slate-v2/packages/slate/test/transforms-contract.ts` now proves highest-mode
+`packages/slate/test/transforms-contract.ts` now proves highest-mode
 block insertion splits the highest selected block and inserts the block at the
 root level. Existing insertNodes fixtures already cover paragraph
 middle/start/end, empty paragraph, root start/child/end, and default selection
 insertion. Lexical command dispatch, node-key maps, decorator class shape,
 shadow-root wording, and list HTML specifics stay out or route to later
 list/plugin owners. Focused package proof, `bun run lint:fix`, and
-`.tmp/slate-v2` `bun check` passed. No browser, raw mobile, collaboration,
+`Plate repo root` `bun check` passed. No browser, raw mobile, collaboration,
 table-model, or issue claim changed.
 
 Ralph execution update on 2026-05-09: LexicalUtilsSplitNode source-read is
@@ -1238,45 +1238,45 @@ complete. The useful missing row was public root split rejection. Slate already
 covered normal split behavior through splitNodes fixtures and operation/snapshot
 contracts: paragraph middle/start/end, multi-text element split, nested block
 split, highest-mode ancestor split, mark/property preservation, selection
-rebase, and raw root operation rejection. `.tmp/slate-v2/packages/slate/src/transforms-node/split-nodes.ts`
+rebase, and raw root operation rejection. `packages/slate/src/transforms-node/split-nodes.ts`
 now rejects `Editor.splitNodes(..., { at: [] })` with a direct editor-root error,
-and `.tmp/slate-v2/packages/slate/test/transforms-contract.ts` proves that public
-contract. Focused package proof, `bun run lint:fix`, and `.tmp/slate-v2`
+and `packages/slate/test/transforms-contract.ts` proves that public
+contract. Focused package proof, `bun run lint:fix`, and `Plate repo root`
 `bun check` passed. No browser, raw mobile, collaboration, table-model, or issue
 claim changed.
 
 Ralph execution update on 2026-05-09: lexical-code-shiki and lexical-code
 LexicalCodeNodeTabs source-read is complete. The portable Slate-owned row is
 not Lexical's full indent/outdent command matrix; it is the code-highlighting
-example's raw Tab behavior. `.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts`
+example's raw Tab behavior. `apps/www/tests/slate-browser/donor/examples/code-highlighting.test.ts`
 now proves Tab inside a code line inserts the configured spaces and advances the
 caret. Lexical `INDENT_CONTENT_COMMAND`/`OUTDENT_CONTENT_COMMAND`, backward
 selection preservation, Shiki tokenizer/theme loading, node class APIs, and
 product command dispatch stay out or wait for a future accepted code-block
-indent owner. Focused browser proof, `bun run lint:fix`, and `.tmp/slate-v2`
+indent owner. Focused browser proof, `bun run lint:fix`, and `Plate repo root`
 `bun check` passed. No raw mobile, collaboration, table-model, or issue claim
 changed.
 
 Ralph execution update on 2026-05-09: lexical-code LexicalCodeNode source-read
 is complete. The useful missing row was not Lexical's code-node class lifecycle;
-it was multi-line code indent/outdent behavior. `.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts`
+it was multi-line code indent/outdent behavior. `apps/www/tests/slate-browser/donor/examples/code-highlighting.test.ts`
 now proves Tab and Shift+Tab indent/outdent every selected code line, and
-`.tmp/slate-v2/site/examples/ts/code-highlighting.tsx` routes expanded code-line
+`apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx` routes expanded code-line
 selections through line-start edits while keeping collapsed Tab as configured
 space insertion at the caret. Lexical constructor/createDOM/updateDOM/exportJSON,
 language metadata, tokenizer/highlighter transform policy, command dispatch,
 Alt+Arrow line shifting, Home/End visual-caret policy, node keys, raw mobile,
 collaboration, table-model, and issue claims stay out or wait for separate
 accepted owners. Focused browser proof, full code-highlighting browser proof,
-`bun run lint:fix`, and `.tmp/slate-v2` `bun check` passed.
+`bun run lint:fix`, and `Plate repo root` `bun check` passed.
 
 Ralph execution update on 2026-05-09: Lexical regression #231 empty-text-nodes
-source-read is complete. `.tmp/slate-v2/packages/slate/test/delete-contract.ts`
+source-read is complete. `packages/slate/test/delete-contract.ts`
 now proves repeated Backspace through token-like marked text collapses to a
 canonical empty block with selection at `[0, 0]` offset `0`. Existing
 normalization, leaf lifecycle, and rendered-DOM owners cover empty block anchors
 and invalid empty leaf cleanup. Focused delete proof, `bun run lint:fix`, and
-`.tmp/slate-v2` `bun check` passed. No hashtag plugin, Playground CSS,
+`Plate repo root` `bun check` passed. No hashtag plugin, Playground CSS,
 collaboration harness, raw mobile, table-model, or issue claim changed.
 
 The completion checkpoint stays `pending` because Lexical regression #3433
@@ -1284,13 +1284,13 @@ merge-markdown-lists source-read is the next runnable slice. Continue there
 before adding markdown/list model or browser rows.
 
 Ralph execution update on 2026-05-09: Lexical regression #3433
-merge-markdown-lists source-read is complete. `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
+merge-markdown-lists source-read is complete. `apps/www/tests/slate-browser/donor/examples/markdown-shortcuts.test.ts`
 now proves that a markdown-created list immediately before an existing list
 renders as one `ul` with `two` before `one`. The first focused proof failed red
-with two adjacent lists. `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
+with two adjacent lists. `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx`
 now merges adjacent bulleted-list wrappers after wrapping the current block as a
 list item. Focused browser proof, full markdown-shortcuts browser file,
-`bun run lint:fix`, and `.tmp/slate-v2` `bun check` passed. No generic core
+`bun run lint:fix`, and `Plate repo root` `bun check` passed. No generic core
 `wrapNodes`/`mergeNodes` behavior, raw mobile, collaboration, table-model, or
 issue claim changed.
 
@@ -1298,14 +1298,14 @@ The completion checkpoint stays `pending` because `LexicalHeadingNode.test.ts`
 source-read is the next runnable non-table slice.
 
 Ralph execution update on 2026-05-09: LexicalHeadingNode source-read is
-complete. `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts` now
+complete. `apps/www/tests/slate-browser/donor/examples/richtext.test.ts` now
 proves heading middle split, heading-end paragraph insertion, and empty-heading
 paragraph insertion from the browser. The first focused proof failed red with
-two `h1` elements at heading end. `.tmp/slate-v2/site/examples/ts/richtext.tsx`
+two `h1` elements at heading end. `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx`
 now routes Enter at heading end or in an empty heading to a paragraph after the
 heading, while middle Enter stays on the generic core split path. Focused
 heading proof, full heading grep in the richtext browser file, `bun run
-lint:fix`, and `.tmp/slate-v2` `bun check` passed. No generic core
+lint:fix`, and `Plate repo root` `bun check` passed. No generic core
 `insertBreak`/`splitNodes` behavior, raw mobile, collaboration, table-model, or
 issue claim changed.
 
@@ -1313,12 +1313,12 @@ The completion checkpoint stays `pending` because `LexicalQuoteNode.test.ts` is
 the next runnable non-table slice.
 
 Ralph execution update on 2026-05-09: LexicalQuoteNode source-read is
-complete. `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts` now
+complete. `apps/www/tests/slate-browser/donor/examples/richtext.test.ts` now
 proves Enter in an empty blockquote keeps one blockquote and creates a paragraph
 after it. The first focused proof failed red with two `blockquote` elements.
-`.tmp/slate-v2/site/examples/ts/richtext.tsx` now shares one exit-on-Enter policy
+`apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx` now shares one exit-on-Enter policy
 for `heading-one`, `heading-two`, and `block-quote`. Focused quote proof,
-combined heading/quote browser grep, `bun run lint:fix`, and `.tmp/slate-v2`
+combined heading/quote browser grep, `bun run lint:fix`, and `Plate repo root`
 `bun check` passed. No generic core `insertBreak`/`splitNodes` behavior, raw
 mobile, collaboration, table-model, or issue claim changed.
 
@@ -1327,10 +1327,10 @@ The completion checkpoint stays `pending` because
 
 Ralph execution update on 2026-05-09: Lexical selection
 `$sliceSelectedTextNodeContent` source-read is complete.
-`.tmp/slate-v2/packages/slate/test/clipboard-contract.ts` now proves selected
+`packages/slate/test/clipboard-contract.ts` now proves selected
 fragment extraction across unmarked and bold text leaves slices both edges and
 does not mutate source text when the returned fragment is changed. Focused
-package proof, full clipboard contract, `bun run lint:fix`, and `.tmp/slate-v2`
+package proof, full clipboard contract, `bun run lint:fix`, and `Plate repo root`
 `bun check` passed. No browser, raw mobile, collaboration, table-model,
 token/segmented mode, or issue claim changed.
 
@@ -1338,10 +1338,10 @@ The completion checkpoint stays `pending` because `LexicalListItemNode.test.ts`
 is the next runnable non-table slice.
 
 Ralph execution update on 2026-05-09: LexicalListItemNode source-read is
-complete. `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts` now proves
+complete. `packages/slate/test/snapshot-contract.ts` now proves
 `insertBreak` inside a non-empty list item splits the item while preserving the
 `bulleted-list` wrapper and moving selection into the new item. Focused package
-proof, full snapshot contract, `bun run lint:fix`, and `.tmp/slate-v2`
+proof, full snapshot contract, `bun run lint:fix`, and `Plate repo root`
 `bun check` passed. Lexical class/DOM/create/type-guard/export rows stay
 rejected. Replace/remove nested-list normalization, indent/style inheritance,
 and ordered-list restart policy stay deferred to explicit list-plugin/model
@@ -1351,17 +1351,17 @@ The completion checkpoint stays `pending` because `LexicalListNode.test.ts` is
 the next runnable non-table slice.
 
 Ralph execution update on 2026-05-09: LexicalListNode source-read is complete.
-`.tmp/slate-v2/packages/slate/test/snapshot-contract.ts` now proves selected
+`packages/slate/test/snapshot-contract.ts` now proves selected
 top-level blocks can be converted to `list-item` children and wrapped in a
 `numbered-list` wrapper, complementing the existing bulleted-list proof.
 Focused package proof, full snapshot contract, `bun run lint:fix`, and
-`.tmp/slate-v2` `bun check` passed. Lexical class/DOM/depth-class/update/create,
+`Plate repo root` `bun check` passed. Lexical class/DOM/depth-class/update/create,
 subclass transform wiring, checklist role cleanup, and private list-value rows
 stay rejected or deferred to explicit list-plugin/model owners. No raw mobile,
 collaboration, table-model, or issue claim changed.
 
 Ralph execution update on 2026-05-09: lexical-list `formatList.test.ts`
-source-read is complete. No `.tmp/slate-v2` code or tests changed. Existing Slate
+source-read is complete. No `Plate repo root` code or tests changed. Existing Slate
 owners already cover root list formatting, numbered/bulleted wrapper creation,
 and non-empty list continuation through the snapshot contract plus markdown and
 richtext browser rows. Lexical command/extension setup, table-cell shadow-root
@@ -1377,7 +1377,7 @@ slice.
 
 Ralph execution update on 2026-05-09: lexical-list
 `registerListStrictIndentTransform.test.ts` source-read is complete. No
-`.tmp/slate-v2` code or tests changed. Current paste-html browser coverage already
+`Plate repo root` code or tests changed. Current paste-html browser coverage already
 proves compact malformed nested-list import variants without flattening visible
 list content. Lexical's exact strict indentation rewrite, `$generateHtmlFromNodes`
 HTML output, list `value` attributes, and transform registration stay deferred
@@ -1389,7 +1389,7 @@ The completion checkpoint stays `pending` because
 `LexicalMarkdown.test.ts` is the next runnable non-table slice.
 
 Ralph execution update on 2026-05-09: lexical-markdown
-`LexicalMarkdown.test.ts` source-read is complete. No `.tmp/slate-v2` code or
+`LexicalMarkdown.test.ts` source-read is complete. No `Plate repo root` code or
 tests changed. Current Slate v2 owns markdown shortcuts and markdown preview
 examples, not a markdown import/export package. Existing browser rows already
 cover blockquote, list, heading, list continuation, and adjacent markdown-list
@@ -1405,7 +1405,7 @@ The completion checkpoint stays `pending` because
 `MarkdownTransformers.test.ts` is the next runnable non-table slice.
 
 Ralph execution update on 2026-05-09: lexical-markdown
-`MarkdownTransformers.test.ts` source-read is complete. No `.tmp/slate-v2` code
+`MarkdownTransformers.test.ts` source-read is complete. No `Plate repo root` code
 or tests changed. The Lexical rows are markdown-link transformer behavior:
 preserving text or marks before a parsed markdown link, avoiding greedy matches,
 and rejecting markdown link creation inside an existing link. Current Slate v2
@@ -1420,24 +1420,24 @@ The completion checkpoint stays `pending` because
 Ralph execution update on 2026-05-09: lexical-playground
 `ClearFormatting.spec.mjs` source-read is complete. The portable accepted rows
 are selected mark removal, block alignment reset, semantic block preservation,
-and partial multi-paragraph clearing. `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+and partial multi-paragraph clearing. `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 now proves clearing a selected range from the middle of one paragraph through
 the middle of the next removes marks only from the selected text, clears block
 alignment, and preserves blockquote structure. The first focused browser proof
 failed red because the richtext toolbar had no clear-formatting control.
-`.tmp/slate-v2/site/examples/ts/richtext.tsx` now exposes a clear-formatting
+`apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx` now exposes a clear-formatting
 button that removes the richtext example's text marks and resets selected block
 alignment without changing semantic block types. Link, mention, hashtag,
 indent/outdent, theme markup, raw mobile, collaboration, table-model, and issue
 rows stay out or wait for explicit future owners. Focused browser proof,
-`bun run lint:fix`, rerun focused browser proof, and `.tmp/slate-v2` `bun check`
+`bun run lint:fix`, rerun focused browser proof, and `Plate repo root` `bun check`
 passed.
 
 The completion checkpoint stays `pending` because `CodeBlock.spec.mjs` is the
 next runnable non-table slice.
 
 Ralph execution update on 2026-05-09: lexical-playground `CodeBlock.spec.mjs`
-source-read is complete. `.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts`
+source-read is complete. `apps/www/tests/slate-browser/donor/examples/code-highlighting.test.ts`
 now proves selecting paragraph text and clicking the code-block control creates
 a code block with code-line content and keeps the existing code blocks intact.
 Existing code-highlighting browser rows cover Enter inside code lines, collapsed
@@ -1452,9 +1452,9 @@ the next runnable non-table slice.
 
 Ralph execution update on 2026-05-09: lexical-playground
 `ElementFormat.spec.mjs` source-read is complete. The accepted portable row is
-fresh empty-paragraph center alignment from the toolbar. `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+fresh empty-paragraph center alignment from the toolbar. `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 now proves a fresh empty paragraph can be center-aligned while the Slate
-selection stays collapsed on that empty block. `.tmp/slate-v2/site/examples/ts/richtext.tsx`
+selection stays collapsed on that empty block. `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx`
 now explicitly targets the containing block path for collapsed alignment, rather
 than relying on implicit selected-block expansion. The first browser attempts
 failed because full-document delete hit placeholder text and then retained
@@ -1464,7 +1464,7 @@ deferred because this checkout has separate richtext alignment and inline-link
 owners, but no combined link/block-format owner and no indent API. Toolbar
 shell/theme rows stay rejected. Focused browser proof passed. No raw mobile,
 collaboration, table-model, link-plugin policy, indent policy, or issue claim
-changed. Follow-up verification passed in `.tmp/slate-v2`: `bun run lint:fix`,
+changed. Follow-up verification passed in `Plate repo root`: `bun run lint:fix`,
 the richtext Playwright grep for empty paragraph alignment, existing toolbar
 alignment, and clear formatting, then `bun check`.
 
@@ -1475,13 +1475,13 @@ slice.
 Ralph execution update on 2026-05-09: lexical-playground
 `Headings/HeadingsBackspaceAtStart.spec.mjs` source-read is complete. The
 portable row is Backspace at offset `0` of the first heading with no previous
-sibling. `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts` now
+sibling. `apps/www/tests/slate-browser/donor/examples/richtext.test.ts` now
 proves that path is a no-op: the `h1` text remains `Welcome to the playground`,
 no paragraph is created, and the collapsed selection stays at `[0, 0]` offset
 `0`. Runtime already behaved correctly; this pass added the missing proof.
 Lexical Playground setup, dropdown/theme DOM, raw mobile, collaboration,
 table-model, and issue rows stay out. Focused browser proof passed.
-Follow-up verification passed in `.tmp/slate-v2`: `bun run lint:fix`, the
+Follow-up verification passed in `Plate repo root`: `bun run lint:fix`, the
 richtext Playwright grep for first-heading Backspace and heading Enter behavior,
 then `bun check`.
 
@@ -1490,7 +1490,7 @@ The completion checkpoint stays `pending` because
 
 Ralph execution update on 2026-05-09: lexical-playground
 `Headings/HeadingsEnterAtEnd.spec.mjs` source-read is complete. No
-`.tmp/slate-v2` code or test changed. Existing richtext browser proof already
+`Plate repo root` code or test changed. Existing richtext browser proof already
 covers the accepted row: Enter at the end of a heading leaves the heading in
 place and creates a following paragraph. The example policy lives in
 `handleExitBlockEnter`. Lexical Playground setup, dropdown/theme DOM, raw
@@ -1502,7 +1502,7 @@ The completion checkpoint stays `pending` because
 
 Ralph execution update on 2026-05-09: lexical-playground
 `Headings/HeadingsEnterInMiddle.spec.mjs` source-read is complete. No
-`.tmp/slate-v2` code or test changed. Existing richtext browser proof already
+`Plate repo root` code or test changed. Existing richtext browser proof already
 covers the accepted row: Enter in the middle of a heading splits it into two
 headings. Lexical movement helpers, Playground setup, dropdown/theme DOM, raw
 mobile, collaboration, table-model, and issue rows stay out. Same-turn heading
@@ -1512,7 +1512,7 @@ The completion checkpoint stays `pending` because `Indentation.spec.mjs` is the
 next runnable non-table slice.
 
 Ralph execution update on 2026-05-09: lexical-playground
-`Indentation.spec.mjs` source-read is complete. No `.tmp/slate-v2` code or test
+`Indentation.spec.mjs` source-read is complete. No `Plate repo root` code or test
 changed. The file is a mixed product-owner suite, not one raw Slate invariant:
 existing code-highlighting browser rows already cover selected code-line
 Tab/Shift+Tab indentation, and `snapshot-contract.ts` already covers a basic
@@ -1527,7 +1527,7 @@ The completion checkpoint stays `pending` because `List.spec.mjs` is the next
 runnable non-table slice.
 
 Ralph execution update on 2026-05-09: lexical-playground `List.spec.mjs`
-source-read is complete. `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+source-read is complete. `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 now proves selected richtext blocks can be turned into a bulleted list, toggled
 back to paragraphs, turned into a numbered list, and converted back to a
 bulleted list from the toolbar. Existing snapshot/browser owners already cover
@@ -1543,10 +1543,10 @@ The completion checkpoint stays `pending` because `Markdown.spec.mjs` is the
 next runnable non-table slice.
 
 Ralph execution update on 2026-05-09: lexical-playground `Markdown.spec.mjs`
-source-read is complete. `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
+source-read is complete. `apps/www/tests/slate-browser/donor/examples/markdown-shortcuts.test.ts`
 now proves a numeric ordered-list markdown shortcut with a non-1 start number:
 typing `25. ` creates a numbered list rendered as `ol start="25"` and accepts
-item text. `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx` now parses
+item text. `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx` now parses
 ordered-list shortcuts and unwraps both bulleted and numbered lists on markdown
 Backspace exit. Existing markdown-shortcuts rows already cover headings,
 blockquote, bulleted lists, list continuation, and adjacent markdown-created
@@ -1562,12 +1562,12 @@ the next runnable non-table slice.
 
 Ralph execution update on 2026-05-09: lexical-playground
 `TextFormatting.spec.mjs` source-read is complete.
-`.tmp/slate-v2/packages/slate/test/snapshot-contract.ts` now proves
+`packages/slate/test/snapshot-contract.ts` now proves
 `Editor.toggleMark` and `tx.marks.toggle` clear inherited collapsed marks before
-the next inserted text. `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+the next inserted text. `packages/slate/src/core/public-state.ts`
 now defaults `tx.marks.toggle` to `true` instead of a fresh object, and
-`.tmp/slate-v2/site/examples/ts/richtext.tsx` now prevents default browser
-handling for editor-owned mark hotkeys. `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+`apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx` now prevents default browser
+handling for editor-owned mark hotkeys. `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 now proves bold, italic, underline, and code hotkeys create formatted inserted
 text and clear active marks before later plain text. The first browser proof
 failed red because inserted text stayed plain; after default prevention, it
@@ -1585,10 +1585,10 @@ runnable non-table slice.
 Ralph execution update on 2026-05-09: lexical core `CodeBlock.test.ts`
 source-read is complete. The portable row is code-source HTML import through a
 DataTransfer-style rich HTML insertion path, not Lexical node class behavior.
-`.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts` now proves
+`apps/www/tests/slate-browser/donor/examples/paste-html.test.ts` now proves
 Quip-style `<pre>`, VS Code-style `white-space: pre` line `<div>`s, and
 GitHub-style code tables import as one `<pre><code>` block without source
-gutters. `.tmp/slate-v2/site/examples/ts/paste-html-import.ts` now extracts
+gutters. `apps/www/src/app/(app)/examples/slate/_examples/paste-html-import.ts` now extracts
 code-source text before generic table/paragraph import, preserves line breaks,
 normalizes non-breaking spaces, and strips trailing source newlines. A first
 browser-native clipboard version failed red because Chromium flattened `<pre>`
@@ -1597,7 +1597,7 @@ insertion boundary as Lexical's unit test so the existing kernel-trace gauntlet
 stays intact. Source-token colors/bold keyword styling, broad Google Docs title
 inference, sub/sup typography, native clipboard transport, raw mobile,
 collaboration, table-model, and issue rows stay deferred or rejected. Focused
-and full paste-html browser proofs passed, and `.tmp/slate-v2` `bun run lint:fix
+and full paste-html browser proofs passed, and `Plate repo root` `bun run lint:fix
 && bun check` passed. Added
 `docs/solutions/best-practices/2026-05-09-lexical-codeblock-harvest-rows-need-data-transfer-boundaries.md`
 to preserve the DataTransfer-vs-native-clipboard boundary lesson.
@@ -1615,7 +1615,7 @@ contract tests in `snapshot-contract.ts`, `transaction-contract.ts`,
 `collab-history-runtime-contract.ts`, and `apply-onchange-hard-cut-contract.ts`.
 Lexical `registerRootListener`, `registerEditableListener`, private
 `_listeners`, `setRootElement`, and `setEditable` callback cleanup rows are
-editor/root-shell API policy, not raw Slate behavior. No `.tmp/slate-v2` code or
+editor/root-shell API policy, not raw Slate behavior. No `Plate repo root` code or
 test changed, and no browser, raw mobile, collaboration, table-model, or issue
 claim changed.
 
@@ -1626,7 +1626,7 @@ the next runnable source-read slice.
 Ralph execution update on 2026-05-09: lexical core
 `LexicalListPlugin.test.tsx` source-read is complete. The accepted portable row
 is empty paragraph toolbar list toggle, not Lexical React plugin wiring.
-`.tmp/slate-v2/playwright/integration/examples/richtext.test.ts` now proves a
+`apps/www/tests/slate-browser/donor/examples/richtext.test.ts` now proves a
 fresh empty paragraph toggles into one bulleted-list item and back to one empty
 paragraph while preserving collapsed selection. Current Slate already covers
 selected block list toggle/conversion, list wrapper creation, and basic list
@@ -1645,11 +1645,11 @@ is the next runnable source-read slice.
 Ralph execution update on 2026-05-09: lexical-playground
 `HTMLCopyAndPaste.spec.mjs` source-read is complete. The accepted rows were
 multiline paragraph HTML with extra raw newlines and code-source HTML in a
-`<code>` element with `<br>` line breaks. `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
+`<code>` element with `<br>` line breaks. `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
 now proves multiline pasted HTML normalizes to four paragraphs, preserves the
 intended spaces and inline `<b>` / `<i>` formatting, and imports `<code>` with
 `<br>` as a code block through the existing source-code HTML corpus.
-`.tmp/slate-v2/site/examples/ts/paste-html-import.ts` now strips raw newlines
+`apps/www/src/app/(app)/examples/slate/_examples/paste-html-import.ts` now strips raw newlines
 from normal HTML text nodes, drops whitespace-only inter-block text, preserves
 explicit code/pre whitespace, and removes the empty paste target created by
 native block-fragment paste. Existing source-code rows still cover `<pre>`,
@@ -1671,14 +1671,14 @@ Ralph execution update on 2026-05-09: lexical-playground
 confirmed the earlier row-level drill exhausted the accepted HTML list parser
 rows: basic unordered-list import, compact nested `ul` variants, and nested
 `<div>` boundaries inside list items are already applied in
-`.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`. The
+`apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`. The
 structural post-fragment selection behavior is covered by
-`.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`, not duplicated in the
+`packages/slate/test/clipboard-contract.ts`, not duplicated in the
 HTML browser row. Lexical checklist private attributes stay rejected as
 app/list-plugin policy. Top-level HR paste into the middle of a list stays
 deferred to a future HR/block-void plus list-split owner. Toolbar
 indent/outdent assertions stay deferred or rejected under explicit list-indent
-policy. No `.tmp/slate-v2` code or test file changed, so no new Slate v2 command
+policy. No `Plate repo root` code or test file changed, so no new Slate v2 command
 was required for this classification-only slice.
 
 The completion checkpoint stays `pending` because
@@ -1688,7 +1688,7 @@ is the next unresolved clipboard/list source-read candidate.
 Ralph execution update on 2026-05-09: lexical-playground
 `ListsCopyAndPaste.spec.mjs` source-read is complete. Exact source-read split
 the seven native list copy/paste rows from Lexical playground shell and DOM
-theme assertions. `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts` adds
+theme assertions. `packages/slate/test/clipboard-contract.ts` adds
 package proof for the accepted portable rows: a partial list item plus following
 paragraph copied into an empty editor; the same fragment inserted into an empty
 list item by splitting the surrounding list; a copied list inserted into
@@ -1696,7 +1696,7 @@ selected paragraph text while preserving surrounding text; two copied paragraphs
 inserted inside a list item with the first paragraph kept in the list and the
 tail paragraph promoted after the list; and two copied paragraphs inserted at
 the end of a list as one list item plus a following block.
-`.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts` handles
+`packages/slate/src/transforms-text/insert-fragment.ts` handles
 those rows with explicit structural fragment replacement before the generic
 inline/block unwrapping path. Exact Lexical DOM classes, list `value`
 attributes, browser/OS flake tags, native clipboard transport, raw mobile,
@@ -1715,10 +1715,10 @@ Ralph execution update on 2026-05-09: lexical-playground
 `ImageHTML.test.ts` source-read is complete. The portable rows are image HTML
 import from Lexical's exported shapes: no-caption `<p><img></p>` and
 plain-text caption `<figure><img><figcaption>caption text</figcaption></figure>`.
-`.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts` now proves
+`apps/www/tests/slate-browser/donor/examples/paste-html.test.ts` now proves
 both shapes through browser paste/import. The first focused proof failed red
 because Slate rendered the no-caption image as a block void nested under a
-paragraph. `.tmp/slate-v2/site/examples/ts/paste-html-import.ts` now unwraps
+paragraph. `apps/www/src/app/(app)/examples/slate/_examples/paste-html-import.ts` now unwraps
 paragraph wrappers that only contain block elements, so block images stay block
 images. Caption text imports as a following paragraph. Focused ImageHTML
 browser proof, the full paste-html browser corpus, `bun run lint:fix`, and
@@ -1736,11 +1736,11 @@ Ralph execution update on 2026-05-09: lexical core
 `HTMLCopyAndPaste.test.ts` source-read is complete. The accepted portable rows
 are core HTML block-shape paste behavior: plain DOM text, malformed paragraph
 pair, single `div`, nested spans/divs, nested span in `div`, and nested `div`
-in span. `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts` now
+in span. `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts` now
 proves those shapes through the browser paste/import path, and the existing
 rich HTML paste row now asserts typed text after a strong paste remains inside
 `<strong>`. The first focused proof failed red because Slate flattened generic
-`div` block boundaries into one paragraph; `.tmp/slate-v2/site/examples/ts/paste-html-import.ts`
+`div` block boundaries into one paragraph; `apps/www/src/app/(app)/examples/slate/_examples/paste-html-import.ts`
 now imports generic `div` nodes as block-boundary fragments while preserving
 list-item `div` boundary handling. Google Docs, GitHub, and Joplin checklist
 rows stay deferred/rejected until a checklist/list-plugin owner accepts
@@ -1758,10 +1758,10 @@ Ralph execution update on 2026-05-09: lexical-playground native
 `CopyAndPaste.spec.mjs` residual audit is complete. The accepted missing row was
 paragraph fragment paste into an empty quote: the first pasted text block should
 fill the target quote and the tail paragraph should promote after it.
-`.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts` now proves that
+`packages/slate-dom/test/clipboard-boundary.ts` now proves that
 through model-backed DOM clipboard payloads. The first focused proof failed red
 because Slate replaced the empty quote with two paragraphs.
-`.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts` now keeps
+`packages/slate/src/transforms-text/insert-fragment.ts` now keeps
 the target empty text block wrapper for the first pasted text block and keeps
 later text blocks source-shaped. Current owners already cover multi-block
 copy/paste, full-document replacement, inline link fragments, multiline
@@ -1772,7 +1772,7 @@ keeps target wrappers for single text-block fragments. Lexical hashtag/theme
 output, YouTube decorator embeds, exact plaintext rendering, native transport
 flake tags, raw mobile, collaboration, table-model, and issue claims stay out.
 Focused DOM clipboard proof, full DOM clipboard boundary, core clipboard
-contract, `bun run lint:fix`, and `.tmp/slate-v2` `bun check` passed. Added
+contract, `bun run lint:fix`, and `Plate repo root` `bun check` passed. Added
 `docs/solutions/logic-errors/2026-05-09-empty-target-fragment-paste-keeps-first-block-wrapper.md`
 to preserve the target-first-block paste rule.
 
@@ -1784,14 +1784,14 @@ Ralph execution update on 2026-05-09: lexical-playground `Events.spec.mjs`
 input-runtime source-read is complete. The accepted rows were Mac-style
 beforeinput substitutions: autocapitalization via native `insertText` followed
 by `insertReplacementText`, and double-space period replacement after emoji via
-an expanded `insertText` target range. `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts`
+an expanded `insertText` target range. `apps/www/tests/slate-browser/donor/examples/plaintext.test.ts`
 now proves both through browser-dispatched `beforeinput`/`input` events. The
 first focused proof failed red with only `I`, then with `iSI`, then with
-`🙂 . `, exposing three owners. `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
+`🙂 . `, exposing three owners. `packages/slate-react/src/editable/runtime-before-input-events.ts`
 now flushes queued native text repair before the next model-owned beforeinput.
-`.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts` now
+`packages/slate-react/src/editable/mutation-controller.ts` now
 applies provided replacement target ranges even after native repair moves the
-current selection. `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
+current selection. `packages/slate-react/src/editable/selection-reconciler.ts`
 now honors expanded `insertText` target ranges even when model selection is
 preferred. Product shell, theme spans, `page.pause`, OS labels, raw mobile,
 collaboration, table-model, and issue claims stay out. The focused plaintext
@@ -1821,12 +1821,12 @@ Ralph execution update on 2026-05-09: lexical-playground
 `KeyboardShortcuts.spec.mjs` source-read is complete. The accepted portable
 rows were shortcut access to editor commands already owned by Slate examples:
 paragraph/heading block conversion, block alignment, clear formatting, and
-code-block conversion. `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+code-block conversion. `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 first failed red because heading block shortcuts did nothing, then passed after
-`.tmp/slate-v2/site/examples/ts/richtext.tsx` routed block/alignment/clear
-shortcuts through the same owners as the toolbar commands. `.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts`
+`apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx` routed block/alignment/clear
+shortcuts through the same owners as the toolbar commands. `apps/www/tests/slate-browser/donor/examples/code-highlighting.test.ts`
 first failed red because the code-block shortcut did nothing, then passed after
-`.tmp/slate-v2/site/examples/ts/code-highlighting.tsx` reused the existing
+`apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx` reused the existing
 selected-paragraph code-block conversion command for `mod+shift+c` and
 `mod+alt+c`. Existing mark-hotkey rows from the TextFormatting slice cover
 bold/italic/underline/code marks. Heading three, checklist, product typography,
@@ -1834,7 +1834,7 @@ font-size controls, strikethrough/subscript/superscript, paragraph/list/table
 indent shortcuts, active-state DOM, browser/OS labels, raw mobile,
 collaboration, table-model, and issue claims stay out. Focused richtext and
 code-highlighting browser rows passed after the implementation, `bun run
-lint:fix` had no fixes, and `.tmp/slate-v2` `bun check` passed.
+lint:fix` had no fixes, and `Plate repo root` `bun check` passed.
 
 The completion checkpoint stays `pending` because
 `../lexical/packages/lexical-playground/__tests__/e2e/TextEntry.spec.mjs` is the
@@ -1843,12 +1843,12 @@ next unresolved text-entry/input-runtime source-read candidate.
 Ralph execution update on 2026-05-09: lexical-playground
 `TextEntry.spec.mjs` source-read is complete. The accepted missing rows were
 heading-start Enter after markdown heading creation and native Enter at the
-boundary between plain and marked text. `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
+boundary between plain and marked text. `apps/www/tests/slate-browser/donor/examples/markdown-shortcuts.test.ts`
 now proves a heading created by `# ` gets an empty paragraph before it when
 Enter is pressed at the heading start, with selection staying at the heading
-start. `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx` handles that
+start. `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx` handles that
 heading-start split by turning the split empty heading into a paragraph.
-`.tmp/slate-v2/playwright/integration/examples/richtext.test.ts` now proves
+`apps/www/tests/slate-browser/donor/examples/richtext.test.ts` now proves
 native Enter between plain text and bold text creates a plain paragraph followed
 by a bold paragraph, with selection at the start of the bold text. Existing
 plaintext/richtext input and generated stress owners cover basic typing,
@@ -1876,7 +1876,7 @@ creates themed special-text spans, strips brackets, and inserts Lexical
 Playground DOM output. Slate should not copy that plugin behavior into core
 coverage. The disabled-option row keeps `[MLH Fellowship]` as literal text,
 which is ordinary text insertion already covered by existing Slate input
-owners. No `.tmp/slate-v2` code/test edit was needed.
+owners. No `Plate repo root` code/test edit was needed.
 
 The completion checkpoint stays `pending` because
 `../lexical/packages/lexical-playground/__tests__/e2e/Placeholder.spec.mjs` is
@@ -1885,14 +1885,14 @@ the next unresolved placeholder/browser source-read candidate.
 Ralph execution update on 2026-05-09: lexical-playground
 `Placeholder.spec.mjs` source-read is complete. The accepted portable row is
 empty-editor placeholder behavior: a placeholder is visible, the model remains
-empty, and focus lands selection at the start. `.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts`
+empty, and focus lands selection at the start. `apps/www/tests/slate-browser/donor/examples/placeholder.test.ts`
 now proves the Slate equivalent on the custom-placeholder example: placeholder
 visible, `modelText === ""`, and selection at `[0, 0]` offset `0`. Existing
-`.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx` owns the
+`packages/slate-react/test/rendered-dom-shape-contract.tsx` owns the
 empty-block line-break placeholder DOM shape. Lexical's rich/plain/collab
 placeholder strings are product shell text and stay rejected. The focused
 placeholder browser proof passed, `bun run lint:fix` had no fixes, and
-`.tmp/slate-v2` `bun check` passed.
+`Plate repo root` `bun check` passed.
 
 The completion checkpoint stays `pending` because
 `../lexical/packages/lexical-playground/__tests__/e2e/Images.spec.mjs` is the
@@ -1900,7 +1900,7 @@ next unresolved image void/paste source-read candidate.
 
 Ralph execution update on 2026-05-09: lexical-playground `Images.spec.mjs`
 source-read is complete. The accepted missing row was keyboard deletion of a
-clicked selected image void. `.tmp/slate-v2/playwright/integration/examples/images.test.ts`
+clicked selected image void. `apps/www/tests/slate-browser/donor/examples/images.test.ts`
 now proves a clicked image selects `[1, 0]`, Backspace removes that image, and
 the editor keeps the remaining image. Existing image browser rows already cover
 horizontal movement into/out of image voids, vertical movement, shifted
@@ -1909,7 +1909,7 @@ paste-html rows cover Lexical image HTML with optional captions. URL/upload
 dialogs, image dimensions, drag/drop product policy, caption editor UI,
 multi-node NodeSelection replacement, raw mobile, collaboration, table-model,
 and issue claims stay rejected or deferred. The focused image browser proof
-passed, `bun run lint:fix` had no fixes, and `.tmp/slate-v2` `bun check` passed.
+passed, `bun run lint:fix` had no fixes, and `Plate repo root` `bun check` passed.
 
 The completion checkpoint stays `pending` because
 `../lexical/packages/lexical-playground/__tests__/e2e/Tab.spec.mjs` is the next
@@ -1924,7 +1924,7 @@ CDP IME row mixes product paragraph-indent policy, TabNode DOM output, and IME
 runtime behavior, so it stays deferred to explicit keyboard/IME/paragraph-indent
 owners. Ctrl/Meta+ArrowLeft after a typed Tab stays deferred to a future
 text-boundary/keyboard owner if Slate accepts literal-tab keyboard insertion as
-editor-owned behavior. No `.tmp/slate-v2` code/test edit was needed.
+editor-owned behavior. No `Plate repo root` code/test edit was needed.
 
 The completion checkpoint stays `pending` because
 `../lexical/packages/lexical-playground/__tests__/regression/1055-fast-typing-undo.spec.mjs`
@@ -1933,12 +1933,12 @@ is the next unresolved history/input source-read candidate.
 Ralph execution update on 2026-05-09: lexical-playground regression
 `1055-fast-typing-undo.spec.mjs` source-read is complete. The portable row is
 history stack law: after undo, the next user edit must create a fresh undoable
-batch and clear redo. `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`
+batch and clear redo. `packages/slate-history/test/history-contract.ts`
 already owned redo invalidation after a new edit follows undo; that row is now
 strengthened to undo the follow-up edit back to the pre-edit state as well.
 Lexical Playground HTML output and helper setup stay rejected as harness details.
 The focused history-contract grep passed, and the full `history-contract.ts`
-file passed. `bun run lint:fix` had no fixes, and `.tmp/slate-v2` `bun check`
+file passed. `bun run lint:fix` had no fixes, and `Plate repo root` `bun check`
 passed.
 
 The completion checkpoint stays `pending` because
@@ -1951,16 +1951,16 @@ portable row is expanded delete over inline content at the front of the selected
 range. Slate normalizes a spacer before leading inline content, so the full
 selection proof selects from that spacer through the trailing text. A second
 proof selects from an inline link after preceding text through the trailing
-text. `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts` now
+text. `packages/slate/src/transforms-text/delete-text.ts` now
 collects fully-selected inline ancestors and removes them as nodes, so expanded
 delete no longer leaves empty inline shells or invalid inline child points.
-`.tmp/slate-v2/packages/slate/test/delete-contract.ts` covers both rows. The
+`packages/slate/test/delete-contract.ts` covers both rows. The
 focused inline-element delete grep passed, and the full `delete-contract.ts`
 file passed. The first full `bun check` exposed an over-broad version of the
 fix that removed inline shells for selections wholly inside an inline; the final
 fix removes a fully-selected inline ancestor only when the expanded selection
 crosses outside that inline. The delete fixture suite, `bun run lint:fix`, and
-`.tmp/slate-v2` `bun check` passed. Added
+`Plate repo root` `bun check` passed. Added
 `docs/solutions/logic-errors/2026-05-09-expanded-delete-across-inline-boundaries-must-remove-crossed-inline-ancestors.md`
 and validated its YAML frontmatter.
 
@@ -1971,13 +1971,13 @@ is the next unresolved link/end-boundary source-read candidate.
 Ralph execution update on 2026-05-09: lexical-playground regression
 `1113-link-newline-at-end.spec.mjs` source-read is complete. The portable row
 is link end-boundary selection after inserting a new line. A new browser proof
-in `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts` failed red
+in `apps/www/tests/slate-browser/donor/examples/inlines.test.ts` failed red
 because Enter after a typed URL inline link produced a second empty link at the
-start of the next paragraph. `.tmp/slate-v2/site/examples/ts/inlines.tsx` now
+start of the next paragraph. `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx` now
 moves one offset out of a collapsed inserted link, matching the inline boundary
 policy used by the mentions example. The proof now locks exactly one typed URL
 link, selection in the next block, and follow-up text outside the link. Focused
-proof, full inlines browser proof, `bun run lint:fix`, and `.tmp/slate-v2`
+proof, full inlines browser proof, `bun run lint:fix`, and `Plate repo root`
 `bun check` passed. Added
 `docs/solutions/logic-errors/2026-05-09-collapsed-inline-link-insertion-must-move-selection-outside.md`
 and validated its YAML frontmatter. No generic autolink API, raw mobile,
@@ -1992,14 +1992,14 @@ Ralph execution update on 2026-05-09: lexical-playground regression
 misleading: the portable row is code-block clipboard insertion, where copying a
 nested code-line fragment and pasting inside an active code line must merge into
 that line instead of inserting a sibling or top-level code block. A new package
-contract in `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts` failed red,
-then `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts` was
+contract in `packages/slate/test/clipboard-contract.ts` failed red,
+then `packages/slate/src/transforms-text/insert-fragment.ts` was
 updated to fit a single nested text-block child from the same structural
 container into the active nested text block. A new browser proof in
-`.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts` locks
+`apps/www/tests/slate-browser/donor/examples/code-highlighting.test.ts` locks
 the native copy/paste behavior. Focused package proof, full clipboard contract,
 focused browser proof, full code-highlighting browser proof, `bun run lint:fix`,
-and `.tmp/slate-v2` `bun check` passed. Added
+and `Plate repo root` `bun check` passed. Added
 `docs/solutions/logic-errors/2026-05-09-nested-clipboard-fragments-must-merge-into-active-text-block.md`
 and validated its YAML frontmatter.
 No Lexical Playground setup, exact gutter/theme output, raw mobile,
@@ -2012,9 +2012,9 @@ is the next unresolved inline-token editing source-read candidate.
 Ralph execution update on 2026-05-09: lexical-playground regression
 `221-editing-hashtags.spec.mjs` source-read is complete. The portable row is
 dynamic decorated text-token editing, not mention, mark, inline-void, hashtag
-plugin, or Lexical theme behavior. `.tmp/slate-v2/site/examples/ts/highlighted-text.tsx`
+plugin, or Lexical theme behavior. `apps/www/src/app/(app)/examples/slate/_examples/highlighted-text.tsx`
 now adds hashtag-style projections over normal text, and
-`.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts` proves
+`apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts` proves
 Space splitting `#yolo` to decorated `#yo`, Delete removing the plain trailing
 space at the boundary, and Backspace from the plain tail preserving decorated
 `#yol`. The first focused proof failed red because no hashtag projection
@@ -2022,7 +2022,7 @@ rendered. A full-document Backspace setup also exposed a separate
 projected-document replacement edge, so the final proof uses model-owned token
 setup and browser keyboard behavior for the accepted invariant. Focused hashtag
 proof, full highlighted-text browser proof, `bun run lint:fix`, and
-`.tmp/slate-v2` `bun check` passed. Added
+`Plate repo root` `bun check` passed. Added
 `docs/solutions/best-practices/2026-05-09-hashtag-like-text-tokens-should-use-dynamic-decorations.md`
 and validated its YAML frontmatter. No raw mobile, collaboration, table-model,
 or issue claim changed.
@@ -2035,12 +2035,12 @@ Ralph execution update on 2026-05-09: lexical-playground regression
 `230-navigation-around-hashtags.spec.mjs` source-read is complete. The portable
 row is dynamic decorated text-token navigation after transient prefix insertion
 and deletion, not a Lexical hashtag plugin or DOM theme contract.
-`.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts` now
+`apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts` now
 proves that after replacing the document with `#foo`, inserting `a` before it,
 deleting that prefix, then pressing ArrowRight moves the collapsed selection
 into the decorated hashtag-style token at offset `1` through the model-owned
 movement path. Focused browser proof, full highlighted-text browser proof,
-`bun run lint:fix`, and `.tmp/slate-v2` `bun check` passed. No runtime code,
+`bun run lint:fix`, and `Plate repo root` `bun check` passed. No runtime code,
 raw mobile, collaboration, table-model, or issue claim changed.
 
 The completion checkpoint stays `pending` because
@@ -2051,12 +2051,12 @@ candidate.
 Ralph execution update on 2026-05-09: lexical-playground regression
 `3136-insert-nodes-adjacent-to-inline.spec.mjs` source-read is complete. The
 portable rows are rich paste/replacement of selected plain text immediately
-before and immediately after an inline link. `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`
+before and immediately after an inline link. `packages/slate/test/clipboard-contract.ts`
 now proves both core fragment replacement directions, and
-`.tmp/slate-v2/playwright/integration/examples/inlines.test.ts` proves rich HTML
+`apps/www/tests/slate-browser/donor/examples/inlines.test.ts` proves rich HTML
 paste replaces adjacent selected text without expanding or swallowing the link.
 Focused package proof, full clipboard contract, focused browser proof, full
-inlines browser proof, `bun run lint:fix`, and `.tmp/slate-v2` `bun check`
+inlines browser proof, `bun run lint:fix`, and `Plate repo root` `bun check`
 passed. No runtime code, raw mobile, collaboration, table-model, or issue claim
 changed.
 
@@ -2069,11 +2069,11 @@ Ralph execution update on 2026-05-09: lexical-playground regression
 is Backspace at a line boundary before a mention/text token, not Lexical
 Playground typeahead setup, mention styling, exact DOM/theme output, raw mobile,
 collaboration, table-model, or issue behavior.
-`.tmp/slate-v2/playwright/integration/examples/mentions.test.ts` now proves that
+`apps/www/tests/slate-browser/donor/examples/mentions.test.ts` now proves that
 splitting immediately before a leading inline mention and pressing Backspace at
 that new line boundary preserves both mention atoms and restores the boundary
 selection. Focused browser proof, full mentions Chromium proof,
-`bun run lint:fix`, and `.tmp/slate-v2` `bun check` passed. No runtime code, raw
+`bun run lint:fix`, and `Plate repo root` `bun check` passed. No runtime code, raw
 mobile, collaboration, table-model, or issue claim changed.
 
 `../lexical/packages/lexical-playground/__tests__/regression/399-open-line.spec.mjs`
@@ -2088,10 +2088,10 @@ kernel command metadata.
 
 Verification for the 399 slice:
 
-- `cd .tmp/slate-v2 && PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/richtext.test.ts --project=chromium -g "opens a line with Mac Ctrl\\+O"` passed.
-- `cd .tmp/slate-v2 && bun test ./packages/slate-dom/test/hotkeys.ts` passed.
-- `cd .tmp/slate-v2 && bun test ./packages/slate-react/test/editing-kernel-contract.ts` passed.
-- `cd .tmp/slate-v2 && bun run lint:fix && bun check` passed.
+- `cd Plate repo root && PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/richtext.test.ts --project=chromium -g "opens a line with Mac Ctrl\\+O"` passed.
+- `cd Plate repo root && bun test ./packages/slate-dom/test/hotkeys.ts` passed.
+- `cd Plate repo root && bun test ./packages/slate-react/test/editing-kernel-contract.ts` passed.
+- `cd Plate repo root && bun run lint:fix && bun check` passed.
 
 The full richtext Chromium owner sweep was attempted and showed one
 deterministic unrelated IME mark expectation mismatch in `commits IME composition
@@ -2110,9 +2110,9 @@ an empty block before it, keeps selection at the emoji-line start, and
 Backspace rejoins without corrupting emoji text or selection. Lexical
 Playground emoji substitution UI, exact emoji span/theme DOM, flaky tagging,
 raw mobile, collaboration, table-model, and issue behavior stay out.
-`.tmp/slate-v2/playwright/integration/examples/richtext.test.ts` now owns the
+`apps/www/tests/slate-browser/donor/examples/richtext.test.ts` now owns the
 plain Unicode emoji browser proof. Focused browser proof and
-`bun run lint:fix && bun check` passed from `.tmp/slate-v2`.
+`bun run lint:fix && bun check` passed from `Plate repo root`.
 
 The completion checkpoint stays `pending` because the next runnable non-table
 row is
@@ -2129,7 +2129,7 @@ a single replacement operation, and DOM plain-text fallback routes expanded
 same-inline selections through fragment insertion instead of inheriting the
 inline. Focused red browser proof initially failed with `replaced` inside the
 link; the final focused browser proof, full inlines Chromium file,
-clipboard-contract, clipboard-boundary, `bun run lint:fix`, and `.tmp/slate-v2`
+clipboard-contract, clipboard-boundary, `bun run lint:fix`, and `Plate repo root`
 `bun check` passed. Added
 `docs/solutions/logic-errors/2026-05-09-html-clipboard-fallback-must-not-inherit-selected-inline-text.md`
 and validated its YAML frontmatter. Lexical Playground link toolbar setup,
@@ -2146,10 +2146,10 @@ The portable row is native selection import over list content followed by a
 non-text/boundary element without crashing. Slate already had adjacent
 block-void delete proof and a generic native drag-selection boundary row, but
 not the list + boundary combination, so
-`.tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts`
+`apps/www/tests/slate-browser/donor/examples/dom-coverage-boundaries.test.ts`
 now proves a native drag from a materialized list item to a boundary placeholder
 imports into a valid Slate range with no page errors. Focused browser proof,
-full dom-coverage Chromium proof, `bun run lint:fix`, and `.tmp/slate-v2`
+full dom-coverage Chromium proof, `bun run lint:fix`, and `Plate repo root`
 `bun check` passed. Lexical Playground drag helpers, horizontal-rule product
 shell, exact DOM/theme output, raw mobile/device, collaboration, table-model,
 and issue behavior stay out.
@@ -2173,10 +2173,10 @@ they can replace parent content.
 
 Verification for the 7635 slice:
 
-- `cd .tmp/slate-v2 && PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium -g "rich HTML inside nested editor"` first failed red because the nested editor inserted plain text and dropped `<strong>`.
-- `cd .tmp/slate-v2 && PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium -g "parent selection that crosses|rich HTML inside nested editor"` passed after tightening parent/nested selection import.
-- `cd .tmp/slate-v2 && PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium` passed: 12 tests.
-- `cd .tmp/slate-v2 && bun run lint:fix && bun check` passed: Biome formatted touched files, package/site/root typecheck passed, Bun tests passed, and slate-react Vitest passed.
+- `cd Plate repo root && PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium -g "rich HTML inside nested editor"` first failed red because the nested editor inserted plain text and dropped `<strong>`.
+- `cd Plate repo root && PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium -g "parent selection that crosses|rich HTML inside nested editor"` passed after tightening parent/nested selection import.
+- `cd Plate repo root && PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium` passed: 12 tests.
+- `cd Plate repo root && bun run lint:fix && bun check` passed: Biome formatted touched files, package/site/root typecheck passed, Bun tests passed, and slate-react Vitest passed.
 - `ruby -e 'require "yaml"; YAML.load_file("docs/solutions/logic-errors/2026-05-09-parent-nested-dom-selections-must-not-import-as-parent-ranges.md")'` passed for the solution note.
 
 Lexical image caption UI, `SELECTION_INSERT_CLIPBOARD_NODES_COMMAND` API,
@@ -2190,11 +2190,11 @@ row is
 Ralph execution update on 2026-05-09: lexical-playground e2e
 `AutoLinks.spec.mjs` source-read is complete. The portable Slate-owned row is
 not Lexical's full autolink plugin. Slate now proves the narrow accepted
-behavior in `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`:
+behavior in `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`:
 pasting a single URL at a collapsed selection creates one safe inline link,
 places the caret outside the link, and keeps follow-up typing outside the link.
 Focused pasted-URL browser proof, full inlines Chromium proof, `bun run
-lint:fix`, and `.tmp/slate-v2` `bun check` passed. Lexical's broad URL/email
+lint:fix`, and `Plate repo root` `bun check` passed. Lexical's broad URL/email
 parser matrix, delimiter tokenization, invalid URL grammar, unlink/relink UI,
 unlinked-autolink preservation, emoji shortcode destruction, styling/font rows,
 toolbar/product shell, exact DOM/theme output, raw mobile, collaboration,
@@ -2211,12 +2211,12 @@ dynamic decorated text-token editing, not Lexical's hashtag plugin grammar.
 Existing highlighted-text rows already covered hashtag-style decoration, Space
 splitting, Delete/Backspace boundaries, transient-prefix navigation,
 decorated-range copy/cut, and decorated-text IME/editing. The new proof in
-`.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts` covers
+`apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts` covers
 the missing delimiter/marker update: deleting the delimiter between `#hello`
 and `world` expands the decorated token, restoring the delimiter shrinks it
 back, and deleting the leading `#` drops the decoration with stable caret
 placement. Focused delimiter proof, full highlighted-text Chromium proof, `bun
-run lint:fix`, and `.tmp/slate-v2` `bun check` passed. Lexical's hashtag plugin
+run lint:fix`, and `Plate repo root` `bun check` passed. Lexical's hashtag plugin
 grammar, invalid-match matrix, markdown import/export shell, format inheritance
 styling, exact DOM/theme output, raw mobile, collaboration, table-model, and
 issue behavior stay deferred or rejected.
@@ -2233,7 +2233,7 @@ IME, copy/cut semantics, hashtag-style delimiter merge/split, and deleting a
 decorated selected range. Lexical's exact `congrats` grammar, bracket/team token
 policy, keyword styling, product plugin setup, exact DOM/theme output, raw
 mobile, collaboration, table-model, and issue behavior stay deferred or
-rejected. No new `.tmp/slate-v2` verification was needed for this slice because
+rejected. No new `Plate repo root` verification was needed for this slice because
 no code or test file changed.
 
 The completion checkpoint stays `pending` because the next runnable non-table
@@ -2243,7 +2243,7 @@ row is
 Ralph execution update on 2026-05-09: lexical-playground e2e
 `SelectionAlwaysOnDisplay.spec.mjs` source-read is complete with no Slate code
 change. The only raw Slate-owned invariant is blurred-editor model-selection
-persistence, and current `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+persistence, and current `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 already proves it in `keeps model selection when focus moves outside the editor`.
 Lexical's always-on fake-selection overlay, highlight alignment tolerance,
 plain-text skip policy, exact DOM/theme output, raw mobile/device,

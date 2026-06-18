@@ -33,7 +33,7 @@ Completion threshold:
   `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-02-slate-ar-huge-document-commit-readiness.md` passes.
 
 Verification surface:
-- `.tmp/slate-v2` Codex Autoresearch state, lane-runner records, and benchmark logs.
+- `Plate repo root` Codex Autoresearch state, lane-runner records, and benchmark logs.
 - One fresh repeat packet or promotion-readiness proof for `react_huge_doc_full_max_budget_ratio`.
 - `bun check` through `autoresearch.checks.sh` when a measured packet runs.
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-02-slate-ar-huge-document-commit-readiness.md`.
@@ -46,7 +46,7 @@ Constraints:
 - Do not add broad ceremony when the task is trivial or docs-only.
 
 Boundaries:
-- Source of truth: `.tmp/slate-v2/autoresearch.*`, `.tmp/slate-v2/.git/autoresearch/**`, `.tmp/slate-v2/tmp/slate-react-huge-document-full-benchmark*.json`, and this goal plan.
+- Source of truth: `Plate repo root/autoresearch.*`, `Plate repo root/.git/autoresearch/**`, `tmp/slate-react-huge-document-full-benchmark*.json`, and this goal plan.
 - Allowed edit scope: AR session artifacts and this plan. Product/runtime code only if repeat evidence proves a real over-budget or correctness issue.
 - Browser surface: no direct browser UI change expected; Playwright/browser evidence is owned by the benchmark packet.
 - Tracker sync: N/A; no issue or Linear item.
@@ -89,7 +89,7 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | Loaded `autogoal`; continuing from `slate-ar-perf` and AR state. |
 | Active goal checked or created | yes | `get_goal` returned null; created active goal for this plan. |
-| Source of truth read before edits | yes | Read `.tmp/slate-v2` AR compact state and prior lane results before this goal. |
+| Source of truth read before edits | yes | Read `Plate repo root` AR compact state and prior lane results before this goal. |
 | Tracker comments and attachments read | N/A: no tracker item | User request is in current Codex thread only. |
 | Video transcript evidence required | N/A: no video input | No screen recording or media was supplied for this goal. |
 | `docs/solutions` checked for non-trivial existing-code work | N/A: no code change planned | Current evidence says no runtime patch is justified while all rows are under budget. |
@@ -144,7 +144,7 @@ Completion Gates:
 | Package exports or file layout changed | N/A: no package layout change | Run `pnpm brl` before final verification and keep generated barrel updates | No package exports/file layout touched. |
 | Package manifests, lockfile, or install graph changed | N/A: no package manifest change | Run `pnpm install` and relevant package checks | No install graph touched. |
 | Agent rules or skills changed | N/A: no agent rules changed | Run `pnpm install` and verify generated skill sync | No `.agents` source edit planned. |
-| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | Owning proof ran with `--cwd /Users/zbeyens/git/plate-2/.tmp/slate-v2`; root repo only owns this goal ledger. |
+| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | Owning proof ran with `--cwd /Users/zbeyens/git/plate-2/Plate repo root`; root repo only owns this goal ledger. |
 | Browser surface changed | N/A: no browser UI change | Capture Browser Use proof or record explicit waiver/blocker | Benchmark owns browser trace proof. |
 | Browser final proof | N/A: no direct route proof needed | Attach screenshot or exact browser verification caveat when browser proof applies | AR browser-trace benchmark is the proof surface. |
 | CI-controlled template output changed | N/A: no template output touched | Restore generated template output or record why it is intentionally kept | No CI-generated template output touched. |
@@ -203,13 +203,13 @@ Error attempts:
 | `finalize-current-tree --exclude-session-artifacts` not ready | 1 | Stop at commit approval boundary | Current-tree plan requires a clean source branch; no autonomous commit allowed. |
 
 Verification evidence:
-- `node /Users/zbeyens/git/codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs log --cwd /Users/zbeyens/git/plate-2/.tmp/slate-v2 --from-last --status measure --evidence-status accepted ...` succeeded for packet #14.
+- `node /Users/zbeyens/git/codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs log --cwd /Users/zbeyens/git/plate-2/Plate repo root --from-last --status measure --evidence-status accepted ...` succeeded for packet #14.
 - Packet #14 metrics: `react_huge_doc_full_max_budget_ratio=0.82`, `react_huge_doc_full_failure_count=0`, `react_huge_doc_full_burst_to_paint_per_op_p95_ms=13.13`, `react_huge_doc_full_virtualized_type_to_paint_p95_ms=30.9`, `react_huge_doc_full_virtualized_dom_nodes_p95=303`.
 - Packet #14 checks: `bash ./autoresearch.checks.sh` passed, which runs `bun check`.
-- `node /Users/zbeyens/git/codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs state --cwd /Users/zbeyens/git/plate-2/.tmp/slate-v2 --compact` reports 2 measured runs, 2 accepted evidence entries, no pending log decision, dirty source drift false, and all 5 lanes completed/accepted.
-- `node /Users/zbeyens/git/codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs promote-gate --cwd /Users/zbeyens/git/plate-2/.tmp/slate-v2 --reason "Segment 1 baseline and repeat both passed under budget with checks green; no implementation patch candidate remains." --dry-run` succeeded and would create segment 2 only if we continue.
-- `node /Users/zbeyens/git/codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs finalize-preview --cwd /Users/zbeyens/git/plate-2/.tmp/slate-v2` returned `ready=false` because the giant `v2` branch has unkept non-session coverage and dirty working tree.
-- `node /Users/zbeyens/git/codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs finalize-current-tree --cwd /Users/zbeyens/git/plate-2/.tmp/slate-v2 --exclude-session-artifacts` returned `ready=false` with the concrete blocker: `Working tree is dirty; current-tree plan requires a clean source branch.`
+- `node /Users/zbeyens/git/codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs state --cwd /Users/zbeyens/git/plate-2/Plate repo root --compact` reports 2 measured runs, 2 accepted evidence entries, no pending log decision, dirty source drift false, and all 5 lanes completed/accepted.
+- `node /Users/zbeyens/git/codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs promote-gate --cwd /Users/zbeyens/git/plate-2/Plate repo root --reason "Segment 1 baseline and repeat both passed under budget with checks green; no implementation patch candidate remains." --dry-run` succeeded and would create segment 2 only if we continue.
+- `node /Users/zbeyens/git/codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs finalize-preview --cwd /Users/zbeyens/git/plate-2/Plate repo root` returned `ready=false` because the giant `v2` branch has unkept non-session coverage and dirty working tree.
+- `node /Users/zbeyens/git/codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs finalize-current-tree --cwd /Users/zbeyens/git/plate-2/Plate repo root --exclude-session-artifacts` returned `ready=false` with the concrete blocker: `Working tree is dirty; current-tree plan requires a clean source branch.`
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-02-slate-ar-huge-document-commit-readiness.md` passed in `/Users/zbeyens/git/plate-2`.
 
 Final handoff contract:

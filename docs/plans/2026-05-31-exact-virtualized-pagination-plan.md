@@ -39,10 +39,10 @@ Completion threshold:
 
 Verification surface:
 - Planning-only checks run in `/Users/zbeyens/git/plate-2`.
-- Live source grounding is read from `/Users/zbeyens/git/plate-2/.tmp/slate-v2`
+- Live source grounding is read from `/Users/zbeyens/git/plate-2/Plate repo root`
   and recorded in this plan; no Slate v2 behavior claim is made by root checks.
 - Later execution proof must run from
-  `/Users/zbeyens/git/plate-2/.tmp/slate-v2` and include:
+  `/Users/zbeyens/git/plate-2/Plate repo root` and include:
   - `bun --filter slate-layout test`
   - `bun --filter slate-layout typecheck`
   - focused Chromium Playwright rows for pagination startup, rows=800
@@ -56,7 +56,7 @@ Verification surface:
     any release-quality browser claim.
 
 Constraints:
-- Planning mode only in this activation: no `.tmp/slate-v2` implementation
+- Planning mode only in this activation: no `Plate repo root` implementation
   patch.
 - Raw Slate stays unopinionated. Plate owns product pagination UI, export
   policy, table UX, and docs product ergonomics.
@@ -73,11 +73,11 @@ Boundaries:
   `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`, and
   `docs/slate-v2/references/**`.
 - Current source read scope:
-  - `.tmp/slate-v2/packages/slate-layout/src/index.ts`
-  - `.tmp/slate-v2/packages/slate-layout/src/react.tsx`
-  - `.tmp/slate-v2/packages/slate-layout/src/page-mount-plan.ts`
-  - `.tmp/slate-v2/site/examples/ts/pagination.tsx`
-  - `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts`
+  - `packages/slate-layout/src/index.ts`
+  - `packages/slate-layout/src/react.tsx`
+  - `packages/slate-layout/src/page-mount-plan.ts`
+  - `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx`
+  - `apps/www/tests/slate-browser/donor/examples/pagination.test.ts`
 - Current research/ledger read scope:
   - `docs/research/README.md`
   - `docs/research/index.md`
@@ -139,7 +139,7 @@ Start Gates:
 | Active goal checked or created | yes | First planning goal hit budget; user asked for a shorter goal; `create_goal` created `Finish remaining Slate Plan passes for exact virtualized pagination. Planning only.` |
 | Source of truth read before edits | yes | Read live `slate-layout`, `PagedEditable`, page mount plan, pagination example, focused pagination tests, research pages, and durable issue/reference rows. |
 | `docs/solutions` checked for non-trivial existing-code work | no | N/A: this pass is planning-only and does not patch existing implementation. |
-| Live `.tmp/slate-v2` grounding needed for current-state claims | yes | Current owners and exact gaps are cited below from `.tmp/slate-v2`. |
+| Live `Plate repo root` grounding needed for current-state claims | yes | Current owners and exact gaps are cited below from `Plate repo root`. |
 
 Work Checklist:
 - [x] Objective includes lane outcome, pass policy, completion threshold,
@@ -175,9 +175,9 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Finalize exact oracle, perf matrix, issue sync, and closure proof gates | pending |
-| Slate v2 source/runtime/browser/API claim | yes | Record `.tmp/slate-v2` command/proof or keep as planning-only | current-state pass has source reads only; behavior proof belongs to execution |
+| Slate v2 source/runtime/browser/API claim | yes | Record `Plate repo root` command/proof or keep as planning-only | current-state pass has source reads only; behavior proof belongs to execution |
 | Issue ledger or PR reference changed | no for issue-ledger pass | Sync ledger/reference rows or record why no sync applies | No sync applies in this pass: the full issue-ledger scan found no new fixed/improved/stale/duplicate claim and existing rows already match the no-new-claim exact-layout target. |
-| Autoreview for uncommitted implementation changes | no | Run autoreview in `.tmp/slate-v2` after non-trivial execution edits | N/A planning-only |
+| Autoreview for uncommitted implementation changes | no | Run autoreview in `Plate repo root` after non-trivial execution edits | N/A planning-only |
 | Final user-review handoff | pending | Emit final handoff or keep plan pending with next pass | pending |
 | Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-31-exact-virtualized-pagination-plan.md` | pending; not eligible this activation |
 
@@ -214,23 +214,23 @@ Source-backed architecture north star:
   explicit status and must promote to exact measurement for visible, selected,
   composing, command-target, export, collab, and authoritative snapshot paths.
 - source evidence:
-  - `.tmp/slate-v2/packages/slate-layout/src/index.ts:401-409` exposes
+  - `packages/slate-layout/src/index.ts:401-409` exposes
     `estimateBlock`, currently returning a boolean rather than an accuracy or
     authority contract.
-  - `.tmp/slate-v2/packages/slate-layout/src/index.ts:392-399` already defines
+  - `packages/slate-layout/src/index.ts:392-399` already defines
     `pageBreaks` read/write sources, so strict-fidelity snapshots have a
     natural home.
-  - `.tmp/slate-v2/packages/slate-layout/src/index.ts:272-285` stores
+  - `packages/slate-layout/src/index.ts:272-285` stores
     `measurementProfile`, `pageBreaks`, `pageBreaksStatus`, pages, blocks, and
     fragments in snapshots.
-  - `.tmp/slate-v2/packages/slate-layout/src/index.ts:1928-2325` implements
+  - `packages/slate-layout/src/index.ts:1928-2325` implements
     the Pretext engine and measured block cache, but cold estimation bypasses
     exact Pretext line measurement.
-  - `.tmp/slate-v2/packages/slate-layout/src/react.tsx:620-760` virtualizes
+  - `packages/slate-layout/src/react.tsx:620-760` virtualizes
     page surfaces and visible page content through page mount items.
-  - `.tmp/slate-v2/packages/slate-layout/src/page-mount-plan.ts:1-160` maps
+  - `packages/slate-layout/src/page-mount-plan.ts:1-160` maps
     fragments/pages to mount items and filters by viewport/overscan.
-  - `.tmp/slate-v2/site/examples/ts/pagination.tsx:1586-1600` uses
+  - `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:1586-1600` uses
     `estimateBlock` for virtualized rich stress blocks that are not active.
 - rejected drift: do not let skeleton estimates masquerade as exact page breaks;
   do not expose TanStack item ranges as the API; do not split table AST nodes
@@ -384,7 +384,7 @@ Ecosystem strategy synthesis:
 | Premirror | `docs/research/sources/editor-architecture/layout-measurement-and-ime-lanes.md` | snapshot -> measure -> compose -> render; pages/fragments are derived. | Layout becoming document model. | Derived layout lane and page chrome outside content. | Encoding page fragments as Slate document nodes. | `slate-layout` snapshots/fragments stay derived. | agree |
 | Tiptap Pages | `docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md` | CSS floats/page gaps plus special table package for tables. | Pretending complex blocks split automatically. | Failure taxonomy: BFC blocks, tables, figures, images, padding, oversized nodes. | CSS-float pagination, manual AST splitting as default, raw Slate product TableKit. | provider-owned split protocols and exact box units. | diverge |
 | TanStack Virtual | `docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md` | Headless range engine, measured items, overscan, retained indexes. | Rendering every repeated unit. | Internal range engine and repeated-unit discipline. | Public TanStack-shaped options or letting it own selection/copy/IME/a11y policy. | Internal page/spread mount plan behind `domStrategy`. | partial |
-| Current Slate v2 | live `.tmp/slate-v2` files listed above | Pretext engine, page mount plan, `PagedEditable`, node layout provider, Playwright perf rows. | Starting from theory only. | Existing substrate and tests. | Current boolean `estimateBlock` as authoritative layout. | exact snapshots + skeleton status + incremental oracle. | revise |
+| Current Slate v2 | live `Plate repo root` files listed above | Pretext engine, page mount plan, `PagedEditable`, node layout provider, Playwright perf rows. | Starting from theory only. | Existing substrate and tests. | Current boolean `estimateBlock` as authoritative layout. | exact snapshots + skeleton status + incremental oracle. | revise |
 
 Legacy regression proof matrix:
 | Regression class | Legacy behavior | Slate v2 target | Proof route | Owner | Status |
@@ -408,12 +408,12 @@ Browser stress / parity strategy:
 Verification workspace gate:
 | Claim | Workspace | Command | Result | Owner |
 |-------|-----------|---------|--------|-------|
-| Current source grounding | `.tmp/slate-v2` | targeted `sed` / `rg` reads for `slate-layout`, `PagedEditable`, page mount plan, pagination example, and pagination tests | complete for current-state pass; no behavior proof claimed | slate-plan |
+| Current source grounding | `Plate repo root` | targeted `sed` / `rg` reads for `slate-layout`, `PagedEditable`, page mount plan, pagination example, and pagination tests | complete for current-state pass; no behavior proof claimed | slate-plan |
 | Planning artifact integrity | `plate-2` | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-31-exact-virtualized-pagination-plan.md` | pending; not eligible this activation | closure pass |
-| Exact layout oracle | `.tmp/slate-v2` | command TBD in execution plan | pending | execution |
-| Focused layout/package gate | `.tmp/slate-v2` | `bun --filter slate-layout test && bun --filter slate-layout typecheck` | pending | execution |
-| Focused pagination browser gate | `.tmp/slate-v2` | `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium -g "<pagination cluster>" --reporter=line` | pending | execution |
-| Fast package gate | `.tmp/slate-v2` | `bun check` | pending | execution |
+| Exact layout oracle | `Plate repo root` | command TBD in execution plan | pending | execution |
+| Focused layout/package gate | `Plate repo root` | `bun --filter slate-layout test && bun --filter slate-layout typecheck` | pending | execution |
+| Focused pagination browser gate | `Plate repo root` | `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium -g "<pagination cluster>" --reporter=line` | pending | execution |
+| Fast package gate | `Plate repo root` | `bun check` | pending | execution |
 
 Applicable implementation-skill review matrix:
 | Lens | Applies | Status | Findings | Plan delta |
@@ -455,7 +455,7 @@ Hard cuts and rejected alternatives:
 
 Plan deltas from review:
 - Created a fresh Slate Plan from the `slate-plan` template.
-- Current-state pass re-grounded the plan in live `.tmp/slate-v2` source, not
+- Current-state pass re-grounded the plan in live `Plate repo root` source, not
   old architecture notes.
 - Related issue discovery pass reused existing durable pagination issue rows
   and explicitly skipped broad live GitHub/ClawSweeper rerun because no fixed,
@@ -491,10 +491,10 @@ Fast driver gates:
 | Gate | Cwd | Command / artifact | Proves | Status |
 |------|-----|--------------------|--------|--------|
 | planning artifact check | `/Users/zbeyens/git/plate-2` | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-31-exact-virtualized-pagination-plan.md` | final plan/template integrity | pending; not eligible this pass |
-| current source grounding | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | targeted source reads listed in Boundaries | current-state claims | complete |
-| exact oracle | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | TBD `slate-layout` test command | exactness preserved under virtualization/incremental layout | pending execution |
-| perf matrix | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | focused pagination Playwright cluster | virtualized approximates staged envelope at rows 8/500/800/default | pending execution |
-| package gate | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | `bun check` | fast source quality gate | pending execution |
+| current source grounding | `/Users/zbeyens/git/plate-2/Plate repo root` | targeted source reads listed in Boundaries | current-state claims | complete |
+| exact oracle | `/Users/zbeyens/git/plate-2/Plate repo root` | TBD `slate-layout` test command | exactness preserved under virtualization/incremental layout | pending execution |
+| perf matrix | `/Users/zbeyens/git/plate-2/Plate repo root` | focused pagination Playwright cluster | virtualized approximates staged envelope at rows 8/500/800/default | pending execution |
+| package gate | `/Users/zbeyens/git/plate-2/Plate repo root` | `bun check` | fast source quality gate | pending execution |
 
 Final user-review handoff outline:
 - accepted plan items: pending final pass.

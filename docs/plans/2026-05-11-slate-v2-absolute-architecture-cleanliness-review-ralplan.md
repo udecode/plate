@@ -44,16 +44,16 @@ Anything broader than that is architecture theater.
 
 | Surface                      | Current owner                                                                                                                                                | Read                                                                                                                                                                                   |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Editor state/update backbone | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:76-79`, `:480-490`, `:493-497`, `:900-906`                                                            | Current public shape reads through editor methods, writes through `editor.update`, and exposes `state`/`tx` extension namespaces. Keep.                                                |
-| Legacy extension slots       | `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:60-76`                                                                                            | Runtime rejects `methods` and public `commands`. Active source already cut the stale extension shape.                                                                                  |
-| Internal command registry    | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:920-927`                                                                                              | Commands still exist internally, which is fine. Do not expose them as product API.                                                                                                     |
-| Selector substrate           | `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:1-87`, `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:104-148` | Main editor selector path uses a custom `useReducer` force-render helper, not React's external-store primitive. This is the biggest cleanup candidate.                                 |
-| Adjacent external stores     | `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`, `use-slate-projections.tsx`, `use-slate-widgets.tsx`                               | Adjacent stores already use `useSyncExternalStore`, so the custom selector helper needs a proof or replacement.                                                                        |
-| Selector fanout              | `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:189-343`                                                                               | Runtime/global/deferred listener sets are well-scoped, but ownership is tied to the custom selector substrate.                                                                         |
-| Root runtime                 | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:97-405`                                                                              | One hook wires composition, Android input, selection import/export, repair, trace, input rules, event runtime, root refs, lifecycle, and pending marks. It works, but it is too dense. |
-| Virtualized public shape     | `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3-25`                                                                      | `virtualized` is object-only and explicitly experimental, not a stable string peer. Keep.                                                                                              |
-| Virtualized contract test    | `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:327-345`                                                                                       | Contract proves `virtualized` stays object-only and experimental.                                                                                                                      |
-| `useElementIf`               | `rg useElementIf` over `.tmp/slate-v2/packages/slate-react/src`, tests, site, and active docs                                                                | No live public use found in current source. This is not a current architecture blocker.                                                                                                |
+| Editor state/update backbone | `packages/slate/src/interfaces/editor.ts:76-79`, `:480-490`, `:493-497`, `:900-906`                                                            | Current public shape reads through editor methods, writes through `editor.update`, and exposes `state`/`tx` extension namespaces. Keep.                                                |
+| Legacy extension slots       | `packages/slate/src/core/editor-extension.ts:60-76`                                                                                            | Runtime rejects `methods` and public `commands`. Active source already cut the stale extension shape.                                                                                  |
+| Internal command registry    | `packages/slate/src/interfaces/editor.ts:920-927`                                                                                              | Commands still exist internally, which is fine. Do not expose them as product API.                                                                                                     |
+| Selector substrate           | `packages/slate-react/src/hooks/use-generic-selector.tsx:1-87`, `packages/slate-react/src/hooks/use-editor-selector.tsx:104-148` | Main editor selector path uses a custom `useReducer` force-render helper, not React's external-store primitive. This is the biggest cleanup candidate.                                 |
+| Adjacent external stores     | `packages/slate-react/src/hooks/use-slate-annotations.tsx`, `use-slate-projections.tsx`, `use-slate-widgets.tsx`                               | Adjacent stores already use `useSyncExternalStore`, so the custom selector helper needs a proof or replacement.                                                                        |
+| Selector fanout              | `packages/slate-react/src/hooks/use-editor-selector.tsx:189-343`                                                                               | Runtime/global/deferred listener sets are well-scoped, but ownership is tied to the custom selector substrate.                                                                         |
+| Root runtime                 | `packages/slate-react/src/editable/runtime-root-engine.ts:97-405`                                                                              | One hook wires composition, Android input, selection import/export, repair, trace, input rules, event runtime, root refs, lifecycle, and pending marks. It works, but it is too dense. |
+| Virtualized public shape     | `packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3-25`                                                                      | `virtualized` is object-only and explicitly experimental, not a stable string peer. Keep.                                                                                              |
+| Virtualized contract test    | `packages/slate-react/test/surface-contract.tsx:327-345`                                                                                       | Contract proves `virtualized` stays object-only and experimental.                                                                                                                      |
+| `useElementIf`               | `rg useElementIf` over `packages/slate-react/src`, tests, site, and active docs                                                                | No live public use found in current source. This is not a current architecture blocker.                                                                                                |
 | Perf replacement gate        | `docs/slate-v2/replacement-gates-scoreboard.md:32`                                                                                                           | Slate React perf superiority versus legacy chunking remains `pending / typing red`.                                                                                                    |
 | RC proof ledger              | `docs/slate-v2/true-slate-rc-proof-ledger.md:74-83`                                                                                                          | Direct v2-vs-legacy huge-document typing superiority is still open.                                                                                                                    |
 
@@ -313,7 +313,7 @@ The plan is `done` as a review/planning gate. The current answer is:
 ### 2026-05-11: selector substrate proof started
 
 - Trigger: user requested `ralph full`.
-- Current owner: `.tmp/slate-v2/packages/slate-react/src/hooks`.
+- Current owner: `packages/slate-react/src/hooks`.
 - Scope: prove or replace `useGenericSelector` as the substrate for
   `useEditorSelector` and `useDecorationSelector`.
 - Known starting point: `useGenericSelector` uses a reducer-based force-render
@@ -329,17 +329,17 @@ The plan is `done` as a review/planning gate. The current answer is:
 ### 2026-05-11: Ralph execution closed
 
 - Selector substrate result:
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx` now
+  `packages/slate-react/src/hooks/use-generic-selector.tsx` now
   uses `useSyncExternalStore` as the subscription primitive instead of
   `useReducer` force-rendering.
 - Selector contracts:
-  `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx` now pins the
+  `packages/slate-react/test/surface-contract.tsx` now pins the
   external-store substrate; provider/decorator contracts stayed green.
 - Root runtime result:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-selection-import.ts`
+  `packages/slate-react/src/editable/runtime-root-selection-import.ts`
   owns selectionchange handler, scheduler, and import-controller construction.
 - Root runtime contract:
-  `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+  `packages/slate-react/test/kernel-authority-audit-contract.ts`
   now pins selection import ownership to the root selection import module.
 - Reference/issue sync: no change needed. The slice changed internal runtime
   ownership and selector substrate only; public API and issue claims did not

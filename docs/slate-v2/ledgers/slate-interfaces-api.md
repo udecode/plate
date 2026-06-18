@@ -22,7 +22,7 @@ status: active
   path/point/range ref files are now pulled back toward the legacy source shape
   without changing the green fixture surface
 - direct non-Editor interface oracle proof is now live and green in:
-  - `.tmp/slate-v2/packages/slate/test/legacy-interfaces-fixtures.ts`
+  - `packages/slate/test/legacy-interfaces-fixtures.ts`
 - package-local closeout is green on:
   - `bun test ./packages/slate/test`
   - `bunx turbo build --filter=./packages/slate`

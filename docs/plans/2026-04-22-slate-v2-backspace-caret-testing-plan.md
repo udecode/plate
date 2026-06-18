@@ -99,23 +99,23 @@ selection, and follow-up typing.
 
 Primary browser rows:
 
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/large-document-runtime.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/shadow-dom.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts`
 
 Helper owner:
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `packages/browser/src/playwright/index.ts`
 
 Product owners if rows fail:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx` only if the
+- `packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `packages/slate-react/src/editable/model-input-strategy.ts`
+- `packages/slate-react/src/editable/selection-reconciler.ts`
+- `packages/slate-react/src/editable/dom-repair-queue.ts`
+- `packages/slate-react/src/components/editable.tsx` only if the
   coordinator or wrapper wiring is the measured owner
 
 ## TDD Sequence

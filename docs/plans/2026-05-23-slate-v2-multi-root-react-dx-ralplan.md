@@ -3,7 +3,7 @@
 Status: done - Slate Ralplan complete, ready for Ralph execution
 Runtime id: `019e46be-4ec4-7d11-bc6e-9fcf033a8803`
 Skill: `slate-ralplan`
-Scope: `.tmp/slate-v2` multi-root React API, package ownership, and example DX
+Scope: `Plate repo root` multi-root React API, package ownership, and example DX
 
 ## Intent
 
@@ -332,7 +332,7 @@ Add a source-level assertion for the example:
 
 ## Verification Commands For Ralph
 
-Run from `.tmp/slate-v2`:
+Run from `Plate repo root`:
 
 ```bash
 bun test ./packages/slate-react/test/slate-runtime-provider-contract.test.tsx
@@ -359,7 +359,7 @@ The plan is ready for Ralph only when:
 
 | Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
 | --- | --- | --- | --- | --- | --- |
-| 1. Current-state read and initial score | complete | Live `.tmp/slate-v2` source, existing plan, research index/log, issue ledgers, PR reference, and multi-root browser tests read. | Changed lane from `ready for Ralph execution` to pending full-gate review; added confidence scorecard and pass ledger. | Issue discovery, ecosystem synthesis, maintainer objection, high-risk proof, and closure gates remain open. | Slate Ralplan |
+| 1. Current-state read and initial score | complete | Live `Plate repo root` source, existing plan, research index/log, issue ledgers, PR reference, and multi-root browser tests read. | Changed lane from `ready for Ralph execution` to pending full-gate review; added confidence scorecard and pass ledger. | Issue discovery, ecosystem synthesis, maintainer objection, high-risk proof, and closure gates remain open. | Slate Ralplan |
 | 2. Related issue discovery | complete | Live/open, sync, issue coverage, package impact, requirements, clusters, gitcrawl clusters, fork dossier, and PR reference rows read. | Added related issue classification matrix; kept new exact fixed/improved claims at zero; marked older `SlateRuntime` + `<Slate root>` public accounting stale for pass 11. | Need durable ledger/PR wording sync in pass 11. | Slate Ralplan / ClawSweeper discipline |
 | 3. Issue-ledger pass | complete | Full issue-ledger index, package impact matrix, requirements file, issue clusters, gitcrawl clusters, open ledger, test candidate map, benchmark candidate map, sync ledger, coverage matrix, fork dossier, and PR reference read. | Added ownership/accounting pass: runtime-boundary issue pressure supports moving focus/selection/root ownership into `slate-react`/`slate-dom`, but still produces zero new issue claims for this plan. | Need intent/decision brief to settle public API shape and non-goals. | Slate Ralplan |
 | 4. Intent/boundary and decision brief | complete | Source plan, current example evidence, issue-ledger ownership pass, and intent-boundary guidance read. | Added intent/outcome/scope/non-goals/decision boundaries plus public API decision brief; chose `<Slate editor>` + `<Editable root>` as canonical and demoted runtime/view APIs to substrate. | Need research/ecosystem synthesis before score can exceed 0.85 on research or migration. | Slate Ralplan |
@@ -721,7 +721,7 @@ evidence answer the boundary question.
 | Desired outcome | App code renders document layout and product fields. `slate-react` creates root views, tracks active root, preserves focus, restores root-local selection, and routes root-local DOM sync. |
 | In scope | Public React API shape, root provider composition, root hooks, state-field hooks outside an editable, active-root/history routing, example cleanup, and package/browser proof obligations. |
 | Non-goals | No product `MultiRootEditor`; no Plate-only component; no support for sharing the same node-object graph across independent runtimes; no React-controlled `value` comeback; no broad issue closure; no pagination/layout work in this plan. |
-| Decision boundaries | This plan may decide the public multi-root React API, hook naming direction, app/package ownership split, issue claim policy, and required proof rows. It may not edit `.tmp/slate-v2` implementation from the Ralplan skill. |
+| Decision boundaries | This plan may decide the public multi-root React API, hook naming direction, app/package ownership split, issue claim policy, and required proof rows. It may not edit `Plate repo root` implementation from the Ralplan skill. |
 | Unresolved user-decision points | None. Hook naming can still be refined during execution review, but the architectural boundary is settled. |
 
 Pressure test:
@@ -960,7 +960,7 @@ Read set:
 - `react-useeffect` skill: effects are escape hatches; use external-store
   subscriptions and event handlers instead of effect-driven state mirroring.
 - `shadcn` skill: compose primitives, not custom product wrappers.
-- Live `.tmp/slate-v2` evidence:
+- Live `Plate repo root` evidence:
   - `useSlateRuntimeState` and `useSlateViewState` route through selector
     context and root-aware `shouldUpdate`;
   - `useStateFieldValue` filters by `dirtyStateKeys`;
@@ -1080,10 +1080,10 @@ Browser rows to preserve or add:
 
 ### Verification Workspace Rule
 
-All implementation proof belongs in `.tmp/slate-v2`, not `plate-2`.
+All implementation proof belongs in `Plate repo root`, not `plate-2`.
 
 This Ralplan pass records required proof only. Ralph execution must run the
-named `.tmp/slate-v2` tests and browser rows before any implementation claim.
+named `Plate repo root` tests and browser rows before any implementation claim.
 
 ### Score After Pass 6
 
@@ -1685,7 +1685,7 @@ advanced substrate:
   useSlateViewState
 ```
 
-This is a planning/accounting sync only. It does not claim `.tmp/slate-v2`
+This is a planning/accounting sync only. It does not claim `Plate repo root`
 implementation proof.
 
 ### Score After Pass 11
@@ -1721,7 +1721,7 @@ truthfully move from pending to done.
 | Research / ecosystem evidence | pass | Research synthesis, ecosystem maintainer pass, Plate/plugin, and slate-yjs/collab answers are complete. |
 | Performance / DX / migration / regression passes | pass | Perf/DX/migration/regression pressure rows and proof matrix are complete. |
 | Maintainer and high-risk passes | pass | Maintainer objection, steelman, high-risk deliberate mode, adoption, rollback, and proof guardrails are complete. |
-| Allowed edit scope | pass | This skill edited only planning, issue-ledger/reference, and scoped `.tmp` state artifacts. No `.tmp/slate-v2` implementation files were edited. |
+| Allowed edit scope | pass | This skill edited only planning, issue-ledger/reference, and scoped `.tmp` state artifacts. No `Plate repo root` implementation files were edited. |
 | Continuation state | pass | No next Slate Ralplan pass remains. Ralph owns implementation execution. |
 
 ### Final Confidence Score
@@ -1750,10 +1750,10 @@ Threshold: pass.
 - Advanced substrate remains valid: `SlateRuntime`, `<Slate root>`,
   `createEditorView`, `useSlateRuntimeState`, and `useSlateViewState`.
 - Issue sync is closed with zero new fixed/improved claims.
-- Implementation must happen in `.tmp/slate-v2`, not from this Slate Ralplan
+- Implementation must happen in `Plate repo root`, not from this Slate Ralplan
   pass.
 
-Required Ralph verification from `.tmp/slate-v2`:
+Required Ralph verification from `Plate repo root`:
 
 ```bash
 bun test ./packages/slate-react/test/slate-runtime-provider-contract.test.tsx
@@ -1772,7 +1772,7 @@ Execution started for the closed Slate Ralplan.
 | Field | Value |
 | --- | --- |
 | Status | complete |
-| Owner | `.tmp/slate-v2/packages/slate-react` |
+| Owner | `packages/slate-react` |
 | Public behavior | `<Slate editor>` hosts multiple root-bound `<Editable root>` surfaces without app-created views. |
 | Trigger | Public React API behavior requires red-green-refactor proof. |
 | Scope | Package API/hooks/provider, canonical multi-root example, focused package/browser verification. |

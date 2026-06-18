@@ -1,0 +1,107 @@
+---
+title: "Using TypeScript"
+---
+
+# Using TypeScript
+
+Slate types custom document models through editor value generics. Define the
+element and text shapes for your editor, create a `Value` from the element
+union, then pass that value to `createEditor<Value>()` or
+`useSlateEditor<Value>()` when React owns the editor lifetime.
+
+## Defining Element And Text Types
+
+```typescript
+import { type ElementOf, type TextOf, type ValueOf } from '@platejs/slate'
+import { useSlateEditor, type ReactEditor } from '@platejs/slate-react'
+
+type CustomText = { text: string; bold?: true }
+
+type ParagraphElement = {
+  type: 'paragraph'
+  children: CustomText[]
+}
+
+type HeadingElement = {
+  type: 'heading'
+  level: number
+  children: CustomText[]
+}
+
+type CustomValue = (ParagraphElement | HeadingElement)[]
+type CustomEditor = ReactEditor<CustomValue>
+
+const useCustomEditor = () => {
+  const editor = useSlateEditor<CustomValue>()
+
+  type CustomElement = ElementOf<typeof editor>
+  type EditorText = TextOf<typeof editor>
+  type EditorValue = ValueOf<typeof editor>
+
+  return editor
+}
+```
+
+## Annotating Initial Values
+
+Annotate the editor's initial value with your value type.
+
+```tsx
+import { Editable, Slate, useSlateEditor } from '@platejs/slate-react'
+
+type CustomText = { text: string; bold?: true }
+type ParagraphElement = { type: 'paragraph'; children: CustomText[] }
+type CustomValue = ParagraphElement[]
+
+const initialValue: CustomValue = [
+  {
+    type: 'paragraph',
+    children: [{ text: 'A line of text in a paragraph.' }],
+  },
+]
+
+const App = () => {
+  const editor = useSlateEditor<CustomValue>({ initialValue })
+
+  return (
+    <Slate editor={editor}>
+      <Editable />
+    </Slate>
+  )
+}
+```
+
+## Working With Nodes
+
+Use exported helper types to derive the document types from an editor instead
+of duplicating unions at every call site.
+
+```typescript
+import type { ElementOf, TextOf, ValueOf } from '@platejs/slate'
+
+type CustomElement = ElementOf<typeof editor>
+type CustomText = TextOf<typeof editor>
+type CustomValue = ValueOf<typeof editor>
+```
+
+When reading a generic `Node`, narrow it before accessing element-specific
+properties.
+
+```typescript
+import { ElementApi, type Node } from '@platejs/slate'
+
+const isParagraph = (node: Node) =>
+  ElementApi.isElement(node) && node.type === 'paragraph'
+```
+
+## Multiple Document Models
+
+Use a different `Value` type for each editor model.
+
+```typescript
+const articleEditor = createEditor<ArticleValue>()
+const commentEditor = createEditor<CommentValue>()
+```
+
+Each editor carries its value through `ValueOf<typeof editor>`,
+`ElementOf<typeof editor>`, and `TextOf<typeof editor>`.

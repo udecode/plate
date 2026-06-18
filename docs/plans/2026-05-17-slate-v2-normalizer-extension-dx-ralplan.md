@@ -16,7 +16,7 @@ Next pass: none
 
 ## Ralph Execution Grounding
 
-Task statement: implement the accepted follow-up in `.tmp/slate-v2`: split
+Task statement: implement the accepted follow-up in `Plate repo root`: split
 extension normalization into `normalizers.editor` for editor-root/value repair
 and `normalizers.node` for non-root node repair, keep scoped normalizer `tx`,
 migrate `forced-layout` off `WeakSet + commitListeners`, and prove
@@ -50,13 +50,13 @@ Constraints:
 
 Likely touchpoints:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-- `.tmp/slate-v2/packages/slate/src/core/normalize-node.ts`
-- `.tmp/slate-v2/packages/slate/test/normalization-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`
-- `.tmp/slate-v2/scripts/benchmarks/core/compare/normalization.mjs`
-- `.tmp/slate-v2/site/examples/ts/forced-layout.tsx`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/core/editor-extension.ts`
+- `packages/slate/src/core/normalize-node.ts`
+- `packages/slate/test/normalization-contract.ts`
+- `packages/slate/test/public-surface-contract.ts`
+- `benchmarks/slate-v2/donor/core/compare/normalization.mjs`
+- `apps/www/src/app/(app)/examples/slate/_examples/forced-layout.tsx`
 
 Execution state: active under Ralph as of 2026-05-17. Completion state is
 `active goal state` and stays
@@ -511,7 +511,7 @@ Run from cwd:
 
 No broader browser matrix is required for the plan itself. If Ralph touches the
 normalizer engine, the implementation closeout should also run the package
-normalization tests and the broad `bun check` gate from `.tmp/slate-v2`.
+normalization tests and the broad `bun check` gate from `Plate repo root`.
 
 ## Performance Review And Legacy Normalizer Benchmark
 
@@ -1151,7 +1151,7 @@ Gate results:
 | Current pass is closure/final-gates    | pass   | Completion state records `current_pass: closure-final-gates`.                                                                    |
 | Final handoff complete                 | pass   | The final handoff below lists public API, runtime, migration, issue accounting, rejected alternatives, and implementation gates. |
 | Issue accounting conservative          | pass   | No new fixed or improved issue claim; planning sync added to `issue-coverage-matrix.md`.                                         |
-| Sibling source untouched by this skill | pass   | Slate Ralplan artifacts only; implementation gates point to `.tmp/slate-v2` for Ralph.                                           |
+| Sibling source untouched by this skill | pass   | Slate Ralplan artifacts only; implementation gates point to `Plate repo root` for Ralph.                                           |
 | Completion state can close             | pass   | Earlier pass rows were complete before this activation; closure is the only pass completed in this activation.                   |
 
 Final handoff status: complete.

@@ -826,7 +826,7 @@ No claim that current slate-yjs can migrate without adapter work.
 | DOM/React regression            | Existing DOM bridge and React provider contracts stay green after `dom()` / `react()` extension conversion. Add installed-handle contracts for `editor.api.dom` / `editor.api.react` with no public `DOMEditor`, `ReactEditor`, `editor.dom`, `state.dom`, or `tx.dom`. |
 | Full method override regression | Existing transform, query, normalizer, operation middleware, and commit listener contracts stay green. No old override coverage is lost.                                                                                                                                |
 | Example DX regression           | Examples migrate wrappers to extension values and compile without `as CustomEditor` recovery casts.                                                                                                                                                                     |
-| Browser regression              | Focused Playwright rows for checklists, editable voids, markdown shortcuts, inlines, richtext, and history undo run from `.tmp/slate-v2`.                                                                                                                               |
+| Browser regression              | Focused Playwright rows for checklists, editable voids, markdown shortcuts, inlines, richtext, and history undo run from `Plate repo root`.                                                                                                                               |
 | Plate migration risk            | Plate-facing type proof shows raw Slate extension groups can be consumed by a Plate plugin bridge without exposing Plate plugins in raw Slate.                                                                                                                          |
 | slate-yjs risk                  | Collaboration package proof covers operation middleware and remote update metadata before adapter migration is claimed.                                                                                                                                                 |
 
@@ -894,7 +894,7 @@ absolute-best shape does not change back to wrappers, and it does not expose
 | Migration                      | Hard but mechanical. Wrapper usages are widespread enough that a soft dual API will rot.                                   | Hard-cut public wrappers and migrate examples/tests/docs in one Ralph lane. Keep internal installer only for core tests if needed.                                                                                                   |
 | Plate                          | Good boundary. Raw Slate should not copy Plate's product plugin records, options, component registry, or transform facade. | Plate can bridge plugins to Slate extensions internally; raw Slate keeps `extensions`, `state`, `tx`, and narrow installed handles under `editor.api`.                                                                               |
 | slate-yjs                      | Good substrate, not free. Current slate-yjs is wrapper/root-mutation shaped.                                               | Treat `yjs()` as later adapter work with operation middleware, commit listeners, runtime state, and capabilities. No "drop-in migration" claim.                                                                                      |
-| Regression proof               | Not enough yet. Current proof matrix is broad, but the target needs hard public-surface and benchmark assertions.          | Add public-surface/type tests before code, then run focused package tests, browser rows, benchmark lanes, and `bun check` from `.tmp/slate-v2`.                                                                                      |
+| Regression proof               | Not enough yet. Current proof matrix is broad, but the target needs hard public-surface and benchmark assertions.          | Add public-surface/type tests before code, then run focused package tests, browser rows, benchmark lanes, and `bun check` from `Plate repo root`.                                                                                      |
 
 DX verdict:
 
@@ -1173,7 +1173,7 @@ Expanded proof plan:
 | Type contracts     | Prove `createEditor({ extensions })` and `useSlateEditor({ extensions })` infer `state.history`, `tx.history`, `editor.api.history`, `editor.api.dom`, `editor.api.react`, and `editor.getApi(extensionToken)` only when installed. Add negative tests for uninstalled handles, string `getApi`, fresh-instance `getApi`, duplicated history APIs on `editor.api.history`, and fallback `CustomEditor` intersections. |
 | History behavior   | Existing history tests stay green. Add stack read tests through `state.history`, undo/redo tests through `tx.history`, and `withoutSaving` / `withMerging` / `withNewBatch` tests through `editor.api.history`.                                                                                                                                                                                                       |
 | DOM/React behavior | Existing DOM and React package tests stay green. Add installed-handle tests for focus, resolvePath, clipboard, mount/unmount, read-only, composition, and selection reconciliation.                                                                                                                                                                                                                                   |
-| Browser rows       | Run focused Playwright examples for checklists, editable voids, markdown shortcuts, inlines, richtext, and history undo from `.tmp/slate-v2`.                                                                                                                                                                                                                                                                         |
+| Browser rows       | Run focused Playwright examples for checklists, editable voids, markdown shortcuts, inlines, richtext, and history undo from `Plate repo root`.                                                                                                                                                                                                                                                                         |
 | Performance        | Preserve transform/query no-handler fast paths, add operation middleware empty-Set fast path, benchmark zero/one/many installed groups and handles, and rerun core plus React benchmarks.                                                                                                                                                                                                                             |
 | Migration/adoption | Migrate first-party examples and docs in the same Ralph lane. Docs describe current API only. PR reference sync must remove stale `withEditor` rationale.                                                                                                                                                                                                                                                             |
 | Package boundary   | Keep raw Slate on `extensions`, `state`, `tx`, and narrow `editor.api` handles. Plate keeps product `plugins`, product APIs, transforms, components, options, and rule families.                                                                                                                                                                                                                                      |
@@ -1508,8 +1508,8 @@ Closure checks:
 | Scheduled pass ledger          | pass   | Pass-state rows 1 through 11 are `complete`; row 12 is closed in this pass.                                                                                                                                                                                        |
 | Reference accepted API wording | pass   | Scoped grep over `docs/slate-v2/references/pr-description.md` finds no accepted `withEditor`, wrapper-option, `editor.dom`, `DOMEditor.findPath`, `state.dom`, or `tx.dom` wording. Historical evidence and rejected examples stay only in the plan/issue dossier. |
 | Issue claim accounting         | pass   | Pass 11 records `New fixed issue claims: 0` and `New improved issue claims: 0`; PR reference fixed issue count stays `32`.                                                                                                                                         |
-| Slate v2 source boundary       | pass   | Slate Ralplan edited only planning, reference, ledger, and scoped `.tmp` artifacts. No `.tmp/slate-v2` implementation/test/package edits were made in this planning lane.                                                                                          |
-| Verification ownership         | pass   | This is planning-only closure. `plate-2` verification covers plan/reference/state artifacts; the later Ralph implementation must run `.tmp/slate-v2` public-surface, type, browser, benchmark, and package gates before claiming implementation release readiness. |
+| Slate v2 source boundary       | pass   | Slate Ralplan edited only planning, reference, ledger, and scoped `.tmp` artifacts. No `Plate repo root` implementation/test/package edits were made in this planning lane.                                                                                          |
+| Verification ownership         | pass   | This is planning-only closure. `plate-2` verification covers plan/reference/state artifacts; the later Ralph implementation must run `Plate repo root` public-surface, type, browser, benchmark, and package gates before claiming implementation release readiness. |
 | Completion state               | pass   | Scoped completion file may move to `status: done`, `current_pass: closure-score-and-final-gates`, `next_pass: none`, and `next_action: none`.                                                                                                                      |
 
 Final closure score:
@@ -1860,7 +1860,7 @@ extension handles.
    `HistoryEditor`, `DOMEditor`, and `ReactEditor` from app-facing exports.
 9. Update docs and PR reference to current API only, no migration-story wording.
 10. Run focused package tests, browser rows, typecheck, lint, and `bun check`
-    from `.tmp/slate-v2`.
+    from `Plate repo root`.
 
 ## Fast Driver Gates
 
@@ -2042,7 +2042,7 @@ gates are still pending.
 Status: complete for Slate Ralplan planning.
 
 Implementation status: not started by this skill. A later Ralph pass should
-execute the plan in `.tmp/slate-v2`.
+execute the plan in `Plate repo root`.
 
 ## Ralph Execution Start - 2026-05-17
 
@@ -2056,37 +2056,37 @@ Current pass:
 
 - `current_pass: tdd-pass`
 - `current_pass_status: in_progress`
-- `current_pass_owner: .tmp/slate-v2/packages/slate`
+- `current_pass_owner: packages/slate`
 - `current_pass_scope: creation-time extension installation and typed installed
 API contracts`
 
 Initial tracer evidence:
 
-- Live `.tmp/slate-v2` still exposes `withHistory`, `HistoryEditor`, `withDOM`,
+- Live `Plate repo root` still exposes `withHistory`, `HistoryEditor`, `withDOM`,
   `withReact`, `useSlateEditor({ withEditor })`, public `editor.extend`, and
   wrapper-based tests/examples.
 - Existing useful test owners include
-  `.tmp/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts`,
-  `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`,
-  `.tmp/slate-v2/packages/slate/test/tsconfig.generic-types.json`,
-  `.tmp/slate-v2/packages/slate-history/test/generic-history-contract.ts`, and
-  `.tmp/slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx`.
+  `packages/slate/test/generic-extension-namespace-contract.ts`,
+  `packages/slate/test/extension-methods-contract.ts`,
+  `packages/slate/test/tsconfig.generic-types.json`,
+  `packages/slate-history/test/generic-history-contract.ts`, and
+  `packages/slate-react/test/generic-react-editor-contract.tsx`.
 
 First red target:
 
-- Add `.tmp/slate-v2/packages/slate/test/generic-extension-install-contract.ts`.
+- Add `packages/slate/test/generic-extension-install-contract.ts`.
 - Add that file to
-  `.tmp/slate-v2/packages/slate/test/tsconfig.generic-types.json`.
-- Run `bun --filter slate typecheck` from `.tmp/slate-v2`.
+  `packages/slate/test/tsconfig.generic-types.json`.
+- Run `bun --filter slate typecheck` from `Plate repo root`.
 - Expected red: `createEditor({ extensions })`, `editor.api`, and
   `editor.getApi(...)` are not implemented yet.
 
 Red result:
 
-- Added `.tmp/slate-v2/packages/slate/test/generic-extension-install-contract.ts`.
+- Added `packages/slate/test/generic-extension-install-contract.ts`.
 - Added it to
-  `.tmp/slate-v2/packages/slate/test/tsconfig.generic-types.json`.
-- Ran `bun --filter slate typecheck` from `.tmp/slate-v2`.
+  `packages/slate/test/tsconfig.generic-types.json`.
+- Ran `bun --filter slate typecheck` from `Plate repo root`.
 - Failure is expected and points at the right owner:
   - `CreateEditorOptions` does not accept `extensions`.
   - `Editor<CustomValue>` does not expose `api`.
@@ -2095,7 +2095,7 @@ Red result:
 
 Green result:
 
-- Implemented `createEditor({ extensions })` in `.tmp/slate-v2/packages/slate`.
+- Implemented `createEditor({ extensions })` in `packages/slate`.
 - Added installed-extension inference for `editor.read`, `editor.update`,
   `editor.api`, and `editor.getApi(extensionToken)`.
 - Added runtime token identity for `editor.getApi(extensionToken)` so a fresh
@@ -2111,13 +2111,13 @@ pending for examples/docs/browser/final gates.
 
 Red result:
 
-- Replaced `.tmp/slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx`
+- Replaced `packages/slate-react/test/generic-react-editor-contract.tsx`
   with the hard-cut target: `react()`, `createReactEditor()`,
   `useSlateEditor({ extensions })`, `editor.api.react`,
   `editor.api.dom`, `editor.api.clipboard`, and negative tests for public
   `ReactEditor`, public `withReact`, and `withEditor`.
 - Ran `bun x tsc --project packages/slate-react/test/tsconfig.generic-types.json --noEmit`
-  from `.tmp/slate-v2`.
+  from `Plate repo root`.
 - Failure was expected: `slate-react` exported no `react()` or
   `createReactEditor()`, stale `withReact` imports still existed, and
   `useSlateEditor` still accepted `withEditor`.
@@ -2160,10 +2160,10 @@ Next owner:
 
 Green verification:
 
-- `bun --filter slate typecheck` from `.tmp/slate-v2`: passed.
-- `bun test ./packages/slate/test/public-surface-contract.ts ./packages/slate/test/generic-extension-namespace-contract.ts ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/query-extension-contract.ts ./packages/slate/test/normalization-contract.ts` from `.tmp/slate-v2`: 390 pass, 0 fail.
-- `bun lint:fix` from `.tmp/slate-v2`: passed.
-- Reran `bun --filter slate typecheck` from `.tmp/slate-v2` after lint: passed.
+- `bun --filter slate typecheck` from `Plate repo root`: passed.
+- `bun test ./packages/slate/test/public-surface-contract.ts ./packages/slate/test/generic-extension-namespace-contract.ts ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/query-extension-contract.ts ./packages/slate/test/normalization-contract.ts` from `Plate repo root`: 390 pass, 0 fail.
+- `bun lint:fix` from `Plate repo root`: passed.
+- Reran `bun --filter slate typecheck` from `Plate repo root` after lint: passed.
 - Reran the focused core contract tests after lint: 390 pass, 0 fail.
 
 History slice result:
@@ -2171,10 +2171,10 @@ History slice result:
 - Replaced the history generic type contract with the final API shape:
   `history()`, `state.history`, `tx.history`, `editor.api.history`, and
   `editor.getApi(HistoryExtension)`.
-- Implemented `.tmp/slate-v2/packages/slate-history/src/history-extension.ts`.
+- Implemented `packages/slate-history/src/history-extension.ts`.
 - Exported `history()` from `slate-history`.
 - Removed stale `withHistory` and `HistoryEditor` source files from
-  `.tmp/slate-v2/packages/slate-history/src`.
+  `packages/slate-history/src`.
 - Migrated focused history tests away from editor-root history fields and root
   undo/redo methods.
 - Updated core installed-group extraction so declared state/tx groups resolve
@@ -2184,22 +2184,22 @@ History slice result:
 History verification:
 
 - `bun x tsc --project packages/slate-history/test/tsconfig.generic-types.json --noEmit`
-  from `.tmp/slate-v2`: failed red, then passed after implementation.
-- `bun --filter slate-history typecheck` from `.tmp/slate-v2`: passed.
+  from `Plate repo root`: failed red, then passed after implementation.
+- `bun --filter slate-history typecheck` from `Plate repo root`: passed.
 - `bun test ./packages/slate-history/test/history-contract.ts ./packages/slate-history/test/integrity-contract.ts ./packages/slate-history/test/index.spec.ts`
-  from `.tmp/slate-v2`: 50 pass, 1 skip, 0 fail.
-- `bun --filter slate typecheck` from `.tmp/slate-v2`: passed after core
+  from `Plate repo root`: 50 pass, 1 skip, 0 fail.
+- `bun --filter slate typecheck` from `Plate repo root`: passed after core
   type-helper changes.
-- `bun lint:fix` from `.tmp/slate-v2`: passed.
+- `bun lint:fix` from `Plate repo root`: passed.
 - Reran focused history type/runtime gates after lint: passed.
 - `rg -n "withHistory|HistoryEditor" packages/slate-history/src packages/slate-history/test/generic-history-contract.ts packages/slate-history/test/history-contract.ts packages/slate-history/test/integrity-contract.ts packages/slate-history/test/index.spec.ts`
-  from `.tmp/slate-v2`: no matches.
+  from `Plate repo root`: no matches.
 
 DOM slice result:
 
 - Added a DOM generic type contract for `dom()`, `editor.api.dom`, and
   `editor.api.clipboard`.
-- Implemented `dom()` in `.tmp/slate-v2/packages/slate-dom`.
+- Implemented `dom()` in `packages/slate-dom`.
 - Removed `withDOM` from the public `slate-dom` root.
 - Split clipboard into a sibling capability, not `editor.api.dom.clipboard`.
 - Migrated focused DOM/clipboard tests to `createEditor({ extensions: [dom()] })`
@@ -2210,19 +2210,19 @@ DOM slice result:
 DOM verification:
 
 - `bun x tsc --project packages/slate-dom/test/tsconfig.generic-types.json --noEmit`
-  from `.tmp/slate-v2`: failed red, then passed after implementation.
-- `bun --filter slate-dom typecheck` from `.tmp/slate-v2`: passed.
-- `bun --filter slate typecheck` from `.tmp/slate-v2`: passed after DOM changes.
-- `bun test` from `.tmp/slate-v2/packages/slate-dom`: 71 pass, 0 fail.
-- `bun lint:fix` from `.tmp/slate-v2`: passed.
+  from `Plate repo root`: failed red, then passed after implementation.
+- `bun --filter slate-dom typecheck` from `Plate repo root`: passed.
+- `bun --filter slate typecheck` from `Plate repo root`: passed after DOM changes.
+- `bun test` from `packages/slate-dom`: 71 pass, 0 fail.
+- `bun lint:fix` from `Plate repo root`: passed.
 - Reran focused DOM type/runtime gates after lint and internal rename: passed.
 
 Next implementation owner:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-- `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/create-editor.ts`
+- `packages/slate/src/core/editor-extension.ts`
+- `packages/slate/src/core/extension-registry.ts`
 
 Final target:
 
@@ -2255,4 +2255,4 @@ Required Ralph proof:
 - examples/docs teach extension values, not wrapper functions
 - browser rows cover touched React/DOM examples
 - benchmarks cover zero/one/many extension overhead and no-handler fast paths
-- broad `.tmp/slate-v2` gate runs before any implementation release claim
+- broad `Plate repo root` gate runs before any implementation release claim

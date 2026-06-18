@@ -159,7 +159,7 @@ Follow-ups:
 | Slate-close unopinionated DX           |  0.94 | Apps still call `editor.update`; `replace_children` names the Slate JSON parent-child array change instead of a paste event.                                           |
 | Plate and slate-yjs migration backbone |  0.90 | Plate sees no product API. yjs can consume a child splice directly or lower it inside one remote transaction.                                                          |
 | Regression-proof testing strategy      |  0.94 | The proof matrix now covers op apply/inverse, path/point/range refs, history, collab replay, benchmark, and browser cut/undo rows.                                     |
-| Research evidence completeness         |  0.93 | Gitcrawl, live ledgers, live `.tmp/slate-v2` source, and compiled Lexical/ProseMirror/Tiptap research all point at a range operation, not clipboard or virtualization. |
+| Research evidence completeness         |  0.93 | Gitcrawl, live ledgers, live `Plate repo root` source, and compiled Lexical/ProseMirror/Tiptap research all point at a range operation, not clipboard or virtualization. |
 | shadcn-style composability/minimalism  |  0.90 | No UI/product API surface. Keep it core-only.                                                                                                                          |
 
 Total: `0.92`.
@@ -182,49 +182,49 @@ Current #5992 proof:
 
 Current copy/fragment extraction:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts:285` defines the whole
+- `packages/slate/src/interfaces/node.ts:285` defines the whole
   top-level child fragment fast path.
-- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts:466` calls that fast path
+- `packages/slate/src/interfaces/node.ts:466` calls that fast path
   before falling back to the old range slicer.
 
 Current delete path:
 
-- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts:1613` detects
+- `packages/slate/src/transforms-text/delete-text.ts:1613` detects
   exact whole top-level block ranges.
-- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts:1659` deletes
+- `packages/slate/src/transforms-text/delete-text.ts:1659` deletes
   that range by looping from `endIndex` to `startIndex`.
-- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts:1678` emits a
+- `packages/slate/src/transforms-text/delete-text.ts:1678` emits a
   separate `remove_node` for every removed top-level child.
-- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts:1709` routes
+- `packages/slate/src/transforms-text/delete-text.ts:1709` routes
   matching ranges into that fast path.
 
 Current operation mechanics:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:103` defines
+- `packages/slate/src/interfaces/operation.ts:103` defines
   `replace_fragment` with full `children` and `newChildren` arrays.
-- `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:310` inverts
+- `packages/slate/src/interfaces/operation.ts:310` inverts
   `replace_fragment` by swapping those full arrays.
-- `.tmp/slate-v2/packages/slate/src/interfaces/transforms/general.ts:237` applies
+- `packages/slate/src/interfaces/transforms/general.ts:237` applies
   `remove_node` by replacing the parent child array once per node.
-- `.tmp/slate-v2/packages/slate/src/interfaces/transforms/general.ts:319`
+- `packages/slate/src/interfaces/transforms/general.ts:319`
   applies `replace_fragment` by replacing all children at `op.path`.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts:2013` classifies any
+- `packages/slate/src/core/public-state.ts:2013` classifies any
   `replace_fragment` commit as `replace`.
 
 Current benchmark:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs:475`
+- `benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs:475`
   measures cut as copy plus delete.
-- `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs:502`
+- `benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs:502`
   measures prepared edit-only cut.
-- `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs:597`
+- `benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs:597`
   records #5992 as the 50,000-block two-node cut pressure row.
 
 Current tests:
 
-- `.tmp/slate-v2/packages/slate/test/delete-contract.ts:13` locks bounded
+- `packages/slate/test/delete-contract.ts:13` locks bounded
   operation count for selected top-level block deletion.
-- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:86` locks whole
+- `packages/slate/test/clipboard-contract.ts:86` locks whole
   top-level fragment extraction from a large surrounding document.
 
 ## 6. Ecosystem Strategy Synthesis

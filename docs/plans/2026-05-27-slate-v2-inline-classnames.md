@@ -2,7 +2,7 @@
 
 Objective:
 Inline static CSS class-name constants in
-`/Users/zbeyens/git/plate-2/.tmp/slate-v2/site` example code. Completion
+`/Users/zbeyens/git/plate-2/apps/www` example code. Completion
 requires no static `const <name>Css = 'slate-...'` or equivalent static
 class-name constants in `site/examples/ts` or `site/components`, affected call
 sites using literal `className` strings or `cn()` for composition/conditionals,
@@ -28,11 +28,11 @@ Task source:
   names, use `cn()` for dynamic/combined class names.
 
 Completion threshold:
-- `rg -n 'const\s+\w+(Css|ClassName)\s*=|className=\{`|toneBadgeClassName|className=\{\w+Css\}|className:\s*\w+Css\b' .tmp/slate-v2/site/examples/ts .tmp/slate-v2/site/components`
+- `rg -n 'const\s+\w+(Css|ClassName)\s*=|className=\{`|toneBadgeClassName|className=\{\w+Css\}|className:\s*\w+Css\b' apps/www/src/app/(app)/examples/slate/_examples apps/www/components`
   returns no matches.
-- `rg -n "@emotion|emotion|css\(|cx\(" .tmp/slate-v2 --glob '!site/.next/**' --glob '!site/out/**'`
+- `rg -n "@emotion|emotion|css\(|cx\(" Plate repo root --glob '!site/.next/**' --glob '!site/out/**'`
   returns no matches.
-- `bun typecheck:site` and `bun lint` pass from `.tmp/slate-v2`.
+- `bun typecheck:site` and `bun lint` pass from `Plate repo root`.
 - Browser smoke passes on representative touched routes.
 
 Verification surface:
@@ -50,10 +50,10 @@ Constraints:
 - No PR/commit/push.
 
 Boundaries:
-- Source of truth: latest user prompt plus current `.tmp/slate-v2` files.
-- Allowed edit scope: `.tmp/slate-v2/site/examples/ts/**` and
-  `.tmp/slate-v2/site/components/**`.
-- Browser surface: `.tmp/slate-v2/site` examples app.
+- Source of truth: latest user prompt plus current `Plate repo root` files.
+- Allowed edit scope: `apps/www/src/app/(app)/examples/slate/_examples/**` and
+  `apps/www/components/**`.
+- Browser surface: `apps/www` examples app.
 - Tracker sync: N/A: no tracker item supplied.
 - Non-goals: package runtime/API work.
 
@@ -96,7 +96,7 @@ Work Checklist:
 - [x] Final handoff shape decided.
 - [x] Branch handling recorded for code-changing work: N/A with reason.
 - [x] Local-env-rot retry policy recorded: N/A, no install-corruption signature.
-- [x] Workspace authority recorded: proof commands ran in `.tmp/slate-v2`.
+- [x] Workspace authority recorded: proof commands ran in `Plate repo root`.
 - [x] High-risk note recorded: rendered examples touched; browser smoke required.
 - [x] Review/autoreview target selected or marked N/A: N/A, small mechanical
       cleanup with targeted source audit plus lint/typecheck/browser proof.
@@ -114,7 +114,7 @@ Completion Gates:
 | Targeted behavior verification | yes | Browser-smoke touched routes | Passed with expected selectors and no console errors |
 | TypeScript or typed config changed | yes | Run relevant typecheck | `bun typecheck:site` passed |
 | Package manifests, lockfile, or install graph changed | N/A | Record reason | No manifest/lockfile change in this pass |
-| Workspace authority proof | yes | Run in owning checkout | Commands ran in `.tmp/slate-v2` |
+| Workspace authority proof | yes | Run in owning checkout | Commands ran in `Plate repo root` |
 | Browser surface changed | yes | Browser proof | Local Chromium smoke passed |
 | Browser final proof | yes | Record artifact path | `/tmp/slate-v2-inline-classnames-search.png` |
 | CI-controlled template output changed | N/A | Record reason | No template output touched |
@@ -172,12 +172,12 @@ Error attempts:
 | Initial rg quoting typo | 2 | Split search commands and use single quotes for backtick patterns | Audits passed |
 
 Verification evidence:
-- `rg -n 'const\s+\w+(Css|ClassName)\s*=|className=\{`|toneBadgeClassName|className=\{\w+Css\}|className:\s*\w+Css\b' .tmp/slate-v2/site/examples/ts .tmp/slate-v2/site/components` -> no matches.
-- `rg -n "@emotion|emotion|css\(|cx\(" .tmp/slate-v2 --glob '!site/.next/**' --glob '!site/out/**'` -> no matches.
-- `bun lint:fix` from `.tmp/slate-v2` -> pass; fixed 8 files.
-- `bun typecheck:site` from `.tmp/slate-v2` -> pass.
-- `bun lint` from `.tmp/slate-v2` -> pass.
-- Browser smoke from `.tmp/slate-v2` against `http://localhost:3100` -> pass:
+- `rg -n 'const\s+\w+(Css|ClassName)\s*=|className=\{`|toneBadgeClassName|className=\{\w+Css\}|className:\s*\w+Css\b' apps/www/src/app/(app)/examples/slate/_examples apps/www/components` -> no matches.
+- `rg -n "@emotion|emotion|css\(|cx\(" Plate repo root --glob '!site/.next/**' --glob '!site/out/**'` -> no matches.
+- `bun lint:fix` from `Plate repo root` -> pass; fixed 8 files.
+- `bun typecheck:site` from `Plate repo root` -> pass.
+- `bun lint` from `Plate repo root` -> pass.
+- Browser smoke from `Plate repo root` against `http://localhost:3100` -> pass:
   pagination, search-highlighting, comment-mode, inlines, and images mounted
   expected selectors; search interaction produced highlight selector;
   `emotionClassCount: 0` on all checked routes; console `errors: []`.

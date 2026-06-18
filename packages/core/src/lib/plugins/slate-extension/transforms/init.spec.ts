@@ -1,4 +1,4 @@
-import type { TSelection } from '@platejs/slate';
+import type { TSelection } from '@platejs/slate-legacy';
 
 import { createSlateEditor } from '../../../editor';
 import { createSlatePlugin } from '../../../plugin/createSlatePlugin';

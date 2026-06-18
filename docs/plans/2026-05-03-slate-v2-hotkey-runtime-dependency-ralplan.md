@@ -523,7 +523,7 @@ Actions:
 
 Next action:
 
-- Add focused hotkey parity tests in `.tmp/slate-v2`, then replace the matcher and remove the dependency.
+- Add focused hotkey parity tests in `Plate repo root`, then replace the matcher and remove the dependency.
 
 ### 2026-05-03 hotkey hard cut completed
 
@@ -533,8 +533,8 @@ Supporting skills: `hard-cut`, `tdd`, `ce-compound`
 
 Actions:
 
-- Added Slate-owned hotkey matcher tests in `.tmp/slate-v2/packages/slate-dom/test/hotkeys.ts`.
-- Added Slate-owned matcher internals in `.tmp/slate-v2/packages/slate-dom/src/utils/hotkey-match.ts`.
+- Added Slate-owned hotkey matcher tests in `packages/slate-dom/test/hotkeys.ts`.
+- Added Slate-owned matcher internals in `packages/slate-dom/src/utils/hotkey-match.ts`.
 - Rewired `Hotkeys` to the Slate-owned matcher while preserving the public `Hotkeys` surface.
 - Migrated active examples and docs from `is-hotkey` to Slate-owned hotkey helpers.
 - Removed `is-hotkey` and `@types/is-hotkey` from active manifests and `bun.lock`.
@@ -567,7 +567,7 @@ Status: complete
 Actions:
 
 - Read `../is-hotkey/test/index.js` after the dependency clone was available.
-- Backfilled valuable public behavior rows into `.tmp/slate-v2/packages/slate-dom/test/hotkeys.ts`:
+- Backfilled valuable public behavior rows into `packages/slate-dom/test/hotkeys.ts`:
   - aliases for `cmd`, `space`, and `+`;
   - question mark and non-ASCII key matching;
   - multi-hotkey specs;
@@ -576,7 +576,7 @@ Actions:
   - platform-specific `mod`;
   - modifier-only keydown matching;
   - malformed modifier grammar rejection.
-- Updated `.tmp/slate-v2/packages/slate-dom/src/utils/hotkey-match.ts` to support modifier-only keydown and clearer invalid modifier errors.
+- Updated `packages/slate-dom/src/utils/hotkey-match.ts` to support modifier-only keydown and clearer invalid modifier errors.
 - Updated the solution note with the backfill rule.
 
 Verification:

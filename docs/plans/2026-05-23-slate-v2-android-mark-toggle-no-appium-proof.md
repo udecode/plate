@@ -8,7 +8,7 @@ Process cluster 9 as far as we honestly can without adding Appium.
 
 - Issue: `#6022` `[Android] Soft keyboard dismisses and cursor jumps when typing after toggling a mark on a collapsed selection`
 - Upstream PR evidence: `#6027`
-- Current local owner: `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
+- Current local owner: `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
 
 ## Evidence
 
@@ -52,8 +52,8 @@ Not allowed proof now:
 
 ## Changed Files
 
-- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
-- `.tmp/slate-v2/packages/slate-react/test/android-input-manager-contract.test.ts`
+- `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
+- `packages/slate-react/test/android-input-manager-contract.test.ts`
 - `docs/slate-issues/gitcrawl-v2-sync-ledger.md`
 - `docs/slate-v2/ledgers/fork-issue-dossier.md`
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md`
@@ -61,13 +61,13 @@ Not allowed proof now:
 
 ## Verification
 
-- Red: `.tmp/slate-v2/packages/slate-react: bun test:vitest test/android-input-manager-contract.test.ts`
+- Red: `packages/slate-react: bun test:vitest test/android-input-manager-contract.test.ts`
   failed because selection was `[0,0]@2` instead of `[0,1]@1`.
-- Green: `.tmp/slate-v2/packages/slate-react: bun test:vitest test/android-input-manager-contract.test.ts`
+- Green: `packages/slate-react: bun test:vitest test/android-input-manager-contract.test.ts`
   passed with `7` tests.
-- `.tmp/slate-v2: bun --filter slate-react typecheck` passed.
-- `.tmp/slate-v2: bun lint:fix` passed.
-- `.tmp/slate-v2: bun test:mobile-device-proof` passed and confirmed semantic/proxy rows cannot satisfy raw Android/iOS claims.
+- `Plate repo root: bun --filter slate-react typecheck` passed.
+- `Plate repo root: bun lint:fix` passed.
+- `Plate repo root: bun test:mobile-device-proof` passed and confirmed semantic/proxy rows cannot satisfy raw Android/iOS claims.
 - `plate-2: node tooling/scripts/completion-check.mjs` passed.
 
 ## Remaining Proof Gap

@@ -22,75 +22,75 @@ Status words:
 
 | File                                           | Status     | Note                                                                                                                                                                     |
 | ---------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `.tmp/slate-v2/bunfig.toml`                    | `ported`   | root Bun test discovery owner                                                                                                                                            |
-| `.tmp/slate-v2/bun.lock`                       | `ported`   | live lockfile owner                                                                                                                                                      |
-| `.tmp/slate-v2/turbo.json`                     | `ported`   | build/type task graph                                                                                                                                                    |
-| `.tmp/slate-v2/biome.jsonc`                    | `ported`   | live formatting/lint owner                                                                                                                                               |
-| `.tmp/slate-v2/eslint.config.mjs`              | `adapted`  | flat config landed; repo-wide source enforcement stays staged beyond tranche 1                                                                                           |
-| `.tmp/slate-v2/.gitignore`                     | `adapted`  | Bun/Turbo ignore entries added; no Yarn/PnP ignore lane kept                                                                                                             |
-| `.tmp/slate-v2/package.json`                   | `adapted`  | Bun/Turbo/Biome graph landed; root now runs Bun 1.3.12, React 19.2.5, Next 16.2.4, TypeScript 6.0.3, hard-cuts Rollup, and drives package builds through ESM-only tsdown |
-| `.tmp/slate-v2/config/babel/register.cjs`      | `adapted`  | source alias layer restored without `slate-browser` assumption                                                                                                           |
-| `.tmp/slate-v2/config/bun-test-setup.ts`       | `ported`   | Bun preload owns the workspace test bridge and path filtering                                                                                                            |
-| `.tmp/slate-v2/config/tsconfig.test.json`      | `adapted`  | Bun test typing now lives on the shared bundler-resolution test config                                                                                                   |
-| `.tmp/slate-v2/config/tsdown.config.mts`       | `ported`   | shared ESM-only package build owner                                                                                                                                      |
-| `.tmp/slate-v2/tsconfig.json`                  | `adapted`  | bundler resolution, Bun test globals, and the live package refs are now the root TS owner, including `slate-browser`                                                     |
-| `.tmp/slate-v2/.npmrc`                         | `archived` | pnpm-only config removed from the live repo                                                                                                                              |
-| `.tmp/slate-v2/pnpm-workspace.yaml`            | `archived` | pnpm workspace owner removed from the live repo                                                                                                                          |
-| `.tmp/slate-v2/pnpm-lock.yaml`                 | `archived` | Bun lockfile replaces it                                                                                                                                                 |
-| `.tmp/slate-v2/.yarnrc.yml`                    | `archived` | Yarn owner removed from live repo                                                                                                                                        |
-| `.tmp/slate-v2/yarn.lock`                      | `archived` | Bun lockfile replaces it                                                                                                                                                 |
-| `.tmp/slate-v2/config/rollup/rollup.config.js` | `archived` | Rollup owner removed from live repo                                                                                                                                      |
-| `.tmp/slate-v2/scripts/sync-package-types.mjs` | `archived` | declaration sync step removed with the tsdown cut                                                                                                                        |
+| `Plate repo root/bunfig.toml`                    | `ported`   | root Bun test discovery owner                                                                                                                                            |
+| `Plate repo root/bun.lock`                       | `ported`   | live lockfile owner                                                                                                                                                      |
+| `Plate repo root/turbo.json`                     | `ported`   | build/type task graph                                                                                                                                                    |
+| `Plate repo root/biome.jsonc`                    | `ported`   | live formatting/lint owner                                                                                                                                               |
+| `Plate repo root/eslint.config.mjs`              | `adapted`  | flat config landed; repo-wide source enforcement stays staged beyond tranche 1                                                                                           |
+| `Plate repo root/.gitignore`                     | `adapted`  | Bun/Turbo ignore entries added; no Yarn/PnP ignore lane kept                                                                                                             |
+| `Plate repo root/package.json`                   | `adapted`  | Bun/Turbo/Biome graph landed; root now runs Bun 1.3.12, React 19.2.5, Next 16.2.4, TypeScript 6.0.3, hard-cuts Rollup, and drives package builds through ESM-only tsdown |
+| `Plate repo root/config/babel/register.cjs`      | `adapted`  | source alias layer restored without `slate-browser` assumption                                                                                                           |
+| `Plate repo root/config/bun-test-setup.ts`       | `ported`   | Bun preload owns the workspace test bridge and path filtering                                                                                                            |
+| `Plate repo root/config/tsconfig.test.json`      | `adapted`  | Bun test typing now lives on the shared bundler-resolution test config                                                                                                   |
+| `Plate repo root/config/tsdown.config.mts`       | `ported`   | shared ESM-only package build owner                                                                                                                                      |
+| `Plate repo root/tsconfig.json`                  | `adapted`  | bundler resolution, Bun test globals, and the live package refs are now the root TS owner, including `slate-browser`                                                     |
+| `Plate repo root/.npmrc`                         | `archived` | pnpm-only config removed from the live repo                                                                                                                              |
+| `Plate repo root/pnpm-workspace.yaml`            | `archived` | pnpm workspace owner removed from the live repo                                                                                                                          |
+| `Plate repo root/pnpm-lock.yaml`                 | `archived` | Bun lockfile replaces it                                                                                                                                                 |
+| `Plate repo root/.yarnrc.yml`                    | `archived` | Yarn owner removed from live repo                                                                                                                                        |
+| `Plate repo root/yarn.lock`                      | `archived` | Bun lockfile replaces it                                                                                                                                                 |
+| `Plate repo root/config/rollup/rollup.config.js` | `archived` | Rollup owner removed from live repo                                                                                                                                      |
+| `tooling/slate-v2/donor/sync-package-types.mjs` | `archived` | declaration sync step removed with the tsdown cut                                                                                                                        |
 
 ## Tranche 1 Site And Workflow Files
 
 | File                                              | Status    | Note                                                                                                                                      |
 | ------------------------------------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `.tmp/slate-v2/site/next.config.js`               | `adapted` | Next 16-compatible turbopack config landed; invalid build-time eslint config and the old webpack-only branch are gone                     |
-| `.tmp/slate-v2/site/pages/api/index.ts`           | `ported`  | site path handling matches modern repo layout                                                                                             |
-| `.tmp/slate-v2/site/next-env.d.ts`                | `adapted` | stays generated; tranche 2 route typing now comes from `.next/types` inclusion in site tsconfig instead of a manual import                |
-| `.tmp/slate-v2/site/tsconfig.json`                | `adapted` | Next 16 site TS surface now uses bundler resolution, React JSX, explicit React types, and `.next/types` inclusion                         |
-| `.tmp/slate-v2/site/pages/examples/[example].tsx` | `adapted` | explicit example importer map replaced the template-string dynamic import so Next 16 stops bundling `custom-types.d.ts` as a route module |
-| `.tmp/slate-v2/playwright.config.ts`              | `adapted` | exported-site Playwright flow now builds and serves through Bun on port 3101                                                              |
-| `.tmp/slate-v2/.github/workflows/ci.yml`          | `ported`  | Bun CI owner                                                                                                                              |
-| `.tmp/slate-v2/.github/workflows/comment.yml`     | `ported`  | Bun snapshot workflow                                                                                                                     |
-| `.tmp/slate-v2/.github/workflows/release.yml`     | `ported`  | Bun/changesets release owner                                                                                                              |
-| `.tmp/slate-v2/README.md`                         | `ported`  | Bun/Turbo repo description                                                                                                                |
-| `.tmp/slate-v2/Readme.md`                         | `ported`  | same                                                                                                                                      |
-| `.tmp/slate-v2/docs/general/contributing.md`      | `ported`  | contributor instructions match tranche 1 graph                                                                                            |
+| `apps/www/next.config.js`               | `adapted` | Next 16-compatible turbopack config landed; invalid build-time eslint config and the old webpack-only branch are gone                     |
+| `apps/www/pages/api/index.ts`           | `ported`  | site path handling matches modern repo layout                                                                                             |
+| `apps/www/next-env.d.ts`                | `adapted` | stays generated; tranche 2 route typing now comes from `.next/types` inclusion in site tsconfig instead of a manual import                |
+| `apps/www/tsconfig.json`                | `adapted` | Next 16 site TS surface now uses bundler resolution, React JSX, explicit React types, and `.next/types` inclusion                         |
+| `apps/www/src/app/(app)/examples/slate/[example].tsx` | `adapted` | explicit example importer map replaced the template-string dynamic import so Next 16 stops bundling `custom-types.d.ts` as a route module |
+| `Plate repo root/playwright.config.ts`              | `adapted` | exported-site Playwright flow now builds and serves through Bun on port 3101                                                              |
+| `Plate repo root/.github/workflows/ci.yml`          | `ported`  | Bun CI owner                                                                                                                              |
+| `Plate repo root/.github/workflows/comment.yml`     | `ported`  | Bun snapshot workflow                                                                                                                     |
+| `Plate repo root/.github/workflows/release.yml`     | `ported`  | Bun/changesets release owner                                                                                                              |
+| `Plate repo root/README.md`                         | `ported`  | Bun/Turbo repo description                                                                                                                |
+| `Plate repo root/Readme.md`                         | `ported`  | same                                                                                                                                      |
+| `content/docs/slate/general/contributing.md`      | `ported`  | contributor instructions match tranche 1 graph                                                                                            |
 
 ## Tranche 1 Package Manifest Files
 
 | File                                                       | Status    | Note                                                                                                    |
 | ---------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------------- |
-| `.tmp/slate-v2/packages/slate/package.json`                | `adapted` | build now runs through tsdown and publishes ESM-only `dist/index.js` + `dist/index.d.ts`                |
-| `.tmp/slate-v2/packages/slate-history/package.json`        | `adapted` | build now runs through tsdown and publishes ESM-only `dist/index.js` + `dist/index.d.ts`                |
-| `.tmp/slate-v2/packages/slate-hyperscript/package.json`    | `adapted` | package is now explicitly module-typed and publishes ESM-only output through tsdown                     |
-| `.tmp/slate-v2/packages/slate-browser/package.json`        | `adapted` | private proof package now publishes ESM-only multi-subpath output through a package-local tsdown config |
-| `.tmp/slate-v2/packages/slate-dom/package.json`            | `adapted` | build now runs through tsdown and publishes ESM-only `dist/index.js` + `dist/index.d.ts`                |
-| `.tmp/slate-v2/packages/slate-react/package.json`          | `adapted` | build now runs through tsdown, publishes ESM-only output, and keeps React 19.2.5 / React 19 peer floor  |
-| `.tmp/slate-v2/packages/slate-browser/README.md`           | `adapted` | package docs now describe the Bun-era package-local and root convenience commands only                  |
-| `.tmp/slate-v2/packages/slate-browser/tsconfig.build.json` | `ported`  | build-time declaration owner for the proof package                                                      |
-| `.tmp/slate-v2/packages/slate-browser/tsconfig.test.json`  | `adapted` | source + browser-test typecheck owner without cross-runtime Bun/Vitest global conflicts                 |
-| `.tmp/slate-v2/packages/slate-browser/tsdown.config.mts`   | `adapted` | package-local multi-entry build owner for `browser`, `core`, `playwright`, and `transports` subpaths    |
-| `.tmp/slate-v2/packages/slate-history/tsconfig.build.json` | `ported`  | build-time declaration owner                                                                            |
-| `.tmp/slate-v2/packages/slate-dom/tsconfig.build.json`     | `ported`  | build-time declaration owner                                                                            |
-| `.tmp/slate-v2/packages/slate-react/tsconfig.build.json`   | `ported`  | build-time declaration owner                                                                            |
+| `packages/slate/package.json`                | `adapted` | build now runs through tsdown and publishes ESM-only `dist/index.js` + `dist/index.d.ts`                |
+| `packages/slate-history/package.json`        | `adapted` | build now runs through tsdown and publishes ESM-only `dist/index.js` + `dist/index.d.ts`                |
+| `packages/slate-hyperscript/package.json`    | `adapted` | package is now explicitly module-typed and publishes ESM-only output through tsdown                     |
+| `packages/browser/package.json`        | `adapted` | private proof package now publishes ESM-only multi-subpath output through a package-local tsdown config |
+| `packages/slate-dom/package.json`            | `adapted` | build now runs through tsdown and publishes ESM-only `dist/index.js` + `dist/index.d.ts`                |
+| `packages/slate-react/package.json`          | `adapted` | build now runs through tsdown, publishes ESM-only output, and keeps React 19.2.5 / React 19 peer floor  |
+| `packages/browser/README.md`           | `adapted` | package docs now describe the Bun-era package-local and root convenience commands only                  |
+| `packages/browser/tsconfig.build.json` | `ported`  | build-time declaration owner for the proof package                                                      |
+| `packages/browser/tsconfig.test.json`  | `adapted` | source + browser-test typecheck owner without cross-runtime Bun/Vitest global conflicts                 |
+| `packages/browser/tsdown.config.mts`   | `adapted` | package-local multi-entry build owner for `browser`, `core`, `playwright`, and `transports` subpaths    |
+| `packages/slate-history/tsconfig.build.json` | `ported`  | build-time declaration owner                                                                            |
+| `packages/slate-dom/tsconfig.build.json`     | `ported`  | build-time declaration owner                                                                            |
+| `packages/slate-react/tsconfig.build.json`   | `ported`  | build-time declaration owner                                                                            |
 
 ## Tranche 2 Runtime And Compatibility Files
 
 | File                                                                                              | Status    | Note                                                                                                                                     |
 | ------------------------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| `.tmp/slate-v2/config/typescript/tsconfig.json`                                                   | `adapted` | TS6 baseline moved the repo onto bundler resolution and dropped the deprecated node resolver                                             |
-| `.tmp/slate-v2/playwright/tsconfig.json`                                                          | `adapted` | Playwright TS now matches the modern ESM/Bundler toolchain, TS6 baseline, and explicit Node typing                                       |
-| `.tmp/slate-v2/site/tsconfig.example.json`                                                        | `adapted` | example TS config now matches the live bundler-resolution baseline                                                                       |
-| `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`                                  | `adapted` | React 19 type fallout was closed with strict `useRef` init and input-event typing fixes only                                             |
-| `.tmp/slate-v2/packages/slate-react/src/components/restore-dom/restore-dom.tsx`                   | `adapted` | null-aware ref typing landed for React 19 without changing restore timing                                                                |
-| `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/use-android-input-manager.ts` | `adapted` | ref typing widened to the real DOM-ref shape under React 19                                                                              |
-| `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx`                           | `adapted` | stricter React 19 `useRef` initialization landed without selector behavior drift                                                         |
-| `.tmp/slate-v2/packages/slate-react/src/hooks/use-mutation-observer.ts`                           | `adapted` | null-aware ref typing landed without mutation-observer behavior drift                                                                    |
-| `.tmp/slate-v2/packages/slate-hyperscript/src/creators.ts`                                        | `adapted` | TS6 tightened `find()` results, so the selection creator now narrows `anchor` and `focus` honestly before use                            |
-| `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`                                            | `adapted` | TS6 tightened `Transforms.setNodes` inference, so the example now narrows the code-block setNodes call explicitly without behavior drift |
+| `Plate repo root/config/typescript/tsconfig.json`                                                   | `adapted` | TS6 baseline moved the repo onto bundler resolution and dropped the deprecated node resolver                                             |
+| `Plate repo root/playwright/tsconfig.json`                                                          | `adapted` | Playwright TS now matches the modern ESM/Bundler toolchain, TS6 baseline, and explicit Node typing                                       |
+| `apps/www/tsconfig.example.json`                                                        | `adapted` | example TS config now matches the live bundler-resolution baseline                                                                       |
+| `packages/slate-react/src/components/editable.tsx`                                  | `adapted` | React 19 type fallout was closed with strict `useRef` init and input-event typing fixes only                                             |
+| `packages/slate-react/src/components/restore-dom/restore-dom.tsx`                   | `adapted` | null-aware ref typing landed for React 19 without changing restore timing                                                                |
+| `packages/slate-react/src/hooks/android-input-manager/use-android-input-manager.ts` | `adapted` | ref typing widened to the real DOM-ref shape under React 19                                                                              |
+| `packages/slate-react/src/hooks/use-generic-selector.tsx`                           | `adapted` | stricter React 19 `useRef` initialization landed without selector behavior drift                                                         |
+| `packages/slate-react/src/hooks/use-mutation-observer.ts`                           | `adapted` | null-aware ref typing landed without mutation-observer behavior drift                                                                    |
+| `packages/slate-hyperscript/src/creators.ts`                                        | `adapted` | TS6 tightened `find()` results, so the selection creator now narrows `anchor` and `focus` honestly before use                            |
+| `apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx`                                            | `adapted` | TS6 tightened `Transforms.setNodes` inference, so the example now narrows the code-block setNodes call explicitly without behavior drift |
 
 ## Docs Split
 
@@ -171,32 +171,32 @@ package/runtime truth already captured in the draft stack.
 
 ### `packages/slate`
 
-- `.tmp/slate-v2/packages/slate/test/query-contract.ts`
+- `packages/slate/test/query-contract.ts`
   disposition: restored
   proof owner: `true-slate-rc-proof-ledger.md`
   note: direct query owner is back in the live repo and green
-- `.tmp/slate-v2/packages/slate/test/legacy-editor-nodes-fixtures.ts`
+- `packages/slate/test/legacy-editor-nodes-fixtures.ts`
   disposition: restored
   proof owner: `true-slate-rc-proof-ledger.md`
   note: direct `Editor.nodes/**` legacy oracle owner is back and green
-- `.tmp/slate-v2/packages/slate/test/legacy-interfaces-fixtures.ts`
+- `packages/slate/test/legacy-interfaces-fixtures.ts`
   disposition: restored
   proof owner: `true-slate-rc-proof-ledger.md`
   note: direct non-Editor interface oracle owner is back and green
-- `.tmp/slate-v2/packages/slate/test/legacy-fixture-utils.ts`
+- `packages/slate/test/legacy-fixture-utils.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: legacy fixture loading now runs on the Bun-era toolchain instead of
   dead Babel assumptions
-- `.tmp/slate-v2/packages/slate/src/editor/unhang-range.ts`
+- `packages/slate/src/editor/unhang-range.ts`
   disposition: adapted
   proof owner: `query-contract.ts`
   note: current void-aware unhang behavior now matches the restored query rows
-- `.tmp/slate-v2/packages/slate/src/editor/positions.ts`
+- `packages/slate/src/editor/positions.ts`
   disposition: adapted
   proof owner: `query-contract.ts`
   note: current positions iterator now matches the restored `voids` row
-- `.tmp/slate-v2/packages/slate/src/editor/fragment.ts`
+- `packages/slate/src/editor/fragment.ts`
   disposition: adapted
   proof owner: `query-contract.ts`
   note: collapsed fragment reads now fail closed to `[]` on the restored query
@@ -204,196 +204,196 @@ package/runtime truth already captured in the draft stack.
 
 ### `packages/slate-history`
 
-- `.tmp/slate-v2/packages/slate-history/src/history.ts`
+- `packages/slate-history/src/history.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: live `History` / `HistoryBatch` surface is restored in place
-- `.tmp/slate-v2/packages/slate-history/src/history-editor.ts`
+- `packages/slate-history/src/history-editor.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: history helper surface carries merge/save/split-once state
-- `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
+- `packages/slate-history/src/with-history.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: commit-time history capture now derives from the committed publish seam,
   and undo/redo replay runs inside one outer transaction per history batch
-- `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`
+- `packages/slate-history/test/history-contract.ts`
   disposition: created
   proof owner: `true-slate-rc-proof-ledger.md`
   note: kept undo/redo parity rows now have a direct owner
-- `.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts`
+- `packages/slate-history/test/integrity-contract.ts`
   disposition: created
   proof owner: `true-slate-rc-proof-ledger.md`
   note: batching, save/merge flags, stack-write seam, and commit-before-onChange
   capture now have a direct owner
-- `.tmp/slate-v2/scripts/benchmarks/core/compare/history.mjs`
+- `benchmarks/slate-v2/donor/core/compare/history.mjs`
   disposition: created
   proof owner: `true-slate-rc-proof-ledger.md`
   note: live `slate-history` compare owner is restored under Bun
 
 ### `packages/slate-react`
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/editable.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: mounted root, clipboard, and current Editable behavior are reviewed as
   live seams
-- `.tmp/slate-v2/packages/slate-react/src/plugin/react-editor.ts`
+- `packages/slate-react/src/plugin/react-editor.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: current ReactEditor helper namespace is a real kept surface
-- `.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts`
+- `packages/slate-react/src/plugin/with-react.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: withReact remains a real compatibility construction helper
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `packages/slate-react/test/provider-hooks-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused provider/hooks proof is now real and green
-- `.tmp/slate-v2/packages/slate-react/test/react-editor-contract.tsx`
+- `packages/slate-react/test/react-editor-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused ReactEditor proof is now real and green
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `packages/slate-react/test/surface-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused surface proof now owns translate policy, mount identity, and
   path-rebasing stability
-- `.tmp/slate-v2/packages/slate-react/test/editable-behavior.tsx`
+- `packages/slate-react/test/editable-behavior.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused Editable proof now owns callback partition and current value-vs-selection change behavior
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused projection/runtime proof now owns overlap-safe splitting, ancestor/editor propagation, and path-shift stability
-- `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts`
+- `packages/slate-react/src/annotation-store.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: first source-backed annotation store now exists over core bookmarks and projected runtime-id slices
-- `.tmp/slate-v2/packages/slate-react/src/projection-context.tsx`
+- `packages/slate-react/src/projection-context.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: source-backed projection provider context now exists instead of keeping projection wiring implicit inside one hook file
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
+- `packages/slate-react/src/projection-store.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: source-backed projection store now exists as a public runtime surface instead of hiding projection logic behind local hooks only
-- `.tmp/slate-v2/packages/slate-react/src/context.tsx`
+- `packages/slate-react/src/context.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: runtime-id and element-path contexts now exist as first-class public support surface
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `packages/slate-react/src/hooks/use-slate-node-ref.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: runtime-id DOM binding hook now also seeds plain-editor DOM key maps so
   app-owned selection/scroll rows can resolve text nodes honestly
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx`
+- `packages/slate-react/src/hooks/use-slate-selector.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: selector context now wakes plain editors as well as withReact editors
-- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
+- `packages/slate-react/src/components/slate.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: provider no longer churns runtime ids on auto-wrapped app-owned
   surfaces, and plain-editor changes now reach selector subscribers
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: public `Editable` now keeps projection/runtime ids stable,
   forwards app-owned block behavior honestly, and owns the shell/promotion
   large-document surface
-- `.tmp/slate-v2/packages/slate-react/src/large-document/create-island-plan.ts`
+- `packages/slate-react/src/large-document/create-island-plan.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: island planning now exists as an explicit large-document runtime seam
-- `.tmp/slate-v2/packages/slate-react/src/large-document/classify-island-kind.ts`
+- `packages/slate-react/src/large-document/classify-island-kind.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: shell previews now classify island semantics instead of rendering flat
   anonymous shells
-- `.tmp/slate-v2/packages/slate-react/src/large-document/island-shell.tsx`
+- `packages/slate-react/src/large-document/island-shell.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: inactive large-document islands now have a real shell owner with
   preview and promotion behavior
-- `.tmp/slate-v2/packages/slate-react/src/large-document/large-document-commands.ts`
+- `packages/slate-react/src/large-document/large-document-commands.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: shell-backed selection and full-document large-doc commands now have a
   named runtime owner
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotation-store.tsx`
+- `packages/slate-react/src/hooks/use-slate-annotation-store.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: source-backed annotation-store hook now exists as its own public surface
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-widget-store.tsx`
+- `packages/slate-react/src/hooks/use-slate-widget-store.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: source-backed widget-store hook now exists as its own public surface
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-element.tsx`
+- `packages/slate-react/src/components/slate-element.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public element host surface is now real
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-spacer.tsx`
+- `packages/slate-react/src/components/slate-spacer.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public spacer surface is now real
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-leaf.tsx`
+- `packages/slate-react/src/components/slate-leaf.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public leaf surface is now real
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-text.tsx`
+- `packages/slate-react/src/components/slate-text.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public text-node surface is now real
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-placeholder.tsx`
+- `packages/slate-react/src/components/slate-placeholder.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public placeholder surface is now real
-- `.tmp/slate-v2/packages/slate-react/src/components/text-string.tsx`
+- `packages/slate-react/src/components/text-string.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public text-string surface is now real
-- `.tmp/slate-v2/packages/slate-react/src/components/zero-width-string.tsx`
+- `packages/slate-react/src/components/zero-width-string.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public zero-width surface is now real
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-element.tsx`
+- `packages/slate-react/src/components/editable-element.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public editable element wrapper is now real
-- `.tmp/slate-v2/packages/slate-react/src/components/void-element.tsx`
+- `packages/slate-react/src/components/void-element.tsx`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: low-level public void wrapper surface is now real
-- `.tmp/slate-v2/packages/slate-react/test/primitives-contract.tsx`
+- `packages/slate-react/test/primitives-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused primitive proof now owns the recovered low-level public runtime surface
-- `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
+- `packages/slate-react/test/annotation-store-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused annotation proof now owns bookmark-backed range rebasing and projection-slice publication
-- `.tmp/slate-v2/packages/slate-react/src/widget-store.ts`
+- `packages/slate-react/src/widget-store.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: first source-backed widget store now exists for selection-driven widget visibility with local subscriptions
-- `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx`
+- `packages/slate-react/test/widget-layer-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused widget proof now owns local widget visibility and no-text-rerender selection widget behavior
-- `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`
+- `packages/slate-react/test/app-owned-customization.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused app-owned proof now owns markdown projections, markdown
   shortcuts, forced layout, and app-owned scroll forwarding
-- `.tmp/slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
+- `packages/slate-react/test/large-doc-and-scroll.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused large-document proof now owns shelling, shell promotion,
   shell-backed full-document selection, shell-backed paste, and the kept scroll
   forwarding seam
-- `.tmp/slate-v2/packages/slate-react/test/with-react-contract.tsx`
+- `packages/slate-react/test/with-react-contract.tsx`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: focused withReact proof now owns the Android pending-selection
@@ -401,24 +401,24 @@ package/runtime truth already captured in the draft stack.
 
 ### `packages/slate-dom`
 
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
+- `packages/slate-dom/src/plugin/dom-editor.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: mounted DOM bridge behavior still lives here, but it now also has a
   direct package proof owner
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts`
+- `packages/slate-dom/src/plugin/with-dom.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: clipboard boundary behavior still lives here, and shifted node keys are
   now preserved across insert/remove paths so mounted React surfaces keep their
   DOM identity; decorated multi-leaf clipboard export also strips render-only
   wrappers from copied HTML
-- `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`
+- `packages/slate-dom/test/bridge.ts`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: direct package bridge proof now owns path/point/range translation and
   decorated offset behavior
-- `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
+- `packages/slate-dom/test/clipboard-boundary.ts`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: direct package clipboard-boundary proof now owns fragment payload, HTML
@@ -426,7 +426,7 @@ package/runtime truth already captured in the draft stack.
 
 ### `packages/slate-browser`
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `packages/browser/src/playwright/index.ts`
   disposition: adapted
   proof owner: `docs/slate-browser/proof-lane-matrix.md`
   note: editor-first Playwright harness owns current example e2e, IME, anchor,
@@ -434,19 +434,19 @@ package/runtime truth already captured in the draft stack.
 
 ### `packages/slate-hyperscript`
 
-- `.tmp/slate-v2/packages/slate-hyperscript/src/index.ts`
+- `packages/slate-hyperscript/src/index.ts`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: public hyperscript export surface still matches the kept package claim
-- `.tmp/slate-v2/packages/slate-hyperscript/src/hyperscript.ts`
+- `packages/slate-hyperscript/src/hyperscript.ts`
   disposition: preserved
   proof owner: `true-slate-rc-proof-ledger.md`
   note: factory and shorthand creation surface remains source-compatible
-- `.tmp/slate-v2/packages/slate-hyperscript/test/index.spec.ts`
+- `packages/slate-hyperscript/test/index.spec.ts`
   disposition: adapted
   proof owner: `true-slate-rc-proof-ledger.md`
   note: fixture parsing and cursor/selection construction stay owned by the Bun fixture runner
-- `.tmp/slate-v2/packages/slate-hyperscript/test/smoke-contract.ts`
+- `packages/slate-hyperscript/test/smoke-contract.ts`
   disposition: added
   proof owner: `true-slate-rc-proof-ledger.md`
   note: draft smoke rows now have a direct Bun-owned proof owner instead of stale Mocha-only closure language
@@ -459,18 +459,18 @@ stays tracked in `true-slate-rc-proof-ledger.md`, not as fake file rows here.
 
 | Row                                                                                   | Status    | Why it matters                                                                                                         |
 | ------------------------------------------------------------------------------------- | --------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `.tmp/slate-v2/site/examples/ts/highlighted-text.tsx`                                 | `adapted` | overlap-safe highlight rendering now exists on the kept `createSlateProjectionStore` + `Editable` surface              |
-| `.tmp/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx`                    | `adapted` | durable annotation anchors now exist on the kept annotation store + projection store + annotation-widget surface       |
-| `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx`                      | `adapted` | explicit external overlay sources now exist on the kept projection-store + external refresh surface                    |
-| `.tmp/slate-v2/site/examples/ts/review-comments.tsx`                                  | `adapted` | comments/review UI now exists on the kept annotation store + widget store + inline review slice surface                |
-| `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`              | `adapted` | Chromium proof now owns highlight overlap selection, typing, and clipboard semantics without wrapper leakage           |
-| `.tmp/slate-v2/playwright/integration/examples/persistent-annotation-anchors.test.ts` | `adapted` | Chromium proof now owns bookmark-backed anchor persistence across fragment and text edits                              |
-| `.tmp/slate-v2/playwright/integration/examples/external-decoration-sources.test.ts`   | `adapted` | Chromium proof now owns explicit external overlay refresh behavior                                                     |
-| `.tmp/slate-v2/playwright/integration/examples/review-comments.test.ts`               | `adapted` | Chromium proof now owns comment creation, inline review slices, sidebar state, and annotation-backed widget visibility |
-| `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`      | `adapted` | explicit projection/runtime contract owner is green on the kept overlay runtime                                        |
-| `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`               | `adapted` | explicit annotation runtime contract owner is green on the kept annotation store path                                  |
-| `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx`                   | `adapted` | explicit widget runtime contract owner is green on the kept widget-store path                                          |
-| `.tmp/slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`                    | `adapted` | explicit large-doc runtime contract owner is green on the kept semantic-islands corridor surface                       |
+| `apps/www/src/app/(app)/examples/slate/_examples/highlighted-text.tsx`                                 | `adapted` | overlap-safe highlight rendering now exists on the kept `createSlateProjectionStore` + `Editable` surface              |
+| `apps/www/src/app/(app)/examples/slate/_examples/persistent-annotation-anchors.tsx`                    | `adapted` | durable annotation anchors now exist on the kept annotation store + projection store + annotation-widget surface       |
+| `apps/www/src/app/(app)/examples/slate/_examples/external-decoration-sources.tsx`                      | `adapted` | explicit external overlay sources now exist on the kept projection-store + external refresh surface                    |
+| `apps/www/src/app/(app)/examples/slate/_examples/review-comments.tsx`                                  | `adapted` | comments/review UI now exists on the kept annotation store + widget store + inline review slice surface                |
+| `apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts`              | `adapted` | Chromium proof now owns highlight overlap selection, typing, and clipboard semantics without wrapper leakage           |
+| `apps/www/tests/slate-browser/donor/examples/persistent-annotation-anchors.test.ts` | `adapted` | Chromium proof now owns bookmark-backed anchor persistence across fragment and text edits                              |
+| `apps/www/tests/slate-browser/donor/examples/external-decoration-sources.test.ts`   | `adapted` | Chromium proof now owns explicit external overlay refresh behavior                                                     |
+| `apps/www/tests/slate-browser/donor/examples/review-comments.test.ts`               | `adapted` | Chromium proof now owns comment creation, inline review slices, sidebar state, and annotation-backed widget visibility |
+| `packages/slate-react/test/projections-and-selection-contract.tsx`      | `adapted` | explicit projection/runtime contract owner is green on the kept overlay runtime                                        |
+| `packages/slate-react/test/annotation-store-contract.tsx`               | `adapted` | explicit annotation runtime contract owner is green on the kept annotation store path                                  |
+| `packages/slate-react/test/widget-layer-contract.tsx`                   | `adapted` | explicit widget runtime contract owner is green on the kept widget-store path                                          |
+| `packages/slate-react/test/large-doc-and-scroll.tsx`                    | `adapted` | explicit large-doc runtime contract owner is green on the kept semantic-islands corridor surface                       |
 
 ## Current Read
 

@@ -24,15 +24,15 @@ Completion threshold:
 - Score >= 0.92, no dimension below 0.85.
 - Every pass row complete or intentionally skipped with evidence.
 - The plan names the accepted shared hit-testing owner, regression tests,
-  issue/reference accounting, `.tmp/slate-v2` verification gates, and final
+  issue/reference accounting, `Plate repo root` verification gates, and final
   user-review handoff.
 - `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-29-pagination-left-margin-click-architecture.md`
   passes only during the closure pass.
 
 Verification surface:
 - Planning checks run in `plate-2`.
-- Slate v2 behavior/source claims must cite `.tmp/slate-v2`.
-- Execution proof must run from `.tmp/slate-v2`:
+- Slate v2 behavior/source claims must cite `Plate repo root`.
+- Execution proof must run from `Plate repo root`:
   - `bun --filter slate-react test -- slate-string-coordinate-placement root-interaction-resolver use-slate-root-chrome`
   - focused Chromium pagination rows covering staged and virtualized left
     wrapped-line margin clicks, right wrapped-line margin clicks, first-page
@@ -40,11 +40,11 @@ Verification surface:
   - `bun --filter slate-react typecheck`
   - `bun lint:fix`
   - `bun --filter slate-react build`
-  - dirty-local autoreview from `.tmp/slate-v2` if execution changes code
+  - dirty-local autoreview from `Plate repo root` if execution changes code
 
 Constraints:
 - Planning mode may edit only planning/research/issue/reference artifacts.
-- No `.tmp/slate-v2` implementation patch in this activation.
+- No `Plate repo root` implementation patch in this activation.
 - Best long-term owner wins over a pagination-only patch.
 - Raw Slate stays unopinionated; pagination is an example/layout stress surface,
   not a core product API.
@@ -53,10 +53,10 @@ Boundaries:
 - Allowed planning edit scope: `docs/plans/**`, `docs/research/**`,
   `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`,
   `docs/slate-v2/references/**`.
-- Execution scope, after user acceptance: `.tmp/slate-v2/packages/slate-react/src/editable/root-interaction-controller.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/slate-string-coordinate-placement.ts`,
+- Execution scope, after user acceptance: `packages/slate-react/src/editable/root-interaction-controller.ts`,
+  `packages/slate-react/src/editable/slate-string-coordinate-placement.ts`,
   focused `slate-react` tests, and
-  `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/pagination.test.ts`.
 - Do not change pagination content fixtures or mask the bug by moving margins.
 
 Blocked condition:
@@ -90,9 +90,9 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | `slate-plan` loaded; planning mode only. |
 | Active goal checked or created | yes | Active goal created for this lane. |
-| Source of truth read before edits | yes | User report/video plus live `.tmp/slate-v2` source and tests. |
+| Source of truth read before edits | yes | User report/video plus live `Plate repo root` source and tests. |
 | `docs/solutions` checked for non-trivial existing-code work | yes | `rg` found no exact left-margin solution; pagination/product-package solution is unrelated. |
-| Live `.tmp/slate-v2` grounding needed for current-state claims | yes | Source/test rows below. |
+| Live `Plate repo root` grounding needed for current-state claims | yes | Source/test rows below. |
 
 Work Checklist:
 - [x] Objective includes lane outcome, full pass schedule, one-pass-per-activation policy, completion threshold, verification surface, constraints, boundaries, and blocked condition.
@@ -106,15 +106,15 @@ Work Checklist:
 - [x] Slate maintainer objection ledger complete for every breaking/paradigm change, or marked N/A with reason.
 - [x] Verification workspace gate recorded for every Slate v2 planning/source claim; execution proof gates are queued for accepted-plan execution.
 - [x] TDD proof plan recorded for behavior/proof changes; N/A for executing TDD in planning mode because no implementation code was patched.
-- [x] Browser proof gaps, exact scenarios, and `.tmp/slate-v2` command routes recorded; N/A for captured Playwright proof until accepted-plan execution.
+- [x] Browser proof gaps, exact scenarios, and `Plate repo root` command routes recorded; N/A for captured Playwright proof until accepted-plan execution.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | yes | Close planning threshold; leave implementation proof queued for accepted-plan execution | Score 0.923, every planning pass row closed, issue/reference sync closed, and `.tmp/slate-v2` proof gates named for execution. |
-| Slate v2 source/runtime/browser claim | yes | Record live `.tmp/slate-v2` source proof and separate browser-proof gaps from execution proof | Current source/test owners are cited; exact Playwright/unit/type/lint/build gates are queued for accepted-plan execution from `.tmp/slate-v2`. |
+| Named verification threshold | yes | Close planning threshold; leave implementation proof queued for accepted-plan execution | Score 0.923, every planning pass row closed, issue/reference sync closed, and `Plate repo root` proof gates named for execution. |
+| Slate v2 source/runtime/browser claim | yes | Record live `Plate repo root` source proof and separate browser-proof gaps from execution proof | Current source/test owners are cited; exact Playwright/unit/type/lint/build gates are queued for accepted-plan execution from `Plate repo root`. |
 | Issue ledger or PR reference changed | yes | Issue-sync accounting checked live/manual ledgers and PR reference; no external ledger/reference mutation required because existing rows already carry the same no-claim/fixed-preserve posture | complete |
-| Autoreview for uncommitted implementation changes | later | Record N/A for planning-only closure; require dirty-local autoreview from `.tmp/slate-v2` after any accepted implementation patch | N/A now because this planning lane made no `.tmp/slate-v2` implementation diff. |
+| Autoreview for uncommitted implementation changes | later | Record N/A for planning-only closure; require dirty-local autoreview from `Plate repo root` after any accepted implementation patch | N/A now because this planning lane made no `Plate repo root` implementation diff. |
 | Final user-review handoff | yes | Record final handoff in this plan and emit it in final response | Final handoff recorded below; final chat response must include Done Handoff. |
 | Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-29-pagination-left-margin-click-architecture.md` | Passed: `[autogoal] complete: docs/plans/2026-05-29-pagination-left-margin-click-architecture.md`. |
 
@@ -149,17 +149,17 @@ Source-backed architecture north star:
 - target shape: Root/page chrome hit testing resolves to a deterministic visual
   line-edge point from DOM line rectangles before focus/restore fallback runs.
 - source evidence:
-  - `.tmp/slate-v2/packages/slate-react/src/editable/root-interaction-controller.ts:894`
+  - `packages/slate-react/src/editable/root-interaction-controller.ts:894`
     currently detects coordinate-based root chrome placement on activate-root or
     editable-root ignore paths.
-  - `.tmp/slate-v2/packages/slate-react/src/editable/root-interaction-controller.ts:921`
+  - `packages/slate-react/src/editable/root-interaction-controller.ts:921`
     builds `startRange` from `rootChromeCoordinatePlacement`, falling back to
     browser `resolveEventRange`.
-  - `.tmp/slate-v2/packages/slate-react/src/editable/slate-string-coordinate-placement.ts:69`
+  - `packages/slate-react/src/editable/slate-string-coordinate-placement.ts:69`
     chooses nearest string rect by vertical distance and horizontal center.
-  - `.tmp/slate-v2/packages/slate-react/src/editable/slate-string-coordinate-placement.ts:103`
+  - `packages/slate-react/src/editable/slate-string-coordinate-placement.ts:103`
     maps left-of-rect clicks to logical `start`.
-  - `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:1962`
+  - `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:1962`
     covers virtualized line start only for the first visible leaf/block target,
     not a wrapped continuation line.
 - rejected drift: Do not patch the pagination example with a special left
@@ -243,31 +243,31 @@ Decision brief:
 - follow-ups: issue-sync accounting, then closure score/final gates.
 
 Intent/boundary validation evidence:
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-root-chrome.ts:12-30`
+- `packages/slate-react/src/hooks/use-slate-root-chrome.ts:12-30`
   exposes only `disabled` and `selection`, and `:44-55` returns stable root
   chrome event props. This is sufficient; adding `onPageMarginClick`,
   `pageHitTesting`, or structural-DOM policy here would leak product layout into
   raw Slate.
-- `.tmp/slate-v2/packages/slate-react/src/index.ts:149-153` exports
+- `packages/slate-react/src/index.ts:149-153` exports
   `useSlateRootChrome`, while the string-coordinate helpers are not exported
   from the public package barrel. Keep line-edge hit testing internal.
-- `.tmp/slate-v2/packages/slate-react/src/editable/root-interaction-resolver.ts:160-193`
+- `packages/slate-react/src/editable/root-interaction-resolver.ts:160-193`
   keeps root chrome, editable root, native editable, external, and interactive
   descendants as distinct intent classes. Do not collapse them into a generic
   pagination margin handler.
-- `.tmp/slate-v2/packages/slate-react/src/editable/root-interaction-controller.ts:553-595`
+- `packages/slate-react/src/editable/root-interaction-controller.ts:553-595`
   finds the active editable root and asks string coordinate placement for a
   target. Rows `:897-925` then turn that placement into a range before browser
   fallback can steal the click.
-- `.tmp/slate-v2/packages/slate-react/src/editable/slate-string-coordinate-placement.ts:69-119`
+- `packages/slate-react/src/editable/slate-string-coordinate-placement.ts:69-119`
   chooses the nearest string rect and maps left/right physical edges to logical
   edges; `:165-233` resolves a line-edge model offset from character rects and
   grapheme boundaries. This is the correct fix owner.
-- `.tmp/slate-v2/packages/slate-react/test/slate-string-coordinate-placement.test.ts:107-154`
+- `packages/slate-react/test/slate-string-coordinate-placement.test.ts:107-154`
   already covers RTL physical/logical edge mapping, and `:156-170` starts the
   grapheme-boundary proof family. The missing unit row is wrapped continuation
   line start/end offset selection.
-- `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:1345-1417`
+- `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:1345-1417`
   and `:1420-1482` cover no-jump page margins/corners; `:1543-1581` covers
   right margin line end; `:1962-2028` covers virtualized first-line margin start.
   The missing browser row is left margin beside a wrapped continuation line with
@@ -458,35 +458,35 @@ Revision pass:
   fixed floors (`#3429`, `#4789`, `#4984`, `#5826` family) are preserve-only
   guardrails unless execution proof expands the claim.
 - remaining plan work: issue-sync accounting pass, then closure score/final
-  gates pass. No `.tmp/slate-v2` implementation under this planning goal.
+  gates pass. No `Plate repo root` implementation under this planning goal.
 
 Pressure pass findings:
-- performance: `.tmp/slate-v2/packages/slate-react/src/editable/slate-string-coordinate-placement.ts:47-67`
+- performance: `packages/slate-react/src/editable/slate-string-coordinate-placement.ts:47-67`
   currently scopes candidate strings to the active editable root and excludes
   nested editors. Keep that boundary. Do not widen to document-level or app-level
   scans.
-- performance: `.tmp/slate-v2/packages/slate-react/src/editable/slate-string-coordinate-placement.ts:76-97`
+- performance: `packages/slate-react/src/editable/slate-string-coordinate-placement.ts:76-97`
   builds all candidate string rects and sorts them just to select the nearest
   candidate. Execution should replace that with a single-pass best-candidate
   loop over mounted strings/rects. This is a real pressure finding: sorting is
   wasted work on every page-margin click.
-- performance: `.tmp/slate-v2/packages/slate-react/src/editable/slate-string-coordinate-placement.ts:165-233`
+- performance: `packages/slate-react/src/editable/slate-string-coordinate-placement.ts:165-233`
   does grapheme and `Range.getClientRects()` work only for the selected string.
   Keep it that way; do not inspect character rects for every mounted string.
-- React/runtime: `.tmp/slate-v2/packages/slate-react/src/editable/root-interaction-controller.ts:874-953`
+- React/runtime: `packages/slate-react/src/editable/root-interaction-controller.ts:874-953`
   keeps the mousedown path in event callbacks and refs, not React state. Execution
   must preserve that shape: no component state, no effects, no subscriptions, no
   rerender-driven pointer state.
-- drag/regression: `.tmp/slate-v2/packages/slate-react/src/editable/root-interaction-controller.ts:929-943`
+- drag/regression: `packages/slate-react/src/editable/root-interaction-controller.ts:929-943`
   seeds `pendingProjectedDrag` from the resolved coordinate range, and
   `:1000-1067` later applies projected drag. If execution changes this path, add
   a margin-drag guardrail; otherwise the click fix can still leave drag anchored
   to the raw browser point.
-- browser proof: `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:1543-1581`
+- browser proof: `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:1543-1581`
   currently proves right-margin placement, but the helper can select the first
   visible rect rather than the same wrapped continuation fragment. Execution
   should target the same visual fragment on both left and right.
-- browser proof: `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:1962-2028`
+- browser proof: `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:1962-2028`
   already proves virtualized bounded DOM with `< 1400` elements and `<= 8` page
   surfaces before a first-line margin click. The new wrapped-line virtualized row
   should keep the same bounded-DOM precondition.
@@ -568,21 +568,21 @@ Browser stress / parity strategy:
 Verification workspace gate:
 | Claim | Workspace | Command | Result | Owner |
 |-------|-----------|---------|--------|-------|
-| current root interaction owner inspected | `.tmp/slate-v2` | `nl -ba packages/slate-react/src/editable/root-interaction-controller.ts` | read | pass 1 |
-| current string coordinate owner inspected | `.tmp/slate-v2` | `nl -ba packages/slate-react/src/editable/slate-string-coordinate-placement.ts` | read | pass 1 |
-| current pagination proof gap inspected | `.tmp/slate-v2` | `nl -ba playwright/integration/examples/pagination.test.ts` | read | pass 1 |
+| current root interaction owner inspected | `Plate repo root` | `nl -ba packages/slate-react/src/editable/root-interaction-controller.ts` | read | pass 1 |
+| current string coordinate owner inspected | `Plate repo root` | `nl -ba packages/slate-react/src/editable/slate-string-coordinate-placement.ts` | read | pass 1 |
+| current pagination proof gap inspected | `Plate repo root` | `nl -ba playwright/integration/examples/pagination.test.ts` | read | pass 1 |
 | ProseMirror coordinate owner refreshed | sibling `../prosemirror` | `nl -ba ../prosemirror/view/src/domcoords.ts`, `index.ts`, `input.ts` | read | pass 5 |
 | React ProseMirror proof shape refreshed | sibling `../react-prosemirror` | `nl -ba ../react-prosemirror/src/components/__tests__/ProseMirror.selection.test.tsx` | read | pass 5 |
 | Tiptap/Pretext pagination boundary refreshed | sibling/docs research | `nl -ba ../tiptap-docs/...`, `nl -ba docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md` | read | pass 5 |
 | Evidence Kit control-plane refreshed | `plate-2` | `jq`/`rg` over benchmark registry and health latest | read | pass 5 |
-| Pressure pass live source inspected | `.tmp/slate-v2` | `nl -ba packages/slate-react/src/editable/slate-string-coordinate-placement.ts`, `root-interaction-controller.ts`, and pagination Playwright rows | read | pass 6 |
+| Pressure pass live source inspected | `Plate repo root` | `nl -ba packages/slate-react/src/editable/slate-string-coordinate-placement.ts`, `root-interaction-controller.ts`, and pagination Playwright rows | read | pass 6 |
 | Performance/TDD skill lenses applied | `plate-2` | `sed -n` over `performance`, `performance-oracle`, `vercel-react-best-practices`, and `tdd` skills plus selected perf rules | read | pass 6 |
-| Maintainer objection pass evidence refreshed | `.tmp/slate-v2`, siblings | Re-read `use-slate-root-chrome.ts`, `slate-string-coordinate-placement.ts`, `root-interaction-controller.ts`, current package/browser tests, and ProseMirror `posAtCoords` source | read | pass 7 |
-| High-risk deliberate evidence refreshed | `.tmp/slate-v2`, `plate-2` | Re-read page mount plan, paged layout React filtering, pagination target helpers, virtualized browser rows, PR issue claim rules, and prior fix-loop memory | read | pass 8 |
-| Ecosystem maintainer evidence refreshed | `plate-2`, `.tmp/slate-v2`, siblings | Re-read compiled research plus local ProseMirror, Lexical, Tiptap Pages, Pretext, TanStack, and current Slate v2 source rows | read | pass 9 |
+| Maintainer objection pass evidence refreshed | `Plate repo root`, siblings | Re-read `use-slate-root-chrome.ts`, `slate-string-coordinate-placement.ts`, `root-interaction-controller.ts`, current package/browser tests, and ProseMirror `posAtCoords` source | read | pass 7 |
+| High-risk deliberate evidence refreshed | `Plate repo root`, `plate-2` | Re-read page mount plan, paged layout React filtering, pagination target helpers, virtualized browser rows, PR issue claim rules, and prior fix-loop memory | read | pass 8 |
+| Ecosystem maintainer evidence refreshed | `plate-2`, `Plate repo root`, siblings | Re-read compiled research plus local ProseMirror, Lexical, Tiptap Pages, Pretext, TanStack, and current Slate v2 source rows | read | pass 9 |
 | Revision pass evidence consolidated | `plate-2` | Re-read active plan against Slate Plan template and pass ledger; consolidated accepted execution queue, scorecard, and final handoff outline | read | pass 10 |
 | Issue sync accounting closed | `plate-2` | Re-read generated live ledger, manual sync ledger, coverage matrix, fork dossier, cluster/requirements files, and PR reference; decided no external mutation required | read | pass 11 |
-| execution behavior proof | `.tmp/slate-v2` | focused unit/browser/type/lint/build gates | queued for accepted execution | execution |
+| execution behavior proof | `Plate repo root` | focused unit/browser/type/lint/build gates | queued for accepted execution | execution |
 
 Evidence Kit / benchmark control-plane:
 | Surface | Artifact / command | Finding | Plan decision |
@@ -622,22 +622,22 @@ High-risk deliberate-mode pre-mortem:
 
 High-risk deliberate findings:
 - geometry false positive: current right-margin helper at
-  `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:462-570`
+  `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:462-570`
   walks visible blocks and uses the first string rect. That is not strong enough
   for the reported bug. Execution must target a wrapped continuation rect and
   reuse that same fragment for left/right expected offsets.
 - virtualization false positive: current virtualized row at
-  `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:1962-2028`
+  `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:1962-2028`
   proves bounded DOM and first-line margin start, not wrapped continuation
   placement. The new row must keep `boundedDOM`/`boundedPages` preconditions and
   assert exact offset after the click.
-- remount risk: `.tmp/slate-v2/packages/slate-layout/src/page-mount-plan.ts:193-205`
+- remount risk: `packages/slate-layout/src/page-mount-plan.ts:193-205`
   disables filtering when `viewport` is null and otherwise filters by visible
   page ranges. This is the right fallback, but the browser proof must not assume
   a page is mounted without first checking the target exists and virtualized DOM
   is bounded.
 - selected/promoted page retention risk:
-  `.tmp/slate-v2/packages/slate-layout/src/page-mount-plan.ts:128-175` keeps
+  `packages/slate-layout/src/page-mount-plan.ts:128-175` keeps
   selected/promoted/composing top-level indexes mounted. Browser proof should
   click from a prior selection elsewhere to ensure selection restoration does not
   steal the target.
@@ -656,14 +656,14 @@ High-risk deliberate findings:
 Slate maintainer objection ledger:
 | Change | Objection | Tradeoff | Evidence | Migration/docs/proof answer | Verdict |
 |--------|-----------|----------|----------|-----------------------------|---------|
-| Internal visual-line edge hit testing | "This is browser layout code inside slate-react." | More DOM geometry code to maintain | `.tmp/slate-v2/.../root-interaction-controller.ts:874-953` already owns root chrome pointer intent; ProseMirror keeps `posAtCoords`/`coordsAtPos` in the view layer. | Keep it internal, package-tested, and bounded. The alternative is app-level glue in every page/layout shell. | accepted |
+| Internal visual-line edge hit testing | "This is browser layout code inside slate-react." | More DOM geometry code to maintain | `Plate repo root/.../root-interaction-controller.ts:874-953` already owns root chrome pointer intent; ProseMirror keeps `posAtCoords`/`coordsAtPos` in the view layer. | Keep it internal, package-tested, and bounded. The alternative is app-level glue in every page/layout shell. | accepted |
 | Deterministic coordinate placement before browser fallback | "Why not trust `resolveEventRange` / native caret APIs?" | More custom fallback logic | The user video and current bug prove browser fallback can choose the previous line end. ProseMirror `domcoords.ts:223-329` also distrusts native caret normalization around block/inline boundaries before falling back. | Use deterministic line-edge placement only when clicking outside/near a Slate string; keep browser fallback when deterministic placement returns null. | accepted |
-| No public `useSlateRootChrome` expansion | "Apps may need policy hooks like `onPageMarginClick`." | Less app-level customization | `.tmp/slate-v2/.../use-slate-root-chrome.ts:12-30` exposes only `disabled` and `selection`; current bug is generic line-edge hit testing, not product page policy. | Preserve raw Slate DX. Plate can build product page policy on top after the substrate is correct. | accepted |
-| Root-scoped candidate scan | "A coordinate scan over strings could be slow on huge docs." | Still requires DOM rect reads on click | `.tmp/slate-v2/.../slate-string-coordinate-placement.ts:47-67` already scopes to the active editable root and excludes nested editors; pressure pass rejects the current `flatMap().sort()[0]` as final shape. | Execution must use a single-pass nearest candidate loop and read character rects only for the chosen string. No typing-path work, no new React state/effects. | accepted with implementation guard |
-| Pagination remains proof fixture | "This sounds like a pagination-specific workaround." | Browser proof lives in pagination example | Existing rows at `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:1345-1581` already use pagination as stress proof for no-jump/right-edge behavior. The package owner is `slate-react`, not the example. | Add tests in pagination because the bug manifests there, but patch shared root/string coordinate placement only. | accepted |
-| RTL, bidi, and grapheme boundaries | "Line-edge math is easy to get wrong across scripts." | More unit proof required | `.tmp/slate-v2/packages/slate-react/test/slate-string-coordinate-placement.test.ts:107-184` already covers RTL physical/logical edges and grapheme boundaries. | Preserve current RTL/grapheme rows; add wrapped-line RTL unit only if execution changes physical/logical edge mapping. | accepted |
-| Projected drag anchoring | "Click fix might leave drag selection anchored to the raw browser point." | Conditional extra browser row | `.tmp/slate-v2/.../root-interaction-controller.ts:382-430` resolves projected endpoints from the provided range, and `:929-943` seeds pending drag from coordinate placement when present. Prior fix-loop memory says this path regresses easily. | If execution changes projected drag seeding or shared range flow, add margin-drag proof. Otherwise keep a source-review guardrail. | accepted conditional |
-| Nested/multiple editable roots | "Coordinate scans might cross into nested editors or wrong roots." | Requires careful root filtering | `.tmp/slate-v2/.../slate-string-coordinate-placement.ts:47-55` filters strings whose closest Slate editor is the active editable root, and package test rows `:76-105` prove nested roots are ignored. | Preserve root filtering; no document-global query and no cross-root selection inference. | accepted |
+| No public `useSlateRootChrome` expansion | "Apps may need policy hooks like `onPageMarginClick`." | Less app-level customization | `Plate repo root/.../use-slate-root-chrome.ts:12-30` exposes only `disabled` and `selection`; current bug is generic line-edge hit testing, not product page policy. | Preserve raw Slate DX. Plate can build product page policy on top after the substrate is correct. | accepted |
+| Root-scoped candidate scan | "A coordinate scan over strings could be slow on huge docs." | Still requires DOM rect reads on click | `Plate repo root/.../slate-string-coordinate-placement.ts:47-67` already scopes to the active editable root and excludes nested editors; pressure pass rejects the current `flatMap().sort()[0]` as final shape. | Execution must use a single-pass nearest candidate loop and read character rects only for the chosen string. No typing-path work, no new React state/effects. | accepted with implementation guard |
+| Pagination remains proof fixture | "This sounds like a pagination-specific workaround." | Browser proof lives in pagination example | Existing rows at `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:1345-1581` already use pagination as stress proof for no-jump/right-edge behavior. The package owner is `slate-react`, not the example. | Add tests in pagination because the bug manifests there, but patch shared root/string coordinate placement only. | accepted |
+| RTL, bidi, and grapheme boundaries | "Line-edge math is easy to get wrong across scripts." | More unit proof required | `packages/slate-react/test/slate-string-coordinate-placement.test.ts:107-184` already covers RTL physical/logical edges and grapheme boundaries. | Preserve current RTL/grapheme rows; add wrapped-line RTL unit only if execution changes physical/logical edge mapping. | accepted |
+| Projected drag anchoring | "Click fix might leave drag selection anchored to the raw browser point." | Conditional extra browser row | `Plate repo root/.../root-interaction-controller.ts:382-430` resolves projected endpoints from the provided range, and `:929-943` seeds pending drag from coordinate placement when present. Prior fix-loop memory says this path regresses easily. | If execution changes projected drag seeding or shared range flow, add margin-drag proof. Otherwise keep a source-review guardrail. | accepted conditional |
+| Nested/multiple editable roots | "Coordinate scans might cross into nested editors or wrong roots." | Requires careful root filtering | `Plate repo root/.../slate-string-coordinate-placement.ts:47-55` filters strings whose closest Slate editor is the active editable root, and package test rows `:76-105` prove nested roots are ignored. | Preserve root filtering; no document-global query and no cross-root selection inference. | accepted |
 | Collaboration / slate-yjs | "Layout coordinates are local and non-deterministic; don't put them in ops." | Selection is local UI-derived before becoming model state | The controller turns placement into normal point/range selection; no page coordinates or measurements enter operations. | Remote peers see normal selection state only. Strict page-break snapshots remain a separate pagination/export concern, not this bug. | accepted |
 | Browser proof brittleness | "Playwright geometry tests can be flaky." | Exact browser rows are still required | Current browser rows already assert no-jump/corner/right-edge behavior; the missing row is exact same-fragment left/right wrapped-line placement. | Use unit tests for helper math and Chromium rows for real geometry. Do not claim issue closure until focused browser proof is green. | accepted |
 | Issue claim expansion | "Does this close `#5944` or structural DOM requests?" | Conservative issue accounting may undersell the fix | Existing issue pass found no exact upstream issue to close; `#5944` is pagination pressure, `#5924` is broader structural DOM policy. | Keep related/no-claim until execution proof exists and issue sync pass reruns. No `Fixes` line from this plan alone. | accepted |
@@ -738,15 +738,15 @@ Accepted execution queue:
 | 5 | execution | Add virtualized wrapped-left proof with mounted-page and total-DOM preconditions. | Row asserts bounded pages/DOM, exact offset, active editor, and no scroll jump. | Do not let virtualization proof depend on hidden full-document DOM. |
 | 6 | execution | Preserve no-jump/corner and existing fixed floors. | Focused browser grep covers staged/single layout corners and existing no-jump rows. | Do not claim broader scroll/focus or structural-DOM issues. |
 | 7 | execution | If projected drag seeding changed, add margin-drag proof. | Drag anchor uses corrected range, not raw browser fallback. | Do not ship a click-only fix if shared drag range flow changed. |
-| 8 | execution | Run closeout gates from `.tmp/slate-v2`. | `bun --filter slate-react test -- slate-string-coordinate-placement root-interaction-resolver use-slate-root-chrome`, focused Chromium rows, `bun --filter slate-react typecheck`, `bun lint:fix`, `bun --filter slate-react build`, and dirty-local autoreview if implementation changed. | Do not run Slate v2 proof from `plate-2`. |
+| 8 | execution | Run closeout gates from `Plate repo root`. | `bun --filter slate-react test -- slate-string-coordinate-placement root-interaction-resolver use-slate-root-chrome`, focused Chromium rows, `bun --filter slate-react typecheck`, `bun lint:fix`, `bun --filter slate-react build`, and dirty-local autoreview if implementation changed. | Do not run Slate v2 proof from `plate-2`. |
 
 Fast driver gates:
 | Gate | Cwd | Command / artifact | Proves | Status |
 |------|-----|--------------------|--------|--------|
 | planning artifact check | plate-2 | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-29-pagination-left-margin-click-architecture.md` | closure integrity | passed |
-| Slate v2 behavior check | `.tmp/slate-v2` | focused Playwright wrapped-left-margin rows | exact bug proof | queued for accepted execution |
-| Slate v2 package check | `.tmp/slate-v2` | `bun --filter slate-react test -- slate-string-coordinate-placement root-interaction-resolver use-slate-root-chrome` | shared owner contracts | queued for accepted execution |
-| Slate v2 complexity check | `.tmp/slate-v2` | source review for no candidate sort/no broad document scan | hot path bounded | queued for accepted execution |
+| Slate v2 behavior check | `Plate repo root` | focused Playwright wrapped-left-margin rows | exact bug proof | queued for accepted execution |
+| Slate v2 package check | `Plate repo root` | `bun --filter slate-react test -- slate-string-coordinate-placement root-interaction-resolver use-slate-root-chrome` | shared owner contracts | queued for accepted execution |
+| Slate v2 complexity check | `Plate repo root` | source review for no candidate sort/no broad document scan | hot path bounded | queued for accepted execution |
 
 Final user-review handoff outline:
 - accepted plan items: shared `slate-react` owner; public API unchanged; bounded
@@ -760,7 +760,7 @@ Final user-review handoff outline:
 - issue claims and non-claims: related/no-claim accounting closed for planning.
   Execution proof may later justify separate ledger updates, but this plan adds
   no fixed/improved claim.
-- proof gates: accepted execution queue names the exact `.tmp/slate-v2`
+- proof gates: accepted execution queue names the exact `Plate repo root`
   browser/unit/type/lint/build/autoreview gates.
 - accepted-plan execution handoff: use a new execution-shaped goal only after
   explicit user acceptance; do not run implementation under this planning goal.
@@ -787,7 +787,7 @@ Done Handoff:
   `#5924` stays not claimed, `#5524`/`#1498`/focus-scroll neighbors stay
   related only, and existing fixed floors remain preserve-only.
 - Execution handoff: start a new execution-shaped goal only after explicit user
-  acceptance, then run the accepted execution queue from `.tmp/slate-v2`.
+  acceptance, then run the accepted execution queue from `Plate repo root`.
 
 Final completion gates:
 | Gate | Required evidence | Status |
@@ -871,7 +871,7 @@ Timeline:
 Verification evidence:
 - `ffprobe` on attached video: 7.003333 seconds.
 - `ffmpeg` extracted frames to `/tmp/slate-left-margin-video/`.
-- `.tmp/slate-v2` source/test reads listed in verification gate.
+- `Plate repo root` source/test reads listed in verification gate.
 - Research layer entrypoints read: `docs/research/README.md`,
   `docs/research/index.md`, `docs/research/log.md`.
 - Issue ledger entrypoints read/searched:
@@ -909,11 +909,11 @@ Verification evidence:
     `#3429`.
   - decision: no shared ledger/reference mutation in pass 3.
 - Intent/boundary pass:
-  - read `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-root-chrome.ts`,
-    `.tmp/slate-v2/packages/slate-react/src/index.ts`,
-    `.tmp/slate-v2/packages/slate-react/src/editable/root-interaction-resolver.ts`,
-    `.tmp/slate-v2/packages/slate-react/src/editable/root-interaction-controller.ts`,
-    `.tmp/slate-v2/packages/slate-react/src/editable/slate-string-coordinate-placement.ts`,
+  - read `packages/slate-react/src/hooks/use-slate-root-chrome.ts`,
+    `packages/slate-react/src/index.ts`,
+    `packages/slate-react/src/editable/root-interaction-resolver.ts`,
+    `packages/slate-react/src/editable/root-interaction-controller.ts`,
+    `packages/slate-react/src/editable/slate-string-coordinate-placement.ts`,
     focused `slate-react` package tests, and pagination Playwright rows.
   - decision: no public API change; execution should add wrapped-line coordinate
     proof and revise internal coordinate placement.
@@ -971,7 +971,7 @@ Verification evidence:
     placement algorithm target, vertical TDD/browser queue, migration stance,
     issue non-claims, and final handoff outline.
   - decision: the plan is ready for issue-sync accounting before closure. Do not
-    begin `.tmp/slate-v2` implementation under the planning goal.
+    begin `Plate repo root` implementation under the planning goal.
 - Issue sync accounting pass:
   - re-read generated live rows, manual v2 sync rows, issue coverage matrix,
     fork dossier, cluster/requirements/package-impact files, and PR reference.
@@ -999,4 +999,4 @@ Reboot status:
 Open risks:
 - None for this planning lane.
 - Accepted-plan execution still needs the exact browser red row and package proof
-  from `.tmp/slate-v2`; that is intentionally outside this planning goal.
+  from `Plate repo root`; that is intentionally outside this planning goal.

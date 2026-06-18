@@ -1,6 +1,6 @@
 export * from '@platejs/core';
 
-export * from '@platejs/slate';
+export * from '@platejs/slate-legacy';
 
 export * from '@platejs/utils';
 

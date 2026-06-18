@@ -28,7 +28,8 @@ node tooling/scripts/bench-targets.mjs autoresearch-init react-active-typing-bre
 
 `bench:targets:dry-run` is read-only. It checks the registry and prints the
 Autoresearch setup plan for the target. Use `autoresearch-init` only when you
-want to create or replace the real `.tmp/slate-v2/autoresearch.*` session files.
+want to create or replace the real `.tmp/slate-autoresearch/autoresearch.*`
+session files.
 For operator workflows, invoke the `slate-ar*` skills instead of package
 scripts.
 

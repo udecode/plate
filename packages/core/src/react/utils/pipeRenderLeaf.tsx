@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { NodeApi } from '@platejs/slate';
+import { NodeApi } from '@platejs/slate-legacy';
 import clsx from 'clsx';
 
 import type { EditableProps } from '../../lib';

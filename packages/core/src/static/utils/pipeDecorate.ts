@@ -1,4 +1,4 @@
-import type { NodeEntry, TRange } from '@platejs/slate';
+import type { NodeEntry, TRange } from '@platejs/slate-legacy';
 
 import {
   type EditableProps,

@@ -47,9 +47,9 @@ Desired outcome:
 
 In scope:
 
-- `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`
-- `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/insert-break.ts`
+- `packages/slate-history/test/history-contract.ts`
+- `packages/slate-history/src/with-history.ts`
+- `packages/slate/src/editor/insert-break.ts`
 - current `splitNodes({ always: true })` behavior only as the operation source
 - issue coverage, fork dossier, PR reference, and completion state sync
 
@@ -99,12 +99,12 @@ Top drivers:
   restoration needs separate history proof.
 - `docs/slate-v2/references/pr-description.md:214` keeps `#3499` as related
   open debt for undo/mark restoration.
-- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts:1189` proves the
+- `packages/slate/test/snapshot-contract.ts:1189` proves the
   current core package can place the selection into a new block after marked
   text.
-- `.tmp/slate-v2/packages/slate-history/src/with-history.ts:48` replays inverse
+- `packages/slate-history/src/with-history.ts:48` replays inverse
   operations on undo and restores `selectionBefore`.
-- `.tmp/slate-v2/packages/slate-history/src/with-history.ts:133` records
+- `packages/slate-history/src/with-history.ts:133` records
   `selectionBefore` from the previous snapshot for new undo batches.
 
 Viable options:
@@ -170,15 +170,15 @@ tree and selection.
 
 Current source owners:
 
-- `.tmp/slate-v2/packages/slate/src/editor/insert-break.ts:9` delegates to
+- `packages/slate/src/editor/insert-break.ts:9` delegates to
   `splitNodes({ always: true })` through the command registry.
-- `.tmp/slate-v2/packages/slate-history/src/with-history.ts:57` wraps undo replay
+- `packages/slate-history/src/with-history.ts:57` wraps undo replay
   in `HistoryEditor.withoutSaving`.
-- `.tmp/slate-v2/packages/slate-history/src/with-history.ts:60` computes inverse
+- `packages/slate-history/src/with-history.ts:60` computes inverse
   operations and replays them in reverse order.
-- `.tmp/slate-v2/packages/slate-history/src/with-history.ts:63` restores the
+- `packages/slate-history/src/with-history.ts:63` restores the
   saved `selectionBefore`.
-- `.tmp/slate-v2/packages/slate-history/src/with-history.ts:211` excludes pure
+- `packages/slate-history/src/with-history.ts:211` excludes pure
   `set_selection` operations from history saves.
 
 ## 6. Ecosystem Strategy Synthesis
@@ -309,7 +309,7 @@ PR reference sync:
 
 | Behavior                             | Proof route                                                   | Status                                |
 | ------------------------------------ | ------------------------------------------------------------- | ------------------------------------- |
-| Marked Enter caret placement         | `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts:1189` | existing package proof                |
+| Marked Enter caret placement         | `packages/slate/test/snapshot-contract.ts:1189` | existing package proof                |
 | Marked Enter undo restores marks     | new `slate-history` contract                                  | missing                               |
 | Marked Enter undo restores selection | new `slate-history` contract                                  | missing                               |
 | Browser richtext reproduction        | Playwright richtext only if package proof is insufficient     | conditional                           |
@@ -482,7 +482,7 @@ When closure is ready, the handoff should list:
 - exact issue claim text;
 - proof commands and results;
 - issue rows changed;
-- source files changed in `.tmp/slate-v2`;
+- source files changed in `Plate repo root`;
 - whether browser proof was needed;
 - remaining related non-claims.
 
@@ -509,11 +509,11 @@ Status: done.
 Implementation result:
 
 - Added `slate-history` proof for marked Enter plus undo:
-  `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`.
+  `packages/slate-history/test/history-contract.ts`.
 - The red run exposed the real loss: core split created an empty right text leaf
   before the moved bold leaf, so selection landed on the empty leaf.
 - Patched the core split owner:
-  `.tmp/slate-v2/packages/slate/src/transforms-node/split-nodes.ts`.
+  `packages/slate/src/transforms-node/split-nodes.ts`.
 - The patch tracks the next sibling start when splitting at the end of a text
   leaf and skips manufacturing an empty split leaf before moved marked text.
 

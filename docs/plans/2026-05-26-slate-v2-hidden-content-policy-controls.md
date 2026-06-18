@@ -1,7 +1,7 @@
 # slate v2 hidden content policy controls
 
 Objective:
-Implement hidden-content example controls in `.tmp/slate-v2` for selecting DOM
+Implement hidden-content example controls in `Plate repo root` for selecting DOM
 coverage policies, complete only when `/examples/hidden-content-blocks` exposes
 policy controls that cover selectionPolicy and adjacent hidden-content policies,
 Playwright proves the controlled policies across Accordion/Collapsible/Tabs
@@ -42,16 +42,16 @@ Completion threshold:
   Collapsible, and Tabs, including that ArrowRight at the Overview tab edge
   does not switch tabs under the default policy and does switch/materialize only
   when the control is set to `materialize`.
-- Targeted package/site checks pass in `.tmp/slate-v2`.
+- Targeted package/site checks pass in `Plate repo root`.
 - `node .agents/rules/autogoal/scripts/check-complete.mjs
   docs/plans/2026-05-26-slate-v2-hidden-content-policy-controls.md` passes.
 
 Verification surface:
-- `.tmp/slate-v2`: focused Playwright route test for
+- `Plate repo root`: focused Playwright route test for
   `hidden-content-blocks`.
-- `.tmp/slate-v2/packages/slate-react`: focused
+- `packages/slate-react`: focused
   `keyboard-input-strategy-contract.test.ts`.
-- `.tmp/slate-v2`: `bun --filter slate-react typecheck`,
+- `Plate repo root`: `bun --filter slate-react typecheck`,
   `bun typecheck:site`, and `bun lint`.
 - In-app Browser route proof at `http://localhost:3100/examples/hidden-content-blocks`.
 
@@ -62,8 +62,8 @@ Constraints:
 - Do not create PRs, comments, commits, or pushes.
 
 Boundaries:
-- Source of truth: latest user prompt plus live `.tmp/slate-v2` route behavior.
-- Allowed edit scope: `.tmp/slate-v2/site/examples/ts/hidden-content-blocks.tsx`,
+- Source of truth: latest user prompt plus live `Plate repo root` route behavior.
+- Allowed edit scope: `apps/www/src/app/(app)/examples/slate/_examples/hidden-content-blocks.tsx`,
   focused Playwright tests, and this goal plan.
 - Browser surface: `http://localhost:3100/examples/hidden-content-blocks`.
 - Tracker sync: N/A: no tracker item.
@@ -132,8 +132,8 @@ Work Checklist:
       requested.
 - [x] Local-env-rot retry policy recorded for any surprising repo-wide failure:
       N/A: rerun cleared transient site typecheck output; no reinstall signal.
-- [x] Workspace authority recorded: every proof command names `.tmp/slate-v2`
-      or `.tmp/slate-v2/packages/slate-react`.
+- [x] Workspace authority recorded: every proof command names `Plate repo root`
+      or `packages/slate-react`.
 - [x] High-risk note recorded for public API, runtime, package-boundary,
       browser behavior, agent-action, or command-contract changes: Browser
       behavior changed only in the example controls; safe default remains
@@ -154,11 +154,11 @@ Completion Gates:
 | Named verification threshold | yes | Run named checks | all commands below passed |
 | Bug reproduced before fix | no | N/A | task is coverage/control feature; prior ArrowRight repro already proven in Browser |
 | Targeted behavior verification | yes | Run focused test/proof | Playwright `hidden-content-blocks`, 3 passed; Browser proof recorded |
-| TypeScript or typed config changed | yes | Run relevant typecheck | `.tmp/slate-v2`: `bun typecheck:site` passed; `bun --filter slate-react typecheck` passed |
+| TypeScript or typed config changed | yes | Run relevant typecheck | `Plate repo root`: `bun typecheck:site` passed; `bun --filter slate-react typecheck` passed |
 | Package exports or file layout changed | no | N/A | no package exports or barrels changed |
 | Package manifests, lockfile, or install graph changed | no | N/A | this slice did not change manifests/lockfile |
 | Agent rules or skills changed | no | N/A | no agent rules/skills changed |
-| Workspace authority proof | yes | Run checks in owning workspace | checks ran in `.tmp/slate-v2` and package subdir |
+| Workspace authority proof | yes | Run checks in owning workspace | checks ran in `Plate repo root` and package subdir |
 | Browser surface changed | yes | Capture Browser proof | Browser showed default boundary keeps Overview active; materialize activates Details |
 | Browser final proof | yes | Record exact browser verification caveat | no screenshot requested; exact Browser state and empty error logs recorded |
 | CI-controlled template output changed | no | N/A | no templates touched |
@@ -173,7 +173,7 @@ Completion Gates:
 | PR proof image hosting | no | N/A | no PR |
 | Tracker sync-back | no | N/A | no tracker |
 | Final handoff contract | yes | Fill final handoff fields | filled below |
-| Final lint | yes | Run lint | `.tmp/slate-v2`: `bun lint` passed |
+| Final lint | yes | Run lint | `Plate repo root`: `bun lint` passed |
 | Goal plan complete | yes | Run autogoal checker | to run after this plan write |
 | Browser interaction proof | yes | Exercise target route | in-app Browser proof passed |
 | Browser console/network check | yes | Record console/network state | Browser `tab.dev.logs({ levels: ['error'] })` returned `[]`; Playwright pageerror row empty |
@@ -225,12 +225,12 @@ Error attempts:
 | Initial `typecheck:site` reported stale Slate React errors | 1 | format touched file and rerun exact checks | rerun passed |
 
 Verification evidence:
-- `.tmp/slate-v2/packages/slate-react`: `bun test:vitest -- keyboard-input-strategy-contract.test.ts` passed, 10 tests.
-- `.tmp/slate-v2`: `bun typecheck:site` passed.
-- `.tmp/slate-v2`: `bun --filter slate-react typecheck` passed.
-- `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium` passed, 3 tests.
-- `.tmp/slate-v2`: `bun lint` passed.
-- `.tmp/slate-v2`: `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local --engine claude --no-tools --no-web-search --prompt "<hidden-content policy controls slice>"` exited clean with no accepted/actionable findings.
+- `packages/slate-react`: `bun test:vitest -- keyboard-input-strategy-contract.test.ts` passed, 10 tests.
+- `Plate repo root`: `bun typecheck:site` passed.
+- `Plate repo root`: `bun --filter slate-react typecheck` passed.
+- `Plate repo root`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium` passed, 3 tests.
+- `Plate repo root`: `bun lint` passed.
+- `Plate repo root`: `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local --engine claude --no-tools --no-web-search --prompt "<hidden-content policy controls slice>"` exited clean with no accepted/actionable findings.
 - Browser proof at `http://localhost:3100/examples/hidden-content-blocks`:
   default `selection=boundary`, `copy=include-model`, `find=not-native-until-mounted`;
   40 ArrowRight presses kept Overview active and Details hidden; after switching

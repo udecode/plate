@@ -16,14 +16,14 @@ Root is a valid editor location. It simply has no previous sibling. Throwing the
 
 ## Current State Evidence
 
-- `.tmp/slate-v2/packages/slate/src/editor/previous.ts:10` returns `undefined` when no `at` exists.
-- `.tmp/slate-v2/packages/slate/src/editor/previous.ts:14` throws for root path.
-- `.tmp/slate-v2/packages/slate/src/editor/previous.ts:20` returns `undefined` when there is no point before the requested location.
-- `.tmp/slate-v2/packages/slate/src/editor/next.ts:16` returns `undefined` when there is no point after the requested location.
-- `.tmp/slate-v2/packages/slate/src/editor/next.ts:22` still contains a root-path throw.
-- `.tmp/slate-v2/packages/slate/test/query-contract.ts:2840` currently locks the `Editor.previous(editor, { at: [] })` throw.
-- `.tmp/slate-v2/packages/slate/src/interfaces/path.ts:372` keeps the correct lower-level invariant: `PathApi.previous([])` throws because root has no previous index.
-- `.tmp/slate-v2/packages/slate/src/transforms-node/merge-nodes.ts:120` already treats `Editor.previous(...)` as optional and bails when no previous node exists.
+- `packages/slate/src/editor/previous.ts:10` returns `undefined` when no `at` exists.
+- `packages/slate/src/editor/previous.ts:14` throws for root path.
+- `packages/slate/src/editor/previous.ts:20` returns `undefined` when there is no point before the requested location.
+- `packages/slate/src/editor/next.ts:16` returns `undefined` when there is no point after the requested location.
+- `packages/slate/src/editor/next.ts:22` still contains a root-path throw.
+- `packages/slate/test/query-contract.ts:2840` currently locks the `Editor.previous(editor, { at: [] })` throw.
+- `packages/slate/src/interfaces/path.ts:372` keeps the correct lower-level invariant: `PathApi.previous([])` throws because root has no previous index.
+- `packages/slate/src/transforms-node/merge-nodes.ts:120` already treats `Editor.previous(...)` as optional and bails when no previous node exists.
 
 ## Accepted API Law
 
@@ -153,7 +153,7 @@ Risk:
 
 ## Proof Plan For Ralph
 
-Use TDD in `.tmp/slate-v2`.
+Use TDD in `Plate repo root`.
 
 1. Change the current root-path throw test in `packages/slate/test/query-contract.ts` to assert:
    - `Editor.previous(editor, { at: [] }) === undefined`
@@ -240,7 +240,7 @@ Non-goals:
 
 Decision boundary:
 
-- Ralph may implement the hard cut in `.tmp/slate-v2` without asking again if tests prove the optional-result behavior and path invariants remain strict.
+- Ralph may implement the hard cut in `Plate repo root` without asking again if tests prove the optional-result behavior and path invariants remain strict.
 
 ## Final Scoped Score
 
@@ -271,5 +271,5 @@ Weighted score: 0.929. Closure-ready for planning review. Implementation still b
 ## Completion Gates
 
 - Current plan status: `done` for scoped review.
-- Later `ralph` execution must edit `.tmp/slate-v2`; this planning pass must not.
-- Implementation proof remains pending in `.tmp/slate-v2`.
+- Later `ralph` execution must edit `Plate repo root`; this planning pass must not.
+- Implementation proof remains pending in `Plate repo root`.

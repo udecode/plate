@@ -11,8 +11,8 @@ const autoresearchScript = path.resolve(
   root,
   '../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs'
 );
-const slateV2Cwd = path.join(root, '.tmp/slate-v2');
-const slateV2Tmp = path.join(slateV2Cwd, 'tmp');
+const slateV2Cwd = root;
+const slateV2Tmp = path.join(root, '.tmp');
 const focusedFailureLinePattern =
   /expected .*Received|failed|selector-runtime-node|shifted rerender/i;
 const reactHugeCompareArtifactPattern =
@@ -144,7 +144,7 @@ function summarizeRichTextStructural() {
     benchmarkCommand:
       'pnpm bench:targets:run -- core-rich-text-operations-compare',
     correctnessCommand:
-      'cd .tmp/slate-v2/packages/slate-react && bun test:vitest test/provider-hooks-contract.test.tsx test/surface-contract.test.tsx',
+      'pnpm --filter @platejs/slate-react exec vitest run --config ./vitest.config.mjs test/provider-hooks-contract.test.tsx test/surface-contract.test.tsx',
     metricWork:
       'Add METRIC rich_text_structural_ops_worst_ratio=<number> to the rich-text compare benchmark or a thin artifact reader before running packets.',
     reason:
@@ -174,8 +174,7 @@ function summarizeHistory() {
     direction: 'lower',
     baseline: `${worst.metric} ${worst.ratio}x legacy (${worst.current}ms vs ${worst.legacy}ms)`,
     benchmarkCommand: 'pnpm bench:targets:run -- history-compare',
-    correctnessCommand:
-      'cd .tmp/slate-v2 && bun test ./packages/slate-history/test',
+    correctnessCommand: 'pnpm --filter @platejs/slate-history test',
     metricWork:
       'Add METRIC history_fragment_ops_worst_ratio=<number> to the history compare benchmark or a thin artifact reader.',
     reason:
@@ -204,7 +203,7 @@ function summarizeObservation() {
     direction: 'lower',
     baseline: `${worst.metric} ${worst.ratio}x legacy (${worst.current}ms vs ${worst.legacy}ms)`,
     benchmarkCommand: 'pnpm bench:targets:run -- core-observation-compare',
-    correctnessCommand: 'cd .tmp/slate-v2 && bun test ./packages/slate/test',
+    correctnessCommand: 'pnpm --filter @platejs/slate test',
     metricWork:
       'Add METRIC core_observation_reads_worst_ratio=<number> to the observation compare benchmark or a thin artifact reader.',
     reason:
@@ -237,7 +236,7 @@ function summarizePagination() {
     benchmarkCommand:
       'pnpm bench:targets:run -- react-pagination-virtualized-char-burst',
     correctnessCommand:
-      'cd .tmp/slate-v2 && PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright test playwright/integration/examples/pagination.test.ts --project=chromium -g "keeps rows=800 virtualized pagination in the staged-class perf envelope|keeps fast staged text after insert breaks at the model caret|selects projected pagination words on native double click|places virtualized pagination selection at wrapped line ends"',
+      'pnpm --filter www exec playwright test --config playwright.slate.config.ts tests/slate-browser/donor/examples/pagination.test.ts --project=chromium -g "keeps rows=800 virtualized pagination in the staged-class perf envelope|keeps fast staged text after insert breaks at the model caret|selects projected pagination words on native double click|places virtualized pagination selection at wrapped line ends"',
     metricWork: 'Already emits METRIC pagination_virtualized_vs_table_ratio.',
     reason:
       'Virtualized pagination is correct but still slower than the staged table cohort.',
@@ -310,7 +309,8 @@ function summarizeReactHugeDoc() {
     baseline: `${worst.metric} ${worst.value}ms p95`,
     benchmarkCommand:
       'pnpm bench:targets:run -- react-huge-document-browser-trace',
-    correctnessCommand: 'cd .tmp/slate-v2 && bun check:full',
+    correctnessCommand:
+      'pnpm slate:packages:typecheck && pnpm slate:packages:test && pnpm --filter www test:slate-browser',
     metricWork:
       'Add METRIC react_huge_doc_type_to_paint_p95_ms=<number> to the browser trace benchmark or a thin artifact reader.',
     reason:
@@ -327,14 +327,18 @@ function summarizeReactHugeDoc() {
 function summarizeRuntimeFanout(withChecks) {
   const result = withChecks
     ? spawnSync(
-        'bun',
+        'pnpm',
         [
-          'test:vitest',
+          'exec',
+          'vitest',
+          'run',
+          '--config',
+          './vitest.config.mjs',
           'test/provider-hooks-contract.test.tsx',
           'test/surface-contract.test.tsx',
         ],
         {
-          cwd: path.join(slateV2Cwd, 'packages/slate-react'),
+          cwd: path.join(root, 'packages/slate-react'),
           encoding: 'utf8',
           maxBuffer: 16 * 1024 * 1024,
           stdio: 'pipe',
@@ -362,7 +366,7 @@ function summarizeRuntimeFanout(withChecks) {
     benchmarkCommand:
       'add a small METRIC benchmark around root insert/reorder/replace runtime-node selector checks',
     correctnessCommand:
-      'cd .tmp/slate-v2/packages/slate-react && bun test:vitest test/provider-hooks-contract.test.tsx test/surface-contract.test.tsx',
+      'pnpm --filter @platejs/slate-react exec vitest run --config ./vitest.config.mjs test/provider-hooks-contract.test.tsx test/surface-contract.test.tsx',
     metricWork:
       'Promote selector-runtime-node-check counts from the contract tests/profiler into METRIC slate_react_runtime_node_fanout_count=<number>.',
     reason:
@@ -430,7 +434,7 @@ function renderLoopMarkdown(payload) {
   }
 
   lines.push(
-    'Next move: pick one loop only, add or verify its METRIC output, then invoke the matching slate-ar skill or run Codex Autoresearch `setup-plan --cwd .tmp/slate-v2 --name "<loop-id>" --metric-name "<metric>"`.'
+    'Next move: pick one loop only, add or verify its METRIC output, then invoke the matching slate-ar skill or run Codex Autoresearch `setup-plan --cwd . --name "<loop-id>" --metric-name "<metric>"`.'
   );
 
   return `${lines.join('\n')}\n`;
@@ -461,8 +465,7 @@ function runSuggestLoops(args) {
     .slice(0, Number.isFinite(limit) ? limit : undefined);
   const payload = {
     generatedAt: new Date().toISOString(),
-    source:
-      'current .tmp/slate-v2 Autoresearch state plus latest benchmark artifacts',
+    source: 'current Plate repo Slate v2 state plus latest benchmark artifacts',
     withChecks,
     latestReactCompareArtifact: latestReactCompare
       ? path.relative(root, latestReactCompare.filePath)

@@ -4,7 +4,7 @@ import type {
   EditorTransforms,
   Operation,
   Value,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 import type { UnionToIntersection } from '@udecode/utils';
 
 import type {

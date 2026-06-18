@@ -1141,7 +1141,7 @@ Actions taken:
 - Generated `active goal state` from the active items 4-6 plan.
 - Set `active goal state` to `pending` for the new lane.
 - Read the completed void/atom lane state before activating the next owner.
-- Ran the item 4A public-surface inventory commands against `.tmp/slate-v2`.
+- Ran the item 4A public-surface inventory commands against `Plate repo root`.
 - Added the current public-surface inventory table above.
 
 Commands run:
@@ -1652,7 +1652,7 @@ Rejected tactics:
 
 Next action:
 
-- Inspect existing `.tmp/slate-v2` Playwright/stress and `slate-browser` helpers,
+- Inspect existing `Plate repo root` Playwright/stress and `slate-browser` helpers,
   then add the first focused canary/instrumentation slice for image void layout
   and keyboard navigation.
 
@@ -1664,7 +1664,7 @@ Owner classification: browser proof infrastructure and server freshness.
 
 Actions taken:
 
-- Read existing `.tmp/slate-v2` Playwright integration examples and stress
+- Read existing `Plate repo root` Playwright integration examples and stress
   helpers.
 - Ran focused canaries for embeds, hovering toolbar, images, mentions,
   search-highlighting, and tables.
@@ -1716,16 +1716,16 @@ Owner classification: `slate-react` render projection instrumentation plus
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/src/render-profiler.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-leaf.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-spacer.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-text.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/void-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `.tmp/slate-v2/playwright/integration/examples/search-highlighting.test.ts`
+- `packages/slate-react/src/render-profiler.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/slate-element.tsx`
+- `packages/slate-react/src/components/slate-leaf.tsx`
+- `packages/slate-react/src/components/slate-spacer.tsx`
+- `packages/slate-react/src/components/slate-text.tsx`
+- `packages/slate-react/src/components/void-element.tsx`
+- `packages/slate-react/test/render-profiler-contract.test.tsx`
+- `packages/browser/src/playwright/index.ts`
+- `apps/www/tests/slate-browser/donor/examples/search-highlighting.test.ts`
 
 Actions taken:
 
@@ -1797,7 +1797,7 @@ Owner classification: image void browser navigation proof.
 
 Files changed:
 
-- `.tmp/slate-v2/playwright/integration/examples/images.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/images.test.ts`
 
 Actions taken:
 
@@ -1855,10 +1855,10 @@ canaries.
 
 Files changed:
 
-- `.tmp/slate-v2/playwright/integration/examples/embeds.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/tables.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/embeds.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/hovering-toolbar.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/tables.test.ts`
 
 Actions taken:
 
@@ -1936,12 +1936,12 @@ Owner classification: browser proof metadata and React DOM binding.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `.tmp/slate-v2/playwright/integration/examples/embeds.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/images.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/tables.test.ts`
+- `packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `packages/browser/src/playwright/index.ts`
+- `apps/www/tests/slate-browser/donor/examples/embeds.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/images.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/tables.test.ts`
 
 Actions taken:
 
@@ -2010,12 +2010,12 @@ Owner classification: shell DOM ownership.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/src/shell-runtime.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-leaf.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-spacer.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-text.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/shell-runtime-contract.test.tsx`
+- `packages/slate-react/src/shell-runtime.ts`
+- `packages/slate-react/src/components/slate-element.tsx`
+- `packages/slate-react/src/components/slate-leaf.tsx`
+- `packages/slate-react/src/components/slate-spacer.tsx`
+- `packages/slate-react/src/components/slate-text.tsx`
+- `packages/slate-react/test/shell-runtime-contract.test.tsx`
 
 Actions taken:
 
@@ -2104,16 +2104,16 @@ Current-state correction:
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/src/shell-runtime.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/void-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/shell-runtime-contract.test.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/primitives-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`
-- `.tmp/slate-v2/site/examples/ts/images.tsx`
-- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
-- `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
+- `packages/slate-react/src/shell-runtime.ts`
+- `packages/slate-react/src/components/void-element.tsx`
+- `packages/slate-react/test/shell-runtime-contract.test.tsx`
+- `packages/slate-react/test/primitives-contract.tsx`
+- `packages/slate-react/test/render-profiler-contract.test.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/images.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/embeds.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/paste-html.tsx`
 - `docs/solutions/developer-experience/2026-04-27-slate-react-void-renderers-should-not-own-hidden-spacer-children.md`
-- `.tmp/slate-v2/playwright/integration/examples/images.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/images.test.ts`
 
 Actions taken:
 
@@ -2184,15 +2184,15 @@ Owner classification: selection projection and editable-root render budget.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/caret-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx`
-- `.tmp/slate-v2/packages/slate-react/dist/index.js`
-- `.tmp/slate-v2/playwright/integration/examples/images.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/embeds.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/tables.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`
+- `packages/slate-react/src/editable/caret-engine.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/hooks/use-slate-selector.tsx`
+- `packages/slate-react/dist/index.js`
+- `apps/www/tests/slate-browser/donor/examples/images.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/embeds.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/tables.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/hovering-toolbar.test.ts`
 
 Actions taken:
 
@@ -2276,13 +2276,13 @@ filtering.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-selected.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-selector.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/test/snapshot-contract.ts`
+- `packages/slate-react/src/components/slate.tsx`
+- `packages/slate-react/src/hooks/use-selected.ts`
+- `packages/slate-react/src/hooks/use-slate-selector.tsx`
+- `packages/slate-react/test/provider-hooks-contract.tsx`
 
 Actions taken:
 
@@ -2363,12 +2363,12 @@ fanout cut.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/test/snapshot-contract.ts`
+- `packages/slate-react/src/hooks/use-slate-projections.tsx`
+- `packages/slate-react/src/projection-store.ts`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
 
 Actions taken:
 
@@ -2449,9 +2449,9 @@ Owner classification: Phase 3 source recompute filtering.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `packages/slate-react/src/projection-store.ts`
+- `packages/slate-react/src/index.ts`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
 
 Actions taken:
 
@@ -2522,8 +2522,8 @@ Owner classification: Phase 3 real source adoption and browser proof.
 
 Files changed:
 
-- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`
-- `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx`
 
 Actions taken:
 
@@ -2583,14 +2583,14 @@ Owner classification: Phase 3 selector API shape and commit-fact filtering.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/test/snapshot-contract.ts`
+- `packages/slate-react/src/hooks/use-node-selector.tsx`
+- `packages/slate-react/src/hooks/use-decoration-selector.tsx`
+- `packages/slate-react/src/index.ts`
+- `packages/slate-react/test/provider-hooks-contract.tsx`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
 
 Actions taken:
 
@@ -2668,8 +2668,8 @@ Owner classification: Phase 3 internal hot-path selector adoption.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/components/editable.tsx`
 - `docs/solutions/ui-bugs/2026-04-27-slate-react-selection-export-listeners-must-skip-dom-owned-selection.md`
 
 Actions taken:
@@ -2759,7 +2759,7 @@ Owner classification: Phase 3 internal hot-path selector adoption.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx`
+- `packages/slate-react/src/components/editable-text.tsx`
 
 Actions taken:
 
@@ -2827,11 +2827,11 @@ Owner classification: Phase 3 projection-store invalidation narrowing.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
-- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`
-- `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx`
+- `packages/slate-react/src/projection-store.ts`
+- `packages/slate-react/src/hooks/use-slate-projections.tsx`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/external-decoration-sources.tsx`
 
 Actions taken:
 
@@ -2898,9 +2898,9 @@ Owner classification: Phase 5 internal selection runtime extraction.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-runtime.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`
+- `packages/slate-react/src/editable/selection-runtime.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/test/selection-runtime-contract.test.ts`
 
 Actions taken:
 
@@ -2967,17 +2967,17 @@ Owner classification: hard-cut shell cleanup, runtime-owned void structure.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/src/context.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/void-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/shell-runtime.ts`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/primitives-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/shell-runtime-contract.test.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`
-- `.tmp/slate-v2/site/examples/ts/images.tsx`
-- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
-- `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
+- `packages/slate-react/src/context.tsx`
+- `packages/slate-react/src/components/void-element.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/shell-runtime.ts`
+- `packages/slate-react/test/surface-contract.tsx`
+- `packages/slate-react/test/primitives-contract.tsx`
+- `packages/slate-react/test/shell-runtime-contract.test.tsx`
+- `packages/slate-react/test/render-profiler-contract.test.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/images.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/embeds.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/paste-html.tsx`
 
 Actions taken:
 
@@ -3058,14 +3058,14 @@ structure.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/src/context.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/inline-void-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/void-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `.tmp/slate-v2/site/examples/ts/mentions.tsx`
+- `packages/slate-react/src/context.tsx`
+- `packages/slate-react/src/components/inline-void-element.tsx`
+- `packages/slate-react/src/components/slate-element.tsx`
+- `packages/slate-react/src/components/void-element.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/index.ts`
+- `packages/slate-react/test/surface-contract.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/mentions.tsx`
 - `docs/solutions/developer-experience/2026-04-27-slate-react-void-renderers-should-not-own-hidden-spacer-children.md`
 
 Actions taken:

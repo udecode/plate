@@ -64,7 +64,7 @@ Non-goals:
 Decision boundaries:
 
 - Ralph may add focused unit/browser tests and small runtime fixes in
-  `.tmp/slate-v2`.
+  `Plate repo root`.
 - Ralph may promote `#4376`, `#5171`, or `#3150` only with exact browser proof.
 - Ralph must keep `#5095` and `#5096` related unless real Safari/device proof
   exists. WebKit smoke tests can only be guardrails.
@@ -163,30 +163,30 @@ Cluster and issue ledgers:
 
 Live Slate v2 source:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:226`
+- `packages/slate-react/src/editable/selection-reconciler.ts:226`
   owns blur/focus selection policy; WebKit blur currently removes DOM ranges.
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts:30`
+- `packages/slate-react/src/editable/runtime-selection-engine.ts:30`
   owns throttled selectionchange import and model/native ownership traces.
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-runtime.ts:33`
+- `packages/slate-react/src/editable/selection-runtime.ts:33`
   owns selection export policy after commits, including deferred DOM export for
   content-changing commits.
-- `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts:42`
+- `packages/slate-react/test/selection-runtime-contract.test.ts:42`
   through `340` covers model-vs-DOM export policy, content-changing commit
   deferral, and text-input repair skip behavior.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:86` exposes
+- `packages/slate-react/src/components/editable.tsx:86` exposes
   `scrollSelectionIntoView`, `onDOMBeforeInput`, and native div props; `:322`
   passes `spellCheck` through when beforeinput support exists.
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts:69`
+- `packages/slate-react/src/editable/model-input-strategy.ts:69`
   owns React `onInput` handling and native input repair.
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:92`
+- `packages/slate-react/src/editable/runtime-before-input-events.ts:92`
   owns DOM beforeinput routing and model/native input decision setup.
-- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:130` proves
+- `apps/www/tests/slate-browser/donor/examples/inlines.test.ts:130` proves
   following text start stays distinct from inline end; `:305` proves padded
   inline caret placement.
-- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:249` proves
+- `apps/www/tests/slate-browser/donor/examples/mentions.test.ts:249` proves
   deterministic selected mention clipboard payload; `:328` proves selected
   mention cut and model-owned caret repair.
-- `.tmp/slate-v2/playwright/integration/examples/document-state.test.ts:256`
+- `apps/www/tests/slate-browser/donor/examples/document-state.test.ts:256`
   proves a document-level spellcheck state field drives the `spellCheck` prop,
   but it does not prove native Safari spellcheck.
 
@@ -195,9 +195,9 @@ Already reworked cluster 19:
 - `docs/plans/2026-05-11-slate-v2-scroll-selection-visibility-ralplan.md`
   accepts selection import first, scroll request second, post-update visibility
   third.
-- `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx:501`
+- `packages/slate-react/test/app-owned-customization.tsx:501`
   proves scroll forwarding.
-- `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx:532`
+- `packages/slate-react/test/app-owned-customization.tsx:532`
   proves remote selection updates skip scroll forwarding.
 
 ## Ecosystem Strategy Synthesis
@@ -308,28 +308,28 @@ Compiled research checked:
 
 Live source checked:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:227`
+- `packages/slate-react/src/editable/selection-reconciler.ts:227`
   through `305` keeps blur/focus selection policy local to the reconciler.
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts:47`
+- `packages/slate-react/src/editable/runtime-selection-engine.ts:47`
   through `116` keeps selectionchange import and ownership traces centralized.
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-runtime.ts:33`
+- `packages/slate-react/src/editable/selection-runtime.ts:33`
   through `240` keeps model-to-DOM export policy explicit, including deferred
   DOM export after content-changing commits.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:86` through
+- `packages/slate-react/src/components/editable.tsx:86` through
   `104` keeps `scrollSelectionIntoView` public and narrow; `:322` through
   `326` keeps `spellCheck` as a normal DOM prop pass-through when supported.
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts:72`
+- `packages/slate-react/src/editable/model-input-strategy.ts:72`
   through `188` keeps native text-input repair in the input lane.
-- `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts:42`
+- `packages/slate-react/test/selection-runtime-contract.test.ts:42`
   through `163` and `:220` through `340` already cover the selection export
   contract, deferred export, and repaired text-input skip behavior.
-- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts:130` through
+- `apps/www/tests/slate-browser/donor/examples/inlines.test.ts:130` through
   `162` and `:305` through `338` already cover inline-boundary proof needed for
   cluster 25 preservation.
-- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:249` through
+- `apps/www/tests/slate-browser/donor/examples/mentions.test.ts:249` through
   `400` already covers selected inline void copy/cut payload and caret repair
   needed for cluster 21 preservation.
-- `.tmp/slate-v2/playwright/integration/examples/document-state.test.ts:256`
+- `apps/www/tests/slate-browser/donor/examples/document-state.test.ts:256`
   through `286` proves a document state field can drive spellcheck state, but
   does not prove native Safari dictionary/UI behavior.
 
@@ -453,11 +453,11 @@ Sync rule for Ralph:
 
 | Surface | Required proof | Current owner |
 | --- | --- | --- |
-| Blur selection | browser row plus package selection runtime contract | `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts` |
+| Blur selection | browser row plus package selection runtime contract | `packages/slate-react/test/selection-runtime-contract.test.ts` |
 | Unfocused update | Firefox browser row or no fixed claim | new Ralph test |
 | WebKit Cyrillic guard | WebKit typed text plus `spellCheck` pass-through | new Ralph test or document-state extension |
-| Inline DOM end | existing inlines rows plus optional `#3150` exact row | `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts` |
-| Inline void clipboard | existing mentions rows | `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts` |
+| Inline DOM end | existing inlines rows plus optional `#3150` exact row | `apps/www/tests/slate-browser/donor/examples/inlines.test.ts` |
+| Inline void clipboard | existing mentions rows | `apps/www/tests/slate-browser/donor/examples/mentions.test.ts` |
 
 ## Browser Stress / Parity Strategy
 
@@ -558,11 +558,11 @@ Pressure score: `0.93`. Remaining risk is execution proof, not plan shape.
 
 | Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
 | --- | --- | --- | --- | --- | --- |
-| current-state-read | complete | live ledgers, current `.tmp/slate-v2` selection/input/clipboard owners, research pages | created this plan and scoped cluster 19 out | none | Slate Ralplan |
+| current-state-read | complete | live ledgers, current `Plate repo root` selection/input/clipboard owners, research pages | created this plan and scoped cluster 19 out | none | Slate Ralplan |
 | related-issue-discovery | complete | live ledger rows, manual sync rows, fork dossier, coverage matrix, and PR reference searched for target plus adjacent issue refs | added adjacent related-only and preserve-only rows; no ledger files changed | none | Slate Ralplan |
 | issue-ledger-pass | complete | package-impact matrix, requirements, benchmark map, and test-candidate maps checked | tightened blocked-on-repro and not-direct-test-candidate rows for clusters 22 and 25 | none | Slate Ralplan |
 | intent-boundary-decision-brief | complete | intent/boundary record and decision brief validated | added pass result notes and kept cluster 22 proof boundary explicit | none | Slate Ralplan |
-| research-source-refresh | complete | compiled research and current `.tmp/slate-v2` source/test owners checked | no target change; recorded exact proof boundaries for clusters 20, 22, 25, and 21 | none | Slate Ralplan |
+| research-source-refresh | complete | compiled research and current `Plate repo root` source/test owners checked | no target change; recorded exact proof boundaries for clusters 20, 22, 25, and 21 | none | Slate Ralplan |
 | pressure-objection-high-risk | complete | high-risk matrix, negative assertion rules, and maintainer objections hardened | strengthened no-overclaim rules; no architecture change | none | Slate Ralplan |
 | revision-and-issue-sync | complete | coverage matrix, fork dossier, manual sync ledger, and PR reference audited | no external ledger/reference write needed because no claim changed | none | Slate Ralplan |
 | closure-final-gates | complete | all earlier passes complete; final handoff and gates written | closed Slate Ralplan planning lane; execution belongs to later Ralph | none | Ralph |
@@ -591,7 +591,7 @@ Ralph execution status:
 
 - Status: done.
 - Current pass: `verification-sweep-pass`.
-- Current owner: `.tmp/slate-v2` `slate-react` browser selection proof.
+- Current owner: `Plate repo root` `slate-react` browser selection proof.
 - Result: cluster 20 exact blur/unfocused selection rows promote `#4376` and
   `#5171`; cluster 22 stays guardrail-only; clusters 25 and 21 preserve
   existing `#3148/#4806` proof while keeping `#3150` related and `#4802`
@@ -628,10 +628,10 @@ Phase 3, clusters 25 and 21:
 
 Changed proof:
 
-- `.tmp/slate-v2/playwright/integration/examples/document-state.test.ts` adds
+- `apps/www/tests/slate-browser/donor/examples/document-state.test.ts` adds
   WebKit blur/refocus/follow-up typing proof, Firefox unfocused update proof,
   and WebKit Cyrillic typed-input guard with `spellCheck` enabled.
-- `.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/decorations-async.test.ts`
   guards `selection.anchorNode` before passing it to `Range.setEnd`, closing the
   root typecheck blocker exposed during verification.
 
@@ -726,6 +726,6 @@ Closed:
 
 Deferred to Ralph execution:
 
-- `.tmp/slate-v2` focused gates for any new behavior claim;
+- `Plate repo root` focused gates for any new behavior claim;
 - issue coverage/fork dossier/PR reference updates if execution promotes a
   candidate issue.

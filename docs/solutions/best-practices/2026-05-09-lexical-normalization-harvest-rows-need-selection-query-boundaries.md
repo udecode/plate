@@ -51,7 +51,7 @@ Route the portable part to Slate's public query APIs:
 - backward ranges -> `Editor.point(editor, range)` and `{ edge: 'end' }`.
 
 The compact proof belongs in
-`.tmp/slate-v2/packages/slate/test/query-contract.ts`, not in
+`packages/slate/test/query-contract.ts`, not in
 `normalization-contract.ts`.
 
 ## Why This Works

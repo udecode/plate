@@ -37,12 +37,12 @@ Outcome:
 
 In scope:
 
-- `.tmp/slate-v2/site/examples/ts/**`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-editor.ts`
-- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/**`
+- `packages/slate-react/src/hooks/use-slate-editor.ts`
+- `packages/slate-react/src/decoration-source.ts`
+- `packages/slate-react/src/hooks/use-slate-annotations.tsx`
+- `packages/slate-react/src/components/slate.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
 - `.agents/rules/ralph.mdc` rule update, during execution only
 
 Non-goals:
@@ -477,7 +477,7 @@ Acceptance:
 
 Acceptance:
 
-- `rg -n "match: \\(n: SlateNode\\)|type Node as SlateNode| as any| as CustomEditor" .tmp/slate-v2/site/examples/ts`
+- `rg -n "match: \\(n: SlateNode\\)|type Node as SlateNode| as any| as CustomEditor" apps/www/src/app/(app)/examples/slate/_examples`
   only returns justified leftovers.
 - `.agents/rules/ralph.mdc` includes the inference rule.
 

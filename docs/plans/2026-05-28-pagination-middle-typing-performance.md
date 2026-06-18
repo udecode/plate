@@ -15,7 +15,7 @@ Completion threshold:
 - Focused pagination browser proof records bounded mounted DOM/pages and p95
   key-to-observable-paint <= 80 ms while typing in the middle of the
   ~1000-page virtualized document.
-- `bun typecheck:site` passes in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`.
+- `bun typecheck:site` passes in `/Users/zbeyens/git/plate-2/Plate repo root`.
 - `node .agents/rules/autogoal/scripts/check-complete.mjs
   docs/plans/2026-05-28-pagination-middle-typing-performance.md` passes.
 
@@ -24,7 +24,7 @@ Verification surface:
   `rg -n "pagination-stress-page|createVirtualizedStressPages|Virtualized stress page" site packages playwright`.
 - Focused browser proof:
   `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium -g "keeps middle-document typing responsive" --reporter=line`.
-- Package and site checks in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`.
+- Package and site checks in `/Users/zbeyens/git/plate-2/Plate repo root`.
 
 Constraints:
 - Preserve real `createRichMarkdownValue` stress content, the 10-page table
@@ -35,7 +35,7 @@ Constraints:
 Boundaries:
 - Source of truth: latest chat request for `/examples/pagination` middle-doc
   typing performance in virtualized mode.
-- Allowed edit scope: `.tmp/slate-v2` source/tests and this goal plan.
+- Allowed edit scope: `Plate repo root` source/tests and this goal plan.
 - Browser surface: `/examples/pagination`, DOM strategy `virtualized`.
 - Tracker sync: N/A, chat-only report.
 
@@ -71,7 +71,7 @@ Work Checklist:
 - [x] Final handoff shape decided: bug/perf fix with focused verification and no PR/tracker sync.
 - [x] Branch handling recorded for code-changing work: N/A, no branch requested.
 - [x] Local-env-rot retry policy recorded: N/A, failures matched test/action timing or command filters, not install corruption.
-- [x] Workspace authority recorded: commands ran in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`.
+- [x] Workspace authority recorded: commands ran in `/Users/zbeyens/git/plate-2/Plate repo root`.
 - [x] High-risk note recorded: runtime/browser input behavior changed; proof covers native typing, model catch-up selection, and bounded virtualized DOM.
 - [x] Review/autoreview target selected from actual diff state: N/A, user asked trace/fix, not autoreview in this turn.
 - [x] Agent-native review decision recorded: N/A, no agent tooling changed.
@@ -91,7 +91,7 @@ Completion Gates:
 | Package exports or file layout changed | no | Run `pnpm brl` or record N/A | N/A: no package exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | Run install or record N/A | N/A: no package manifest, lockfile, or install graph changed. |
 | Agent rules or skills changed | no | Run sync or record N/A | N/A: no agent rules or skills changed. |
-| Workspace authority proof | yes | Run checks in owning workspace | All proof commands ran in `.tmp/slate-v2`; autogoal checker runs from root. |
+| Workspace authority proof | yes | Run checks in owning workspace | All proof commands ran in `Plate repo root`; autogoal checker runs from root. |
 | Browser surface changed | yes | Capture browser proof or waiver | Playwright integration proof covers the route and interaction. |
 | Browser final proof | yes | Record exact proof | Chromium focused test passed with metrics attachment. |
 | CI-controlled template output changed | no | Restore or record N/A | N/A: no templates changed. |

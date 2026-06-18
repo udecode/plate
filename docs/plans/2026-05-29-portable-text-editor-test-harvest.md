@@ -1,7 +1,7 @@
 # Portable Text Editor Test Harvest
 
 Objective:
-Run the editor-test-harvester skill comprehensively for local target ../portabletext. Completion means the stable permissive harvest artifacts under docs/editor-test-harvester/portabletext are current, the exact inventory is rerun and fully classified, every runnable portable/portable-mixed source has test-name extraction and family routing, Slate/Plate owner coverage is mapped from current files, every action row has owner/target/proof/verification or backlog owner, no .tmp/slate-v2 or Plate implementation/test files are edited, and this plan passes the autogoal mechanical check.
+Run the editor-test-harvester skill comprehensively for local target ../portabletext. Completion means the stable permissive harvest artifacts under docs/editor-test-harvester/portabletext are current, the exact inventory is rerun and fully classified, every runnable portable/portable-mixed source has test-name extraction and family routing, Slate/Plate owner coverage is mapped from current files, every action row has owner/target/proof/verification or backlog owner, no Plate repo root or Plate implementation/test files are edited, and this plan passes the autogoal mechanical check.
 
 Goal plan:
 docs/plans/2026-05-29-portable-text-editor-test-harvest.md
@@ -31,7 +31,7 @@ Verification surface:
 - Target repo: ../portabletext.
 - Harvest artifacts: docs/editor-test-harvester/portabletext/report.md, inventory.md, test-index.md, source-routing.md.
 - Source inventory command: rg --files ../portabletext piped through the editor-test-harvester include/exclude regex.
-- Raw Slate owner searches: .tmp/slate-v2 packages/slate/test, slate-react/test, slate-browser/test, and Playwright routes for selection, fragment, insert, delete, paste, clipboard, history, collab, composition, IME, drag/drop, void, root, schema, operation, and transform owners.
+- Raw Slate owner searches: Plate repo root packages/slate/test, slate-react/test, slate-browser/test, and Playwright routes for selection, fragment, insert, delete, paste, clipboard, history, collab, composition, IME, drag/drop, void, root, schema, operation, and transform owners.
 - Plate owner searches: packages, apps/www/src/registry, and docs for link, list, markdown, serializer, html, docx, collaboration, yjs, toolbar, mention, emoji, comment, annotation, media, schema, plugin, void, editable-voids, version-history, and collaboration owners.
 - Hygiene check: report-only pass; behavior-only hygiene is not applicable because license mode is permissive, but artifacts still avoid source body copying.
 - Final mechanical gate: node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-29-portable-text-editor-test-harvest.md.
@@ -39,7 +39,7 @@ Verification surface:
 Constraints:
 - License mode controls output placement. Portable Text is MIT/permissive, so durable artifacts live under docs/editor-test-harvester/portabletext/.
 - Do not browse GitHub files. This run uses local ../portabletext only.
-- Do not edit .tmp/slate-v2, Plate packages, docs, examples, or build config in this report-only pass.
+- Do not edit Plate repo root, Plate packages, docs, examples, or build config in this report-only pass.
 - Preserve behavior invariants, not Portable Text API shape.
 - Browser, IME, mobile, clipboard, and drag/drop rows name honest proof routes rather than claiming model-only proof.
 
@@ -47,10 +47,10 @@ Boundaries:
 - Target repo: ../portabletext.
 - Report directory: docs/editor-test-harvester/portabletext/.
 - Allowed edit scope: docs/editor-test-harvester/portabletext/** and this goal plan.
-- Non-goals: implementation, package/runtime edits, GitHub comments, commits, pushes, PRs, browser automation, and .tmp/slate-v2 test execution.
+- Non-goals: implementation, package/runtime edits, GitHub comments, commits, pushes, PRs, browser automation, and Plate repo root test execution.
 
 Blocked condition:
-No blocker is active. Autonomous work would stop only if ../portabletext, .tmp/slate-v2, or local Plate owner files disappeared, or if the user selected a different target repo/lane.
+No blocker is active. Autonomous work would stop only if ../portabletext, Plate repo root, or local Plate owner files disappeared, or if the user selected a different target repo/lane.
 
 Harvest state:
 - target_repo: ../portabletext
@@ -80,7 +80,7 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | .agents/skills/editor-test-harvester/SKILL.md and docs/plans/templates/editor-test-harvester.md were read before rewriting artifacts. |
 | Active goal checked or created | yes | get_goal returned null, then a matching editor-test-harvester goal was created. |
-| Source of truth read before edits | yes | Existing report/inventory/test-index, ../portabletext/LICENSE, ../portabletext/package.json, representative Portable Text editor tests, .tmp/slate-v2 package scripts/tests, Plate owner files, and docs/solutions were read. |
+| Source of truth read before edits | yes | Existing report/inventory/test-index, ../portabletext/LICENSE, ../portabletext/package.json, representative Portable Text editor tests, Plate repo root package scripts/tests, Plate owner files, and docs/solutions were read. |
 
 Work Checklist:
 - [x] Objective includes outcome, score threshold, verification surface, constraints, boundaries, and blocked condition.
@@ -91,7 +91,7 @@ Work Checklist:
 - [x] Test-name extraction complete for every runnable portable, portable-mixed, and uncertain file, or skipped with reason.
 - [x] Negative-control skip pressure applied to large skip families.
 - [x] Behavior rows extracted with source ref, tag, invariant, proof kind, owner coverage, and action.
-- [x] .tmp/slate-v2 coverage searches recorded for raw Slate rows.
+- [x] Plate repo root coverage searches recorded for raw Slate rows.
 - [x] Plate owner searches recorded for plugin/product rows.
 - [x] Every create/refactor/copy/fresh-invariant/defer/plate-owned row names target owner, proof kind, and command or defer reason.
 - [x] Behavior-only hygiene checked: no durable/versioned output copies or mechanically translates source code, fixtures, snapshots, helpers, expected output blobs, or expressive prose.
@@ -127,7 +127,7 @@ Confidence score:
 | Inventory completeness | 0.20 | 0.98 | Exact command rerun; 502/502 rows classified; full inventory linked. | none |
 | Behavior extraction depth | 0.20 | 0.94 | 200 runnable portable/mixed files indexed with 1944 line/name anchors; every portable/mixed file routed. | no source bodies copied |
 | Skip precision and negative controls | 0.15 | 0.92 | Harness, Plate-owned, and skip buckets have concrete reasons; converter, renderer, behavior API, and test-helper negative controls read. | none |
-| Slate/Plate coverage mapping accuracy | 0.20 | 0.92 | .tmp/slate-v2 owner searches and current Plate owner searches recorded. | report-only, no tests executed |
+| Slate/Plate coverage mapping accuracy | 0.20 | 0.92 | Plate repo root owner searches and current Plate owner searches recorded. | report-only, no tests executed |
 | Actionability of copy/refactor/create plan | 0.15 | 0.93 | Every behavior family has action, target owner, proof kind, and focused command/backlog owner. | browser rows require later apply proof |
 | Provenance and reproducibility | 0.10 | 0.95 | Local license evidence, exact inventory command, source refs, line/name anchors, and rerun delta recorded. | none |
 

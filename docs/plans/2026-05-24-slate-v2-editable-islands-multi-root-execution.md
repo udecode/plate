@@ -3,7 +3,7 @@
 Objective:
 Implement the accepted Slate v2 editable-islands multi-root architecture from
 `docs/plans/2026-05-24-slate-v2-editable-islands-multi-root-ralplan.md`.
-Expose a minimal child-root API in `.tmp/slate-v2`, update the canonical
+Expose a minimal child-root API in `Plate repo root`, update the canonical
 editable-voids example to use same-runtime child roots for rich island content,
 and verify deterministic child-root lifecycle/focus/history/delete/undo behavior
 with focused tests and browser/example proof.
@@ -25,7 +25,7 @@ Task source:
   exists.
 
 Completion threshold:
-- `.tmp/slate-v2` exposes a minimal public child-root API target:
+- `Plate repo root` exposes a minimal public child-root API target:
   `useSlateChildRoot(element, slot = 'default')` or a better source-backed
   equivalent recorded with reason.
 - The canonical editable-voids example uses `<Editable root={childRoot} />` for
@@ -41,13 +41,13 @@ Completion threshold:
   `node .agents/rules/goal/scripts/check-complete.mjs docs/plans/2026-05-24-slate-v2-editable-islands-multi-root-execution.md` passes.
 
 Verification surface:
-- `.tmp/slate-v2` focused package tests for child-root identity/lifecycle and
+- `Plate repo root` focused package tests for child-root identity/lifecycle and
   root selection/history behavior.
-- `.tmp/slate-v2` focused Playwright/example proof for editable islands once the
+- `Plate repo root` focused Playwright/example proof for editable islands once the
   example changes.
 - Source audit proving `renderVoid` stays content-only and no product widget API
   leaked into raw Slate.
-- Relevant package typecheck/lint/check commands discovered from `.tmp/slate-v2`
+- Relevant package typecheck/lint/check commands discovered from `Plate repo root`
   scripts and scoped to touched packages first.
 - Goal plan checker:
   `node .agents/rules/goal/scripts/check-complete.mjs docs/plans/2026-05-24-slate-v2-editable-islands-multi-root-execution.md`.
@@ -62,10 +62,10 @@ Constraints:
 Boundaries:
 - Source of truth: accepted plan
   `docs/plans/2026-05-24-slate-v2-editable-islands-multi-root-ralplan.md`.
-- Allowed edit scope: `.tmp/slate-v2` implementation/tests/examples plus
+- Allowed edit scope: `Plate repo root` implementation/tests/examples plus
   `plate-2/docs/plans/**` and issue/reference ledgers if proof changes claim
   accounting.
-- Browser surface: `.tmp/slate-v2` example route for editable voids/islands.
+- Browser surface: `Plate repo root` example route for editable voids/islands.
 - Tracker sync: no external tracker; local issue ledgers only if claim status
   changes.
 - Non-goals: Plate form-builder APIs, current slate-yjs adapter support,
@@ -74,7 +74,7 @@ Boundaries:
   PR/commit/push unless explicitly requested.
 
 Blocked condition:
-- Block only if live `.tmp/slate-v2` source/tests cannot be read or run after
+- Block only if live `Plate repo root` source/tests cannot be read or run after
   three consecutive attempts, or if the accepted API requires a root lifecycle
   semantic that conflicts with current core invariants and no narrower
   source-backed implementation path remains.
@@ -103,7 +103,7 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | Used `goal`, `task`, `major-task`, and `tdd` because this is accepted public API / architecture execution with behavior proof. |
 | Active goal checked or created | yes | `get_goal` loaded active execution goal `019e5bbf-b31d-7c30-9206-fbafbb6e872b`. |
-| Source of truth read before edits | yes | Read accepted ralplan, live `.tmp/slate-v2` source, root-view tests, editable-voids route tests, and package scripts before final implementation. |
+| Source of truth read before edits | yes | Read accepted ralplan, live `Plate repo root` source, root-view tests, editable-voids route tests, and package scripts before final implementation. |
 | Tracker comments and attachments read | N/A: local plan only | No external tracker item or attachment. |
 | Video transcript evidence required | N/A: no video evidence | Source is a local plan and user command. |
 | `docs/solutions` checked for non-trivial existing-code work | yes | Targeted solution search found relevant prior focus/root docs, including mounted root chrome focus and multi-root chrome click ownership notes. |
@@ -143,7 +143,7 @@ Completion Gates:
 | Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | Red test `useSlateChildRoot renders same-runtime rich island content` failed before hook export with `useSlateChildRoot is not a function`. |
 | Targeted behavior verification | yes | Run focused test/proof for changed behavior | Core/history/react contracts and editable-voids Chromium/mobile route proof passed. |
 | TypeScript or typed config changed | yes | Run relevant typecheck | `bun --filter slate typecheck`, `bun --filter slate-history typecheck`, `bun --filter slate-react typecheck`, and `bun typecheck:site` passed. |
-| Package exports or file layout changed | N/A: no barrel generator in slate-v2 | Record N/A reason | `slate-react/src/index.ts` was manually updated in this repo's export style; no `pnpm brl` surface exists in `.tmp/slate-v2`. |
+| Package exports or file layout changed | N/A: no barrel generator in slate-v2 | Record N/A reason | `slate-react/src/index.ts` was manually updated in this repo's export style; no `pnpm brl` surface exists in `Plate repo root`. |
 | Package manifests, lockfile, or install graph changed | N/A: no manifest or lockfile edit | Record N/A reason | No install graph changed. |
 | Agent rules or skills changed | N/A: no rule or skill edit | Record N/A reason | No `.agents` source changed. |
 | Browser surface changed | yes | Run focused browser proof | Editable-voids Chromium: 16 passed. Editable-voids mobile: 10 passed, 6 expected skips. |
@@ -157,14 +157,14 @@ Completion Gates:
 | PR proof image hosting | N/A: no PR requested | Record N/A reason | No PR body or image artifact. |
 | Tracker sync-back | N/A: no external tracker | Record N/A reason | No external sync target. |
 | Final handoff contract | yes | Fill final handoff fields | Final handoff section below is complete. |
-| Final lint | yes | Run scoped equivalent | `bun lint:fix` and `bun lint` passed in `.tmp/slate-v2`. |
+| Final lint | yes | Run scoped equivalent | `bun lint:fix` and `bun lint` passed in `Plate repo root`. |
 | Goal plan complete | yes | Run `node .agents/rules/goal/scripts/check-complete.mjs docs/plans/2026-05-24-slate-v2-editable-islands-multi-root-execution.md` | Passed with `[goal] complete`. |
 | Knowledge extraction | N/A: no durable solution note requested | Record N/A reason | The execution plan records reusable decisions; no memory update requested. |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Intake and source read | complete | accepted ralplan, live `.tmp/slate-v2` source/tests/scripts, and solution docs read | implementation |
+| Intake and source read | complete | accepted ralplan, live `Plate repo root` source/tests/scripts, and solution docs read | implementation |
 | Implementation | complete | child-root hook/export, operation root lifecycle metadata, editable-voids rewrite, changeset | verification |
 | Verification | complete | focused type/lint/unit/browser proof passed | closeout |
 | PR / tracker sync | complete | N/A: no PR or external tracker requested; no fixed/improved issue claim added | final response |
@@ -191,12 +191,12 @@ Decisions and tradeoffs:
   and drop proof is ownership-focused and issue accounting stays conservative.
 
 Implementation notes:
-- New hook: `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-child-root.ts`.
-- Public export: `.tmp/slate-v2/packages/slate-react/src/index.ts`.
-- Core lifecycle: `.tmp/slate-v2/packages/slate/src/core/public-state.ts`,
-  `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts`, and
-  `.tmp/slate-v2/packages/slate/src/interfaces/transforms/general.ts`.
-- Example: `.tmp/slate-v2/site/examples/ts/editable-voids.tsx` now renders rich
+- New hook: `packages/slate-react/src/hooks/use-slate-child-root.ts`.
+- Public export: `packages/slate-react/src/index.ts`.
+- Core lifecycle: `packages/slate/src/core/public-state.ts`,
+  `packages/slate/src/interfaces/operation.ts`, and
+  `packages/slate/src/interfaces/transforms/general.ts`.
+- Example: `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx` now renders rich
   child content via `<Editable root={bodyRoot} />` in the same runtime.
 
 Review fixes:

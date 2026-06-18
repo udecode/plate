@@ -72,9 +72,9 @@ Desired outcome:
 
 In scope:
 
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/nodes.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/editor/nodes.ts`
 - current examples that use `state.nodes.match` for first-match checks
 - focused query-contract tests and a small query benchmark
 - issue-ledger accounting for the `Editor.nodes` / query API cluster
@@ -91,7 +91,7 @@ Non-goals:
 Decision boundaries:
 
 - Slate Ralplan may decide public API target shape and proof gates.
-- Ralph owns implementation edits in `.tmp/slate-v2`.
+- Ralph owns implementation edits in `Plate repo root`.
 - Hard cut `state.nodes.match` to `state.nodes.entries` by default. The local
   built `dist` contains the draft API, but the package changelog has no public
   v2/state-query release note; treat this as pre-release until a release owner
@@ -118,14 +118,14 @@ Principles:
 Top drivers:
 
 - Current v2 query owner is a generator:
-  `.tmp/slate-v2/packages/slate/src/editor/nodes.ts:6`.
+  `packages/slate/src/editor/nodes.ts:6`.
 - Raw node traversal is also a generator:
-  `.tmp/slate-v2/packages/slate/src/interfaces/node.ts:677`.
+  `packages/slate/src/interfaces/node.ts:677`.
 - Public read state exposes `state.nodes.match`:
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts:960`.
+  `packages/slate/src/core/public-state.ts:960`.
 - Examples materialize first-match checks:
-  `.tmp/slate-v2/site/examples/ts/inlines.tsx:180` and
-  `.tmp/slate-v2/site/examples/ts/richtext.tsx:411`.
+  `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx:180` and
+  `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx:411`.
 - Legacy Slate let first-match destructuring consume only the first generator
   yield: `../slate/packages/slate/src/editor/nodes.ts:6`.
 
@@ -162,10 +162,10 @@ Follow-ups:
 
 | Dimension                                                | Score | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | -------------------------------------------------------- | ----: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| React 19.2 runtime performance                           |  0.93 | No React surface changes; the hot-path concern is avoiding allocation during read selectors and toolbar active checks. Current examples at `.tmp/slate-v2/site/examples/ts/inlines.tsx:180`, `.tmp/slate-v2/site/examples/ts/richtext.tsx:411` materialize first-match reads; the target replaces them with early-exit helpers. The DX audit rejects ambiguous all-selected helpers unless a candidate/predicate split is proven. `cwd .tmp/slate-v2`, `bun ./scripts/benchmarks/core/current/query-ref-observation.mjs` passed and recorded current query-read overhead for the existing all-match path. |
-| Slate-close unopinionated DX                             |  0.94 | Keeps `editor.read`, `NodeEntry`, `match`, `mode`, `voids`, `pass`; rejects static API restoration. Evidence: `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:180`, `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1047`; legacy generator pressure from `../slate/packages/slate/src/editor/nodes.ts:6`.                                                                                                                                                                                                                                                                                  |
+| React 19.2 runtime performance                           |  0.93 | No React surface changes; the hot-path concern is avoiding allocation during read selectors and toolbar active checks. Current examples at `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx:180`, `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx:411` materialize first-match reads; the target replaces them with early-exit helpers. The DX audit rejects ambiguous all-selected helpers unless a candidate/predicate split is proven. `cwd Plate repo root`, `bun ./scripts/benchmarks/core/current/query-ref-observation.mjs` passed and recorded current query-read overhead for the existing all-match path. |
+| Slate-close unopinionated DX                             |  0.94 | Keeps `editor.read`, `NodeEntry`, `match`, `mode`, `voids`, `pass`; rejects static API restoration. Evidence: `packages/slate/src/interfaces/editor.ts:180`, `packages/slate/src/interfaces/editor.ts:1047`; legacy generator pressure from `../slate/packages/slate/src/editor/nodes.ts:6`.                                                                                                                                                                                                                                                                                  |
 | Plate and slate-yjs migration-backbone shape             |  0.90 | Deterministic lazy query primitives remain substrate-level and plugin-friendly; no serialized operation, remote-apply, or current Plate adapter claim is made. Maintainer pass accepts the raw-core boundary and rejects product helpers.                                                                                                                                                                                                                                                                                                                                                                 |
-| Regression-proof testing strategy                        |  0.94 | Focused query-contract, public-surface typecheck, early-exit visit-count tests, reverse/pass/void/mode parity, and grep cleanup gates are named. Current gates passed: `cwd .tmp/slate-v2`, `bun test ./packages/slate/test/query-contract.ts` -> `79 pass`; `bun --filter slate typecheck` -> pass.                                                                                                                                                                                                                                                                                                      |
+| Regression-proof testing strategy                        |  0.94 | Focused query-contract, public-surface typecheck, early-exit visit-count tests, reverse/pass/void/mode parity, and grep cleanup gates are named. Current gates passed: `cwd Plate repo root`, `bun test ./packages/slate/test/query-contract.ts` -> `79 pass`; `bun --filter slate typecheck` -> pass.                                                                                                                                                                                                                                                                                                      |
 | Research evidence completeness                           |  0.93 | Local legacy Slate, ProseMirror, Lexical, and Tiptap sources were read; research decision added at `docs/research/decisions/slate-v2-node-query-api-should-keep-lazy-entries-and-add-first-match-helpers.md`; issue cache rows were reused without broad GitHub rediscovery.                                                                                                                                                                                                                                                                                                                              |
 | shadcn-style composability and hook/component minimalism |  0.88 | No UI; the API removes app helper boilerplate while keeping raw Slate core small. Example cleanup is part of Ralph scope, not an extra product layer.                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 
@@ -215,7 +215,7 @@ matching because it already means first node at a location.
 Hard cut:
 
 - Cut `state.nodes.match` by default. The local `dist` artifact contains the
-  draft API, but `.tmp/slate-v2/packages/slate/CHANGELOG.md` has no
+  draft API, but `packages/slate/CHANGELOG.md` has no
   v2/state-query release entry. Treat this as pre-release local build state.
 - If a release owner confirms that `state.nodes.match` already shipped outside
   this repo, keep a deprecated alias to `entries` for one cycle only, with
@@ -274,7 +274,7 @@ broad live GitHub discovery.
 
 | Issue | Cluster                               | Claim                       | Why                                                                                                                                                                                                        | Proof route                                                                                 | V2 sync ledger | PR line             |
 | ----- | ------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | -------------- | ------------------- |
-| #5080 | editor-nodes-reverse-iteration-order  | already fixed by prior lane | Current plan must not reopen reverse-order semantics; it depends on the existing lazy query owner.                                                                                                         | `.tmp/slate-v2/packages/slate/test/query-contract.ts`; coverage matrix row already present. | unchanged      | unchanged           |
+| #5080 | editor-nodes-reverse-iteration-order  | already fixed by prior lane | Current plan must not reopen reverse-order semantics; it depends on the existing lazy query owner.                                                                                                         | `packages/slate/test/query-contract.ts`; coverage matrix row already present. | unchanged      | unchanged           |
 | #5684 | editor-nodes-traversal-ambiguity      | Related                     | Vague `SlateEditor.nodes` match issue; this API cleanup may improve ergonomics but cannot claim the unknown repro.                                                                                         | ask-for-repro if issue is revisited                                                         | unchanged      | related matrix only |
 | #5028 | editor-nodes-pass-filtering           | Related                     | `pass` already exists; this plan keeps it and does not create a new pass claim.                                                                                                                            | source pointers in `interfaces/editor.ts` and `interfaces/node.ts`                          | unchanged      | related matrix only |
 | #3885 | docs-api-confusion-and-example-gaps   | Not claimed                 | Renaming `match` to `entries` and examples using `find`/`some` improves local example clarity, but the issue asks docs to explain selection-relative `Editor.nodes`; closure needs an explicit docs route. | docs/example cleanup only if Ralph includes it                                              | unchanged      | related matrix only |
@@ -359,10 +359,10 @@ for one cycle and still add `find` / `some`. Do not drop the early-exit helpers.
 
 | Pass                                         | Status   | Evidence added                                                                                                                                                                                                            | Plan delta                                                                                                           | Open issues | Next owner                     |
 | -------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------ |
-| current-state read and initial score         | complete | Read live `.tmp/slate-v2` query source, examples, query tests, legacy Slate, ProseMirror, Lexical, Tiptap, cached issue rows; ran focused query-contract test.                                                            | Drafted target `entries` / `find` / `some`; rejected current `Array.from` shape.                                     | none        | Related issue cache validation |
+| current-state read and initial score         | complete | Read live `Plate repo root` query source, examples, query tests, legacy Slate, ProseMirror, Lexical, Tiptap, cached issue rows; ran focused query-contract test.                                                            | Drafted target `entries` / `find` / `some`; rejected current `Array.from` shape.                                     | none        | Related issue cache validation |
 | related issue cache validation               | complete | Reused `gitcrawl-live-open-ledger`, `gitcrawl-v2-sync-ledger`, `issue-coverage-matrix`, `fork-issue-dossier`, and PR reference rows for #5080/#5684/#5028/#3885/#4041.                                                    | Kept #5080 unchanged as already fixed; #5684 repro-first; #5028 related; #3885 not claimed; #4041 stale/not claimed. | none        | Intent/boundary hardening      |
 | intent/boundary and decision brief hardening | complete | Checked local package changelog, package metadata, and built dist exposure.                                                                                                                                               | Accepted hard cut by default; alias only if release owner proves shipped API.                                        | none        | Performance and benchmark pass |
-| performance and benchmark pass               | complete | Ran `bun ./scripts/benchmarks/core/current/query-ref-observation.mjs` in `.tmp/slate-v2`; current all-match query-read overhead recorded as `nodesReadAfterWriteMs mean 20.28ms`, `+5.72ms` over write-only in that lane. | Added benchmark thresholds and early-exit proof requirements.                                                        | none        | Objection/high-risk pass       |
+| performance and benchmark pass               | complete | Ran `bun ./scripts/benchmarks/core/current/query-ref-observation.mjs` in `Plate repo root`; current all-match query-read overhead recorded as `nodesReadAfterWriteMs mean 20.28ms`, `+5.72ms` over write-only in that lane. | Added benchmark thresholds and early-exit proof requirements.                                                        | none        | Objection/high-risk pass       |
 | objection/high-risk pass                     | complete | Re-scored maintainer objections after alias policy and issue cache validation.                                                                                                                                            | Accepted `entries` rename, `find`, `some`, and no static `Editor.nodes` restoration.                                 | none        | DX-extension audit             |
 | DX-extension audit                           | complete | Re-read ecosystem helper pressure from Lexical, ProseMirror, and Tiptap.                                                                                                                                                  | Rejected/deferred `every`, `closest`, selector APIs, child/product helpers, count, arrays, and type indexes.         | none        | Closure score                  |
 | closure score                                | complete | Re-read plan gates and current verification.                                                                                                                                                                              | Raised score to `0.94`; ready for user review and later Ralph execution.                                             | none        | User review                    |
@@ -375,7 +375,7 @@ Added:
 - Draft `find` and `some` helpers.
 - DX candidate audit for extra helpers from Lexical, ProseMirror, and Tiptap.
 - Research decision comparing legacy Slate, ProseMirror, Lexical, and Tiptap.
-- Focused `.tmp/slate-v2` verification row for current query contract.
+- Focused `Plate repo root` verification row for current query contract.
 
 Dropped:
 
@@ -517,7 +517,7 @@ Status: complete.
 
 Execution date: 2026-05-14.
 
-Implemented in `.tmp/slate-v2`:
+Implemented in `Plate repo root`:
 
 - Added `state.nodes.entries(options)` as the lazy all-match query API.
 - Added `state.nodes.find(options)` and `state.nodes.some(options)` as
@@ -532,7 +532,7 @@ state.nodes.match(...))` first-match patterns.
 Proof:
 
 ```bash
-# cwd: .tmp/slate-v2
+# cwd: Plate repo root
 bun test ./packages/slate/test/query-contract.ts
 # result: 80 pass, 0 fail
 
@@ -574,7 +574,7 @@ Reference docs:
 
 Residual risk:
 
-- `.tmp/slate-v2` had unrelated dirty example/runtime files before this execution
+- `Plate repo root` had unrelated dirty example/runtime files before this execution
   (`site/examples/ts/embeds.tsx`, `site/examples/ts/images.tsx`,
   `site/examples/ts/paste-html.tsx`, `site/examples/ts/rendering-strategy-runtime.tsx`,
   and related example registry/test files). They were not reverted or claimed

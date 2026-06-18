@@ -1,4 +1,4 @@
-import type { TElement } from '@platejs/slate';
+import type { TElement } from '@platejs/slate-legacy';
 
 import { useEditorRef } from '../plate';
 import { SCOPE_ELEMENT, useElementContext } from './useElementStore';

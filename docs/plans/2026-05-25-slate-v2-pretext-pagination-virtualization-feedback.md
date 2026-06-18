@@ -32,13 +32,13 @@ Completion threshold:
 Verification surface:
 - Planning artifacts in `plate-2`: this plan, related issue ledgers, research
   notes if updated, and completion check.
-- Slate v2 source/API/runtime claims must cite live `.tmp/slate-v2` source reads
-  or a `.tmp/slate-v2` command.
-- Browser/runtime behavior claims require `.tmp/slate-v2` browser proof in a
+- Slate v2 source/API/runtime claims must cite live `Plate repo root` source reads
+  or a `Plate repo root` command.
+- Browser/runtime behavior claims require `Plate repo root` browser proof in a
   later pass. This pass records source evidence only.
 
 Constraints:
-- Planning mode only. Do not patch `.tmp/slate-v2` implementation.
+- Planning mode only. Do not patch `Plate repo root` implementation.
 - Allowed edit scope: `docs/plans/**`, `docs/research/**`,
   `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`,
   `docs/slate-v2/references/**`.
@@ -47,7 +47,7 @@ Constraints:
   actually headless and cross-platform-stable.
 
 Boundaries:
-- Local source of truth: `.tmp/slate-v2`, `../pretext`, existing plan/ledger
+- Local source of truth: `Plate repo root`, `../pretext`, existing plan/ledger
   artifacts.
 - External sources: Cyrus Radfar Pretext article, local `../tiptap-docs` Pages
   docs, official Tiptap Pages docs, and Romik Makavana Tiptap pagination article
@@ -116,9 +116,9 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | `slate-plan` skill read before plan edit |
 | Active goal checked or created | yes | active goal objective matches this lane |
-| Source of truth read before edits | yes | `.tmp/slate-v2`, `../pretext`, prior plans, issue ledgers, external articles read |
+| Source of truth read before edits | yes | `Plate repo root`, `../pretext`, prior plans, issue ledgers, external articles read |
 | `docs/solutions` checked for non-trivial existing-code work | yes | `rg` found no directly reusable solution note |
-| Live `.tmp/slate-v2` grounding needed for current-state claims | yes | source reads recorded below |
+| Live `Plate repo root` grounding needed for current-state claims | yes | source reads recorded below |
 
 Work Checklist:
 - [x] Objective includes lane outcome, pass schedule, one-pass-per-activation
@@ -147,9 +147,9 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run final plan completion check in closure pass | Closure pass audited all scheduled passes, raised final weighted score to 0.92, and runs `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md` as the final checker. |
-| Slate v2 source/runtime/browser/API claim | yes | Record live `.tmp/slate-v2` source/commands | Current-state claims are source-confirmed in the verification workspace gate; behavior/browser/API implementation proofs are recorded as future execution gates, and this planning lane makes no implementation or issue-fix claim. |
+| Slate v2 source/runtime/browser/API claim | yes | Record live `Plate repo root` source/commands | Current-state claims are source-confirmed in the verification workspace gate; behavior/browser/API implementation proofs are recorded as future execution gates, and this planning lane makes no implementation or issue-fix claim. |
 | Issue ledger or PR reference changed | yes | Sync manual rows; inspect PR reference for claim-count drift | `docs/slate-issues/gitcrawl-v2-sync-ledger.md`, `docs/slate-v2/ledgers/issue-coverage-matrix.md`, `docs/slate-v2/ledgers/fork-issue-dossier.md`, and `docs/slate-v2/references/pr-description.md` synced to final API/proof wording; fixed/improved claim counts unchanged |
-| Autoreview for implementation changes | no | N/A planning-only | no `.tmp/slate-v2` implementation patch |
+| Autoreview for implementation changes | no | N/A planning-only | no `Plate repo root` implementation patch |
 | Final user-review handoff | yes | Emit final handoff or keep next pass | Final user-review handoff recorded below; final response should summarize it. |
 | Goal plan complete | yes | Run check-complete | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md` passed in closure. |
 
@@ -186,7 +186,7 @@ Source-backed architecture north star:
   page-break snapshots, and optional measurement profiles; `slate-react` owns DOM
   materialization, page/block mount plans, selection, clipboard, IME, a11y, and
   browser proof.
-- source evidence: `.tmp/slate-v2/packages/slate-layout/src/index.ts:236` defines
+- source evidence: `packages/slate-layout/src/index.ts:236` defines
   snapshots with blocks/fragments/pages; `:277` defines engine boundary; `:1349`
   starts the Pretext page engine; `:1698` paginates measured blocks into
   fragments/pages.
@@ -249,11 +249,11 @@ Internal runtime target:
 |-------|---------------|------------------|--------|----------|---------|
 | text measurement | Pretext via `slate-layout` | `prepare()` cached widths, `layout()` hot arithmetic | DOM reflow measurement | `../pretext/src/layout.ts:668`, `:696` | keep with caveat |
 | measurement profile | absent/publicly implicit | opaque snapshot metadata: engine, browser/canvas/headless, font set, correction policy | fake deterministic export claims and user-facing font-engine knobs | `../pretext/src/measurement.ts:36` requires canvas; `:74` computes profile knobs | add metadata |
-| page composition | `slate-layout` | fragments/pages plus split policy | page nodes in editor value | `.tmp/slate-v2/packages/slate-layout/src/index.ts:1698` | keep/revise |
-| page virtualization | none yet | virtualizer item = page/spread rect with mounted page ranges and retained active pages | block-item churn in paged mode | `.tmp/slate-v2/packages/slate-layout/src/react.tsx:185` maps block items; `:219` maps all pages | add |
+| page composition | `slate-layout` | fragments/pages plus split policy | page nodes in editor value | `packages/slate-layout/src/index.ts:1698` | keep/revise |
+| page virtualization | none yet | virtualizer item = page/spread rect with mounted page ranges and retained active pages | block-item churn in paged mode | `packages/slate-layout/src/react.tsx:185` maps block items; `:219` maps all pages | add |
 | continuous virtualization | `slate-react` | top-level/block/fragment items from layout | guessed heights as primary model | `use-virtualized-root-plan.ts:212` consumes top-level ids | keep |
 | strict collab/export | absent | optional shared page-break snapshot | drift across OS/browser clients | Pretext research + external article | add |
-| provider split protocol | generic box/split vocabulary exists | provider boxes for table/media/BFC-like content with intrinsic sizes and split rules | product-specific raw Slate TableKit | `.tmp/slate-v2/packages/slate-layout/src/index.ts:105` and `:113` define box kinds and split policies | add |
+| provider split protocol | generic box/split vocabulary exists | provider boxes for table/media/BFC-like content with intrinsic sizes and split rules | product-specific raw Slate TableKit | `packages/slate-layout/src/index.ts:105` and `:113` define box kinds and split policies | add |
 
 Hook / component / render DX target:
 | Surface | Call-site shape | Composition rule | Performance rule | Evidence | Verdict |
@@ -592,21 +592,21 @@ Research, ecosystem strategy, and live-source refresh pass:
     initial measurement still depends on `canvas.measureText()` and matching
     browser font metrics outside the browser is hard work.
 - current Slate v2 source refresh:
-  - `.tmp/slate-v2/packages/slate-layout/src/index.ts:105` has box kinds for
+  - `packages/slate-layout/src/index.ts:105` has box kinds for
     block, code line, image, table, table cell, and thematic break.
-  - `.tmp/slate-v2/packages/slate-layout/src/index.ts:113` already names
+  - `packages/slate-layout/src/index.ts:113` already names
     `avoid`, `line`, `page`, and `row` split policy vocabulary.
-  - `.tmp/slate-v2/packages/slate-layout/src/index.ts:236` has blocks,
+  - `packages/slate-layout/src/index.ts:236` has blocks,
     fragments, page, pages, root, settings, and version in snapshots.
-  - `.tmp/slate-v2/packages/slate-layout/src/index.ts:1349` still uses the
+  - `packages/slate-layout/src/index.ts:1349` still uses the
     Pretext page layout engine.
-  - `.tmp/slate-v2/packages/slate-layout/src/react.tsx:185` still maps projected
+  - `packages/slate-layout/src/react.tsx:185` still maps projected
     blocks into top-level virtualized layout items.
-  - `.tmp/slate-v2/packages/slate-layout/src/react.tsx:219` still renders all
+  - `packages/slate-layout/src/react.tsx:219` still renders all
     page surfaces.
-  - `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:548`
+  - `packages/slate-react/src/components/editable-text-blocks.tsx:548`
     still exposes only `getVirtualizedTopLevelItems`.
-  - `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:95`
+  - `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:95`
     retains selected/promoted top-level indexes through the range extractor.
 - Premirror refresh:
   - `../premirror/README.md:14` describes measured snapshot -> deterministic
@@ -666,7 +666,7 @@ Performance/DX/migration/regression/simplicity pressure pass:
 
 | Claim under pressure | Failure mode | Pressure result | Plan delta |
 |----------------------|--------------|-----------------|------------|
-| Paged mode should virtualize pages/spreads | Page surfaces still all render if only blocks are virtualized | confirmed by `.tmp/slate-v2/packages/slate-layout/src/react.tsx:185` and `:219` | add page/spread mount plan inside `PagedEditable` |
+| Paged mode should virtualize pages/spreads | Page surfaces still all render if only blocks are virtualized | confirmed by `packages/slate-layout/src/react.tsx:185` and `:219` | add page/spread mount plan inside `PagedEditable` |
 | Keep TanStack internal | Public TanStack knobs become editor contract | existing research keeps TanStack limited to visible index range, size, overscan, retained indexes | keep `domStrategy` public; no virtualizer item API |
 | Retain active editing targets | Page virtualizer unmounts caret/IME page | current top-level virtualizer retains selected/promoted indexes at `use-virtualized-root-plan.ts:95`; page plan must add selected/promoted/composing page retention | proof gate for selection, IME, and composition |
 | Profile-aware layout is enough for strict users | Local recompute still drifts across profiles | not enough for export/collab strict mode | require optional authoritative snapshot |
@@ -761,7 +761,7 @@ Legacy regression proof matrix:
 Browser stress / parity strategy:
 | Surface | Scenario | Browser/device | Command or proof route | Expected signal | Status |
 |---------|----------|----------------|------------------------|-----------------|--------|
-| pagination page virtualization | 500+ pages, scroll middle, type | Chromium first, then WebKit/Firefox | `.tmp/slate-v2` pagination Playwright grep | only visible/retained pages mounted, typing stable | pending |
+| pagination page virtualization | 500+ pages, scroll middle, type | Chromium first, then WebKit/Firefox | `Plate repo root` pagination Playwright grep | only visible/retained pages mounted, typing stable | pending |
 | cross-platform drift | same doc/font/page settings on multiple profiles | Chromium/WebKit/Firefox, macOS/Linux | deterministic snapshot compare | drift recorded or profile-gated | pending |
 | authoritative breaks | peer/export reads accepted breaks | unit + browser | state field replay + export proof | matching page breaks when profile valid | pending |
 | table/image edge cases | table split, merged cell, image near boundary | Chromium | pagination fixture | no overlap, no lost content | pending |
@@ -772,29 +772,29 @@ Verification workspace gate:
 |-------|-----------|------------------|--------|-------|
 | Pretext prepare uses canvas; layout hot path is arithmetic | `../pretext` | `nl -ba ../pretext/src/layout.ts`; `nl -ba ../pretext/src/measurement.ts` | source-confirmed | current pass |
 | Pretext has documented font/profile drift | `../pretext` | `nl -ba ../pretext/RESEARCH.md` | source-confirmed | current pass |
-| Slate layout has pages/fragments/snapshots and Pretext engine | `.tmp/slate-v2` | `nl -ba packages/slate-layout/src/index.ts` | source-confirmed | current pass |
-| Current paged editable feeds block layout items and renders all page surfaces | `.tmp/slate-v2` | `nl -ba packages/slate-layout/src/react.tsx` | source-confirmed | current pass |
-| Current virtualized plan is top-level id/index based | `.tmp/slate-v2` | `nl -ba packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts` | source-confirmed | current pass |
-| Current example keeps page settings in shared state | `.tmp/slate-v2` | `nl -ba site/examples/ts/pagination.tsx` | source-confirmed | current pass |
+| Slate layout has pages/fragments/snapshots and Pretext engine | `Plate repo root` | `nl -ba packages/slate-layout/src/index.ts` | source-confirmed | current pass |
+| Current paged editable feeds block layout items and renders all page surfaces | `Plate repo root` | `nl -ba packages/slate-layout/src/react.tsx` | source-confirmed | current pass |
+| Current virtualized plan is top-level id/index based | `Plate repo root` | `nl -ba packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts` | source-confirmed | current pass |
+| Current example keeps page settings in shared state | `Plate repo root` | `nl -ba site/examples/ts/pagination.tsx` | source-confirmed | current pass |
 | Issue-ledger no-claim posture synced | `plate-2` | `rg -n "Pretext Pagination / Page Virtualization Feedback" docs/slate-issues/gitcrawl-v2-sync-ledger.md docs/slate-v2/ledgers/issue-coverage-matrix.md docs/slate-v2/ledgers/fork-issue-dossier.md` | artifact-confirmed | issue-ledger pass |
 | PR reference did not need claim sync | `plate-2` | `rg -n "#5944|#2793|#790|page virtualization" docs/slate-v2/references/pr-description.md` | no matching PR-claim rows; no change needed | issue-ledger pass |
 | Intent/boundary and decision brief hardened | `plate-2` | `rg -n "owner boundaries|Page-level virtualization plus optional authoritative snapshots|Server-only pagination authority|chosen architecture" docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md` | artifact-confirmed | intent/boundary pass |
 | Compiled Pretext pagination research added | `plate-2` | `rg -n "Pretext Pagination And Page Virtualization|Current Conclusion|Tiptap Pagination Lessons" docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md` | artifact-confirmed | research pass |
 | Research indexes updated | `plate-2` | `rg -n "pretext-pagination-page-virtualization" docs/research/sources/editor-architecture/README.md docs/research/index.md docs/research/log.md` | artifact-confirmed | research pass |
 | Current Pretext headless/profile facts refreshed | `../pretext` | `nl -ba ../pretext/src/measurement.ts`; `nl -ba ../pretext/src/layout.ts`; `nl -ba ../pretext/RESEARCH.md` | source-confirmed | research pass |
-| Current Slate v2 paged/virtualization facts refreshed | `.tmp/slate-v2` | `nl -ba packages/slate-layout/src/index.ts`; `nl -ba packages/slate-layout/src/react.tsx`; `nl -ba packages/slate-react/src/components/editable-text-blocks.tsx`; `nl -ba packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts` | source-confirmed | research pass |
+| Current Slate v2 paged/virtualization facts refreshed | `Plate repo root` | `nl -ba packages/slate-layout/src/index.ts`; `nl -ba packages/slate-layout/src/react.tsx`; `nl -ba packages/slate-react/src/components/editable-text-blocks.tsx`; `nl -ba packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts` | source-confirmed | research pass |
 | Current Tiptap Pages docs fetched | `plate-2` | `curl -L https://tiptap.dev/docs/pages/core-concepts/limitations`; `curl -L https://tiptap.dev/docs/pages/guides/table-with-pages` | official-doc evidence extracted | research pass |
 | Local Tiptap Pages docs read | `../tiptap-docs` | `nl -ba src/content/pages/core-concepts/limitations.mdx`; `nl -ba src/content/pages/guides/table-with-pages.mdx` | source-confirmed negative evidence: CSS floats, BFC split limits, max-height/manual split mitigations, specialized TableKit | pressure pass |
 | Medium article current access status | `plate-2` | `curl -L https://romik-mk.medium.com/tiptap-pagination-problems-solutions-31f1a0b51e08` | Cloudflare challenge; user summary retained as review context | research pass |
-| Pressure pass source checks | `.tmp/slate-v2` + `plate-2` | `nl -ba .tmp/slate-v2/site/examples/ts/pagination.tsx`; `nl -ba .tmp/slate-v2/packages/slate-layout/src/react.tsx`; `nl -ba .tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`; `nl -ba docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md` | source-confirmed pressure points for API/DX/perf proof | pressure pass |
+| Pressure pass source checks | `Plate repo root` + `plate-2` | `nl -ba apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx`; `nl -ba packages/slate-layout/src/react.tsx`; `nl -ba packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`; `nl -ba docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md` | source-confirmed pressure points for API/DX/perf proof | pressure pass |
 | Pressure pass artifact recorded | `plate-2` | `rg -n "Performance/DX/migration/regression/simplicity pressure pass|pageVirtualization|chosen public beta target" docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md` | artifact-confirmed | pressure pass |
-| Maintainer objection source checks | `.tmp/slate-v2` + `plate-2` | `nl -ba .tmp/slate-v2/packages/slate-layout/src/index.ts`; `nl -ba .tmp/slate-v2/packages/slate-layout/src/react.tsx`; `nl -ba .tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`; `nl -ba .tmp/slate-v2/packages/slate-react/src/components/dom-coverage-boundary.tsx`; `nl -ba .tmp/slate-v2/packages/slate/src/interfaces/editor.ts`; `nl -ba .tmp/slate-v2/packages/slate/src/core/public-state.ts`; `nl -ba .tmp/slate-v2/site/examples/ts/pagination.tsx` | source-confirmed ownership, state-field, DOM coverage, current paged rendering, and example DX objections | maintainer objection pass |
+| Maintainer objection source checks | `Plate repo root` + `plate-2` | `nl -ba packages/slate-layout/src/index.ts`; `nl -ba packages/slate-layout/src/react.tsx`; `nl -ba packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`; `nl -ba packages/slate-react/src/components/dom-coverage-boundary.tsx`; `nl -ba packages/slate/src/interfaces/editor.ts`; `nl -ba packages/slate/src/core/public-state.ts`; `nl -ba apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx` | source-confirmed ownership, state-field, DOM coverage, current paged rendering, and example DX objections | maintainer objection pass |
 | Maintainer objection artifact recorded | `plate-2` | `rg -n "Slate maintainer objection ledger|Pass verdict|Default shared page-break writes|raw Slate product TableKit|Maintainer objection source checks" docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md` | artifact-confirmed | maintainer objection pass |
-| High-risk source and test checks | `.tmp/slate-v2` + `plate-2` | `rg -n "pagination|paged|page layout|page-break|virtualized|DOMCoverage|a11y|clipboard|composition|select all|find" .tmp/slate-v2/packages .tmp/slate-v2/site -g '*.{test,ts,tsx,json}'`; `nl -ba .tmp/slate-v2/package.json`; `nl -ba .tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts`; `nl -ba .tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx`; `nl -ba .tmp/slate-v2/playwright/integration/examples/pagination.test.ts`; `nl -ba .tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts` | source-confirmed adjacent proof and missing final proof for high-risk rows | high-risk pass |
+| High-risk source and test checks | `Plate repo root` + `plate-2` | `rg -n "pagination|paged|page layout|page-break|virtualized|DOMCoverage|a11y|clipboard|composition|select all|find" Plate repo root/packages apps/www -g '*.{test,ts,tsx,json}'`; `nl -ba Plate repo root/package.json`; `nl -ba packages/slate-layout/test/page-layout-contract.test.ts`; `nl -ba packages/slate-react/test/dom-strategy-and-scroll.tsx`; `nl -ba apps/www/tests/slate-browser/donor/examples/pagination.test.ts`; `nl -ba apps/www/tests/slate-browser/donor/examples/dom-coverage-boundaries.test.ts` | source-confirmed adjacent proof and missing final proof for high-risk rows | high-risk pass |
 | High-risk artifact recorded | `plate-2` | `rg -n "High-risk deliberate-mode pre-mortem|High-risk proof queue|wrong paged virtualization unit|authoritative break state churn|release gate too weak" docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md` | artifact-confirmed | high-risk pass |
-| Ecosystem maintainer source checks | `.tmp/slate-v2`, `plate-2`, sibling repos, official docs | `nl -ba ../pretext/src/measurement.ts`; `nl -ba ../pretext/src/layout.ts`; `nl -ba ../pretext/RESEARCH.md`; `nl -ba ../premirror/README.md`; `nl -ba ../premirror/docs/milestone-1-implementation-plan.md`; `nl -ba ../tiptap-docs/src/content/pages/core-concepts/limitations.mdx`; `nl -ba ../tiptap-docs/src/content/pages/guides/table-with-pages.mdx`; `curl -L https://tiptap.dev/docs/pages/core-concepts/limitations`; `curl -L https://tiptap.dev/docs/pages/guides/table-with-pages`; `nl -ba docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md`; `nl -ba .tmp/slate-v2/packages/slate-react/src/components/dom-coverage-boundary.tsx`; `nl -ba .tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`; `nl -ba .tmp/slate-v2/packages/slate-layout/src/react.tsx`; `nl -ba .tmp/slate-v2/packages/slate-layout/src/index.ts` | source-confirmed ecosystem keep/reject decisions; official Tiptap docs match local Pages limitation source | ecosystem maintainer pass |
+| Ecosystem maintainer source checks | `Plate repo root`, `plate-2`, sibling repos, official docs | `nl -ba ../pretext/src/measurement.ts`; `nl -ba ../pretext/src/layout.ts`; `nl -ba ../pretext/RESEARCH.md`; `nl -ba ../premirror/README.md`; `nl -ba ../premirror/docs/milestone-1-implementation-plan.md`; `nl -ba ../tiptap-docs/src/content/pages/core-concepts/limitations.mdx`; `nl -ba ../tiptap-docs/src/content/pages/guides/table-with-pages.mdx`; `curl -L https://tiptap.dev/docs/pages/core-concepts/limitations`; `curl -L https://tiptap.dev/docs/pages/guides/table-with-pages`; `nl -ba docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md`; `nl -ba packages/slate-react/src/components/dom-coverage-boundary.tsx`; `nl -ba packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`; `nl -ba packages/slate-layout/src/react.tsx`; `nl -ba packages/slate-layout/src/index.ts` | source-confirmed ecosystem keep/reject decisions; official Tiptap docs match local Pages limitation source | ecosystem maintainer pass |
 | Ecosystem maintainer artifact recorded | `plate-2` | `rg -n "Ecosystem maintainer pass|Ecosystem final keep/reject decisions|Tiptap-specific correction|DOMCoverage|GitHub large-surface|Current weighted score after ecosystem" docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md` | artifact-confirmed | ecosystem maintainer pass |
-| Revision source checks | `.tmp/slate-v2` + `plate-2` | `rg -n "type PagedEditableProps|pageLayoutMode|pageGap|useSlateLayout|type EditableLayout|getVirtualizedTopLevelItems" .tmp/slate-v2/packages/slate-layout/src/react.tsx .tmp/slate-v2/packages/slate-react/src`; `rg -n "DOMStrategy|virtualized|estimatedBlockSize|threshold|overscan" .tmp/slate-v2/packages/slate-react/src .tmp/slate-v2/packages/slate-dom/src`; `rg -n "defineStateField|history: 'skip'|collab: 'shared'|persist: true|EditorStateField" .tmp/slate-v2/packages/slate .tmp/slate-v2/packages/slate-history`; `rg -n "Pretext Pagination / Page Virtualization Feedback|#5944|#2793|#790|page virtualization|page-break|pagination" docs/slate-issues/gitcrawl-v2-sync-ledger.md docs/slate-v2/ledgers/issue-coverage-matrix.md docs/slate-v2/ledgers/fork-issue-dossier.md docs/slate-v2/references/pr-description.md` | source-confirmed final API/proof revision and no new fixed/improved claim basis | revision pass |
+| Revision source checks | `Plate repo root` + `plate-2` | `rg -n "type PagedEditableProps|pageLayoutMode|pageGap|useSlateLayout|type EditableLayout|getVirtualizedTopLevelItems" packages/slate-layout/src/react.tsx packages/slate-react/src`; `rg -n "DOMStrategy|virtualized|estimatedBlockSize|threshold|overscan" packages/slate-react/src packages/slate-dom/src`; `rg -n "defineStateField|history: 'skip'|collab: 'shared'|persist: true|EditorStateField" packages/slate packages/slate-history`; `rg -n "Pretext Pagination / Page Virtualization Feedback|#5944|#2793|#790|page virtualization|page-break|pagination" docs/slate-issues/gitcrawl-v2-sync-ledger.md docs/slate-v2/ledgers/issue-coverage-matrix.md docs/slate-v2/ledgers/fork-issue-dossier.md docs/slate-v2/references/pr-description.md` | source-confirmed final API/proof revision and no new fixed/improved claim basis | revision pass |
 | Revision artifact recorded | `plate-2` | `rg -n "Revision pass:|Revision API decisions|Revision proof deltas|Revision issue-sync impact|Current weighted score after revision|pageVirtualization|pageView" docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md` | artifact-confirmed | revision pass |
 | Issue sync accounting source checks | `plate-2` | `nl -ba docs/slate-issues/gitcrawl-v2-sync-ledger.md`; `nl -ba docs/slate-v2/ledgers/issue-coverage-matrix.md`; `nl -ba docs/slate-v2/ledgers/fork-issue-dossier.md`; `nl -ba docs/slate-v2/references/pr-description.md`; `rg -n "pageView|measurementProfile|pageVirtualization|provider/split|pageBreaks|Pretext Pagination / Page Virtualization Feedback" docs/slate-issues/gitcrawl-v2-sync-ledger.md docs/slate-v2/ledgers/issue-coverage-matrix.md docs/slate-v2/ledgers/fork-issue-dossier.md docs/slate-v2/references/pr-description.md` | source-confirmed stale ledger wording, then synced final API/proof target with zero claim-count change | issue sync accounting |
 | Issue sync accounting artifact recorded | `plate-2` | `rg -n "Issue sync accounting pass|Issue sync accounting decisions|Current weighted score after issue sync|planning target wording added|fixed/improved claim counts unchanged" docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md docs/slate-issues/gitcrawl-v2-sync-ledger.md docs/slate-v2/ledgers/issue-coverage-matrix.md docs/slate-v2/ledgers/fork-issue-dossier.md docs/slate-v2/references/pr-description.md` | artifact-confirmed | issue sync accounting |
@@ -806,10 +806,10 @@ Final completion gates:
 | score >= 0.92 and no dimension below 0.85 | pass | Final weighted score is 0.92; lowest dimension is 0.90. |
 | all scheduled pass rows complete | pass | Phase/pass table rows from current-state through closure are complete. |
 | issue/reference sync closed | pass | v2 sync ledger, issue coverage matrix, fork dossier, and PR reference all name the final API/proof target; fixed/improved claim counts unchanged. |
-| live source grounding complete | pass | Verification workspace gate records live `.tmp/slate-v2`, sibling repo, local Tiptap docs, official Tiptap docs, and plan/ledger artifact reads for every current-state claim. |
+| live source grounding complete | pass | Verification workspace gate records live `Plate repo root`, sibling repo, local Tiptap docs, official Tiptap docs, and plan/ledger artifact reads for every current-state claim. |
 | behavior/browser proof scoped honestly | pass | The plan records behavior/browser proof as execution gates and makes no implementation, native-parity, issue-fix, or release-quality browser claim in planning mode. |
 | TDD/browser proof | pass | N/A for planning-only closeout; required unit/browser rows are named before any accepted implementation or issue claim. |
-| autoreview clean or N/A | pass | N/A: this pass changed planning, research, ledger, and PR-reference artifacts only; no `.tmp/slate-v2` implementation changed. |
+| autoreview clean or N/A | pass | N/A: this pass changed planning, research, ledger, and PR-reference artifacts only; no `Plate repo root` implementation changed. |
 | final handoff emitted | pass | Final user-review handoff is recorded below and will be summarized in the final response. |
 | no runnable planning work remains | pass | `next_pass: none`, `next_action: none`, and all scheduled Slate Plan passes are complete. |
 | `check-complete` passes | pass | Final checker result recorded under Verification evidence. |
@@ -841,15 +841,15 @@ Pass verdict:
 
 | Risk | Trigger | Failure mode | Current evidence | Mitigation / target | Required proof | Closure blocker |
 |------|---------|--------------|------------------|---------------------|----------------|-----------------|
-| fake deterministic pagination | docs/API imply server/client equality | collab peers/export disagree by font/browser/profile | Pretext still depends on canvas/profile facts; `createSlateLayout` stays usable without browser canvas only through the generic non-engine path in `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts:289` | expose profile-aware layout; no same-breaks claim by default; strict mode reads authoritative snapshots | cross-profile snapshot compare plus stale-profile rejection tests | yes: final docs/API cannot imply deterministic cross-client page breaks |
-| wrong paged virtualization unit | virtualized paged mode keeps block repeated unit | all page surfaces render, scroll math and page chrome stay O(page count) | `PagedEditable` maps projection blocks into `getVirtualizedTopLevelItems` at `.tmp/slate-v2/packages/slate-layout/src/react.tsx:185` and renders pages at `:219`; virtualizer accepts top-level runtime ids at `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:212` | internal page/spread mount plan behind virtualized `domStrategy`; no public `pageVirtualization` | package test for page mount items; Playwright row with 500+ pages proving visible/retained pages only | yes |
-| active editing page unmounted | selection or IME target is outside visible page range | lost caret, swallowed composition, or wrong insertion page | virtualized root plan retains selected/promoted top-level indexes at `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:95`; partial-DOM composition guard exists in `.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:1654` | retain visible, selected, promoted, and composing pages; no promotion during composition | browser row: start composition, scroll page away, commit text; selection and inserted text stay correct | yes |
-| authoritative break state churn | many peers write derived page-break snapshots | noisy collab updates, undo pollution, stale exports | state fields support `collab`/`history` policy at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:105`; history-skip state fields are proven at `.tmp/slate-v2/packages/slate-history/test/document-state-history-contract.ts:123`; compact shared patches are proven at `:243` | read-mostly by default; one elected writer; profile hash; dirty range; debounce; history-skip derived writes | package tests for read/write modes, stale profile, writer id, history-skip, shared patch replay | yes |
+| fake deterministic pagination | docs/API imply server/client equality | collab peers/export disagree by font/browser/profile | Pretext still depends on canvas/profile facts; `createSlateLayout` stays usable without browser canvas only through the generic non-engine path in `packages/slate-layout/test/page-layout-contract.test.ts:289` | expose profile-aware layout; no same-breaks claim by default; strict mode reads authoritative snapshots | cross-profile snapshot compare plus stale-profile rejection tests | yes: final docs/API cannot imply deterministic cross-client page breaks |
+| wrong paged virtualization unit | virtualized paged mode keeps block repeated unit | all page surfaces render, scroll math and page chrome stay O(page count) | `PagedEditable` maps projection blocks into `getVirtualizedTopLevelItems` at `packages/slate-layout/src/react.tsx:185` and renders pages at `:219`; virtualizer accepts top-level runtime ids at `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:212` | internal page/spread mount plan behind virtualized `domStrategy`; no public `pageVirtualization` | package test for page mount items; Playwright row with 500+ pages proving visible/retained pages only | yes |
+| active editing page unmounted | selection or IME target is outside visible page range | lost caret, swallowed composition, or wrong insertion page | virtualized root plan retains selected/promoted top-level indexes at `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:95`; partial-DOM composition guard exists in `packages/slate-react/test/dom-strategy-and-scroll.tsx:1654` | retain visible, selected, promoted, and composing pages; no promotion during composition | browser row: start composition, scroll page away, commit text; selection and inserted text stay correct | yes |
+| authoritative break state churn | many peers write derived page-break snapshots | noisy collab updates, undo pollution, stale exports | state fields support `collab`/`history` policy at `packages/slate/src/interfaces/editor.ts:105`; history-skip state fields are proven at `packages/slate-history/test/document-state-history-contract.ts:123`; compact shared patches are proven at `:243` | read-mostly by default; one elected writer; profile hash; dirty range; debounce; history-skip derived writes | package tests for read/write modes, stale profile, writer id, history-skip, shared patch replay | yes |
 | stale authoritative breaks accepted | document/font/page settings change after snapshot | export/collab replays wrong page breaks | no current `pageBreaks` API exists; plan only sketches it | snapshot key includes doc version, root, page settings, typography profile, engine id/version, writer id | stale rejection tests and export-reader fixture | yes |
-| table/media split lies | table/image/BFC-like blocks treated as text blocks | overlap footer, lose content, or corrupt semantics | box kinds and split policies exist at `.tmp/slate-v2/packages/slate-layout/src/index.ts:105`; structured-box extraction tests cover image/table/table-cell at `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts:652`; avoid-split movement is tested at `:808` | provider protocol for table/media/intrinsic boxes; no raw Slate product TableKit | package fixtures for merged cells, nested table, row span, oversized image, and BFC-like container; browser page-boundary rows | yes |
-| missing-DOM native parity lie | virtualized pages are missing from DOM | browser find/a11y/copy claims overpromise | DOMCoverage defaults `findPolicy` to `not-native-until-mounted`; Playwright proves hidden content stays out of native find until materialized at `.tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts:77`; model-backed hidden copy is proven at `:142` and select-all at `:161` | document degraded mode; keep model-backed copy; materialize on selection/programmatic access | paged virtualized rows for browser find caveat, select-all/copy, and screen-reader/manual lane | yes for native-parity claim, no for alpha degraded mode |
-| canonical DX rots into proof harness | example remains the only public teaching surface | users copy debug/table/projection code as API | current example renders `PagedEditable` only inside a heavy proof surface at `.tmp/slate-v2/site/examples/ts/pagination.tsx:796` | split `pagination-basic`/canonical from stress/proof harness | docs/example review plus browser smoke on canonical route | yes for user-review-ready docs |
-| release gate too weak | only package tests run | browser/runtime failures escape | root scripts define `check`, `check:full`, integration, release-proof, persistent soak, and Playwright gates at `.tmp/slate-v2/package.json:33` | execution closure names focused package tests, pagination Playwright rows, then `bun check` or `bun check:full` depending claim strength | recorded command results from `.tmp/slate-v2`, not `plate-2` | yes before implementation release claim |
+| table/media split lies | table/image/BFC-like blocks treated as text blocks | overlap footer, lose content, or corrupt semantics | box kinds and split policies exist at `packages/slate-layout/src/index.ts:105`; structured-box extraction tests cover image/table/table-cell at `packages/slate-layout/test/page-layout-contract.test.ts:652`; avoid-split movement is tested at `:808` | provider protocol for table/media/intrinsic boxes; no raw Slate product TableKit | package fixtures for merged cells, nested table, row span, oversized image, and BFC-like container; browser page-boundary rows | yes |
+| missing-DOM native parity lie | virtualized pages are missing from DOM | browser find/a11y/copy claims overpromise | DOMCoverage defaults `findPolicy` to `not-native-until-mounted`; Playwright proves hidden content stays out of native find until materialized at `apps/www/tests/slate-browser/donor/examples/dom-coverage-boundaries.test.ts:77`; model-backed hidden copy is proven at `:142` and select-all at `:161` | document degraded mode; keep model-backed copy; materialize on selection/programmatic access | paged virtualized rows for browser find caveat, select-all/copy, and screen-reader/manual lane | yes for native-parity claim, no for alpha degraded mode |
+| canonical DX rots into proof harness | example remains the only public teaching surface | users copy debug/table/projection code as API | current example renders `PagedEditable` only inside a heavy proof surface at `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:796` | split `pagination-basic`/canonical from stress/proof harness | docs/example review plus browser smoke on canonical route | yes for user-review-ready docs |
+| release gate too weak | only package tests run | browser/runtime failures escape | root scripts define `check`, `check:full`, integration, release-proof, persistent soak, and Playwright gates at `Plate repo root/package.json:33` | execution closure names focused package tests, pagination Playwright rows, then `bun check` or `bun check:full` depending claim strength | recorded command results from `Plate repo root`, not `plate-2` | yes before implementation release claim |
 
 High-risk proof queue:
 | Queue item | Owner | Minimum proof before execution close | Current adjacent proof | Missing final proof |
@@ -875,16 +875,16 @@ Pass verdict:
 
 | Persona | Objection | Evidence | Decision | Proof / adoption answer | Verdict |
 |---------|-----------|----------|----------|--------------------------|---------|
-| raw Slate maintainer | Pagination and authoritative page breaks smell like document-editor product scope | `slate-layout` lives outside core; `SlatePageLayoutSnapshot` is derived data at `.tmp/slate-v2/packages/slate-layout/src/index.ts:236`; state fields are optional extensions at `.tmp/slate-v2/packages/slate/src/core/state-field.ts:7` | keep layout outside `slate`; no core Pretext dependency; no default page-break persistence | docs must state core owns document operations, layout owns derived views, apps own document-product policy | keep |
-| raw Slate maintainer | `pageBreaks` can become hidden document truth | state fields can be shared/history-controlled at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:105`; shared/history fields without patch hooks are guarded at `.tmp/slate-v2/packages/slate/src/core/public-state.ts:397` | keep as opt-in metadata only; default local layout never writes it | strict mode reads accepted breaks; writer mode requires profile hash, range dirtying, writer identity, and history-skip derived writes | revise |
-| layout maintainer | Measurement profiles can balloon into a second browser engine | Pretext availability still checks canvas at `.tmp/slate-v2/packages/slate-layout/src/index.ts:361`; Pretext engine caches prepared text at `:1349` | keep a small opaque `measurementProfile`, not a public font engine | no same-breaks-across-server claim until Pretext has a true headless measurement contract | keep |
-| layout maintainer | Table/image providers could make raw layout opinionated | current box vocabulary is generic: `image`, `table`, `table-cell`, and split policies at `.tmp/slate-v2/packages/slate-layout/src/index.ts:105` | define minimal provider protocol; do not ship a raw Slate product TableKit | table/media packages provide row/span/intrinsic sizing and split policy; proof harness owns pathological fixtures | revise |
-| React/runtime maintainer | Page virtualization can break selection, IME, and editing if it unmounts the active page | current virtualizer retains selected/promoted top-level indexes at `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:95`; `PagedEditable` still maps block items and renders all page surfaces at `.tmp/slate-v2/packages/slate-layout/src/react.tsx:185` and `:219` | move paged virtualized repeated unit to pages/spreads internally | page mount plan must retain visible, selected, promoted, and composing pages; browser proof must type/compose while scrolling away | keep with proof |
-| React/runtime maintainer | `useSlateLayout` depends on object identity and can relayout too often | hook refreshes on `options.typography` and `options.root` at `.tmp/slate-v2/packages/slate-layout/src/react.tsx:67`; example memoizes typography at `.tmp/slate-v2/site/examples/ts/pagination.tsx:386` | keep hook shape; docs/examples must memoize stable typography/page config | execution pass reviews effect dependencies and external-store subscription stability | keep |
-| accessibility maintainer | Missing DOM cannot claim native browser find or assistive-tech parity | DOMCoverage defaults find policy to `not-native-until-mounted` at `.tmp/slate-v2/packages/slate-react/src/components/dom-coverage-boundary.tsx:36`; materialization handler exists for virtualized boundaries at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1600` | keep virtualized mode explicit and degraded until proof | release notes/docs must avoid native-equivalence claims; browser/a11y proof rows are release gates | keep with caveat |
-| clipboard/browser maintainer | Offscreen pages may corrupt copy/select-all semantics | DOMCoverage range defaults copy policy to `include-model` at `.tmp/slate-v2/packages/slate-react/src/components/dom-coverage-boundary.tsx:36`; self-boundary defaults exclude at `:110` | keep model-backed copy policy, but prove it in paged mode | proof row: select all/copy across unmounted pages, plus explicit degraded browser-find behavior | keep with proof |
-| collab/export maintainer | Multiple clients writing authoritative breaks will churn shared state and history | current example shows shared persisted page settings at `.tmp/slate-v2/site/examples/ts/pagination.tsx:41`; collab patches filter only shared fields at `.tmp/slate-v2/packages/slate/src/core/public-state.ts:540` | only an elected/authoritative writer writes page-break snapshots | readers use `mode: 'read'`; writer uses `mode: 'write'`, profile hash, source id, debounce, and history-skip metadata | revise |
-| Plate adopter | The current pagination example is too much for DX | example owns DOM strategy controls, layout projection, debug frames, page UI, tables/images, and toolbar state around `.tmp/slate-v2/site/examples/ts/pagination.tsx:375` and renders `PagedEditable` at `:796` | split canonical example from proof harness | canonical example shows `useSlateLayout` + `PagedEditable`; proof harness keeps debug/table/image/browser rows | revise |
+| raw Slate maintainer | Pagination and authoritative page breaks smell like document-editor product scope | `slate-layout` lives outside core; `SlatePageLayoutSnapshot` is derived data at `packages/slate-layout/src/index.ts:236`; state fields are optional extensions at `packages/slate/src/core/state-field.ts:7` | keep layout outside `slate`; no core Pretext dependency; no default page-break persistence | docs must state core owns document operations, layout owns derived views, apps own document-product policy | keep |
+| raw Slate maintainer | `pageBreaks` can become hidden document truth | state fields can be shared/history-controlled at `packages/slate/src/interfaces/editor.ts:105`; shared/history fields without patch hooks are guarded at `packages/slate/src/core/public-state.ts:397` | keep as opt-in metadata only; default local layout never writes it | strict mode reads accepted breaks; writer mode requires profile hash, range dirtying, writer identity, and history-skip derived writes | revise |
+| layout maintainer | Measurement profiles can balloon into a second browser engine | Pretext availability still checks canvas at `packages/slate-layout/src/index.ts:361`; Pretext engine caches prepared text at `:1349` | keep a small opaque `measurementProfile`, not a public font engine | no same-breaks-across-server claim until Pretext has a true headless measurement contract | keep |
+| layout maintainer | Table/image providers could make raw layout opinionated | current box vocabulary is generic: `image`, `table`, `table-cell`, and split policies at `packages/slate-layout/src/index.ts:105` | define minimal provider protocol; do not ship a raw Slate product TableKit | table/media packages provide row/span/intrinsic sizing and split policy; proof harness owns pathological fixtures | revise |
+| React/runtime maintainer | Page virtualization can break selection, IME, and editing if it unmounts the active page | current virtualizer retains selected/promoted top-level indexes at `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:95`; `PagedEditable` still maps block items and renders all page surfaces at `packages/slate-layout/src/react.tsx:185` and `:219` | move paged virtualized repeated unit to pages/spreads internally | page mount plan must retain visible, selected, promoted, and composing pages; browser proof must type/compose while scrolling away | keep with proof |
+| React/runtime maintainer | `useSlateLayout` depends on object identity and can relayout too often | hook refreshes on `options.typography` and `options.root` at `packages/slate-layout/src/react.tsx:67`; example memoizes typography at `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:386` | keep hook shape; docs/examples must memoize stable typography/page config | execution pass reviews effect dependencies and external-store subscription stability | keep |
+| accessibility maintainer | Missing DOM cannot claim native browser find or assistive-tech parity | DOMCoverage defaults find policy to `not-native-until-mounted` at `packages/slate-react/src/components/dom-coverage-boundary.tsx:36`; materialization handler exists for virtualized boundaries at `packages/slate-react/src/components/editable-text-blocks.tsx:1600` | keep virtualized mode explicit and degraded until proof | release notes/docs must avoid native-equivalence claims; browser/a11y proof rows are release gates | keep with caveat |
+| clipboard/browser maintainer | Offscreen pages may corrupt copy/select-all semantics | DOMCoverage range defaults copy policy to `include-model` at `packages/slate-react/src/components/dom-coverage-boundary.tsx:36`; self-boundary defaults exclude at `:110` | keep model-backed copy policy, but prove it in paged mode | proof row: select all/copy across unmounted pages, plus explicit degraded browser-find behavior | keep with proof |
+| collab/export maintainer | Multiple clients writing authoritative breaks will churn shared state and history | current example shows shared persisted page settings at `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:41`; collab patches filter only shared fields at `packages/slate/src/core/public-state.ts:540` | only an elected/authoritative writer writes page-break snapshots | readers use `mode: 'read'`; writer uses `mode: 'write'`, profile hash, source id, debounce, and history-skip metadata | revise |
+| Plate adopter | The current pagination example is too much for DX | example owns DOM strategy controls, layout projection, debug frames, page UI, tables/images, and toolbar state around `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:375` and renders `PagedEditable` at `:796` | split canonical example from proof harness | canonical example shows `useSlateLayout` + `PagedEditable`; proof harness keeps debug/table/image/browser rows | revise |
 | ecosystem reviewer | Tiptap Pages ships something; rejecting its CSS trick may ignore working product evidence | local Tiptap docs say CSS floats cannot split BFC blocks and suggest max-height/manual node splitting; table guide requires a specialized pro TableKit | steal failures, reject mechanism | use BFC/table/figure/content-rect rows as tests for Slate provider protocol | reject mechanism |
 
 Hard cuts and rejected alternatives:
@@ -933,7 +933,7 @@ Plan deltas from review:
 - Completed high-risk deliberate mode. Adjacent tests keep the direction alive,
   but the final proof queue is explicit: page/spread mount plan, authoritative
   break authority, provider split protocol, paged missing-DOM policy, canonical
-  DX split, and `.tmp/slate-v2` release gates.
+  DX split, and `Plate repo root` release gates.
 
 Open questions and decision-changing evidence:
 | Question | Why it matters | Evidence needed | Owner | Status |
@@ -955,9 +955,9 @@ Fast driver gates:
 | Gate | Cwd | Command / artifact | Proves | Status |
 |------|-----|--------------------|--------|--------|
 | planning artifact check | plate-2 | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-25-slate-v2-pretext-pagination-virtualization-feedback.md` | final plan integrity | passed in closure |
-| Slate v2 package proof | .tmp/slate-v2 | `bun --filter ./packages/slate-layout test`; `cd packages/slate-react && bun test:vitest`; targeted `slate-history` state-field rows when page-break metadata is implemented | source/API behavior | pending execution |
-| Slate v2 browser proof | .tmp/slate-v2 | `playwright test playwright/integration/examples/pagination.test.ts --project=chromium`; paged virtualized follow-up rows; `playwright test playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium` | paged editing/page virtualization/missing-DOM policy | pending execution |
-| Slate v2 release proof | .tmp/slate-v2 | `bun check`, escalating to `bun check:full` only for release-quality browser claims | whole touched surface | pending execution |
+| Slate v2 package proof | Plate repo root | `bun --filter ./packages/slate-layout test`; `cd packages/slate-react && bun test:vitest`; targeted `slate-history` state-field rows when page-break metadata is implemented | source/API behavior | pending execution |
+| Slate v2 browser proof | Plate repo root | `playwright test playwright/integration/examples/pagination.test.ts --project=chromium`; paged virtualized follow-up rows; `playwright test playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium` | paged editing/page virtualization/missing-DOM policy | pending execution |
+| Slate v2 release proof | Plate repo root | `bun check`, escalating to `bun check:full` only for release-quality browser claims | whole touched surface | pending execution |
 
 Final user-review handoff outline:
 - accepted plan items: Pretext default layout engine, page/spread virtualization
@@ -975,7 +975,7 @@ Final user-review handoff outline:
   proof-gated.
 - proof gates: page/spread mount contract, mounted-count/edit-latency proof,
   authoritative break replay/stale checks, table/media fixtures, DOMCoverage
-  browser rows, canonical example split, and `.tmp/slate-v2` release commands.
+  browser rows, canonical example split, and `Plate repo root` release commands.
 - accepted-plan execution handoff: implementation starts only after explicit user
   acceptance and a new execution-shaped `slate-plan` invocation naming this plan.
 
@@ -1052,19 +1052,19 @@ Source evidence:
 - `../pretext/src/measurement.ts:36` requires OffscreenCanvas or DOM canvas and
   throws without one.
 - `../pretext/src/measurement.ts:61` calls `ctx.measureText(seg).width`.
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts:113` already has split
+- `packages/slate-layout/src/index.ts:113` already has split
   policy vocabulary: `avoid`, `line`, `page`, `row`.
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts:236` defines the page layout
+- `packages/slate-layout/src/index.ts:236` defines the page layout
   snapshot with blocks, fragments, pages, root, settings, and version.
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts:1349` implements the
+- `packages/slate-layout/src/index.ts:1349` implements the
   Pretext page layout engine.
-- `.tmp/slate-v2/packages/slate-layout/src/react.tsx:185` maps projection blocks
+- `packages/slate-layout/src/react.tsx:185` maps projection blocks
   into top-level virtualized items.
-- `.tmp/slate-v2/packages/slate-layout/src/react.tsx:219` renders all page
+- `packages/slate-layout/src/react.tsx:219` renders all page
   surfaces.
-- `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:212`
+- `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:212`
   consumes top-level runtime ids and block layout items.
-- `.tmp/slate-v2/site/examples/ts/pagination.tsx:41` keeps page settings in a
+- `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:41` keeps page settings in a
   shared, persisted state field.
 - `docs/research/sources/editor-architecture/pretext-pagination-page-virtualization.md`
   records the current Pretext / page virtualization / Tiptap Pages research
@@ -1077,7 +1077,7 @@ Source evidence:
 Timeline:
 - 2026-05-25: Slate Plan goal created for virtualization/pagination feedback.
 - 2026-05-25: Current-state pass completed with local Pretext source, external
-  article evidence, live `.tmp/slate-v2` source, existing plan/ledger evidence,
+  article evidence, live `Plate repo root` source, existing plan/ledger evidence,
   and initial score.
 - 2026-05-25: Related issue discovery completed from live/current ledgers. No
   new fixed/improved claims found; #2793 added as screen-reader release guard.
@@ -1158,7 +1158,7 @@ Final user-review handoff:
 - Execution boundary: implementation begins only after explicit user acceptance
   and a new execution-shaped `slate-plan` invocation naming this plan. Execution
   must run focused package tests and pagination/DOMCoverage browser rows from
-  `.tmp/slate-v2` before any release or issue-closure claim.
+  `Plate repo root` before any release or issue-closure claim.
 
 Reboot status:
 | Question | Answer |

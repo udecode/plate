@@ -57,10 +57,10 @@ Current score: `0.93`
 
 | Dimension                                                | Weight | Score | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | -------------------------------------------------------- | -----: | ----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| React 19.2 runtime performance                           |   0.20 |  0.93 | Final target removes duplicated projection props from hot React surfaces, makes `projectionStore` runtime-owned, and replaces app-level `useEditorSelector(editor => editor.read(...))` examples with `useEditorState`. Evidence: `SlateProps` projection inputs in `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:37-45`, duplicate `EditableTextBlocksProps` inputs in `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:252-282`, and existing target-scoped hook guidance in `.tmp/slate-v2/docs/concepts/09-rendering.md:147` and `:177`.                                   |
-| Slate-close unopinionated DX                             |   0.20 |  0.93 | Final target keeps pure node/path/range helpers, but hard-cuts public `Editor.*` editor-state queries, instance schema predicates, instance query aliases, and opinionated block/list helpers from normal raw core. Evidence: instance predicates and aliases at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:237-325`, static editor query helpers at `:101-234` in current docs, opinionated helpers at `:360-383`, and `toggleList` in `.tmp/slate-v2/packages/slate/src/editor/block-format.ts:120-162`.                                                                                                   |
-| Plate and slate-yjs migration-backbone shape             |   0.15 |  0.92 | Final target keeps substrate-only migration: extension `state`/`tx`, schema/spec policy, commits, operations, tags, and local runtime ids, with no current adapter compatibility requirement. Operation replay belongs under `tx.operations.replay(...)`, not a public `editor.applyOperations(...)` escape hatch. Evidence: extension `state`/`tx` in `.tmp/slate-v2/docs/concepts/08-plugins.md:38-44`, commit/operation replay in `.tmp/slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md:53-70`, and migration contracts in `.tmp/slate-v2/packages/slate/test/migration-backbone-contract.ts:33-195`. |
-| Regression-proof testing strategy                        |   0.20 |  0.92 | Final gates cover stale docs, public nav, adapter promises, banned core helpers, callback contracts, duplicate React projection props, and browser-proof family mapping. Evidence: browser contract families in `.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:24-130` and Pass 8/9 grep gates in this plan.                                                                                                                                                                                                                                                                            |
+| React 19.2 runtime performance                           |   0.20 |  0.93 | Final target removes duplicated projection props from hot React surfaces, makes `projectionStore` runtime-owned, and replaces app-level `useEditorSelector(editor => editor.read(...))` examples with `useEditorState`. Evidence: `SlateProps` projection inputs in `packages/slate-react/src/components/slate.tsx:37-45`, duplicate `EditableTextBlocksProps` inputs in `packages/slate-react/src/components/editable-text-blocks.tsx:252-282`, and existing target-scoped hook guidance in `content/docs/slate/concepts/09-rendering.md:147` and `:177`.                                   |
+| Slate-close unopinionated DX                             |   0.20 |  0.93 | Final target keeps pure node/path/range helpers, but hard-cuts public `Editor.*` editor-state queries, instance schema predicates, instance query aliases, and opinionated block/list helpers from normal raw core. Evidence: instance predicates and aliases at `packages/slate/src/interfaces/editor.ts:237-325`, static editor query helpers at `:101-234` in current docs, opinionated helpers at `:360-383`, and `toggleList` in `packages/slate/src/editor/block-format.ts:120-162`.                                                                                                   |
+| Plate and slate-yjs migration-backbone shape             |   0.15 |  0.92 | Final target keeps substrate-only migration: extension `state`/`tx`, schema/spec policy, commits, operations, tags, and local runtime ids, with no current adapter compatibility requirement. Operation replay belongs under `tx.operations.replay(...)`, not a public `editor.applyOperations(...)` escape hatch. Evidence: extension `state`/`tx` in `content/docs/slate/concepts/08-plugins.md:38-44`, commit/operation replay in `content/docs/slate/walkthroughs/07-enabling-collaborative-editing.md:53-70`, and migration contracts in `packages/slate/test/migration-backbone-contract.ts:33-195`. |
+| Regression-proof testing strategy                        |   0.20 |  0.92 | Final gates cover stale docs, public nav, adapter promises, banned core helpers, callback contracts, duplicate React projection props, and browser-proof family mapping. Evidence: browser contract families in `packages/browser/src/core/first-party-browser-contracts.ts:24-130` and Pass 8/9 grep gates in this plan.                                                                                                                                                                                                                                                                            |
 | Research evidence completeness                           |   0.15 |  0.92 | Plan cites live v2 source, live v2 docs, legacy Slate docs, compiled Slate docs research, solution docs style, unit contracts, migration contracts, and browser contracts. No decorative Lexical/ProseMirror/Tiptap refresh is needed because this closure is scoped to Slate API/docs hard cuts.                                                                                                                                                                                                                                                                                                                        |
 | shadcn-style composability and hook/component minimalism |   0.10 |  0.93 | Final target leaves app authors with fewer props and clearer hooks: provider-owned sources, runtime-owned projection store, mount/render/event-only `Editable`, `useEditorState` for shell reads, and target-scoped hooks for rendered document nodes.                                                                                                                                                                                                                                                                                                                                                                   |
 
@@ -72,19 +72,19 @@ API language: `projectionStore` is runtime-owned and not a normal public
 
 Current docs evidence:
 
-- `.tmp/slate-v2/docs/api/nodes/editor.md:264` and `:314` repeat
+- `content/docs/slate/api/nodes/editor.md:264` and `:314` repeat
   transaction-path warnings inside individual mark methods.
-- `.tmp/slate-v2/docs/api/nodes/editor.md:517-532` repeats
+- `content/docs/slate/api/nodes/editor.md:517-532` repeats
   `Inside editor.update(...)` across primitive insert methods.
-- `.tmp/slate-v2/docs/api/transforms.md:1-8` already has the right page-level
+- `content/docs/slate/api/transforms.md:1-8` already has the right page-level
   owner statement for the normal write surface.
-- `.tmp/slate-v2/docs/api/transforms.md:34-143` currently lists `tx.nodes`,
+- `content/docs/slate/api/transforms.md:34-143` currently lists `tx.nodes`,
   `tx.selection`, `tx.text`, and `editor.applyOperations` as distinct
   families; the no-compat target folds replay into `tx.operations.replay`.
-- `.tmp/slate-v2/docs/concepts/04-transforms.md:1-19` teaches the write model as
+- `content/docs/slate/concepts/04-transforms.md:1-19` teaches the write model as
   narrative concept prose, and `:188-209` cleanly separates normalization and
   operation replay.
-- `.tmp/slate-v2/docs/Summary.md:21`, `:34`, and `:74` show the remaining IA
+- `content/docs/slate/Summary.md:21`, `:34`, and `:74` show the remaining IA
   smell: `Editor Methods` labels plus public `Docs Proof Map`.
 
 Legacy Slate evidence:
@@ -100,30 +100,30 @@ Legacy Slate evidence:
 
 Live Slate v2 source evidence:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:193-206` defines the
+- `packages/slate/src/interfaces/editor.ts:193-206` defines the
   update transaction groups: `marks`, `nodes`, `selection`, and `text`.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:208-234` currently
+- `packages/slate/src/interfaces/editor.ts:208-234` currently
   exposes `applyOperations`, `read`, `getSelection`, and `getSnapshot` on
   `BaseEditor`; the no-compat target keeps coherent boundaries and cuts the
   public replay escape hatch.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:814-829` currently
+- `packages/slate/src/interfaces/editor.ts:814-829` currently
   exposes primitive writers as API reference material; the no-compat target
   moves public writes to `tx`.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1394-1403` exposes
+- `packages/slate/src/interfaces/editor.ts:1394-1403` exposes
   `Editor.subscribe` and `Editor.update`.
 
 Contract evidence:
 
-- `.tmp/slate-v2/packages/slate/test/read-update-contract.ts:11-48` proves the
+- `packages/slate/test/read-update-contract.ts:11-48` proves the
   coherent read/update boundary and commit tags.
-- `.tmp/slate-v2/packages/slate/test/read-update-contract.ts:50-129` proves
+- `packages/slate/test/read-update-contract.ts:50-129` proves
   writes and replay are rejected inside plain reads.
-- `.tmp/slate-v2/packages/slate/test/write-boundary-contract.ts:27-55` proves
+- `packages/slate/test/write-boundary-contract.ts:27-55` proves
   primitive writes outside `editor.update` are rejected.
-- `.tmp/slate-v2/packages/slate/test/write-boundary-contract.ts:57-77`
+- `packages/slate/test/write-boundary-contract.ts:57-77`
   currently proves `applyOperations` as the explicit replay writer; the target
   should move that proof to `tx.operations.replay(...)`.
-- `.tmp/slate-v2/packages/slate/test/write-boundary-contract.ts:79-114` proves
+- `packages/slate/test/write-boundary-contract.ts:79-114` proves
   implicit writes route through `editor.update` and `tx` methods.
 
 ## Source-Backed Docs North Star
@@ -209,7 +209,7 @@ Verdict: strengthen gates.
 The previous fast gates were directionally right, but path globs must be
 cwd-stable. Acceptance criteria:
 
-- Run stale-doc greps from `.tmp/slate-v2` with `docs` as the search root.
+- Run stale-doc greps from `Plate repo root` with `docs` as the search root.
 - Exclude historical docs as `--glob '!docs/general/changelog.md'`.
 - Repeated-warning grep should return zero matches outside the single owner
   note locations chosen by the implementation.
@@ -409,10 +409,10 @@ groups, not product APIs:
 
 Evidence:
 
-- `.tmp/slate-v2/docs/concepts/08-plugins.md:38-44` shows `state` and `tx` usage.
-- `.tmp/slate-v2/docs/concepts/08-plugins.md:76-131` explains state/write groups
+- `content/docs/slate/concepts/08-plugins.md:38-44` shows `state` and `tx` usage.
+- `content/docs/slate/concepts/08-plugins.md:76-131` explains state/write groups
   and raw extension slots.
-- `.tmp/slate-v2/packages/slate/test/migration-backbone-contract.ts:33-132`
+- `packages/slate/test/migration-backbone-contract.ts:33-132`
   proves extension namespaces and schema specs without adapter-shaped editor
   namespaces.
 
@@ -439,19 +439,19 @@ operations, not mutable editor fields or runtime ids:
 
 Evidence:
 
-- `.tmp/slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md:3-5`
+- `content/docs/slate/walkthroughs/07-enabling-collaborative-editing.md:3-5`
   says Slate does not choose network, CRDT, persistence, or awareness policy.
-- `.tmp/slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md:53-70`
+- `content/docs/slate/walkthroughs/07-enabling-collaborative-editing.md:53-70`
   currently defines operations as replay contract and `applyOperations` as
   remote import; the no-compat target rewrites that public import path to
   `tx.operations.replay(...)`.
-- `.tmp/slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md:96-120`
+- `content/docs/slate/walkthroughs/07-enabling-collaborative-editing.md:96-120`
   defines commit observation and warns against mutable editor fields.
-- `.tmp/slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md:122-150`
+- `content/docs/slate/walkthroughs/07-enabling-collaborative-editing.md:122-150`
   makes runtime ids local and splits Slate/adapter/React ownership.
-- `.tmp/slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md:191-199`
+- `content/docs/slate/walkthroughs/07-enabling-collaborative-editing.md:191-199`
   explicitly refuses a full multiplayer recipe.
-- `.tmp/slate-v2/packages/slate/test/migration-backbone-contract.ts:135-195`
+- `packages/slate/test/migration-backbone-contract.ts:135-195`
   proves operation replay, tags, and local-only runtime targets.
 
 Acceptance:
@@ -473,11 +473,11 @@ Acceptance:
 ### Ecosystem Gates
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'editor\\.api|editor\\.tf|PlatePlugin|withYjs|slate-yjs|Y\\.Doc|yjs' docs/concepts/08-plugins.md docs/walkthroughs/07-enabling-collaborative-editing.md docs/api/transforms.md docs/api/nodes/editor.md
+cd Plate repo root && rg -n 'editor\\.api|editor\\.tf|PlatePlugin|withYjs|slate-yjs|Y\\.Doc|yjs' docs/concepts/08-plugins.md docs/walkthroughs/07-enabling-collaborative-editing.md docs/api/transforms.md docs/api/nodes/editor.md
 ```
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'state|tx|operations\\.replay|commit|operations|tags|runtime ids are local|does not provide a full multiplayer recipe' docs/concepts/08-plugins.md docs/walkthroughs/07-enabling-collaborative-editing.md docs/general/docs-proof-map.md
+cd Plate repo root && rg -n 'state|tx|operations\\.replay|commit|operations|tags|runtime ids are local|does not provide a full multiplayer recipe' docs/concepts/08-plugins.md docs/walkthroughs/07-enabling-collaborative-editing.md docs/general/docs-proof-map.md
 ```
 
 The first grep should return zero matches except intentionally allowed product
@@ -567,19 +567,19 @@ is an owner-cluster rewrite:
 ### Revision Gates
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'normal application code|bridge layer|Inside .*editor\\.update|primitive .*reference material' docs --glob '!docs/general/changelog.md'
+cd Plate repo root && rg -n 'normal application code|bridge layer|Inside .*editor\\.update|primitive .*reference material' docs --glob '!docs/general/changelog.md'
 ```
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'Docs Proof Map|Editor Methods' docs/Summary.md
+cd Plate repo root && rg -n 'Docs Proof Map|Editor Methods' docs/Summary.md
 ```
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'editor\\.api|editor\\.tf|PlatePlugin|withYjs|slate-yjs|Y\\.Doc|yjs' docs/concepts/08-plugins.md docs/walkthroughs/07-enabling-collaborative-editing.md docs/api/transforms.md docs/api/nodes/editor.md
+cd Plate repo root && rg -n 'editor\\.api|editor\\.tf|PlatePlugin|withYjs|slate-yjs|Y\\.Doc|yjs' docs/concepts/08-plugins.md docs/walkthroughs/07-enabling-collaborative-editing.md docs/api/transforms.md docs/api/nodes/editor.md
 ```
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'state|tx|operations\\.replay|commit|operations|tags|runtime ids are local|does not provide a full multiplayer recipe' docs/concepts/08-plugins.md docs/walkthroughs/07-enabling-collaborative-editing.md docs/general/docs-proof-map.md
+cd Plate repo root && rg -n 'state|tx|operations\\.replay|commit|operations|tags|runtime ids are local|does not provide a full multiplayer recipe' docs/concepts/08-plugins.md docs/walkthroughs/07-enabling-collaborative-editing.md docs/general/docs-proof-map.md
 ```
 
 The first three gates are fail-on-output after implementation, except for a
@@ -615,10 +615,10 @@ The proof map should remain, but as maintainer/contributor support material.
 
 | Change                                                                      | Who feels pain                                                      | Strongest fair objection                                                            | Why this is not change for change's sake                                                                                                                                             | Evidence                                                                                                                                                                                                   | Rejected alternative                                                                                                                              | Migration answer                                                                                                                  | Docs / example answer                                                                                                                                                                          | Regression proof                                                                                                                                             | Ecosystem answer                                                                                                                                 | Verdict                                                                                        |
 | --------------------------------------------------------------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---- |
-| Move repeated tx/bridge warnings into one write-model owner section.        | Raw Slate user, docs reader, app author.                            | "Do not hide the warning; people will call low-level helpers directly."             | The warning stays, but it becomes an ownership rule instead of a sermon repeated under every primitive method. Readers learn the model once, then API entries stay scannable.        | Repetition is currently visible in `.tmp/slate-v2/docs/api/nodes/editor.md:264`, `:314`, and `:517-532`. Legacy Slate keeps transform entries terse in `../slate/docs/api/transforms.md:39-118`.           | Patch each repeated sentence locally. Weaker because the page still teaches by caveat spam.                                                       | Users coming from the current docs use `editor.read` / `editor.update`; runtime-only helpers are not normal public docs.          | `concepts/04-transforms.md` owns the write model. `api/transforms.md` owns exact `tx` signatures, including `tx.operations.replay`. `api/nodes/editor.md` owns lifecycle and boundary methods. | Cwd-stable grep for `normal application code`, `bridge layer`, `Inside .*editor.update`, and `primitive .*reference material` outside the chosen owner note. | No adapter compatibility promise. Pass 5 checks that extension `tx` and collaboration `tx.operations.replay` docs keep their substrate language. | keep                                                                                           |
-| Rename `Summary.md` labels from `Editor Methods` back to `Transforms`.      | Slate maintainer, returning Slate user, docs reader.                | "`Transaction write API` or `Editor Methods` is technically more v2-accurate."      | Navigation should speak Slate's stable reader vocabulary. The page itself can explain that v2 transform helpers live on `tx` inside `editor.update`.                                 | Legacy `../slate/docs/Summary.md:17-35` uses `Transforms` under Concepts and API. Current v2 `.tmp/slate-v2/docs/Summary.md:21` and `:34` use `Editor Methods`.                                            | Rename everything to `Transactions`. Weaker because it is precise internally but less Slate-close and makes the docs feel like a new editor.      | Readers use the same TOC word as legacy Slate, then learn the v2 transaction shape in the first paragraph of the page.            | `Summary.md` labels become `Transforms`; `api/transforms.md` opens with transaction helper wording but keeps the `Transforms API` title.                                                       | `rg -n 'Editor Methods' docs/Summary.md` returns no matches.                                                                                                 | No plugin/collab behavior changes. Plate and slate-yjs migration pressure benefits from less renaming churn in the public docs.                  | keep                                                                                           |
-| Move `Docs Proof Map` out of the public General nav while keeping the page. | Docs/test author, agent maintainer, release owner.                  | "Agents and maintainers need this map fast; hiding it makes regression work worse." | The proof map remains a maintainer artifact, just not a normal reader learning page beside Resources and FAQ. Public docs should not look like release scaffolding.                  | Current v2 `.tmp/slate-v2/docs/Summary.md:74` lists `Docs Proof Map`; legacy Slate General nav has Resources/FAQ-like reader pages, not a proof ledger.                                                    | Delete the proof map. Weaker because agents and maintainers lose source-backed regression navigation.                                             | Users reading docs no longer see proof scaffolding in the TOC. Maintainers reach it from Contributing or a maintainer subsection. | `docs/general/contributing.md` links the proof map with maintainer wording; `Summary.md` no longer lists it.                                                                                   | `rg -n 'Docs Proof Map' docs/Summary.md` returns no matches, and a targeted grep confirms a contributor/maintainer link still exists.                        | No runtime ecosystem change. The proof map still protects extension/collab proof rows for later work.                                            | keep                                                                                           |
-| Cut primitive editor write/query methods from public docs.                  | Runtime bridge author, command author, test author, app author.     | "Internal authors still need sharp tools."                                          | They can exist internally, but the public API should not make bridge helpers look like application authoring surface. The rewrite is unpublished, so compatibility debt buys little. | Live source currently exposes primitive helpers and `applyOperations`; write-boundary tests prove why boundary discipline matters in `.tmp/slate-v2/packages/slate/test/write-boundary-contract.ts:27-77`. | Keep them documented under `Advanced editor write methods`. Weaker because it preserves a second public write surface after we already have `tx`. | App authors use `editor.update` + `tx`; operation replay uses `tx.operations.replay`; internal runtime helpers stay internal.     | `api/nodes/editor.md` documents editor lifecycle, `read`, `update`, `subscribe`, and `dispose`, while `api/transforms.md` documents transaction groups.                                        | Source-ledger grep for public `Editor.*` queries, instance aliases, primitive writers, and `editor.applyOperations`.                                         | Extension/collab users get substrate through `state` / `tx`, not current adapter APIs or public bridge methods.                                  | keep                                                                                           |
+| Move repeated tx/bridge warnings into one write-model owner section.        | Raw Slate user, docs reader, app author.                            | "Do not hide the warning; people will call low-level helpers directly."             | The warning stays, but it becomes an ownership rule instead of a sermon repeated under every primitive method. Readers learn the model once, then API entries stay scannable.        | Repetition is currently visible in `content/docs/slate/api/nodes/editor.md:264`, `:314`, and `:517-532`. Legacy Slate keeps transform entries terse in `../slate/docs/api/transforms.md:39-118`.           | Patch each repeated sentence locally. Weaker because the page still teaches by caveat spam.                                                       | Users coming from the current docs use `editor.read` / `editor.update`; runtime-only helpers are not normal public docs.          | `concepts/04-transforms.md` owns the write model. `api/transforms.md` owns exact `tx` signatures, including `tx.operations.replay`. `api/nodes/editor.md` owns lifecycle and boundary methods. | Cwd-stable grep for `normal application code`, `bridge layer`, `Inside .*editor.update`, and `primitive .*reference material` outside the chosen owner note. | No adapter compatibility promise. Pass 5 checks that extension `tx` and collaboration `tx.operations.replay` docs keep their substrate language. | keep                                                                                           |
+| Rename `Summary.md` labels from `Editor Methods` back to `Transforms`.      | Slate maintainer, returning Slate user, docs reader.                | "`Transaction write API` or `Editor Methods` is technically more v2-accurate."      | Navigation should speak Slate's stable reader vocabulary. The page itself can explain that v2 transform helpers live on `tx` inside `editor.update`.                                 | Legacy `../slate/docs/Summary.md:17-35` uses `Transforms` under Concepts and API. Current v2 `content/docs/slate/Summary.md:21` and `:34` use `Editor Methods`.                                            | Rename everything to `Transactions`. Weaker because it is precise internally but less Slate-close and makes the docs feel like a new editor.      | Readers use the same TOC word as legacy Slate, then learn the v2 transaction shape in the first paragraph of the page.            | `Summary.md` labels become `Transforms`; `api/transforms.md` opens with transaction helper wording but keeps the `Transforms API` title.                                                       | `rg -n 'Editor Methods' docs/Summary.md` returns no matches.                                                                                                 | No plugin/collab behavior changes. Plate and slate-yjs migration pressure benefits from less renaming churn in the public docs.                  | keep                                                                                           |
+| Move `Docs Proof Map` out of the public General nav while keeping the page. | Docs/test author, agent maintainer, release owner.                  | "Agents and maintainers need this map fast; hiding it makes regression work worse." | The proof map remains a maintainer artifact, just not a normal reader learning page beside Resources and FAQ. Public docs should not look like release scaffolding.                  | Current v2 `content/docs/slate/Summary.md:74` lists `Docs Proof Map`; legacy Slate General nav has Resources/FAQ-like reader pages, not a proof ledger.                                                    | Delete the proof map. Weaker because agents and maintainers lose source-backed regression navigation.                                             | Users reading docs no longer see proof scaffolding in the TOC. Maintainers reach it from Contributing or a maintainer subsection. | `docs/general/contributing.md` links the proof map with maintainer wording; `Summary.md` no longer lists it.                                                                                   | `rg -n 'Docs Proof Map' docs/Summary.md` returns no matches, and a targeted grep confirms a contributor/maintainer link still exists.                        | No runtime ecosystem change. The proof map still protects extension/collab proof rows for later work.                                            | keep                                                                                           |
+| Cut primitive editor write/query methods from public docs.                  | Runtime bridge author, command author, test author, app author.     | "Internal authors still need sharp tools."                                          | They can exist internally, but the public API should not make bridge helpers look like application authoring surface. The rewrite is unpublished, so compatibility debt buys little. | Live source currently exposes primitive helpers and `applyOperations`; write-boundary tests prove why boundary discipline matters in `packages/slate/test/write-boundary-contract.ts:27-77`. | Keep them documented under `Advanced editor write methods`. Weaker because it preserves a second public write surface after we already have `tx`. | App authors use `editor.update` + `tx`; operation replay uses `tx.operations.replay`; internal runtime helpers stay internal.     | `api/nodes/editor.md` documents editor lifecycle, `read`, `update`, `subscribe`, and `dispose`, while `api/transforms.md` documents transaction groups.                                        | Source-ledger grep for public `Editor.*` queries, instance aliases, primitive writers, and `editor.applyOperations`.                                         | Extension/collab users get substrate through `state` / `tx`, not current adapter APIs or public bridge methods.                                  | keep                                                                                           |
 | Do not add a new public Architecture page for this cleanup.                 | Docs reader, app author, maintainer who wants a clean mental model. | "The read/update/runtime model is important enough for its own page."               | This request is a docs organization cleanup, not a new architecture launch. A new public page would make the docs more plan-like and less like Slate.                                | `docs/solutions/style.md` says advanced/low-level details belong late, and the compiled Slate docs research says Slate's strength is walkthrough/concept/API separation.                                   | Add `api/editor-runtime.md` or `concepts/runtime.md` immediately. Weaker because it spreads one write-model rule across another page.             | Readers learn the model in `concepts/04-transforms.md` and exact APIs in `api/transforms.md` / `api/nodes/editor.md`.             | No new public page unless `api/nodes/editor.md` remains unreadable after the reorder.                                                                                                          | `rg --files docs                                                                                                                                             | rg 'editor-runtime                                                                                                                               | runtime'` should not grow for this plan unless the revision pass explicitly reopens the split. | No plugin/collab behavior change. Keeping the docs small avoids accidental product-layer promises. | keep |
 
 ## Pass Schedule
@@ -650,7 +650,7 @@ The proof map should remain, but as maintainer/contributor support material.
   style docs, Slate research docs, legacy Slate docs, and current Slate v2
   docs; cwd-stable `rg` over current Slate v2 docs for repeated warning and
   nav smells.
-- Stale terms remaining: current `.tmp/slate-v2/docs` still contains
+- Stale terms remaining: current `content/docs/slate` still contains
   `Editor Methods`, `Docs Proof Map`, and repeated `editor.update` warning
   prose because this lane is review-only.
 - Rejected tactics: local sentence patching, deleting primitive write method
@@ -673,7 +673,7 @@ The proof map should remain, but as maintainer/contributor support material.
   goal workflow skill, memory registry, current Slate v2 plugin docs,
   collaboration docs, docs proof map, and migration-backbone tests; targeted
   `rg` over plugin/collab/proof-map/docs surfaces.
-- Stale terms remaining: current `.tmp/slate-v2/docs` still contains the
+- Stale terms remaining: current `content/docs/slate` still contains the
   user-reported docs IA/prose smells because this lane is review-only.
 - Rejected tactics: current-version Plate adapter proof, current-version
   slate-yjs recipe, direct `editor.api` / `editor.tf` compatibility, and raw
@@ -694,7 +694,7 @@ The proof map should remain, but as maintainer/contributor support material.
   `sed` over the active plan, slate-review skill, completion file, and
   continuation file; targeted `rg` over memory registry for completion-check
   semantics.
-- Stale terms remaining: current `.tmp/slate-v2/docs` still contains the
+- Stale terms remaining: current `content/docs/slate` still contains the
   user-reported docs IA/prose smells because this lane is review-only.
 - Rejected tactics: new API invention, new public architecture page, current
   adapter support promises, and sentence-by-sentence warning patching.
@@ -714,7 +714,7 @@ The proof map should remain, but as maintainer/contributor support material.
   `sed` over the active plan, slate-review skill, completion file, and
   continuation file; `rg` over active plan and completion file for pending,
   unresolved, and final-gate terms.
-- Stale terms remaining: current `.tmp/slate-v2/docs` still contains the
+- Stale terms remaining: current `content/docs/slate` still contains the
   user-reported docs IA/prose smells because this lane is review-only; the plan
   is ready for a later execution lane.
 - Rejected tactics: marking done before the closure pass, executing docs edits
@@ -1106,30 +1106,30 @@ Do not recover:
 
 | Change                                                                            | Strongest objection                                                    | Answer                                                                                                                                                                                    | Evidence                                                                                                                                                                                                                             | Verdict |
 | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------- |
-| Cut instance schema predicates.                                                   | "Slate always had `editor.isVoid`; this makes extension code noisier." | Keep schema setup on `editor.schema`, but reads happen through `state.schema` / `tx.schema`. This removes a mutable-looking instance method family while preserving concise command code. | Current instance methods are in `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:237-282`; state schema already exists at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:179-188`.                                     | keep    |
-| Cut public `Editor.*` editor-state queries.                                       | "This drops a familiar Slate namespace."                               | Compatibility is not the goal. Pure namespaces stay public; editor-state reads move to `state.*` / `tx.*`; internal runtime helpers can exist without being exported.                     | Docs currently teach `Editor.start` / `Editor.end` in `.tmp/slate-v2/docs/api/transforms.md:104-105`; public static query helpers are listed throughout `.tmp/slate-v2/docs/api/nodes/editor.md:101-234`.                            | keep    |
-| Cut `toggleList` and block-format helpers from core.                              | "Users need lists and headings."                                       | They need primitives. Product formatting policy belongs in extensions/examples/Plate, not raw core.                                                                                       | `DEFAULT_LIST_TYPES` and `toggleList` live in `.tmp/slate-v2/packages/slate/src/editor/block-format.ts:6-162`.                                                                                                                       | keep    |
-| Replace public `onCommit` with richer `onChange` context plus granular callbacks. | "Commit is the real runtime unit."                                     | Yes, and advanced subscribers can use `editor.subscribe`. React app props should be Slate-friendly and ergonomic.                                                                         | Current `<Slate>` only calls `onChange(snapshot.children)` when `commit?.childrenChanged` in `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:104-110`.                                                                  | keep    |
-| Cut duplicate projection props from `Editable`.                                   | "Standalone `EditableTextBlocks` may need them."                       | Make that an internal/unsafe component contract. Public React API should have one provider owner for editor-level stores.                                                                 | Duplicate props appear in `SlateProps` at `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:37-45` and `EditableTextBlocksProps` at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:252-282`. | keep    |
-| Cut `inputRules` from raw `Editable`.                                             | "Input rules are convenient."                                          | Convenience here is product policy. Plate/extensions can own it without bloating raw Slate React.                                                                                         | `EditableDOMRootProps` exposes `inputRules` at `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:81-94`.                                                                                                               | keep    |
+| Cut instance schema predicates.                                                   | "Slate always had `editor.isVoid`; this makes extension code noisier." | Keep schema setup on `editor.schema`, but reads happen through `state.schema` / `tx.schema`. This removes a mutable-looking instance method family while preserving concise command code. | Current instance methods are in `packages/slate/src/interfaces/editor.ts:237-282`; state schema already exists at `packages/slate/src/interfaces/editor.ts:179-188`.                                     | keep    |
+| Cut public `Editor.*` editor-state queries.                                       | "This drops a familiar Slate namespace."                               | Compatibility is not the goal. Pure namespaces stay public; editor-state reads move to `state.*` / `tx.*`; internal runtime helpers can exist without being exported.                     | Docs currently teach `Editor.start` / `Editor.end` in `content/docs/slate/api/transforms.md:104-105`; public static query helpers are listed throughout `content/docs/slate/api/nodes/editor.md:101-234`.                            | keep    |
+| Cut `toggleList` and block-format helpers from core.                              | "Users need lists and headings."                                       | They need primitives. Product formatting policy belongs in extensions/examples/Plate, not raw core.                                                                                       | `DEFAULT_LIST_TYPES` and `toggleList` live in `packages/slate/src/editor/block-format.ts:6-162`.                                                                                                                       | keep    |
+| Replace public `onCommit` with richer `onChange` context plus granular callbacks. | "Commit is the real runtime unit."                                     | Yes, and advanced subscribers can use `editor.subscribe`. React app props should be Slate-friendly and ergonomic.                                                                         | Current `<Slate>` only calls `onChange(snapshot.children)` when `commit?.childrenChanged` in `packages/slate-react/src/components/slate.tsx:104-110`.                                                                  | keep    |
+| Cut duplicate projection props from `Editable`.                                   | "Standalone `EditableTextBlocks` may need them."                       | Make that an internal/unsafe component contract. Public React API should have one provider owner for editor-level stores.                                                                 | Duplicate props appear in `SlateProps` at `packages/slate-react/src/components/slate.tsx:37-45` and `EditableTextBlocksProps` at `packages/slate-react/src/components/editable-text-blocks.tsx:252-282`. | keep    |
+| Cut `inputRules` from raw `Editable`.                                             | "Input rules are convenient."                                          | Convenience here is product policy. Plate/extensions can own it without bloating raw Slate React.                                                                                         | `EditableDOMRootProps` exposes `inputRules` at `packages/slate-react/src/components/editable.tsx:81-94`.                                                                                                               | keep    |
 | Move operation replay under `tx.operations.replay`.                               | "Collaboration adapters need a direct replay entrypoint."              | They need a deterministic entrypoint, not an editor-instance write escape hatch. `editor.update(tx => tx.operations.replay(...))` preserves the boundary and still supports adapters.     | Current docs and source expose `applyOperations`; previous plan already treats replay as special, but no-compat cleanup should not leave it as a public instance writer.                                                             | keep    |
 
 ### Pass 8 Gates
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'toggleList|toggleBlock|toggleAlignment|setBlock|withTransaction' packages/slate/src docs --glob '!docs/general/changelog.md'
+cd Plate repo root && rg -n 'toggleList|toggleBlock|toggleAlignment|setBlock|withTransaction' packages/slate/src docs --glob '!docs/general/changelog.md'
 ```
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'Editor\\.(start|end|node|nodes|marks)|editor\\.(isInline|isVoid|markableVoid|isSelectable|isElementReadOnly|start|end|node|nodes|marks|applyOperations)' docs packages/slate/src/interfaces packages/slate/test
+cd Plate repo root && rg -n 'Editor\\.(start|end|node|nodes|marks)|editor\\.(isInline|isVoid|markableVoid|isSelectable|isElementReadOnly|start|end|node|nodes|marks|applyOperations)' docs packages/slate/src/interfaces packages/slate/test
 ```
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'onCommit|onValueChange|onSelectionChange|onChange' packages/slate-react/src/components/slate.tsx docs/libraries/slate-react docs/walkthroughs
+cd Plate repo root && rg -n 'onCommit|onValueChange|onSelectionChange|onChange' packages/slate-react/src/components/slate.tsx docs/libraries/slate-react docs/walkthroughs
 ```
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'annotationStores|decorationSources|projectionStore|inputRules|isInline|zeroWidth' packages/slate-react/src/components docs/libraries/slate-react
+cd Plate repo root && rg -n 'annotationStores|decorationSources|projectionStore|inputRules|isInline|zeroWidth' packages/slate-react/src/components docs/libraries/slate-react
 ```
 
 The first two gates are fail-on-output for public docs and public interfaces
@@ -1152,10 +1152,10 @@ contract. The fourth gate must prove provider/editable prop ownership.
 - Commands run:
   `sed` over the active plan, slate-review skill, goal workflow skill,
   completion file, continuation prompt, current/legacy docs, and relevant live
-  source snippets; targeted `rg` over `.tmp/slate-v2/packages/slate/src`,
-  `.tmp/slate-v2/packages/slate-react/src`, and `.tmp/slate-v2/docs`; `bun run
+  source snippets; targeted `rg` over `packages/slate/src`,
+  `packages/slate-react/src`, and `content/docs/slate`; `bun run
 completion-check`.
-- Stale terms remaining: current `.tmp/slate-v2` still contains the hard-cut
+- Stale terms remaining: current `Plate repo root` still contains the hard-cut
   surfaces because this lane is review-only. At this checkpoint,
   `projectionStore` ownership was the only remaining closure decision; Pass 9
   resolves it as runtime-owned/internal.
@@ -1180,7 +1180,7 @@ completion-check`.
   `sed` over the active plan, completion file, continuation prompt, and
   relevant closure sections; targeted plan grep for Pass 8/9 hard-cut terms;
   `bun run completion-check`.
-- Stale terms remaining: current `.tmp/slate-v2` still contains the hard-cut
+- Stale terms remaining: current `Plate repo root` still contains the hard-cut
   surfaces because this lane is review-only. The plan itself has no unresolved
   public API maybe language.
 - Rejected tactics: leaving `projectionStore` as a normal public prop,
@@ -1220,8 +1220,8 @@ compromise and tightens the already-accepted hard-cut direction.
 
 - Phase completed: Nav and proof visibility.
 - Files changed:
-  `.tmp/slate-v2/docs/Summary.md`,
-  `.tmp/slate-v2/docs/general/contributing.md`,
+  `content/docs/slate/Summary.md`,
+  `content/docs/slate/general/contributing.md`,
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
   `active goal state`, and `active goal state`.
 - Claims verified against source: public Summary uses `Transforms` for both
@@ -1243,7 +1243,7 @@ compromise and tightens the already-accepted hard-cut direction.
 
 - Phase completed: Write-model owner page.
 - Files changed:
-  `.tmp/slate-v2/docs/concepts/04-transforms.md`,
+  `content/docs/slate/concepts/04-transforms.md`,
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
   `active goal state`, and `active goal state`.
 - Claims verified against source: the concept page teaches `editor.update`,
@@ -1267,7 +1267,7 @@ compromise and tightens the already-accepted hard-cut direction.
 
 - Phase completed: Transaction API reference.
 - Files changed:
-  `.tmp/slate-v2/docs/api/transforms.md`,
+  `content/docs/slate/api/transforms.md`,
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
   `active goal state`, and `active goal state`.
 - Claims verified against source: the API page is a terse `tx` reference;
@@ -1289,7 +1289,7 @@ compromise and tightens the already-accepted hard-cut direction.
 
 - Phase completed: Editor API triage.
 - Files changed:
-  `.tmp/slate-v2/docs/api/nodes/editor.md`,
+  `content/docs/slate/api/nodes/editor.md`,
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
   `active goal state`, and `active goal state`.
 - Claims verified against source: the editor API page documents a small public
@@ -1312,8 +1312,8 @@ compromise and tightens the already-accepted hard-cut direction.
 
 - Phase completed: Commands/walkthrough polish.
 - Files changed:
-  `.tmp/slate-v2/docs/walkthroughs/05-executing-commands.md`,
-  `.tmp/slate-v2/docs/walkthroughs/08-using-the-bundled-source.md`,
+  `content/docs/slate/walkthroughs/05-executing-commands.md`,
+  `content/docs/slate/walkthroughs/08-using-the-bundled-source.md`,
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
   `active goal state`, and `active goal state`.
 - Claims verified against source: commands walkthrough uses plain functions
@@ -1337,18 +1337,18 @@ compromise and tightens the already-accepted hard-cut direction.
 
 - Phase completed: API hard-cut implementation.
 - Files changed:
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`,
-  `.tmp/slate-v2/packages/slate/src/create-editor.ts`,
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts`,
-  `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`,
-  `.tmp/slate-v2/packages/slate/src/core/leaf-lifecycle.ts`,
-  `.tmp/slate-v2/packages/slate/src/core/normalize-node.ts`,
-  `.tmp/slate-v2/packages/slate/src/editor/**`,
-  `.tmp/slate-v2/packages/slate/src/transforms-node/**`,
-  `.tmp/slate-v2/packages/slate/src/transforms-text/**`,
-  `.tmp/slate-v2/packages/slate/src/utils/**`,
-  `.tmp/slate-v2/packages/slate/test/**`,
-  `.tmp/slate-v2/docs/**`,
+  `packages/slate/src/interfaces/editor.ts`,
+  `packages/slate/src/create-editor.ts`,
+  `packages/slate/src/core/public-state.ts`,
+  `packages/slate/src/core/extension-registry.ts`,
+  `packages/slate/src/core/leaf-lifecycle.ts`,
+  `packages/slate/src/core/normalize-node.ts`,
+  `packages/slate/src/editor/**`,
+  `packages/slate/src/transforms-node/**`,
+  `packages/slate/src/transforms-text/**`,
+  `packages/slate/src/utils/**`,
+  `packages/slate/test/**`,
+  `content/docs/slate/**`,
   `docs/plans/2026-04-29-slate-v2-docs-maintainer-reorg-review-plan.md`,
   `active goal state`, and `active goal state`.
 - Claims verified against source: public `Editor.*` editor-state query helpers
@@ -1382,18 +1382,18 @@ compromise and tightens the already-accepted hard-cut direction.
 
 - Phase completed: unopinionated core cleanup.
 - Files changed:
-  `.tmp/slate-v2/packages/slate/src/create-editor.ts`,
-  `.tmp/slate-v2/packages/slate/src/core/apply.ts`,
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts`,
-  `.tmp/slate-v2/packages/slate/src/editor/index.ts`,
-  `.tmp/slate-v2/packages/slate/src/editor/is-editor.ts`,
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`,
-  `.tmp/slate-v2/packages/slate/src/interfaces/transforms/general.ts`,
-  `.tmp/slate-v2/packages/slate/src/editor/**`,
-  `.tmp/slate-v2/packages/slate/src/transforms-node/**`,
-  `.tmp/slate-v2/packages/slate/src/transforms-text/**`,
-  `.tmp/slate-v2/packages/slate/test/**`, and
-  `.tmp/slate-v2/docs/general/docs-proof-map.md`.
+  `packages/slate/src/create-editor.ts`,
+  `packages/slate/src/core/apply.ts`,
+  `packages/slate/src/core/public-state.ts`,
+  `packages/slate/src/editor/index.ts`,
+  `packages/slate/src/editor/is-editor.ts`,
+  `packages/slate/src/interfaces/editor.ts`,
+  `packages/slate/src/interfaces/transforms/general.ts`,
+  `packages/slate/src/editor/**`,
+  `packages/slate/src/transforms-node/**`,
+  `packages/slate/src/transforms-text/**`,
+  `packages/slate/test/**`, and
+  `content/docs/slate/general/docs-proof-map.md`.
 - Claims verified against source: raw Slate core no longer exposes
   `toggleList`, `setBlock`, `toggleBlock`, or `toggleAlignment`; the block
   formatting module is gone from the core editor barrel; public
@@ -1422,15 +1422,15 @@ compromise and tightens the already-accepted hard-cut direction.
 
 - Phase completed: React public contract cleanup.
 - Files changed:
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`,
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`,
-  `.tmp/slate-v2/packages/slate-react/src/index.ts`,
-  `.tmp/slate-v2/packages/slate-react/test/**`,
-  `.tmp/slate-v2/packages/slate-dom/test/**`,
-  `.tmp/slate-v2/docs/libraries/slate-react/slate.md`,
-  `.tmp/slate-v2/docs/libraries/slate-react/editable.md`,
-  `.tmp/slate-v2/docs/walkthroughs/01-installing-slate.md`, and
-  `.tmp/slate-v2/docs/walkthroughs/06-saving-to-a-database.md`.
+  `packages/slate-react/src/components/slate.tsx`,
+  `packages/slate-react/src/components/editable-text-blocks.tsx`,
+  `packages/slate-react/src/index.ts`,
+  `packages/slate-react/test/**`,
+  `packages/slate-dom/test/**`,
+  `content/docs/slate/libraries/slate-react/slate.md`,
+  `content/docs/slate/libraries/slate-react/editable.md`,
+  `content/docs/slate/walkthroughs/01-installing-slate.md`, and
+  `content/docs/slate/walkthroughs/06-saving-to-a-database.md`.
 - Claims verified against source: `<Slate onChange>` fires for every commit
   with a shared `SlateChange` object; `onValueChange` is document-only;
   `onSelectionChange` is selection-only; public `<Slate onCommit>` and
@@ -1461,11 +1461,11 @@ compromise and tightens the already-accepted hard-cut direction.
 
 - Phase completed: Hook DX cleanup.
 - Files changed:
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx`,
-  `.tmp/slate-v2/packages/slate-react/src/index.ts`,
-  `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`,
-  `.tmp/slate-v2/docs/libraries/slate-react/hooks.md`, and
-  `.tmp/slate-v2/docs/concepts/09-rendering.md`.
+  `packages/slate-react/src/hooks/use-editor-selector.tsx`,
+  `packages/slate-react/src/index.ts`,
+  `packages/slate-react/test/provider-hooks-contract.tsx`,
+  `content/docs/slate/libraries/slate-react/hooks.md`, and
+  `content/docs/slate/concepts/09-rendering.md`.
 - Claims verified against source: `useEditorState(selector, options)` runs
   selectors inside `editor.read`; it supports result equality, `deps`,
   `deferred`, and commit-scoped `shouldUpdate`; normal docs use
@@ -1493,7 +1493,7 @@ compromise and tightens the already-accepted hard-cut direction.
 - Phase completed: Final docs gates.
 - Files changed:
   final verification covered the Phase 1-9 code and docs changes in
-  `.tmp/slate-v2`, plus this plan, `active goal state`, and
+  `Plate repo root`, plus this plan, `active goal state`, and
   `active goal state`.
 - Claims verified against source: repeated warning prose is gone; public
   Summary no longer exposes `Editor Methods` or `Docs Proof Map`; public docs
@@ -1533,7 +1533,7 @@ compromise and tightens the already-accepted hard-cut direction.
 
 - Phase complete: `bun check` closeout.
 - Latest evidence:
-  `bun check` in `.tmp/slate-v2` passes after fixing `slate-history`
+  `bun check` in `Plate repo root` passes after fixing `slate-history`
   transaction replay, migrating the stale history fixture into
   `editor.update`, adding the missing `slate/internal` source path for site
   typecheck, and updating site examples to the hard-cut public API.
@@ -1636,35 +1636,35 @@ the user runs an execution lane.
 ## Fast Driver Gates
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'normal application code|bridge layer|Inside .*editor\\.update|primitive .*reference material' docs --glob '!docs/general/changelog.md'
+cd Plate repo root && rg -n 'normal application code|bridge layer|Inside .*editor\\.update|primitive .*reference material' docs --glob '!docs/general/changelog.md'
 ```
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'Docs Proof Map|Editor Methods' docs/Summary.md
+cd Plate repo root && rg -n 'Docs Proof Map|Editor Methods' docs/Summary.md
 ```
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'Editor\\.addMark\\(|Editor\\.removeMark\\(|editor\\.children|editor\\.selection|editor\\.operations|editor\\.marks|methods\\(' docs --glob '!docs/general/changelog.md'
+cd Plate repo root && rg -n 'Editor\\.addMark\\(|Editor\\.removeMark\\(|editor\\.children|editor\\.selection|editor\\.operations|editor\\.marks|methods\\(' docs --glob '!docs/general/changelog.md'
 ```
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'editor\\.api|editor\\.tf|PlatePlugin|withYjs|slate-yjs|Y\\.Doc|yjs' docs/concepts/08-plugins.md docs/walkthroughs/07-enabling-collaborative-editing.md docs/api/transforms.md docs/api/nodes/editor.md
+cd Plate repo root && rg -n 'editor\\.api|editor\\.tf|PlatePlugin|withYjs|slate-yjs|Y\\.Doc|yjs' docs/concepts/08-plugins.md docs/walkthroughs/07-enabling-collaborative-editing.md docs/api/transforms.md docs/api/nodes/editor.md
 ```
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'state|tx|operations\\.replay|commit|operations|tags|runtime ids are local|does not provide a full multiplayer recipe' docs/concepts/08-plugins.md docs/walkthroughs/07-enabling-collaborative-editing.md docs/general/docs-proof-map.md
+cd Plate repo root && rg -n 'state|tx|operations\\.replay|commit|operations|tags|runtime ids are local|does not provide a full multiplayer recipe' docs/concepts/08-plugins.md docs/walkthroughs/07-enabling-collaborative-editing.md docs/general/docs-proof-map.md
 ```
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'Editor\\.(start|end|node|nodes|marks)|toggleList|toggleBlock|toggleAlignment|setBlock|withTransaction|editor\\.(isInline|isVoid|markableVoid|isSelectable|isElementReadOnly|start|end|node|nodes|marks|applyOperations)' packages/slate/src/interfaces packages/slate/src/create-editor.ts docs packages/slate/test
+cd Plate repo root && rg -n 'Editor\\.(start|end|node|nodes|marks)|toggleList|toggleBlock|toggleAlignment|setBlock|withTransaction|editor\\.(isInline|isVoid|markableVoid|isSelectable|isElementReadOnly|start|end|node|nodes|marks|applyOperations)' packages/slate/src/interfaces packages/slate/src/create-editor.ts docs packages/slate/test
 ```
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'onCommit|onValueChange|onSelectionChange|onChange' packages/slate-react/src/components/slate.tsx docs/libraries/slate-react docs/walkthroughs
+cd Plate repo root && rg -n 'onCommit|onValueChange|onSelectionChange|onChange' packages/slate-react/src/components/slate.tsx docs/libraries/slate-react docs/walkthroughs
 ```
 
 ```bash
-cd .tmp/slate-v2 && rg -n 'annotationStores|decorationSources|projectionStore|inputRules|isInline|zeroWidth' packages/slate-react/src/components/slate.tsx packages/slate-react/src/components/editable-text-blocks.tsx docs/libraries/slate-react
+cd Plate repo root && rg -n 'annotationStores|decorationSources|projectionStore|inputRules|isInline|zeroWidth' packages/slate-react/src/components/slate.tsx packages/slate-react/src/components/editable-text-blocks.tsx docs/libraries/slate-react
 ```
 
 ## Final User-Review Handoff Outline

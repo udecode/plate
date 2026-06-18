@@ -2,7 +2,7 @@
 
 Status: `implemented`
 Runtime id: `019e3627-238b-7993-a8cf-26be45504c47`
-Requested surface: `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`
+Requested surface: `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx`
 Current pass: `ralph-implementation-and-proof`
 Prior final score: `0.93`
 Final score: `0.94`
@@ -73,7 +73,7 @@ Decision boundaries:
   convention, issue classifications, and implementation acceptance tests.
 - This ralplan may reject product-shaped search APIs even if the example request
   mentions search.
-- This ralplan must not edit `.tmp/slate-v2` implementation or examples.
+- This ralplan must not edit `Plate repo root` implementation or examples.
 - A later `ralph` implementation may adjust helper internals only if it keeps
   the same public intent and updates this plan when the public shape changes.
 
@@ -394,26 +394,26 @@ Plan delta:
 - Type-surface polish pass refined that hook option from React's
   `DependencyList` alias to Slate v2's existing `readonly unknown[]` selector
   convention, matching
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx`.
+  `packages/slate-react/src/hooks/use-editor-selector.tsx`.
 - PR reference section `6.3 React Decoration Source Hook` must mention that the
   low-level hook and range hook share the explicit dependency-refresh contract.
 - Closure score needs a recheck because a public hook option changed.
 
 ## Current Source Evidence
 
-- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:46` creates a
+- `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx:46` creates a
   `useSlateDecorationSource` directly.
-- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:49` asks the app to
+- `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx:49` asks the app to
   return projections from a snapshot.
-- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:51` asks the app to
+- `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx:51` asks the app to
   compute `runtimeScope`.
-- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:54` wires a DOM
+- `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx:54` wires a DOM
   `input` listener in `useEffect` instead of using normal React input code.
-- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:63` repeats
+- `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx:63` repeats
   `sourceId: 'search-highlighting'` even though the source already has that id.
-- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:133` to `201` hand
+- `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx:133` to `201` hand
   rolls cross-leaf text-search projection splitting.
-- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:204` to `230` hand
+- `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx:204` to `230` hand
   rolls runtime-id collection for every text node.
 
 This is not just verbose. It teaches the wrong default. A user trying to build
@@ -436,20 +436,20 @@ That is framework internals cosplay.
 
 `createDecorationSource` is intentionally low-level:
 
-- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts:19` requires
+- `packages/slate-react/src/decoration-source.ts:19` requires
   `read(context) => SlateDecoration[]`.
-- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts:111` wraps the
+- `packages/slate-react/src/decoration-source.ts:111` wraps the
   read callback into `createSlateProjectionStore`.
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:52` exposes
+- `packages/slate-react/src/projection-store.ts:52` exposes
   `runtimeScope` as raw runtime ids or a function.
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:343` to `390`
+- `packages/slate-react/src/projection-store.ts:343` to `390`
   proves recompute is source-driven and scoped by dirtiness/runtime scope.
 
 That is a good substrate. It is a bad beginner API.
 
 `useSlateDecorationSource` also has a footgun:
 
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts:43`
+- `packages/slate-react/src/hooks/use-slate-decoration-source.ts:43`
   refreshes on `options` identity.
 
 Inline options in examples are common. If this stays, the hook should either
@@ -827,8 +827,8 @@ Required performance proof:
 | Proof                       | Required evidence                                                                                                                                                                                                                                                                             |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Manual source parity        | Compare current manual `useSlateDecorationSource` search source with the helper source on the same document and query. `sourceReadCount`, `recomputeCount`, `fullFallbackCount`, `changedRuntimeBucketCount`, `runtimeSubscriberWakeCount`, and `globalSubscriberWakeCount` must not regress. |
-| Render breadth              | Existing `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx` records projection metrics and decoration-source toggle breadth; add a search/range-source lane beside `decorationSourceToggleBreadth`.                                                                        |
-| Large overlay lane          | `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx` records decoration-source metrics; add range-source mode or reuse it if implementation can parameterize source creation.                                                                                          |
+| Render breadth              | Existing `benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx` records projection metrics and decoration-source toggle breadth; add a search/range-source lane beside `decorationSourceToggleBreadth`.                                                                        |
+| Large overlay lane          | `benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx` records decoration-source metrics; add range-source mode or reuse it if implementation can parameterize source creation.                                                                                          |
 | Runtime-scope no-regression | Existing projection tests prove scoped recompute can skip missed runtime ids. Helper tests must prove manual `runtimeScope` pass-through keeps that behavior.                                                                                                                                 |
 | Browser interaction         | `/examples/search-highlighting`: query typing, editor typing inside a highlight, select highlighted text, select-all, copy, paste, and follow-up typing.                                                                                                                                      |
 
@@ -1150,15 +1150,15 @@ for overlays that toolbars, sidebars, and external UI may share.
 ## Implementation Phases With Owners
 
 1. Core owner: add `NodeApi.findTextRanges` in
-   `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`, export it through the
+   `packages/slate/src/interfaces/node.ts`, export it through the
    public surface, and add focused unit tests under
-   `.tmp/slate-v2/packages/slate/test/interfaces/Node/`.
+   `packages/slate/test/interfaces/Node/`.
 2. React owner: add `createRangeDecorationSource(editor, options)` beside
-   `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`, plus
+   `packages/slate-react/src/decoration-source.ts`, plus
    `useSlateRangeDecorationSource(editor, options)` beside the existing hook.
    Add React-only `deps` to `useSlateDecorationSource` and have the range hook
    share that lifecycle contract.
-3. Example owner: update `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`
+3. Example owner: update `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx`
    to the canonical state-plus-range-source shape; update highlighted text,
    markdown preview, and code highlighting only where they currently repeat
    generic range/source plumbing.
@@ -1171,18 +1171,18 @@ for overlays that toolbars, sidebars, and external UI may share.
 
 | Gate                   | Cwd             | Command                                                                                                                                                                                                                                                                      | Purpose                                                                                                                                  |
 | ---------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| Core range helper      | `.tmp/slate-v2` | `bun test ./packages/slate/test/find-text-ranges-contract.ts ./packages/slate/test/query-contract.ts`                                                                                                                                                                        | Prove `NodeApi.findTextRanges` behavior and public query contracts.                                                                      |
-| React source hooks     | `.tmp/slate-v2` | `bun test packages/slate-react/test/projections-and-selection-contract.test.tsx packages/slate-react/test/app-owned-customization.test.tsx`                                                                                                                                  | Prove projected slices, source refresh defaults, low-level hook `deps`, range hook `deps`, and no regression to app-owned customization. |
-| Example browser proof  | `.tmp/slate-v2` | `playwright test playwright/integration/examples/search-highlighting.test.ts playwright/integration/examples/highlighted-text.test.ts playwright/integration/examples/markdown-preview.test.ts playwright/integration/examples/code-highlighting.test.ts --project=chromium` | Prove examples remain interactive after helper adoption.                                                                                 |
-| React rerender breadth | `.tmp/slate-v2` | `bun run bench:react:rerender-breadth:local`                                                                                                                                                                                                                                 | Prove no broader rerender pattern than the manual source path.                                                                           |
-| Huge overlay pressure  | `.tmp/slate-v2` | `bun run bench:react:huge-document-overlays:local`                                                                                                                                                                                                                           | Prove large overlay metrics before any performance claim.                                                                                |
+| Core range helper      | `Plate repo root` | `bun test ./packages/slate/test/find-text-ranges-contract.ts ./packages/slate/test/query-contract.ts`                                                                                                                                                                        | Prove `NodeApi.findTextRanges` behavior and public query contracts.                                                                      |
+| React source hooks     | `Plate repo root` | `bun test packages/slate-react/test/projections-and-selection-contract.test.tsx packages/slate-react/test/app-owned-customization.test.tsx`                                                                                                                                  | Prove projected slices, source refresh defaults, low-level hook `deps`, range hook `deps`, and no regression to app-owned customization. |
+| Example browser proof  | `Plate repo root` | `playwright test playwright/integration/examples/search-highlighting.test.ts playwright/integration/examples/highlighted-text.test.ts playwright/integration/examples/markdown-preview.test.ts playwright/integration/examples/code-highlighting.test.ts --project=chromium` | Prove examples remain interactive after helper adoption.                                                                                 |
+| React rerender breadth | `Plate repo root` | `bun run bench:react:rerender-breadth:local`                                                                                                                                                                                                                                 | Prove no broader rerender pattern than the manual source path.                                                                           |
+| Huge overlay pressure  | `Plate repo root` | `bun run bench:react:huge-document-overlays:local`                                                                                                                                                                                                                           | Prove large overlay metrics before any performance claim.                                                                                |
 | Planning state         | `plate-2`       | `node tooling/scripts/completion-check.mjs`                                                                                                                                                                                                                                  | Prove this ralplan closure file is complete.                                                                                             |
 
 ## Confidence Scorecard
 
 | Dimension                                                | Weight | Score | Evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | -------------------------------------------------------- | -----: | ----: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| React 19.2 runtime performance                           |   0.20 |  0.94 | `Performance, DX, And Research Synthesis`; `Absolute-Best DX Skepticism Pass`; `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts`; `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`; `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`; `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`; `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md`. |
+| React 19.2 runtime performance                           |   0.20 |  0.94 | `Performance, DX, And Research Synthesis`; `Absolute-Best DX Skepticism Pass`; `packages/slate-react/src/hooks/use-slate-decoration-source.ts`; `packages/slate-react/src/projection-store.ts`; `benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx`; `benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx`; `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md`. |
 | Slate-close unopinionated DX                             |   0.20 |  0.96 | `Intent And Boundaries`; `Decision Brief`; `Chosen API Target`; `Steelman Pass`; `Absolute-Best DX Skepticism Pass`; `Deps type-surface polish pass`; live source pointers for `search-highlighting.tsx`, `use-slate-decoration-source.ts`, `use-editor-selector.tsx`, and `decoration-source.ts`.                                                                                                                                                                          |
 | Plate and slate-yjs migration-backbone shape             |   0.15 |  0.90 | `Architecture North Star And Migration Backbone`; `Related Issue Accounting`; rejected raw `SearchApi` / `editor.api.search` product layer.                                                                                                                                                                                                                                                                                                                                 |
 | Regression-proof testing strategy                        |   0.20 |  0.93 | `Test Plan For Ralph Execution`; `Fast Driver Gates`; issue matrix rows for `#4483`, `#5987`, `#4392`, `#3382`, `#3352`, `#4076`.                                                                                                                                                                                                                                                                                                                                           |
@@ -1208,8 +1208,8 @@ No dimension is below `0.85`.
 | Public API language             | pass   | Accepted names and rejected alternatives are explicit; no undecided public API remains.                                                                                                                            |
 | Implementation review lenses    | pass   | Vercel React, performance-oracle, performance, tdd, react-useeffect, and shadcn rows recorded.                                                                                                                     |
 | Migration backbone              | pass   | Plate and slate-yjs targets recorded without requiring current adapter compatibility.                                                                                                                              |
-| Verification workspace          | pass   | This skill changed planning/ledger/reference files only; no `.tmp/slate-v2` behavior is claimed complete. Slate v2 commands are recorded as implementation gates.                                                  |
-| Post-skepticism closure recheck | pass   | Deps type-surface polish changed only the public hook type spelling to match live Slate React selector options; score remains `0.94`, PR reference is synced, and no `.tmp/slate-v2` behavior is claimed complete. |
+| Verification workspace          | pass   | This skill changed planning/ledger/reference files only; no `Plate repo root` behavior is claimed complete. Slate v2 commands are recorded as implementation gates.                                                  |
+| Post-skepticism closure recheck | pass   | Deps type-surface polish changed only the public hook type spelling to match live Slate React selector options; score remains `0.94`, PR reference is synced, and no `Plate repo root` behavior is claimed complete. |
 | Final handoff                   | pass   | Final user-review outline below is updated; completion file records `final_handoff_status: complete`.                                                                                                              |
 
 ## Final User-Review Handoff Outline
@@ -1261,27 +1261,27 @@ Continue file: `active goal state`
 
 Completed slice:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`: added
+- `packages/slate/src/interfaces/node.ts`: added
   `NodeApi.findTextRanges(root, query, options)`.
-- `.tmp/slate-v2/packages/slate/test/find-text-ranges-contract.ts`: added
+- `packages/slate/test/find-text-ranges-contract.ts`: added
   focused contract coverage.
 
 Completed implementation:
 
-- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`: added
+- `packages/slate-react/src/decoration-source.ts`: added
   `createRangeDecorationSource(editor, options)` and range-entry normalization.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts`:
+- `packages/slate-react/src/hooks/use-slate-decoration-source.ts`:
   added hook-level `deps` and `useSlateRangeDecorationSource`.
-- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`: switched to
+- `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx`: switched to
   `useState`, `onChange`, `NodeApi.findTextRanges`, and the range source hook;
   hoisted source dirtiness and memoized the editor shell to preserve input
   focus/render proof.
-- `.tmp/slate-v2/site/examples/ts/highlighted-text.tsx`,
-  `.tmp/slate-v2/site/examples/ts/markdown-preview.tsx`, and
-  `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`: moved to range
+- `apps/www/src/app/(app)/examples/slate/_examples/highlighted-text.tsx`,
+  `apps/www/src/app/(app)/examples/slate/_examples/markdown-preview.tsx`, and
+  `apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx`: moved to range
   decoration sources.
-- `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx` and
-  `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`:
+- `benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx` and
+  `benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx`:
   refreshed stale benchmark API usage so the planned benchmark gates run.
 
 Verification:
@@ -1299,7 +1299,7 @@ Verification:
 Verification note:
 
 - `bun lint` exits `0` and reports one existing warning in
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx` for
+  `packages/slate-react/src/components/slate.tsx` for
   `reactEditor` in a hook dependency array. This lane did not touch that file.
 
 ## Dirtiness API Review Pass
@@ -1314,18 +1314,18 @@ search highlighting is `dirtiness: 'text'`, not a hoisted
 
 Evidence:
 
-- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx:17` currently hoists
+- `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx:17` currently hoists
   `['text', 'external']`; `:49` passes that tuple into the range hook.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts:35`
+- `packages/slate-react/src/hooks/use-slate-decoration-source.ts:35`
   and `:77` read raw `options.dirtiness`; `:58` and `:104` put that raw value
   in the source identity deps. That makes inline array dirtiness recreate the
   source and forces examples toward a hoisted tuple workaround.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts:61`
+- `packages/slate-react/src/hooks/use-slate-decoration-source.ts:61`
   and `:107` refresh the source from `deps` with `reason: 'external'` and no
   `change`.
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:147-164` maps
+- `packages/slate-react/src/projection-store.ts:147-164` maps
   dirtiness to editor subscription sources; `external` adds no editor source.
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:206-229` treats a
+- `packages/slate-react/src/projection-store.ts:206-229` treats a
   no-change refresh as dirty before checking the dirtiness class, so the hook
   `deps` refresh already recomputes for `dirtiness: 'text'`.
 
@@ -1411,11 +1411,11 @@ Planned focused gates:
 
 Completed implementation:
 
-- `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`: removed
+- `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx`: removed
   `searchHighlightingDirtiness` and uses `dirtiness: 'text'` directly.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts`:
+- `packages/slate-react/src/hooks/use-slate-decoration-source.ts`:
   added structural dirtiness-list identity for both decoration-source hooks.
-- `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`: added
+- `packages/slate-react/test/app-owned-customization.tsx`: added
   inline multi-class dirtiness coverage to both low-level and range hook source
   stability tests.
 - `docs/slate-v2/references/pr-description.md`: recorded that structurally
@@ -1427,7 +1427,7 @@ Verification:
 - `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx`
 - `bun test ./packages/slate-react/test/app-owned-customization.tsx ./packages/slate-react/test/projections-and-selection-contract.tsx`
 - `bun --filter slate-react typecheck`
-- `bun tsc --project tsconfig.json` from `.tmp/slate-v2/site`
+- `bun tsc --project tsconfig.json` from `apps/www`
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/search-highlighting.test.ts --project=chromium`
 - `bun lint`
 - `bun check`
@@ -1435,7 +1435,7 @@ Verification:
 Verification note:
 
 - `bun lint` and `bun check` exit `0` with the existing
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx` exhaustive-deps
+  `packages/slate-react/src/components/slate.tsx` exhaustive-deps
   warning only. This lane did not touch that file.
 
 Completion:
@@ -1449,28 +1449,28 @@ Completion:
 
 Status: `complete`
 Trigger: user observed that `const path = useElementPath()` in
-`.tmp/slate-v2/site/examples/ts/code-highlighting.tsx` subscribes during render
+`apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx` subscribes during render
 even though the path is only needed by the language-select callback.
 
 Implementation:
 
-- `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`: removed
+- `apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx`: removed
   `useElementPath`; `setLanguage` now finds the current rendered code-block
   entry inside `editor.update` with `tx.nodes.find(...)`, then sets the
   language at that path.
-- `.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts`:
+- `apps/www/tests/slate-browser/donor/examples/code-highlighting.test.ts`:
   added browser coverage that changes the language select from `jsx` to
   `typescript`.
 
 Verification:
 
-- `bun tsc --project tsconfig.json` from `.tmp/slate-v2/site`
+- `bun tsc --project tsconfig.json` from `apps/www`
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/code-highlighting.test.ts --project=chromium`
 - `bunx biome check site/examples/ts/code-highlighting.tsx playwright/integration/examples/code-highlighting.test.ts && bunx eslint site/examples/ts/code-highlighting.tsx playwright/integration/examples/code-highlighting.test.ts`
 
 Verification note:
 
 - Full `bun lint` / `bun check` is currently blocked by unrelated formatting
-  drift in `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts` and
-  `.tmp/slate-v2/packages/slate/src/index.ts`. The touched files pass targeted
+  drift in `packages/slate/src/core/editor-extension.ts` and
+  `packages/slate/src/index.ts`. The touched files pass targeted
   Biome/ESLint, site typecheck, and focused browser proof.

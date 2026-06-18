@@ -117,8 +117,8 @@ The next execution batch for decorations is Wave 9.
 Perf truth note:
 
 - benchmark command names referenced later in this roadmap are still target
-  owners unless they exist in `.tmp/slate-v2/package.json` and
-  `.tmp/slate-v2/scripts/benchmarks/**`
+  owners unless they exist in `Plate repo root/package.json` and
+  `benchmarks/slate-v2/donor/**`
 - do not read those names as current proof ownership
 - current repo truth still lacks the overlay/example benchmark owners for this
   lane

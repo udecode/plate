@@ -8,7 +8,7 @@ separate editor layer.
 
 ## Constraints
 
-- Work in `.tmp/slate-v2`.
+- Work in `Plate repo root`.
 - Keep this experimental; do not claim production fragmented editable DOM.
 - Add focused tests for page layout geometry and fixed page pagination behavior.
 - Verify the actual route in Browser after typing.

@@ -1,7 +1,7 @@
 ---
 status: done
 owner: slate-v2-tanstack-virtualization-ralplan
-source_repo: .tmp/slate-v2
+source_repo: Plate repo root
 created: 2026-05-03
 ---
 
@@ -26,7 +26,7 @@ composition, native selections, Slate fragments, voids, and collaboration.
 
 Status: complete for the requested implementation slice.
 
-Implemented in `.tmp/slate-v2`:
+Implemented in `Plate repo root`:
 
 - Added `@tanstack/react-virtual` as a `slate-react` runtime dependency.
 - Replaced the experimental virtualized fixed-segment shell path with a
@@ -120,49 +120,49 @@ Unresolved user-decision points:
 
 ## Source Grounding
 
-Live `.tmp/slate-v2` facts:
+Live `Plate repo root` facts:
 
 - `Editable` already documents safe staged rendering as the default and
   describes virtualized mode as experimental with missing native find and
   screen-reader coverage until mount.
-  Source: `.tmp/slate-v2/docs/libraries/slate-react/editable.md:211-268`.
+  Source: `content/docs/slate/libraries/slate-react/editable.md:211-268`.
 - `RenderingStrategyOptions` already includes `'virtualized'`, but the option
   object shares shell-oriented `segmentSize` instead of viewport measurement.
   Source:
-  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3-18`.
+  `packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3-18`.
 - Current virtualized planning is fixed segment math over top-level runtime ids,
   not viewport measurement.
   Source:
-  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:29-73`
+  `packages/slate-react/src/rendering-strategy/create-segment-plan.ts:29-73`
   and
-  `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts:228-242`.
+  `packages/slate-react/src/editable/root-selector-sources.ts:228-242`.
 - Current `EditableDOMRoot` runtime strategy prop accepts only `'staged' |
 'shell'`, so virtualized mode is passed through root runtime as shell-shaped
   policy.
   Source:
-  `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:83-90`
+  `packages/slate-react/src/components/editable.tsx:83-90`
   and
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1557-1563`.
+  `packages/slate-react/src/components/editable-text-blocks.tsx:1557-1563`.
 - Current virtualized tests already prove viewport DOM coverage boundaries,
   materializing selected segments, broad model-backed selection, and metrics.
   Source:
-  `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:171-340`.
+  `packages/slate-react/test/rendering-strategy-and-scroll.tsx:171-340`.
 - `DOMCoverageBoundary` already has `state: 'virtualized'`,
   `reason: 'viewport-virtualization'`, materialization, indexed boundary lookup,
   and boundary-aware point/range APIs.
   Source:
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:26-39`,
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:539-589`,
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:592-619`,
+  `packages/slate-dom/src/plugin/dom-coverage.ts:26-39`,
+  `packages/slate-dom/src/plugin/dom-coverage.ts:539-589`,
+  `packages/slate-dom/src/plugin/dom-coverage.ts:592-619`,
   and
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:639-676`.
+  `packages/slate-dom/src/plugin/dom-coverage.ts:639-676`.
 - `EditableRenderingStrategyMetrics` already includes cohort, mounted/pending
   counts, DOM node count, editable descendant count, and viewport virtualization
   boundary count.
-  Source: `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:103-175`.
+  Source: `packages/slate-react/src/components/editable.tsx:103-175`.
 - No active `@tanstack/react-virtual`, `@tanstack/virtual-core`,
   `useVirtualizer`, or `useWindowVirtualizer` hit was found in
-  `.tmp/slate-v2/package.json`, `packages`, `site`, `docs`, or `bun.lock` during
+  `Plate repo root/package.json`, `packages`, `site`, `docs`, or `bun.lock` during
   this pass.
 
 External evidence:
@@ -231,7 +231,7 @@ Status: complete for the 2026-05-03 Ralph activation.
 
 Evidence used:
 
-- live `.tmp/slate-v2` rendering strategy, DOM coverage, metrics, and tests listed
+- live `Plate repo root` rendering strategy, DOM coverage, metrics, and tests listed
   in Source Grounding;
 - TanStack Virtual required and optional primitives summarized in the research
   note;
@@ -300,8 +300,8 @@ Before:
 
 - virtualized object uses the shell `segmentSize` shape.
   Source:
-  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:10-18`
-  and `.tmp/slate-v2/docs/libraries/slate-react/editable.md:238-247`.
+  `packages/slate-react/src/rendering-strategy/create-segment-plan.ts:10-18`
+  and `content/docs/slate/libraries/slate-react/editable.md:238-247`.
 
 After:
 
@@ -554,7 +554,7 @@ Rollback answer:
 
 ### Phase 0: Dependency And Current-State Probe
 
-- Confirm exact installed package in `.tmp/slate-v2`.
+- Confirm exact installed package in `Plate repo root`.
 - If absent, add `@tanstack/react-virtual` to `packages/slate-react`
   dependencies and root lockfile.
 - Run a bundle/default-path smoke. If default path cost is unacceptable, switch
@@ -620,7 +620,7 @@ Rollback answer:
 ## Fast Driver Gates
 
 ```txt
-rg -n "@tanstack/react-virtual|@tanstack/virtual-core|useVirtualizer|useWindowVirtualizer" .tmp/slate-v2
+rg -n "@tanstack/react-virtual|@tanstack/virtual-core|useVirtualizer|useWindowVirtualizer" Plate repo root
 bun test ./packages/slate-react/test/rendering-strategy-and-scroll.tsx
 bun test ./packages/slate-dom/test/dom-coverage.ts ./packages/slate-dom/test/clipboard-boundary.ts
 bun --filter slate-react typecheck
@@ -682,7 +682,7 @@ Status: not ready. Current-state and intent/decision passes are complete.
 
 ## Open Questions / What Would Change The Decision
 
-- If `@tanstack/react-virtual` is not actually installed in `.tmp/slate-v2`, add it
+- If `@tanstack/react-virtual` is not actually installed in `Plate repo root`, add it
   deliberately during implementation or use `@tanstack/virtual-core` after
   bundle proof.
 - If absolute-positioned editable rows fail selection/IME/browser proof, use

@@ -47,7 +47,7 @@ into raw Slate.
 - Character navigation across nested table-cell text blocks.
 - DOM point import/export at table boundaries.
 - Issue accounting for #6034, #4658, #5355, and adjacent #2558.
-- Focused Playwright, unit, and stress coverage in `.tmp/slate-v2`.
+- Focused Playwright, unit, and stress coverage in `Plate repo root`.
 
 ## Non Goals
 
@@ -72,14 +72,14 @@ into raw Slate.
   proof; #4658 is table boundary / invalid DOM import policy; #5355 depends on
   missing editable descendants in `colgroup` / `col`; #2558 needs a real table
   selection model.
-- `.tmp/slate-v2/site/examples/ts/tables.tsx`: current example has local
+- `apps/www/src/app/(app)/examples/slate/_examples/tables.tsx`: current example has local
   `table()` extension transforms that keep Backspace/Delete/Enter inside cell
   boundaries.
-- `.tmp/slate-v2/playwright/integration/examples/tables.test.ts`: current proof
+- `apps/www/tests/slate-browser/donor/examples/tables.test.ts`: current proof
   covers Backspace/Delete/Enter containment, #6034 ArrowDown table-last-node,
   triple-click cell selection, drag from table toward trailing text, and
   horizontal cell boundary navigation with render-budget checks.
-- `.tmp/slate-v2/playwright/stress/generated-editing.test.ts`: stress case
+- `apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts`: stress case
   covers `table-cell-boundary-navigation`.
 - Prior solution notes:
   - table helper paths must derive table/cell paths from resolved entries, not
@@ -130,14 +130,14 @@ into raw Slate.
 
 ## Ralph Execution Plan
 
-1. Inspect current `.tmp/slate-v2` table source/tests first:
+1. Inspect current `Plate repo root` table source/tests first:
    - `site/examples/ts/tables.tsx`
    - `playwright/integration/examples/tables.test.ts`
    - `playwright/stress/generated-editing.test.ts`
    - `packages/slate/src/editor/positions.ts`
    - `packages/slate-dom/test/bridge.ts`
 2. Run the current focused table proof before editing:
-   - `cd .tmp/slate-v2 && PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/tables.test.ts --project=chromium --workers=1`
+   - `cd Plate repo root && PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/tables.test.ts --project=chromium --workers=1`
 3. Add missing exact rows only if they fail before fix or cover a real gap:
    - #4658: attempt to place/type text outside a table boundary and prove Slate
      either ignores/fails closed or lands in a valid model point.
@@ -170,7 +170,7 @@ Minimum same-slice proof for Ralph:
   - Chromium is required for #6034/#4658 desktop proof.
   - Firefox is required before any Firefox multi-range/table-selection claim.
   - WebKit is required only if the changed browser behavior is not Chromium-only.
-- Final local gates in `.tmp/slate-v2`:
+- Final local gates in `Plate repo root`:
   - `bun lint:fix`
   - `bun typecheck:root`
 
@@ -191,7 +191,7 @@ Anything less stays related or not claimed.
 
 | Pass | Status | Notes |
 | --- | --- | --- |
-| Skill boundary | complete | Planning-only. No `.tmp/slate-v2` implementation edits from this pass. |
+| Skill boundary | complete | Planning-only. No `Plate repo root` implementation edits from this pass. |
 | Cache-first issue accounting | complete | Read live ledger, sync ledger, coverage matrix, fork dossier, recluster map, PR reference. |
 | Prior solution review | complete | Table helper, keydown ownership, Firefox multi-range, and position-boundary notes applied. |
 | Current source/test inspection | complete | Read table example, focused tests, stress row, DOM bridge evidence. |
@@ -199,7 +199,7 @@ Anything less stays related or not claimed.
 | Ralph handoff | complete | Execution plan and proof commands listed above. |
 | Ralph execution | complete | Updated the table example copy to match the actual contract and made the ArrowDown test derive the trailing paragraph length from the rendered example. |
 | Focused table proof | complete | Fresh static server on `http://localhost:3111`: Chromium table suite `10 passed`; stress table-cell-boundary-navigation `1 passed`. |
-| Final gates | complete | `bun build:next`, `bun lint:fix`, and `bun typecheck:root` passed in `.tmp/slate-v2`. |
+| Final gates | complete | `bun build:next`, `bun lint:fix`, and `bun typecheck:root` passed in `Plate repo root`. |
 | Lane status | complete | #6034 stays fixed; #4658 stays related; #5355 and #2558 stay not claimed. No ledger claim changes were made. |
 
 ## Closeout Result

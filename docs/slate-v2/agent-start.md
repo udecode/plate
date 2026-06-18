@@ -11,7 +11,9 @@ Use this first. It is the small control plane for Slate v2 work after the long
 
 ## Current Truth
 
-- Live implementation repo: `.tmp/slate-v2`
+- Live implementation source: Slate packages under `packages/**`, docs under
+  `content/docs/slate/**`, and examples under
+  `apps/www/src/app/(app)/examples/slate/**`.
 - Control docs: `docs/slate-v2/**`
 - Active release claim:
   [absolute-architecture-release-claim.md](/Users/zbeyens/git/plate-2/docs/slate-v2/absolute-architecture-release-claim.md)
@@ -20,7 +22,7 @@ Use this first. It is the small control plane for Slate v2 work after the long
 - Gate scoreboard:
   [replacement-gates-scoreboard.md](/Users/zbeyens/git/plate-2/docs/slate-v2/replacement-gates-scoreboard.md)
 
-Current public API examples must match `.tmp/slate-v2` source, not old docs.
+Current public API examples must match live Plate repo source, not old docs.
 For reads, teach `editor.read((state) => ...)`. For writes, teach
 `editor.update((tx) => ...)`.
 
@@ -39,19 +41,19 @@ For reads, teach `editor.read((state) => ...)`. For writes, teach
 1. Read this file.
 2. Read `master-roadmap.md` only for current tranche and blocker state.
 3. Read `absolute-architecture-release-claim.md` only for accepted public claim.
-4. Read live `.tmp/slate-v2` source/tests before making any current-state claim.
+4. Read live Plate repo source/tests before making any current-state claim.
 5. For bugs, use `slate-patch`.
 6. For architecture, use `slate-plan --quick` first unless the user asks for a
    durable plan or release-grade review.
 
 ## Commands
 
-From `.tmp/slate-v2`:
+From `/Users/zbeyens/git/plate-2`:
 
 ```sh
-bun check
-bun check:full
-bun test:integration-local
+pnpm slate:packages:typecheck
+pnpm slate:packages:test
+pnpm --filter www test:slate-browser
 ```
 
 From `plate-2`:

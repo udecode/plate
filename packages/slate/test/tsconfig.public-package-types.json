@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "files": ["./public-package-types-smoke.ts"],
+  "compilerOptions": {
+    "composite": false,
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "paths": {},
+    "skipLibCheck": false,
+    "types": ["node", "react", "react-dom"]
+  }
+}

@@ -23,7 +23,7 @@ Outcome: every promoted WPT matrix row has a Slate owner, action, proof kind, ta
 In scope:
 
 - raw Slate browser input, selection, clipboard, contenteditable structural edit, focus, and Shadow DOM behavior;
-- current `.tmp/slate-v2` package and browser test owners;
+- current `Plate repo root` package and browser test owners;
 - fresh local invariant wording with WPT path provenance.
 
 Out of scope:
@@ -66,7 +66,7 @@ Full row accounting is in `docs/plans/2026-05-11-slate-v2-wpt-harvest-test-proce
 
 ## Current Owner Coverage
 
-Live `.tmp/slate-v2` search found current owner coverage in these files:
+Live `Plate repo root` search found current owner coverage in these files:
 
 - Native input: `packages/slate-react/test/model-input-strategy-contract.test.ts`, `packages/slate-react/test/selection-controller-contract.ts`, `packages/slate-react/test/editing-kernel-contract.ts`, `playwright/integration/examples/plaintext.test.ts`, `playwright/integration/examples/rendering-strategy-runtime.test.ts`.
 - Selection/Range: `packages/slate-browser/test/browser/selection.browser.test.ts`, `packages/slate-browser/test/core/selection.test.ts`, `packages/slate-react/test/selection-controller-contract.ts`, `packages/slate-react/test/dom-coverage-boundary-contract.tsx`, `playwright/integration/examples/dom-coverage-boundaries.test.ts`, `playwright/integration/examples/inlines.test.ts`, `playwright/integration/examples/shadow-dom.test.ts`.
@@ -89,12 +89,12 @@ Live `.tmp/slate-v2` search found current owner coverage in these files:
 Run focused gates first, then widen only if implementation touches shared runtime code.
 
 ```bash
-cd .tmp/slate-v2/packages/slate-react
+cd packages/slate-react
 bun test:vitest test/model-input-strategy-contract.test.ts test/selection-controller-contract.test.ts test/editing-kernel-contract.ts test/dom-coverage-native-bridge-contract.test.ts test/dom-coverage-boundary-contract.tsx
 ```
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun --filter slate-browser test:selection
 bun test ./packages/slate/test/clipboard-contract.ts ./packages/slate-dom/test/clipboard-boundary.ts ./packages/slate/test/delete-contract.ts ./packages/slate/test/transforms-contract.ts
 bunx playwright test playwright/integration/examples/plaintext.test.ts playwright/integration/examples/dom-coverage-boundaries.test.ts playwright/integration/examples/paste-html.test.ts playwright/integration/examples/shadow-dom.test.ts playwright/integration/examples/inlines.test.ts playwright/integration/examples/rendering-strategy-runtime.test.ts --project=chromium
@@ -118,12 +118,12 @@ If a WPT row becomes an IME/composition row, use real browser composition proof.
 
 - Intent, outcome, scope, non-goals, and decision boundary are explicit.
 - Raw Slate owns substrate behavior only; Plate/product rows stay excluded.
-- Current `.tmp/slate-v2` tests were searched before action rows were marked.
+- Current `Plate repo root` tests were searched before action rows were marked.
 - Browser claims have browser proof commands.
 - Package-only checks are not counted as browser proof.
 - No issue claim changed; no `docs/slate-issues/**` edit is needed for WPT provenance.
 - No upstream WPT code, helpers, fixtures, snapshots, expected output, or prose is copied into versioned output.
-- Execution is handed to Ralph; this skill does not edit `.tmp/slate-v2`.
+- Execution is handed to Ralph; this skill does not edit `Plate repo root`.
 
 ## Pass-State Ledger
 
@@ -132,34 +132,34 @@ If a WPT row becomes an IME/composition row, use real browser composition proof.
 | Argument resolution                  | complete | inferred `slate-v2 .tmp/editor-test-harvester/wpt/report.md` from prior requested next step                             |
 | Artifact validation                  | complete | report, inventory, test-index, and harvester completion file read                                                       |
 | Row accounting                       | complete | appendix accounts for promoted matrix rows and all 1,139 inventory files                                                |
-| Current owner search                 | complete | live `.tmp/slate-v2` tests/source searched by input, selection, clipboard, delete, focus, and shadow terms              |
+| Current owner search                 | complete | live `Plate repo root` tests/source searched by input, selection, clipboard, delete, focus, and shadow terms              |
 | Downstream Slate Ralplan application | complete | browser proof, owner split, no issue claim, no source edits                                                             |
 | Completion state                     | complete | session completion and continuation updated                                                                             |
-| Ralph full execution                 | complete | WPT-1 through WPT-5 processed into `.tmp/slate-v2`; focused package, typecheck, lint, and Chromium browser gates passed |
+| Ralph full execution                 | complete | WPT-1 through WPT-5 processed into `Plate repo root`; focused package, typecheck, lint, and Chromium browser gates passed |
 
 ## Ralph Execution Results
 
 | Queue                                  | Result                   | Evidence                                                                                                                                                                              |
 | -------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| WPT-1 beforeinput/input                | implemented              | Added `beforeinput` DataTransfer command coverage in `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`; Slate React focused owner suite passed.                    |
+| WPT-1 beforeinput/input                | implemented              | Added `beforeinput` DataTransfer command coverage in `packages/slate-react/test/editing-kernel-contract.ts`; Slate React focused owner suite passed.                    |
 | WPT-2 DOM Selection/Range              | implemented              | `takeEditorSelectionSnapshot` now returns `null` for foreign and partially foreign DOM selections; `slate-browser` selection suite passed with 7 tests.                               |
 | WPT-3 clipboard/DataTransfer           | deduped plus payload row | Existing native bridge, Slate clipboard, and Slate DOM clipboard suites cover readOnly/app-owned/copy/paste/drop ownership; DataTransfer beforeinput payload route added under WPT-1. |
 | WPT-4 contenteditable structural edits | deduped                  | Existing delete, transforms, inlines, rendering-strategy, void, table, and DOM coverage rows cover the promoted structural edit queue; package and Chromium browser gates passed.     |
 | WPT-5 focus/Shadow DOM                 | implemented plus deduped | Added a shadow-root selection snapshot row; existing shadow DOM and iframe browser rows cover browser focus/root behavior.                                                            |
 
-Fresh verification from `.tmp/slate-v2`:
+Fresh verification from `Plate repo root`:
 
 ```bash
 bun --filter slate-browser test:selection
 ```
 
-Fresh verification from `.tmp/slate-v2/packages/slate-react`:
+Fresh verification from `packages/slate-react`:
 
 ```bash
 bun test:vitest test/editing-kernel-contract.test.ts test/model-input-strategy-contract.test.ts test/selection-controller-contract.test.ts test/dom-coverage-native-bridge-contract.test.ts test/dom-coverage-boundary-contract.test.tsx
 ```
 
-Fresh verification from `.tmp/slate-v2`:
+Fresh verification from `Plate repo root`:
 
 ```bash
 bun test ./packages/slate/test/clipboard-contract.ts ./packages/slate-dom/test/clipboard-boundary.test.ts ./packages/slate/test/delete-contract.ts ./packages/slate/test/transforms-contract.ts
@@ -176,7 +176,7 @@ bun lint:fix
 | -------------------------------- | ----: | ----------------------------------------------------------------------------------------------- |
 | Harvest source readiness         |  0.95 | report, inventory, test-index, revision, license, and output mode recorded                      |
 | Lane-filter completeness         |  0.93 | all five promoted matrix rows routed; full inventory grouped and excluded/deferred where needed |
-| Current owner coverage mapping   |  0.92 | current `.tmp/slate-v2` tests/source searched and mapped to each row                            |
+| Current owner coverage mapping   |  0.92 | current `Plate repo root` tests/source searched and mapped to each row                            |
 | Actionability of execution queue |  0.94 | every in-lane row has owner, target files, proof kind, and focused commands                     |
 | License/provenance discipline    |  0.96 | permissive source still uses fresh invariant wording and path provenance only                   |
 

@@ -26,7 +26,7 @@ Read these first:
 1. The target repo license evidence: `LICENSE`, `LICENCE`, `COPYING`, `NOTICE`,
    package metadata, or workspace metadata.
 2. The target editor repo, preferably a local checkout like `../lexical`.
-3. `.tmp/slate-v2` current test files and package scripts.
+3. `Plate repo root` current test files and package scripts.
 4. Plate package/docs/example owners in this checkout when the behavior is a
    plugin, kit, UI, React integration, or product policy.
 5. `docs/solutions/` for prior browser, IME, selection, and mobile proof lessons.
@@ -125,12 +125,12 @@ from the invariant, not pasted or mechanically ported from upstream source.
   UX, mention/hashtag/emoji/date-time plugins, media/product decorators,
   toolbar/menu state, React plugin hosts, NodeView/PluginView-style authoring,
   and rich product examples.
-- Do not force Plate-owned rows into `.tmp/slate-v2`. Split substrate proof from
+- Do not force Plate-owned rows into `Plate repo root`. Split substrate proof from
   plugin policy: raw Slate owns editor primitives; Plate owns opinionated
   features, integration ergonomics, and product-facing behavior.
 - Browser, mobile, selection, clipboard, and IME claims need honest runtime
   proof. A jsdom composition test does not prove mobile/IME behavior.
-- Do not edit `.tmp/slate-v2` unless the user asks for apply/copy/fix execution.
+- Do not edit `Plate repo root` unless the user asks for apply/copy/fix execution.
 - No GitHub comments, labels, commits, pushes, or PRs unless explicitly asked.
 - A single-pass matrix is a first-pass harvest, not a comprehensive harvest.
 - Do not call a harvest comprehensive unless the pass schedule is complete, the
@@ -227,7 +227,7 @@ Score caps:
 - Skip precision cannot exceed `0.80` unless every skipped file or skip family
   has a concrete reason and at least one negative-control example was read.
 - Slate/Plate coverage mapping cannot exceed `0.80` unless the report records
-  the `.tmp/slate-v2` search commands for raw rows and the current Plate owner or
+  the `Plate repo root` search commands for raw rows and the current Plate owner or
   explicit Plate gap for `plate-owned` rows.
 - Actionability cannot exceed `0.80` unless every create/refactor/copy row names
   a target test file, proof kind, and focused verification command, and every
@@ -293,7 +293,7 @@ Run harvests as passes, not one giant skim:
      versioned row or implementation must be rewritten as a fresh local
      invariant.
 6. Slate/Plate coverage mapping pass:
-   - search `.tmp/slate-v2` by behavior keywords and adjacent concepts;
+   - search `Plate repo root` by behavior keywords and adjacent concepts;
    - search current Plate packages, docs, examples, and kits for plugin/product
      behavior;
    - map to exact current Slate tests, browser stress rows, Plate owners, docs,
@@ -427,7 +427,7 @@ Pass-state ledger rows must include:
 
 9. Extract behavior rows. Use behavior words, not upstream class names.
 
-10. Search `.tmp/slate-v2` for equivalent coverage using behavior keywords and
+10. Search `Plate repo root` for equivalent coverage using behavior keywords and
     adjacent concepts. Do not stop at exact upstream names.
 
 11. Search Plate packages, kits, examples, and docs when behavior belongs to
@@ -598,7 +598,7 @@ and local proof.
 
 | Source ref       | Test ref   | Tag               | Behavior invariant | Proof kind              | Owner coverage                            | Action                                                 |
 | ---------------- | ---------- | ----------------- | ------------------ | ----------------------- | ----------------------------------------- | ------------------------------------------------------ |
-| `../lexical/...` | `test ref` | `ime-composition` | ...                | browser/unit/raw-device | `.tmp/slate-v2/...`, Plate owner, or none | covered/refactor-existing/create-new/defer/plate-owned |
+| `../lexical/...` | `test ref` | `ime-composition` | ...                | browser/unit/raw-device | `Plate repo root/...`, Plate owner, or none | covered/refactor-existing/create-new/defer/plate-owned |
 
 For `behavior-only` targets, `Source ref` and `Test ref` are scratch provenance.
 Any versioned output derived from `Behavior invariant` must be rewritten locally.
@@ -635,7 +635,7 @@ Write the extracted portable/portable-mixed test-name index to:
 <report_dir>/test-index.md
 ```
 
-For apply runs, edit `.tmp/slate-v2` or Plate tests only after the matrix exists.
+For apply runs, edit `Plate repo root` or Plate tests only after the matrix exists.
 Keep the implementation slice small enough to verify.
 
 Source comments are useful only when they explain the behavior being protected.
@@ -669,11 +669,11 @@ Versioned-output hygiene check for behavior-only sources:
 test ! -f "docs/editor-test-harvester/<repo>/inventory.md"
 test ! -f "docs/editor-test-harvester/<repo>/test-index.md"
 rg -n "copied from|verbatim|fixture copied|ported from" \
-  docs .tmp/slate-v2 packages apps examples 2>/dev/null && \
+  content/docs/slate packages apps/www/src/app/(app)/examples/slate apps/www/tests/slate-browser 2>/dev/null && \
   echo "Review versioned output for unsafe behavior-only wording" || true
 ```
 
-Implementation verification in `.tmp/slate-v2` or Plate:
+Implementation verification in `Plate repo root` or Plate:
 
 - Run the focused package or browser test that owns the new proof.
 - Run `bun check` before claiming the applied slice is closed.

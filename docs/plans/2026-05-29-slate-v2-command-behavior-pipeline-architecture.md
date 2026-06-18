@@ -2,7 +2,7 @@
 
 Objective:
 Complete the accepted Slate v2 command/behavior pipeline execution in
-`.tmp/slate-v2`: harden `event/input -> guard -> command/action -> tx mutation
+`Plate repo root`: harden `event/input -> guard -> command/action -> tx mutation
 -> afterCommit effect`, strict handled/forward middleware semantics, private
 native-input command taxonomy, projected/content-root selection behavior,
 paste/drop command semantics, and scenario-style regression coverage without
@@ -26,7 +26,7 @@ Completion threshold:
   selection hardening, paste/drop command semantics, scenario-matrix coverage,
   closure verification, and final autoreview.
 - Closure is legal only when focused package/browser tests pass, `bun check`
-  and `bun check:full` are recorded from `.tmp/slate-v2`, final autoreview has
+  and `bun check:full` are recorded from `Plate repo root`, final autoreview has
   no accepted/actionable findings, this plan records current evidence and open
   risks, and
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-29-slate-v2-command-behavior-pipeline-architecture.md`
@@ -36,10 +36,10 @@ Verification surface:
 - Planning artifact check:
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-29-slate-v2-command-behavior-pipeline-architecture.md`
   from `plate-2` at closure.
-- Slate v2 API/source grounding: live reads from `.tmp/slate-v2/packages/slate`
-  and `.tmp/slate-v2/packages/slate-react` recorded in the source, API, runtime,
+- Slate v2 API/source grounding: live reads from `packages/slate`
+  and `packages/slate-react` recorded in the source, API, runtime,
   test, and verification rows below.
-- Implementation proof is recorded from `.tmp/slate-v2`: focused `slate`,
+- Implementation proof is recorded from `Plate repo root`: focused `slate`,
   `slate-dom`, and `slate-react` package tests; focused Playwright browser rows
   for pagination/richtext/multi-root behavior; `bun check`; `bun check:full`;
   focused retries-off reruns for the two flaky full-suite rows; and final
@@ -57,7 +57,7 @@ Constraints:
   Slate-native wording.
 
 Boundaries:
-- Allowed execution scope: `.tmp/slate-v2` Slate v2 source/tests/docs plus this
+- Allowed execution scope: `Plate repo root` Slate v2 source/tests/docs plus this
   plan ledger.
 - Issue/reference discovery remains ledger-first. No live GitHub sweep was
   needed for this execution slice.
@@ -84,7 +84,7 @@ Accepted execution addendum:
   substrate and private `slate-react` native editing routes. The target is not
   more API surface; it is consistency: every mutation/effect/interception path
   must obey the same ownership rules before deeper command-taxonomy work.
-- First execution slice starts in `.tmp/slate-v2` with source inspection and
+- First execution slice starts in `Plate repo root` with source inspection and
   focused tests around the smallest surface that proves or improves consistency.
 
 Current verdict:
@@ -119,9 +119,9 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | `slate-plan` prompt loaded in user message; planning mode only |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created this lane goal |
-| Source of truth read before edits | yes | plan, research index/log, Portable Text source summary, Evidence Kit registry/health, live `.tmp/slate-v2` source reads |
-| `docs/solutions` checked for non-trivial existing-code work | N/A | implementation was governed by the accepted Slate v2 plan and live `.tmp/slate-v2` source/tests; no reusable `docs/solutions` artifact was needed |
-| Live `.tmp/slate-v2` grounding needed for current-state claims | yes | public export, internal export, extension, command-registry, transform-middleware, update/afterCommit, editable command, clipboard reads recorded below |
+| Source of truth read before edits | yes | plan, research index/log, Portable Text source summary, Evidence Kit registry/health, live `Plate repo root` source reads |
+| `docs/solutions` checked for non-trivial existing-code work | N/A | implementation was governed by the accepted Slate v2 plan and live `Plate repo root` source/tests; no reusable `docs/solutions` artifact was needed |
+| Live `Plate repo root` grounding needed for current-state claims | yes | public export, internal export, extension, command-registry, transform-middleware, update/afterCommit, editable command, clipboard reads recorded below |
 
 Work Checklist:
 - [x] Objective includes lane outcome, full pass schedule, one-pass-per-
@@ -151,16 +151,16 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | complete | Run the command, proof, source audit, or artifact check named in this plan | Closure pass records planning-readiness score 0.925, closes every scheduled pass, and runs `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-29-slate-v2-command-behavior-pipeline-architecture.md` |
-| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | complete | Record live `.tmp/slate-v2` command/proof or mark as planning-only with reason | Execution proof recorded from `.tmp/slate-v2`: focused package tests, browser rows, `bun check`, `bun check:full`, focused flake reruns, and final autoreview |
+| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | complete | Record live `Plate repo root` command/proof or mark as planning-only with reason | Execution proof recorded from `Plate repo root`: focused package tests, browser rows, `bun check`, `bun check:full`, focused flake reruns, and final autoreview |
 | Issue ledger or PR reference changed | complete for current pass | Current manual v2 sync ledger updated; PR description, coverage matrix, and fork dossier explicitly unchanged because no claim text changed | `docs/slate-issues/gitcrawl-v2-sync-ledger.md` 2026-05-29 planning sync |
-| Autoreview for uncommitted implementation changes | complete | Load `.agents/skills/autoreview/SKILL.md`; run the helper from the git checkout that owns the implementation diff (`.tmp/slate-v2` for Slate v2 patches) until no accepted/actionable findings, or record N/A for planning-only/no local patch | Final run from `.tmp/slate-v2`: `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local --engine claude --no-tools --no-web-search --prompt <intentional hard-cut context>` -> clean, no accepted/actionable findings |
+| Autoreview for uncommitted implementation changes | complete | Load `.agents/skills/autoreview/SKILL.md`; run the helper from the git checkout that owns the implementation diff (`Plate repo root` for Slate v2 patches) until no accepted/actionable findings, or record N/A for planning-only/no local patch | Final run from `Plate repo root`: `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local --engine claude --no-tools --no-web-search --prompt <intentional hard-cut context>` -> clean, no accepted/actionable findings |
 | Final user-review handoff | complete | Emit final handoff or keep the plan open with the next pass | Final response presents execution result, hard cuts, verification, flakes, and residual risks |
 | Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-29-slate-v2-command-behavior-pipeline-architecture.md` | Closure command passes in this pass |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Current-state read and initial score | complete | live source reads in `.tmp/slate-v2`; research and Evidence Kit control-plane read; initial scorecard and provisional target rows filled | related issue discovery |
+| Current-state read and initial score | complete | live source reads in `Plate repo root`; research and Evidence Kit control-plane read; initial scorecard and provisional target rows filled | related issue discovery |
 | Related issue discovery | complete | reused existing ledger/cache evidence: fork dossier sections for input policy, clipboard insertData, mobile/IME macro sync, PM-10/PM-09, public `onCommand` cut, and Plate-fit API hard cuts; read live/current ledger rows and test-candidate map clusters | issue-ledger pass |
 | Issue-ledger pass | complete | added `docs/slate-issues/gitcrawl-v2-sync-ledger.md` 2026-05-29 planning sync; confirmed no `Fixes`, no `Improves`, no PR description change, no coverage matrix change, and no new fork dossier section | intent/boundary pass |
 | Intent/boundary and decision brief | complete | intent, outcome, in-scope, non-goals, decision boundaries, unresolved user-decision points, principles, drivers, options, chosen direction, rejected alternatives, consequences, and follow-ups are filled | research refresh |
@@ -176,8 +176,8 @@ Phase / pass table:
 Scorecard:
 | Dimension | Weight | Score | Evidence |
 |-----------|-------:|------:|----------|
-| React 19.2 runtime performance | 0.20 | 0.86 | Positive: the plan adds no public command/input middleware on the urgent path; `editor.update`/`afterCommit` remain outside render and current runtime profiles afterCommit separately (`.tmp/slate-v2/packages/slate/src/core/public-state.ts:2208`, `2499`, `4551`). React 19.2 research supports external-store subscriptions and non-urgent surrounding UI. Current huge-doc typing/select/select-all red remains an execution/release gate, so this is a planning-readiness score, not a runtime performance claim. |
-| Slate-close unopinionated DX | 0.20 | 0.94 | Public API stays instance/extension/type oriented, not public `Editor.*` commands (`.tmp/slate-v2/packages/slate/src/index.ts:1`). The plan keeps the authoring story on `editor.update`, `tx`, `transforms`, `clipboard`, and `afterCommit`, and rejects `editor.commands.on`, `Editable onCommand`, PT names, and Tiptap-style command catalogs in raw Slate. |
+| React 19.2 runtime performance | 0.20 | 0.86 | Positive: the plan adds no public command/input middleware on the urgent path; `editor.update`/`afterCommit` remain outside render and current runtime profiles afterCommit separately (`packages/slate/src/core/public-state.ts:2208`, `2499`, `4551`). React 19.2 research supports external-store subscriptions and non-urgent surrounding UI. Current huge-doc typing/select/select-all red remains an execution/release gate, so this is a planning-readiness score, not a runtime performance claim. |
+| Slate-close unopinionated DX | 0.20 | 0.94 | Public API stays instance/extension/type oriented, not public `Editor.*` commands (`packages/slate/src/index.ts:1`). The plan keeps the authoring story on `editor.update`, `tx`, `transforms`, `clipboard`, and `afterCommit`, and rejects `editor.commands.on`, `Editable onCommand`, PT names, and Tiptap-style command catalogs in raw Slate. |
 | Plate and slate-yjs migration backbone | 0.15 | 0.93 | Commit metadata, update tags, tx, state/tx groups, `onCommit`, operations, and bookmarks line up with Plate product command DX and slate-yjs extension-owned binding research. Plate owns product command/profile DX above Slate; slate-yjs observes operations/commits, not UI command names. |
 | Regression-proof testing strategy | 0.20 | 0.94 | Portable Text scenario style, ProseMirror DOM bridge discipline, and existing Slate v2 editable command taxonomy converge on a concrete execution matrix: delete, paste/drop, IME/composition, selection movement, history, projected/content roots, and clipboard. The plan explicitly refuses behavior claims until those rows pass. |
 | Research evidence completeness | 0.15 | 0.96 | Portable Text, Lexical, ProseMirror, Tiptap, React 19.2, Plate, slate-yjs, and live Slate v2 source were synthesized against this exact command proposal. Pressure, objection, high-risk, ecosystem, revision, and issue-sync passes all converge on private runtime taxonomy plus existing public substrate. |
@@ -193,15 +193,15 @@ Source-backed architecture north star:
 - source evidence: public root exports `defineEditorExtension`, `createEditor`,
   `createEditorRuntime`, `createEditorView`, `isEditor`, and types, but not
   public `defineCommand/registerCommand/executeCommand`
-  (`.tmp/slate-v2/packages/slate/src/index.ts:1`). Those command functions are
-  internal exports (`.tmp/slate-v2/packages/slate/src/internal/index.ts:1`).
+  (`packages/slate/src/index.ts:1`). Those command functions are
+  internal exports (`packages/slate/src/internal/index.ts:1`).
   Public extension output already has `clipboard`, `onCommit`, `operations`,
   `queries`, `state`, `transforms`, and `tx`
-  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1483`).
+  (`packages/slate/src/interfaces/editor.ts:1483`).
 - rejected drift: do not expose `Editor.registerCommand`; do not make
   `editor.commands.on` the default API; do not reintroduce extension
   `commands` blindly while the live extension validator explicitly rejects it as
-  legacy (`.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:197`,
+  legacy (`packages/slate/src/core/editor-extension.ts:197`,
   `233`).
 - migration posture: existing transform/clipboard authors should stay on the
   current public substrate. Native input, paste/drop, keyboard, history, and
@@ -377,7 +377,7 @@ Ecosystem strategy synthesis:
 | React 19.2 | `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md` | `useSyncExternalStore`, transitions/deferred UI, `Activity`, Performance Tracks | Render/effect watchers mutating editor state or broad editor rerenders | External-store subscriptions, urgent editing path, non-urgent surrounding UI, profiler evidence | Treating React scheduler as the editor invalidation engine | Runtime taxonomy must run in event/update time and feed dirty commits to selectors; effects stay after commit | supports Option D with perf gates |
 | Plate | `docs/research/systems/editor-behavior-architecture.md`; `packages/media/src/react/placeholder/PlaceholderPlugin.tsx`; `apps/www/src/registry/components/editor/transforms.ts` | Product plugins expose `editor.api`, `editor.tf`, plugin handlers, transforms, shortcuts, and profile-like behavior decisions | Raw Slate absorbing toolbar/profile/product commands | Behavior profiles, product command catalog, plugin-provided capabilities mapped onto Slate substrate | Current Plate public API compatibility as a raw Slate requirement | Plate owns product command DX and behavior profiles over Slate tx/state/native-input substrate | boundary confirmed |
 | slate-yjs / Yjs | `docs/research/sources/editor-architecture/yjs-collaboration-bindings.md`; live Slate source reads | Extension-owned binding state, commit-driven local export, remote import through `editor.update`, relative positions/bookmarks, awareness external store | Commands as collaboration replay protocol or Yjs/provider objects in Slate values | `onCommit`, state/tx namespaces, commit metadata, relative-position/bookmark mapping, awareness external-store hooks | External `withYjs(editor)` wrapper mutation, overriding apply/onChange, provider policy in raw Slate | Commands can annotate local intent; operations/commits remain replay truth; Yjs package uses extension-owned state/tx | supports Option D |
-| Local Slate v2 | live `.tmp/slate-v2` source reads | Public `read`/`update`, `transforms`, `clipboard`, `onCommit`, state/tx extension slots; internal command registry; editable command taxonomy | Reintroducing rejected extension `commands` or public `Editable onCommand` | Current substrate: extension lifecycle, tx mutation, afterCommit effects, internal taxonomy, model-owned mutation controller | Treating current internal `EditableCommand` as public | Keep the existing substrate; native-input taxonomy stays private in this plan | source confirms internal-only Option D |
+| Local Slate v2 | live `Plate repo root` source reads | Public `read`/`update`, `transforms`, `clipboard`, `onCommit`, state/tx extension slots; internal command registry; editable command taxonomy | Reintroducing rejected extension `commands` or public `Editable onCommand` | Current substrate: extension lifecycle, tx mutation, afterCommit effects, internal taxonomy, model-owned mutation controller | Treating current internal `EditableCommand` as public | Keep the existing substrate; native-input taxonomy stays private in this plan | source confirms internal-only Option D |
 
 Research pass verdict:
 - No ecosystem source justifies public `Editor.*` or default
@@ -497,17 +497,17 @@ Browser stress / parity strategy:
 Verification workspace gate:
 | Claim | Workspace | Command | Result | Owner |
 |-------|-----------|---------|--------|-------|
-| Current public exports and internal command registry location | `.tmp/slate-v2` | source read: `packages/slate/src/index.ts`, `packages/slate/src/internal/index.ts` | read; no runtime command | pass 1 |
-| Current extension slots and legacy `commands` rejection | `.tmp/slate-v2` | source read: `interfaces/editor.ts`, `core/editor-extension.ts` | read; no runtime command | pass 1 |
-| Current handled/next/afterCommit substrate | `.tmp/slate-v2` | source read: `core/command-registry.ts`, `core/transform-middleware.ts`, `core/public-state.ts` | read; no runtime command | pass 1 |
-| Current native command taxonomy and clipboard routing | `.tmp/slate-v2` | source read: `slate-react/src/editable/*` | read; no runtime command | pass 1 |
-| Research/ecosystem synthesis against Option D | `plate-2` + `.tmp/slate-v2` | source reads: research docs, Plate plugin/transform examples, Slate editable/source files | complete; no runtime command | research pass |
-| Pressure pass benchmark/test grounding | `plate-2` + `.tmp/slate-v2` | source reads: Evidence Kit latest results, huge-doc perf docs, projected-command tests, extension middleware tests, browser command rows | complete; no runtime command | pressure pass |
-| Slate maintainer objection grounding | `.tmp/slate-v2` | source reads: public/internal exports, extension legacy rejection, `EditableDOMRootProps`, command registry, command result, clipboard middleware, extension setup output, editable command taxonomy, mutation controller, afterCommit/onCommit | complete; no runtime command | objection pass |
-| High-risk deliberate-mode grounding | `plate-2` + `.tmp/slate-v2` | source/result reads: benchmark health/latest huge-doc compare, runtime event engine, input router, transform middleware, clipboard strategy, public-state afterCommit, command registry, mutation controller | complete; no runtime command | high-risk pass |
-| Ecosystem maintainer grounding | `plate-2` + `.tmp/slate-v2` | source/research reads: React 19.2 external-store research, Plate behavior profile research and transform/plugin source, Yjs collaboration research, Lexical/ProseMirror/Tiptap/Portable Text research, Slate v2 public/internal/runtime source already recorded | complete; no runtime command | ecosystem pass |
+| Current public exports and internal command registry location | `Plate repo root` | source read: `packages/slate/src/index.ts`, `packages/slate/src/internal/index.ts` | read; no runtime command | pass 1 |
+| Current extension slots and legacy `commands` rejection | `Plate repo root` | source read: `interfaces/editor.ts`, `core/editor-extension.ts` | read; no runtime command | pass 1 |
+| Current handled/next/afterCommit substrate | `Plate repo root` | source read: `core/command-registry.ts`, `core/transform-middleware.ts`, `core/public-state.ts` | read; no runtime command | pass 1 |
+| Current native command taxonomy and clipboard routing | `Plate repo root` | source read: `slate-react/src/editable/*` | read; no runtime command | pass 1 |
+| Research/ecosystem synthesis against Option D | `plate-2` + `Plate repo root` | source reads: research docs, Plate plugin/transform examples, Slate editable/source files | complete; no runtime command | research pass |
+| Pressure pass benchmark/test grounding | `plate-2` + `Plate repo root` | source reads: Evidence Kit latest results, huge-doc perf docs, projected-command tests, extension middleware tests, browser command rows | complete; no runtime command | pressure pass |
+| Slate maintainer objection grounding | `Plate repo root` | source reads: public/internal exports, extension legacy rejection, `EditableDOMRootProps`, command registry, command result, clipboard middleware, extension setup output, editable command taxonomy, mutation controller, afterCommit/onCommit | complete; no runtime command | objection pass |
+| High-risk deliberate-mode grounding | `plate-2` + `Plate repo root` | source/result reads: benchmark health/latest huge-doc compare, runtime event engine, input router, transform middleware, clipboard strategy, public-state afterCommit, command registry, mutation controller | complete; no runtime command | high-risk pass |
+| Ecosystem maintainer grounding | `plate-2` + `Plate repo root` | source/research reads: React 19.2 external-store research, Plate behavior profile research and transform/plugin source, Yjs collaboration research, Lexical/ProseMirror/Tiptap/Portable Text research, Slate v2 public/internal/runtime source already recorded | complete; no runtime command | ecosystem pass |
 | Revision pass wording audit | `plate-2` | plan search for delayed public API framing and source-backed row rewrites | complete; no runtime command | revision pass |
-| Phase 1 implementation behavior | `.tmp/slate-v2` | focused tests + `bun check` after accepted execution | complete for command/middleware result cleanup; broader browser/scenario behavior remains phase 2+ | execution mode |
+| Phase 1 implementation behavior | `Plate repo root` | focused tests + `bun check` after accepted execution | complete for command/middleware result cleanup; broader browser/scenario behavior remains phase 2+ | execution mode |
 
 Autoreview workspace gate:
 | Reviewed patch owner | Cwd | Command | Result | Notes |
@@ -653,7 +653,7 @@ Implementation phases with owners:
 | Phase | Owner | Scope | Entry criteria | Exit criteria | Verification |
 |-------|-------|-------|----------------|---------------|--------------|
 | 0. API consistency sweep | execution mode | audit and align `editor.update`/`read`, `tx.*`, extension `transforms`, `clipboard`, `queries`, `operations`, `state`/`tx` groups, `onCommit`/`afterCommit`, `slate-react` editable event props, internal command registry, and `EditableCommand` ownership | accepted final plan | every public/internal surface is classified as mutation, effect, interception, query, operation, or private native-input runtime; inconsistencies become focused patches or explicit non-goals | source audit plus focused package tests for changed surfaces |
-| 1. Internal command result cleanup | execution mode | hard-cut private command/middleware boundaries to strict `boolean`; no public `Editor.*`; no public command bus | phase 0 complete | every command/middleware boundary returns `true`, `false`, or `next(...)`; no command-boundary `void`; no `{ handled }` object; contract tests pass without public API expansion | `.tmp/slate-v2` focused slate tests |
+| 1. Internal command result cleanup | execution mode | hard-cut private command/middleware boundaries to strict `boolean`; no public `Editor.*`; no public command bus | phase 0 complete | every command/middleware boundary returns `true`, `false`, or `next(...)`; no command-boundary `void`; no `{ handled }` object; contract tests pass without public API expansion | `Plate repo root` focused slate tests |
 | 2. React internal input taxonomy hardening | execution mode | stable internal taxonomy and scenario matrix; no public input-policy slot | phase 1 complete | beforeinput/keydown/paste/drop/history policy works through scenarios without public API churn | focused slate-react tests + browser rows |
 | 3. Clipboard alignment | execution mode | paste/drop handler result semantics and command-policy docs/tests | phase 2 complete | insertData docs/tests stay strict boolean and paste/drop scenarios pass | clipboard tests + benchmark mapping |
 | 4. Scenario matrix gate | execution mode | delete/paste/drop/IME/selection/history scenario families | phases 1-3 complete | scenario rows pass and become release gate candidates | focused browser/integration rows |
@@ -662,21 +662,21 @@ Fast driver gates:
 | Gate | Cwd | Command / artifact | Proves | Status |
 |------|-----|--------------------|--------|--------|
 | planning artifact check | plate-2 | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-29-slate-v2-command-behavior-pipeline-architecture.md` | final plan completion only | complete in closure pass |
-| Slate v2 API surface read | .tmp/slate-v2 | source read recorded above | current public/internal command shape | complete pass 1 |
-| Slate v2 behavior check | .tmp/slate-v2 | focused tests + `bun check` + `bun check:full` after accepted execution | runtime/API/browser behavior | complete: phases 0-4 passed focused tests, browser rows, `bun check`, `bun check:full`, focused flake reruns, and final autoreview |
+| Slate v2 API surface read | Plate repo root | source read recorded above | current public/internal command shape | complete pass 1 |
+| Slate v2 behavior check | Plate repo root | focused tests + `bun check` + `bun check:full` after accepted execution | runtime/API/browser behavior | complete: phases 0-4 passed focused tests, browser rows, `bun check`, `bun check:full`, focused flake reruns, and final autoreview |
 
 Accepted execution ledger:
 | Slice | Status | Patch | Verification | Notes |
 |-------|--------|-------|--------------|-------|
-| Phase 0 slice 1: command registry public/static API consistency | complete | Split `EditorStaticApi` from `InternalEditorStaticApi` in `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`; kept `defineCommand`/`registerCommand` internal while removing them from the public static API type; added public-surface regression coverage in `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts` | `bun test ./packages/slate/test/public-surface-contract.ts`; `bun test ./packages/slate/test/transaction-contract.ts`; `bun --filter ./packages/slate typecheck` | The initial API sweep found command registry helpers were root-value-private but still typed as part of `EditorStaticApi`. The fix preserves internal kernel/test use through `slate/internal` and prevents the public static API type from advertising a command bus. |
-| Phase 0 slice 2: data-transfer command boundary | complete | Changed `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts` so `applyModelOwnedDataTransferInput` delegates to `applyEditableCommand({ kind: 'insert-data' })` and returns the handled boolean; added focused coverage in `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts` | `bunx vitest run --config ./vitest.config.mjs ./test/model-input-strategy-contract.test.ts` from `.tmp/slate-v2/packages/slate-react`; `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts` from `.tmp/slate-v2/packages/slate-react`; `bun --filter ./packages/slate-react typecheck` | The sweep found a duplicate model-owned data-transfer update path beside the private editable command taxonomy. The helper now uses the same handled command route as beforeinput/drop/paste command classification. |
-| Phase 0 slice 3: explicit delete-fragment target | complete | Changed `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts` so `delete-fragment` commands honor `command.selection` for normal text ranges, not only full-block deletion; added focused coverage in `.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts` | `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts` from `.tmp/slate-v2/packages/slate-react`; `bunx vitest run --config ./vitest.config.mjs ./test/model-input-strategy-contract.test.ts` from `.tmp/slate-v2/packages/slate-react`; `bun test ./packages/slate-react/test/editing-kernel-contract.ts`; `bunx vitest run --config ./vitest.config.mjs ./test/dom-coverage-native-bridge-contract.test.ts` from `.tmp/slate-v2/packages/slate-react`; `bun --filter ./packages/slate-react typecheck` | The sweep found a command payload field that was only partly respected. Beforeinput/delete-by-cut/delete-by-drag can classify an explicit target; the executor now mutates that target instead of falling back to whatever selection happens to be current. |
-| Phase 0 fast gate | complete | Formatting-only issue in `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts` fixed; phase 0 patches verified against the repo fast gate | `bun check` from `.tmp/slate-v2` | `bun check` ran lint, package/site/root typecheck, Bun tests, slate-layout tests, and slate-react Vitest suite successfully. |
-| Phase 1: strict boolean command result cleanup | complete | Hard-cut `.tmp/slate-v2` command/middleware propagation to strict `boolean`: core command registry, transform bridge, clipboard middleware, DOM clipboard handler/runtime, slate-history handler, slate-react command adapters, examples, and docs no longer use command-boundary `void` or `{ handled }`; added regression coverage for `false` decline forwarding in `.tmp/slate-v2/packages/slate/test/transaction-contract.ts` | `bun test ./packages/slate/test/transaction-contract.ts ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/generic-extension-namespace-contract.ts ./packages/slate/test/public-surface-contract.ts`; `bun test ./packages/slate-dom/test/clipboard-boundary.ts ./packages/slate-dom/test/dom-coverage.ts`; `bunx vitest run --config ./vitest.config.mjs ./test/model-input-strategy-contract.test.ts ./test/projected-command-contract.test.ts ./test/slate-runtime-provider-contract.test.tsx` from `.tmp/slate-v2/packages/slate-react`; `bun --filter ./packages/slate typecheck`; `bun --filter ./packages/slate-dom typecheck`; `bun --filter ./packages/slate-react typecheck`; `bun typecheck:site`; `bun typecheck:root`; `bun check` | Final shape is `true` = handled/stop, `false` = decline/fall through, `next(command?)` = forward with optional override and return downstream boolean. The public command bus remains cut. |
-| Phase 2 slice 1: projected/content-root move-selection command route | complete | Refactored `.tmp/slate-v2/packages/slate-react/src/editable/content-root-navigation.ts` so event selection extension and command-driven selection extension share one private action helper; `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts` now executes `move-selection` for projected/content-root selections before root-local fallback; added projected command coverage for extending an existing projected selection and promoting a model selection at a content-root edge | `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts ./test/content-root-navigation-contract.test.ts`; `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts ./test/content-root-navigation-contract.test.ts ./test/keyboard-input-strategy-contract.test.ts ./test/editing-kernel-contract.ts ./test/slate-runtime-provider-contract.test.tsx`; `bun --filter ./packages/slate-react typecheck`; `bun check` | Fixes the private taxonomy hole where keydown could classify `move-selection` but `applyEditableCommand` returned `false`. No public command API added. Browser/pointer scenario rows remain the next phase 2 slice. |
-| Phase 2 slice 2: browser selection and coordinate closure | complete | Added `.tmp/slate-v2/packages/slate-react/src/editable/slate-string-coordinate-placement.ts` document-offset mapping for split Slate strings; mapped explicit string offsets through full-document offsets in `.tmp/slate-v2/packages/slate-react/src/editable/root-interaction-controller.ts`; deferred cross-root focus with `focusSlateEditableAfterEventFrame`; hardened the multi-root browser click row to target the actual last body paragraph box | `bunx vitest run --config ./vitest.config.mjs ./test/slate-string-coordinate-placement.test.ts ./test/projected-command-contract.test.ts` from `.tmp/slate-v2/packages/slate-react`; `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium --grep "places selection at wrapped line start when clicking the left paragraph margin"`; `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts --project=firefox --grep "exposes input intent for start insert, number insert, and delete"`; `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=mobile --grep "moves body caret to the clicked end padding after another root was focused"`; `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium --grep "moves body caret to the clicked end padding after another root was focused"` | Closes the browser-selection slice without adding public event APIs. Coordinate placement now treats split leaves as document offsets, and root focus no longer races pointer placement after switching roots. |
-| Phase 3: paste/drop command semantics | complete | Hardened `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`: empty Slate fragments with `text/plain` fall back to text insertion, projected paste RangeRefs are released on throwing handlers, Slate HTML fragment detection uses parsed DOM attributes instead of loose text matching, and empty projected paste preserves the view selection so the next typed replacement can apply | `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts` from `.tmp/slate-v2/packages/slate-react`; `bunx vitest run --config ./vitest.config.mjs ./test/editing-epoch-kernel-contract.test.ts ./test/projected-command-contract.test.ts` from `.tmp/slate-v2/packages/slate-react`; `bunx vitest run --config ./vitest.config.mjs ./test/surface-contract.test.tsx ./test/projected-command-contract.test.ts` from `.tmp/slate-v2/packages/slate-react`; `bun test ./packages/slate/test/transaction-contract.ts ./packages/slate/test/public-surface-contract.ts` | Paste/drop stays on the existing extension substrate with strict booleans. The patch fixes real fallback and cleanup defects while keeping collapsed delete-fragment as the accepted handled no-op semantics. |
-| Phase 4: scenario matrix and release closure | complete | Added insert-break epoch coverage in `.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.test.ts`; made `.tmp/slate-v2/packages/slate-react/test/surface-contract.test.tsx` release-aware for sibling pending changeset patch floors; expanded `.tmp/slate-v2/.changeset/paged-right-margin-selection.md` to cover strict boolean command middleware and internal command registration split; kept `.tmp/slate-v2/packages/slate/src/core/command-registry.ts` strict boolean dispatch explicit | `bun check:full` from `.tmp/slate-v2` exited 0; full run reported 1169 passed, 353 skipped, and 2 flaky Chromium rows; focused retries-off reruns passed: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "keeps model and DOM coherent after persistent native word-delete"` and `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium --grep "keeps middle-document typing responsive in a 1000-page virtualized document"`; final autoreview from `.tmp/slate-v2` returned clean | Full closure passed without expanding the public API. The two full-suite flakes were not accepted as product regressions because both focused retries-off reruns passed. |
+| Phase 0 slice 1: command registry public/static API consistency | complete | Split `EditorStaticApi` from `InternalEditorStaticApi` in `packages/slate/src/interfaces/editor.ts`; kept `defineCommand`/`registerCommand` internal while removing them from the public static API type; added public-surface regression coverage in `packages/slate/test/public-surface-contract.ts` | `bun test ./packages/slate/test/public-surface-contract.ts`; `bun test ./packages/slate/test/transaction-contract.ts`; `bun --filter ./packages/slate typecheck` | The initial API sweep found command registry helpers were root-value-private but still typed as part of `EditorStaticApi`. The fix preserves internal kernel/test use through `slate/internal` and prevents the public static API type from advertising a command bus. |
+| Phase 0 slice 2: data-transfer command boundary | complete | Changed `packages/slate-react/src/editable/mutation-controller.ts` so `applyModelOwnedDataTransferInput` delegates to `applyEditableCommand({ kind: 'insert-data' })` and returns the handled boolean; added focused coverage in `packages/slate-react/test/model-input-strategy-contract.test.ts` | `bunx vitest run --config ./vitest.config.mjs ./test/model-input-strategy-contract.test.ts` from `packages/slate-react`; `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts` from `packages/slate-react`; `bun --filter ./packages/slate-react typecheck` | The sweep found a duplicate model-owned data-transfer update path beside the private editable command taxonomy. The helper now uses the same handled command route as beforeinput/drop/paste command classification. |
+| Phase 0 slice 3: explicit delete-fragment target | complete | Changed `packages/slate-react/src/editable/mutation-controller.ts` so `delete-fragment` commands honor `command.selection` for normal text ranges, not only full-block deletion; added focused coverage in `packages/slate-react/test/projected-command-contract.test.ts` | `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts` from `packages/slate-react`; `bunx vitest run --config ./vitest.config.mjs ./test/model-input-strategy-contract.test.ts` from `packages/slate-react`; `bun test ./packages/slate-react/test/editing-kernel-contract.ts`; `bunx vitest run --config ./vitest.config.mjs ./test/dom-coverage-native-bridge-contract.test.ts` from `packages/slate-react`; `bun --filter ./packages/slate-react typecheck` | The sweep found a command payload field that was only partly respected. Beforeinput/delete-by-cut/delete-by-drag can classify an explicit target; the executor now mutates that target instead of falling back to whatever selection happens to be current. |
+| Phase 0 fast gate | complete | Formatting-only issue in `packages/slate-react/src/editable/editing-kernel.ts` fixed; phase 0 patches verified against the repo fast gate | `bun check` from `Plate repo root` | `bun check` ran lint, package/site/root typecheck, Bun tests, slate-layout tests, and slate-react Vitest suite successfully. |
+| Phase 1: strict boolean command result cleanup | complete | Hard-cut `Plate repo root` command/middleware propagation to strict `boolean`: core command registry, transform bridge, clipboard middleware, DOM clipboard handler/runtime, slate-history handler, slate-react command adapters, examples, and docs no longer use command-boundary `void` or `{ handled }`; added regression coverage for `false` decline forwarding in `packages/slate/test/transaction-contract.ts` | `bun test ./packages/slate/test/transaction-contract.ts ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/generic-extension-namespace-contract.ts ./packages/slate/test/public-surface-contract.ts`; `bun test ./packages/slate-dom/test/clipboard-boundary.ts ./packages/slate-dom/test/dom-coverage.ts`; `bunx vitest run --config ./vitest.config.mjs ./test/model-input-strategy-contract.test.ts ./test/projected-command-contract.test.ts ./test/slate-runtime-provider-contract.test.tsx` from `packages/slate-react`; `bun --filter ./packages/slate typecheck`; `bun --filter ./packages/slate-dom typecheck`; `bun --filter ./packages/slate-react typecheck`; `bun typecheck:site`; `bun typecheck:root`; `bun check` | Final shape is `true` = handled/stop, `false` = decline/fall through, `next(command?)` = forward with optional override and return downstream boolean. The public command bus remains cut. |
+| Phase 2 slice 1: projected/content-root move-selection command route | complete | Refactored `packages/slate-react/src/editable/content-root-navigation.ts` so event selection extension and command-driven selection extension share one private action helper; `packages/slate-react/src/editable/mutation-controller.ts` now executes `move-selection` for projected/content-root selections before root-local fallback; added projected command coverage for extending an existing projected selection and promoting a model selection at a content-root edge | `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts ./test/content-root-navigation-contract.test.ts`; `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts ./test/content-root-navigation-contract.test.ts ./test/keyboard-input-strategy-contract.test.ts ./test/editing-kernel-contract.ts ./test/slate-runtime-provider-contract.test.tsx`; `bun --filter ./packages/slate-react typecheck`; `bun check` | Fixes the private taxonomy hole where keydown could classify `move-selection` but `applyEditableCommand` returned `false`. No public command API added. Browser/pointer scenario rows remain the next phase 2 slice. |
+| Phase 2 slice 2: browser selection and coordinate closure | complete | Added `packages/slate-react/src/editable/slate-string-coordinate-placement.ts` document-offset mapping for split Slate strings; mapped explicit string offsets through full-document offsets in `packages/slate-react/src/editable/root-interaction-controller.ts`; deferred cross-root focus with `focusSlateEditableAfterEventFrame`; hardened the multi-root browser click row to target the actual last body paragraph box | `bunx vitest run --config ./vitest.config.mjs ./test/slate-string-coordinate-placement.test.ts ./test/projected-command-contract.test.ts` from `packages/slate-react`; `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium --grep "places selection at wrapped line start when clicking the left paragraph margin"`; `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts --project=firefox --grep "exposes input intent for start insert, number insert, and delete"`; `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=mobile --grep "moves body caret to the clicked end padding after another root was focused"`; `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium --grep "moves body caret to the clicked end padding after another root was focused"` | Closes the browser-selection slice without adding public event APIs. Coordinate placement now treats split leaves as document offsets, and root focus no longer races pointer placement after switching roots. |
+| Phase 3: paste/drop command semantics | complete | Hardened `packages/slate-react/src/editable/mutation-controller.ts`: empty Slate fragments with `text/plain` fall back to text insertion, projected paste RangeRefs are released on throwing handlers, Slate HTML fragment detection uses parsed DOM attributes instead of loose text matching, and empty projected paste preserves the view selection so the next typed replacement can apply | `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts` from `packages/slate-react`; `bunx vitest run --config ./vitest.config.mjs ./test/editing-epoch-kernel-contract.test.ts ./test/projected-command-contract.test.ts` from `packages/slate-react`; `bunx vitest run --config ./vitest.config.mjs ./test/surface-contract.test.tsx ./test/projected-command-contract.test.ts` from `packages/slate-react`; `bun test ./packages/slate/test/transaction-contract.ts ./packages/slate/test/public-surface-contract.ts` | Paste/drop stays on the existing extension substrate with strict booleans. The patch fixes real fallback and cleanup defects while keeping collapsed delete-fragment as the accepted handled no-op semantics. |
+| Phase 4: scenario matrix and release closure | complete | Added insert-break epoch coverage in `packages/slate-react/test/editing-epoch-kernel-contract.test.ts`; made `packages/slate-react/test/surface-contract.test.tsx` release-aware for sibling pending changeset patch floors; expanded `Plate repo root/.changeset/paged-right-margin-selection.md` to cover strict boolean command middleware and internal command registration split; kept `packages/slate/src/core/command-registry.ts` strict boolean dispatch explicit | `bun check:full` from `Plate repo root` exited 0; full run reported 1169 passed, 353 skipped, and 2 flaky Chromium rows; focused retries-off reruns passed: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "keeps model and DOM coherent after persistent native word-delete"` and `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium --grep "keeps middle-document typing responsive in a 1000-page virtualized document"`; final autoreview from `Plate repo root` returned clean | Full closure passed without expanding the public API. The two full-suite flakes were not accepted as product regressions because both focused retries-off reruns passed. |
 
 Phase 0 API classification:
 | Surface | Classification | Public? | Owner | Phase 0 decision |
@@ -728,7 +728,7 @@ Final execution handoff outline:
   selection, split-leaf coordinate placement, paste/drop fallback and cleanup,
   insert-break duplicate suppression, public/internal surface contracts, and
   release-aware peer floors.
-- closure: `.tmp/slate-v2` focused package/browser tests passed, `bun check`
+- closure: `Plate repo root` focused package/browser tests passed, `bun check`
   passed, `bun check:full` exited 0, focused retries-off reruns passed for both
   full-suite flakes, and autoreview returned clean.
 
@@ -740,7 +740,7 @@ Final completion gates:
 | issue/reference sync closed | issue-ledger sync status closed | complete: 2026-05-29 manual v2 sync records no claim/reference changes |
 | live source grounding complete | source-backed rows cite current owners | complete: final closure re-read public/internal exports, extension slots/rejections, editable taxonomy, afterCommit, command result, and benchmark timestamps |
 | workspace verification recorded | verification workspace gate closed | complete |
-| autoreview clean or N/A | `.agents/skills/autoreview/SKILL.md` loaded and clean from the git checkout that owns non-trivial uncommitted implementation changes (`.tmp/slate-v2` for Slate v2 patches), or N/A with reason | complete: final `.tmp/slate-v2` autoreview clean, no accepted/actionable findings |
+| autoreview clean or N/A | `.agents/skills/autoreview/SKILL.md` loaded and clean from the git checkout that owns non-trivial uncommitted implementation changes (`Plate repo root` for Slate v2 patches), or N/A with reason | complete: final `Plate repo root` autoreview clean, no accepted/actionable findings |
 | final handoff emitted or lane remains open | final response / next pass recorded | complete: final response emits execution handoff; `next_pass: none` |
 | `check-complete` passes | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-29-slate-v2-command-behavior-pipeline-architecture.md` | complete in closure pass |
 
@@ -828,7 +828,7 @@ External/browser findings:
 Timeline:
 - 2026-05-29T09:12:02.557Z Slate Plan goal plan created.
 - 2026-05-29: Current-state read pass completed; plan grounded in live
-  `.tmp/slate-v2` public exports, internal command registry, extension slots,
+  `Plate repo root` public exports, internal command registry, extension slots,
   transform middleware, update/afterCommit boundary, editable command taxonomy,
   Portable Text behavior research, and Evidence Kit health.
 - 2026-05-29: Related issue discovery pass completed from existing ledger/cache
@@ -865,61 +865,61 @@ Timeline:
   handoff is ready for user review.
 - 2026-05-29: Accepted execution addendum added phase 0 API consistency sweep
   before internal command result cleanup and native-input taxonomy hardening.
-- 2026-05-29: Phase 0 slice 1 completed in `.tmp/slate-v2`: command registry
+- 2026-05-29: Phase 0 slice 1 completed in `Plate repo root`: command registry
   helpers were moved out of `EditorStaticApi` into `InternalEditorStaticApi`;
   public-surface contract coverage was added; focused slate contract tests and
   package typecheck passed.
-- 2026-05-29: Phase 0 slice 2 completed in `.tmp/slate-v2`: model-owned
+- 2026-05-29: Phase 0 slice 2 completed in `Plate repo root`: model-owned
   data-transfer input now delegates to `applyEditableCommand` and returns the
   handled result; focused slate-react model-input/projected-command tests and
   package typecheck passed.
-- 2026-05-29: Phase 0 slice 3 completed in `.tmp/slate-v2`:
+- 2026-05-29: Phase 0 slice 3 completed in `Plate repo root`:
   `delete-fragment` commands now honor explicit model selections for normal
   text ranges; focused projected-command, model-input, editing-kernel,
   DOM-coverage native bridge, and slate-react typecheck passed.
-- 2026-05-29: Phase 0 fast gate completed in `.tmp/slate-v2`; `bun check`
+- 2026-05-29: Phase 0 fast gate completed in `Plate repo root`; `bun check`
   passed after formatting the touched test import and an existing
   `editing-kernel.ts` indentation issue reported by Biome.
-- 2026-05-29: Phase 1 completed in `.tmp/slate-v2`: command/middleware
+- 2026-05-29: Phase 1 completed in `Plate repo root`: command/middleware
   propagation is strict boolean across core command registry, transform bridge,
   clipboard middleware, DOM clipboard, slate-history, slate-react adapters,
   examples, and docs. Focused slate/slate-dom/slate-react tests, package/site/root
   typechecks, and `bun check` passed.
-- 2026-05-29: Phase 2 slice 1 completed in `.tmp/slate-v2`:
+- 2026-05-29: Phase 2 slice 1 completed in `Plate repo root`:
   `move-selection` now executes through the private command route for
   projected/content-root selections. Focused projected-command,
   content-root-navigation, keyboard-input-strategy, editing-kernel, runtime
   provider tests, slate-react typecheck, and `bun check` passed.
-- 2026-05-29: Phase 2 browser/coordinate closure completed in `.tmp/slate-v2`:
+- 2026-05-29: Phase 2 browser/coordinate closure completed in `Plate repo root`:
   split-leaf string coordinate placement now resolves document offsets,
   root-switch pointer focus is deferred through the event frame, the multi-root
   browser click row targets the real paragraph box, and focused pagination,
   richtext Firefox, multi-root mobile, and multi-root Chromium rows passed.
-- 2026-05-29: Phase 3 paste/drop command semantics completed in `.tmp/slate-v2`:
+- 2026-05-29: Phase 3 paste/drop command semantics completed in `Plate repo root`:
   empty Slate fragments fall back to plain text when appropriate, projected
   RangeRefs are released on handler throws, HTML fragment detection is DOM
   parsed instead of text-matched, and empty projected paste preserves view
   selection for the next typed replacement.
 - 2026-05-29: Phase 4 scenario and release-contract closure completed in
-  `.tmp/slate-v2`: insert-break epoch duplicate suppression, release-aware
+  `Plate repo root`: insert-break epoch duplicate suppression, release-aware
   peer floors, strict boolean command dispatch clarity, and changeset coverage
   were verified by focused package tests.
-- 2026-05-29: `bun check:full` from `.tmp/slate-v2` exited 0 with 1169 passed,
+- 2026-05-29: `bun check:full` from `Plate repo root` exited 0 with 1169 passed,
   353 skipped, and 2 flaky Chromium rows; both flaky rows passed focused
   retries-off reruns.
-- 2026-05-29: Final autoreview from `.tmp/slate-v2` completed clean with no
+- 2026-05-29: Final autoreview from `Plate repo root` completed clean with no
   accepted/actionable findings.
 
 Verification evidence:
 - Source/read verification only in pass 1:
-  - `.tmp/slate-v2/packages/slate/src/index.ts`
-  - `.tmp/slate-v2/packages/slate/src/internal/index.ts`
-  - `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/command-registry.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/transform-middleware.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/*`
+  - `packages/slate/src/index.ts`
+  - `packages/slate/src/internal/index.ts`
+  - `packages/slate/src/interfaces/editor.ts`
+  - `packages/slate/src/core/editor-extension.ts`
+  - `packages/slate/src/core/command-registry.ts`
+  - `packages/slate/src/core/transform-middleware.ts`
+  - `packages/slate/src/core/public-state.ts`
+  - `packages/slate-react/src/editable/*`
   No implementation command was run because this activation is planning-only.
 - Related issue discovery verification in pass 2:
   - `docs/slate-issues/gitcrawl-live-open-ledger.md`
@@ -938,12 +938,12 @@ Verification evidence:
   artifacts are explicitly unchanged because no fixed/improved claim changed.
 - Intent/boundary pass verification:
   - `docs/plans/2026-05-29-slate-v2-command-behavior-pipeline-architecture.md`
-  - `.tmp/slate-v2/packages/slate/src/index.ts`
-  - `.tmp/slate-v2/packages/slate/src/internal/index.ts`
-  - `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/editable-command-types.ts`
+  - `packages/slate/src/index.ts`
+  - `packages/slate/src/internal/index.ts`
+  - `packages/slate/src/interfaces/editor.ts`
+  - `packages/slate/src/core/editor-extension.ts`
+  - `packages/slate-react/src/components/editable.tsx`
+  - `packages/slate-react/src/editable/editable-command-types.ts`
   No implementation command was run because this activation is planning-only.
 - Research/ecosystem/live-source pass verification:
   - `docs/research/sources/editor-architecture/portable-text-schema-behavior-and-portability.md`
@@ -957,10 +957,10 @@ Verification evidence:
   - `docs/analysis/slate-v2-plate-v2-architecture-research.md`
   - `packages/media/src/react/placeholder/PlaceholderPlugin.tsx`
   - `apps/www/src/registry/components/editor/transforms.ts`
-  - `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/editable-command-types.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+  - `packages/slate/src/interfaces/editor.ts`
+  - `packages/slate/src/core/editor-extension.ts`
+  - `packages/slate-react/src/editable/editable-command-types.ts`
+  - `packages/slate-react/src/editable/mutation-controller.ts`
   No implementation command was run because this activation is planning-only.
 - Pressure pass verification:
   - `benchmarks/editor/research/benchmark-registry.json`
@@ -970,34 +970,34 @@ Verification evidence:
   - `benchmarks/editor/benchmarks/results/package-boundary-gates-latest.json`
   - `docs/slate-v2/replacement-gates-scoreboard.md`
   - `docs/slate-v2/slate-react-perf-loop-context.md`
-  - `.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts`
-  - `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`
-  - `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts`
-  - `.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`
+  - `packages/slate-react/test/projected-command-contract.test.ts`
+  - `packages/slate/test/extension-methods-contract.ts`
+  - `apps/www/tests/slate-browser/donor/examples/plaintext.test.ts`
+  - `apps/www/tests/slate-browser/donor/examples/hovering-toolbar.test.ts`
   No implementation command was run because this activation is planning-only.
 - Slate maintainer objection pass verification:
-  - `.tmp/slate-v2/packages/slate/src/index.ts`
-  - `.tmp/slate-v2/packages/slate/src/internal/index.ts`
-  - `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/command-registry.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/editable-command-types.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+  - `packages/slate/src/index.ts`
+  - `packages/slate/src/internal/index.ts`
+  - `packages/slate/src/interfaces/editor.ts`
+  - `packages/slate/src/core/editor-extension.ts`
+  - `packages/slate/src/core/command-registry.ts`
+  - `packages/slate/src/core/public-state.ts`
+  - `packages/slate-react/src/components/editable.tsx`
+  - `packages/slate-react/src/editable/editable-command-types.ts`
+  - `packages/slate-react/src/editable/mutation-controller.ts`
+  - `packages/slate-react/src/editable/clipboard-input-strategy.ts`
   No implementation command was run because this activation is planning-only.
 - High-risk deliberate-mode pass verification:
   - `benchmarks/editor/benchmarks/results/benchmark-health-latest.json`
   - `benchmarks/editor/benchmarks/results/slate-v2-legacy-latest.json`
   - `benchmarks/editor/benchmarks/results/rich-text-editors-latest.json`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/transform-middleware.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/command-registry.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+  - `packages/slate-react/src/editable/runtime-event-engine.ts`
+  - `packages/slate-react/src/editable/input-router.ts`
+  - `packages/slate-react/src/editable/clipboard-input-strategy.ts`
+  - `packages/slate/src/core/transform-middleware.ts`
+  - `packages/slate/src/core/command-registry.ts`
+  - `packages/slate/src/core/public-state.ts`
+  - `packages/slate-react/src/editable/mutation-controller.ts`
   No implementation command was run because this activation is planning-only.
 - Ecosystem maintainer pass verification:
   - `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md`
@@ -1022,138 +1022,138 @@ Verification evidence:
   No implementation command was run because this activation is planning-only.
 - Closure pass verification:
   - `.agents/skills/autoreview/SKILL.md`
-  - `.tmp/slate-v2/packages/slate/src/index.ts`
-  - `.tmp/slate-v2/packages/slate/src/internal/index.ts`
-  - `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/command-registry.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/editable-command-types.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+  - `packages/slate/src/index.ts`
+  - `packages/slate/src/internal/index.ts`
+  - `packages/slate/src/interfaces/editor.ts`
+  - `packages/slate/src/core/editor-extension.ts`
+  - `packages/slate/src/core/public-state.ts`
+  - `packages/slate/src/core/command-registry.ts`
+  - `packages/slate-react/src/editable/editable-command-types.ts`
+  - `packages/slate-react/src/editable/editing-kernel.ts`
+  - `packages/slate-react/src/editable/mutation-controller.ts`
+  - `packages/slate-react/src/editable/clipboard-input-strategy.ts`
   - `benchmarks/editor/benchmarks/results/benchmark-health-latest.json`
   - `benchmarks/editor/benchmarks/results/slate-v2-legacy-latest.json`
   - `benchmarks/editor/benchmarks/results/rich-text-editors-latest.json`
   No implementation command was run because this activation is planning-only.
 - Accepted execution phase 0 slice 1 verification:
-  - `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-  - `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`
+  - `packages/slate/src/interfaces/editor.ts`
+  - `packages/slate/test/public-surface-contract.ts`
   - `bun test ./packages/slate/test/public-surface-contract.ts`
   - `bun test ./packages/slate/test/transaction-contract.ts`
   - `bun --filter ./packages/slate typecheck`
   This proved the first API consistency patch only.
 - Accepted execution phase 0 slice 2 verification:
-  - `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-  - `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`
+  - `packages/slate-react/src/editable/mutation-controller.ts`
+  - `packages/slate-react/test/model-input-strategy-contract.test.ts`
   - `bunx vitest run --config ./vitest.config.mjs ./test/model-input-strategy-contract.test.ts`
-    from `.tmp/slate-v2/packages/slate-react`
+    from `packages/slate-react`
   - `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts`
-    from `.tmp/slate-v2/packages/slate-react`
+    from `packages/slate-react`
   - `bun --filter ./packages/slate-react typecheck`
   This proved data-transfer command routing only.
 - Accepted execution phase 0 slice 3 verification:
-  - `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-  - `.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts`
+  - `packages/slate-react/src/editable/mutation-controller.ts`
+  - `packages/slate-react/test/projected-command-contract.test.ts`
   - `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts`
-    from `.tmp/slate-v2/packages/slate-react`
+    from `packages/slate-react`
   - `bunx vitest run --config ./vitest.config.mjs ./test/model-input-strategy-contract.test.ts`
-    from `.tmp/slate-v2/packages/slate-react`
+    from `packages/slate-react`
   - `bun test ./packages/slate-react/test/editing-kernel-contract.ts`
   - `bunx vitest run --config ./vitest.config.mjs ./test/dom-coverage-native-bridge-contract.test.ts`
-    from `.tmp/slate-v2/packages/slate-react`
+    from `packages/slate-react`
   - `bun --filter ./packages/slate-react typecheck`
   This proved explicit delete-fragment targets only.
 - Accepted execution phase 0 fast-gate verification:
-  - `bun check` from `.tmp/slate-v2`
+  - `bun check` from `Plate repo root`
   - Result: pass. Coverage included lint, package/site/root typecheck,
     `bun test:bun`, slate-layout tests, and slate-react Vitest tests.
   Phase 0 API consistency sweep is complete.
 - Accepted execution phase 1 verification:
-  - `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/command-registry.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-  - `.tmp/slate-v2/packages/slate/src/core/transform-middleware.ts`
-  - `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
-  - `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
-  - `.tmp/slate-v2/packages/slate-history/src/history-extension.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-  - `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
-  - `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`
+  - `packages/slate/src/interfaces/editor.ts`
+  - `packages/slate/src/core/command-registry.ts`
+  - `packages/slate/src/core/editor-extension.ts`
+  - `packages/slate/src/core/transform-middleware.ts`
+  - `packages/slate-dom/src/plugin/dom-editor.ts`
+  - `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
+  - `packages/slate-history/src/history-extension.ts`
+  - `packages/slate-react/src/editable/mutation-controller.ts`
+  - `packages/slate/test/transaction-contract.ts`
+  - `packages/slate-react/test/model-input-strategy-contract.test.ts`
   - `rg -n "EditorCommandResult = \{|return \{ handled|\{ handled: false \}|\{ handled: true \}|EditorCommandResult \| void" packages/slate/src packages/slate/test packages/slate-dom/src packages/slate-dom/test packages/slate-history/src site/examples/ts docs/concepts docs/walkthroughs docs/libraries/slate-react`
-    from `.tmp/slate-v2`
+    from `Plate repo root`
   - `bun test ./packages/slate/test/transaction-contract.ts ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/generic-extension-namespace-contract.ts ./packages/slate/test/public-surface-contract.ts`
   - `bun test ./packages/slate-dom/test/clipboard-boundary.ts ./packages/slate-dom/test/dom-coverage.ts`
   - `bunx vitest run --config ./vitest.config.mjs ./test/model-input-strategy-contract.test.ts ./test/projected-command-contract.test.ts ./test/slate-runtime-provider-contract.test.tsx`
-    from `.tmp/slate-v2/packages/slate-react`
+    from `packages/slate-react`
   - `bun --filter ./packages/slate typecheck`
   - `bun --filter ./packages/slate-dom typecheck`
   - `bun --filter ./packages/slate-react typecheck`
   - `bun typecheck:site`
   - `bun typecheck:root`
-  - `bun check` from `.tmp/slate-v2`
+  - `bun check` from `Plate repo root`
   Result: pass. Phase 1 internal command result cleanup is complete.
 - Accepted execution phase 2 slice 1 verification:
-  - `.tmp/slate-v2/packages/slate-react/src/editable/content-root-navigation.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-  - `.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts`
+  - `packages/slate-react/src/editable/content-root-navigation.ts`
+  - `packages/slate-react/src/editable/mutation-controller.ts`
+  - `packages/slate-react/test/projected-command-contract.test.ts`
   - `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts ./test/content-root-navigation-contract.test.ts`
-    from `.tmp/slate-v2/packages/slate-react`
+    from `packages/slate-react`
   - `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts ./test/content-root-navigation-contract.test.ts ./test/keyboard-input-strategy-contract.test.ts ./test/editing-kernel-contract.ts ./test/slate-runtime-provider-contract.test.tsx`
-    from `.tmp/slate-v2/packages/slate-react`
+    from `packages/slate-react`
   - `bun --filter ./packages/slate-react typecheck`
-  - `bun check` from `.tmp/slate-v2`
+  - `bun check` from `Plate repo root`
   Result: pass. Phase 2 projected/content-root move-selection command route
   slice is complete.
 - Accepted execution phase 2 browser/coordinate closure verification:
-  - `.tmp/slate-v2/packages/slate-react/src/editable/slate-string-coordinate-placement.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/root-interaction-controller.ts`
-  - `.tmp/slate-v2/playwright/integration/examples/multi-root-document.test.ts`
+  - `packages/slate-react/src/editable/slate-string-coordinate-placement.ts`
+  - `packages/slate-react/src/editable/root-interaction-controller.ts`
+  - `apps/www/tests/slate-browser/donor/examples/multi-root-document.test.ts`
   - `bunx vitest run --config ./vitest.config.mjs ./test/slate-string-coordinate-placement.test.ts ./test/projected-command-contract.test.ts`
-    from `.tmp/slate-v2/packages/slate-react`
+    from `packages/slate-react`
   - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium --grep "places selection at wrapped line start when clicking the left paragraph margin"`
-    from `.tmp/slate-v2`
+    from `Plate repo root`
   - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts --project=firefox --grep "exposes input intent for start insert, number insert, and delete"`
-    from `.tmp/slate-v2`
+    from `Plate repo root`
   - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=mobile --grep "moves body caret to the clicked end padding after another root was focused"`
-    from `.tmp/slate-v2`
+    from `Plate repo root`
   - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium --grep "moves body caret to the clicked end padding after another root was focused"`
-    from `.tmp/slate-v2`
+    from `Plate repo root`
   Result: pass. Phase 2 browser selection and coordinate placement closure is
   complete.
 - Accepted execution phase 3 paste/drop verification:
-  - `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-  - `.tmp/slate-v2/packages/slate-react/test/projected-command-contract.test.ts`
-  - `.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.test.ts`
-  - `.tmp/slate-v2/packages/slate-react/test/surface-contract.test.tsx`
+  - `packages/slate-react/src/editable/mutation-controller.ts`
+  - `packages/slate-react/test/projected-command-contract.test.ts`
+  - `packages/slate-react/test/editing-epoch-kernel-contract.test.ts`
+  - `packages/slate-react/test/surface-contract.test.tsx`
   - `bun test ./packages/slate/test/transaction-contract.ts ./packages/slate/test/public-surface-contract.ts`
-    from `.tmp/slate-v2`
+    from `Plate repo root`
   - `bunx vitest run --config ./vitest.config.mjs ./test/projected-command-contract.test.ts`
-    from `.tmp/slate-v2/packages/slate-react`
+    from `packages/slate-react`
   - `bunx vitest run --config ./vitest.config.mjs ./test/editing-epoch-kernel-contract.test.ts ./test/projected-command-contract.test.ts`
-    from `.tmp/slate-v2/packages/slate-react`
+    from `packages/slate-react`
   - `bunx vitest run --config ./vitest.config.mjs ./test/surface-contract.test.tsx ./test/projected-command-contract.test.ts`
-    from `.tmp/slate-v2/packages/slate-react`
+    from `packages/slate-react`
   Result: pass. Empty fragment fallback, projected RangeRef release,
   structured HTML fragment parsing, and empty projected paste selection behavior
   are covered.
 - Accepted execution phase 4 and closure verification:
-  - `.tmp/slate-v2/packages/slate/src/core/command-registry.ts`
-  - `.tmp/slate-v2/packages/slate-react/package.json`
-  - `.tmp/slate-v2/packages/slate-react/test/surface-contract.test.tsx`
-  - `.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.test.ts`
-  - `.tmp/slate-v2/.changeset/paged-right-margin-selection.md`
-  - `bun check:full` from `.tmp/slate-v2` exited 0; summary recorded 1169
+  - `packages/slate/src/core/command-registry.ts`
+  - `packages/slate-react/package.json`
+  - `packages/slate-react/test/surface-contract.test.tsx`
+  - `packages/slate-react/test/editing-epoch-kernel-contract.test.ts`
+  - `Plate repo root/.changeset/paged-right-margin-selection.md`
+  - `bun check:full` from `Plate repo root` exited 0; summary recorded 1169
     passed, 353 skipped, and 2 flaky Chromium rows.
   - Focused retries-off richtext flake rerun:
     `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "keeps model and DOM coherent after persistent native word-delete"`
-    from `.tmp/slate-v2` -> pass.
+    from `Plate repo root` -> pass.
   - Focused retries-off pagination flake rerun:
     `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium --grep "keeps middle-document typing responsive in a 1000-page virtualized document"`
-    from `.tmp/slate-v2` -> pass.
+    from `Plate repo root` -> pass.
   - Final autoreview:
     `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local --engine claude --no-tools --no-web-search --prompt <intentional hard-cut context>`
-    from `.tmp/slate-v2` -> clean, no accepted/actionable findings.
+    from `Plate repo root` -> clean, no accepted/actionable findings.
   Result: pass. Closure verification is complete.
 
 Reboot status:

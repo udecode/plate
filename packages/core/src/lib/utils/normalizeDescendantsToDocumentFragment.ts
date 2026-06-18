@@ -3,7 +3,7 @@ import {
   type Editor,
   ElementApi,
   TextApi,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 
 import type { SlateEditor } from '../editor';
 import type { WithRequiredKey } from '../plugin';

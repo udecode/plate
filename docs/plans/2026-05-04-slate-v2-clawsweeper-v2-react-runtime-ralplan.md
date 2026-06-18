@@ -60,7 +60,7 @@ Desired outcome:
 
 In scope:
 
-- `.tmp/slate-v2/packages/slate-react` provider, hooks, selector runtime,
+- `packages/slate-react` provider, hooks, selector runtime,
   projection stores, annotation/widget stores, focus/scroll lifecycle, and
   React-visible render contracts;
 - browser/example proof only where focus, selection, scroll, or render behavior
@@ -103,25 +103,25 @@ Unresolved user-decision points:
   lifecycle, focus timing, placeholder/render timing, editor replacement
   semantics, React-facing lifecycle integration, and render-time decoration or
   annotation projection.
-- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:96` creates the
+- `packages/slate-react/src/components/slate.tsx:96` creates the
   selector context, `:108` subscribes to editor commits, `:123` batches commit
   fanout, `:162` dispatches selector updates, `:175` composes decoration and
   annotation projection sources, and `:216` publishes the provider stack.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:66`
+- `packages/slate-react/src/hooks/use-editor-selector.tsx:66`
   exposes `useEditorSelector`, `:135` exposes `useEditorState`, and `:171`
   owns global/runtime/deferred selector fanout.
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:53`
+- `packages/slate-react/test/provider-hooks-contract.tsx:53`
   proves `useEditor` updates when `<Slate editor>` changes, `:127` proves
   selector `shouldUpdate` receives commit facts, and `:182` proves
   `useEditorState` reads through `editor.read`.
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx:105`
+- `packages/slate-react/test/projections-and-selection-contract.tsx:105`
   proves product-noun decoration sources, overlapping projections, and
   cross-node projection behavior.
-- `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx:126`
+- `packages/slate-react/test/annotation-store-contract.tsx:126`
   proves one annotation entity drives inline projection and sidebar state.
-- `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx:88` proves
+- `packages/slate-react/test/widget-layer-contract.tsx:88` proves
   selection widgets toggle without rerendering text slices.
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:152` fences
+- `packages/slate-react/test/surface-contract.tsx:152` fences
   generic selector ownership to named surfaces.
 
 Current-state read result:
@@ -375,15 +375,15 @@ Research/live-source refresh:
   fans broad selector listeners on every editor change. This is the residual
   shape v2 is cutting away.
 - Current Slate v2:
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:96`-`:172`
-  publishes commit-aware selector dispatch; `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:171`-`:236`
-  has global, runtime-id, and deferred selector fanout; `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx:27`-`:57`
+  `packages/slate-react/src/components/slate.tsx:96`-`:172`
+  publishes commit-aware selector dispatch; `packages/slate-react/src/hooks/use-editor-selector.tsx:171`-`:236`
+  has global, runtime-id, and deferred selector fanout; `packages/slate-react/src/hooks/use-slate-projections.tsx:27`-`:57`
   uses runtime-id projection subscriptions; and
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx:42`-`:79`
+  `packages/slate-react/src/hooks/use-decoration-selector.tsx:42`-`:79`
   scopes decoration reads to the runtime-id store. Existing tests at
-  `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:53`-`:125`,
-  `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx:404`-`:443`,
-  and `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx:486`-`:545`
+  `packages/slate-react/test/provider-hooks-contract.tsx:53`-`:125`,
+  `packages/slate-react/test/projections-and-selection-contract.tsx:404`-`:443`,
+  and `packages/slate-react/test/annotation-store-contract.tsx:486`-`:545`
   already prove the first layer of provider replacement, selector equality,
   runtime projection wakeup, and annotation/projection split.
 
@@ -510,7 +510,7 @@ Repeated-unit budgets:
 Required unit gates:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun --filter slate-react test:vitest -- provider-hooks-contract projections-and-selection-contract annotation-store-contract widget-layer-contract surface-contract render-profiler-contract rendering-strategy-and-scroll
 bun --filter slate-react typecheck
 ```
@@ -518,7 +518,7 @@ bun --filter slate-react typecheck
 Required benchmark gates:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun run bench:react:rerender-breadth:local
 bun run bench:react:huge-document-overlays:local
 bun run bench:react:huge-document:legacy-compare:local
@@ -526,7 +526,7 @@ bun run bench:core:refs-projection:local
 ```
 
 Benchmark artifacts must use the existing command surface in
-`.tmp/slate-v2/scripts/benchmarks/README.md`, including the current JSON outputs
+`benchmarks/slate-v2/donor/README.md`, including the current JSON outputs
 under `packages/slate-react/tmp/` and `.tmp/`. Do not add parallel benchmark
 files unless a new metric changes a release decision.
 
@@ -608,8 +608,8 @@ High-risk trigger:
 
 Blast radius:
 
-- packages: primarily `.tmp/slate-v2/packages/slate-react`, with DOM bridge
-  pressure in `.tmp/slate-v2/packages/slate-dom` when browser behavior is touched;
+- packages: primarily `packages/slate-react`, with DOM bridge
+  pressure in `packages/slate-dom` when browser behavior is touched;
 - consumers: raw Slate React users, Plate, slate-yjs-style collaboration
   consumers, examples, and docs;
 - behavior: editor identity, render breadth, selection/focus repair,
@@ -746,7 +746,7 @@ Accepted decisions:
 - keep raw Slate's React runtime selector-first and sidecar-driven;
 - keep broad hooks available but not recommended for hot repeated units;
 - keep product-shaped comment/widget APIs out of raw Slate;
-- use existing `.tmp/slate-v2` unit, stress, and benchmark surfaces as the proof
+- use existing `Plate repo root` unit, stress, and benchmark surfaces as the proof
   backbone;
 - treat React `Activity` as hidden/background UI only, never as editable
   missing-DOM support;

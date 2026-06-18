@@ -4,7 +4,7 @@ Date: 2026-05-14
 Status: superseded by `docs/plans/2026-05-14-slate-v2-example-memoization-hard-cut-ralplan.md`
 Score: 0.94
 Owner: Slate Ralplan planning only
-Execution owner: ralph in `.tmp/slate-v2`
+Execution owner: ralph in `Plate repo root`
 
 ## Verdict
 
@@ -45,21 +45,21 @@ own overlay state.
 
 Runtime:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editable-command-types.ts`
+- `packages/slate-react/src/editable/editable-command-types.ts`
   already defines semantic commands for delete, history, insert break, insert
   data, insert text, move selection, select-all, set-block, and toggle-mark.
-- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `packages/slate-react/src/editable/keyboard-input-strategy.ts`
   currently calls `applyUserEditableCommandHandler` only when the classified
   keydown command is `format`.
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
+- `packages/slate-react/src/editable/runtime-before-input-events.ts`
   routes native beforeinput commands through `onCommand` more broadly.
-- `.tmp/slate-v2/packages/slate-react/src/editable/editable-input-rules.ts`
+- `packages/slate-react/src/editable/editable-input-rules.ts`
   already supports editor extension capability input rules, so behavior can
   move out of example props without inventing a new plugin system first.
 
 Docs:
 
-- `.tmp/slate-v2/docs/libraries/slate-react/editable.md` still teaches
+- `content/docs/slate/libraries/slate-react/editable.md` still teaches
   `onKeyDown` for keyboard shortcuts and claims broader `onCommand` coverage
   than keydown currently provides.
 
@@ -221,10 +221,10 @@ side on top.
     code highlighting
   - Chromium Playwright rows for each rewritten example
 - Final gate:
-  - `cd .tmp/slate-v2 && bun --filter slate-react typecheck`
-  - `cd .tmp/slate-v2 && bun lint:fix`
-  - `cd .tmp/slate-v2 && bun --filter slate-react test`
-  - `cd .tmp/slate-v2 && bun check`
+  - `cd Plate repo root && bun --filter slate-react typecheck`
+  - `cd Plate repo root && bun lint:fix`
+  - `cd Plate repo root && bun --filter slate-react test`
+  - `cd Plate repo root && bun check`
 
 ## Risk
 

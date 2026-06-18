@@ -71,9 +71,9 @@ Original public DOM surface before this plan landed:
 - `DOMEditorCapability` exposes strict `findEventRange`, `findPath`,
   `toDOMNode`, `toDOMPoint`, `toDOMRange`, `toSlateNode`, `toSlatePoint`, and
   `toSlateRange` at
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:69-108`.
+  `packages/slate-dom/src/plugin/dom-editor.ts:69-108`.
 - `toSlatePoint` and `toSlateRange` exposed `suppressThrow` in public option
-  objects at `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:94-108`
+  objects at `packages/slate-dom/src/plugin/dom-editor.ts:94-108`
   and wrapper exports at `:1558-1580`.
 
 Original `suppressThrow` surface:
@@ -101,18 +101,18 @@ Current strict DOM projection calls outside `dom-editor.ts`:
 Hot examples of the wrong original shape:
 
 - `ReactEditor.toSlateRange(... suppressThrow: true)` in selection controller at
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:284-287`,
+  `packages/slate-react/src/editable/selection-controller.ts:284-287`,
   `:491-495`, and `:608-612`.
 - Strict `ReactEditor.toDOMRange(editor, selection)` fallback in selection
-  export at `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:737-742`.
+  export at `packages/slate-react/src/editable/selection-controller.ts:737-742`.
 - Catch-and-ignore around strict `toDOMRange` in selection repair at
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:930-935`.
+  `packages/slate-react/src/editable/selection-reconciler.ts:930-935`.
 - Strict `ReactEditor.toDOMPoint` in native input strategy at
-  `.tmp/slate-v2/packages/slate-react/src/editable/native-input-strategy.ts:56-57`.
+  `packages/slate-react/src/editable/native-input-strategy.ts:56-57`.
 - Strict `ReactEditor.findEventRange` in drop handling at
-  `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:440-442`.
+  `packages/slate-react/src/editable/clipboard-input-strategy.ts:440-442`.
 - Mentions example catch around `editor.dom.toDOMRange(target)` at
-  `.tmp/slate-v2/site/examples/ts/mentions.tsx:123-129`.
+  `apps/www/src/app/(app)/examples/slate/_examples/mentions.tsx:123-129`.
 
 ## 4. Public API Target
 
@@ -603,7 +603,7 @@ plan, not a corpus rebuild.
 | Lexical          | `../lexical/packages/lexical/src/LexicalUpdateTags.ts:45-74`; `../lexical/packages/lexical/src/LexicalUpdates.ts:616-632`; `../lexical/packages/lexical/src/LexicalSelection.ts:3113-3159`; `../lexical/packages/lexical/src/LexicalUpdates.ts:951-1032`; `../lexical/packages/lexical/src/LexicalEditor.ts:220-248,579-670` | Update tags explicitly control DOM selection, scroll, focus, composition, history, paste, and collaboration side effects; update errors route through configured `onError` and restore state; lost-selection invariant still throws.                                   | Side-effect policy is named instead of hidden in ad hoc browser catches; fatal/invariant failure stays separate from ordinary side-effect suppression. | Add resolver APIs for recoverable DOM/model projection, keep commit tags for skip-scroll/skip-dom-selection/composition, and keep strict invariant failures typed.            | explicit side-effect tags, update-scoped DOM selection/focus/scroll policy                                    | class node model, `$` helper style, treating `onError` as normal recoverable projection architecture | partial                                                 |
 | Tiptap           | `../tiptap/packages/core/src/helpers/posToDOMRect.ts:5-35`; `../tiptap/packages/core/src/commands/focus.ts:14-16,51-66`; `../tiptap/packages/core/src/commands/scrollIntoView.ts:15-20`                                                                                                                                      | Product APIs expose focus/scroll options and rect helpers while delegating core behavior to ProseMirror transactions and `coordsAtPos`.                                                                                                                                | Product UI can ask for geometry/focus without learning low-level DOM mapping.                                                                          | Expose `resolveRangeRect(range): DOMRect                                                                                                                                      | null` for UI overlays and examples; keep raw DOM projection strict/resolver split.                            | boring geometry helper and focus scroll option shape                                                 | making Tiptap product command API define raw Slate core | partial |
 | React 19.2       | Context7 `/reactjs/react.dev` query on 2026-05-14 for Activity, hooks, and Performance Tracks; compiled page `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md`                                                                                                                      | `Activity` can hide/preserve UI while deprioritizing hidden work; `useSyncExternalStore` is the external-store subscription primitive; `useTransition` and `useDeferredValue` split urgent vs non-urgent UI; Performance Tracks expose React render/priority evidence. | Surrounding UI can be scheduled cleanly without making editor-core invalidation depend on React.                                                       | Keep resolver/selection/DOM bridge policy below React; React consumes stable store snapshots and nullable geometry, not thrown projection failures.                           | external-store subscription and non-urgent overlay scheduling                                                 | pretending React scheduling fixes stale DOM projection or broad editor invalidation                  | agree                                                   |
-| Current Slate v2 | `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:69-108`; `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:284-287,492-495,609-612,737-742`; `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:622-625,891-920,932-936`                                             | Public DOM API exposed strict helpers plus public `suppressThrow`; React runtime used strict projection, `suppressThrow`, and catch-and-ignore in recoverable paths.                                                                                                   | The original code had the exact legacy failure shape the plan cut.                                                                                     | Factor shared resolver core, add nullable public resolvers, convert runtime recovery files to resolver APIs, retain strict direct helpers, and remove public `suppressThrow`. | current runtime ownership split as the place to land the fix                                                  | boolean `suppressThrow` as future API, runtime catch wrappers, public `try*` workaround              | revise                                                  |
+| Current Slate v2 | `packages/slate-dom/src/plugin/dom-editor.ts:69-108`; `packages/slate-react/src/editable/selection-controller.ts:284-287,492-495,609-612,737-742`; `packages/slate-react/src/editable/selection-reconciler.ts:622-625,891-920,932-936`                                             | Public DOM API exposed strict helpers plus public `suppressThrow`; React runtime used strict projection, `suppressThrow`, and catch-and-ignore in recoverable paths.                                                                                                   | The original code had the exact legacy failure shape the plan cut.                                                                                     | Factor shared resolver core, add nullable public resolvers, convert runtime recovery files to resolver APIs, retain strict direct helpers, and remove public `suppressThrow`. | current runtime ownership split as the place to land the fix                                                  | boolean `suppressThrow` as future API, runtime catch wrappers, public `try*` workaround              | revise                                                  |
 
 ### Research Maintenance Verdict
 
@@ -651,13 +651,13 @@ failure mode with nicer names. That would be fake architecture.
 
 | Area                     | Pressure result                                                                                                                                                                                                                                                                         | Decision                                                                                                                                                                                                 |
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| Public strict APIs       | Current `DOMEditorCapability` strict helpers are still clear at `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:69-108`.                                                                                                                                                     | Keep. Strict `to*` and `find*` APIs remain invariant APIs.                                                                                                                                               |
-| Public `suppressThrow`   | Originally public on `toSlatePoint` / `toSlateRange` at `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:94-108` and wrapper lines `1558-1580`.                                                                                                                               | Cut with no compatibility shim.                                                                                                                                                                          |
+| Public strict APIs       | Current `DOMEditorCapability` strict helpers are still clear at `packages/slate-dom/src/plugin/dom-editor.ts:69-108`.                                                                                                                                                     | Keep. Strict `to*` and `find*` APIs remain invariant APIs.                                                                                                                                               |
+| Public `suppressThrow`   | Originally public on `toSlatePoint` / `toSlateRange` at `packages/slate-dom/src/plugin/dom-editor.ts:94-108` and wrapper lines `1558-1580`.                                                                                                                               | Cut with no compatibility shim.                                                                                                                                                                          |
 | Resolver API family      | Current runtime already needs nullable projection in selection import/export, Android, drop, hooks, and examples.                                                                                                                                                                       | Keep, but cap width to `resolveDOMNode`, `resolveDOMPoint`, `resolveDOMRange`, `resolveSlateNode`, `resolveSlatePoint`, `resolveSlateRange`, `resolvePath`, `resolveEventRange`, and `resolveRangeRect`. |
 | Public rich results      | Useful for tests and debug assertions, not app code.                                                                                                                                                                                                                                    | Cut from public API. Internal resolver core may return tagged results. Public resolvers unwrap to `T                                                                                                     | null`. |
-| Runtime catch wrappers   | Current `selection-reconciler` catches `toDOMRange` at `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:933-936`; mentions catches `editor.dom.toDOMRange` at `.tmp/slate-v2/site/examples/ts/mentions.tsx:123-129`.                                            | Cut. Replace with resolver calls.                                                                                                                                                                        |
+| Runtime catch wrappers   | Current `selection-reconciler` catches `toDOMRange` at `packages/slate-react/src/editable/selection-reconciler.ts:933-936`; mentions catches `editor.dom.toDOMRange` at `apps/www/src/app/(app)/examples/slate/_examples/mentions.tsx:123-129`.                                            | Cut. Replace with resolver calls.                                                                                                                                                                        |
 | Hot path allocation      | Exceptions, arrays from eager `Array.from`, rich public results, and document scans are unacceptable in selection import/export.                                                                                                                                                        | Revise implementation law: success path returns existing primitive/native object; failure path returns `null`; reason allocation only behind debug/test mode.                                            |
-| Hook path lookup         | `useElementSelected` already prefers explicit/context path before fallback `ReactEditor.findPath` at `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:33-38`.                                                                                                      | Keep the context/runtime-id shape; revise fallback to `resolvePath(element) ?? return false` when the element can be stale.                                                                              |
+| Hook path lookup         | `useElementSelected` already prefers explicit/context path before fallback `ReactEditor.findPath` at `packages/slate-react/src/hooks/use-element-selected.ts:33-38`.                                                                                                      | Keep the context/runtime-id shape; revise fallback to `resolvePath(element) ?? return false` when the element can be stale.                                                                              |
 | Example overlay geometry | Mentions needs geometry only, not a native `Range`.                                                                                                                                                                                                                                     | Use `resolveRangeRect(target) ?? return`, then one batched style write.                                                                                                                                  |
 | Plate migration          | Plate plugin code still uses strict product-level lookup in places, for example `editor.api.findPath(element)!` in `../plate/packages/table/src/lib/queries/getTableCellSize.ts:35` and nullable-aware use in `getSelectedCellsBorders.ts:86-92`.                                       | Keep raw Slate primitive; Plate can wrap it with plugin-specific policy. Do not move Plate table policy into raw Slate.                                                                                  |
 | slate-yjs migration      | slate-yjs stores model operations, origins, and relative selections, not DOM projection: `../slate-yjs/packages/core/src/plugins/withYjs.ts:230-263`, `../slate-yjs/packages/core/src/plugins/withYHistory.ts:130-148`, and `../slate-yjs/packages/core/src/utils/position.ts:268-291`. | Resolver nulls must not mutate operations or collaboration state. DOM projection failure is a React/runtime concern.                                                                                     |
@@ -700,16 +700,16 @@ Current live support:
 
 - Existing benchmark scripts already cover core text/selection, editor store,
   refs projection, React rerender breadth, huge overlays, huge documents, and
-  browser trace at `.tmp/slate-v2/package.json:11-30`.
+  browser trace at `Plate repo root/package.json:11-30`.
 - Current React selector runtime uses `useSyncExternalStore` in
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:48-108`.
+  `packages/slate-react/src/hooks/use-generic-selector.tsx:48-108`.
 - Runtime subscriptions are keyed by runtime id when available in
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:319-340`.
+  `packages/slate-react/src/hooks/use-editor-selector.tsx:319-340`.
 - Current rendering metrics already classify cohorts at
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:136-145`
+  `packages/slate-react/src/components/editable-text-blocks.tsx:136-145`
   and emit strategy metrics at `:1682-1761`.
 - Existing tests prove virtualized/staged metrics rows in
-  `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:330-430`.
+  `packages/slate-react/test/rendering-strategy-and-scroll.tsx:330-430`.
 
 Required implementation budgets:
 
@@ -866,7 +866,7 @@ The plan is clean enough, with one required cut:
   inside recoverable `slate-react` runtime.
 - Hook rule sharpened: `useElementSelected` fallback path resolution must become
   nullable.
-- Benchmark/proof targets added from existing `.tmp/slate-v2` scripts.
+- Benchmark/proof targets added from existing `Plate repo root` scripts.
 - Plate and slate-yjs migration boundaries recorded with current source
   pointers.
 
@@ -932,15 +932,15 @@ line. It is not safe as an unannounced patch-style cleanup because the live
 package surface is publishable and documented:
 
 - root package has release scripts for `latest`, `next`, and `experimental` at
-  `.tmp/slate-v2/package.json:47-52`;
+  `Plate repo root/package.json:47-52`;
 - `slate-dom` is versioned `0.124.1` at
-  `.tmp/slate-v2/packages/slate-dom/package.json:1-4`;
+  `packages/slate-dom/package.json:1-4`;
 - `slate-react` is versioned `0.124.0` at
-  `.tmp/slate-v2/packages/slate-react/package.json:1-4`;
+  `packages/slate-react/package.json:1-4`;
 - docs originally published `suppressThrow` in
-  `.tmp/slate-v2/docs/libraries/slate-react/react-editor.md:94-100`;
+  `content/docs/slate/libraries/slate-react/react-editor.md:94-100`;
 - the changelog explicitly describes `suppressThrow: true` behavior in
-  `.tmp/slate-v2/packages/slate-dom/CHANGELOG.md:20-24`.
+  `packages/slate-dom/CHANGELOG.md:20-24`.
 
 So the plan stays aggressive, and the maintainer decision is to hard-cut the
 old option:
@@ -1077,7 +1077,7 @@ API target is the resolver split, and public `suppressThrow` is removed.
 | Lexical          | Update tags explicitly skip DOM selection, scroll, focus, and composition side effects; update errors route through `_onError`, with lost selection still treated as an invariant failure. Evidence: `../lexical/packages/lexical/src/LexicalUpdateTags.ts:45-74`, `../lexical/packages/lexical/src/LexicalUpdates.ts:616-632,951-1032`, `../lexical/packages/lexical/src/LexicalSelection.ts:3113-3160`. | "Why not just use tags or a global error handler?"               | Tags are right for commit side effects. `onError` is fatal plumbing, not normal recoverable DOM projection. Slate still needs value-level resolvers for selection/import/export and overlay geometry. | keep tags for side effects; keep resolvers for projection                        |
 | Tiptap           | `posToDOMRect` gives product code a rect helper, focus accepts `scrollIntoView`, and scroll is an explicit command over ProseMirror transactions. Evidence: `../tiptap/packages/core/src/helpers/posToDOMRect.ts:5-35`, `../tiptap/packages/core/src/commands/focus.ts:10-67`, `../tiptap/packages/core/src/commands/scrollIntoView.ts:15-22`.                                                            | "A rect helper sounds like product UI, not raw Slate."           | `resolveRangeRect` is a geometry primitive, not menu placement or focus policy. Plate owns opinionated UI. Raw Slate can expose `DOMRect                                                              | null`because overlays need geometry without owning native`Range` failure policy. | keep, document as primitive |
 | React runtime    | React 19.2 primitives help schedule and subscribe, but they do not define DOM/model projection failure policy. Prior compiled React/runtime research remains sufficient.                                                                                                                                                                                                                                  | "Could React error boundaries or transitions own this?"          | No. React can reduce render cost and order side effects; it should not be the recovery mechanism for editor projection misses.                                                                        | keep Slate-owned bridge policy                                                   |
-| Current Slate v2 | Public docs and package surface exposed `suppressThrow`, and runtime code used strict/catch/boolean recovery in selection paths. Evidence from the original read: `.tmp/slate-v2/docs/libraries/slate-react/react-editor.md:48-100`, `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:69-108`.                                                                                                  | "A hard public cut could be hostile if this is already shipped." | Accepted as a breaking cleanup. Maintainer decision is hard cut, with resolver docs as the replacement path.                                                                                          | hard cut                                                                         |
+| Current Slate v2 | Public docs and package surface exposed `suppressThrow`, and runtime code used strict/catch/boolean recovery in selection paths. Evidence from the original read: `content/docs/slate/libraries/slate-react/react-editor.md:48-100`, `packages/slate-dom/src/plugin/dom-editor.ts:69-108`.                                                                                                  | "A hard public cut could be hostile if this is already shipped." | Accepted as a breaking cleanup. Maintainer decision is hard cut, with resolver docs as the replacement path.                                                                                          | hard cut                                                                         |
 
 Keep:
 
@@ -1204,7 +1204,7 @@ Closure checks:
 | Pass 12 legality                 | Legal: issue sync accounting is complete, and closure is the only remaining scheduled pass.                                                                                                                                                                                                                                                       |
 | Required plan artifacts          | Present: verdict, nullable API rule, current source inventory, public API target, runtime law, surface coverage, throw policy, ecosystem evidence, issue accounting, proof plan, implementation phases, intent/boundary record, decision brief, pressure passes, maintainer objections, high-risk pass, revision pass, and issue sync accounting. |
 | Issue/reference sync             | Checked in pass 11; no ledger or PR-reference edits required.                                                                                                                                                                                                                                                                                     |
-| Slate v2 implementation boundary | Preserved. This plan pass did not edit `.tmp/slate-v2` source, tests, examples, package files, or config.                                                                                                                                                                                                                                         |
+| Slate v2 implementation boundary | Preserved. This plan pass did not edit `Plate repo root` source, tests, examples, package files, or config.                                                                                                                                                                                                                                         |
 | Execution handoff                | Ready for a later `ralph` execution. This ralplan does not execute code.                                                                                                                                                                                                                                                                          |
 | Completion state                 | Scoped file `active goal state` can move to `done`.                                                                                                                                                                                                                                                   |
 
@@ -1252,14 +1252,14 @@ Current pass:
 
 - `current_pass: verification-and-closeout`
 - `current_pass_status: complete`
-- `current_pass_owner: .tmp/slate-v2`
+- `current_pass_owner: Plate repo root`
 - `current_pass_scope: DOM resolver API, slate-react runtime conversion,
 examples, reference sync, verification`
 
 First driver gates:
 
-- `cd .tmp/slate-v2 && bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/public-surface-contract.ts`
-- `cd .tmp/slate-v2 && bun --filter slate-dom typecheck`
+- `cd Plate repo root && bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/public-surface-contract.ts`
+- `cd Plate repo root && bun --filter slate-dom typecheck`
 
 Next owner:
 
@@ -1274,7 +1274,7 @@ Status: `complete`.
 Implemented:
 
 - Added nullable DOM resolver APIs in
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`:
+  `packages/slate-dom/src/plugin/dom-editor.ts`:
   `resolveDOMNode`, `resolveDOMPoint`, `resolveDOMRange`,
   `resolveSlateNode`, `resolveSlatePoint`, `resolveSlateRange`,
   `resolvePath`, `resolveEventRange`, and `resolveRangeRect`.
@@ -1310,16 +1310,16 @@ Static proof:
 
 Verification:
 
-- `cd .tmp/slate-v2 && bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/public-surface-contract.ts ./packages/slate-react/test/selection-controller-contract.ts ./packages/slate-react/test/selection-reconciler-contract.ts`
-- `cd .tmp/slate-v2 && bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/clipboard-boundary.ts ./packages/slate-dom/test/dom-coverage.ts ./packages/slate-dom/test/hotkeys.ts ./packages/slate-dom/test/public-surface-contract.ts`
-- `cd .tmp/slate-v2 && bun --filter slate-dom typecheck`
-- `cd .tmp/slate-v2 && bun --filter slate-react typecheck`
-- `cd .tmp/slate-v2 && bun typecheck:site`
-- `cd .tmp/slate-v2 && bun --filter slate-react test`
-- `cd .tmp/slate-v2 && bun lint:fix`
-- `cd .tmp/slate-v2 && bun lint`
-- `cd .tmp/slate-v2 && bun test:slate-browser:selection`
-- `cd .tmp/slate-v2 && bun check`
+- `cd Plate repo root && bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/public-surface-contract.ts ./packages/slate-react/test/selection-controller-contract.ts ./packages/slate-react/test/selection-reconciler-contract.ts`
+- `cd Plate repo root && bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/clipboard-boundary.ts ./packages/slate-dom/test/dom-coverage.ts ./packages/slate-dom/test/hotkeys.ts ./packages/slate-dom/test/public-surface-contract.ts`
+- `cd Plate repo root && bun --filter slate-dom typecheck`
+- `cd Plate repo root && bun --filter slate-react typecheck`
+- `cd Plate repo root && bun typecheck:site`
+- `cd Plate repo root && bun --filter slate-react test`
+- `cd Plate repo root && bun lint:fix`
+- `cd Plate repo root && bun lint`
+- `cd Plate repo root && bun test:slate-browser:selection`
+- `cd Plate repo root && bun check`
 - `cd /Users/zbeyens/git/plate-2 && bun run completion-check`
 
 Next pass: hard-cut verification.
@@ -1342,23 +1342,23 @@ Maintainer decision:
 Implemented:
 
 - Removed `suppressThrow` from active `toSlatePoint` and `toSlateRange`
-  options in `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`.
+  options in `packages/slate-dom/src/plugin/dom-editor.ts`.
 - Kept nullable behavior only on `resolveSlatePoint` and `resolveSlateRange`.
 - Updated active reference docs in
-  `.tmp/slate-v2/docs/libraries/slate-react/react-editor.md`.
-- Added `.tmp/slate-v2/.changeset/remove-suppress-throw-dom-projection.md`.
+  `content/docs/slate/libraries/slate-react/react-editor.md`.
+- Added `Plate repo root/.changeset/remove-suppress-throw-dom-projection.md`.
 
 Verification:
 
-- `cd .tmp/slate-v2 && bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/public-surface-contract.ts ./packages/slate-react/test/selection-controller-contract.ts ./packages/slate-react/test/selection-reconciler-contract.ts`
-- `cd .tmp/slate-v2 && bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/clipboard-boundary.ts ./packages/slate-dom/test/dom-coverage.ts ./packages/slate-dom/test/hotkeys.ts ./packages/slate-dom/test/public-surface-contract.ts`
-- `cd .tmp/slate-v2 && bun --filter slate-dom typecheck`
-- `cd .tmp/slate-v2 && bun --filter slate-react typecheck`
-- `cd .tmp/slate-v2 && bun typecheck:site`
-- `cd .tmp/slate-v2 && bun lint:fix`
-- `cd .tmp/slate-v2 && bun lint`
-- `cd .tmp/slate-v2 && rg -n "suppressThrow|tryToDOM|tryToSlate" packages/slate-dom/src packages/slate-react/src packages/slate-dom/test packages/slate-react/test docs/libraries --glob '!**/CHANGELOG.md' --glob '!site/out/**'`
-- `cd .tmp/slate-v2 && bun check` ran lint and all typechecks successfully, then failed in the existing `slate-react` annotation-store contract: `annotation stores refresh when root runtime order changes`, expected `1.0:8|1.0:11`, received `none`.
+- `cd Plate repo root && bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/public-surface-contract.ts ./packages/slate-react/test/selection-controller-contract.ts ./packages/slate-react/test/selection-reconciler-contract.ts`
+- `cd Plate repo root && bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/clipboard-boundary.ts ./packages/slate-dom/test/dom-coverage.ts ./packages/slate-dom/test/hotkeys.ts ./packages/slate-dom/test/public-surface-contract.ts`
+- `cd Plate repo root && bun --filter slate-dom typecheck`
+- `cd Plate repo root && bun --filter slate-react typecheck`
+- `cd Plate repo root && bun typecheck:site`
+- `cd Plate repo root && bun lint:fix`
+- `cd Plate repo root && bun lint`
+- `cd Plate repo root && rg -n "suppressThrow|tryToDOM|tryToSlate" packages/slate-dom/src packages/slate-react/src packages/slate-dom/test packages/slate-react/test docs/libraries --glob '!**/CHANGELOG.md' --glob '!site/out/**'`
+- `cd Plate repo root && bun check` ran lint and all typechecks successfully, then failed in the existing `slate-react` annotation-store contract: `annotation stores refresh when root runtime order changes`, expected `1.0:8|1.0:11`, received `none`.
 
 ## 24. Updated Pass-State Ledger
 
@@ -1381,20 +1381,20 @@ Evidence added:
   DOM/React runtime error-policy target, but it was already marked complete
   under the old one-shot interpretation; this plan state now owns the reopened
   pass-gated truth.
-- Original live `.tmp/slate-v2` public DOM API read:
+- Original live `Plate repo root` public DOM API read:
   `packages/slate-dom/src/plugin/dom-editor.ts:69-108` still exposes strict
   `findEventRange`, `findPath`, `toDOMNode`, `toDOMPoint`, `toDOMRange`,
   `toSlateNode`, `toSlatePoint`, and `toSlateRange`.
-- Original live `.tmp/slate-v2` public options exposed `suppressThrow` on
+- Original live `Plate repo root` public options exposed `suppressThrow` on
   `toSlatePoint` and `toSlateRange` in
   `packages/slate-dom/src/plugin/dom-editor.ts:94-108`.
-- Original live `.tmp/slate-v2` `suppressThrow` counts were issue-facing:
+- Original live `Plate repo root` `suppressThrow` counts were issue-facing:
   `packages/slate-dom/src/plugin/dom-editor.ts` has `26`,
   `packages/slate-react/src/editable/selection-reconciler.ts` has `5`,
   `packages/slate-react/src/editable/selection-controller.ts` has `3`,
   `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
   has `2`, and tests/changelog carry the rest.
-- Original live `.tmp/slate-v2` runtime had strict projection calls in
+- Original live `Plate repo root` runtime had strict projection calls in
   `packages/slate-react/src/editable/selection-controller.ts`,
   `selection-reconciler.ts`, `native-input-strategy.ts`,
   `clipboard-input-strategy.ts`, and the Android input manager.
@@ -1643,7 +1643,7 @@ Skills used: `performance-oracle`, `performance`,
 
 Evidence added:
 
-- Re-read live `.tmp/slate-v2` strict/runtime projection call sites:
+- Re-read live `Plate repo root` strict/runtime projection call sites:
   `packages/slate-dom/src/plugin/dom-editor.ts:69-108,1558-1580`,
   `packages/slate-react/src/editable/selection-controller.ts:284-287,492-495,609-612,737-742`,
   `packages/slate-react/src/editable/selection-reconciler.ts:622-625,891-920,933-936`,
@@ -1656,7 +1656,7 @@ Evidence added:
   `packages/slate-react/src/hooks/use-editor-selector.tsx:319-340`,
   `packages/slate-react/src/components/editable-text-blocks.tsx:136-145,1682-1761`,
   and `packages/slate-react/test/rendering-strategy-and-scroll.tsx:330-430`.
-- Re-read existing benchmark scripts in `.tmp/slate-v2/package.json:11-30`.
+- Re-read existing benchmark scripts in `Plate repo root/package.json:11-30`.
 - Re-read Plate migration pressure examples in
   `../plate/packages/link/src/react/components/FloatingLink/useFloatingLinkEdit.ts:39-54`,
   `../plate/packages/table/src/lib/queries/getTableCellSize.ts:35-53`, and
@@ -1693,7 +1693,7 @@ Skill used: `steelman-pass`.
 
 Evidence added:
 
-- Re-read live `.tmp/slate-v2` public DOM API and public `suppressThrow` option
+- Re-read live `Plate repo root` public DOM API and public `suppressThrow` option
   at `packages/slate-dom/src/plugin/dom-editor.ts:69-108,1548-1581`.
 - Re-read live strict event-range behavior at
   `packages/slate-dom/src/plugin/dom-editor.ts:530-604`.
@@ -1735,13 +1735,13 @@ Skill used: `high-risk-deliberate-pass`.
 Evidence added:
 
 - Re-read live package/release surface:
-  `.tmp/slate-v2/package.json:47-52`,
-  `.tmp/slate-v2/packages/slate-dom/package.json:1-4`, and
-  `.tmp/slate-v2/packages/slate-react/package.json:1-4`.
+  `Plate repo root/package.json:47-52`,
+  `packages/slate-dom/package.json:1-4`, and
+  `packages/slate-react/package.json:1-4`.
 - Re-read documented public `suppressThrow` API in
-  `.tmp/slate-v2/docs/libraries/slate-react/react-editor.md:94-100`.
+  `content/docs/slate/libraries/slate-react/react-editor.md:94-100`.
 - Re-read changelog evidence that `suppressThrow: true` behavior has shipped in
-  `.tmp/slate-v2/packages/slate-dom/CHANGELOG.md:20-24`.
+  `packages/slate-dom/CHANGELOG.md:20-24`.
 - Re-read live runtime source showing current `suppressThrow`, strict fallback,
   and catch behavior in
   `packages/slate-dom/src/plugin/dom-editor.ts:69-108`,
@@ -1786,8 +1786,8 @@ Evidence added:
   `../tiptap/packages/core/src/commands/focus.ts:10-67`, and
   `../tiptap/packages/core/src/commands/scrollIntoView.ts:15-22`.
 - Re-read current Slate v2 public DOM docs and surface:
-  `.tmp/slate-v2/docs/libraries/slate-react/react-editor.md:48-100` and
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:69-108`.
+  `content/docs/slate/libraries/slate-react/react-editor.md:48-100` and
+  `packages/slate-dom/src/plugin/dom-editor.ts:69-108`.
 - Re-read compiled research references for scroll/selection visibility,
   read/update runtime architecture, and lazy query API decisions.
 
@@ -1902,7 +1902,7 @@ Next owner: `ralph` when the user decides to execute.
 
 |   # | Pass                                                   | Status   | Evidence added                                                                                                                                                                                                | Plan delta                                                                                                                                                                          | Open issues                                       | Next owner                          |
 | --: | ------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- | ----------------------------------- |
-|   1 | Current-state read and initial score                   | complete | Live `.tmp/slate-v2` DOM API, `suppressThrow`, strict runtime calls, and planning ledgers re-read.                                                                                                            | Plan reopened; score set to pass-gated `0.86`.                                                                                                                                      | No issue claim changed.                           | `slate-ralplan`                     |
+|   1 | Current-state read and initial score                   | complete | Live `Plate repo root` DOM API, `suppressThrow`, strict runtime calls, and planning ledgers re-read.                                                                                                            | Plan reopened; score set to pass-gated `0.86`.                                                                                                                                      | No issue claim changed.                           | `slate-ralplan`                     |
 |   2 | Related issue discovery                                | complete | Existing ClawSweeper DOM selection/focus dossier and coverage matrix rows reused cache-first; no broad live GitHub discovery.                                                                                 | No issue claim text changed; no dossier/matrix/PR-reference edit needed.                                                                                                            | Resolved by pass 3.                               | `slate-ralplan`                     |
 |   3 | Issue-ledger pass                                      | complete | Full docs/slate-issues stack scanned for resolver/error-policy fixed, improved, related, and non-fix rows.                                                                                                    | No claim text changed; implementation proof policy strengthened.                                                                                                                    | Resolved by pass 4.                               | `slate-ralplan`                     |
 |   4 | Intent/boundary and decision brief                     | complete | Intent-boundary pass applied; intent, outcome, scope, non-goals, boundaries, options, rejected alternatives, consequences, and follow-ups recorded.                                                           | Added section 15 decision brief; score raised to `0.89`.                                                                                                                            | Resolved by pass 5.                               | `slate-ralplan`                     |

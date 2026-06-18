@@ -25,10 +25,10 @@ Draft contract rows:
 
 Current live owners:
 
-- `.tmp/slate-v2/packages/slate-hyperscript/src/**`
-- `.tmp/slate-v2/packages/slate-hyperscript/test/index.spec.ts`
-- `.tmp/slate-v2/packages/slate-hyperscript/test/smoke-contract.ts`
-- `.tmp/slate-v2/packages/slate-hyperscript/test/fixtures/**`
+- `packages/slate-hyperscript/src/**`
+- `packages/slate-hyperscript/test/index.spec.ts`
+- `packages/slate-hyperscript/test/smoke-contract.ts`
+- `packages/slate-hyperscript/test/fixtures/**`
 
 ## `keep-now`
 
@@ -43,9 +43,9 @@ Current live owners:
 
 Immediate current proof owners to preserve:
 
-- `.tmp/slate-v2/packages/slate-hyperscript/test/index.spec.ts`
-- `.tmp/slate-v2/packages/slate-hyperscript/test/smoke-contract.ts`
-- `.tmp/slate-v2/packages/slate-hyperscript/test/fixtures/**`
+- `packages/slate-hyperscript/test/index.spec.ts`
+- `packages/slate-hyperscript/test/smoke-contract.ts`
+- `packages/slate-hyperscript/test/fixtures/**`
 
 ## `keep-later`
 

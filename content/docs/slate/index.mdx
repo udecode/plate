@@ -1,0 +1,66 @@
+---
+title: "Introduction"
+---
+
+# Introduction
+
+[Slate](http://slatejs.org) is a customizable framework for building rich text editors.
+
+Slate gives you a small document model, a transaction runtime, and a React renderer that you can shape around your product. You bring the schema, the UI, and the behavior that makes your editor different.
+
+## Why?
+
+Most rich text editors make the simple case feel easy. The hard part starts when your editor needs comments, embeds, mentions, tables, operation replay, or a document model that belongs to your application instead of the editor library.
+
+Slate is built for that harder case.
+
+- **Your document model is yours.** Slate stores documents as nested JSON nodes, so paragraphs, links, images, tables, comments, and domain-specific elements all use the same tree model.
+- **Core stays small.** Slate gives you primitives for reading, updating, normalizing, rendering, and replaying operations. It does not decide what a "blog post", "comment", or "task" node should mean.
+- **Programmatic editing is explicit.** Reads go through `editor.read(...)`; writes go through `editor.update(...)`. This keeps user edits, app commands, history, and operation replay on the same runtime path.
+- **React is the view layer.** `@platejs/slate-react` renders the editor and subscribes to committed editor state. App components render content; the runtime owns selection, DOM repair, void shells, and browser editing details.
+- **Adapters can target the operation model.** Slate exposes snapshots, commits, tags, and operation replay so sync, import, export, and audit adapters can move document changes without persisting React or DOM state.
+
+If that sounds like the shape of editor you need, Slate is probably a good fit.
+
+## Principles
+
+Slate follows a few principles:
+
+1. **Schema-less core.** Slate's core does not bake in paragraphs, headings, lists, or images. Those are conventions you define with elements, text, rendering, and normalization.
+2. **Nested document model.** Slate documents are recursive trees. This makes simple editors straightforward and gives complex editors enough room for tables, embeds, captions, and nested blocks.
+3. **Explicit transactions.** Slate separates reads from writes. You read committed state with `editor.read(...)` and make document changes inside `editor.update(...)`.
+4. **Operations as the shared layer.** User edits, commands, history, import/export, and replay all meet at the operation and commit layer.
+5. **React as projection.** React renders the editor, but hot editing policy stays in the runtime. Renderers subscribe to the smallest editor facts they actually display.
+6. **Unopinionated extension points.** Slate exposes low-level extension hooks for schema, namespaced reads and writes, normalization, commit listeners, operation middleware, and rendering. Product frameworks like Plate can build richer command conventions on top.
+
+## Examples
+
+To get a sense for how you might use Slate, check out a few examples:
+
+- [**Plain text**](https://www.slatejs.org/examples/plaintext) shows the most basic editable document.
+- [**Rich text**](https://www.slatejs.org/examples/richtext) shows marks, blocks, and keyboard handlers.
+- [**Markdown preview**](https://www.slatejs.org/examples/markdown-preview) shows Markdown-like shortcuts.
+- [**Inlines**](https://www.slatejs.org/examples/inlines) shows inline nodes with associated data.
+- [**Images**](https://www.slatejs.org/examples/images) shows block void nodes.
+- [**Hovering toolbar**](https://www.slatejs.org/examples/hovering-toolbar) shows a contextual menu driven by selection state.
+- [**Tables**](https://www.slatejs.org/examples/tables) shows nested block structures.
+- [**Paste HTML**](https://www.slatejs.org/examples/paste-html) shows custom paste handling.
+- [**Mentions**](https://www.slatejs.org/examples/mentions) shows inline void nodes for @-mentions.
+
+Examples are a good way to see the APIs in motion. The walkthroughs are the better place to learn the model step by step.
+
+## Documentation
+
+If you're using Slate for the first time, start with [Installing Slate](walkthroughs/01-installing-slate). Then read the walkthroughs in order before jumping into the API reference.
+
+- [**Walkthroughs**](walkthroughs/01-installing-slate)
+- [**Concepts**](concepts/01-interfaces)
+- [**API**](api/nodes)
+- [**Slate React**](libraries/slate-react)
+- [**FAQ**](general/faq)
+
+That's the shape: learn the editor, render it with React, then add the behaviors your application needs.
+
+## Contributing
+
+Slate is [MIT-licensed](https://github.com/ianstormtaylor/slate/blob/HEAD/License). Check out the [Contributing instructions](general/contributing) if you'd like to help.

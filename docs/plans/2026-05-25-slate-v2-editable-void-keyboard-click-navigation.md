@@ -38,11 +38,11 @@ Completion threshold:
   passes.
 
 Verification surface:
-- `.tmp/slate-v2` Playwright editable-voids route.
-- `.tmp/slate-v2` site typecheck.
-- `.tmp/slate-v2` Slate React focused contract tests.
-- `.tmp/slate-v2` lint.
-- `.tmp/slate-v2` autoreview local diff.
+- `Plate repo root` Playwright editable-voids route.
+- `Plate repo root` site typecheck.
+- `Plate repo root` Slate React focused contract tests.
+- `Plate repo root` lint.
+- `Plate repo root` autoreview local diff.
 
 Constraints:
 - Do not change ordinary void semantics.
@@ -53,7 +53,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: user request in this thread.
-- Allowed edit scope: `.tmp/slate-v2` editable-voids example, Playwright test,
+- Allowed edit scope: `Plate repo root` editable-voids example, Playwright test,
   and only the runtime code needed if tests prove runtime ownership is wrong.
 - Browser surface: `site/examples/ts/editable-voids.tsx` through
   `playwright/integration/examples/editable-voids.test.ts`.
@@ -92,7 +92,7 @@ Work Checklist:
 - [x] Release artifact decision recorded: N/A, no published package delta.
 - [x] Review/autoreview selected from dirty local diff and passed.
 - [x] Agent-native review decision recorded: N/A, no agent/tooling changes.
-- [x] Workspace authority recorded: all behavior proof ran in `.tmp/slate-v2`.
+- [x] Workspace authority recorded: all behavior proof ran in `Plate repo root`.
 - [x] Final handoff evidence recorded.
 
 Completion Gates:
@@ -168,22 +168,22 @@ Open risks:
 - Mobile/raw-device keyboard behavior is not claimed.
 
 Verification evidence:
-- Repro: `.tmp/slate-v2` focused Playwright row
+- Repro: `Plate repo root` focused Playwright row
   `moves across editable void child-root boundaries with keyboard` failed before
   the fix with expected child-root selection `[0,0]` offset `0` but received
   `null`.
-- Browser focused: `.tmp/slate-v2`
+- Browser focused: `Plate repo root`
   `PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/editable-voids.test.ts --project=chromium -g "child-root (arrow navigation usable after clicks|boundaries with keyboard)"`
   passed, 2 tests.
-- Browser full route: `.tmp/slate-v2`
+- Browser full route: `Plate repo root`
   `PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/editable-voids.test.ts --project=chromium`
   passed, 19 tests.
-- Typecheck: `.tmp/slate-v2` `bun typecheck:site` passed.
-- Focused package tests: `.tmp/slate-v2`
+- Typecheck: `Plate repo root` `bun typecheck:site` passed.
+- Focused package tests: `Plate repo root`
   `bun --filter ./packages/slate-react test:vitest -- content-root-navigation-contract selection-controller-contract keyboard-input-strategy-contract`
   passed, 32 tests.
-- Lint: `.tmp/slate-v2` `bun lint` passed.
-- Review: `.tmp/slate-v2`
+- Lint: `Plate repo root` `bun lint` passed.
+- Review: `Plate repo root`
   `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local`
   passed with no accepted/actionable findings.
 

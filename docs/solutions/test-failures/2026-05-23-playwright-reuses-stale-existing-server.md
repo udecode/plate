@@ -43,7 +43,7 @@ For source edits that affect rendered examples, build the static site and run
 Playwright against a fresh server on a separate port:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun build:next
 PORT=3111 bun serve:playwright
 PLAYWRIGHT_BASE_URL=http://localhost:3111 PLAYWRIGHT_RETRIES=0 \

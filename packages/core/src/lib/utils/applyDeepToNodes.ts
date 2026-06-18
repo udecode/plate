@@ -6,7 +6,7 @@ import {
   type TNode,
   NodeApi,
   queryNode,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 
 export type ApplyDeepToNodesOptions<N extends TNode> = {
   // Function to call on each node following the query.

@@ -1,0 +1,20 @@
+*.log
+.turbo/
+.next/
+.idea/
+*.tsbuildinfo
+build/
+dist/
+lib/
+node_modules/
+site/out/
+*tmp/
+test-results/
+coverage
+.DS_Store
+.clawpatch/
+**/next-env.d.ts
+
+# Autoresearch session state
+/autoresearch.*
+/autoresearch.research/

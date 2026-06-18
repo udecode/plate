@@ -14,9 +14,9 @@ Resolve `udecode/slate#17`: undoing after typing into the native `Name` input of
 ## Current Plan
 
 1. Fetch issue source and transcript attached video.
-2. Inspect current `.tmp/slate-v2` editable-voids source, tests, DOM focus handling, and native input undo/history path.
+2. Inspect current `Plate repo root` editable-voids source, tests, DOM focus handling, and native input undo/history path.
 3. Reproduce current behavior on the local example.
-4. If red-current, add the smallest browser proof row, fix the durable owner, and verify from current `.tmp/slate-v2`.
+4. If red-current, add the smallest browser proof row, fix the durable owner, and verify from current `Plate repo root`.
 5. If already accounted, keep runtime code unchanged, verify current behavior, comment, and close if confidence is high.
 
 ## Findings
@@ -26,7 +26,7 @@ Resolve `udecode/slate#17`: undoing after typing into the native `Name` input of
   - `[00:01]-[00:05]` user focuses the `Name` input and types `abc`.
   - `[00:06]` user performs undo.
   - `[00:07]-[00:10]` page shows runtime error: `Could not set focus, editor seems stuck with pending operations`, stack includes `Object.focus`.
-- Current `.tmp/slate-v2` does not reproduce the crash. The existing `undo from a new editable void input removes the inserted void block` row passes.
+- Current `Plate repo root` does not reproduce the crash. The existing `undo from a new editable void input removes the inserted void block` row passes.
 - Tightened that row to record the exact pending-focus runtime error patterns and assert none after undo settles.
 - Current classification: `already-accounted` with strengthened browser proof.
 

@@ -24,7 +24,7 @@ Primary truth, in order:
 
 1. legacy source and docs under `../slate/packages/slate/**` and
    `../slate/docs/**`
-2. current `.tmp/slate-v2/packages/slate/**`
+2. current `packages/slate/**`
 3. real draft source under `.tmp/slate-v2-draft/packages/slate/**`
 4. banked cut decisions already recorded in live docs/ledgers
 

@@ -30,10 +30,10 @@ Completion threshold:
   read-only editable area while preserving comment-mode behavior.
 - Focused browser coverage proves pointer selection in comment mode and that
   read-only editors still reject document edits.
-- Safe root-owned bugs found by the repro are fixed in `.tmp/slate-v2`; larger
+- Safe root-owned bugs found by the repro are fixed in `Plate repo root`; larger
   limitations are listed with exact repro and owner.
 - Targeted browser tests, `slate-react` package tests, typecheck, lint, and
-  `.tmp/slate-v2` fast `bun check` pass.
+  `Plate repo root` fast `bun check` pass.
 - Task closure is legal only when the source-of-truth acceptance criteria are
   satisfied or explicitly narrowed, required verification evidence is recorded,
   code-review and release-artifact gates are closed when applicable, tracker/PR
@@ -41,14 +41,14 @@ Completion threshold:
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-comment-mode-text-selection.md` passes.
 
 Verification surface:
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-input-events.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `.tmp/slate-v2/playwright/integration/examples/comment-mode.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/read-only.test.ts`
-- `.tmp/slate-v2/packages/slate-react/test/**`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/runtime-before-input-events.ts`
+- `packages/slate-react/src/editable/runtime-input-events.ts`
+- `packages/slate-react/src/editable/input-router.ts`
+- `packages/slate-react/src/editable/model-input-strategy.ts`
+- `apps/www/tests/slate-browser/donor/examples/comment-mode.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/read-only.test.ts`
+- `packages/slate-react/test/**`
 - Browser proof on `http://localhost:3100/examples/comment-mode`.
 
 Constraints:
@@ -60,10 +60,10 @@ Constraints:
 
 Boundaries:
 - Source of truth: user prompt in this turn plus live comment-mode route.
-- Allowed edit scope: `.tmp/slate-v2/packages/slate-react/**`,
-  `.tmp/slate-v2/playwright/integration/examples/comment-mode.test.ts`,
-  `.tmp/slate-v2/playwright/integration/examples/read-only.test.ts`,
-  `.tmp/slate-v2/.changeset/**`, and this plan.
+- Allowed edit scope: `packages/slate-react/**`,
+  `apps/www/tests/slate-browser/donor/examples/comment-mode.test.ts`,
+  `apps/www/tests/slate-browser/donor/examples/read-only.test.ts`,
+  `Plate repo root/.changeset/**`, and this plan.
 - Browser surface: `http://localhost:3100/examples/comment-mode`.
 - Tracker sync: N/A, no tracker requested.
 - Non-goals: comment persistence, Notion-style synced blocks, markdown review
@@ -157,15 +157,15 @@ Completion Gates:
 | Named verification threshold | yes | Done: run focused route, package, typecheck, lint, and fast repo checks. | Commands listed in Verification evidence passed. |
 | Bug reproduced before fix | yes | Done: record failing browser repro. | Before fix, pointer drag in `#comment-mode` produced `selectedText: ""`, `selection:0.0:0|0.0:0`, and active element `comment-mode-document`. |
 | Targeted behavior verification | yes | Done: run focused browser tests. | Comment-mode/read-only Playwright matrix passed: 9 passed, 3 intentional exact-range skips. |
-| TypeScript or typed config changed | yes | Done: run relevant typecheck. | `.tmp/slate-v2`: `bun --filter slate-react typecheck` passed; `bun check` typecheck stages passed. |
+| TypeScript or typed config changed | yes | Done: run relevant typecheck. | `Plate repo root`: `bun --filter slate-react typecheck` passed; `bun check` typecheck stages passed. |
 | Package exports or file layout changed | no | N/A: no exports or file layout changes. | N/A. |
 | Package manifests, lockfile, or install graph changed | no | N/A: no manifest or lockfile change. | N/A. |
 | Agent rules or skills changed | no | N/A: no agent/tooling source changed. | N/A. |
-| Workspace authority proof | yes | Done: run checks in `.tmp/slate-v2`, the owning sibling repo. | All package/browser proof commands ran in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`; plan checker ran in root because plan lives there. |
+| Workspace authority proof | yes | Done: run checks in `Plate repo root`, the owning sibling repo. | All package/browser proof commands ran in `/Users/zbeyens/git/plate-2/Plate repo root`; plan checker ran in root because plan lives there. |
 | Browser surface changed | yes | Done: run browser route tests. | Comment-mode pointer selection passes across Chromium, Firefox, mobile, and WebKit. |
 | Browser final proof | yes | Done: exact browser verification caveat recorded. | Automated Playwright proof only; no screenshot artifact. |
 | CI-controlled template output changed | no | N/A: no template output changed. | N/A. |
-| Package behavior or public API changed | yes | Done: add changeset. | `.tmp/slate-v2/.changeset/slate-react-readonly-selection.md`. |
+| Package behavior or public API changed | yes | Done: add changeset. | `Plate repo root/.changeset/slate-react-readonly-selection.md`. |
 | Registry-only component work changed | no | N/A: not registry-only work. | N/A. |
 | Docs or content changed | yes | Done: plan only. | This plan records evidence; no public docs changed. |
 | High-risk mini gate | yes | Done: record failure mode and boundary. | Risk: contentEditable read-only could leak mutations; proof covers read-only keyboard typing and native input repair path. |
@@ -176,7 +176,7 @@ Completion Gates:
 | PR proof image hosting | no | N/A: no PR body. | N/A. |
 | Tracker sync-back | no | N/A: no tracker. | N/A. |
 | Final handoff contract | yes | Done: fields below filled. | Final response summarizes fix, proof, and autoreview blocker. |
-| Final lint | yes | Done: run formatter and lint. | `.tmp/slate-v2`: `bun lint:fix` and `bun lint` passed. |
+| Final lint | yes | Done: run formatter and lint. | `Plate repo root`: `bun lint:fix` and `bun lint` passed. |
 | Goal plan complete | yes | Done. | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-comment-mode-text-selection.md` passed. |
 | Browser interaction proof | yes | Done: exercise route interactions. | Playwright pointer selection tests passed. |
 | Browser console/network check | yes | Done by test failure policy. | Local route tests are not network-dependent. |
@@ -240,21 +240,21 @@ Error attempts:
 | Autoreview helper silent timeout | 1 | Record review blocker and rely on direct checks | Bounded 180s run exited 124 with no output. |
 
 Verification evidence:
-- `.tmp/slate-v2`: one-off repro before fix returned `selectedText: ""`,
+- `Plate repo root`: one-off repro before fix returned `selectedText: ""`,
   `selectionLabel: "selection:0.0:0|0.0:0"`, active element
   `comment-mode-document`.
-- `.tmp/slate-v2`: one-off proof after fix returned selected text
+- `Plate repo root`: one-off proof after fix returned selected text
   `Comment mode in Slate v`, `selection:0.0:0|0.0:23`,
   `contentEditable: "true"`, and `ariaReadonly: "true"`.
-- `.tmp/slate-v2`: one-off typing proof after fix showed comment-mode text did
+- `Plate repo root`: one-off typing proof after fix showed comment-mode text did
   not include `XXX` and read-only writes stayed `0`.
-- `.tmp/slate-v2`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/read-only.test.ts playwright/integration/examples/comment-mode.test.ts` passed: 9 passed, 3 skipped.
-- `.tmp/slate-v2`: `bun --filter slate-react test:vitest` passed: 43 files,
+- `Plate repo root`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/read-only.test.ts playwright/integration/examples/comment-mode.test.ts` passed: 9 passed, 3 skipped.
+- `Plate repo root`: `bun --filter slate-react test:vitest` passed: 43 files,
   406 tests.
-- `.tmp/slate-v2`: `bun --filter slate-react typecheck` passed.
-- `.tmp/slate-v2`: `bun lint:fix` passed.
-- `.tmp/slate-v2`: `bun lint` passed.
-- `.tmp/slate-v2`: `bun check` passed.
+- `Plate repo root`: `bun --filter slate-react typecheck` passed.
+- `Plate repo root`: `bun lint:fix` passed.
+- `Plate repo root`: `bun lint` passed.
+- `Plate repo root`: `bun check` passed.
 - `/Users/zbeyens/git/plate-2`: `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-comment-mode-text-selection.md` passed.
 - Cleanup scan found no new `console.log`, `test.only`, `.only(`, or
   `debugger`; only the pre-existing android debug comment matched.

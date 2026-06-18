@@ -3,23 +3,23 @@ title: Slate v2 local overlay proof substrate
 type: source
 status: partial
 source_refs:
-  - .tmp/slate-v2/packages/slate-react/src/projection-store.ts
-  - .tmp/slate-v2/packages/slate-react/src/annotation-store.ts
-  - .tmp/slate-v2/packages/slate-react/src/widget-store.ts
-  - .tmp/slate-v2/packages/slate-react/src/hooks/use-slate-projections.tsx
-  - .tmp/slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx
-  - .tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx
-  - .tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx
-  - .tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx
-  - .tmp/slate-v2/packages/slate/src/interfaces/bookmark.ts
-  - .tmp/slate-v2/packages/slate/src/interfaces/editor.ts
-  - .tmp/slate-v2/packages/slate/src/editor.ts
-  - .tmp/slate-v2/packages/slate/src/range-projection.ts
-  - .tmp/slate-v2/packages/slate/src/core/get-dirty-paths.ts
-  - .tmp/slate-v2/packages/slate/src/core/draft-helpers.ts
-  - .tmp/slate-v2/packages/slate/test/snapshot-contract.ts
-  - .tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx
-  - .tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx
+  - packages/slate-react/src/projection-store.ts
+  - packages/slate-react/src/annotation-store.ts
+  - packages/slate-react/src/widget-store.ts
+  - packages/slate-react/src/hooks/use-slate-projections.tsx
+  - packages/slate-react/src/hooks/use-decoration-selector.tsx
+  - packages/slate-react/test/projections-and-selection-contract.tsx
+  - packages/slate-react/test/annotation-store-contract.tsx
+  - packages/slate-react/test/widget-layer-contract.tsx
+  - packages/slate/src/interfaces/bookmark.ts
+  - packages/slate/src/interfaces/editor.ts
+  - packages/slate/src/editor.ts
+  - packages/slate/src/range-projection.ts
+  - packages/slate/src/core/get-dirty-paths.ts
+  - packages/slate/src/core/draft-helpers.ts
+  - packages/slate/test/snapshot-contract.ts
+  - benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx
+  - benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx
 updated: 2026-04-28
 related:
   - docs/research/entities/slate.md

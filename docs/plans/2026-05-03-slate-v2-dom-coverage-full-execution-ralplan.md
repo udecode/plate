@@ -599,7 +599,7 @@ Performance/stress:
 
 ### Phase 1: Hot Surface Audit And Budget Cuts
 
-Owner: `.tmp/slate-v2` Slate React runtime and benchmark harness.
+Owner: `Plate repo root` Slate React runtime and benchmark harness.
 
 Work:
 

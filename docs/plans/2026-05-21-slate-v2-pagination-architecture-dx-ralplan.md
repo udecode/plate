@@ -19,23 +19,23 @@
 
 ## Source Evidence
 
-- `.tmp/slate-v2/site/examples/ts/pagination.tsx` owns
+- `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx` owns
   `buildPaginationProjection`, path-keyed element boxes, per-text-span line
   decorations, `hitWidth`, and `hitHeight`.
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts` owns
+- `packages/slate-layout/src/index.ts` owns
   `getSlatePageLayoutGeometry`, `getSlatePageLayoutProjection`, pagination
   fragments, root-aware `projectRange`, and layout snapshots.
-- `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx` currently covers
+- `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx` currently covers
   only small block-start shortcuts for headings, block quotes, and lists.
-- `.tmp/slate-v2/site/examples/ts/tables.tsx` is explicitly a basic rendering
+- `apps/www/src/app/(app)/examples/slate/_examples/tables.tsx` is explicitly a basic rendering
   example; table editing is local and minimal, with no table map, row/column
   commands, header/alignment model, selection grid, or pagination geometry.
-- `.tmp/slate-v2/site/examples/ts/custom-types.d.ts` defines table, row, and
+- `apps/www/src/app/(app)/examples/slate/_examples/custom-types.d.ts` defines table, row, and
   cell example types, but these are site example types, not a Slate layout or
   Markdown schema contract.
-- `.tmp/slate-v2/packages/slate-layout/src/react.tsx` keeps `PagedEditable`
+- `packages/slate-layout/src/react.tsx` keeps `PagedEditable`
   focused on fixed page surfaces plus one editable overlay.
-- `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts` proves
+- `apps/www/tests/slate-browser/donor/examples/pagination.test.ts` proves
   blank-tail clicks, paragraph-gap clicks, leading empty paragraphs, caret
   containment, and Backspace behavior in Chromium.
 - `../premirror/packages/react/src/index.tsx` has the right shape: page
@@ -339,7 +339,7 @@ source editor, not a rich Markdown editor.
 | Typora | `docs/research/sources/typora/code-math-table-and-task-surfaces.md` | Markdown surfaces own local editing behavior | parser-only Markdown that feels fake while editing | table/task/code/math behavior as UX authority | full Typora product clone | Plate/app packages over Slate substrate | partial |
 | Lexical | `docs/research/sources/lexical/markdown-package-and-shortcuts-doc-patterns.md` | Markdown package groups import/export, shortcuts, transformers | scattering Markdown features across examples | transformer inventory and explicit conversion layer | Lexical node/update model and raw-Slate Markdown package | Plate Markdown package over Slate substrate | diverge |
 | Tiptap | `docs/research/sources/tiptap/input-rules-and-extension-doc-patterns.md` | dedicated input rules concept plus extension-local authoring | hidden editor-global autoformat magic | explicit input-rule API and extension hook | regex-heavy docs as first DX | Plate/app input-rule packages over Slate hooks | agree |
-| Current Slate v2 | `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`, `.tmp/slate-v2/site/examples/ts/tables.tsx` | example-local transforms and renderers | none; this is the current gap | keep examples as proof fixtures | shipping example-local logic as best practice | substrate-owned layout, feature-owned Markdown/table | gap |
+| Current Slate v2 | `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx`, `apps/www/src/app/(app)/examples/slate/_examples/tables.tsx` | example-local transforms and renderers | none; this is the current gap | keep examples as proof fixtures | shipping example-local logic as best practice | substrate-owned layout, feature-owned Markdown/table | gap |
 
 ## Architecture North Star
 
@@ -459,10 +459,10 @@ Planning-only gate:
 node tooling/scripts/completion-check.mjs --id 019e46be-4ec4-7d11-bc6e-9fcf033a8803
 ```
 
-Implementation gates after Ralph changes `.tmp/slate-v2`:
+Implementation gates after Ralph changes `Plate repo root`:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun --filter slate-layout test
 bun --filter slate-layout-pretext test
 bun --filter slate-layout typecheck
@@ -683,7 +683,7 @@ Fixed issue claims added: none.
 Improved issue claims added: none.
 
 PR description update: unchanged. Reason: this is a planning-only Ralplan update
-with no new fixed/improved issue count, no `.tmp/slate-v2` implementation proof,
+with no new fixed/improved issue count, no `Plate repo root` implementation proof,
 and no current PR-body claim to change. The implementation phase must update
 `docs/slate-v2/references/pr-description.md` when layout projection APIs or
 generic substrate APIs actually land.
@@ -809,7 +809,7 @@ callbacks.
 
 Changed files:
 
-- `.tmp/slate-v2/config/typescript/tsconfig.json`
+- `Plate repo root/config/typescript/tsconfig.json`
 - raw Slate Markdown/table package directories
 - `docs/slate-v2/references/pr-description.md`
 
@@ -832,15 +832,15 @@ Next owner:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts`
-- `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts`
-- `.tmp/slate-v2/packages/slate-layout/dist/index.js`
-- `.tmp/slate-v2/packages/slate-layout/dist/index.d.ts`
-- `.tmp/slate-v2/packages/slate-layout/dist/index.d.ts.map`
-- `.tmp/slate-v2/packages/slate-layout/dist/src-DIexvwjR.js`
-- `.tmp/slate-v2/packages/slate-layout/dist/src-DIexvwjR.js.map`
-- `.tmp/slate-v2/packages/slate-layout-pretext/dist/index.js`
-- `.tmp/slate-v2/packages/slate-layout-pretext/dist/index.js.map`
+- `packages/slate-layout/src/index.ts`
+- `packages/slate-layout/test/page-layout-contract.test.ts`
+- `packages/slate-layout/dist/index.js`
+- `packages/slate-layout/dist/index.d.ts`
+- `packages/slate-layout/dist/index.d.ts.map`
+- `packages/slate-layout/dist/src-DIexvwjR.js`
+- `packages/slate-layout/dist/src-DIexvwjR.js.map`
+- `packages/slate-layout-pretext/dist/index.js`
+- `packages/slate-layout-pretext/dist/index.js.map`
 - `docs/slate-v2/references/pr-description.md`
 
 What landed:
@@ -880,15 +880,15 @@ Next owner:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts`
-- `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts`
-- `.tmp/slate-v2/packages/slate-layout/dist/index.js`
-- `.tmp/slate-v2/packages/slate-layout/dist/index.d.ts`
-- `.tmp/slate-v2/packages/slate-layout/dist/index.d.ts.map`
-- `.tmp/slate-v2/packages/slate-layout/dist/src-DIexvwjR.js`
-- `.tmp/slate-v2/packages/slate-layout/dist/src-DIexvwjR.js.map`
-- `.tmp/slate-v2/packages/slate-layout-pretext/dist/index.js`
-- `.tmp/slate-v2/packages/slate-layout-pretext/dist/index.js.map`
+- `packages/slate-layout/src/index.ts`
+- `packages/slate-layout/test/page-layout-contract.test.ts`
+- `packages/slate-layout/dist/index.js`
+- `packages/slate-layout/dist/index.d.ts`
+- `packages/slate-layout/dist/index.d.ts.map`
+- `packages/slate-layout/dist/src-DIexvwjR.js`
+- `packages/slate-layout/dist/src-DIexvwjR.js.map`
+- `packages/slate-layout-pretext/dist/index.js`
+- `packages/slate-layout-pretext/dist/index.js.map`
 - `docs/slate-v2/references/pr-description.md`
 
 What landed:
@@ -928,16 +928,16 @@ Next owner:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts`
-- `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts`
-- `.tmp/slate-v2/packages/slate-layout/dist/index.js`
-- `.tmp/slate-v2/packages/slate-layout/dist/index.d.ts`
-- `.tmp/slate-v2/packages/slate-layout/dist/index.d.ts.map`
-- `.tmp/slate-v2/packages/slate-layout/dist/src-DIexvwjR.js`
-- `.tmp/slate-v2/packages/slate-layout/dist/src-DIexvwjR.js.map`
-- `.tmp/slate-v2/packages/slate-layout-pretext/dist/index.js`
-- `.tmp/slate-v2/packages/slate-layout-pretext/dist/index.js.map`
-- `.tmp/slate-v2/site/examples/ts/pagination.tsx`
+- `packages/slate-layout/src/index.ts`
+- `packages/slate-layout/test/page-layout-contract.test.ts`
+- `packages/slate-layout/dist/index.js`
+- `packages/slate-layout/dist/index.d.ts`
+- `packages/slate-layout/dist/index.d.ts.map`
+- `packages/slate-layout/dist/src-DIexvwjR.js`
+- `packages/slate-layout/dist/src-DIexvwjR.js.map`
+- `packages/slate-layout-pretext/dist/index.js`
+- `packages/slate-layout-pretext/dist/index.js.map`
+- `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx`
 
 What landed:
 
@@ -987,9 +987,9 @@ Next owner:
 
 Changed files:
 
-- `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`
-- `.tmp/slate-v2/site/examples/ts/pagination.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/custom-types.d.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx`
+- `apps/www/tests/slate-browser/donor/examples/pagination.test.ts`
 - `docs/slate-v2/references/pr-description.md`
 
 What landed:
@@ -1038,11 +1038,11 @@ Next owner:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts`
-- `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts`
-- `.tmp/slate-v2/site/examples/ts/pagination.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts`
-- `.tmp/slate-v2/.changeset/slate-layout-avoid-split-boxes.md`
+- `packages/slate-layout/src/index.ts`
+- `packages/slate-layout/test/page-layout-contract.test.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx`
+- `apps/www/tests/slate-browser/donor/examples/pagination.test.ts`
+- `Plate repo root/.changeset/slate-layout-avoid-split-boxes.md`
 - `docs/plans/2026-05-21-slate-v2-pagination-page-flow-fix.md`
 
 What landed:
@@ -1073,10 +1073,10 @@ Next owner:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`
-- `.tmp/slate-v2/packages/slate/test/delete-contract.ts`
-- `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts`
-- `.tmp/slate-v2/.changeset/slate-delete-leading-breaks.md`
+- `packages/slate/src/transforms-text/delete-text.ts`
+- `packages/slate/test/delete-contract.ts`
+- `apps/www/tests/slate-browser/donor/examples/pagination.test.ts`
+- `Plate repo root/.changeset/slate-delete-leading-breaks.md`
 
 What landed:
 

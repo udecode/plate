@@ -215,9 +215,9 @@ remain at the typed end.
 
 Proof:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/site/examples/ts/decorations-async.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/decorations-async.tsx`
+- `apps/www/tests/slate-browser/donor/examples/decorations-async.test.ts`
 - `docs/plans/2026-05-23-slate-v2-async-decoration-caret-cluster-proof.md`
 
 ### Cluster 11: Android empty-node voice input duplication

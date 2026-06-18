@@ -40,14 +40,14 @@ Completion threshold:
 
 Verification surface:
 - Plan artifact: this file plus final `check-complete` from `plate-2`.
-- Live source grounding: current `.tmp/slate-v2` `slate-react` input runtime,
+- Live source grounding: current `Plate repo root` `slate-react` input runtime,
   DOM repair, native input policy, `slate-layout`, and pagination example.
-- Execution proof to require later from `.tmp/slate-v2`: focused unit tests for
+- Execution proof to require later from `Plate repo root`: focused unit tests for
   transaction scheduling/flush boundaries, focused Playwright for virtualized
   pagination typing, typecheck, scoped lint, and dirty-local autoreview if
   implementation is non-trivial.
 - Planning-only checks run in `plate-2`; any Slate v2 source/runtime/browser/API
-  claim must cite and verify the live `.tmp/slate-v2` workspace command.
+  claim must cite and verify the live `Plate repo root` workspace command.
 
 Constraints:
 - Planning mode only in this activation: no Slate v2 implementation patch.
@@ -63,14 +63,14 @@ Constraints:
 Boundaries:
 - Allowed planning edits: this plan and later triggered research/ledger files.
 - Current source read scope:
-  `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-input-events.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/native-input-strategy.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`,
-  `.tmp/slate-v2/packages/slate-layout/src/index.ts`,
-  `.tmp/slate-v2/packages/slate-layout/src/react.tsx`, and
-  `.tmp/slate-v2/site/examples/ts/pagination.tsx`.
+  `packages/slate-react/src/editable/input-router.ts`,
+  `packages/slate-react/src/editable/runtime-before-input-events.ts`,
+  `packages/slate-react/src/editable/runtime-input-events.ts`,
+  `packages/slate-react/src/editable/native-input-strategy.ts`,
+  `packages/slate-react/src/editable/dom-repair-queue.ts`,
+  `packages/slate-layout/src/index.ts`,
+  `packages/slate-layout/src/react.tsx`, and
+  `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx`.
 - Non-goal for this planning pass: implementation, commit, PR, or broad
   issue-ledger rewrite.
 - Allowed edit scope: `docs/plans/**`, `docs/research/**`,
@@ -90,7 +90,7 @@ Slate Plan lane state:
 - current_pass: verification-plan-and-objection-ledger
 - current_pass_status: complete
 - next_pass: none
-- next_action: accepted-plan execution can start in `.tmp/slate-v2` after user
+- next_action: accepted-plan execution can start in `Plate repo root` after user
   review; implementation may vary internals but must keep the invariants and
   keep iterating until the measurable proof gates pass
 - final_handoff_status: complete
@@ -123,9 +123,9 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | `slate-plan` explicitly invoked; standard mode selected because user asked for durable plan and measurable auto-iteration goal. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created this Slate Plan planning goal. |
-| Source of truth read before edits | yes | Latest user request plus live `.tmp/slate-v2` source listed in Boundaries. |
+| Source of truth read before edits | yes | Latest user request plus live `Plate repo root` source listed in Boundaries. |
 | `docs/solutions` checked for non-trivial existing-code work | no | N/A for current-state planning pass; no implementation patch in this activation. |
-| Live `.tmp/slate-v2` grounding needed for current-state claims | yes | Read current input router, beforeinput runtime, native input strategy, DOM repair, layout refresh, paged rendering, and pagination example source. |
+| Live `Plate repo root` grounding needed for current-state claims | yes | Read current input router, beforeinput runtime, native input strategy, DOM repair, layout refresh, paged rendering, and pagination example source. |
 
 Work Checklist:
 - [x] Objective includes lane outcome, full pass schedule, one-pass-per-
@@ -163,10 +163,10 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | yes | Define exact unit, browser, benchmark, and closeout proof gates, with numeric stop conditions | Verification matrix below names `.tmp/slate-v2` commands and budgets: p95 visible typing `<=120ms`, 36-char settle `<=600ms`, DOM `<=1400`, page surfaces `<=10`, no fixed debounce correctness. |
-| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | yes | Record live `.tmp/slate-v2` command/proof or mark as planning-only with reason | Planning-only: no source patch or issue-fix claim. Live source/test surfaces were read and execution commands are listed for later proof. |
+| Named verification threshold | yes | Define exact unit, browser, benchmark, and closeout proof gates, with numeric stop conditions | Verification matrix below names `Plate repo root` commands and budgets: p95 visible typing `<=120ms`, 36-char settle `<=600ms`, DOM `<=1400`, page surfaces `<=10`, no fixed debounce correctness. |
+| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | yes | Record live `Plate repo root` command/proof or mark as planning-only with reason | Planning-only: no source patch or issue-fix claim. Live source/test surfaces were read and execution commands are listed for later proof. |
 | Issue ledger or PR reference changed | yes | Sync the relevant ledger/reference row or record why no sync applies | No sync applies: this plan keeps related issue rows as non-claim/proof-route guardrails and does not add PR close text. |
-| Autoreview for uncommitted implementation changes | no | Load `.agents/skills/autoreview/SKILL.md`; run the helper from the git checkout that owns the implementation diff (`.tmp/slate-v2` for Slate v2 patches) until no accepted/actionable findings, or record N/A for planning-only/no local patch | N/A planning-only: no `.tmp/slate-v2` implementation diff is introduced by this plan pass. Execution phase must run autoreview from `.tmp/slate-v2` if it patches source. |
+| Autoreview for uncommitted implementation changes | no | Load `.agents/skills/autoreview/SKILL.md`; run the helper from the git checkout that owns the implementation diff (`Plate repo root` for Slate v2 patches) until no accepted/actionable findings, or record N/A for planning-only/no local patch | N/A planning-only: no `Plate repo root` implementation diff is introduced by this plan pass. Execution phase must run autoreview from `Plate repo root` if it patches source. |
 | Final user-review handoff | yes | Emit final handoff or keep the plan pending with the next pass | Final handoff section is filled below with accepted items, cuts, non-claims, proof gates, and execution owner. |
 | Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-31-real-time-virtualized-typing-architecture.md` | Passed in `/Users/zbeyens/git/plate-2`; no Slate behavior proof is claimed by this command. |
 
@@ -177,7 +177,7 @@ Phase / pass table:
 | Related issue discovery | complete | read requirements, clusters, pilot dossier, benchmark map, issue coverage matrix, v2 sync ledger, and open issue ledger rows for input/runtime, selection, virtualization, rerender, and transaction-boundary pressure | issue-ledger pass |
 | Issue-ledger pass | complete | existing sync ledger, coverage matrix, open issue ledger, and PR reference already keep the relevant rows as related/proof-route/non-claimed; no ledger/reference edit is needed until this plan promotes or changes an issue claim | intent/boundary pass |
 | Intent/boundary and decision brief | complete | decision fixed: internal DOM-first native text transaction scheduler, deterministic flush boundaries, and layout invalidation; adoption story and hard cuts recorded | research refresh |
-| Research, ecosystem strategy, live-source refresh | complete | ProseMirror transaction/DOMObserver model, react-prosemirror React flush bridge, Lexical update/read/dirties/reconciler model, Pretext deterministic offscreen layout constraints, Tiptap Pages limitations/table workaround, and live `.tmp/slate-v2` source refreshed | pressure passes |
+| Research, ecosystem strategy, live-source refresh | complete | ProseMirror transaction/DOMObserver model, react-prosemirror React flush bridge, Lexical update/read/dirties/reconciler model, Pretext deterministic offscreen layout constraints, Tiptap Pages limitations/table workaround, and live `Plate repo root` source refreshed | pressure passes |
 | Performance/DX/migration/regression/simplicity pressure passes | complete | pressure pass chose runtime-owned pending native text transactions, flush-before-boundary as default, dirty top-level layout invalidation with prefix reuse/suffix recomposition, and no new public API | verification plan and objection ledger |
 | High-risk deliberate mode | complete | high-risk pre-mortem plus pressure pass covers stale reads, remounts, layout breadth, collaboration/history, and IME/mobile overclaim | verification plan and objection ledger |
 | Ecosystem maintainer pass | skipped | no public external ecosystem API claim; external systems are evidence only, not compatibility targets | final closeout |
@@ -357,7 +357,7 @@ Ecosystem strategy synthesis:
 | Lexical | `../lexical/packages/lexical-website/docs/intro.md:80-106`, `:110-116`; `../lexical/packages/lexical-website/docs/concepts/editor-state.md:122-134`, `:193-228`; `../lexical/packages/lexical-website/docs/concepts/transforms.md:52-93`; `../lexical/packages/lexical/src/LexicalUpdates.ts:505-553`, `:914-1053` | Immutable current state plus pending mutable state; reads flush pending updates; commands run in update context; dirty leaves/elements drive reconciliation; discrete updates force sync commit. | Full-tree recompute, stale reads, and unbounded transform loops. | Read/update boundary semantics, dirty-set invalidation, sync commit escape hatch, and clear dirty-selection validation. | Lexical's node model, transform system, and public `$` helper API. | Pending native text queue must define read/flush semantics and dirty affected ranges without changing Slate's public model. | strongest runtime comparator |
 | Pretext | `../pretext/AGENTS.md:49-78`; `../pretext/pages/demos/markdown-chat.data.ts:142-146`; `../pretext/src/layout.test.ts:1226-1298` | Prepare-time text measurement and deterministic line walking after width/fonts are known; hot layout path has no DOM/canvas reads. | Asking DOM for offscreen heights during virtualization. | Offscreen/page height planning and streaming line cursor API as a future layout oracle. | Making Pretext authoritative for active editing caret/composition, or claiming cross-client fidelity while `prepare()` still relies on canvas/browser font metrics. | Use DOM truth for the active edit corridor; use Pretext-like APIs only for offscreen estimation/page planning and tests. | bounded adoption |
 | Tiptap Pages | `../tiptap-docs/src/content/pages/core-concepts/limitations.mdx:11-20`; `../tiptap-docs/src/content/pages/guides/table-with-pages.mdx:16-66`; `../tiptap-docs/src/content/pages/core-concepts/options.mdx:11-87` | Page layout is product-facing; tables need a Pages-specific table package because table layout/splitting is heavily modified. | Pretending CSS page gaps solve complex block/table splitting. | Clear owner split: page/layout package owns table/media split policy, not the core text runtime. | CSS-float pagination limits, semantic AST splitting as the default answer, or page options as a typing correctness knob. | `slate-layout` owns split policy/invalidation; `slate-react` owns text input. Tables/media need provider-owned layout fragments, not arbitrary AST mutation. | cautionary reference |
-| Current Slate v2 | `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts:42`, `:447-534`; `runtime-input-events.ts:159-177`; `dom-repair-queue.ts:330-345`; `slate-layout/src/index.ts:487-488`, `:2468-2545`, `:2554-2628`; `slate-layout/src/react.tsx:454-490`; `site/examples/ts/pagination.tsx:1708-1803` | Native path exists and virtualized mode can defer repair, but correctness and layout settle still depend on fixed timers and broad snapshot/projection work. | Duplicate React capture repair and app-owned batching. | Existing DOM repair import, native-safety policy, and page fragment projection as starting points. | Keeping `80ms`/`320-640ms` timers as the architecture. | Replace with deterministic flush + dirty block/page invalidation; keep implementation details free to iterate against metrics. | revise |
+| Current Slate v2 | `packages/slate-react/src/editable/input-router.ts:42`, `:447-534`; `runtime-input-events.ts:159-177`; `dom-repair-queue.ts:330-345`; `slate-layout/src/index.ts:487-488`, `:2468-2545`, `:2554-2628`; `slate-layout/src/react.tsx:454-490`; `site/examples/ts/pagination.tsx:1708-1803` | Native path exists and virtualized mode can defer repair, but correctness and layout settle still depend on fixed timers and broad snapshot/projection work. | Duplicate React capture repair and app-owned batching. | Existing DOM repair import, native-safety policy, and page fragment projection as starting points. | Keeping `80ms`/`320-640ms` timers as the architecture. | Replace with deterministic flush + dirty block/page invalidation; keep implementation details free to iterate against metrics. | revise |
 
 Legacy regression proof matrix:
 | Regression class | Legacy behavior | Slate v2 target | Proof route | Owner | Status |
@@ -390,17 +390,17 @@ Browser stress / parity strategy:
 Execution verification matrix:
 | Gate | Cwd | Command | Must prove | Stop condition |
 |------|-----|---------|------------|----------------|
-| Native text scheduler and flush contracts | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | `bun --filter slate-react test:vitest -- input-router-contract.test.tsx runtime-repair-engine-contract.test.tsx model-input-strategy-contract.test.ts native-input-strategy-contract.test.ts editing-kernel-contract.test.ts editing-epoch-kernel-contract.test.ts keyboard-input-strategy-contract.test.ts selection-runtime-contract.test.ts selection-controller-contract.test.ts projected-collab-substrate-contract.test.ts` | Pending text preserves order/root/path/range; every command/read/selection/blur/composition/history/collab boundary flushes or explicitly proves a merged pending view. | All rows green; no correctness dependency on a fixed timer. |
-| History/collab transaction visibility | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | `bun test ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate-history/test/history-contract.ts ./packages/slate-history/test/document-state-history-contract.ts` | Flushed native text appears as normal Slate operations with history/collab metadata; undo/redo and remote apply do not see hidden DOM draft state. | All rows green after scheduler changes. |
-| Layout invalidation | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | `bun --filter ./packages/slate-layout test` | Committed text edits use `dirtyTopLevelRanges` / `dirtyPaths`, reuse prefix layout, and recompose suffix only until page-break/height convergence. | Layout tests green plus a new affected-range regression row. |
-| Page virtualization unit contract | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | `bun --filter slate-react test:vitest -- dom-strategy-page-virtualization.test.tsx dom-strategy-and-scroll.test.tsx render-profiler-contract.test.tsx` | Virtualized mode retains page items, maps split-table rows to page items, emits stable metrics, and keeps render profiler counters bounded. | Unit tests green and metrics do not loop on unchanged virtualized state. |
-| Pagination browser perf and correctness | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bunx playwright test playwright/integration/examples/pagination.test.ts --project=chromium` | Direct virtualized load, staged-to-virtualized switch, 1000-page route, 10-page table, fast scroll, mid-document typing, burst typing, margin selection, and projected paragraph click/edit stay correct. | p95 visible typing `<=120ms`; 36-char burst settle `<=600ms`; DOM `<=1400`; page surfaces `<=10`; no dropped/reordered chars; model selection equals visible caret. |
-| Huge-document regression proof | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bunx playwright test playwright/integration/examples/huge-document.test.ts --project=chromium` | Existing staged/virtualized long-editor focus, scroll, typing, and undo rows still pass after scheduler/layout changes. | Chromium row green; no regression in scroll-to-caret behavior. |
-| React and browser benchmark proof | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | `REACT_ACTIVE_TYPING_BREAKDOWN_BLOCKS=5000 REACT_ACTIVE_TYPING_BREAKDOWN_TYPE_OPS=36 bun bench:react:active-typing:local` | Active typing does not broaden React rerender work or require app-side memo/debounce ceremony. | Artifact shows bounded active typing work against current baseline. |
-| Huge-document trace proof | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | `SLATE_BROWSER_TRACE_BLOCKS=5000 SLATE_BROWSER_TRACE_TYPE_OPS=36 bun bench:react:huge-document:browser-trace:local` | Browser trace has no long-task/long-animation-frame regression that contradicts the Playwright perf row. | Artifact remains under accepted benchmark budget or records a blocker. |
-| Final fast package gate | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | `bun check` | Source changes pass lint, typecheck, and fast package tests. | Green before handoff. |
-| Release-quality browser claim gate | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | `bun check:full` | Release-proof guards plus full integration sweep pass before any production-ready browser claim. | Green only when execution claims release-quality browser behavior. |
-| Implementation autoreview | `/Users/zbeyens/git/plate-2/.tmp/slate-v2` | Load `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/SKILL.md` and run its local helper from this checkout. | Non-trivial scheduler/layout implementation has no accepted/actionable review findings. | Clean autoreview or documented accepted exceptions. |
+| Native text scheduler and flush contracts | `/Users/zbeyens/git/plate-2/Plate repo root` | `bun --filter slate-react test:vitest -- input-router-contract.test.tsx runtime-repair-engine-contract.test.tsx model-input-strategy-contract.test.ts native-input-strategy-contract.test.ts editing-kernel-contract.test.ts editing-epoch-kernel-contract.test.ts keyboard-input-strategy-contract.test.ts selection-runtime-contract.test.ts selection-controller-contract.test.ts projected-collab-substrate-contract.test.ts` | Pending text preserves order/root/path/range; every command/read/selection/blur/composition/history/collab boundary flushes or explicitly proves a merged pending view. | All rows green; no correctness dependency on a fixed timer. |
+| History/collab transaction visibility | `/Users/zbeyens/git/plate-2/Plate repo root` | `bun test ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate-history/test/history-contract.ts ./packages/slate-history/test/document-state-history-contract.ts` | Flushed native text appears as normal Slate operations with history/collab metadata; undo/redo and remote apply do not see hidden DOM draft state. | All rows green after scheduler changes. |
+| Layout invalidation | `/Users/zbeyens/git/plate-2/Plate repo root` | `bun --filter ./packages/slate-layout test` | Committed text edits use `dirtyTopLevelRanges` / `dirtyPaths`, reuse prefix layout, and recompose suffix only until page-break/height convergence. | Layout tests green plus a new affected-range regression row. |
+| Page virtualization unit contract | `/Users/zbeyens/git/plate-2/Plate repo root` | `bun --filter slate-react test:vitest -- dom-strategy-page-virtualization.test.tsx dom-strategy-and-scroll.test.tsx render-profiler-contract.test.tsx` | Virtualized mode retains page items, maps split-table rows to page items, emits stable metrics, and keeps render profiler counters bounded. | Unit tests green and metrics do not loop on unchanged virtualized state. |
+| Pagination browser perf and correctness | `/Users/zbeyens/git/plate-2/Plate repo root` | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bunx playwright test playwright/integration/examples/pagination.test.ts --project=chromium` | Direct virtualized load, staged-to-virtualized switch, 1000-page route, 10-page table, fast scroll, mid-document typing, burst typing, margin selection, and projected paragraph click/edit stay correct. | p95 visible typing `<=120ms`; 36-char burst settle `<=600ms`; DOM `<=1400`; page surfaces `<=10`; no dropped/reordered chars; model selection equals visible caret. |
+| Huge-document regression proof | `/Users/zbeyens/git/plate-2/Plate repo root` | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bunx playwright test playwright/integration/examples/huge-document.test.ts --project=chromium` | Existing staged/virtualized long-editor focus, scroll, typing, and undo rows still pass after scheduler/layout changes. | Chromium row green; no regression in scroll-to-caret behavior. |
+| React and browser benchmark proof | `/Users/zbeyens/git/plate-2/Plate repo root` | `REACT_ACTIVE_TYPING_BREAKDOWN_BLOCKS=5000 REACT_ACTIVE_TYPING_BREAKDOWN_TYPE_OPS=36 bun bench:react:active-typing:local` | Active typing does not broaden React rerender work or require app-side memo/debounce ceremony. | Artifact shows bounded active typing work against current baseline. |
+| Huge-document trace proof | `/Users/zbeyens/git/plate-2/Plate repo root` | `SLATE_BROWSER_TRACE_BLOCKS=5000 SLATE_BROWSER_TRACE_TYPE_OPS=36 bun bench:react:huge-document:browser-trace:local` | Browser trace has no long-task/long-animation-frame regression that contradicts the Playwright perf row. | Artifact remains under accepted benchmark budget or records a blocker. |
+| Final fast package gate | `/Users/zbeyens/git/plate-2/Plate repo root` | `bun check` | Source changes pass lint, typecheck, and fast package tests. | Green before handoff. |
+| Release-quality browser claim gate | `/Users/zbeyens/git/plate-2/Plate repo root` | `bun check:full` | Release-proof guards plus full integration sweep pass before any production-ready browser claim. | Green only when execution claims release-quality browser behavior. |
+| Implementation autoreview | `/Users/zbeyens/git/plate-2/Plate repo root` | Load `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/SKILL.md` and run its local helper from this checkout. | Non-trivial scheduler/layout implementation has no accepted/actionable review findings. | Clean autoreview or documented accepted exceptions. |
 
 Execution auto-iteration rule:
 - Start by making the scheduler/unit rows red for the exact invariants above,
@@ -428,15 +428,15 @@ Execution TDD queue:
 Verification workspace gate:
 | Claim | Workspace | Command | Result | Owner |
 |-------|-----------|---------|--------|-------|
-| Current source grounding only | `.tmp/slate-v2` | `nl -ba <source files> | sed ...` | source read complete; no behavior proof claimed in planning pass | slate-plan current-state pass |
+| Current source grounding only | `Plate repo root` | `nl -ba <source files> | sed ...` | source read complete; no behavior proof claimed in planning pass | slate-plan current-state pass |
 | External runtime comparator grounding | sibling repos from `/Users/zbeyens/git/plate-2` | targeted `nl -ba` / `rg` reads in `../prosemirror-*`, `../react-prosemirror`, `../lexical`, `../pretext`, and `../tiptap-docs` | comparator evidence complete for planning; no external implementation borrowed | slate-plan research pass |
-| Pressure source grounding | `.tmp/slate-v2` | targeted `rg` / `nl -ba` reads for commit dirtiness, layout extraction/projection, DOM repair, kernel trace, node selectors, and page mount plan | pressure pass complete; no behavior proof claimed | slate-plan pressure pass |
-| Test and benchmark surface grounding | `.tmp/slate-v2` | read `slate-react` and `slate-layout` package scripts, pagination/huge-document Playwright specs, input-router/runtime-repair/page-virtualization/render-profiler/layout tests, and benchmark scripts | verification pass complete; execution proof commands named above | slate-plan verification pass |
+| Pressure source grounding | `Plate repo root` | targeted `rg` / `nl -ba` reads for commit dirtiness, layout extraction/projection, DOM repair, kernel trace, node selectors, and page mount plan | pressure pass complete; no behavior proof claimed | slate-plan pressure pass |
+| Test and benchmark surface grounding | `Plate repo root` | read `slate-react` and `slate-layout` package scripts, pagination/huge-document Playwright specs, input-router/runtime-repair/page-virtualization/render-profiler/layout tests, and benchmark scripts | verification pass complete; execution proof commands named above | slate-plan verification pass |
 
 Autoreview workspace gate:
 | Reviewed patch owner | Cwd | Command | Result | Notes |
 |----------------------|-----|---------|--------|-------|
-| Planning-only pass | `/Users/zbeyens/git/plate-2` | N/A | No implementation patch to review | Execution must run autoreview from `.tmp/slate-v2` after non-trivial source changes. |
+| Planning-only pass | `/Users/zbeyens/git/plate-2` | N/A | No implementation patch to review | Execution must run autoreview from `Plate repo root` after non-trivial source changes. |
 
 Applicable implementation-skill review matrix:
 | Lens | Applies | Status | Findings | Plan delta |
@@ -504,7 +504,7 @@ Plan deltas from review:
   transactions, flush-before-boundary as the default, no merged pending read
   view unless proof demands it, and `dirtyTopLevelRanges`-driven layout
   invalidation with prefix reuse plus suffix recomposition.
-- Verification pass named exact `.tmp/slate-v2` unit, browser, benchmark, fast
+- Verification pass named exact `Plate repo root` unit, browser, benchmark, fast
   package, full browser, and autoreview gates. It also closed maintainer
   objections and defined the auto-iteration stop rule: keep changing internals
   until the same command set proves the numeric budgets or a precise blocker is
@@ -530,8 +530,8 @@ Fast driver gates:
 | Gate | Cwd | Command / artifact | Proves | Status |
 |------|-----|--------------------|--------|--------|
 | planning artifact check | plate-2 | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-31-real-time-virtualized-typing-architecture.md` | final plan/template integrity | complete |
-| current source grounding | .tmp/slate-v2 | source reads listed in Boundaries | current state claims | complete |
-| Slate v2 behavior check | .tmp/slate-v2 | execution verification matrix above | runtime/browser behavior | named for accepted-plan execution |
+| current source grounding | Plate repo root | source reads listed in Boundaries | current state claims | complete |
+| Slate v2 behavior check | Plate repo root | execution verification matrix above | runtime/browser behavior | named for accepted-plan execution |
 
 Final user-review handoff outline:
 - accepted plan items: internal DOM-first native text transaction scheduler;
@@ -550,7 +550,7 @@ Final user-review handoff outline:
 - proof gates: execution must pass the unit, layout, Playwright, benchmark,
   `bun check`, and autoreview rows above; `bun check:full` is required before a
   release-quality browser claim.
-- accepted-plan execution handoff: work in `.tmp/slate-v2`, use the TDD queue,
+- accepted-plan execution handoff: work in `Plate repo root`, use the TDD queue,
   keep implementation details flexible, and keep iterating until the numeric
   budgets pass or a precise blocker is recorded.
 
@@ -560,9 +560,9 @@ Final completion gates:
 | score >= 0.92 and no dimension below 0.85 | scorecard rows cite evidence | complete: weighted score is above 0.92 and no row is below 0.91. |
 | all pass rows complete or skipped with evidence | phase/pass table closed | complete: every phase row is complete or skipped with reason. |
 | issue/reference sync closed | issue-ledger sync status closed | complete: no sync applies because no issue/PR close claim changed. |
-| live source grounding complete | source-backed rows cite current owners | complete: source and test/bench surfaces were read in `.tmp/slate-v2`. |
+| live source grounding complete | source-backed rows cite current owners | complete: source and test/bench surfaces were read in `Plate repo root`. |
 | workspace verification recorded | verification workspace gate closed | complete: planning-only proof recorded and execution commands named. |
-| autoreview clean or N/A | `.agents/skills/autoreview/SKILL.md` loaded and clean from the git checkout that owns non-trivial uncommitted implementation changes (`.tmp/slate-v2` for Slate v2 patches), or N/A with reason | complete: N/A because this pass changed only the planning artifact. |
+| autoreview clean or N/A | `.agents/skills/autoreview/SKILL.md` loaded and clean from the git checkout that owns non-trivial uncommitted implementation changes (`Plate repo root` for Slate v2 patches), or N/A with reason | complete: N/A because this pass changed only the planning artifact. |
 | final handoff emitted or lane remains active | final response / next pass recorded | complete: handoff section above is filled and `next_pass` is `none`. |
 | `check-complete` passes | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-31-real-time-virtualized-typing-architecture.md` | complete: `[autogoal] complete: docs/plans/2026-05-31-real-time-virtualized-typing-architecture.md`. |
 
@@ -664,7 +664,7 @@ External/browser findings:
 
 Timeline:
 - 2026-05-31T08:06:27.640Z Slate Plan goal plan created.
-- 2026-05-31 Current-state pass completed from live `.tmp/slate-v2` source.
+- 2026-05-31 Current-state pass completed from live `Plate repo root` source.
 - 2026-05-31 Related issue discovery completed from durable issue ledgers and
   benchmark maps; no fixed issue claim made.
 - 2026-05-31 Issue-ledger sync pass completed: no ledger/reference edit needed
@@ -674,7 +674,7 @@ Timeline:
   pagination-local text batching rejected.
 - 2026-05-31 Focused research and live-source refresh pass completed:
   ProseMirror, react-prosemirror, Lexical, Pretext, Tiptap Pages, and current
-  `.tmp/slate-v2` source evidence recorded; next pass is pressure review.
+  `Plate repo root` source evidence recorded; next pass is pressure review.
 - 2026-05-31 Performance/DX/regression pressure pass completed: cut hook-local
   timer repair as the unit, chose runtime-owned pending native text transactions,
   flush-before-boundary, commit-dirtiness layout invalidation, and no public
@@ -686,14 +686,14 @@ Timeline:
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-31-real-time-virtualized-typing-architecture.md`.
 
 Verification evidence:
-- Planning source read, cwd `/Users/zbeyens/git/plate-2/.tmp/slate-v2`:
+- Planning source read, cwd `/Users/zbeyens/git/plate-2/Plate repo root`:
   `nl -ba packages/slate-react/src/editable/input-router.ts`,
   `runtime-before-input-events.ts`, `runtime-input-events.ts`,
   `native-input-strategy.ts`, `dom-repair-queue.ts`,
   `packages/slate-layout/src/index.ts`, `packages/slate-layout/src/react.tsx`,
   and `site/examples/ts/pagination.tsx`.
 - Intent/decision pass source refresh, cwd `/Users/zbeyens/git/plate-2`:
-  `nl -ba .tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`,
+  `nl -ba packages/slate-react/src/editable/input-router.ts`,
   `runtime-before-input-events.ts`, `runtime-input-events.ts`,
   `native-input-strategy.ts`, `dom-repair-queue.ts`,
   `packages/slate-layout/src/index.ts`,
@@ -704,18 +704,18 @@ Verification evidence:
   `../react-prosemirror`, `../lexical`, `../pretext`, and `../tiptap-docs`;
   comparator evidence is planning-only and does not claim copied code.
 - Pressure pass, cwd `/Users/zbeyens/git/plate-2`: targeted `rg` and `nl -ba`
-  reads in `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`,
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts`,
-  `.tmp/slate-v2/packages/slate-layout/src/index.ts`,
-  `.tmp/slate-v2/packages/slate-layout/src/page-mount-plan.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-kernel-trace.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx`, and
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx`.
+  reads in `packages/slate/src/interfaces/editor.ts`,
+  `packages/slate/src/core/public-state.ts`,
+  `packages/slate-layout/src/index.ts`,
+  `packages/slate-layout/src/page-mount-plan.ts`,
+  `packages/slate-react/src/editable/model-input-strategy.ts`,
+  `packages/slate-react/src/editable/runtime-kernel-trace.ts`,
+  `packages/slate-react/src/hooks/use-node-selector.tsx`, and
+  `packages/slate-react/src/hooks/use-editor-selector.tsx`.
 - No Slate v2 behavior command run in this planning pass; no implementation
   behavior claim made beyond current source shape.
 - Verification pass, cwd `/Users/zbeyens/git/plate-2`: read
-  `.tmp/slate-v2/package.json`, `packages/slate-react/package.json`,
+  `Plate repo root/package.json`, `packages/slate-react/package.json`,
   `packages/slate-layout/package.json`, `playwright.config.ts`,
   `playwright/integration/examples/pagination.test.ts`,
   `playwright/integration/examples/huge-document.test.ts`,
@@ -730,7 +730,7 @@ Reboot status:
 | Question | Answer |
 |----------|--------|
 | Where am I? | Slate Plan ready for user review after the final mechanical check. |
-| Where am I going? | Accepted-plan execution in `.tmp/slate-v2`: write the red tests, replace timeout-owned correctness with the internal scheduler, add layout invalidation, and iterate until the browser budgets pass. |
+| Where am I going? | Accepted-plan execution in `Plate repo root`: write the red tests, replace timeout-owned correctness with the internal scheduler, add layout invalidation, and iterate until the browser budgets pass. |
 | What is the goal? | Produce a user-review-ready architecture plan for real-time virtualized typing, then let execution mode auto-iterate against measurable browser budgets. |
 | What have I learned? | The best long-term decision is an internal DOM-first transaction scheduler plus deterministic flush and commit-dirtiness-driven layout invalidation; a hook-local debounce is the wrong unit, and a merged pending read view is overkill until proof says otherwise. |
 | What have I done? | Created the planning goal/plan, completed current-state read, related issue discovery, issue-ledger sync, intent/decision boundary, focused research/live-source refresh, pressure review, verification matrix, objection ledger, and final handoff. |

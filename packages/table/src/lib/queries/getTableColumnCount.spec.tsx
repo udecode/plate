@@ -1,4 +1,4 @@
-import type { TElement } from '@platejs/slate';
+import type { TElement } from '@platejs/slate-legacy';
 
 import { getTableColumnCount } from './getTableColumnCount';
 

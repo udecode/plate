@@ -1,7 +1,7 @@
 # pagination virtualized typing perf
 
 Objective:
-Make Slate v2 pagination typing genuinely virtualized in `.tmp/slate-v2`: the
+Make Slate v2 pagination typing genuinely virtualized in `Plate repo root`: the
 default ~1000-page virtualized pagination example must accept a fast typing
 burst in the middle of the document without dropped text or multi-second input
 stalls.
@@ -44,7 +44,7 @@ Completion threshold:
 
 Verification surface:
 - Repeatable Playwright/Chrome typing benchmark for staged and virtualized
-  pagination modes, run from `.tmp/slate-v2`.
+  pagination modes, run from `Plate repo root`.
 - Focused tests covering any changed `slate-react`, `slate-layout`, and
   pagination browser behavior.
 - Targeted typecheck/lint for touched packages/files.
@@ -61,7 +61,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: user request plus measured baseline from the previous turn.
-- Allowed edit scope: `.tmp/slate-v2` package/example/test files and this goal
+- Allowed edit scope: `Plate repo root` package/example/test files and this goal
   plan.
 - Browser surface: `/examples/pagination?page_layout=single&strategy=virtualized`.
 - Tracker sync: N/A: no issue or PR requested.
@@ -109,7 +109,7 @@ Start Gates:
 | TDD decision before behavior change or bug fix | yes | Add/extend focused perf browser proof and unit coverage for changed runtime behavior. |
 | Branch decision for code-changing task | yes | N/A: user did not ask for branch/commit/PR; work current checkout. |
 | Release artifact decision | yes | N/A unless package-public behavior changes; record after implementation. |
-| Browser tool decision for browser surface | yes | Use Playwright/Chrome from `.tmp/slate-v2` for repeatable latency metrics; Browser Use is not the right tool for numeric perf budgets. |
+| Browser tool decision for browser surface | yes | Use Playwright/Chrome from `Plate repo root` for repeatable latency metrics; Browser Use is not the right tool for numeric perf budgets. |
 | PR expectation decision | no | N/A: no PR requested. |
 | Tracker sync expectation decision | no | N/A: no tracker. |
 | Browser pack selected | yes | `--with browser`. |
@@ -138,7 +138,7 @@ Work Checklist:
 - [x] Local-env-rot retry policy recorded: N/A after dependency install repaired
       local dev; failures matched product perf path.
 - [x] Workspace authority recorded: every proof command names
-      `/Users/zbeyens/git/plate-2/.tmp/slate-v2`.
+      `/Users/zbeyens/git/plate-2/Plate repo root`.
 - [x] High-risk note recorded: native text input behavior changed; proof covers
       printable ASCII, deferred repair ownership, DOM caret target selection, and
       virtualized pagination typing.
@@ -162,9 +162,9 @@ Completion Gates:
 | Targeted behavior verification | yes | Run focused test/proof | `bun --filter ./packages/slate-react test:vitest -- input-router-contract.test.tsx native-input-strategy-contract.test.ts`; `bun test ./packages/slate-react/test/dom-repair-policy-contract.ts`; focused Playwright pagination typing grep passed. |
 | TypeScript or typed config changed | yes | Run relevant typecheck | `bun --filter ./packages/slate-react typecheck` passed. |
 | Package exports or file layout changed | no | N/A | No exports or file layout changed. |
-| Package manifests, lockfile, or install graph changed | yes | Run install and relevant package checks | `bun install` ran before dev because `.tmp/slate-v2` had missing dependencies; package/unit/browser checks passed after. |
+| Package manifests, lockfile, or install graph changed | yes | Run install and relevant package checks | `bun install` ran before dev because `Plate repo root` had missing dependencies; package/unit/browser checks passed after. |
 | Agent rules or skills changed | no | N/A | No agent rules or skills changed. |
-| Workspace authority proof | yes | Run verification in owning checkout | All proof ran in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`. |
+| Workspace authority proof | yes | Run verification in owning checkout | All proof ran in `/Users/zbeyens/git/plate-2/Plate repo root`. |
 | Browser surface changed | yes | Browser proof | Playwright/Chrome exercised `/examples/pagination?page_layout=single&strategy=virtualized`; Browser Use waived for numeric latency. |
 | Browser final proof | yes | Record exact browser result | Direct Chrome benchmark: 408.1ms, 1105 pages, 3 page surfaces, 319 DOM elements, expected text present, model text present, selection `[1532,0]@44`. |
 | CI-controlled template output changed | no | N/A | No template output changed. |
@@ -236,12 +236,12 @@ Error attempts:
 | None yet | 0 | | |
 
 Verification evidence:
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: `bun --filter ./packages/slate-react test:vitest -- input-router-contract.test.tsx native-input-strategy-contract.test.ts` passed, 2 files / 10 tests.
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: `bun test ./packages/slate-react/test/dom-repair-policy-contract.ts` passed, 9 tests.
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 bunx playwright test playwright/integration/examples/pagination.test.ts --project=chromium --grep "keeps (middle-document typing responsive|fast burst typing intact)"` passed, 2 tests.
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: direct Playwright/Chrome benchmark for `/examples/pagination?page_layout=single&strategy=virtualized` passed: 36 chars, 408.1ms, 1105 pages, 3 page surfaces, 319 DOM elements, model text true, selection `[1532,0]@44`.
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: `bun --filter ./packages/slate-react typecheck` passed.
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: `bunx biome check <9 touched files> --fix` passed with no fixes.
+- `/Users/zbeyens/git/plate-2/Plate repo root`: `bun --filter ./packages/slate-react test:vitest -- input-router-contract.test.tsx native-input-strategy-contract.test.ts` passed, 2 files / 10 tests.
+- `/Users/zbeyens/git/plate-2/Plate repo root`: `bun test ./packages/slate-react/test/dom-repair-policy-contract.ts` passed, 9 tests.
+- `/Users/zbeyens/git/plate-2/Plate repo root`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 bunx playwright test playwright/integration/examples/pagination.test.ts --project=chromium --grep "keeps (middle-document typing responsive|fast burst typing intact)"` passed, 2 tests.
+- `/Users/zbeyens/git/plate-2/Plate repo root`: direct Playwright/Chrome benchmark for `/examples/pagination?page_layout=single&strategy=virtualized` passed: 36 chars, 408.1ms, 1105 pages, 3 page surfaces, 319 DOM elements, model text true, selection `[1532,0]@44`.
+- `/Users/zbeyens/git/plate-2/Plate repo root`: `bun --filter ./packages/slate-react typecheck` passed.
+- `/Users/zbeyens/git/plate-2/Plate repo root`: `bunx biome check <9 touched files> --fix` passed with no fixes.
 
 Final handoff contract:
 - PR line: N/A, no PR requested.

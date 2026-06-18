@@ -24,7 +24,7 @@ Completion threshold:
 - User-review-ready plan with total score >= 0.92 and no dimension below 0.85.
 - Every pass row must be complete or intentionally skipped with evidence.
 - Issue/reference sync rows must be closed before any final claim.
-- Every Slate v2 runtime/browser/API claim must cite live `.tmp/slate-v2`
+- Every Slate v2 runtime/browser/API claim must cite live `Plate repo root`
   source or command proof.
 - `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-frontier-family-architecture-review.md`
   must pass only in the final closure pass.
@@ -32,7 +32,7 @@ Completion threshold:
 Verification surface:
 - Planning evidence runs from `plate-2`.
 - Frontier evidence is local cloned source under `/Users/zbeyens/git`.
-- Slate v2 current-shape evidence is live source under `.tmp/slate-v2`.
+- Slate v2 current-shape evidence is live source under `Plate repo root`.
 - No Slate v2 implementation or browser behavior is claimed in pass 12.
 
 Constraints:
@@ -51,9 +51,9 @@ Boundaries:
 - Reviewed local repos:
   `/Users/zbeyens/git/-shapeshift-labs-frontier*`.
 - Reviewed live Slate v2 source:
-  `.tmp/slate-v2/packages/slate`,
-  `.tmp/slate-v2/packages/slate-react`, and
-  `.tmp/slate-v2/packages/slate-history`.
+  `packages/slate`,
+  `packages/slate-react`, and
+  `packages/slate-history`.
 - Reviewed Plate pressure:
   `packages/core/src/react/stores/element`,
   `docs/performance/editor-performance-master-plan.md`, and
@@ -100,7 +100,7 @@ Current verdict:
   reconsidered as isolated dev/benchmark tooling after future proof.
 - research/source refresh call: pass 5 confirms the owner split against the
   compiled React/Lexical/ProseMirror/Tiptap/Yjs research layer, local upstream
-  source reads, live `.tmp/slate-v2` state/tx/state-field/history/selector
+  source reads, live `Plate repo root` state/tx/state-field/history/selector
   source, live Plate selector and AI-suggestion source, and refreshed Frontier
   source reads. No contradiction found. Remaining weakness is proof, not
   research direction.
@@ -161,7 +161,7 @@ Start Gates:
 | Active goal checked or created | yes | `get_goal` returned active goal `019e5f10-3661-7312-a67b-66daf0a1aa99`. |
 | Source of truth read before edits | yes | Read research index/log, issue ledgers, Frontier source, live Slate v2 source, and Plate perf/source owners. |
 | `docs/solutions` checked for non-trivial existing-code work | N/A | Planning-only architecture review; no implementation patch in this activation. |
-| Live `.tmp/slate-v2` grounding needed for current-state claims | yes | Current owners cited in scorecard, runtime target, and verification table. |
+| Live `Plate repo root` grounding needed for current-state claims | yes | Current owners cited in scorecard, runtime target, and verification table. |
 
 Work Checklist:
 - [x] Objective includes lane outcome, full pass schedule, one-pass-per-
@@ -202,7 +202,7 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Complete pass 12 and final plan check | passes 1-12 closed; score 0.92; final handoff recorded |
-| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | yes | Record live `.tmp/slate-v2` command/proof for any behavior claim | passes 1-12 record source/ledger/plan pointers only; no runtime/browser/API change claimed |
+| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | yes | Record live `Plate repo root` command/proof for any behavior claim | passes 1-12 record source/ledger/plan pointers only; no runtime/browser/API change claimed |
 | Issue ledger or PR reference changed | yes, ledger note only in pass 11 | Update ledger and record PR-reference decision | gitcrawl sync ledger updated; PR reference and issue coverage matrix intentionally unchanged |
 | Autoreview for uncommitted implementation changes | N/A | No implementation patch in pass 12 | planning-only |
 | Final user-review handoff | yes | Emit only after closure pass | recorded in final handoff outline and closure sections |
@@ -243,7 +243,7 @@ Source-backed architecture north star:
   subscriptions, replay logs, and profile artifacts as Slate-owned primitives.
 - source evidence: Slate `StateFieldDescriptor` already has `diff`,
   `applyPatch`, and `invertPatch`; large shared/history fields without hooks
-  throw above 32 KB (`.tmp/slate-v2/packages/slate/src/core/public-state.ts:362-423`).
+  throw above 32 KB (`packages/slate/src/core/public-state.ts:362-423`).
 - rejected drift: Do not make Frontier the editor transaction, history, rich
   text, or CRDT substrate.
 - migration posture: Plate can adopt the explicit mutation-plan DX as a command
@@ -253,11 +253,11 @@ Source-backed architecture north star:
 Pass-5 research / live-source refresh findings:
 | Evidence surface | Refreshed source | Result | Plan effect |
 |------------------|------------------|--------|-------------|
-| React runtime posture | `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md`; `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:213-387` | React 19.2 supports external stores/background UI, and Slate React already uses runtime-id/deferred selector fanout | Keep React-native runtime; pressure deeper invalidation in pass 6 |
-| State/tx public API | `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md`; `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts:139-220,348-454` | Current direction is state/tx groups, with live tests for grouped reads/writes and `tx.value.replace` | Slate raw DX stays primitive and namespace-based |
-| Slate state fields | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:111-120`; `.tmp/slate-v2/packages/slate/src/core/public-state.ts:362-423` | State fields already expose diff/apply/invert hooks and enforce patch hooks for large shared/history values | First Slate steal should extend/standardize field patch helpers, not import Frontier |
-| State-field subscriptions | `.tmp/slate-v2/packages/slate-react/src/hooks/use-state-field.ts:40-52`; `../-shapeshift-labs-frontier-state/src/subscription.ts:145-260` | Slate state-field React hook is key-level; Frontier proves path/range routing mechanics | Candidate is state-field-local routing only, not generic node render routing |
-| Slate history | `.tmp/slate-v2/packages/slate-history/src/history-extension.ts:168-209,271-350` | History replays semantic operations plus state patches and merges by root-aware operations | Reject Frontier snapshot-patch history as replacement |
+| React runtime posture | `docs/research/sources/editor-architecture/react-19-2-external-store-and-background-ui.md`; `packages/slate-react/src/hooks/use-editor-selector.tsx:213-387` | React 19.2 supports external stores/background UI, and Slate React already uses runtime-id/deferred selector fanout | Keep React-native runtime; pressure deeper invalidation in pass 6 |
+| State/tx public API | `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md`; `packages/slate/test/state-tx-public-api-contract.ts:139-220,348-454` | Current direction is state/tx groups, with live tests for grouped reads/writes and `tx.value.replace` | Slate raw DX stays primitive and namespace-based |
+| Slate state fields | `packages/slate/src/interfaces/editor.ts:111-120`; `packages/slate/src/core/public-state.ts:362-423` | State fields already expose diff/apply/invert hooks and enforce patch hooks for large shared/history values | First Slate steal should extend/standardize field patch helpers, not import Frontier |
+| State-field subscriptions | `packages/slate-react/src/hooks/use-state-field.ts:40-52`; `../-shapeshift-labs-frontier-state/src/subscription.ts:145-260` | Slate state-field React hook is key-level; Frontier proves path/range routing mechanics | Candidate is state-field-local routing only, not generic node render routing |
+| Slate history | `packages/slate-history/src/history-extension.ts:168-209,271-350` | History replays semantic operations plus state patches and merges by root-aware operations | Reject Frontier snapshot-patch history as replacement |
 | Lexical | `docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md`; `/Users/zbeyens/git/lexical/packages/lexical/src/LexicalEditor.ts:1368-1388` | Read/update lifecycle and dirty/update tags support Slate's lifecycle direction | Steal lifecycle discipline, not class nodes or command-first app API |
 | ProseMirror | `docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md`; `/Users/zbeyens/git/prosemirror/state/src/transaction.ts:42-92,185-214` | Transactions own selection mapping, stored marks, metadata, and scroll intent | Build Slate-op-aware mapping/proof, not JSON-patch path mapping |
 | Tiptap | `docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md`; `/Users/zbeyens/git/tiptap/packages/core/src/CommandManager.ts:7-135` | Product command/chain DX is useful but backed by one transaction | Route mutation-plan ergonomics to Plate and compile to Slate/Plate transforms |
@@ -313,23 +313,23 @@ Cloned Frontier package map:
 Public API target:
 | Surface | Proposed shape | User-facing DX | Compatibility / migration | Evidence | Verdict |
 |---------|----------------|----------------|---------------------------|----------|---------|
-| Slate state fields | Add or document first-party compact patch helpers for large shared/history state fields | Extension authors can opt into replayable compact state without importing unrelated app-state packages | Existing `StateFieldDescriptor` hook names stay | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:111-120`; `.tmp/slate-v2/packages/slate/src/core/public-state.ts:397-423` | steal internally |
-| Slate plugin-state subscriptions | Consider path/key watcher descriptors for state fields with large maps/lists | Hooks can subscribe narrower than `dirtyStateKeys.includes(field.key)` | Backward compatible; default stays key-level | Current hook is key-level only (`.tmp/slate-v2/packages/slate-react/src/hooks/use-state-field.ts:40-52`); Frontier router supports path/field/range watches (`../-shapeshift-labs-frontier-state/src/types.ts:174-241`) | revise in later pass |
+| Slate state fields | Add or document first-party compact patch helpers for large shared/history state fields | Extension authors can opt into replayable compact state without importing unrelated app-state packages | Existing `StateFieldDescriptor` hook names stay | `packages/slate/src/interfaces/editor.ts:111-120`; `packages/slate/src/core/public-state.ts:397-423` | steal internally |
+| Slate plugin-state subscriptions | Consider path/key watcher descriptors for state fields with large maps/lists | Hooks can subscribe narrower than `dirtyStateKeys.includes(field.key)` | Backward compatible; default stays key-level | Current hook is key-level only (`packages/slate-react/src/hooks/use-state-field.ts:40-52`); Frontier router supports path/field/range watches (`../-shapeshift-labs-frontier-state/src/types.ts:174-241`) | revise in later pass |
 | Plate mutation plans | Optional Plate command-planning helper for AI/bulk transforms | Agent-readable `plan -> access/conflict -> compile -> apply` flow | Plate-only; no raw Slate opinion leakage | Frontier access/conflict and compile output (`../-shapeshift-labs-frontier-mutation/src/index.ts:921-1165`) | steal for Plate |
 | Runtime dependency | Do not add Frontier to Slate v2 core | Smaller core, fewer semantics fights | Can still use Frontier in benchmarks/devtools if measured | Slate already owns operation dirtiness/history/root semantics | cut |
 
 Internal runtime target:
 | Layer | Current owner | Target mechanism | Avoids | Evidence | Verdict |
 |-------|---------------|------------------|--------|----------|---------|
-| State patching | Slate `public-state.ts` | First-party patch hooks plus optional built-in compact JSON patch for state fields | Full snapshot cloning for large shared/history plugin state | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:372-423` | steal concept |
-| Dirtiness fanout | Slate commit/change and Slate React selectors | Keep runtime-id dirtiness for document nodes; add state-field-local watch routing only where state maps are huge | Duplicating Frontier route tree for node render paths | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:1394-1565`; `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:238-375` | partial |
+| State patching | Slate `public-state.ts` | First-party patch hooks plus optional built-in compact JSON patch for state fields | Full snapshot cloning for large shared/history plugin state | `packages/slate/src/core/public-state.ts:372-423` | steal concept |
+| Dirtiness fanout | Slate commit/change and Slate React selectors | Keep runtime-id dirtiness for document nodes; add state-field-local watch routing only where state maps are huge | Duplicating Frontier route tree for node render paths | `packages/slate/src/core/public-state.ts:1394-1565`; `packages/slate-react/src/hooks/use-editor-selector.tsx:238-375` | partial |
 | Path/selection mapping | Slate operation refs/range refs | Build Slate-op-aware mapping, not JSON-patch mapping | Wrong mapping across roots, voids, split/merge, selection refs | Frontier path mapper shows the shape but is JSON patch based (`../-shapeshift-labs-frontier-state/src/path-map.ts:21-260`) | steal algorithm class |
-| History/replay | Slate history extension | Keep semantic operations plus state patches; add optional encoded state-patch/event-log proof artifacts | Snapshot-diff undo and non-semantic history | `.tmp/slate-v2/packages/slate-history/src/history-extension.ts:168-209`, `271-424`; Frontier snapshot undo at `../-shapeshift-labs-frontier-crdt/src/crdt-undo.ts:85-240` | keep Slate |
+| History/replay | Slate history extension | Keep semantic operations plus state patches; add optional encoded state-patch/event-log proof artifacts | Snapshot-diff undo and non-semantic history | `packages/slate-history/src/history-extension.ts:168-209`, `271-424`; Frontier snapshot undo at `../-shapeshift-labs-frontier-crdt/src/crdt-undo.ts:85-240` | keep Slate |
 
 Hook / component / render DX target:
 | Surface | Call-site shape | Composition rule | Performance rule | Evidence | Verdict |
 |---------|-----------------|------------------|------------------|----------|---------|
-| Slate React selectors | Existing `useEditorState` / runtime selectors | Keep selector call sites Slate-close and root-aware | Runtime-id fanout, no generic app store wrapper | `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:213-375` | keep |
+| Slate React selectors | Existing `useEditorState` / runtime selectors | Keep selector call sites Slate-close and root-aware | Runtime-id fanout, no generic app store wrapper | `packages/slate-react/src/hooks/use-editor-selector.tsx:213-375` | keep |
 | Plate element selectors | Existing `useElementSelector(selector, deps, options)` | Keep Plate compatibility, reduce hot path only when measured | Direct `useSyncExternalStore` already present | `packages/core/src/react/stores/element/useElementSelector.ts:11-89`; perf notes at `docs/performance/editor-performance-master-plan.md:335-367` | no Frontier dependency |
 | AI suggestions | Current diff-to-suggestions path | Frontier may benchmark JSON diffs offline, but Plate suggestion semantics stay Plate-owned | Do not flatten suggestions into generic JSON patch | `packages/ai/src/react/ai-chat/utils/applyAISuggestions.ts:27-110` | dev-only experiment |
 
@@ -344,7 +344,7 @@ slate-yjs migration-backbone target:
 | Pressure | Slate substrate target | Collaboration route | Non-goal | Evidence | Verdict |
 |----------|------------------------|---------------------|----------|---------|---------|
 | Shared document edits | Slate operations/root keys/selection refs | Yjs adapter maps Slate ops and root-qualified cursors | Replace slate-yjs with Frontier CRDT | Frontier CRDT ops are generic JSON/tree/list/text (`../-shapeshift-labs-frontier-crdt/src/types.ts:66-235`) | reject dependency |
-| Shared plugin state | State fields with compact patches and collab policy | Collab adapter can sync `collab: shared` fields with field-owned patch codecs | Generic Frontier state cache as Slate core | Slate state fields already include `collab`, `history`, `persist` (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:105-120`) | steal pattern |
+| Shared plugin state | State fields with compact patches and collab policy | Collab adapter can sync `collab: shared` fields with field-owned patch codecs | Generic Frontier state cache as Slate core | Slate state fields already include `collab`, `history`, `persist` (`packages/slate/src/interfaces/editor.ts:105-120`) | steal pattern |
 | Collab regressions | Replay/minimize/model-check harness | Use Frontier-style scheduled sync repro artifacts around slate-yjs tests | Adopt Frontier text binding | Frontier text binding does whole-text replace for doc-to-editor mismatch (`../-shapeshift-labs-frontier-crdt-sync/src/crdt-sync-text-binding.ts:73-110`) | steal tests, reject binding |
 
 Intent / boundary record:
@@ -369,7 +369,7 @@ Intent / boundary record:
   (`Slate core`, `Slate dev/proof tooling`, `Plate`, `defer`, `reject`), public
   API posture, proof gates, issue-claim policy, and dependency posture. It may
   not claim runtime behavior, issue closure, or benchmark wins without later
-  `.tmp/slate-v2` proof.
+  `Plate repo root` proof.
 - resolved boundary decisions:
   - Slate core owns editor semantics: operations, paths, roots, refs,
     selection, normalization, and history grouping.
@@ -519,7 +519,7 @@ Ecosystem strategy synthesis:
 | ProseMirror | `docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md`; `/Users/zbeyens/git/prosemirror/state/src/transaction.ts:42-92,185-214` | Transactions map selection, stored marks, metadata, and scroll intent | Stale selection and random DOM ownership | Composite transaction/selection discipline | Integer positions and plugin complexity | Slate operations/refs/root-aware mapping, centralized DOM bridge | partial |
 | Tiptap | `docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md`; `/Users/zbeyens/git/tiptap/packages/core/src/CommandManager.ts:7-135` | Extension commands and chain compose around one transaction | Undiscoverable product actions | Product command planning and selector UI posture | Required focus/chain ceremony in raw Slate | Plate mutation plans compile to Slate/Plate transforms | agree for Plate |
 | Yjs / slate-yjs | `docs/research/sources/editor-architecture/yjs-collaboration-bindings.md`; `/Users/zbeyens/git/slate-yjs/packages/core/src/plugins/withCursors.ts:160-260` | Binding state, relative positions, awareness cursor store, undo/cursor lessons | Collaboration hidden in editor wrapper mutation | Replay/model-check proof and Yjs binding mechanics | Replacing Yjs with Frontier CRDT | Extension-owned slate-yjs package with state/tx namespaces | partial |
-| Live Slate v2 | `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts:139-220,348-454`; `.tmp/slate-v2/packages/slate/src/core/public-state.ts:362-423` | State/tx groups, state-field patch hooks, runtime ids, operation/history substrate | Rebuilding a second runtime beside Slate | Tighten first-party primitives already present | Frontier runtime dependency | state-field patch helpers, optional state-field-local watchers, replay proof | agree |
+| Live Slate v2 | `packages/slate/test/state-tx-public-api-contract.ts:139-220,348-454`; `packages/slate/src/core/public-state.ts:362-423` | State/tx groups, state-field patch hooks, runtime ids, operation/history substrate | Rebuilding a second runtime beside Slate | Tighten first-party primitives already present | Frontier runtime dependency | state-field patch helpers, optional state-field-local watchers, replay proof | agree |
 | Live Plate | `packages/core/src/react/stores/element/useElementSelector.ts:11-89`; `packages/ai/src/react/ai-chat/utils/applyAISuggestions.ts:27-110` | External-store element selectors and product-specific AI suggestion transforms | Forcing product DX into raw Slate | Agent-readable mutation planning around existing Plate transforms | Generic JSON patch as Plate suggestion truth | Plate-only mutation-plan helper | agree for Plate |
 
 Legacy regression proof matrix:
@@ -535,8 +535,8 @@ Legacy regression proof matrix:
 Browser stress / parity strategy:
 | Surface | Scenario | Browser/device | Command or proof route | Expected signal | Status |
 |---------|----------|----------------|------------------------|-----------------|--------|
-| State patch hooks | Large shared state undo/redo, history merge/split, local/shared policy | unit first, then browser if selection/focus involved | `.tmp/slate-v2` focused package tests plus browser route when state patch affects selection/content roots | compact patch/inverse replay; no focus/selection regression | contract specified |
-| State-field routing | Large map/list field with many watchers | unit plus React profile if implemented | `.tmp/slate-v2` hook tests and lab event-to-paint proxy | key-level fanout reduced only when benchmark is red | conditional |
+| State patch hooks | Large shared state undo/redo, history merge/split, local/shared policy | unit first, then browser if selection/focus involved | `Plate repo root` focused package tests plus browser route when state patch affects selection/content roots | compact patch/inverse replay; no focus/selection regression | contract specified |
+| State-field routing | Large map/list field with many watchers | unit plus React profile if implemented | `Plate repo root` hook tests and lab event-to-paint proxy | key-level fanout reduced only when benchmark is red | conditional |
 | Synced/content roots | Shared-root selection/history and undo/redo | Chromium/WebKit/Firefox | existing synced-block route plus new state-patch rows | no selection/history regression; follow-up typing works | contract specified |
 | Dynamic decorations/projections | State update affecting narrow projection/decoration source | Chromium and React Performance Tracks | existing projection/decorate routes plus state-field update row | no broad React fanout; visible decoration correct | contract specified |
 | Collab replay | Remote/local update schedule with state patches and selections | unit/model first, browser later | slate-yjs replay/minimize harness | no echo, no history pollution, selection/bookmark survives | contract specified |
@@ -548,18 +548,18 @@ Verification workspace gate:
 |-------|-----------|---------|--------|-------|
 | Frontier repos cloned | plate-2 | `find .. -maxdepth 1 -type d -name '-shapeshift-labs-frontier*' -print \| sort` | 22 Frontier-family dirs present | pass 1 |
 | Frontier package map read | plate-2 | package manifest scan over `../-shapeshift-labs-frontier*/package.json` | names/descriptions/deps recorded in package map | pass 1 |
-| Slate v2 current state fields/history/selectors exist | plate-2 reading `.tmp/slate-v2` | `nl -ba ...` source reads listed in scorecard | source pointers recorded; no behavior command claimed | pass 1 |
+| Slate v2 current state fields/history/selectors exist | plate-2 reading `Plate repo root` | `nl -ba ...` source reads listed in scorecard | source pointers recorded; no behavior command claimed | pass 1 |
 | Related issue discovery | plate-2 | `rg`/`nl` reads over `docs/slate-issues/*`, `docs/slate-v2/ledgers/*`, and `docs/slate-v2/references/pr-description.md` | Existing ledgers cover #6038, #5992, #5771, #5533, #5515, #5212, #3752; no new ClawSweeper run needed | pass 2 |
 | Issue-ledger support scan | plate-2 | `rg`/`nl` reads over issue clusters, requirements, package-impact, benchmark candidates, v2 matrix, fork dossier, PR reference, and gitcrawl sync ledger | Expanded issue matrix; existing claim statuses preserved | pass 3 |
 | Intent/boundary decision brief | plate-2 | active plan rewrite of intent, decision brief, and ownership decision table | Owner split is explicit; no issue/runtime claims changed | pass 4 |
-| Research/ecosystem/source refresh | plate-2 | `sed`/`rg`/`nl` reads over compiled research, local upstream editor repos, Frontier source, live `.tmp/slate-v2`, and Plate source | Ecosystem strategy expanded; owner split still holds; no issue/runtime claims changed | pass 5 |
+| Research/ecosystem/source refresh | plate-2 | `sed`/`rg`/`nl` reads over compiled research, local upstream editor repos, Frontier source, live `Plate repo root`, and Plate source | Ecosystem strategy expanded; owner split still holds; no issue/runtime claims changed | pass 5 |
 | Performance/DX/migration/regression pressure | plate-2 | pass-6 plan sections and lens matrix | execution order, proof contracts, and cut/defer rules recorded | pass 6 |
 | Maintainer objection ledger | plate-2 | pass-7 objection ledger and ecosystem objection answers | keep/cut/defer calls survived maintainer-style pressure; no issue/runtime claims changed | pass 7 |
 | High-risk deliberate mode | plate-2 | pass-8 pre-mortem, expanded proof plan, blast radius, rollback/hard-cut answers | subtle corruption and scope-creep risks have no-ship gates; no issue/runtime claims changed | pass 8 |
 | Ecosystem maintainer pass | plate-2 | pass-9 downstream owner answers and ecosystem closure contracts | adoption constraints recorded; no issue/runtime claims changed | pass 9 |
 | Revision pass | plate-2 | pass-10 execution order, API posture, docs/example posture, and benchmark gate policy | pass outputs consolidated; no issue/runtime claims changed | pass 10 |
 | Issue sync accounting | plate-2 | `rg`/`nl` reads over gitcrawl sync ledger, issue coverage matrix, and PR reference; one manual gitcrawl sync note added | zero fixed/improved/related/PR deltas recorded | pass 11 |
-| Slate v2 behavior | `.tmp/slate-v2` | none in pass 12 | no behavior claim made | later execution |
+| Slate v2 behavior | `Plate repo root` | none in pass 12 | no behavior claim made | later execution |
 
 Autoreview workspace gate:
 | Reviewed patch owner | Cwd | Command | Result | Notes |
@@ -579,7 +579,7 @@ Applicable implementation-skill review matrix:
 High-risk deliberate-mode pre-mortem:
 | Risk | Trigger | Failure mode | Mitigation | Proof | Status |
 |------|---------|--------------|------------|-------|--------|
-| Patch replay corruption | Compact state-field helper shipped too early | Undo/redo restores document operations but replays stale or non-invertible plugin state; collab import/export diverges silently | helper can stay internal; require diff/apply/invert roundtrip, inverse replay, >32 KB policy, history merge/split, and shared/local/persist policy tests | `.tmp/slate-v2` unit/package proof before any API claim | no-ship gate |
+| Patch replay corruption | Compact state-field helper shipped too early | Undo/redo restores document operations but replays stale or non-invertible plugin state; collab import/export diverges silently | helper can stay internal; require diff/apply/invert roundtrip, inverse replay, >32 KB policy, history merge/split, and shared/local/persist policy tests | `Plate repo root` unit/package proof before any API claim | no-ship gate |
 | Root/selection regression | State patches join historic batches that cross roots/content roots | Undo/redo restores the wrong root selection or breaks follow-up typing in synced/content roots | keep Slate operations/root refs as the owner; never map selection through generic JSON paths | history/root/content-root tests plus browser follow-up typing | no-ship gate |
 | Routing scope creep | State-field-local routing copied from Frontier as generic node/render routing | Two subscription engines fight; repeated units pay extra router cost; plugin authors learn a second invalidation model | route only state fields with huge map/list values; defer unless key-level dirty-state fanout benchmark is red | watcher count, notification count, heap, p95 event-to-paint, React profile | conditional gate |
 | Benchmark false positive | Codec/router microbench is green but editor UX gets worse | Good patch bytes or React profile hides broken find, selection, IME, copy/paste, accessibility, or mobile touch | benchmark rows must include native editor behavior and interaction matrix, not just codec speed | browser find, native selection, copy/paste/select-all, IME, mobile, undo/history, remote update | no-ship gate |
@@ -750,7 +750,7 @@ Pass-11 claim delta:
 Pass-11 preserved issue surfaces:
 | Surface | Existing owner | Pass-11 decision |
 |---------|----------------|------------------|
-| State-field / non-node document state | PR reference non-claim section and gitcrawl state-field sync rows | Preserve. Compact helper needs future `.tmp/slate-v2` execution proof before any issue status changes. |
+| State-field / non-node document state | PR reference non-claim section and gitcrawl state-field sync rows | Preserve. Compact helper needs future `Plate repo root` execution proof before any issue status changes. |
 | Performance / subscriptions / large docs | `#6038`, `#5992`, `#5945`, `#4056`, `#3752`, `#5131`, `#2051`, `#2195`, `#2405`, `#790` matrix and sync rows | Preserve. Frontier codec/router/profile stays dev/proof inspiration only. |
 | Content roots / projections / hidden content | Synced Blocks, projection, hidden-content, and content-root sync rows | Preserve. The Frontier review does not broaden native behavior, serialization, repeated-root performance, or release claims. |
 | Collaboration / slate-yjs | `#5771`, `#5533`, `#1770`, `#3741` rows | Preserve. Yjs remains the owner; Frontier CRDT stays rejected for Slate runtime. |
@@ -866,9 +866,9 @@ Implementation phases with owners:
 | Plan pass 9 | slate-plan | ecosystem maintainer pass | pass 8 complete | downstream owner answers and ecosystem closure contracts recorded | plan/source reads |
 | Plan pass 10 | slate-plan | revision pass | pass 9 complete | execution order, API posture, docs/example posture, and benchmark gates consolidated | plan source read |
 | Plan pass 11 | slate-plan | issue sync accounting | pass 10 complete | manual gitcrawl sync note added; PR reference and issue coverage matrix intentionally unchanged | ledger/reference reads |
-| Slate state-patch prototype | future execution | first-party compact state-patch helper | accepted plan | tests and benchmarks pass | `.tmp/slate-v2` package tests |
-| Slate state-field routing prototype | future execution, conditional | path/range watcher routing for huge state maps/lists | key-level fanout benchmark is red | watcher/notification/heap budget improves | `.tmp/slate-v2` hook and perf tests |
-| Slate replay/devtools prototype | future execution | event log/profile artifacts | accepted plan | replay/minimize proof rows | `.tmp/slate-v2` tests |
+| Slate state-patch prototype | future execution | first-party compact state-patch helper | accepted plan | tests and benchmarks pass | `Plate repo root` package tests |
+| Slate state-field routing prototype | future execution, conditional | path/range watcher routing for huge state maps/lists | key-level fanout benchmark is red | watcher/notification/heap budget improves | `Plate repo root` hook and perf tests |
+| Slate replay/devtools prototype | future execution | event log/profile artifacts | accepted plan | replay/minimize proof rows | `Plate repo root` tests |
 | Plate mutation-plan prototype | future Plate plan | Plate AI/bulk transform planning | user chooses Plate lane | focused Plate tests and docs call site | Plate package tests |
 
 Fast driver gates:
@@ -887,7 +887,7 @@ Fast driver gates:
 | revision check | plate-2 | pass-10 revised execution order, API posture, docs/example posture, and benchmark gate policy | pass notes consolidated into one execution queue | complete |
 | issue-sync-accounting check | plate-2 | pass-11 gitcrawl sync note plus PR reference and issue coverage reads | issue/reference sync closed with zero claim deltas | complete |
 | closure verifier check | plate-2 | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-frontier-family-architecture-review.md` | `[autogoal] complete` | complete |
-| Slate v2 behavior check | .tmp/slate-v2 | none in pass 12 | no runtime behavior claimed | N/A for planning closure |
+| Slate v2 behavior check | Plate repo root | none in pass 12 | no runtime behavior claimed | N/A for planning closure |
 
 Final user-review handoff outline:
 - accepted plan items: draft is Slate helper first, dev/proof replay second,
@@ -902,7 +902,7 @@ Final user-review handoff outline:
   native editor behavior, dev/proof dependency edge, and Plate mutation-plan
   tests if accepted
 - accepted-plan execution handoff: ready; next user action is to accept the
-  plan and invoke execution mode against `.tmp/slate-v2` or a separate Plate
+  plan and invoke execution mode against `Plate repo root` or a separate Plate
   plan for mutation-plan DX
 
 Final completion gates:
@@ -978,7 +978,7 @@ Verification evidence:
   listed all 22 requested Frontier-family directories.
 - Package manifest scan recorded each Frontier package name, version,
   description, dependencies, and peers.
-- Live `.tmp/slate-v2` source reads recorded current state-field, commit,
+- Live `Plate repo root` source reads recorded current state-field, commit,
   history, and selector owners.
 - Issue-ledger reads recorded that current live rows and manual classifications
   already exist for `#6038`, `#5992`, `#5771`, `#5533`, `#5515`, `#5212`, and
@@ -991,7 +991,7 @@ Verification evidence:
   Slate dev/proof optional, Plate product DX, reject/defer for Frontier runtime
   families.
 - Pass 5 research/source refresh read compiled React/Lexical/ProseMirror/Tiptap
-  and Yjs pages plus local upstream source handles, live `.tmp/slate-v2`
+  and Yjs pages plus local upstream source handles, live `Plate repo root`
   state/tx/state-field/history/selector sources, live Plate selector and AI
   suggestion sources, and refreshed Frontier source snippets.
 - Pass 6 applied Vercel React, performance-oracle, performance, tdd,

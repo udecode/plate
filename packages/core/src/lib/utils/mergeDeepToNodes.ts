@@ -1,4 +1,4 @@
-import type { TNode } from '@platejs/slate';
+import type { TNode } from '@platejs/slate-legacy';
 
 import merge from 'lodash/merge.js';
 

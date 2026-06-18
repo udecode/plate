@@ -1,4 +1,4 @@
-import type { Descendant, TElement, TText } from '@platejs/slate';
+import type { Descendant, TElement, TText } from '@platejs/slate-legacy';
 import type { UnknownObject } from '@udecode/utils';
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -4,7 +4,7 @@ import {
   type Value,
   ElementApi,
   queryNode,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 import { nanoid } from 'nanoid';
 
 import type { PluginConfig } from '../../plugin/BasePlugin';

@@ -19,7 +19,7 @@ measured but not obviously performance-specific.
 
 - Default to read-only `recipes recommend`, `recipes list`, `recipes show`, and
   `setup-plan`.
-- Target cwd is `.tmp/slate-v2`.
+- Target cwd is `Plate repo root`.
 - Do not start packets unless the user explicitly asks to run the loop.
 - Do not trust external recipe catalogs without inspecting them first.
 - In Slate v2, prefer explicit Bun/package commands over a generic npm recipe
@@ -42,11 +42,11 @@ measured but not obviously performance-specific.
 Use direct CLI until a root shortcut exists:
 
 ```bash
-node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs recipes list --cwd .tmp/slate-v2
-node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs recipes recommend --cwd .tmp/slate-v2
-node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs recipes show <recipe-id> --cwd .tmp/slate-v2
-node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs setup-plan --cwd .tmp/slate-v2 --recipe <recipe-id>
-node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs doctor --cwd .tmp/slate-v2 --check-benchmark --explain
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs recipes list --cwd .
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs recipes recommend --cwd .
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs recipes show <recipe-id> --cwd .
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs setup-plan --cwd . --recipe <recipe-id>
+node ../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs doctor --cwd . --check-benchmark --explain
 ```
 
 If the recipe output is customized, run `benchmark-lint` before any packet.

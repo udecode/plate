@@ -34,10 +34,10 @@ Current live owners:
 
 - [slate-react-api.md](/Users/zbeyens/git/plate-2/docs/slate-v2/ledgers/slate-react-api.md)
 - [example-parity-matrix.md](/Users/zbeyens/git/plate-2/docs/slate-v2/ledgers/example-parity-matrix.md)
-- `.tmp/slate-v2/packages/slate-react/src/**`
-- `.tmp/slate-v2/packages/slate-react/test/**`
-- `.tmp/slate-v2/site/examples/ts/**`
-- `.tmp/slate-v2/playwright/integration/examples/**`
+- `packages/slate-react/src/**`
+- `packages/slate-react/test/**`
+- `apps/www/src/app/(app)/examples/slate/_examples/**`
+- `apps/www/tests/slate-browser/donor/examples/**`
 
 ## `keep-now`
 
@@ -68,17 +68,17 @@ than legacy.
 
 Immediate current proof owners to restore or create:
 
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/react-editor-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/primitives-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/editable-behavior.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/with-react-contract.tsx`
+- `packages/slate-react/test/provider-hooks-contract.tsx`
+- `packages/slate-react/test/react-editor-contract.tsx`
+- `packages/slate-react/test/primitives-contract.tsx`
+- `packages/slate-react/test/editable-behavior.tsx`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
+- `packages/slate-react/test/annotation-store-contract.tsx`
+- `packages/slate-react/test/widget-layer-contract.tsx`
+- `packages/slate-react/test/app-owned-customization.tsx`
+- `packages/slate-react/test/large-doc-and-scroll.tsx`
+- `packages/slate-react/test/surface-contract.tsx`
+- `packages/slate-react/test/with-react-contract.tsx`
 
 ## `keep-later`
 

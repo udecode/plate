@@ -26,13 +26,13 @@ Completion threshold:
   issue/reference sync rows are closed, final handoff is emitted, and
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-synced-content-roots.md`
   passes.
-- Planning closure does not implement `.tmp/slate-v2`. Execution requires a
+- Planning closure does not implement `Plate repo root`. Execution requires a
   later explicit accepted-plan invocation.
 
 Verification surface:
 - Planning artifact: this file and any issue/reference/research rows under the
   Slate Plan allowed edit scope.
-- Live source grounding: `.tmp/slate-v2` reads for roots data, `contentRoot`,
+- Live source grounding: `Plate repo root` reads for roots data, `contentRoot`,
   root view registration, content-root navigation, current editable-voids
   example, examples route registration, and Playwright coverage.
 - Future implementation gates: focused package tests for `slate` and
@@ -41,7 +41,7 @@ Verification surface:
   stress row.
 
 Constraints:
-- Planning mode only. Do not patch `.tmp/slate-v2` implementation, examples,
+- Planning mode only. Do not patch `Plate repo root` implementation, examples,
   tests, or package exports before explicit user acceptance and a later
   execution invocation.
 - Keep default voids legacy-like and atomic. Do not make every void navigable or
@@ -54,16 +54,16 @@ Boundaries:
 - Allowed planning edit scope: `docs/plans/**`, `docs/research/**`,
   `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`, and
   `docs/slate-v2/references/**`.
-- Live source read workspace: `.tmp/slate-v2`.
+- Live source read workspace: `Plate repo root`.
 - Target execution files, not edited in planning mode:
-  `.tmp/slate-v2/site/examples/ts/synced-blocks.tsx`,
-  `.tmp/slate-v2/site/pages/examples/[example].tsx`,
-  `.tmp/slate-v2/site/constants/examples.ts`,
-  `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`,
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/content-root-navigation.ts`,
-  and `.tmp/slate-v2/playwright/integration/examples/synced-blocks.test.ts`.
+  `apps/www/src/app/(app)/examples/slate/_examples/synced-blocks.tsx`,
+  `apps/www/src/app/(app)/examples/slate/[example].tsx`,
+  `apps/www/constants/examples.ts`,
+  `apps/www/src/app/(app)/examples/slate/_examples/custom-types.d.ts`,
+  `packages/slate-react/src/components/editable-text-blocks.tsx`,
+  `packages/slate-react/src/hooks/use-slate-runtime.tsx`,
+  `packages/slate-react/src/editable/content-root-navigation.ts`,
+  and `apps/www/tests/slate-browser/donor/examples/synced-blocks.test.ts`.
 
 Blocked condition:
 - Block only if current source, required ledgers, or a user-owned boundary become
@@ -112,9 +112,9 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | `slate-plan` loaded from `.agents/skills/slate-plan/SKILL.md`. |
 | Active goal checked or created | yes | Active goal `019e5f10-3661-7312-a67b-66daf0a1aa99` targets this plan and keeps one pass per activation. |
-| Source of truth read before edits | yes | Latest user request plus Notion screenshot/excerpt; active plan scaffold; live `.tmp/slate-v2` source reads below. |
+| Source of truth read before edits | yes | Latest user request plus Notion screenshot/excerpt; active plan scaffold; live `Plate repo root` source reads below. |
 | `docs/solutions` checked for non-trivial existing-code work | yes | `docs/solutions/developer-experience/2026-05-17-slate-v2-extension-composition-hard-cuts-need-creation-time-inference-and-browser-proof.md:169` warns browser rows catch stale root/runtime calls typecheck misses. |
-| Live `.tmp/slate-v2` grounding needed for current-state claims | yes | Recorded under Current-state source facts and Verification evidence. |
+| Live `Plate repo root` grounding needed for current-state claims | yes | Recorded under Current-state source facts and Verification evidence. |
 
 Work Checklist:
 - [x] Objective includes lane outcome, full pass schedule, one-pass-per-
@@ -154,7 +154,7 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan. | final checker run recorded under Verification evidence |
-| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | yes | Record live `.tmp/slate-v2` command/proof or mark as planning-only with reason. | source reads and verification workspace rows recorded; behavior proof is planning-only N/A because no implementation changed |
+| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | yes | Record live `Plate repo root` command/proof or mark as planning-only with reason. | source reads and verification workspace rows recorded; behavior proof is planning-only N/A because no implementation changed |
 | Issue ledger or PR reference changed | yes | Sync the relevant ledger/reference row or record why no sync applies. | pass 11 synced `docs/slate-issues/gitcrawl-v2-sync-ledger.md`, `docs/slate-v2/ledgers/issue-coverage-matrix.md`, `docs/slate-v2/ledgers/fork-issue-dossier.md`, and `docs/slate-v2/references/pr-description.md`; no fixed/improved claim count changed |
 | Autoreview for uncommitted implementation changes | no for passes 1-11 | Planning-only; no implementation patch. | N/A for passes 1-11 |
 | Final user-review handoff | yes | Emit final handoff or keep the plan pending with the next pass. | emitted in this plan and final response |
@@ -179,12 +179,12 @@ Phase / pass table:
 Scorecard:
 | Dimension | Weight | Score | Evidence |
 |-----------|-------:|------:|----------|
-| React 19.2 runtime performance | 0.20 | 0.92 | One runtime with many root views remains the cheap direction: roots live in one `EditorDocumentValue` at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:89`, mounted views are tracked by root in `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:348`, and current selector hooks already support root/runtime-scoped subscriptions at `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:639`. Revision keeps perf honest: no render-time root mutation, no effect-created document roots, no perf claim before selector fanout and 20/100 projection stress rows. |
-| Slate-close unopinionated DX | 0.20 | 0.93 | `contentRoot: { slot: string }` exists at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:513`, renderers receive `slots` at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:521`, and ProseMirror/Tiptap source confirms the wrapper/content split. Revision reduces the public API to one canonical call site: `props.slots.contentRoot('body', options)`, with `useSlateContentRoot` kept as the escape hatch and `<ContentRoot />` rejected for now. |
-| Plate and slate-yjs migration backbone | 0.15 | 0.92 | One operation stream plus `tx.roots.create/replace/delete` at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:249` is the right backbone. Revision makes the migration split explicit: root keys are content identity, projection ids are runtime-local, root deletion is explicit, history focus must be projection-aware, and current slate-yjs remains a non-claim because it exposes one `sharedRoot`. |
-| Regression-proof testing strategy | 0.20 | 0.89 | Existing editable-voids browser rows cover horizontal root boundaries, vertical boundaries, and click-outside focus at `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts:379`, `:787`, and `:910`; prior solution notes add wrong-root selection, operation-root middleware, and false-green browser proof failures. Revision keeps route behavior unclaimed but makes the proof matrix concrete enough for execution: shared edit, active-copy undo/redo, ArrowUp/Down, click outside, placeholder, clipboard/move, delete/range delete, selector fanout, and editable-void regressions. |
+| React 19.2 runtime performance | 0.20 | 0.92 | One runtime with many root views remains the cheap direction: roots live in one `EditorDocumentValue` at `packages/slate/src/interfaces/editor.ts:89`, mounted views are tracked by root in `packages/slate-react/src/hooks/use-slate-runtime.tsx:348`, and current selector hooks already support root/runtime-scoped subscriptions at `packages/slate-react/src/hooks/use-slate-runtime.tsx:639`. Revision keeps perf honest: no render-time root mutation, no effect-created document roots, no perf claim before selector fanout and 20/100 projection stress rows. |
+| Slate-close unopinionated DX | 0.20 | 0.93 | `contentRoot: { slot: string }` exists at `packages/slate/src/interfaces/editor.ts:513`, renderers receive `slots` at `packages/slate-react/src/components/editable-text-blocks.tsx:521`, and ProseMirror/Tiptap source confirms the wrapper/content split. Revision reduces the public API to one canonical call site: `props.slots.contentRoot('body', options)`, with `useSlateContentRoot` kept as the escape hatch and `<ContentRoot />` rejected for now. |
+| Plate and slate-yjs migration backbone | 0.15 | 0.92 | One operation stream plus `tx.roots.create/replace/delete` at `packages/slate/src/interfaces/editor.ts:249` is the right backbone. Revision makes the migration split explicit: root keys are content identity, projection ids are runtime-local, root deletion is explicit, history focus must be projection-aware, and current slate-yjs remains a non-claim because it exposes one `sharedRoot`. |
+| Regression-proof testing strategy | 0.20 | 0.89 | Existing editable-voids browser rows cover horizontal root boundaries, vertical boundaries, and click-outside focus at `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts:379`, `:787`, and `:910`; prior solution notes add wrong-root selection, operation-root middleware, and false-green browser proof failures. Revision keeps route behavior unclaimed but makes the proof matrix concrete enough for execution: shared edit, active-copy undo/redo, ArrowUp/Down, click outside, placeholder, clipboard/move, delete/range delete, selector fanout, and editable-void regressions. |
 | Research evidence completeness | 0.15 | 0.95 | Passes 5 and 9 checked local ProseMirror, React ProseMirror, Tiptap, Lexical, slate-yjs, React selector/runtime, Plate, and research docs. Every external source still points to the same decision: Slate model/ops plus React slot/root projection, not nested independent editors or mirrored roots. |
-| shadcn-style composability and minimalism | 0.10 | 0.93 | Existing `EditableElementSlots` only exposes `unstableBoundary` at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:415`. Revision keeps the public surface minimal: one content-root slot, active projection runtime state, route-local copy/unsync, no product DSL, no Plate wrapper in raw Slate, and no canonical `<ContentRoot />`. |
+| shadcn-style composability and minimalism | 0.10 | 0.93 | Existing `EditableElementSlots` only exposes `unstableBoundary` at `packages/slate-react/src/components/editable-text-blocks.tsx:415`. Revision keeps the public surface minimal: one content-root slot, active projection runtime state, route-local copy/unsync, no product DSL, no Plate wrapper in raw Slate, and no canonical `<ContentRoot />`. |
 
 Weighted score after pass 11: 0.92.
 
@@ -213,11 +213,11 @@ Source-backed architecture north star:
   projects an editor-owned content root. Synced copies can point at the same
   root key, so edits are shared by data identity, not by mirroring.
 - source evidence: current `InitialValue` accepts `roots: Record<RootKey, V>` at
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:94`; current element
+  `packages/slate/src/interfaces/editor.ts:94`; current element
   specs can declare `contentRoot: { slot: string }` at
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:523`; current child
+  `packages/slate/src/interfaces/editor.ts:523`; current child
   roots are stored on `element.childRoots[slot]` by convention in
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-child-root.ts:37`.
+  `packages/slate-react/src/hooks/use-slate-child-root.ts:37`.
 - rejected drift: do not create one editor per block; do not model Synced Blocks
   as copied mirror roots by default; do not redefine all voids as navigable;
   do not force users to hand-wire every root mount in examples.
@@ -227,32 +227,32 @@ Source-backed architecture north star:
 Current-state source facts:
 | Surface | Current source | Fact | Plan implication |
 |---------|----------------|------|------------------|
-| Root value model | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:87` | Roots are keyed strings in `EditorDocumentValue.roots`. | Keep keyed roots; ordering belongs to owner nodes in parent roots. |
-| Root lifecycle API | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:249` | Transactions expose `tx.roots.create`, `delete`, and `replace`. | Synced Blocks can create or duplicate body roots without raw op replay. |
-| Content-root schema | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:513` | `contentRoot.slot` is schema vocabulary; actual root key is document data. | Correct substrate for synced block body. |
-| Current editable section data | `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:91` | Initial value stores `main` plus separate child body roots. | Example already teaches same-runtime roots, but not shared copies. |
-| Current content-root specs | `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:137` | Both example node types declare `contentRoot: { slot: 'body' }` and `void: 'editable-island'`. | Synced Blocks should use the content-root axis, but should not teach mixed-control islands as the only model. |
-| Current root render DX | `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:227` | `EditableSection` calls `useSlateContentRoot(element)` and renders `<Editable root={root}>`. | This works, but it is too complex for the canonical Synced Blocks DX. |
-| Current mixed island DX | `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:243` | `EditableVoid` calls `useSlateChildRoot`, `useSlateRootChrome`, then renders `<Editable root={bodyRoot}>` beside native inputs. | Keep this as lower-level/mixed island proof, not the ideal synced-block call site. |
-| Root view registry | `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:348` | Runtime tracks `Map<RootKey, Set<ReactRuntimeEditor>>`. | Multiple mounts per root are structurally possible. |
-| Mounted view lookup gap | `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:386` | `getMountedViewEditor(root)` returns the first editor in a root's set. | Synced Blocks need active projection/view identity before duplicate root mounts are safe. |
-| Content root helper | `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-content-root.ts:25` | Helper resolves slot and returns `{ chrome, root }`. | Good low-level API; example DX should be one call or one slot. |
-| Root chrome | `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-root-chrome.ts:26` | Root chrome wires mouse focus and selection restore for a root. | Reuse internally for root-content slots. |
-| Render slots today | `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:415` | `EditableElementSlots` exists but only exposes `unstableBoundary`. | Best DX likely extends slots with a `contentRoot` renderer. |
-| Void render contract today | `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:529` | `renderVoid` receives only `{ element }`. | Synced Blocks should use `renderElement`, not `renderVoid`, if they need clean slot DX. |
-| Navigation implementation | `.tmp/slate-v2/packages/slate-react/src/editable/content-root-navigation.ts:443` | Navigation classifies Enter, horizontal arrows/delete, and vertical arrows for content roots. | Existing bridge is valuable but must be proven on the new route. |
-| Keyboard integration | `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:341` | Keydown calls `applyContentRootNavigation` before generic caret movement. | New route can prove content-root navigation without product code. |
-| Existing browser proof | `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts:787` | Chromium row checks vertical movement across current content-root boundaries. | Good floor; user-reported browser breakage means Synced Blocks needs route-specific browser proof, not trust in generic code. |
-| Example route registry | `.tmp/slate-v2/site/pages/examples/[example].tsx:18` | Examples are explicitly imported by route key. | Execution must register `synced-blocks`. |
-| Example nav registry | `.tmp/slate-v2/site/constants/examples.ts:11` | Examples list drives the visible index. | Execution must add `['Synced Blocks', 'synced-blocks']`. |
+| Root value model | `packages/slate/src/interfaces/editor.ts:87` | Roots are keyed strings in `EditorDocumentValue.roots`. | Keep keyed roots; ordering belongs to owner nodes in parent roots. |
+| Root lifecycle API | `packages/slate/src/interfaces/editor.ts:249` | Transactions expose `tx.roots.create`, `delete`, and `replace`. | Synced Blocks can create or duplicate body roots without raw op replay. |
+| Content-root schema | `packages/slate/src/interfaces/editor.ts:513` | `contentRoot.slot` is schema vocabulary; actual root key is document data. | Correct substrate for synced block body. |
+| Current editable section data | `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:91` | Initial value stores `main` plus separate child body roots. | Example already teaches same-runtime roots, but not shared copies. |
+| Current content-root specs | `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:137` | Both example node types declare `contentRoot: { slot: 'body' }` and `void: 'editable-island'`. | Synced Blocks should use the content-root axis, but should not teach mixed-control islands as the only model. |
+| Current root render DX | `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:227` | `EditableSection` calls `useSlateContentRoot(element)` and renders `<Editable root={root}>`. | This works, but it is too complex for the canonical Synced Blocks DX. |
+| Current mixed island DX | `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:243` | `EditableVoid` calls `useSlateChildRoot`, `useSlateRootChrome`, then renders `<Editable root={bodyRoot}>` beside native inputs. | Keep this as lower-level/mixed island proof, not the ideal synced-block call site. |
+| Root view registry | `packages/slate-react/src/hooks/use-slate-runtime.tsx:348` | Runtime tracks `Map<RootKey, Set<ReactRuntimeEditor>>`. | Multiple mounts per root are structurally possible. |
+| Mounted view lookup gap | `packages/slate-react/src/hooks/use-slate-runtime.tsx:386` | `getMountedViewEditor(root)` returns the first editor in a root's set. | Synced Blocks need active projection/view identity before duplicate root mounts are safe. |
+| Content root helper | `packages/slate-react/src/hooks/use-slate-content-root.ts:25` | Helper resolves slot and returns `{ chrome, root }`. | Good low-level API; example DX should be one call or one slot. |
+| Root chrome | `packages/slate-react/src/hooks/use-slate-root-chrome.ts:26` | Root chrome wires mouse focus and selection restore for a root. | Reuse internally for root-content slots. |
+| Render slots today | `packages/slate-react/src/components/editable-text-blocks.tsx:415` | `EditableElementSlots` exists but only exposes `unstableBoundary`. | Best DX likely extends slots with a `contentRoot` renderer. |
+| Void render contract today | `packages/slate-react/src/components/editable-text-blocks.tsx:529` | `renderVoid` receives only `{ element }`. | Synced Blocks should use `renderElement`, not `renderVoid`, if they need clean slot DX. |
+| Navigation implementation | `packages/slate-react/src/editable/content-root-navigation.ts:443` | Navigation classifies Enter, horizontal arrows/delete, and vertical arrows for content roots. | Existing bridge is valuable but must be proven on the new route. |
+| Keyboard integration | `packages/slate-react/src/editable/keyboard-input-strategy.ts:341` | Keydown calls `applyContentRootNavigation` before generic caret movement. | New route can prove content-root navigation without product code. |
+| Existing browser proof | `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts:787` | Chromium row checks vertical movement across current content-root boundaries. | Good floor; user-reported browser breakage means Synced Blocks needs route-specific browser proof, not trust in generic code. |
+| Example route registry | `apps/www/src/app/(app)/examples/slate/[example].tsx:18` | Examples are explicitly imported by route key. | Execution must register `synced-blocks`. |
+| Example nav registry | `apps/www/constants/examples.ts:11` | Examples list drives the visible index. | Execution must add `['Synced Blocks', 'synced-blocks']`. |
 
 Public API target:
 | Surface | Proposed shape | User-facing DX | Compatibility / migration | Evidence | Verdict |
 |---------|----------------|----------------|---------------------------|----------|---------|
-| Synced content node | App-defined block element with `contentRoot: { slot: 'body' }`; node data stores `syncId` and `childRoots.body`. | A Synced Block is just another root-editor node. Its body root is projected in place. | Existing void users do not move. Existing child-root examples still work. | Current `EditorElementContentRootSpec` at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:513`. | target |
-| Root projection DX | Add stable render slot: `props.slots.contentRoot('body', options)`. Do not teach `<ContentRoot />` as the canonical API. | Example renderer shows a shell plus one content slot, not hook plumbing. | `useSlateContentRoot` remains lower-level escape hatch; component sugar can be reconsidered later if a repeated public call site proves it. | Existing `EditableElementSlots` at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:415`, slot creation at `:424`, and `slots` passed to renderers at `:521`. | chosen |
-| Shared synced copy | Multiple owner nodes may point at the same `childRoots.body` root key. | Editing either copy mutates one shared body root; every mounted projection renders the same data. | No mirror/diff sync layer. | Root view set supports many views per root at `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:348`. | target with active-view gate |
-| Unsync | `tx.roots.create(newRoot, clone old body); tx.nodes.set({ childRoots: { body: newRoot } })` on one owner. | Breaks a copy into an independent root. | Raw example should include `Duplicate synced block` and `Unsync this copy` as example-local commands, because they prove the data model without making Slate own Notion permissions. | `tx.roots.create` exists at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:249`. | chosen example action |
+| Synced content node | App-defined block element with `contentRoot: { slot: 'body' }`; node data stores `syncId` and `childRoots.body`. | A Synced Block is just another root-editor node. Its body root is projected in place. | Existing void users do not move. Existing child-root examples still work. | Current `EditorElementContentRootSpec` at `packages/slate/src/interfaces/editor.ts:513`. | target |
+| Root projection DX | Add stable render slot: `props.slots.contentRoot('body', options)`. Do not teach `<ContentRoot />` as the canonical API. | Example renderer shows a shell plus one content slot, not hook plumbing. | `useSlateContentRoot` remains lower-level escape hatch; component sugar can be reconsidered later if a repeated public call site proves it. | Existing `EditableElementSlots` at `packages/slate-react/src/components/editable-text-blocks.tsx:415`, slot creation at `:424`, and `slots` passed to renderers at `:521`. | chosen |
+| Shared synced copy | Multiple owner nodes may point at the same `childRoots.body` root key. | Editing either copy mutates one shared body root; every mounted projection renders the same data. | No mirror/diff sync layer. | Root view set supports many views per root at `packages/slate-react/src/hooks/use-slate-runtime.tsx:348`. | target with active-view gate |
+| Unsync | `tx.roots.create(newRoot, clone old body); tx.nodes.set({ childRoots: { body: newRoot } })` on one owner. | Breaks a copy into an independent root. | Raw example should include `Duplicate synced block` and `Unsync this copy` as example-local commands, because they prove the data model without making Slate own Notion permissions. | `tx.roots.create` exists at `packages/slate/src/interfaces/editor.ts:249`. | chosen example action |
 | Default voids | No change. | Images, embeds, inline voids stay atomic. | Preserves legacy-like behavior. | Previous plan decision in `docs/plans/2026-05-25-slate-v2-void-roots-and-editable-islands.md:397`. | keep |
 
 Vocabulary boundary:
@@ -293,32 +293,32 @@ Why this wins:
 Internal runtime target:
 | Layer | Current owner | Target mechanism | Avoids | Evidence | Verdict |
 |-------|---------------|------------------|--------|----------|---------|
-| Root storage | `slate` value/runtime | One `roots` map remains the canonical content store. Owner element path defines projection order. | Ordered root arrays and duplicate content copies. | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:89`. | keep |
-| Root projection registry | `slate-react` runtime | Track root views by root and projection instance. Projection id is runtime-local and derived from mounted owner runtime id plus slot/root, not stored in the document. `getMountedViewEditor(root)` needs active-projection preference or an explicit projection-aware lookup. | Focusing an arbitrary mounted copy when the same root appears twice. | Current first-view lookup at `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:386`. | chosen |
-| Selection | `slate` selection + `slate-react` DOM bridge | Selection stays root-qualified; active projection is view-local UI state. Root selection answers "what content"; projection answers "which mounted copy should receive DOM focus." | Persisting DOM mount identity in document value. | `rootedRange` writes root-qualified points at `.tmp/slate-v2/packages/slate-react/src/editable/content-root-navigation.ts:136`. | target |
-| History | `slate` history/runtime | Undo/redo stay one operation stream. History focus restores the active root and the last active projection for that root when available, otherwise falls back to the first mounted projection. | Independent per-block stacks and cross-copy divergence. | History focus currently asks `getMountedViewEditor(root)` at `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-history.ts:173`. | chosen |
-| Navigation | `slate-react` content-root navigation | Keep explicit bridges only for content-root elements. Add same-root duplicate projection proof. | Global cross-root ranges or default void traversal changes. | Existing navigation bridge at `.tmp/slate-v2/packages/slate-react/src/editable/content-root-navigation.ts:980`. | keep/gate |
+| Root storage | `slate` value/runtime | One `roots` map remains the canonical content store. Owner element path defines projection order. | Ordered root arrays and duplicate content copies. | `packages/slate/src/interfaces/editor.ts:89`. | keep |
+| Root projection registry | `slate-react` runtime | Track root views by root and projection instance. Projection id is runtime-local and derived from mounted owner runtime id plus slot/root, not stored in the document. `getMountedViewEditor(root)` needs active-projection preference or an explicit projection-aware lookup. | Focusing an arbitrary mounted copy when the same root appears twice. | Current first-view lookup at `packages/slate-react/src/hooks/use-slate-runtime.tsx:386`. | chosen |
+| Selection | `slate` selection + `slate-react` DOM bridge | Selection stays root-qualified; active projection is view-local UI state. Root selection answers "what content"; projection answers "which mounted copy should receive DOM focus." | Persisting DOM mount identity in document value. | `rootedRange` writes root-qualified points at `packages/slate-react/src/editable/content-root-navigation.ts:136`. | target |
+| History | `slate` history/runtime | Undo/redo stay one operation stream. History focus restores the active root and the last active projection for that root when available, otherwise falls back to the first mounted projection. | Independent per-block stacks and cross-copy divergence. | History focus currently asks `getMountedViewEditor(root)` at `packages/slate-react/src/hooks/use-slate-history.ts:173`. | chosen |
+| Navigation | `slate-react` content-root navigation | Keep explicit bridges only for content-root elements. Add same-root duplicate projection proof. | Global cross-root ranges or default void traversal changes. | Existing navigation bridge at `packages/slate-react/src/editable/content-root-navigation.ts:980`. | keep/gate |
 
 Hook / component / render DX target:
 | Surface | Call-site shape | Composition rule | Performance rule | Evidence | Verdict |
 |---------|-----------------|------------------|------------------|----------|---------|
-| Synced block renderer | `return <SyncedBlockChrome {...props}>{props.slots.contentRoot('body', { ariaLabel: 'Synced block content' })}</SyncedBlockChrome>`. | Renderer owns visual chrome; Slate React owns root resolution, root chrome, DOM coverage, active projection registration, and nested `Editable` mounting. | Mount only when the owner block is rendered; subscriptions stay root-scoped. | Current `slots` prop already exists at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:521`. | chosen |
-| Low-level escape hatch | `const { chrome, root } = useSlateContentRoot(element)` remains valid. | Advanced users can compose custom root surfaces. | No hidden root creation in effects. | `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-content-root.ts:25`. | keep |
-| Component sugar | `<ContentRoot slot="body" />` is not canonical. Reconsider only if real user examples repeat the same slot call enough to justify another public primitive. | Avoids extra import/API weight. | Avoids context magic and keeps owner children/coverage inside `slots`. | `useElement` context exists at `.tmp/slate-v2/packages/slate-react/src/hooks/use-element.ts:10`, but a component would still hide renderer-local ownership. | reject for canonical DX |
-| Mixed island | Current `useSlateChildRoot` + `useSlateRootChrome` + `<Editable root>` remains acceptable for app/native-control islands. | Native controls and editor content can coexist. | Do not create child roots for controls that do not need rich text. | `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:243`. | keep |
-| Synced Blocks example | New `site/examples/ts/synced-blocks.tsx` should show shared root identity, duplicate, edit, and unsync with Notion-like border/top chrome. | Product chrome is example-local. | Two copies of one root should not double-subscribe unrelated parent content. | route registry at `.tmp/slate-v2/site/pages/examples/[example].tsx:18`. | add |
+| Synced block renderer | `return <SyncedBlockChrome {...props}>{props.slots.contentRoot('body', { ariaLabel: 'Synced block content' })}</SyncedBlockChrome>`. | Renderer owns visual chrome; Slate React owns root resolution, root chrome, DOM coverage, active projection registration, and nested `Editable` mounting. | Mount only when the owner block is rendered; subscriptions stay root-scoped. | Current `slots` prop already exists at `packages/slate-react/src/components/editable-text-blocks.tsx:521`. | chosen |
+| Low-level escape hatch | `const { chrome, root } = useSlateContentRoot(element)` remains valid. | Advanced users can compose custom root surfaces. | No hidden root creation in effects. | `packages/slate-react/src/hooks/use-slate-content-root.ts:25`. | keep |
+| Component sugar | `<ContentRoot slot="body" />` is not canonical. Reconsider only if real user examples repeat the same slot call enough to justify another public primitive. | Avoids extra import/API weight. | Avoids context magic and keeps owner children/coverage inside `slots`. | `useElement` context exists at `packages/slate-react/src/hooks/use-element.ts:10`, but a component would still hide renderer-local ownership. | reject for canonical DX |
+| Mixed island | Current `useSlateChildRoot` + `useSlateRootChrome` + `<Editable root>` remains acceptable for app/native-control islands. | Native controls and editor content can coexist. | Do not create child roots for controls that do not need rich text. | `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:243`. | keep |
+| Synced Blocks example | New `site/examples/ts/synced-blocks.tsx` should show shared root identity, duplicate, edit, and unsync with Notion-like border/top chrome. | Product chrome is example-local. | Two copies of one root should not double-subscribe unrelated parent content. | route registry at `apps/www/src/app/(app)/examples/slate/[example].tsx:18`. | add |
 
 Plate migration-backbone target:
 | Pressure | Slate substrate target | Plate adaptation route | Non-goal | Evidence | Verdict |
 |----------|------------------------|------------------------|----------|---------|---------|
 | Product synced blocks | Root projection primitive plus active projection identity. | Plate can wrap with synced-block menus, copy/unsync UI, comments, permissions, and persistence. | Raw Slate workspace permissions or cross-page sync service. | User-provided Notion excerpt/screenshot; current Slate root primitives. | target |
-| Node UI complexity | Slot-based content root renderer. | Plate can expose a richer component around raw slots. | Raw Slate does not ship Notion UI. | `EditableElementSlots` current surface at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:415`. | target |
+| Node UI complexity | Slot-based content root renderer. | Plate can expose a richer component around raw slots. | Raw Slate does not ship Notion UI. | `EditableElementSlots` current surface at `packages/slate-react/src/components/editable-text-blocks.tsx:415`. | target |
 
 slate-yjs migration-backbone target:
 | Pressure | Slate substrate target | Collaboration route | Non-goal | Evidence | Verdict |
 |----------|------------------------|---------------------|----------|---------|---------|
 | Shared body root | Root lifecycle ops and root-qualified selection/position metadata. | Adapter maps each root key to shared content and remote cursors include root keys. | Claiming current slate-yjs supports Synced Blocks without adapter work. | Prior 2026-05-25 plan notes current slate-yjs single shared root at `docs/plans/2026-05-25-slate-v2-void-roots-and-editable-islands.md:478`. | gated |
-| Multiple projections | Remote selections need root plus projection display policy. | Show remote cursor in every copy or active copy by product policy. | Persisting projection view ids in collaborative document state. | Current runtime view registry gap at `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:386`. | open |
+| Multiple projections | Remote selections need root plus projection display policy. | Show remote cursor in every copy or active copy by product policy. | Persisting projection view ids in collaborative document state. | Current runtime view registry gap at `packages/slate-react/src/hooks/use-slate-runtime.tsx:386`. | open |
 
 Intent / boundary record:
 - intent: make same-runtime embedded documents feel like ordinary document
@@ -383,11 +383,11 @@ Decision brief:
 Decision rows:
 | Decision | Call | Why | Evidence | Revisit trigger |
 |----------|------|-----|----------|-----------------|
-| Canonical projection API | `props.slots.contentRoot(slot, options)` | It is renderer-local, has owner children context, can wire DOM coverage and nested `Editable` internally, and avoids a new import. | `EditableElementSlots` at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:415`; slots passed to renderers at `:521`. | If three or more real examples need identical options and component sugar stays type-clean. |
-| Top-level component | Do not teach as canonical. | It hides ownership behind context and cannot naturally consume owner children without more magic. | `useElement` context exists at `.tmp/slate-v2/packages/slate-react/src/hooks/use-element.ts:10`, but current renderer already passes slots. | Later ergonomic pass, not Synced Blocks blocker. |
-| Active projection identity | Runtime-local id derived from mounted owner runtime id + content slot/root. | Same root can appear twice; root key alone answers data identity, not DOM focus target. | Current root view registry is `Map<RootKey, Set<...>>` at `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:348`, but root lookup returns one arbitrary view at `:386`. | Browser proof shows wrong-copy focus remains after active projection state. |
-| Synced Blocks route actions | Include duplicate/copy and unsync as example-local commands. | Mimics Notion's core workflow and proves shared-root versus cloned-root data. | Root lifecycle API at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:249`. | If route becomes too product-heavy during implementation. |
-| Void semantics | Keep default voids atomic; content-root blocks are opt-in. | User asked for legacy-like voids plus a special editable-root node type. | Existing `void` kinds include `editable-island` at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:487`; prior plan rejected broad void traversal. | Browser proof shows content-root bridge leaks into ordinary voids. |
+| Canonical projection API | `props.slots.contentRoot(slot, options)` | It is renderer-local, has owner children context, can wire DOM coverage and nested `Editable` internally, and avoids a new import. | `EditableElementSlots` at `packages/slate-react/src/components/editable-text-blocks.tsx:415`; slots passed to renderers at `:521`. | If three or more real examples need identical options and component sugar stays type-clean. |
+| Top-level component | Do not teach as canonical. | It hides ownership behind context and cannot naturally consume owner children without more magic. | `useElement` context exists at `packages/slate-react/src/hooks/use-element.ts:10`, but current renderer already passes slots. | Later ergonomic pass, not Synced Blocks blocker. |
+| Active projection identity | Runtime-local id derived from mounted owner runtime id + content slot/root. | Same root can appear twice; root key alone answers data identity, not DOM focus target. | Current root view registry is `Map<RootKey, Set<...>>` at `packages/slate-react/src/hooks/use-slate-runtime.tsx:348`, but root lookup returns one arbitrary view at `:386`. | Browser proof shows wrong-copy focus remains after active projection state. |
+| Synced Blocks route actions | Include duplicate/copy and unsync as example-local commands. | Mimics Notion's core workflow and proves shared-root versus cloned-root data. | Root lifecycle API at `packages/slate/src/interfaces/editor.ts:249`. | If route becomes too product-heavy during implementation. |
+| Void semantics | Keep default voids atomic; content-root blocks are opt-in. | User asked for legacy-like voids plus a special editable-root node type. | Existing `void` kinds include `editable-island` at `packages/slate/src/interfaces/editor.ts:487`; prior plan rejected broad void traversal. | Browser proof shows content-root bridge leaks into ordinary voids. |
 
 Issue accounting:
 | Issue / cluster | Claim category | Exact claim | Why | Proof route | V2 sync ledger | PR line |
@@ -464,7 +464,7 @@ Ecosystem strategy synthesis:
 | React ProseMirror | `../react-prosemirror/README.md:109`, `:114`, `:215`; `../react-prosemirror/migration-guides/v2.md:12`, `:22`, `:34`. | Moves ProseMirror rendering into React to avoid portal wrappers, double render, stale state, and DOM ownership fights. | React portals into editor-owned nodes as the normal API. | React component node views receive props; layout/editor methods run outside render. | Extra wrapper/portal handoff as the Synced Blocks architecture. | Slate React slot should render normal React chrome while Slate owns the nested editable root internally. | strong support |
 | Tiptap | `../tiptap/packages/react/src/NodeViewWrapper.tsx:10`; `../tiptap/packages/react/src/NodeViewContent.tsx:10`; `../tiptap/packages/core/src/CommandManager.ts:51`; `../tiptap-docs/src/content/editor/api/commands/index.mdx:28`. | Product DX wraps ProseMirror node views with `NodeViewWrapper` and `NodeViewContent`; commands use `chain().run()`. | Raw ProseMirror ceremony in app docs. | Product-grade naming and wrapper/content split; example should feel obvious. | `chain().focus().run()` as raw Slate command law; product command DSL in core. | Raw Slate keeps `editor.update((tx) => ...)`; Plate may later own higher-level synced-block commands. | DX benchmark only |
 | Lexical | `../lexical/packages/lexical/src/nodes/LexicalDecoratorNode.ts:23`; `../lexical/packages/lexical-react/src/shared/useReactDecorators.tsx:18`; `../lexical/packages/lexical-react/src/LexicalNestedComposer.tsx:33`; `../lexical/packages/lexical/src/LexicalUpdates.ts:243`; `../lexical/packages/lexical/src/LexicalUtils.ts:460`. | Decorator nodes mount React UI by node key; nested composers are separate editors; dirty leaves/elements drive transforms and subscriptions. | Treating all UI as document children or all nested rich content as one editor. | Dirty-node/runtime invalidation and decorator channel. | Class node model and nested editors as the shared content-root answer. Lexical's nested composer explicitly needs an `initialEditor` and does not inherit plugins. | Keep one Slate runtime with multiple root views, not Lexical-style nested editor states, for Synced Blocks. | reject nested editor substrate |
-| React 19.2 / Slate React selectors | `docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md:20`; `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:181`; `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:639`; `../lexical/packages/lexical-react/src/shared/useReactDecorators.tsx:30`. | External-store selectors and root/runtime-scoped update gates keep React from rerendering every surface. | Editor-wide React rerenders and effect-created roots. | Narrow subscriptions, snapshot reads, deferred selectors, root-affect checks. | Claiming React alone solves dirty-path fanout. | Content-root slot implementation must mount views with root-scoped selectors and a repeated-root stress row. | adopt |
+| React 19.2 / Slate React selectors | `docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md:20`; `packages/slate-react/src/hooks/use-editor-selector.tsx:181`; `packages/slate-react/src/hooks/use-slate-runtime.tsx:639`; `../lexical/packages/lexical-react/src/shared/useReactDecorators.tsx:30`. | External-store selectors and root/runtime-scoped update gates keep React from rerendering every surface. | Editor-wide React rerenders and effect-created roots. | Narrow subscriptions, snapshot reads, deferred selectors, root-affect checks. | Claiming React alone solves dirty-path fanout. | Content-root slot implementation must mount views with root-scoped selectors and a repeated-root stress row. | adopt |
 | Plate | `packages/core/src/lib/plugin/createSlatePlugin.ts:91`; `packages/core/src/react/plugin/toPlatePlugin.ts:70`; `packages/core/src/internal/plugin/pluginInjectNodeProps.ts:25`; `packages/core/src/internal/plugin/pipeInjectNodeProps.tsx:11`. | Slate-first plugins compose into React Plate plugins; Plate injects node props, selectors, chrome, and product behavior on top. | Raw Slate becoming a product UI framework. | Ownership boundary: raw Slate owns keyed root projection; Plate owns rich synced-block product wrappers later. | Copying Plate plugin APIs into raw Slate for this route. | Keep `Synced Blocks` example local; no workspace permissions, toolbar kit, or Plate dependency. | boundary confirmed |
 | slate-yjs | `../slate-yjs/packages/core/src/plugins/withYjs.ts:29`; `:156`; `:204`; `../slate-yjs/packages/core/src/plugins/withYHistory.ts:68`; `:80`; `:130`; `../slate-yjs/packages/core/src/plugins/withCursors.ts:31`; `:98`; `../slate-yjs/packages/core/src/utils/position.ts:65`. | Current adapter binds one `Y.XmlText` shared root to one editor; history/cursors store relative selections against that shared root. | Pretending current slate-yjs can understand multiple Slate v2 roots without adapter work. | Relative selection/history concept, origin grouping, cursor awareness. | Single sharedRoot as enough for Synced Blocks. | Slate v2 must expose root-qualified ops, selection/history metadata, and local projection identity; adapter maps each keyed root to a shared type. | migration pressure |
 
@@ -515,12 +515,12 @@ Performance / DX / migration / regression / simplicity pressure results:
 Performance review lane:
 | Question | Answer | Evidence / rule |
 |----------|--------|-----------------|
-| Vercel React micro-rules used | `rerender-defer-reads`, `rerender-derived-state-no-effect`, `advanced-init-once`, plus selector/external-store posture. | `.agents/skills/vercel-react-best-practices/SKILL.md`; current selector source at `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:104` and `:213`. |
+| Vercel React micro-rules used | `rerender-defer-reads`, `rerender-derived-state-no-effect`, `advanced-init-once`, plus selector/external-store posture. | `.agents/skills/vercel-react-best-practices/SKILL.md`; current selector source at `packages/slate-react/src/hooks/use-editor-selector.tsx:104` and `:213`. |
 | Extra performance rules used | `cohort-segmentation`, `repeated-unit-budget`, `effect-subscription-budget`, `interaction-inp-matrix`, `memory-dom-tagging`, `browser-trace-cwv-proof`, and `editor-native-behavior-proof`. | `.agents/skills/performance/rules/*.md` reads in pass 6. |
-| Repeated unit | One mounted content-root projection: owner shell, root chrome, nested editable view, subscriptions, event handlers, and active projection registration. | Current root view registry at `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:348`; current slot surface at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:415`. |
+| Repeated unit | One mounted content-root projection: owner shell, root chrome, nested editable view, subscriptions, event handlers, and active projection registration. | Current root view registry at `packages/slate-react/src/hooks/use-slate-runtime.tsx:348`; current slot surface at `packages/slate-react/src/components/editable-text-blocks.tsx:415`. |
 | Cohorts | normal: 1-5 projections; medium: 20 projections; stress: 100 projections; pathological: custom renderers plus comments/decorations plus same-root projections. | Cohort rule; benchmark candidate rows for dirty path, rerender breadth, and large docs at `docs/slate-issues/benchmark-candidate-map.md:458`, `:488`, `:518`. |
-| Budgets | Unrelated root edits must not notify same-root projection selectors; same-root text edit may update each mounted projection, but not unrelated parent blocks or unrelated roots. | Existing selector fanout tests at `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:545`, `:615`, `:946`, and `:1079`. |
-| Interaction metrics | type, select, select-all, copy, paste, delete/range delete, click outside, ArrowUp/Down, undo/redo, and follow-up typing after focus repair. | Interaction INP matrix; editable-void browser floor at `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts:379`, `:787`, `:910`. |
+| Budgets | Unrelated root edits must not notify same-root projection selectors; same-root text edit may update each mounted projection, but not unrelated parent blocks or unrelated roots. | Existing selector fanout tests at `packages/slate-react/test/provider-hooks-contract.tsx:545`, `:615`, `:946`, and `:1079`. |
+| Interaction metrics | type, select, select-all, copy, paste, delete/range delete, click outside, ArrowUp/Down, undo/redo, and follow-up typing after focus repair. | Interaction INP matrix; editable-void browser floor at `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts:379`, `:787`, `:910`. |
 | Memory / DOM tags | JS heap, DOM node count, mounted projection count, selector subscription count, listener count, dirty id set size, and custom renderer flag. | Memory/DOM tagging rule. |
 | Degradation contract | No degradation for normal/medium route proof. Stress rows may be lab-only but cannot silently break native selection, copy, paste, find, undo/history, or follow-up typing. | Editor native behavior proof rule. |
 | Trace / CWV scope | Page-load CWV is out of scope for the planning pass; editor event-to-update/event-to-paint and Playwright/native proof are in scope after implementation. | Browser trace/CWV rule. |
@@ -554,15 +554,15 @@ Browser stress / parity strategy:
 Verification workspace gate:
 | Claim | Workspace | Command | Result | Owner |
 |-------|-----------|---------|--------|-------|
-| Current roots data model is keyed roots. | `.tmp/slate-v2` | `nl -ba packages/slate/src/interfaces/editor.ts \| sed -n '80,110p'` | observed `RootKey` and `roots: Record<RootKey, V>` | pass 1 |
-| Current root lifecycle API exists. | `.tmp/slate-v2` | `nl -ba packages/slate/src/interfaces/editor.ts \| sed -n '240,260p'` | observed `tx.roots.create/delete/replace` type | pass 1 |
-| Current content-root schema exists. | `.tmp/slate-v2` | `nl -ba packages/slate/src/interfaces/editor.ts \| sed -n '500,532p'` | observed `EditorElementContentRootSpec` | pass 1 |
-| Current root view lookup is root-only. | `.tmp/slate-v2` | `nl -ba packages/slate-react/src/hooks/use-slate-runtime.tsx \| sed -n '340,405p'` | observed `Map<RootKey, Set<...>>` and first-value lookup | pass 1 |
-| Current examples route is explicit. | `.tmp/slate-v2` | `nl -ba "site/pages/examples/[example].tsx" \| sed -n '18,50p'` | observed explicit route import map | pass 1 |
-| Current selector fanout base exists. | `.tmp/slate-v2` | `nl -ba packages/slate-react/src/hooks/use-editor-selector.tsx \| sed -n '213,360p'` and `nl -ba packages/slate-react/test/provider-hooks-contract.tsx \| sed -n '545,700p'` | observed runtime-id listener map, affected-runtime filtering, and tests that skip unrelated runtime id commits | pass 6 |
-| Current mounted render selector base exists. | `.tmp/slate-v2` | `nl -ba packages/slate-react/test/provider-hooks-contract.tsx \| sed -n '946,1120p'` | observed mounted render selector tests for synced text commits and root selector sources | pass 6 |
-| Current content-root navigation unit floor exists. | `.tmp/slate-v2` | `nl -ba packages/slate-react/test/content-root-navigation-contract.test.ts \| sed -n '1,275p'` | observed unit rows for horizontal, Enter, Backspace, and selection-root navigation | pass 6 |
-| Browser behavior is not claimed by this pass. | `.tmp/slate-v2` | not run | planning-only current-state read | pass 1 |
+| Current roots data model is keyed roots. | `Plate repo root` | `nl -ba packages/slate/src/interfaces/editor.ts \| sed -n '80,110p'` | observed `RootKey` and `roots: Record<RootKey, V>` | pass 1 |
+| Current root lifecycle API exists. | `Plate repo root` | `nl -ba packages/slate/src/interfaces/editor.ts \| sed -n '240,260p'` | observed `tx.roots.create/delete/replace` type | pass 1 |
+| Current content-root schema exists. | `Plate repo root` | `nl -ba packages/slate/src/interfaces/editor.ts \| sed -n '500,532p'` | observed `EditorElementContentRootSpec` | pass 1 |
+| Current root view lookup is root-only. | `Plate repo root` | `nl -ba packages/slate-react/src/hooks/use-slate-runtime.tsx \| sed -n '340,405p'` | observed `Map<RootKey, Set<...>>` and first-value lookup | pass 1 |
+| Current examples route is explicit. | `Plate repo root` | `nl -ba "site/pages/examples/[example].tsx" \| sed -n '18,50p'` | observed explicit route import map | pass 1 |
+| Current selector fanout base exists. | `Plate repo root` | `nl -ba packages/slate-react/src/hooks/use-editor-selector.tsx \| sed -n '213,360p'` and `nl -ba packages/slate-react/test/provider-hooks-contract.tsx \| sed -n '545,700p'` | observed runtime-id listener map, affected-runtime filtering, and tests that skip unrelated runtime id commits | pass 6 |
+| Current mounted render selector base exists. | `Plate repo root` | `nl -ba packages/slate-react/test/provider-hooks-contract.tsx \| sed -n '946,1120p'` | observed mounted render selector tests for synced text commits and root selector sources | pass 6 |
+| Current content-root navigation unit floor exists. | `Plate repo root` | `nl -ba packages/slate-react/test/content-root-navigation-contract.test.ts \| sed -n '1,275p'` | observed unit rows for horizontal, Enter, Backspace, and selection-root navigation | pass 6 |
+| Browser behavior is not claimed by this pass. | `Plate repo root` | not run | planning-only current-state read | pass 1 |
 
 Applicable implementation-skill review matrix:
 | Lens | Applies | Status | Findings | Plan delta |
@@ -608,17 +608,17 @@ High-risk deliberate-mode conclusions:
 Slate maintainer objection ledger:
 | Change | Objection | Tradeoff | Evidence | Migration/docs/proof answer | Verdict |
 |--------|-----------|----------|----------|-----------------------------|---------|
-| Add `props.slots.contentRoot(...)` | "This is React convenience, not core Slate." | Correct: the slot is React DX. But the model is already core: `contentRoot` is schema vocabulary and `childRoots[slot]` stores the data root. | Core spec at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:513`; renderer slots at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:415` and `:521`; ProseMirror's `NodeView.contentDOM` split at `../prosemirror-view/src/viewdesc.ts:31`. | Keep core to schema/root identity and implement the render affordance in `slate-react`. Document the slot as "project this root here", not as a synced-block product primitive. | accepted; execution gate |
-| Reject canonical `<ContentRoot />` | "A component is more React-like than a slot function." | A component is easy to add later, but it hides owner renderer context and pushes root resolution into context magic. | Renderer already receives `attributes`, `children`, `element`, and `slots` together at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:506`; `useSlateContentRoot` can resolve context today at `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-content-root.ts:25`. | Ship the slot first. Reconsider component sugar only if multiple real examples repeat identical slot options and the type surface stays clean. | accepted; keep rejected alternative |
-| Allow same root in multiple owner nodes | "A root should have one mounted editor view; multiple views make focus arbitrary." | Data identity and view identity must split. Root key answers what content is edited; projection identity answers which DOM mount receives focus. | Root view registry is already `Map<RootKey, Set<...>>` at `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:348`, but `getMountedViewEditor(root)` picks the first view at `:386`. | Add runtime-local active projection identity before claiming Synced Blocks done. Do not serialize projection ids. Browser proof must show copy B keeps focus through edit/undo/redo. | accepted; hard gate |
-| Add active projection identity | "This is hidden mutable UI state." | Yes, and that is exactly where it belongs. It is DOM-focus state, not document content. | History restore currently calls root-only `getMountedViewEditor(root)` at `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-history.ts:173`; content navigation writes root-qualified ranges at `.tmp/slate-v2/packages/slate-react/src/editable/content-root-navigation.ts:136`. | Store active projection in runtime/view state keyed by root plus owner runtime id and slot. History/focus may prefer it, but operations, snapshots, and collab state stay root-qualified. | accepted; hard gate |
-| Keep default voids atomic | "Content roots will make every void traversable and break legacy expectations." | Only opt-in content-root elements get navigation. Ordinary void behavior stays atomic. | Void kinds are explicit at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:487`; editable-voids opt in with `void: 'editable-island'` and `contentRoot` at `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:137`; navigation first checks for content-root specs at `.tmp/slate-v2/packages/slate-react/src/editable/content-root-navigation.ts:145`. | Do not change default void traversal. New Synced Blocks should be a content-root element rendered through `renderElement`, not a broad `renderVoid` semantic change. | accepted; regression gate |
-| Add Notion-style `Synced Blocks` example | "Raw Slate should not ship product UI." | The product chrome is example-local; the primitive is general. The example is valuable because it proves the hardest real workflow. | User supplied Notion scenario; root lifecycle API supports create/delete/replace at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:249`; current editable-voids example is too hook-heavy at `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:227`. | Include border/top chrome, duplicate, and unsync only in `site/examples/ts/synced-blocks.tsx`. Do not add permissions, workspace sync, comments, or Plate dependencies to raw Slate. | accepted; example-local |
-| Copy/duplicate and unsync commands | "This starts defining a product sync protocol." | The commands are demonstrators for root identity, not a server sync API. | `tx.roots.create`/`replace`/`delete` are already public transaction concepts at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:249`. | Duplicate should create another owner node pointing at the same root. Unsync should create a new root cloned from the shared root and update only that owner node. Keep command code route-local unless a second example proves reuse. | accepted; route-local |
-| Root lifecycle and orphan policy | "If owners share roots, deleting an owner can orphan or accidentally delete shared content." | Correct; the plan must not hide lifetime policy. Shared roots need explicit owner/root distinction. | Root storage is separate from owner nodes at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:89`; child-root resolution prefers persisted `childRoots[slot]` at `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-child-root.ts:37`. | Owner deletion must not automatically delete a shared root in the canonical example. Cleanup can be explicit command/persistence policy. Browser tests should cover deleting an owner without crashing and unsyncing without stale references. | accepted; high-risk follow-up |
+| Add `props.slots.contentRoot(...)` | "This is React convenience, not core Slate." | Correct: the slot is React DX. But the model is already core: `contentRoot` is schema vocabulary and `childRoots[slot]` stores the data root. | Core spec at `packages/slate/src/interfaces/editor.ts:513`; renderer slots at `packages/slate-react/src/components/editable-text-blocks.tsx:415` and `:521`; ProseMirror's `NodeView.contentDOM` split at `../prosemirror-view/src/viewdesc.ts:31`. | Keep core to schema/root identity and implement the render affordance in `slate-react`. Document the slot as "project this root here", not as a synced-block product primitive. | accepted; execution gate |
+| Reject canonical `<ContentRoot />` | "A component is more React-like than a slot function." | A component is easy to add later, but it hides owner renderer context and pushes root resolution into context magic. | Renderer already receives `attributes`, `children`, `element`, and `slots` together at `packages/slate-react/src/components/editable-text-blocks.tsx:506`; `useSlateContentRoot` can resolve context today at `packages/slate-react/src/hooks/use-slate-content-root.ts:25`. | Ship the slot first. Reconsider component sugar only if multiple real examples repeat identical slot options and the type surface stays clean. | accepted; keep rejected alternative |
+| Allow same root in multiple owner nodes | "A root should have one mounted editor view; multiple views make focus arbitrary." | Data identity and view identity must split. Root key answers what content is edited; projection identity answers which DOM mount receives focus. | Root view registry is already `Map<RootKey, Set<...>>` at `packages/slate-react/src/hooks/use-slate-runtime.tsx:348`, but `getMountedViewEditor(root)` picks the first view at `:386`. | Add runtime-local active projection identity before claiming Synced Blocks done. Do not serialize projection ids. Browser proof must show copy B keeps focus through edit/undo/redo. | accepted; hard gate |
+| Add active projection identity | "This is hidden mutable UI state." | Yes, and that is exactly where it belongs. It is DOM-focus state, not document content. | History restore currently calls root-only `getMountedViewEditor(root)` at `packages/slate-react/src/hooks/use-slate-history.ts:173`; content navigation writes root-qualified ranges at `packages/slate-react/src/editable/content-root-navigation.ts:136`. | Store active projection in runtime/view state keyed by root plus owner runtime id and slot. History/focus may prefer it, but operations, snapshots, and collab state stay root-qualified. | accepted; hard gate |
+| Keep default voids atomic | "Content roots will make every void traversable and break legacy expectations." | Only opt-in content-root elements get navigation. Ordinary void behavior stays atomic. | Void kinds are explicit at `packages/slate/src/interfaces/editor.ts:487`; editable-voids opt in with `void: 'editable-island'` and `contentRoot` at `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:137`; navigation first checks for content-root specs at `packages/slate-react/src/editable/content-root-navigation.ts:145`. | Do not change default void traversal. New Synced Blocks should be a content-root element rendered through `renderElement`, not a broad `renderVoid` semantic change. | accepted; regression gate |
+| Add Notion-style `Synced Blocks` example | "Raw Slate should not ship product UI." | The product chrome is example-local; the primitive is general. The example is valuable because it proves the hardest real workflow. | User supplied Notion scenario; root lifecycle API supports create/delete/replace at `packages/slate/src/interfaces/editor.ts:249`; current editable-voids example is too hook-heavy at `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:227`. | Include border/top chrome, duplicate, and unsync only in `site/examples/ts/synced-blocks.tsx`. Do not add permissions, workspace sync, comments, or Plate dependencies to raw Slate. | accepted; example-local |
+| Copy/duplicate and unsync commands | "This starts defining a product sync protocol." | The commands are demonstrators for root identity, not a server sync API. | `tx.roots.create`/`replace`/`delete` are already public transaction concepts at `packages/slate/src/interfaces/editor.ts:249`. | Duplicate should create another owner node pointing at the same root. Unsync should create a new root cloned from the shared root and update only that owner node. Keep command code route-local unless a second example proves reuse. | accepted; route-local |
+| Root lifecycle and orphan policy | "If owners share roots, deleting an owner can orphan or accidentally delete shared content." | Correct; the plan must not hide lifetime policy. Shared roots need explicit owner/root distinction. | Root storage is separate from owner nodes at `packages/slate/src/interfaces/editor.ts:89`; child-root resolution prefers persisted `childRoots[slot]` at `packages/slate-react/src/hooks/use-slate-child-root.ts:37`. | Owner deletion must not automatically delete a shared root in the canonical example. Cleanup can be explicit command/persistence policy. Browser tests should cover deleting an owner without crashing and unsyncing without stale references. | accepted; high-risk follow-up |
 | Collaboration / slate-yjs | "This cannot be claimed while current slate-yjs has one shared root." | Agreed. The raw Slate plan is the substrate, not a slate-yjs compatibility claim. | Current `withYjs` stores one `sharedRoot: Y.XmlText` at `../slate-yjs/packages/core/src/plugins/withYjs.ts:29` and binds it at `:156`. | The adapter story is root-keyed shared types plus root-qualified selection/history. Projection ids remain local display state. No current slate-yjs fixed/improved claim. | accepted; non-claim |
-| Performance of many projected roots | "Nested editables per block will blow up React and DOM work." | The risk is real; the answer is bounded projection budgets, not denial. | `useSlateViewState` gates by root with `isRootAffected` at `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:639`; pass 6 added 20/100 projection cohorts. | No perf claim until route/package stress rows capture selector notification count, mounted projection count, event-to-paint, heap, DOM, and listener tags. | accepted; proof gate |
-| Browser behavior | "The plan says it behaves like sibling blocks, but tests already missed user bugs." | Correct. Browser proof is mandatory, and Playwright alone is only enough when it exercises the real click/keyboard path. | Existing editable-voids rows cover some boundaries at `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts:379`, `:787`, `:910`; prior memory warns browser-visible Slate regressions need real browser proof when harnesses miss UX. | `/examples/synced-blocks` must prove shared edit, ArrowUp/Down, click outside, active-copy undo/redo, placeholder isolation, copy/unsync, delete/range delete, and follow-up typing. | accepted; browser gate |
+| Performance of many projected roots | "Nested editables per block will blow up React and DOM work." | The risk is real; the answer is bounded projection budgets, not denial. | `useSlateViewState` gates by root with `isRootAffected` at `packages/slate-react/src/hooks/use-slate-runtime.tsx:639`; pass 6 added 20/100 projection cohorts. | No perf claim until route/package stress rows capture selector notification count, mounted projection count, event-to-paint, heap, DOM, and listener tags. | accepted; proof gate |
+| Browser behavior | "The plan says it behaves like sibling blocks, but tests already missed user bugs." | Correct. Browser proof is mandatory, and Playwright alone is only enough when it exercises the real click/keyboard path. | Existing editable-voids rows cover some boundaries at `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts:379`, `:787`, `:910`; prior memory warns browser-visible Slate regressions need real browser proof when harnesses miss UX. | `/examples/synced-blocks` must prove shared edit, ArrowUp/Down, click outside, active-copy undo/redo, placeholder isolation, copy/unsync, delete/range delete, and follow-up typing. | accepted; browser gate |
 
 Hard cuts and rejected alternatives:
 | Option / API | Keep / cut / reject | Why | Migration cost | Evidence | Follow-up |
@@ -626,8 +626,8 @@ Hard cuts and rejected alternatives:
 | One editor per synced block | reject | Shared selection/history/collab become federation problems. | High. | Memory prior root-shape comparison and current one-runtime roots. | None. |
 | Mirrored roots as canonical sync | reject | Looks synced but splits operation identity and conflicts. | Medium now, high later. | `tx.roots` makes real shared root possible. | Could be app-level escape hatch only. |
 | Default void traversal | reject | User wanted voids like before; too much regression risk. | High. | Prior plan decision at `docs/plans/2026-05-25-slate-v2-void-roots-and-editable-islands.md:397`. | Preserve tests. |
-| Manual `<Editable root>` in canonical Synced Blocks example | reject as best DX | It works but teaches internals and repeats hook boilerplate. | Low to replace with slot API. | Current example manual mount at `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:227`. | Add content-root slot target. |
-| Canonical `<ContentRoot />` component | reject for now | It hides renderer-local owner children and DOM coverage behind context. | Low if added later as sugar. | Slots already exist at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:415`. | Reconsider after slot proves repetitive. |
+| Manual `<Editable root>` in canonical Synced Blocks example | reject as best DX | It works but teaches internals and repeats hook boilerplate. | Low to replace with slot API. | Current example manual mount at `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:227`. | Add content-root slot target. |
+| Canonical `<ContentRoot />` component | reject for now | It hides renderer-local owner children and DOM coverage behind context. | Low if added later as sugar. | Slots already exist at `packages/slate-react/src/components/editable-text-blocks.tsx:415`. | Reconsider after slot proves repetitive. |
 
 Plan deltas from review:
 - Pass 1 created the plan and narrowed the target from generic editable voids to
@@ -717,18 +717,18 @@ Fast driver gates:
 | Gate | Cwd | Command / artifact | Proves | Status |
 |------|-----|--------------------|--------|--------|
 | planning artifact check | plate-2 | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-synced-content-roots.md` | plan/template integrity at closure | complete |
-| Slate v2 current source read | `.tmp/slate-v2` | `nl -ba packages/slate/src/interfaces/editor.ts`, `nl -ba packages/slate-react/src/hooks/use-slate-runtime.tsx`, `nl -ba site/examples/ts/editable-voids.tsx` slices | current data/API/render state | complete for pass 1 |
+| Slate v2 current source read | `Plate repo root` | `nl -ba packages/slate/src/interfaces/editor.ts`, `nl -ba packages/slate-react/src/hooks/use-slate-runtime.tsx`, `nl -ba site/examples/ts/editable-voids.tsx` slices | current data/API/render state | complete for pass 1 |
 | Related issue discovery | plate-2 | `rg` / `nl -ba` reads across `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`, and `docs/slate-v2/references/pr-description.md` | current issue claim stance for content-root and same-root projection pressure | complete for pass 2 |
 | Full issue-ledger pass | plate-2 | `rg` / `nl -ba` reads across cluster, requirements, package-impact, benchmark, and test-candidate files | no missed fixed/improved claims; broader proof guardrails for implementation | complete for pass 3 |
 | Intent/boundary and decision brief | plate-2 | source reads for slots, element context, content-root hook, root chrome, and editable-voids call site | canonical slot API, vocabulary boundaries, active projection identity, and example-local copy/unsync decisions | complete for pass 4 |
 | Research ecosystem refresh | plate-2 plus local sibling repos | Local source/research reads for ProseMirror, React ProseMirror, Tiptap, Lexical, React selector posture, Plate, slate-yjs, and prior multi-root solution notes | slot-owned root projection is still the best long-term architecture; nested editors and mirrored roots stay rejected | complete for pass 5 |
-| Pressure pass | plate-2 plus `.tmp/slate-v2` source reads | Skill lens reads, selector fanout tests, content-root navigation tests, benchmark candidate rows, and prior multi-root failure notes | performance/DX/migration/regression/simplicity gates are concrete; no implementation claim is made | complete for pass 6 |
-| Maintainer objection ledger | plate-2 plus `.tmp/slate-v2` and sibling source reads | Expanded ledger rows for every public/paradigm objection and converted each to accepted, accepted-with-hard-gate, non-claim, or rejected-alternative stance | maintainer objections are no longer open; high-risk pass remains runnable | complete for pass 7 |
-| High-risk deliberate mode | plate-2 plus `.tmp/slate-v2` source/test reads | Stress-read wrong-copy focus, owner/root lifetime, rootless selection, operation-root middleware, perf helper traps, default void leakage, browser false greens, and slate-yjs non-claims | hard execution gates are explicit; ecosystem maintainer pass remains runnable | complete for pass 8 |
+| Pressure pass | plate-2 plus `Plate repo root` source reads | Skill lens reads, selector fanout tests, content-root navigation tests, benchmark candidate rows, and prior multi-root failure notes | performance/DX/migration/regression/simplicity gates are concrete; no implementation claim is made | complete for pass 6 |
+| Maintainer objection ledger | plate-2 plus `Plate repo root` and sibling source reads | Expanded ledger rows for every public/paradigm objection and converted each to accepted, accepted-with-hard-gate, non-claim, or rejected-alternative stance | maintainer objections are no longer open; high-risk pass remains runnable | complete for pass 7 |
+| High-risk deliberate mode | plate-2 plus `Plate repo root` source/test reads | Stress-read wrong-copy focus, owner/root lifetime, rootless selection, operation-root middleware, perf helper traps, default void leakage, browser false greens, and slate-yjs non-claims | hard execution gates are explicit; ecosystem maintainer pass remains runnable | complete for pass 8 |
 | Ecosystem maintainer pass | plate-2 plus sibling repos | Re-read ProseMirror, React ProseMirror, Tiptap, Lexical, slate-yjs, React selector/runtime, and local research source slices | final API survived external maintainer pressure; render/effect lifecycle, active projection, source DX, and slate-yjs non-claim gates are explicit | complete for pass 9 |
 | Revision pass | plate-2 | Source-backed plan revision, scorecard update, final-handoff outline fill, and stale pending wording scan | plan is review-ready except for issue/reference sync accounting and final checker closure | complete for pass 10 |
 | Issue/reference sync accounting | plate-2 | Updated `docs/slate-issues/gitcrawl-v2-sync-ledger.md`, `docs/slate-v2/ledgers/issue-coverage-matrix.md`, `docs/slate-v2/ledgers/fork-issue-dossier.md`, and `docs/slate-v2/references/pr-description.md` with a Synced Blocks planning-sync/non-claim section | issue/reference accounting is current; PR fixed/improved counts stay unchanged | complete for pass 11 |
-| Slate v2 behavior check | `.tmp/slate-v2` | focused `synced-blocks` and `editable-voids` Playwright rows after execution | runtime/API/browser behavior | pending |
+| Slate v2 behavior check | `Plate repo root` | focused `synced-blocks` and `editable-voids` Playwright rows after execution | runtime/API/browser behavior | pending |
 
 Final user-review handoff outline:
 - accepted plan items: first-class content-root block model, canonical
@@ -844,18 +844,18 @@ Timeline:
   stayed 0.92 and the plan is ready for user review.
 
 Verification evidence:
-- `.tmp/slate-v2`: read `packages/slate/src/interfaces/editor.ts` for roots,
+- `Plate repo root`: read `packages/slate/src/interfaces/editor.ts` for roots,
   root lifecycle, and content-root spec.
-- `.tmp/slate-v2`: read `packages/slate-react/src/hooks/use-slate-runtime.tsx`
+- `Plate repo root`: read `packages/slate-react/src/hooks/use-slate-runtime.tsx`
   for mounted root view registry and root-only lookup gap.
-- `.tmp/slate-v2`: read `packages/slate-react/src/hooks/use-slate-content-root.ts`,
+- `Plate repo root`: read `packages/slate-react/src/hooks/use-slate-content-root.ts`,
   `use-slate-child-root.ts`, and `use-slate-root-chrome.ts` for current helper
   composition.
-- `.tmp/slate-v2`: read `site/examples/ts/editable-voids.tsx` for current manual
+- `Plate repo root`: read `site/examples/ts/editable-voids.tsx` for current manual
   root rendering and tx root creation in the example.
-- `.tmp/slate-v2`: read `packages/slate-react/src/editable/content-root-navigation.ts`
+- `Plate repo root`: read `packages/slate-react/src/editable/content-root-navigation.ts`
   and `keyboard-input-strategy.ts` for current navigation integration.
-- `.tmp/slate-v2`: read `playwright/integration/examples/editable-voids.test.ts`
+- `Plate repo root`: read `playwright/integration/examples/editable-voids.test.ts`
   for existing browser proof floors.
 - `plate-2`: read `docs/research/README.md`, `docs/research/index.md`, and
   `docs/research/log.md`; reused the 2026-05-25 content-root plan as prior
@@ -885,14 +885,14 @@ Verification evidence:
 - `plate-2`: read relevant `docs/slate-issues/test-candidate-map/**` rows for
   `#5117`, `#5630`, `#5582`, `#5568`, `#4896`, `#4888`, `#4842`, `#4839`,
   `#4806`, `#4802`, `#5771`, `#3283`, `#3177`, and `#4301`.
-- `.tmp/slate-v2`: read `packages/slate-react/src/components/editable-text-blocks.tsx:415`,
+- `Plate repo root`: read `packages/slate-react/src/components/editable-text-blocks.tsx:415`,
   `:424`, `:521`, and `:830` for slot ownership and renderer-local context.
-- `.tmp/slate-v2`: read `packages/slate-react/src/hooks/use-slate-content-root.ts:25`
+- `Plate repo root`: read `packages/slate-react/src/hooks/use-slate-content-root.ts:25`
   and `use-slate-root-chrome.ts:26` for the hook stack the slot should hide.
-- `.tmp/slate-v2`: read `packages/slate-react/src/hooks/use-element.ts:10` for
+- `Plate repo root`: read `packages/slate-react/src/hooks/use-element.ts:10` for
   why `<ContentRoot />` component sugar is technically possible but not the
   canonical choice.
-- `.tmp/slate-v2`: read `site/examples/ts/editable-voids.tsx:227` and `:243`
+- `Plate repo root`: read `site/examples/ts/editable-voids.tsx:227` and `:243`
   for the current manual API that Synced Blocks should stop teaching.
 - `plate-2`: read `docs/research/entities/prosemirror.md`,
   `docs/research/entities/tiptap.md`, `docs/research/entities/lexical.md`,
@@ -929,12 +929,12 @@ Verification evidence:
 - `plate-2`: read performance rule files for cohort segmentation, repeated-unit
   budgets, effect/subscription budgets, interaction matrices, memory/DOM tags,
   browser trace boundaries, and native editor behavior.
-- `.tmp/slate-v2`: read `packages/slate-react/src/hooks/use-editor-selector.tsx:104`
+- `Plate repo root`: read `packages/slate-react/src/hooks/use-editor-selector.tsx:104`
   and `:213` for selector subscription and runtime-id fanout behavior.
-- `.tmp/slate-v2`: read
+- `Plate repo root`: read
   `packages/slate-react/test/provider-hooks-contract.tsx:545`, `:615`, `:946`,
   and `:1079` for current selector fanout and mounted render selector contracts.
-- `.tmp/slate-v2`: read
+- `Plate repo root`: read
   `packages/slate-react/test/content-root-navigation-contract.test.ts:1` for
   existing content-root navigation unit coverage.
 - `plate-2`: read
@@ -946,18 +946,18 @@ Verification evidence:
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-synced-content-roots.md`;
   it correctly reported the plan incomplete because later pass rows remained
   pending.
-- `.tmp/slate-v2`: re-read `packages/slate/src/interfaces/editor.ts:87`,
+- `Plate repo root`: re-read `packages/slate/src/interfaces/editor.ts:87`,
   `:249`, `:487`, and `:513` for root storage, root lifecycle, void kinds, and
   content-root schema during the maintainer objection pass.
-- `.tmp/slate-v2`: re-read
+- `Plate repo root`: re-read
   `packages/slate-react/src/components/editable-text-blocks.tsx:415`, `:506`,
   and `:2032` for slot ownership, renderer props, and internal root-bound
   `Editable` wrapping.
-- `.tmp/slate-v2`: re-read
+- `Plate repo root`: re-read
   `packages/slate-react/src/hooks/use-slate-runtime.tsx:348`, `:386`, and
   `:639` plus `use-slate-history.ts:173` for mounted view sets, root-only
   lookup gap, root-scoped selector gates, and history focus restore.
-- `.tmp/slate-v2`: re-read `use-slate-content-root.ts:25`,
+- `Plate repo root`: re-read `use-slate-content-root.ts:25`,
   `use-slate-child-root.ts:37`, `content-root-navigation.ts:136`, and
   `site/examples/ts/editable-voids.tsx:137` / `:227` for current low-level
   content-root API and example ceremony.
@@ -965,22 +965,22 @@ Verification evidence:
   `../slate-yjs`: re-read the local source slices for `NodeView.contentDOM`,
   React/ProseMirror render-phase hazards, `NodeViewContent`, and current
   one-`sharedRoot` slate-yjs assumptions.
-- `.tmp/slate-v2`: read `packages/slate-react/src/hooks/use-slate-runtime.tsx:348`,
+- `Plate repo root`: read `packages/slate-react/src/hooks/use-slate-runtime.tsx:348`,
   `:386`, and `:639`, plus `packages/slate-react/src/hooks/use-slate-history.ts:173`,
   for the wrong-copy focus/high-risk pass.
-- `.tmp/slate-v2`: read
+- `Plate repo root`: read
   `packages/slate-react/src/editable/content-root-navigation.ts:61`, `:136`,
   `:443`, and `:980` plus
   `packages/slate-react/test/content-root-navigation-contract.test.ts:77`,
   `:131`, `:228`, and `:253` for content-root boundary and key filtering risk.
-- `.tmp/slate-v2`: read
+- `Plate repo root`: read
   `playwright/integration/examples/editable-voids.test.ts:379`, `:787`, and
   `:910` for current browser proof floors around keyboard, vertical movement,
   and click-outside behavior.
 - `plate-2`: read the prior rootless selection, operation-root middleware,
   multi-root chrome click, and benchmark-helper solution notes for failure
   modes that must not repeat in Synced Blocks execution.
-- `.tmp/slate-v2`: read
+- `Plate repo root`: read
   `packages/slate-react/test/provider-hooks-contract.tsx:545`, `:615`, and
   `:946` for selector fanout and mounted render selector risk.
 - `../slate-yjs`: read `withYjs.ts:29`, `:156`, and `:204` for the current
@@ -1000,7 +1000,7 @@ Verification evidence:
 - `../slate-yjs`: re-read `withYjs.ts:29`, `withYHistory.ts:68`, and
   `withCursors.ts:31` for current single-shared-root, relative history, and
   cursor assumptions.
-- `.tmp/slate-v2`: re-read `packages/slate-react/src/hooks/use-editor-selector.tsx:104`,
+- `Plate repo root`: re-read `packages/slate-react/src/hooks/use-editor-selector.tsx:104`,
   `:157`, and `:213`, plus `packages/slate-react/src/hooks/use-slate-runtime.tsx:348`,
   `:386`, and `:639`, for React selector/runtime lifecycle constraints.
 - `plate-2`: re-read

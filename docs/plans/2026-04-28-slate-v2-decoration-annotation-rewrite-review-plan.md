@@ -70,7 +70,7 @@ that the system is still too projection-store-shaped at the public edge.
 
 The refresh also found stale compiled research references. The local proof page
 still pointed at `decoration-sources.ts` and `use-slate-decoration-sources.tsx`,
-but current `.tmp/slate-v2` has no dedicated decoration-source layer. Decoration
+but current `Plate repo root` has no dedicated decoration-source layer. Decoration
 source behavior lives in `projection-store.ts` through `dirtiness`,
 `runtimeScope`, `sourceId`, `refresh`, and runtime/source subscribers. I updated
 `docs/research/sources/editor-architecture/slate-v2-local-proof-substrate.md`
@@ -1074,7 +1074,7 @@ The review lane is complete. The next move is implementation via
 Status: complete as of 2026-04-28. Slices 1-4 complete.
 
 `complete-plan` activated implementation after review closure. The first
-execution owner is the smallest durable tracer in `.tmp/slate-v2/packages/slate-react`:
+execution owner is the smallest durable tracer in `packages/slate-react`:
 
 - add product-noun overlay API scaffolding over the existing projection
   transport;

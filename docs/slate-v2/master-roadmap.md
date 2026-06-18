@@ -9,7 +9,7 @@ status: active
 ## Purpose
 
 Canonical tranche order for porting `.tmp/slate-v2-draft` into the fresh
-`.tmp/slate-v2` clone.
+`Plate repo root` clone.
 
 ## Execution Doctrine
 

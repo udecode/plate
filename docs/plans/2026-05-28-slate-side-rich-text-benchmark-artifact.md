@@ -18,9 +18,9 @@ this plan passes the autogoal completion check.
 
 Verification surface:
 - Slate artifact generator:
-  `/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-slate-browser-trace.mjs`
+  `/Users/zbeyens/git/plate-2/benchmarks/slate-v2/donor/browser/react/huge-document-slate-browser-trace.mjs`
 - Generated Slate artifact:
-  `/Users/zbeyens/git/plate-2/.tmp/slate-v2/tmp/slate-react-huge-document-slate-browser-trace-benchmark-surfaces-legacyChunkOn-legacyChunkOff-blocks-5000-iters-3-ops-10.json`
+  `/Users/zbeyens/git/plate-2/tmp/slate-react-huge-document-slate-browser-trace-benchmark-surfaces-legacyChunkOn-legacyChunkOff-blocks-5000-iters-3-ops-10.json`
 - Evidence Kit ingestion:
   `/Users/zbeyens/git/plate-2/benchmarks/editor/src/index.mjs`
 - Viewer data:
@@ -39,9 +39,9 @@ Constraints:
   it with `SLATE_LEGACY_BROWSER_TRACE_BUILD=1`.
 
 Boundaries:
-- Source of truth: `.tmp/slate-v2` benchmark scripts and
+- Source of truth: `Plate repo root` benchmark scripts and
   `/Users/zbeyens/git/slate/site/examples/ts/huge-document.tsx`.
-- Allowed edit scope: `.tmp/slate-v2` benchmark script/package script,
+- Allowed edit scope: `Plate repo root` benchmark script/package script,
   `benchmarks/editor` ingestion/viewer/generated data, and this plan.
 - External sources: N/A; local Slate and Slate v2 checkouts are enough.
 - Browser surface: legacy Slate static huge-document route served to Playwright,
@@ -57,7 +57,7 @@ not normalize the resulting trace rows. All three paths worked.
 
 Major source:
 - type: local benchmark/browser artifact implementation
-- id / link: `.tmp/slate-v2` plus `/Users/zbeyens/git/slate`
+- id / link: `Plate repo root` plus `/Users/zbeyens/git/slate`
 - title: Slate-side huge-document browser trace artifact
 - decision to make: which hidden-Slate detailed table deserves the first real
   Slate artifact
@@ -69,7 +69,7 @@ Major lane:
 - lane: benchmark/performance
 - output type: generated browser trace artifact plus Evidence Kit rows
 - implementation expected: yes
-- affected packages / surfaces: `.tmp/slate-v2` benchmark tooling and
+- affected packages / surfaces: `Plate repo root` benchmark tooling and
   `benchmarks/editor`
 - dominant risk: adding a column without comparable row alignment
 
@@ -92,11 +92,11 @@ Start Gates:
 | Source of truth read before analysis | yes | Read Slate and Slate v2 huge-document routes and benchmark ingestion code. |
 | Major lane selected | yes | Benchmark/performance lane selected. |
 | Decision criteria stated | yes | Completion threshold names artifact, ingestion, row alignment, checks, and served proof. |
-| Existing repo patterns / prior decisions checked | yes | Reused `.tmp/slate-v2` benchmark scripts and `benchmarks/editor` Evidence Kit ingestion. |
+| Existing repo patterns / prior decisions checked | yes | Reused `Plate repo root` benchmark scripts and `benchmarks/editor` Evidence Kit ingestion. |
 | Helper stack selected | yes | Used local script, Playwright, Evidence Kit, and static HTTP proof only. |
 | External research decision recorded | yes | N/A because local clone behavior settled the task. |
 | Implementation expectation recorded | yes | Implementation expected and completed. |
-| Workspace authority selected | yes | `plate-2` owns benchmark harness; `.tmp/slate-v2` owns benchmark script; `/Users/zbeyens/git/slate` owns legacy route. |
+| Workspace authority selected | yes | `plate-2` owns benchmark harness; `Plate repo root` owns benchmark script; `/Users/zbeyens/git/slate` owns legacy route. |
 | Branch / PR expectation decided | yes | No commit, push, or PR requested. |
 | Browser pack selected | yes | Browser trace generation and served viewer proof required browser coverage. |
 | Browser route / app surface identified | yes | Legacy Slate `/examples/huge-document` plus `http://127.0.0.1:8765/rich-text.html`. |
@@ -143,7 +143,7 @@ Completion Gates:
 | External-source audit | no | Cite official/local clone/external sources when used, or record N/A | N/A: local clone source and measured browser artifact were enough. |
 | Implementation gates | yes | Close primary-template and browser gates | Generator, ingestion, docs, full package check, and served proof completed. |
 | Final handoff contract | yes | Record recommendation, evidence, caveats, residual risk, and next owner | Final handoff below records the artifact and remaining non-goals. |
-| Final lint | yes | Run scoped equivalent when files changed | Biome checks passed for touched `.tmp/slate-v2` and `benchmarks/editor` files. |
+| Final lint | yes | Run scoped equivalent when files changed | Biome checks passed for touched `Plate repo root` and `benchmarks/editor` files. |
 | Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-28-slate-side-rich-text-benchmark-artifact.md` | Completion check passed after this update. |
 | Browser interaction proof | yes | Exercise the target route/interaction with approved browser tool or record blocker | Playwright typed into legacy Slate huge-document route and produced timing rows. |
 | Browser console/network check | no | Record console/network state or why it is not applicable | N/A: static viewer proof is JSON/HTTP; benchmark route proof is the generated trace artifact. |
@@ -172,7 +172,7 @@ Decisions and tradeoffs:
 
 Implementation notes:
 - Added `bench:react:huge-document:slate-browser-trace:local` in
-  `.tmp/slate-v2/package.json`.
+  `Plate repo root/package.json`.
 - Added `huge-document-slate-browser-trace.mjs` to serve legacy Slate static
   output, select DOM text nodes, type through Playwright, and summarize DOM,
   heap, long task, selection, and typing timing metrics.
@@ -192,11 +192,11 @@ Error attempts:
 | First ingestion shape produced a Slate column without shared fixtures | 1 | Normalize surfaces as libraries and metrics as shared fixtures | Served data proved 26 fully aligned rows. |
 
 Verification evidence:
-- `node --check .tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-slate-browser-trace.mjs`
+- `node --check benchmarks/slate-v2/donor/browser/react/huge-document-slate-browser-trace.mjs`
   passed.
-- `cd .tmp/slate-v2 && bunx biome check package.json scripts/benchmarks/browser/react/huge-document-slate-browser-trace.mjs --fix`
+- `cd Plate repo root && bunx biome check package.json scripts/benchmarks/browser/react/huge-document-slate-browser-trace.mjs --fix`
   passed.
-- `cd .tmp/slate-v2 && bun run bench:react:huge-document:slate-browser-trace:local`
+- `cd Plate repo root && bun run bench:react:huge-document:slate-browser-trace:local`
   passed.
 - Slate artifact evidence: `legacyChunkOn` and `legacyChunkOff` completed 3
   measured iterations each, observed 5,000 blocks, and had 0 native-surface

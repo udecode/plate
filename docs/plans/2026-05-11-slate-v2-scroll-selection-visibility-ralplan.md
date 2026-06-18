@@ -79,24 +79,24 @@ Rejected alternatives:
 
 Live Slate v2 after the prior execution attempt:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:420` owns a
+- `packages/slate-react/src/components/editable.tsx:420` owns a
   `scrollRectIntoViewIfNeeded` parent walker with a fixed visibility margin.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:513` owns
+- `packages/slate-react/src/components/editable.tsx:513` owns
   `defaultScrollSelectionIntoView`; it measures the collapsed focus range and
   falls back to the leaf rect without mutating DOM methods.
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:239`
+- `packages/slate-react/src/editable/runtime-before-input-events.ts:239`
   still calls `syncSelectionForBeforeInput`.
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:291`
+- `packages/slate-react/src/editable/selection-controller.ts:291`
   still carries model-selection preference as a boolean plus source, not a
   reasoned freshness token.
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:564`
+- `packages/slate-react/src/editable/selection-reconciler.ts:564`
   still gates `insertText` DOM selection import on
   `preferModelSelectionForInput`.
-- `.tmp/slate-v2/playwright/integration/examples/scroll-into-view.test.ts:1`
+- `apps/www/tests/slate-browser/donor/examples/scroll-into-view.test.ts:1`
   exists, but the row currently selects the final block programmatically. `ralph`
   should tighten it against the user path: scroll, click visible lower text,
   type, scroll away, click/type again.
-- `.tmp/slate-v2/site/examples/ts/scroll-into-view.tsx:20` creates the nested
+- `apps/www/src/app/(app)/examples/slate/_examples/scroll-into-view.tsx:20` creates the nested
   scroll-parent repro surface.
 
 User evidence:
@@ -225,12 +225,12 @@ Next pass:
 
 | Row                                     | Test owner                                                                                          | Behavior                                                                                                            |
 | --------------------------------------- | --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Stale click selection before typing     | `.tmp/slate-v2/playwright/integration/examples/scroll-into-view.test.ts` tighten existing row       | scroll nested editor, click lower paragraph, type, assert text lands in clicked paragraph and caret remains visible |
+| Stale click selection before typing     | `apps/www/tests/slate-browser/donor/examples/scroll-into-view.test.ts` tighten existing row       | scroll nested editor, click lower paragraph, type, assert text lands in clicked paragraph and caret remains visible |
 | Repeat scroll/click/type                | same browser file                                                                                   | repeat the reported cycle three times; assert scroll does not chase old selection                                   |
-| DOM selection import before beforeinput | `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.test.ts` or new focused test | `insertText` imports current in-editor DOM selection when model preference is stale                                 |
+| DOM selection import before beforeinput | `packages/slate-react/test/selection-controller-contract.test.ts` or new focused test | `insertText` imports current in-editor DOM selection when model preference is stale                                 |
 | Internal control undo/text input        | existing editable-void/read-only rows                                                               | internal-control preference still protects native controls                                                          |
-| Zero rect fallback                      | `.tmp/slate-v2/packages/slate-react/test/editable-behavior.test.tsx`                                | empty/line-break caret still reveals using fallback rect without mutating element methods                           |
-| Nested parent scrolling                 | `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.test.tsx`                    | inner and outer scroll containers receive minimal deltas                                                            |
+| Zero rect fallback                      | `packages/slate-react/test/editable-behavior.test.tsx`                                | empty/line-break caret still reveals using fallback rect without mutating element methods                           |
+| Nested parent scrolling                 | `packages/slate-react/test/rendering-strategy-and-scroll.test.tsx`                    | inner and outer scroll containers receive minimal deltas                                                            |
 | Scroll margin                           | new unit row                                                                                        | sticky chrome margin shrinks visible rect                                                                           |
 | Composition                             | existing IME rows plus new skip-scroll row if needed                                                | composition repair does not import/scroll stale non-composed selection                                              |
 
@@ -315,10 +315,10 @@ Algorithm contract:
 
 Execution owner:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/input-state.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
+- `packages/slate-react/src/editable/input-state.ts`
+- `packages/slate-react/src/editable/selection-controller.ts`
+- `packages/slate-react/src/editable/selection-reconciler.ts`
+- `packages/slate-react/src/editable/runtime-before-input-events.ts`
 
 ### Scroll Request Lifecycle Pass
 
@@ -340,10 +340,10 @@ Algorithm contract:
 
 Execution owner:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-repair-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts`
+- `packages/slate-react/src/editable/selection-controller.ts`
+- `packages/slate-react/src/editable/dom-repair-queue.ts`
+- `packages/slate-react/src/editable/runtime-repair-engine.ts`
+- `packages/slate-react/src/editable/runtime-root-engine.ts`
 
 ### Geometry And Parent-Walk Pass
 
@@ -368,9 +368,9 @@ Algorithm contract:
 
 Execution owner:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.test.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/editable-behavior.test.tsx`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/test/rendering-strategy-and-scroll.test.tsx`
+- `packages/slate-react/test/editable-behavior.test.tsx`
 
 ### Browser Proof Pass
 
@@ -391,8 +391,8 @@ Required first row:
 
 Execution owner:
 
-- `.tmp/slate-v2/playwright/integration/examples/scroll-into-view.test.ts`
-- `.tmp/slate-v2/site/examples/ts/scroll-into-view.tsx`
+- `apps/www/tests/slate-browser/donor/examples/scroll-into-view.test.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/scroll-into-view.tsx`
 
 ### API Cut Pass
 
@@ -445,8 +445,8 @@ any source/test edits.
 
 First browser row:
 
-- refine `.tmp/slate-v2/playwright/integration/examples/scroll-into-view.test.ts`
-- use `.tmp/slate-v2/site/examples/ts/scroll-into-view.tsx`
+- refine `apps/www/tests/slate-browser/donor/examples/scroll-into-view.test.ts`
+- use `apps/www/src/app/(app)/examples/slate/_examples/scroll-into-view.tsx`
 - assert both browser DOM text and Slate handle/model text after scroll,
   click-lower-paragraph, type, scroll-away, click-lower-paragraph, type again
 - first issue target: `#5826` related proof; no fixed claim until the row
@@ -454,28 +454,28 @@ First browser row:
 
 First runtime slice:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/input-state.ts`: replace the
+- `packages/slate-react/src/editable/input-state.ts`: replace the
   stale boolean-only model preference with reason/source freshness data.
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`:
+- `packages/slate-react/src/editable/selection-controller.ts`:
   update `setEditableModelSelectionPreference` and expose a single internal
   helper for stale-preference checks.
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`:
+- `packages/slate-react/src/editable/selection-reconciler.ts`:
   import current in-editor DOM selection for `insertText` when model preference
   is stale, while preserving internal-control/composition/programmatic guards.
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`:
+- `packages/slate-react/src/editable/runtime-before-input-events.ts`:
   pass the freshness-aware preference instead of the raw boolean.
 
 Second runtime slice:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`: replace
+- `packages/slate-react/src/components/editable.tsx`: replace
   temporary `getBoundingClientRect` mutation with a rect-based default helper.
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`: queue
+- `packages/slate-react/src/editable/selection-controller.ts`: queue
   caret visibility requests after DOM selection export.
-- `.tmp/slate-v2/packages/slate-react/test/editable-behavior.test.tsx`: keep the
+- `packages/slate-react/test/editable-behavior.test.tsx`: keep the
   two-scroll regression row and add zero-rect fallback proof.
-- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.test.tsx`:
+- `packages/slate-react/test/rendering-strategy-and-scroll.test.tsx`:
   prove nested parent deltas and internal policy margins.
-- `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.test.ts`:
+- `packages/slate-react/test/selection-controller-contract.test.ts`:
   prove stale model preference expires on explicit user DOM selection.
 
 Cut line:
@@ -539,7 +539,7 @@ Ralph execution gates:
 
 - first user-path browser row exists and fails before the behavior fix, or the
   existing row is tightened to prove the user path directly
-- Slate v2 focused unit/browser gates pass from `.tmp/slate-v2`
+- Slate v2 focused unit/browser gates pass from `Plate repo root`
 - no `scroll-into-view-if-needed` method-mutation dependency remains in default
   caret visibility path
 - final handoff separates fixed, improved, related, and unclaimed issue rows

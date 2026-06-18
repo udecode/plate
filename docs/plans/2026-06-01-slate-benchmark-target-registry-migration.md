@@ -23,7 +23,7 @@ Major source:
 - type: user architecture direction
 - id / link: local thread request
 - title: Clean Slate benchmark and Autoresearch target structure
-- decision to make: decide the long-term benchmark ownership model after `.tmp/slate-v2` is merged back into Plate
+- decision to make: decide the long-term benchmark ownership model after `Plate repo root` is merged back into Plate
 - decision criteria: one benchmark source of truth, no Evidence Kit / Autoresearch split-brain, target-based Autoresearch setup, runtime benchmark code near measured runtime code, report/history generation outside active loop state
 
 Major lane:
@@ -58,12 +58,12 @@ Constraints:
 - Do not move runtime benchmark implementations in this slice; the future merge changes their final home.
 
 Boundaries:
-- Source of truth: `benchmarks/editor/research/benchmark-registry.json`, `benchmarks/editor/research/evidence-source-map.md`, `benchmarks/editor/iterations/003-evidence-control-plane.md`, `.tmp/slate-v2/package.json`, and current package scripts.
+- Source of truth: `benchmarks/editor/research/benchmark-registry.json`, `benchmarks/editor/research/evidence-source-map.md`, `benchmarks/editor/iterations/003-evidence-control-plane.md`, `Plate repo root/package.json`, and current package scripts.
 - Allowed edit scope: `benchmarks/targets/**`, `tooling/scripts/bench-targets.mjs`, `package.json`, `.agents/rules/slate-autoresearch.mdc`, generated skill mirrors, this plan.
 - External sources: N/A; repo evidence settles this architecture slice.
 - Browser surface: N/A; no browser UI changed.
 - Tracker sync: N/A; no tracker item.
-- Non-goals: deleting Evidence Kit, moving `.tmp/slate-v2` benchmark code, changing benchmark measurement semantics, running expensive browser benchmarks.
+- Non-goals: deleting Evidence Kit, moving `Plate repo root` benchmark code, changing benchmark measurement semantics, running expensive browser benchmarks.
 
 Output budget strategy:
 - Read only targeted benchmark docs, registry rows, package scripts, and skill sections.
@@ -96,14 +96,14 @@ Start Gates:
 |------|---------|----------|
 | `major-task` loaded | yes | Read `.agents/skills/major-task/SKILL.md`. |
 | Active goal checked or created | yes | `get_goal` returned no goal; `create_goal` created this objective. |
-| Source of truth read before analysis | yes | Read Evidence Kit source map, Evidence Kit control-plane note, active registry, health output, `.tmp/slate-v2` scripts. |
+| Source of truth read before analysis | yes | Read Evidence Kit source map, Evidence Kit control-plane note, active registry, health output, `Plate repo root` scripts. |
 | Major lane selected | yes | Benchmark and performance architecture. |
 | Decision criteria stated | yes | One registry, target-based Autoresearch setup, no active Evidence Kit split-brain, runtime code follows runtime. |
 | Existing repo patterns / prior decisions checked | yes | Evidence Kit memory and docs showed current active artifact registry and generated health/report flow. |
 | Helper stack selected | yes | `autogoal`, `major-task`, `docs-creator`, `performance-oracle`, `agent-native-reviewer`; no external research needed. |
 | External research decision recorded | yes | N/A: repo evidence is enough. |
 | Implementation expectation recorded | yes | First implementation slice adds target registry and commands, not full deletion. |
-| Workspace authority selected | yes | Root `plate-2` owns control scripts and generated skills; `.tmp/slate-v2` owns runtime benchmark commands. |
+| Workspace authority selected | yes | Root `plate-2` owns control scripts and generated skills; `Plate repo root` owns runtime benchmark commands. |
 | Branch / PR expectation decided | yes | N/A: user did not ask for branch, commit, push, or PR. |
 | Output budget strategy recorded | yes | See Output budget strategy. |
 | Docs pack selected | yes | This plan and target README are docs/supporting surfaces. |
@@ -143,7 +143,7 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run the repo audit and command smoke checks named in this plan | `pnpm bench:targets:check`, `pnpm bench:targets:list`, `pnpm slate:ar:setup-target`, syntax/JSON checks passed. |
-| Current-state source audit | yes | Map current owner, boundaries, constraints, and affected surfaces | Findings record Evidence Kit active state, 23 active artifacts, 35 ignored historical artifacts, and `.tmp/slate-v2` runtime ownership. |
+| Current-state source audit | yes | Map current owner, boundaries, constraints, and affected surfaces | Findings record Evidence Kit active state, 23 active artifacts, 35 ignored historical artifacts, and `Plate repo root` runtime ownership. |
 | Decision criteria closure | yes | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | Target registry and CLI satisfy first-slice criteria; full Evidence Kit deletion intentionally deferred. |
 | Options / tradeoffs / rejection record | yes | Record viable options, chosen recommendation, and why alternatives lose | Decisions and tradeoffs section records options A-D. |
 | Review / pressure pass | yes | Run selected reviewer/lens or record N/A with reason | Performance-oracle lens applied manually to target registry complexity; agent-native reviewer loaded; no external reviewer subprocess available. |
@@ -166,7 +166,7 @@ Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
 | Intake and source read | complete | Read goal skill, major-task skill, Evidence Kit docs/registry/health, package scripts. | current-state map |
-| Current-state map | complete | Evidence Kit owns active artifact list and generated reports; `.tmp/slate-v2` owns runtime benchmark commands. | options |
+| Current-state map | complete | Evidence Kit owns active artifact list and generated reports; `Plate repo root` owns runtime benchmark commands. | options |
 | Options and recommendation | complete | Chose target registry as source; rejected Evidence Kit or Autoresearch as sole active owner. | implementation |
 | Review / pressure pass | complete | Performance and agent-native lenses applied; CLI smoke found two real migration bugs. | verification |
 | Implementation or plan artifact | complete | Added target registry, CLI, README, package scripts, and skill guidance. | verification |
@@ -177,8 +177,8 @@ Findings:
 - Fact: Evidence Kit currently records active benchmark claims in `benchmarks/editor/research/benchmark-registry.json`.
 - Fact: Current Evidence Kit docs say unregistered benchmark JSON files are historical output and not active evidence.
 - Fact: Current health output reports 23 active artifacts, 2 optional missing artifacts, and 35 ignored unregistered historical artifacts.
-- Fact: `.tmp/slate-v2/package.json` owns runtime benchmark scripts such as `bench:react:active-typing:local`, `bench:react:huge-document:browser-trace:local`, and core benchmark scripts.
-- Fact: The future merge means benchmark code should follow runtime/package ownership, not stay in `.tmp/slate-v2` by identity.
+- Fact: `Plate repo root/package.json` owns runtime benchmark scripts such as `bench:react:active-typing:local`, `bench:react:huge-document:browser-trace:local`, and core benchmark scripts.
+- Fact: The future merge means benchmark code should follow runtime/package ownership, not stay in `Plate repo root` by identity.
 - Inference: Evidence Kit is valuable as migration input and report archive but harmful as a second active control plane after Autoresearch target setup exists.
 - Recommendation: make `benchmarks/targets/slate-v2.json` the source for benchmark decisions, with Autoresearch consuming target ids and generated reports/history reading the same target registry.
 
@@ -200,7 +200,7 @@ Implementation notes:
 
 Review fixes:
 - `pnpm slate:ar:setup-target -- react-active-typing-breakdown` initially treated `--` as the target id. Fixed by stripping the pnpm separator in `bench-targets.mjs`.
-- Evidence Kit import initially resolved `../../.tmp/slate-v2` relative to `benchmarks/editor/research`, producing `benchmarks/.tmp/slate-v2`. Fixed importer base to `benchmarks/editor` and regenerated the target registry.
+- Evidence Kit import initially resolved `../../Plate repo root` relative to `benchmarks/editor/research`, producing `benchmarks/Plate repo root`. Fixed importer base to `benchmarks/editor` and regenerated the target registry.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |

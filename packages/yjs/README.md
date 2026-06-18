@@ -1,176 +1,56 @@
-# Plate Yjs plugin
+# @platejs/yjs
 
-`@platejs/yjs` binds Plate editors to a shared Yjs document. It ships provider wrappers for IndexedDB, Hocuspocus, and WebRTC, and accepts custom providers that implement the same `UnifiedProvider` interface.
+Yjs collaboration bindings for Slate editors.
 
-Read the main docs at [platejs.org/docs/yjs](https://platejs.org/docs/yjs).
-
-## Installation
-
-Install the plugin.
-
-```bash
-npm install @platejs/yjs
-```
-
-Install network provider packages as needed:
-
-```bash
-npm install @hocuspocus/provider
-```
-
-```bash
-npm install y-webrtc
-```
-
-## Usage
-
-Configure `YjsPlugin` with a `providers` array. Every configured provider receives the same plugin-owned `Y.Doc` and `Awareness` instance.
+`@platejs/yjs` maps Slate operations, selection state, awareness, provider
+lifecycle, and undo/redo coordination onto a Yjs document. Provider packages
+stay at the application edge: wrap your Hocuspocus, WebSocket, WebRTC, or
+custom provider as a `YjsProviderLike`, then pass it to `createYjsExtension`.
 
 ```tsx
-import { YjsPlugin } from '@platejs/yjs/react';
-import { createPlateEditor } from 'platejs/react';
+import { createEditor } from '@platejs/slate'
+import { createYjsExtension } from '@platejs/yjs'
+import { history } from '@platejs/slate-history'
 
-const editor = createPlateEditor({
-  plugins: [
-    YjsPlugin.configure({
-      options: {
-        providers: [
-          {
-            type: 'indexeddb',
-            options: {
-              docName: 'document-1',
-            },
-          },
-          {
-            type: 'hocuspocus',
-            options: {
-              name: 'document-1',
-              url: 'wss://collab.example.com',
-            },
-          },
-          {
-            type: 'webrtc',
-            options: {
-              roomName: 'document-1',
-            },
-          },
-        ],
-      },
+const editor = createEditor({
+  extensions: [
+    history(),
+    createYjsExtension({
+      clientId: 'local-user',
+      doc,
+      provider,
+      rootName: '@platejs/slate',
     }),
   ],
-  skipInitialization: true,
-});
+  initialValue,
+})
 ```
 
-Call `init` after the editor mounts, and call `destroy` when it unmounts:
+React apps can render remote cursor decorations and provider state through the
+React subpath.
 
 ```tsx
-await editor.getApi(YjsPlugin).yjs.init({
-  id: 'document-1',
-  value: initialValue,
-});
-
-editor.getApi(YjsPlugin).yjs.destroy();
+import {
+  useYjsProviderStatus,
+  useYjsProviderSynced,
+  useYjsRemoteCursors,
+} from '@platejs/yjs/react'
 ```
 
-## Providers
+## Boundaries
 
-| Type | Package | Purpose | Options |
-| --- | --- | --- | --- |
-| `indexeddb` | `y-indexeddb` | Browser-local document persistence | `{ docName: string }` |
-| `hocuspocus` | `@hocuspocus/provider` | WebSocket server collaboration | `HocuspocusProviderConfiguration` |
-| `webrtc` | `y-webrtc` | Peer-to-peer collaboration | `{ roomName: string; signaling?: string[]; password?: string; maxConns?: number; peerOpts?: object }` |
+- `@platejs/yjs` owns the Slate/Yjs adapter, awareness model, provider lifecycle
+  bridge, operation replay, and Yjs-aware undo/redo coordination.
+- App code owns transport packages, authentication, persistence, room naming,
+  server scaling, and provider-specific options.
+- Provider integrations are peer application code. The package does not depend
+  on Hocuspocus, `y-websocket`, IndexedDB, WebRTC, or another transport
+  package.
+- Public imports are `@platejs/yjs`, `@platejs/yjs/core`, and `@platejs/yjs/react`.
+  The `@platejs/yjs/internal` subpath is reserved for sibling Slate packages.
 
-Use the same document identifier across providers that should share one document. For example, pair `docName: 'document-1'` with `name: 'document-1'` or `roomName: 'document-1'`.
+## Related Docs
 
-IndexedDB only persists Yjs updates locally. It does not transport awareness, cursors, or remote users; combine it with Hocuspocus or WebRTC for multi-user collaboration.
-
-## Shared Documents
-
-Pass `ydoc` when another part of your app owns the document:
-
-```tsx
-import * as Y from 'yjs';
-
-const ydoc = new Y.Doc();
-
-YjsPlugin.configure({
-  options: {
-    ydoc,
-    providers: [
-      {
-        type: 'indexeddb',
-        options: {
-          docName: 'document-1',
-        },
-      },
-    ],
-  },
-});
-```
-
-Use `sharedType` when the editor content lives inside a nested `Y.XmlText`:
-
-```tsx
-const parentDoc = new Y.Doc();
-const editors = parentDoc.getMap('editors');
-const mainContent = new Y.XmlText();
-
-editors.set('main', mainContent);
-
-YjsPlugin.configure({
-  options: {
-    sharedType: mainContent,
-    ydoc: parentDoc,
-    providers: [
-      {
-        type: 'indexeddb',
-        options: {
-          docName: 'document-1',
-        },
-      },
-    ],
-  },
-});
-```
-
-## Custom Providers
-
-Use a pre-instantiated provider directly when you need behavior outside the built-in wrappers:
-
-```tsx
-import type { UnifiedProvider } from '@platejs/yjs';
-
-const provider: UnifiedProvider = new MyProvider({ awareness, doc: ydoc });
-
-YjsPlugin.configure({
-  options: {
-    providers: [provider],
-  },
-});
-```
-
-Register reusable provider classes with `registerProviderType`:
-
-```tsx
-import { registerProviderType } from '@platejs/yjs';
-
-registerProviderType('custom', CustomProviderWrapper);
-
-YjsPlugin.configure({
-  options: {
-    providers: [
-      {
-        type: 'custom',
-        options: {
-          roomName: 'document-1',
-        },
-      },
-    ],
-  },
-});
-```
-
-## License
-
-[MIT](../../LICENSE)
+- [Slate Yjs](../../docs/libraries/slate-yjs.md)
+- [Operation Replay Substrate](../../docs/walkthroughs/07-operation-replay-substrate.md)
+- [Slate v2 Release](../../docs/releases/slate-v2.md)

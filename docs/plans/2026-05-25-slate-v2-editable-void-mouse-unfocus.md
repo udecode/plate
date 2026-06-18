@@ -1,7 +1,7 @@
 # Slate v2 editable void mouse unfocus
 
 Objective:
-Fix the `.tmp/slate-v2` editable-void child-root mouse unfocus regression: when focus is inside a same-runtime editable void child root, clicking a parent editor paragraph or empty parent block must move focus and selection to the parent root and clear the child-root selection, without regressing child-root click, paste, drop, or keyboard navigation.
+Fix the `Plate repo root` editable-void child-root mouse unfocus regression: when focus is inside a same-runtime editable void child root, clicking a parent editor paragraph or empty parent block must move focus and selection to the parent root and clear the child-root selection, without regressing child-root click, paste, drop, or keyboard navigation.
 
 Goal plan:
 docs/plans/2026-05-25-slate-v2-editable-void-mouse-unfocus.md
@@ -29,13 +29,13 @@ Verification surface:
 
 Constraints:
 - Do not use git branch/status hygiene.
-- Work in `.tmp/slate-v2` for code, tests, package build, and browser proof.
+- Work in `Plate repo root` for code, tests, package build, and browser proof.
 - Keep the fix at the reusable Slate React focus/selection ownership boundary.
 - Do not create a PR, commit, or push.
 
 Boundaries:
 - Source of truth: user bug report plus the existing editable-voids route behavior.
-- Allowed edit scope: `.tmp/slate-v2/packages/slate-react`, `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`, `.tmp/slate-v2/.changeset`, and this goal plan.
+- Allowed edit scope: `packages/slate-react`, `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts`, `Plate repo root/.changeset`, and this goal plan.
 - Browser surface: `/examples/editable-voids` via repo Playwright Chromium integration.
 - Tracker sync: N/A, no tracker item.
 - Non-goals: broad API redesign, manual browser exploration after Playwright proof, unrelated local diff cleanup.
@@ -86,7 +86,7 @@ Work Checklist:
 - [x] Final handoff shape decided: bug fix with tests, package gates, browser proof, changeset, autoreview.
 - [x] Branch handling recorded for code-changing work: N/A, no PR/commit requested.
 - [x] Local-env-rot retry policy recorded: N/A, no surprising install-corruption failure.
-- [x] Workspace authority recorded: verification commands run in `.tmp/slate-v2`, plan/check in root `plate-2`.
+- [x] Workspace authority recorded: verification commands run in `Plate repo root`, plan/check in root `plate-2`.
 - [x] High-risk note recorded for runtime/browser behavior.
 - [x] Review/autoreview target selected from actual diff state.
 - [x] Agent-native review decision recorded: N/A, no agent/tooling files changed.
@@ -105,7 +105,7 @@ Completion Gates:
 | Package exports or file layout changed | no | N/A | No exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | N/A | No manifest or lockfile changed. |
 | Agent rules or skills changed | no | N/A | No agent rule/skill files changed. |
-| Workspace authority proof | yes | Run proof in owning workspace | Code/test/browser commands run in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`. |
+| Workspace authority proof | yes | Run proof in owning workspace | Code/test/browser commands run in `/Users/zbeyens/git/plate-2/Plate repo root`. |
 | Browser surface changed | yes | Run browser route proof | Full editable-voids Chromium route passed: 20 tests. |
 | Browser final proof | yes | Record artifact/caveat | Playwright pass count and failing trace before fix recorded; no manual screenshot needed. |
 | CI-controlled template output changed | no | N/A | No template output touched. |

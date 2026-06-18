@@ -1,4 +1,4 @@
-import { PathApi } from '@platejs/slate';
+import { PathApi } from '@platejs/slate-legacy';
 
 import { createTSlatePlugin } from '../../plugin';
 import {

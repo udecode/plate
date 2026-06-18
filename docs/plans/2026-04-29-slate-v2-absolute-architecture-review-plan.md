@@ -63,7 +63,7 @@ an internal module boundary. A public static object named `Editor` should not
 survive an unpublished hard-cut rewrite.
 
 This plan is complete. The review lane closed, the implementation lane shipped
-the hard cut in `.tmp/slate-v2`, and the completion gate is green.
+the hard cut in `Plate repo root`, and the completion gate is green.
 
 ## 2. Intent and Boundaries
 
@@ -268,7 +268,7 @@ Plan delta from Pass 2:
 
 Next owner:
 
-- Phase 2 implementation prep in `.tmp/slate-v2/packages/slate`: introduce the
+- Phase 2 implementation prep in `packages/slate`: introduce the
   non-public replacement/test-helper substrate and internal transform-registry
   boundary before cutting the public `Editor` value.
 
@@ -279,7 +279,7 @@ Next owner:
 - Set `active goal state` back to `pending`.
 - Regenerated `active goal state` for execution instead of review.
 - Started Phase 1 contract-first tests in
-  `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`.
+  `packages/slate/test/public-surface-contract.ts`.
 - Added red public contracts for:
   - no public value export named `Editor`
   - no public transform-registry exports
@@ -287,7 +287,7 @@ Next owner:
   - no `export interface EditorInterface` or `export const Editor` in public
     source
 - Ran `bun test ./packages/slate/test/public-surface-contract.ts` from
-  `.tmp/slate-v2`.
+  `Plate repo root`.
 - Result: red, as intended. New public-surface assertions fail on current
   source. The same focused file also has existing docs-surface failures for
   stale React/void wording, so the next owner is implementation plus later docs

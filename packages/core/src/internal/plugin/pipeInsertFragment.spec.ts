@@ -1,4 +1,4 @@
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/slate-legacy';
 
 import { createSlateEditor } from '../../lib/editor';
 import { createSlatePlugin } from '../../lib/plugin';

@@ -3,7 +3,7 @@
 status: done
 score: 0.94
 date: 2026-05-08
-target: `.tmp/slate-v2`
+target: `Plate repo root`
 source plan: `docs/editor-test-harvester/lexical/report.md`
 skill: `slate-ralplan`
 
@@ -27,7 +27,7 @@ typing and organization, not core/runtime design.
 
 ## Execution Update
 
-Implemented the approved cleanup in `.tmp/slate-v2`:
+Implemented the approved cleanup in `Plate repo root`:
 
 - added `site/examples/ts/mark-utils.ts`;
 - changed `site/examples/ts/custom-types.d.ts` so `CustomTextKey` is derived
@@ -48,8 +48,8 @@ No core, runtime, public API, issue claim, or table-selection model changed.
 - desired outcome: all harvested test rows stay green, the example code is
   easier to maintain, and Slate core remains unopinionated.
 - in scope:
-  - `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
-  - `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`
+  - `apps/www/src/app/(app)/examples/slate/_examples/paste-html.tsx`
+  - `apps/www/src/app/(app)/examples/slate/_examples/custom-types.d.ts`
   - repeated mark helpers in `richtext.tsx`, `iframe.tsx`, and
     `hovering-toolbar.tsx`
   - proof naming and verification commands around the new Playwright rows
@@ -106,15 +106,15 @@ Consequences:
 
 | Surface                 | Current owner                                                                                                                                  | Finding                                                                                                                                       |
 | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| HTML paste parser       | `.tmp/slate-v2/site/examples/ts/paste-html.tsx:32-231`                                                                                         | Element/text tag maps, font-size normalization, styled text import, fragment normalization, and `deserialize` live inside the component file. |
-| Paste transport         | `.tmp/slate-v2/site/examples/ts/paste-html.tsx:263-305`                                                                                        | `dom.clipboard.insertData` remains the right extension point; iOS plain-text prediction is app policy.                                        |
-| Paste leaf style        | `.tmp/slate-v2/site/examples/ts/paste-html.tsx:406-434`                                                                                        | `fontSize` rendering is leaf style policy, not a toolbar mark.                                                                                |
-| Custom leaf type        | `.tmp/slate-v2/site/examples/ts/custom-types.d.ts:161-177`                                                                                     | `CustomText` includes boolean marks plus `fontSize`; `CustomTextKey` excludes `fontSize`.                                                     |
-| Mark casts              | `.tmp/slate-v2/site/examples/ts/richtext.tsx:159-164`, `iframe.tsx:81-86`, `hovering-toolbar.tsx:62-67`                                        | Three examples repeat the same cast around `state.marks.get()`.                                                                               |
-| Table containment proof | `.tmp/slate-v2/playwright/integration/examples/tables.test.ts:129-179`                                                                         | Tests lock triple-click and drag containment without claiming whole-table selection.                                                          |
-| Browser transport proof | `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:23-77`, `editable-voids.test.ts:48-71`                                        | `execCommand`, synthetic paste, and native input paste are intentionally separate rows.                                                       |
-| IME helper              | `.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:22-95`                                                                             | Synthetic composition clones the DOM range before mutation; native Chromium CDP remains the stronger path when available.                     |
-| IME/history proof       | `.tmp/slate-v2/playwright/stress/generated-editing.test.ts:1070-1179`, `.tmp/slate-v2/packages/slate-history/test/history-contract.ts:259-305` | Composition-adjacent rows and history unit rows exist and should stay unchanged.                                                              |
+| HTML paste parser       | `apps/www/src/app/(app)/examples/slate/_examples/paste-html.tsx:32-231`                                                                                         | Element/text tag maps, font-size normalization, styled text import, fragment normalization, and `deserialize` live inside the component file. |
+| Paste transport         | `apps/www/src/app/(app)/examples/slate/_examples/paste-html.tsx:263-305`                                                                                        | `dom.clipboard.insertData` remains the right extension point; iOS plain-text prediction is app policy.                                        |
+| Paste leaf style        | `apps/www/src/app/(app)/examples/slate/_examples/paste-html.tsx:406-434`                                                                                        | `fontSize` rendering is leaf style policy, not a toolbar mark.                                                                                |
+| Custom leaf type        | `apps/www/src/app/(app)/examples/slate/_examples/custom-types.d.ts:161-177`                                                                                     | `CustomText` includes boolean marks plus `fontSize`; `CustomTextKey` excludes `fontSize`.                                                     |
+| Mark casts              | `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx:159-164`, `iframe.tsx:81-86`, `hovering-toolbar.tsx:62-67`                                        | Three examples repeat the same cast around `state.marks.get()`.                                                                               |
+| Table containment proof | `apps/www/tests/slate-browser/donor/examples/tables.test.ts:129-179`                                                                         | Tests lock triple-click and drag containment without claiming whole-table selection.                                                          |
+| Browser transport proof | `apps/www/tests/slate-browser/donor/examples/plaintext.test.ts:23-77`, `editable-voids.test.ts:48-71`                                        | `execCommand`, synthetic paste, and native input paste are intentionally separate rows.                                                       |
+| IME helper              | `packages/browser/src/playwright/ime.ts:22-95`                                                                             | Synthetic composition clones the DOM range before mutation; native Chromium CDP remains the stronger path when available.                     |
+| IME/history proof       | `apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts:1070-1179`, `packages/slate-history/test/history-contract.ts:259-305` | Composition-adjacent rows and history unit rows exist and should stay unchanged.                                                              |
 
 ## Ecosystem Strategy Synthesis
 
@@ -294,10 +294,10 @@ focused test proves runtime drift.
 
 | Pass                                 | Status   | Evidence added                                                                                                                                    | Plan delta                                                                            | Open issues | Next owner     |
 | ------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ----------- | -------------- |
-| Current-state read and initial score | complete | Live source/test reads listed above; Lexical and ProseMirror evidence sampled; fresh `.tmp/slate-v2` `bun check` and focused browser rows passed. | Created cleanup plan; chose helper extraction over rewrite.                           | none        | implementation |
+| Current-state read and initial score | complete | Live source/test reads listed above; Lexical and ProseMirror evidence sampled; fresh `Plate repo root` `bun check` and focused browser rows passed. | Created cleanup plan; chose helper extraction over rewrite.                           | none        | implementation |
 | Related issue discovery              | complete | Existing nearby refs identified only.                                                                                                             | Skipped ClawSweeper because implementation stayed behavior-neutral and claim-neutral. | none        | none           |
 | Issue ledger pass                    | complete | No claim/API/runtime/browser behavior changed.                                                                                                    | Ledgers unchanged by design.                                                          | none        | none           |
-| Implementation cleanup               | complete | Mark helper extraction and paste-html parser helper extraction landed in `.tmp/slate-v2`.                                                         | Removed repeated casts and shrank `paste-html.tsx`.                                   | none        | verification   |
+| Implementation cleanup               | complete | Mark helper extraction and paste-html parser helper extraction landed in `Plate repo root`.                                                         | Removed repeated casts and shrank `paste-html.tsx`.                                   | none        | verification   |
 | Closure score                        | complete | `bun check`, paste-html, richtext mark, iframe, and hovering-toolbar Playwright rows passed after cleanup.                                        | Status set to done.                                                                   | none        | none           |
 
 ## Plan Deltas From Review
@@ -339,4 +339,4 @@ None for this cleanup. Future table selection needs a separate API/model plan.
 
 Current state is `done` because the approved cleanup was implemented under an
 execution lane after the Ralplan pass, with no claim-changing issue surface and
-fresh `.tmp/slate-v2` verification.
+fresh `Plate repo root` verification.

@@ -12,7 +12,7 @@ import type {
   TextOperation,
   TText,
   Value,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 import type {
   HotkeysEvent,
   HotkeysOptions,

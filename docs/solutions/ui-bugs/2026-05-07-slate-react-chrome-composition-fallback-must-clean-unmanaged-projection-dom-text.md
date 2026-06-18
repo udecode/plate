@@ -57,7 +57,7 @@ The cleanup is intentionally narrow:
   rendered content.
 
 The regression row lives in
-`.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`:
+`apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts`:
 
 ```ts
 await editor.selection.selectDOM({

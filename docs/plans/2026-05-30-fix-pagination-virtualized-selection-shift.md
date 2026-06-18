@@ -13,8 +13,8 @@ Constraints:
 Keep the patch scoped to virtualized pagination selected text. Do not change staged pagination, non-virtualized layout, projection geometry, package exports, registry output, commits, PRs, or tracker state.
 
 Boundaries:
-- Source of truth: `.tmp/slate-v2` pagination example and its Playwright integration test.
-- Allowed edit scope: `.tmp/slate-v2/site/examples/ts/pagination.tsx`, `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts`, and this goal plan.
+- Source of truth: `Plate repo root` pagination example and its Playwright integration test.
+- Allowed edit scope: `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx`, `apps/www/tests/slate-browser/donor/examples/pagination.test.ts`, and this goal plan.
 - Browser surface: `http://localhost:3100/examples/pagination?page_layout=single&strategy=virtualized`.
 - Tracker sync: N/A, local user-reported issue.
 - Non-goals: broader pagination architecture, page virtualization policy, shortcut behavior, autoscroll behavior.
@@ -28,9 +28,9 @@ Work Checklist:
 - [x] Video evidence N/A: the issue was directly reproducible from the provided route.
 - [x] Nearby pagination render/projection code and existing pagination Playwright tests read before edits.
 - [x] Implementation fixed the selected/native-flow virtualized text boundary instead of changing projection geometry.
-- [x] Release artifact N/A: example/test-only bug fix in `.tmp/slate-v2`.
+- [x] Release artifact N/A: example/test-only bug fix in `Plate repo root`.
 - [x] Branch, PR, tracker sync, and changeset N/A: user did not request git or release work.
-- [x] Workspace authority recorded: all proof commands ran in `.tmp/slate-v2` except this plan check.
+- [x] Workspace authority recorded: all proof commands ran in `Plate repo root` except this plan check.
 - [x] Browser pack covered by Playwright route proof; Browser plugin unavailable in this session after tool discovery.
 - [x] Autoreview selected for the local pagination alignment patch.
 
@@ -49,8 +49,8 @@ Completion Gates:
 |------|---------|----------|
 | Bug reproduced before fix | yes | Before fix, projected leaf left was 341px and selected native-flow leaf left was 339px. |
 | Targeted behavior verification | yes | Focused Playwright alignment test passes after the fix. |
-| TypeScript changed | yes | `bun typecheck:site` passed in `.tmp/slate-v2`. |
-| Formatting | yes | `bunx biome check --write site/examples/ts/pagination.tsx playwright/integration/examples/pagination.test.ts` passed in `.tmp/slate-v2`. |
+| TypeScript changed | yes | `bun typecheck:site` passed in `Plate repo root`. |
+| Formatting | yes | `bunx biome check --write site/examples/ts/pagination.tsx playwright/integration/examples/pagination.test.ts` passed in `Plate repo root`. |
 | Browser surface changed | yes | Playwright exercised the target route and selection transition. |
 | Package exports or install graph | no | N/A: no package export, manifest, lockfile, or install graph changes. |
 | Changeset | no | N/A: example/test-only fix in Slate v2 checkout. |
@@ -87,10 +87,10 @@ Error attempts:
 | Red focused Playwright regression before fix | 1 | Apply native-flow inset in virtualized render path. | Green after patch. |
 
 Verification evidence:
-- `.tmp/slate-v2`: `bunx biome check --write site/examples/ts/pagination.tsx playwright/integration/examples/pagination.test.ts`
-- `.tmp/slate-v2`: `bun typecheck:site`
-- `.tmp/slate-v2`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium --grep "keeps virtualized pagination text aligned"`
-- `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium --grep "keeps virtualized pagination text aligned|moves the cursor between the first two virtualized"`
+- `Plate repo root`: `bunx biome check --write site/examples/ts/pagination.tsx playwright/integration/examples/pagination.test.ts`
+- `Plate repo root`: `bun typecheck:site`
+- `Plate repo root`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium --grep "keeps virtualized pagination text aligned"`
+- `Plate repo root`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium --grep "keeps virtualized pagination text aligned|moves the cursor between the first two virtualized"`
 
 Final handoff contract:
 - PR line: N/A, no PR requested.

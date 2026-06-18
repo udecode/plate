@@ -4,7 +4,7 @@ import type {
   Path,
   Point,
   TRange,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 
 import type { SlateEditor } from '../../editor';
 

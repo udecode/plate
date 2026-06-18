@@ -169,7 +169,7 @@ Follow-ups:
 | React 19.2 runtime performance                           |  0.91 | Current runtime already filters selector fanout by commit/runtime facts and throttles selectionchange. Ecosystem pass rejects importing broad ProseMirror/Lexical runtime machinery.                                  |
 | Slate-close unopinionated DX                             |  0.91 | Public API remains unchanged; strict helpers stay strict for direct callers, while runtime paths classify and fail closed.                                                                                            |
 | Plate and slate-yjs migration backbone                   |  0.85 | Plate/Yjs pressure validates deterministic model `Range                                                                                                                                                               | null` output and focus/null cursor semantics; pass 8 rejects raw DOM range leakage as a migration rollback trigger. |
-| Regression-proof testing                                 |  0.95 | Proof ownership is split into vertical TDD rows, browser rows, rollback gates, explicit claim gates, ecosystem keep/defer/reject rows, and concrete `.tmp/slate-v2` command groups.                                   |
+| Regression-proof testing                                 |  0.95 | Proof ownership is split into vertical TDD rows, browser rows, rollback gates, explicit claim gates, ecosystem keep/defer/reject rows, and concrete `Plate repo root` command groups.                                   |
 | Research evidence completeness                           |  0.95 | Added live Slate v2 selection runtime/source, strict DOM helper source, selector fanout, Plate editor shape, Yjs cursor overlays, objection proof anchors, ecosystem maintainer challenge rows, and ledger sync rows. |
 | shadcn-style composability and hook/component minimalism |  0.88 | No UI props, component flags, or public bridge hooks are introduced; revision keeps customization at existing extension points and blocks app-authored DOM classifier APIs.                                           |
 
@@ -183,12 +183,12 @@ Current live owners:
 
 | Current owner                      | Evidence                                                                                                                                                             | Current shape                                                                                                                | Initial take                                                                     |
 | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `slate-dom` strict DOM helpers     | `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:65-105`                                                                                                   | `findEventRange`, `toDOMPoint`, `toDOMRange`, `toSlatePoint`, and `toSlateRange` are direct capabilities.                    | Keep strict helpers, but do not make runtime paths depend on exceptions.         |
-| DOM coverage boundary fallback     | `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:399-427`                                                                                                  | Non-rendered coverage boundaries can map back to Slate points.                                                               | Reuse as one input to the bridge, not a separate special case in every caller.   |
-| Focus restore                      | `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:627-731`                                                                                                  | `DOMEditor.focus` sets `IS_FOCUSED`, uses `preventScroll: true`, waits for dirty node maps, and retries DOM selection sync.  | This is the right owner, but exact focus/scroll issue rows are still not closed. |
-| Selection import/export controller | `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:244-285`, `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:484-528` | React controller imports DOM selection only when anchor/focus belong to this editor and converts with `suppressThrow: true`. | Good direction; leftover plan should harden ownership reasons and proof.         |
-| Selection reconciler               | `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:177-205`, `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:870-958` | Native `selectionchange` is attached outside React; export path writes DOM selection and scrolls it into view.               | Keep event ownership; audit scroll/focus cases before claiming.                  |
-| Existing contract tests            | `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:56-105`, `.tmp/slate-v2/packages/slate-dom/test/bridge.ts:420-466`                         | Unit tests cover model preference, external selection, decorated slice conversion.                                           | Useful floor, not enough for issue closure.                                      |
+| `slate-dom` strict DOM helpers     | `packages/slate-dom/src/plugin/dom-editor.ts:65-105`                                                                                                   | `findEventRange`, `toDOMPoint`, `toDOMRange`, `toSlatePoint`, and `toSlateRange` are direct capabilities.                    | Keep strict helpers, but do not make runtime paths depend on exceptions.         |
+| DOM coverage boundary fallback     | `packages/slate-dom/src/plugin/dom-editor.ts:399-427`                                                                                                  | Non-rendered coverage boundaries can map back to Slate points.                                                               | Reuse as one input to the bridge, not a separate special case in every caller.   |
+| Focus restore                      | `packages/slate-dom/src/plugin/dom-editor.ts:627-731`                                                                                                  | `DOMEditor.focus` sets `IS_FOCUSED`, uses `preventScroll: true`, waits for dirty node maps, and retries DOM selection sync.  | This is the right owner, but exact focus/scroll issue rows are still not closed. |
+| Selection import/export controller | `packages/slate-react/src/editable/selection-controller.ts:244-285`, `packages/slate-react/src/editable/selection-controller.ts:484-528` | React controller imports DOM selection only when anchor/focus belong to this editor and converts with `suppressThrow: true`. | Good direction; leftover plan should harden ownership reasons and proof.         |
+| Selection reconciler               | `packages/slate-react/src/editable/selection-reconciler.ts:177-205`, `packages/slate-react/src/editable/selection-reconciler.ts:870-958` | Native `selectionchange` is attached outside React; export path writes DOM selection and scrolls it into view.               | Keep event ownership; audit scroll/focus cases before claiming.                  |
+| Existing contract tests            | `packages/slate-react/test/selection-controller-contract.ts:56-105`, `packages/slate-dom/test/bridge.ts:420-466`                         | Unit tests cover model preference, external selection, decorated slice conversion.                                           | Useful floor, not enough for issue closure.                                      |
 
 Target flow:
 
@@ -297,7 +297,7 @@ Accepted ecosystem revisions:
 - Keep Mobile/IME rows out unless raw device or honest browser IME transport is
   available.
 - During implementation, every external test copied must be rewritten as a
-  Slate behavior row with a Slate owner and a `.tmp/slate-v2` command.
+  Slate behavior row with a Slate owner and a `Plate repo root` command.
 
 ## 7. Public API Target
 
@@ -571,37 +571,37 @@ Performance verdict:
 
 - Do not model the bridge as a fresh object graph on every `selectionchange`.
   The hot path already runs through `createRuntimeSelectionChangeHandler`, which
-  throttles native selectionchange at `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts:46-108`
+  throttles native selectionchange at `packages/slate-react/src/editable/runtime-selection-engine.ts:46-108`
   and then calls `applyEditableDOMSelectionChange`.
 - Keep the classification reasons finite and primitive. A string enum plus
   existing `Range | null` is enough for traceability; allocation-heavy result
   objects should be reserved for debug/test output if needed.
 - Preserve current fanout filters. DOM export is already limited by commit facts
-  in `.tmp/slate-v2/packages/slate-react/src/editable/selection-runtime.ts:99-185`,
+  in `packages/slate-react/src/editable/selection-runtime.ts:99-185`,
   and React selector fanout is runtime-id scoped in
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:212-343`.
+  `packages/slate-react/src/hooks/use-editor-selector.tsx:212-343`.
 - Do not add full DOM scans to classification. Current expensive work is
   already explicit: `createFastDOMSelectionRange` only handles same-path text
   and full-document cases before falling back at
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:169-210`,
+  `packages/slate-react/src/editable/selection-controller.ts:169-210`,
   while shell/coverage exports are isolated at
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:593-676`.
+  `packages/slate-react/src/editable/selection-controller.ts:593-676`.
 - Keep scroll separate from classification. `scrollSelectionIntoView` should run
   only on model-to-DOM export, as it does at
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:669`.
+  `packages/slate-react/src/editable/selection-controller.ts:669`.
 
 React/DX verdict:
 
 - The native `selectionchange` listener belongs behind the runtime root because
   React's `onSelect` is not enough; that is already stated in
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:177-213`.
+  `packages/slate-react/src/editable/selection-reconciler.ts:177-213`.
 - The bridge should not create a new public hook. Existing public state should
   stay through selector contracts such as `useEditorSelection` at
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selection.tsx:10-15`.
+  `packages/slate-react/src/hooks/use-editor-selection.tsx:10-15`.
 - Effects are acceptable for external synchronization only: cleanup of range
   refs, autofocus, native listener attachment, selector subscription, repair
   runtime, and Android/composition runtime setup in
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:154-287`.
+  `packages/slate-react/src/editable/runtime-root-engine.ts:154-287`.
   Do not move user-event selection decisions into effects.
 - `FocusedContext` remains coarse. Do not expand it with bridge reasons; that
   would turn a private runtime fact into app-facing rerender pressure.
@@ -633,8 +633,8 @@ Regression/TDD verdict:
   proving runtime paths do not throw while strict `DOMEditor.toSlatePoint` /
   `toSlateRange` stay strict.
 - Second vertical row: selectionchange ownership policy, using
-  `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts` and
-  `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`.
+  `packages/slate-react/test/selection-controller-contract.ts` and
+  `packages/slate-react/test/selection-runtime-contract.test.ts`.
 - Third vertical row: browser proof for one issue-shaped behavior, preferably
   parent/nested editor ownership or focus-scroll. Do not mark any issue fixed
   until the browser row matches the issue.
@@ -656,7 +656,7 @@ Blast radius:
 | Surface    | In blast radius                                                                                                                                                                                                                                                                                                                                                            | Guardrail                                                                              |
 | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------- |
 | Packages   | `slate-dom`, `slate-react`, `slate-browser` proof helpers                                                                                                                                                                                                                                                                                                                  | No public API change; private runtime bridge only.                                     |
-| Files      | `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`, `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`, `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`, `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`, `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts` | Edits later must cite the owner and keep strict helper defaults.                       |
+| Files      | `packages/slate-dom/src/plugin/dom-editor.ts`, `packages/slate-react/src/editable/runtime-selection-engine.ts`, `packages/slate-react/src/editable/selection-controller.ts`, `packages/slate-react/src/editable/selection-reconciler.ts`, `packages/slate-react/src/editable/runtime-root-engine.ts` | Edits later must cite the owner and keep strict helper defaults.                       |
 | Consumers  | Raw Slate React apps, Plate adapters, slate-yjs cursor consumers, browser examples                                                                                                                                                                                                                                                                                         | Consumers see model `Range                                                             | null`, not bridge reasons or DOM ranges. |
 | Behavior   | Native selectionchange, model-to-DOM selection export, focus restore, scroll-to-selection, nested editor containment, table containment                                                                                                                                                                                                                                    | Each behavior needs focused unit/contract proof plus one issue-shaped browser row.     |
 | Docs/tests | Issue coverage matrix, fork dossier, PR reference, browser tests, package contracts                                                                                                                                                                                                                                                                                        | No `Fixes #...` claim without exact matching proof from `/Users/zbeyens/git/slate-v2`. |
@@ -667,9 +667,9 @@ Three-scenario pre-mortem:
    - Failure: direct `DOMEditor.toSlatePoint` / `toSlateRange` callers stop
      throwing and bad rendered DOM becomes silent `null`.
    - Current evidence: helper APIs still default through strict behavior
-     (`.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:90-104`,
-     `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:300-325`,
-     `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:1520-1542`).
+     (`packages/slate-dom/src/plugin/dom-editor.ts:90-104`,
+     `packages/slate-dom/src/plugin/dom-editor.ts:300-325`,
+     `packages/slate-dom/src/plugin/dom-editor.ts:1520-1542`).
    - Guard: add strict-helper unit proof before runtime fail-closed browser
      proof. Roll back by removing runtime classifier call sites, not by
      weakening strict helpers.
@@ -690,7 +690,7 @@ Three-scenario pre-mortem:
      whole-table selection model, or focus-scroll work steals app scroll
      customization.
    - Current evidence: current table rows prove containment/triple-click only
-     (`.tmp/slate-v2/playwright/integration/examples/tables.test.ts:129-179`);
+     (`apps/www/tests/slate-browser/donor/examples/tables.test.ts:129-179`);
      `scrollSelectionIntoView` remains injected at
      `selection-controller.ts:593-676`.
    - Guard: whole-table selection stays out of this lane; scroll fixes must keep
@@ -741,11 +741,11 @@ High-risk verdict:
 
 | Objection                                                     | Strongest fair version                                                                                            | Tradeoff accepted                                                                                                            | Why the plan still wins                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Proof required                                                                                                                                            | Verdict                               |
 | ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------- |
-| "This hides useful DOM conversion errors."                    | If every failed conversion turns into `null`, maintainers lose the stack traces that explain bad renderer output. | Runtime code gets a two-mode policy instead of one simple converter call.                                                    | Keep strict helper behavior for direct callers: `DOMEditor.toSlatePoint` / `toSlateRange` default `suppressThrow` to `false` (`.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:90-104`, `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:300-325`, `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:1520-1542`). Only runtime import paths use `suppressThrow: true` after ownership checks (`.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:267-280`, `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:515-528`). | Unit row proves direct strict conversion still throws, while runtime selectionchange ignores foreign/stale/app-owned ranges without crashing.             | keep with revision                    |
-| "Focus/scroll is browser-specific and should stay app-owned." | Apps may need custom scroll containers, portals, or virtualized layouts; core should not steal scroll policy.     | The runtime must respect the existing `scrollSelectionIntoView` extension point instead of inventing hidden scroll behavior. | Selection export already separates runtime DOM range materialization from the injected scroll callback (`.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:593-676`). Focus/listener wiring already lives in the runtime root (`.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:205-287`). The plan keeps app scroll customization, but prevents apps from patching internal import/export ownership.                                                                                                                                                | Browser row for scrollable root/parent plus one selected-inline/mention focus row; no fixed claim if the proof only passes with app-specific scroll code. | keep with boundary                    |
-| "Nested editors are edge-case app structure."                 | Nested editors can be produced by examples/plugins, not raw core; maybe the app should keep them sane.            | Ownership rules must handle nested editors even when exact issue closure remains related/improves rather than fixed.         | Live `DOMEditor.toSlatePoint` already has nested-editor/void awareness (`.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:1043-1060`). The coverage ledger already has exact fixed parent-to-nested proof for #4984 and keeps #5947/#4842 narrower (`docs/slate-v2/ledgers/issue-coverage-matrix.md:54-55`, `docs/slate-v2/ledgers/issue-coverage-matrix.md:124-128`).                                                                                                                                                                                                                   | Focused parent/child browser or unit proof before promoting #5947/#4842 beyond `Improves` / `Related`.                                                    | keep                                  |
+| "This hides useful DOM conversion errors."                    | If every failed conversion turns into `null`, maintainers lose the stack traces that explain bad renderer output. | Runtime code gets a two-mode policy instead of one simple converter call.                                                    | Keep strict helper behavior for direct callers: `DOMEditor.toSlatePoint` / `toSlateRange` default `suppressThrow` to `false` (`packages/slate-dom/src/plugin/dom-editor.ts:90-104`, `packages/slate-dom/src/plugin/dom-editor.ts:300-325`, `packages/slate-dom/src/plugin/dom-editor.ts:1520-1542`). Only runtime import paths use `suppressThrow: true` after ownership checks (`packages/slate-react/src/editable/selection-controller.ts:267-280`, `packages/slate-react/src/editable/selection-controller.ts:515-528`). | Unit row proves direct strict conversion still throws, while runtime selectionchange ignores foreign/stale/app-owned ranges without crashing.             | keep with revision                    |
+| "Focus/scroll is browser-specific and should stay app-owned." | Apps may need custom scroll containers, portals, or virtualized layouts; core should not steal scroll policy.     | The runtime must respect the existing `scrollSelectionIntoView` extension point instead of inventing hidden scroll behavior. | Selection export already separates runtime DOM range materialization from the injected scroll callback (`packages/slate-react/src/editable/selection-controller.ts:593-676`). Focus/listener wiring already lives in the runtime root (`packages/slate-react/src/editable/runtime-root-engine.ts:205-287`). The plan keeps app scroll customization, but prevents apps from patching internal import/export ownership.                                                                                                                                                | Browser row for scrollable root/parent plus one selected-inline/mention focus row; no fixed claim if the proof only passes with app-specific scroll code. | keep with boundary                    |
+| "Nested editors are edge-case app structure."                 | Nested editors can be produced by examples/plugins, not raw core; maybe the app should keep them sane.            | Ownership rules must handle nested editors even when exact issue closure remains related/improves rather than fixed.         | Live `DOMEditor.toSlatePoint` already has nested-editor/void awareness (`packages/slate-dom/src/plugin/dom-editor.ts:1043-1060`). The coverage ledger already has exact fixed parent-to-nested proof for #4984 and keeps #5947/#4842 narrower (`docs/slate-v2/ledgers/issue-coverage-matrix.md:54-55`, `docs/slate-v2/ledgers/issue-coverage-matrix.md:124-128`).                                                                                                                                                                                                                   | Focused parent/child browser or unit proof before promoting #5947/#4842 beyond `Improves` / `Related`.                                                    | keep                                  |
 | "Table selection is product-specific."                        | Lexical-style whole-table range selection is a table model feature, not a raw DOM bridge feature.                 | Some table rows stay explicitly not claimed, even if browser containment rows are useful.                                    | The plan rejects whole-table selection as a hidden raw Slate requirement. Lexical harvest says Slate v2 added containment/cell triple-click proof but deferred whole-table drag/range until Slate owns that model (`docs/editor-test-harvester/lexical/report.md:163-166`, `docs/editor-test-harvester/lexical/report.md:176`).                                                                                                                                                                                                                                                                   | Table rows may prove containment/no-crash/triple-click boundaries only; #2558-like whole-table selection needs a separate model decision.                 | keep boundary, drop whole-table claim |
-| "This belongs in React only."                                 | Native `selectionchange` is attached by React runtime code, so centralizing in `slate-react` may be simpler.      | The split requires a private bridge contract between `slate-dom` classification and `slate-react` timing.                    | React owns listener lifecycle because React `onSelect` is insufficient (`.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:177-213`). `slate-dom` owns root/target/point/range primitives through `DOMEditor` capabilities (`.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:90-104`, `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:1495-1542`). Keeping both owners avoids making React the only DOM substrate.                                                                                                                                     | Contract tests prove classification happens before React import and no new public hook/API is needed.                                                     | keep                                  |
+| "This belongs in React only."                                 | Native `selectionchange` is attached by React runtime code, so centralizing in `slate-react` may be simpler.      | The split requires a private bridge contract between `slate-dom` classification and `slate-react` timing.                    | React owns listener lifecycle because React `onSelect` is insufficient (`packages/slate-react/src/editable/selection-reconciler.ts:177-213`). `slate-dom` owns root/target/point/range primitives through `DOMEditor` capabilities (`packages/slate-dom/src/plugin/dom-editor.ts:90-104`, `packages/slate-dom/src/plugin/dom-editor.ts:1495-1542`). Keeping both owners avoids making React the only DOM substrate.                                                                                                                                     | Contract tests prove classification happens before React import and no new public hook/API is needed.                                                     | keep                                  |
 
 Accepted revisions from pass 7:
 
@@ -766,7 +766,7 @@ Accepted revisions from pass 7:
 | 2. Related issue discovery pass                      | complete | `gitcrawl threads` for #5947/#4842/#5867/#5826/#5538/#5568/#3497/#5171/#5107/#5711/#5806/#2558; clusters 1/3/14/20; coverage matrix rows; fork dossier append                                                                                                                                          | Routed remaining candidates and raised score to `0.66`                                                                                                     | Full ledger scan still required                                                                              | `slate-ralplan`                  |
 | 3. Issue-ledger pass                                 | complete | Full `docs/slate-issues` stack; live ledger, gitcrawl clusters, macro clusters, package impact, requirements, benchmark map, test-candidate maps, current coverage/dossier                                                                                                                             | Found missing singleton/test-candidate rows and raised score to `0.70`                                                                                     | Newly surfaced gaps need focused ClawSweeper sync                                                            | `clawsweeper`                    |
 | 3b. Focused ledger-gap ClawSweeper pass              | complete | `gitcrawl threads` for #5690/#5689/#4995/#5632/#5559/#3909/#3893/#5550/#5551/#5524/#5924; coverage matrix rows; fork dossier focused gap section                                                                                                                                                       | Synced related/non-claimed rows and raised score to `0.73`                                                                                                 | Intent/boundary decision brief still pending                                                                 | `slate-ralplan`                  |
-| 4. Intent/boundary and decision brief pass           | complete | Live `.tmp/slate-v2` DOM editor, selection controller, selection reconciler, and editing-kernel policy owners                                                                                                                                                                                          | Rejected public API expansion, locked owner split, and raised score to `0.78`                                                                              | Ecosystem/test synthesis still pending                                                                       | `slate-ralplan`                  |
+| 4. Intent/boundary and decision brief pass           | complete | Live `Plate repo root` DOM editor, selection controller, selection reconciler, and editing-kernel policy owners                                                                                                                                                                                          | Rejected public API expansion, locked owner split, and raised score to `0.78`                                                                              | Ecosystem/test synthesis still pending                                                                       | `slate-ralplan`                  |
 | 5. Research and ecosystem synthesis pass             | complete | Lexical harvest report; ProseMirror `webtest-selection`, `webtest-composition`, `webtest-nodeview`, `webtest-markview`, `webtest-view`, view source; Tiptap focus/readOnly/renderer/clipboard tests                                                                                                    | Added ecosystem synthesis and exact steal/reject table; raised score to `0.84`                                                                             | Performance/DX/migration/regression pressure still pending                                                   | `slate-ralplan`                  |
 | 6. Performance/DX/migration/regression pressure pass | complete | Live Slate v2 selection runtime, selection export/import, selector fanout, commit metadata, Plate editor shape, Plate Yjs, slate-yjs cursor overlays, performance/react/tdd skill pressure, `docs/solutions/performance-issues/2026-05-08-dom-selection-bridges-must-stay-cheap-on-selectionchange.md` | Added hot-path constraints, React/effect boundaries, migration contract, and vertical TDD proof rows; raised score to `0.88`                               | Maintainer objections still need direct answers                                                              | `steelman-pass` if needed        |
 | 7. Maintainer objection ledger                       | complete | `steelman-pass`; strict `DOMEditor` helper source; runtime import/export source; focus/listener runtime source; issue coverage matrix; Lexical harvest table rows                                                                                                                                      | Answered objections, revised strict-vs-runtime failure policy, kept scroll extension boundary, and raised score to `0.90`                                  | High-risk pass still needs to challenge final browser/runtime risk                                           | `high-risk-deliberate-pass`      |
@@ -774,7 +774,7 @@ Accepted revisions from pass 7:
 | 9. Ecosystem maintainer pass                         | complete | ProseMirror selection/view/nodeview tests and `domcoords` source; Lexical harvester report/apply ledger; Tiptap focus command source                                                                                                                                                                   | Narrowed borrowed behavior, deferred coords unless touched, rejected ProseMirror/Tiptap APIs and Lexical whole-table semantics, and raised score to `0.92` | Revision pass must fold final accepted constraints into implementation phases and closure gates              | `slate-ralplan`                  |
 | 10. Revision pass                                    | complete | Live Slate v2 unit/browser proof inventory; current package scripts; accepted ecosystem/high-risk constraints                                                                                                                                                                                          | Rewrote implementation phases, command gates, issue-sync checklist, and final closure gates; raised score to `0.93`                                        | Ledgers and PR reference still need final accounting                                                         | `slate-ralplan`                  |
 | 11. Issue sync accounting pass                       | complete | Coverage matrix rows for #5711/#3634/#4961; fork dossier revision accounting section; live ledger and PR reference no-op decisions                                                                                                                                                                     | Synchronized the concrete claim/no-claim map and raised score to `0.94`                                                                                    | Closure score not run; completion file still pending                                                         | `slate-ralplan`                  |
-| 12. Closure score and final gates                    | complete | Final scorecard, pass ledger, issue-sync state, implementation phases, and exact `.tmp/slate-v2` command gates                                                                                                                                                                                         | Closed the plan at score `0.94`; completion file can flip to `done`                                                                                        | None                                                                                                         | `ralph` execution when requested |
+| 12. Closure score and final gates                    | complete | Final scorecard, pass ledger, issue-sync state, implementation phases, and exact `Plate repo root` command gates                                                                                                                                                                                         | Closed the plan at score `0.94`; completion file can flip to `done`                                                                                        | None                                                                                                         | `ralph` execution when requested |
 
 ## 20. Plan Deltas From Review
 
@@ -842,7 +842,7 @@ and keeps jsdom/mobile proof confusion out of this DOM bridge plan.
 
 Pass 10 completed revision. The implementation plan is no longer a loose owner
 list: it is a vertical execution map with first proof, browser proof, claim
-gate, rollback boundary, and exact `.tmp/slate-v2` command groups. The next pass
+gate, rollback boundary, and exact `Plate repo root` command groups. The next pass
 must sync the issue ledgers and PR reference against that concrete claim map.
 
 Pass 11 completed issue-sync accounting. The issue coverage matrix now routes
@@ -984,7 +984,7 @@ Execution handoff:
 - issue matrix with fixed/improved/related/not-claimed rows;
 - external tests copied or deliberately rejected;
 - implementation phases for `ralph`;
-- exact `.tmp/slate-v2` verification commands.
+- exact `Plate repo root` verification commands.
 
 ## 25. Final Completion Gates
 
@@ -999,7 +999,7 @@ Completion gates met:
   used;
 - public API target is explicit: no new public API for this lane;
 - implementation phases have owner, first proof, browser proof, and claim gate;
-- relevant `.tmp/slate-v2` commands are named and tied to the phases above;
+- relevant `Plate repo root` commands are named and tied to the phases above;
 - final closure pass records the accepted score and flips the completion file
   only when no scheduled pass remains.
 
@@ -1011,8 +1011,8 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`
-- `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts`
+- `packages/slate-dom/test/bridge.ts`
+- `packages/slate-react/test/selection-controller-contract.ts`
 
 Scope:
 
@@ -1037,7 +1037,7 @@ Result:
   callers but return `null` with `suppressThrow: true`.
 - Patched `DOMEditor.toSlateRange` to honor `suppressThrow` for missing DOM
   endpoints.
-- Verified in `.tmp/slate-v2`:
+- Verified in `Plate repo root`:
   - `bun lint:fix`
   - `bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/dom-coverage.ts`
   - `bun test ./packages/slate-react/test/selection-controller-contract.ts ./packages/slate-react/test/selection-reconciler-contract.ts ./packages/slate-react/test/selection-runtime-contract.test.ts ./packages/slate-react/test/dom-repair-policy-contract.ts`
@@ -1049,8 +1049,8 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts`
+- `packages/slate-react/src/editable/selection-controller.ts`
+- `packages/slate-react/test/selection-controller-contract.ts`
 
 Scope:
 
@@ -1071,7 +1071,7 @@ Result:
 - Patched selection import preparation so native selectionchange only clears
   model preference when the DOM selection is editor-owned and resolves to a
   Slate range.
-- Verified in `.tmp/slate-v2`:
+- Verified in `Plate repo root`:
   - `bun lint:fix`
   - `bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/dom-coverage.ts`
   - `bun test ./packages/slate-react/test/selection-controller-contract.ts ./packages/slate-react/test/selection-reconciler-contract.ts ./packages/slate-react/test/selection-runtime-contract.test.ts ./packages/slate-react/test/dom-repair-policy-contract.ts`
@@ -1093,9 +1093,9 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
-- `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`
-- `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`
+- `packages/slate-dom/src/plugin/dom-editor.ts`
+- `packages/slate-dom/test/bridge.ts`
+- `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts`
 
 Scope:
 
@@ -1111,7 +1111,7 @@ Result:
   suppressed import returns `null`.
 - Patched `DOMEditor.toSlateNode` so global DOM-to-Slate weak-map hits are
   accepted only when the DOM node belongs to the current editor root.
-- Verified in `.tmp/slate-v2`:
+- Verified in `Plate repo root`:
   - `bun lint:fix`
   - `bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/dom-coverage.ts`
   - `bun test ./packages/slate-react/test/selection-controller-contract.ts ./packages/slate-react/test/selection-reconciler-contract.ts ./packages/slate-react/test/selection-runtime-contract.test.ts ./packages/slate-react/test/dom-repair-policy-contract.ts`
@@ -1135,10 +1135,10 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`
+- `packages/slate-react/test/rendering-strategy-and-scroll.tsx`
+- `packages/slate-react/test/app-owned-customization.tsx`
+- `packages/slate-react/test/selection-controller-contract.ts`
+- `packages/slate-react/test/selection-runtime-contract.test.ts`
 
 Scope:
 
@@ -1151,7 +1151,7 @@ Result:
 - Verified existing package contracts for scroll forwarding, app-owned
   customization, and selection controller/runtime behavior without code changes.
 - Kept #5867/#5826/#5538/#5568/#3497/#5537/#4961 as related/non-claimed rows.
-- Verified in `.tmp/slate-v2`:
+- Verified in `Plate repo root`:
   - `bun test ./packages/slate-react/test/rendering-strategy-and-scroll.tsx ./packages/slate-react/test/app-owned-customization.tsx`
   - `bun test ./packages/slate-react/test/selection-controller-contract.ts ./packages/slate-react/test/selection-runtime-contract.test.ts`
 
@@ -1171,7 +1171,7 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/shadow-dom.test.ts`
 
 Scope:
 
@@ -1186,7 +1186,7 @@ Result:
   typing gauntlet, model-owned ArrowLeft movement, and newline editing rows
   without code changes.
 - Kept #5107/#5749/#4337 related.
-- Verified in `.tmp/slate-v2`:
+- Verified in `Plate repo root`:
   - `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/shadow-dom.test.ts --project=chromium`
 
 Reference docs:
@@ -1205,9 +1205,9 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/playwright/integration/examples/tables.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/tables.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/dom-coverage-boundaries.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`
 
 Scope:
 
@@ -1224,7 +1224,7 @@ Result:
 - Verified covered-range rows: model-backed covered ranges and native drag
   selection across a boundary placeholder.
 - Verified mention atomic arrow-key movement from both sides.
-- Verified in `.tmp/slate-v2`:
+- Verified in `Plate repo root`:
   - `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/tables.test.ts --project=chromium --grep "triple-clicking the last table cell|dragging from a table cell"`
   - `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium --grep "native drag selection|model-backed covered ranges"`
   - `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/mentions.test.ts --project=chromium --grep "arrow keys select mentions"`
@@ -1237,7 +1237,7 @@ Reference docs:
 Next:
 
 - Slice 7: docs/reference sync and final verification.
-- Run final `bun check` in `.tmp/slate-v2`, then mark this execution lane done if
+- Run final `bun check` in `Plate repo root`, then mark this execution lane done if
   no scheduled pass remains.
 
 ### Slice 7 - Docs Reference Sync And Final Verification - 2026-05-08
@@ -1249,7 +1249,7 @@ Owner:
 - `docs/plans/2026-05-08-slate-v2-dom-selection-focus-bridge-ralplan.md`
 - `.tmp/completion-checks/slate-v2-dom-selection-focus-bridge-ralplan.md`
 - `active goal state`
-- `.tmp/slate-v2`
+- `Plate repo root`
 
 Scope:
 
@@ -1263,7 +1263,7 @@ Result:
   shadow DOM, and phase 6 table/covered-range/mention proof.
 - No issue claim, PR reference, coverage matrix, or fork dossier update was
   needed: no new fixed issue claim was added.
-- Verified in `.tmp/slate-v2`:
+- Verified in `Plate repo root`:
   - `bun lint:fix`
   - `bun check`
 

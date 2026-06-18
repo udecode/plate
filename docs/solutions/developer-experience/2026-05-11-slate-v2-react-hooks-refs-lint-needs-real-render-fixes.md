@@ -59,7 +59,7 @@ one-shot constructor escape hatch.
 ## Solution
 
 Keep the recommended React Hooks preset and disable only the currently noisy
-compiler mutation rule in `.tmp/slate-v2/eslint.config.mjs`:
+compiler mutation rule in `Plate repo root/eslint.config.mjs`:
 
 ```js
 rules: {

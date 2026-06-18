@@ -48,7 +48,7 @@ Land the next Phase 8 batch from
 
 - loaded `task`, `goal workflow`, `learnings-researcher`, `tdd`, and
   `react`
-- checked `.tmp/slate-v2` for deeper AGENTS/CLAUDE files: none found
+- checked `Plate repo root` for deeper AGENTS/CLAUDE files: none found
 - read current `paste-html` example, runtime seam, browser test, and legacy
   Slate example
 - read clipboard-boundary learning:

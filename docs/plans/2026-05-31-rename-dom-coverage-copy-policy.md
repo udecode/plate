@@ -32,7 +32,7 @@ Completion threshold:
 - Defaults and examples use `model`.
 - Docs explain all four copy policies as current-state API.
 - Focused package tests, hidden-content browser rows, and `bun check` pass in
-  `/Users/zbeyens/git/plate-2/.tmp/slate-v2`.
+  `/Users/zbeyens/git/plate-2/Plate repo root`.
 
 Verification surface:
 - `bun test ./packages/slate-dom/test/dom-coverage.ts ./packages/slate-dom/test/clipboard-boundary.ts`
@@ -47,7 +47,7 @@ Constraints:
 - Do not broaden into unrelated DOM coverage behavior.
 
 Boundaries:
-- Source of truth: `.tmp/slate-v2` Slate v2 package and example sources.
+- Source of truth: `Plate repo root` Slate v2 package and example sources.
 - Allowed edit scope: DOM coverage copy policy source, tests, examples, docs,
   and changesets.
 - Browser surface: `/examples/hidden-content-blocks`.
@@ -122,7 +122,7 @@ Work Checklist:
 - [x] Final handoff shape decided: concise source/test summary.
 - [x] Branch handling recorded: N/A, no branch requested.
 - [x] Local-env-rot retry policy recorded: N/A, no env-rot failure shape.
-- [x] Workspace authority recorded: verification commands ran in `.tmp/slate-v2`
+- [x] Workspace authority recorded: verification commands ran in `Plate repo root`
       or its owning package.
 - [x] High-risk note recorded: public API rename is hard-cut; tests and
       changesets prove callers see only the new names.
@@ -164,7 +164,7 @@ Completion Gates:
 | Package exports or file layout changed | no | N/A | No exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | N/A | No manifest or lockfile changed. |
 | Agent rules or skills changed | no | N/A | No agent rules or skills changed. |
-| Workspace authority proof | yes | Run checks in owning checkout | All commands ran in `.tmp/slate-v2` or `.tmp/slate-v2/packages/slate-react`. |
+| Workspace authority proof | yes | Run checks in owning checkout | All commands ran in `Plate repo root` or `packages/slate-react`. |
 | Browser surface changed | yes | Run route proof or waiver | Playwright hidden-content/query-controls rows passed. |
 | Browser final proof | yes | Record exact route proof | `http://localhost:3100/examples/hidden-content-blocks?selection=model&copy=model` returned 200; Playwright passed. |
 | CI-controlled template output changed | no | N/A | No templates changed. |

@@ -1,5 +1,5 @@
 import { BoldPlugin } from '@platejs/basic-nodes/react';
-import { type Value, createEditor } from '@platejs/slate';
+import { type Value, createEditor } from '@platejs/slate-legacy';
 
 import { ParagraphPlugin, ReactPlugin } from '../../react';
 import { withPlate } from '../../react/editor/withPlate';

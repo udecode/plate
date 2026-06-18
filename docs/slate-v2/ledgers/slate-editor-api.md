@@ -32,9 +32,9 @@ status: active
     showed those files are already source-close enough that they were not the
     best first code spend
 - direct query owner proof is now live and green in:
-  - `.tmp/slate-v2/packages/slate/test/query-contract.ts`
+  - `packages/slate/test/query-contract.ts`
 - direct `Editor.nodes/**` oracle proof is now live and green in:
-  - `.tmp/slate-v2/packages/slate/test/legacy-editor-nodes-fixtures.ts`
+  - `packages/slate/test/legacy-editor-nodes-fixtures.ts`
 - package-local closeout is green on:
   - `bun test ./packages/slate/test`
   - `bunx turbo build --filter=./packages/slate`

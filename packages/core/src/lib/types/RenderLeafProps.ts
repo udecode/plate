@@ -1,4 +1,4 @@
-import type { LeafPosition, Path, TText } from '@platejs/slate';
+import type { LeafPosition, Path, TText } from '@platejs/slate-legacy';
 
 export type RenderLeafFn = (props: RenderLeafProps) => React.ReactElement<any>;
 

@@ -34,7 +34,7 @@ Verification surface:
 - Planning source reads in `plate-2`: this plan, the existing 2026-05-26
   multi-root/content-root/hidden-content/selection plans, issue ledgers, and
   solution notes.
-- Live source grounding in `.tmp/slate-v2`: the three example files, their
+- Live source grounding in `Plate repo root`: the three example files, their
   Playwright tests, `view-selection.ts`, `projection-graph.ts`,
   `content-root-navigation.ts`, `projected-selection-target.ts`,
   `editable-text-blocks.tsx`, and `dom-coverage.ts`.
@@ -43,7 +43,7 @@ Verification surface:
   projection-selection plan rows. This pass adds no code and no browser claim.
 
 Constraints:
-- Planning-only activation. Do not patch `.tmp/slate-v2` implementation code
+- Planning-only activation. Do not patch `Plate repo root` implementation code
   from this plan.
 - Keep one runtime editor and many views. Do not switch to one editor per block.
 - Keep raw Slate unopinionated. Product chrome and Notion-like synced-block UI
@@ -58,9 +58,9 @@ Boundaries:
 - Editable planning scope: `docs/plans/**`, `docs/research/**`,
   `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`, and
   `docs/slate-v2/references/**`.
-- Source-read scope: `.tmp/slate-v2/packages/slate-react`,
-  `.tmp/slate-v2/packages/slate-dom`, `.tmp/slate-v2/site/examples/ts`, and
-  `.tmp/slate-v2/playwright/integration/examples`.
+- Source-read scope: `packages/slate-react`,
+  `packages/slate-dom`, `apps/www/src/app/(app)/examples/slate/_examples`, and
+  `apps/www/tests/slate-browser/donor/examples`.
 - In scope: view order, root projection, hidden DOM boundaries, selection,
   focus, history, copy/delete/type over projected selections, example DX, and
   shared conformance tests.
@@ -68,7 +68,7 @@ Boundaries:
   adapter compatibility, Notion permissions, and product UI kits in raw Slate.
 
 Blocked condition:
-Block only if live `.tmp/slate-v2` source and the existing plan/ledger files are
+Block only if live `Plate repo root` source and the existing plan/ledger files are
 unavailable for three consecutive activations. No blocker remains for this
 planning decision.
 
@@ -107,7 +107,7 @@ Start Gates:
 | Active goal checked or created | yes | Active Slate Plan goal created for this consolidated view-boundary decision. |
 | Source of truth read before edits | yes | User prompt, screenshot plan list, related plans, live examples, tests, and runtime files read. |
 | `docs/solutions` checked for existing-code work | yes | Read multi-root DX, inactive root caret, rootless selection, operation-root middleware, and DOMCoverage solution notes. |
-| Live `.tmp/slate-v2` grounding needed for current-state claims | yes | Live source line reads recorded under Source-backed facts. |
+| Live `Plate repo root` grounding needed for current-state claims | yes | Live source line reads recorded under Source-backed facts. |
 
 Work Checklist:
 - [x] Objective includes lane outcome, pass schedule, completion threshold,
@@ -139,7 +139,7 @@ Completion Gates:
 | Named verification threshold | yes | Close plan rows and run checker | Completed after source reads, plan consolidation, scorecard, and checker. |
 | Slate v2 source/runtime/browser/API claim | yes | Cite live source or mark as planning-only | Live source reads are recorded; no new runtime/browser/API behavior is claimed. |
 | Issue ledger or PR reference changed | no | Reuse existing rows and record no new claims | Existing hidden/content-root/projection rows already classify this surface; this plan changes no ledger or PR reference. |
-| Autoreview for implementation changes | no | N/A for planning-only | No `.tmp/slate-v2` implementation patch exists in this activation. |
+| Autoreview for implementation changes | no | N/A for planning-only | No `Plate repo root` implementation patch exists in this activation. |
 | Final user-review handoff | yes | Emit concise verdict and next implementation queue | Final handoff fields and summary are recorded in this plan. |
 | Goal plan complete | yes | Run checker from `plate-2` | Checker result recorded under Verification evidence. |
 
@@ -176,21 +176,21 @@ from the DOM.
 Source-backed facts:
 | Surface | Live source | Fact | Decision |
 |---------|-------------|------|----------|
-| Multi-root root DX | `.tmp/slate-v2/site/examples/ts/multi-root-document.tsx:182-212` | The canonical multi-root example is already good DX: one `<Slate editor>` and multiple `<Editable root>` surfaces. | Keep. |
-| Multi-root history/focus | `.tmp/slate-v2/site/examples/ts/multi-root-document.tsx:217-244` | Document history and external title input share one runtime, with explicit focus policy where needed. | Keep, but include in shared conformance. |
-| Synced root data model | `.tmp/slate-v2/site/examples/ts/synced-blocks.tsx:67-90` | Repeated owner blocks point at shared and separate root keys in one document value. | Keep as the product-real example. |
-| Synced root schema | `.tmp/slate-v2/site/examples/ts/synced-blocks.tsx:108-117` | `contentRoot: { slot: 'body' }` is the right raw Slate schema vocabulary. | Keep. |
-| Synced root rendering | `.tmp/slate-v2/site/examples/ts/synced-blocks.tsx:209-240` | Duplicate/unsync are example-local commands over root identity. | Keep example-local. |
-| Hidden content controls | `.tmp/slate-v2/site/examples/ts/hidden-content-blocks.tsx:163-198` | Selection/copy/find policy is local app state feeding boundaries. | Keep app-owned policy. |
-| Hidden content slot | `.tmp/slate-v2/site/examples/ts/hidden-content-blocks.tsx:371-470` | Accordion, Collapsible, and Tabs all use `slots.contentBoundary`. | Keep public slot, avoid raw UI kit. |
-| Public slot surface | `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:450-565` | `contentBoundary` and `contentRoot` already coexist as render slots. | Keep API; unify internals. |
-| View selection | `.tmp/slate-v2/packages/slate-react/src/view-selection.ts:13-32` | Runtime-only `SlateViewSelection` and history storage already exist. | Keep and make it the cross-boundary selection source. |
-| Projection graph | `.tmp/slate-v2/packages/slate-react/src/projection-graph.ts:5-60` | The graph already models owner/root/path visible order for projected roots. | Promote conceptually to view-boundary graph. |
-| Content-root navigation | `.tmp/slate-v2/packages/slate-react/src/editable/content-root-navigation.ts:282-335` | It builds a projection graph from content-root owners. | Move graph construction out of navigation ownership. |
-| Vertical navigation | `.tmp/slate-v2/packages/slate-react/src/editable/content-root-navigation.ts:1008-1164` | Vertical movement mixes graph ownership, DOM geometry, and owner lookup. | Keep algorithm, change owner boundary. |
-| Shift selection | `.tmp/slate-v2/packages/slate-react/src/editable/content-root-navigation.ts:1292-1384` | Shift+Arrow creates a `ViewSelection` only for content roots. | Extend same model to hidden boundaries. |
-| Projected commands | `.tmp/slate-v2/packages/slate-react/src/editable/projected-selection-target.ts:127-159` | Projected selection can become command ranges, but ambiguous repeated-root segments bail out. | Make ambiguity an explicit capability matrix row, not hidden fallback. |
-| DOM coverage | `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:26-120` | Hidden DOM boundaries already carry state, policies, covered ranges, and materialization reasons. | Fold boundary facts into the same visible-order model. |
+| Multi-root root DX | `apps/www/src/app/(app)/examples/slate/_examples/multi-root-document.tsx:182-212` | The canonical multi-root example is already good DX: one `<Slate editor>` and multiple `<Editable root>` surfaces. | Keep. |
+| Multi-root history/focus | `apps/www/src/app/(app)/examples/slate/_examples/multi-root-document.tsx:217-244` | Document history and external title input share one runtime, with explicit focus policy where needed. | Keep, but include in shared conformance. |
+| Synced root data model | `apps/www/src/app/(app)/examples/slate/_examples/synced-blocks.tsx:67-90` | Repeated owner blocks point at shared and separate root keys in one document value. | Keep as the product-real example. |
+| Synced root schema | `apps/www/src/app/(app)/examples/slate/_examples/synced-blocks.tsx:108-117` | `contentRoot: { slot: 'body' }` is the right raw Slate schema vocabulary. | Keep. |
+| Synced root rendering | `apps/www/src/app/(app)/examples/slate/_examples/synced-blocks.tsx:209-240` | Duplicate/unsync are example-local commands over root identity. | Keep example-local. |
+| Hidden content controls | `apps/www/src/app/(app)/examples/slate/_examples/hidden-content-blocks.tsx:163-198` | Selection/copy/find policy is local app state feeding boundaries. | Keep app-owned policy. |
+| Hidden content slot | `apps/www/src/app/(app)/examples/slate/_examples/hidden-content-blocks.tsx:371-470` | Accordion, Collapsible, and Tabs all use `slots.contentBoundary`. | Keep public slot, avoid raw UI kit. |
+| Public slot surface | `packages/slate-react/src/components/editable-text-blocks.tsx:450-565` | `contentBoundary` and `contentRoot` already coexist as render slots. | Keep API; unify internals. |
+| View selection | `packages/slate-react/src/view-selection.ts:13-32` | Runtime-only `SlateViewSelection` and history storage already exist. | Keep and make it the cross-boundary selection source. |
+| Projection graph | `packages/slate-react/src/projection-graph.ts:5-60` | The graph already models owner/root/path visible order for projected roots. | Promote conceptually to view-boundary graph. |
+| Content-root navigation | `packages/slate-react/src/editable/content-root-navigation.ts:282-335` | It builds a projection graph from content-root owners. | Move graph construction out of navigation ownership. |
+| Vertical navigation | `packages/slate-react/src/editable/content-root-navigation.ts:1008-1164` | Vertical movement mixes graph ownership, DOM geometry, and owner lookup. | Keep algorithm, change owner boundary. |
+| Shift selection | `packages/slate-react/src/editable/content-root-navigation.ts:1292-1384` | Shift+Arrow creates a `ViewSelection` only for content roots. | Extend same model to hidden boundaries. |
+| Projected commands | `packages/slate-react/src/editable/projected-selection-target.ts:127-159` | Projected selection can become command ranges, but ambiguous repeated-root segments bail out. | Make ambiguity an explicit capability matrix row, not hidden fallback. |
+| DOM coverage | `packages/slate-dom/src/plugin/dom-coverage.ts:26-120` | Hidden DOM boundaries already carry state, policies, covered ranges, and materialization reasons. | Fold boundary facts into the same visible-order model. |
 
 Architecture call:
 - Keep the public vocabulary split:
@@ -261,8 +261,8 @@ Implementation queue after user acceptance:
 | 1. Rename/own graph | `slate-react` runtime | Extract `ViewBoundaryGraph` from content-root navigation/projection graph without public API change. | Unit graph contracts for roots, repeated roots, and hidden boundary nodes. |
 | 2. Selection bridge | `slate-react` runtime | Make `ViewSelection` graph-backed for content roots and content boundaries. | Shift+Arrow, reverse Shift+Arrow, collapse, and history contracts. |
 | 3. Command target | `slate-react` input/clipboard | Route type/delete/backspace/copy through view targets with capability results. | Projected selection target tests plus hidden-boundary degraded/materialize rows. |
-| 4. Example conformance | `.tmp/slate-v2/playwright` | Parameterize the matrix over the three examples. | Chromium focused rows first; multi-browser/mobile rows only where native behavior is claimed. |
-| 5. Browser proof | `.tmp/slate-v2` route proof | Run synced-blocks, hidden-content-blocks, and multi-root-document route proofs in browser. | No `Cannot find descendant`, no wrong-root focus, honest native-selection state. |
+| 4. Example conformance | `Plate repo root/playwright` | Parameterize the matrix over the three examples. | Chromium focused rows first; multi-browser/mobile rows only where native behavior is claimed. |
+| 5. Browser proof | `Plate repo root` route proof | Run synced-blocks, hidden-content-blocks, and multi-root-document route proofs in browser. | No `Cannot find descendant`, no wrong-root focus, honest native-selection state. |
 
 Issue accounting:
 | Surface | Claim category | Exact claim | Proof route | Sync disposition |
@@ -312,11 +312,11 @@ Applicable implementation-skill review matrix:
 Verification workspace gate:
 | Claim | Workspace | Command or read | Result | Owner |
 |-------|-----------|-----------------|--------|-------|
-| Multi-root DX is already simple | `.tmp/slate-v2` | `nl -ba site/examples/ts/multi-root-document.tsx` | `<Editable root>` call sites verified. | planning |
-| Synced Blocks uses content roots | `.tmp/slate-v2` | `nl -ba site/examples/ts/synced-blocks.tsx` | Shared and separate root keys plus `contentRoot` spec verified. | planning |
-| Hidden route uses stable contentBoundary | `.tmp/slate-v2` | `nl -ba site/examples/ts/hidden-content-blocks.tsx` and `editable-text-blocks.tsx` | `slots.contentBoundary` verified. | planning |
-| ViewSelection exists | `.tmp/slate-v2` | `nl -ba packages/slate-react/src/view-selection.ts` | Runtime selection and history storage verified. | planning |
-| DOMCoverage is the hidden-boundary registry | `.tmp/slate-v2` | `nl -ba packages/slate-dom/src/plugin/dom-coverage.ts` | Boundary state/policy/materialization types verified. | planning |
+| Multi-root DX is already simple | `Plate repo root` | `nl -ba site/examples/ts/multi-root-document.tsx` | `<Editable root>` call sites verified. | planning |
+| Synced Blocks uses content roots | `Plate repo root` | `nl -ba site/examples/ts/synced-blocks.tsx` | Shared and separate root keys plus `contentRoot` spec verified. | planning |
+| Hidden route uses stable contentBoundary | `Plate repo root` | `nl -ba site/examples/ts/hidden-content-blocks.tsx` and `editable-text-blocks.tsx` | `slots.contentBoundary` verified. | planning |
+| ViewSelection exists | `Plate repo root` | `nl -ba packages/slate-react/src/view-selection.ts` | Runtime selection and history storage verified. | planning |
+| DOMCoverage is the hidden-boundary registry | `Plate repo root` | `nl -ba packages/slate-dom/src/plugin/dom-coverage.ts` | Boundary state/policy/materialization types verified. | planning |
 | Final plan checker | `plate-2` | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-unified-view-boundary-navigation-architecture.md` | passed after final update. | planning |
 
 Verification evidence:
@@ -325,7 +325,7 @@ Verification evidence:
   selection/history coverage, hidden DOM blocks API, hidden content policy
   controls, hidden-content Shift boundary selection, focus ownership, comment
   selection, and ArrowRight paragraph edge.
-- Read live `.tmp/slate-v2` examples/tests/runtime files listed in Verification
+- Read live `Plate repo root` examples/tests/runtime files listed in Verification
   surface.
 - Read solution notes for multi-root DX, inactive-root native caret, rootless
   selection, operation-root middleware, and DOMCoverage internal boundaries.

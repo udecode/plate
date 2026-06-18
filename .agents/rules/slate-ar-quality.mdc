@@ -14,10 +14,10 @@ holes, example quality, or broad "make this better" research.
 
 ## Contract
 
-- Target cwd is `.tmp/slate-v2`.
+- Target cwd is `Plate repo root`.
 - Use generic Codex Autoresearch research and quality-gap mechanics through
   `slate-ar`.
-- Keep durable state under `.tmp/slate-v2/autoresearch.research/<slug>/`.
+- Keep durable state under `.tmp/slate-autoresearch/research/<slug>/`.
 - `quality_gap=0` closes the current accepted checklist only. It does not mean
   discovery is permanently complete.
 
@@ -26,9 +26,9 @@ holes, example quality, or broad "make this better" research.
 Use Codex Autoresearch directly through the `slate-ar` wrapper:
 
 ```bash
-<autoresearch-cli> research-setup --cwd .tmp/slate-v2 --slug "<slug>" --goal "<goal>"
-<autoresearch-cli> quality-gap --cwd .tmp/slate-v2 --research-slug "<slug>" --list
-<autoresearch-cli> gap-candidates --cwd .tmp/slate-v2 --research-slug "<slug>"
+<autoresearch-cli> research-setup --cwd . --slug "<slug>" --goal "<goal>"
+<autoresearch-cli> quality-gap --cwd . --research-slug "<slug>" --list
+<autoresearch-cli> gap-candidates --cwd . --research-slug "<slug>"
 ```
 
 Use `gap-candidates --apply` only after inspecting the candidates and deciding

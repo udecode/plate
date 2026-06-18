@@ -30,7 +30,7 @@ Verification surface:
 
 Constraints:
 - Edit `.agents/rules/slate-autoresearch.mdc`, not generated `SKILL.md`.
-- Keep `.tmp/slate-v2` as the Slate target workspace.
+- Keep `Plate repo root` as the Slate target workspace.
 - Do not commit, push, branch-finalize, or create PRs.
 - Keep `setup-target` safe/read-only; real mutation belongs to `init-target`.
 
@@ -61,13 +61,13 @@ Work Checklist:
 - [x] Kept `pnpm slate:ar:setup-target -- <target-id>` read-only.
 - [x] Added `pnpm slate:ar:setup-plan-target` as the explicit read-only alias.
 - [x] Added root Slate AR wrapper that strips pnpm's `--` separator and injects
-      `.tmp/slate-v2`.
+      `Plate repo root`.
 - [x] Added quality-gap, research, and finalization package shortcuts.
 - [x] Documented quality-gap mode and `quality_gap=0` semantics.
 - [x] Documented finalization mode, evidence filtering, warnings, and approval
       boundaries.
 - [x] Synced generated skill mirrors with `pnpm install`.
-- [x] Restored active `.tmp/slate-v2` Autoresearch config to
+- [x] Restored active `Plate repo root` Autoresearch config to
       `react-active-typing-breakdown` after smoke quality-gap setup.
 - [x] Recorded Biome stack overflow as a tooling caveat.
 

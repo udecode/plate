@@ -45,7 +45,7 @@ Current tranche-3 owner docs:
 Current tranche-3 landed waves:
 
 - [2026-04-18-slate-v2-slate-accessor-batch-wave-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-18-slate-v2-slate-accessor-batch-wave-plan.md)
-- restored direct proof owners now live in `.tmp/slate-v2`:
+- restored direct proof owners now live in `Plate repo root`:
   - `packages/slate/test/query-contract.ts`
   - `packages/slate/test/legacy-editor-nodes-fixtures.ts`
   - `packages/slate/test/legacy-interfaces-fixtures.ts`

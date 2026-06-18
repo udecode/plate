@@ -1,4 +1,4 @@
-import { createEditor as createBaseEditor } from '@platejs/slate';
+import { createEditor as createBaseEditor } from '@platejs/slate-legacy';
 
 import { createSlateEditor } from '../editor';
 import { createSlatePlugin } from '../plugin';

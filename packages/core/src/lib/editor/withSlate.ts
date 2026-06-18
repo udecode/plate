@@ -3,7 +3,7 @@ import {
   type TSelection,
   type Value,
   createEditor,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 import { nanoid } from 'nanoid';
 
 import type { PluginStoreFactory } from '../../internal/plugin/resolvePlugins';

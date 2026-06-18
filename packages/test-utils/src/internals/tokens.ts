@@ -1,4 +1,4 @@
-import type { Path, TNode, TText } from '@platejs/slate';
+import type { Path, TNode, TText } from '@platejs/slate-legacy';
 
 /** A weak map to hold anchor tokens. */
 

@@ -17,18 +17,18 @@ Score: `0.82` current, `0.94` target.
 
 ## Current Source Evidence
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1351`
+- `packages/slate-react/src/components/editable-text-blocks.tsx:1351`
   creates a legacy `Editable.decorate` projection source.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1707`
+- `packages/slate-react/src/components/editable-text-blocks.tsx:1707`
   refreshes that source on `decorate` identity changes.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1712`
+- `packages/slate-react/src/components/editable-text-blocks.tsx:1712`
   calls `EDITOR_TO_FORCE_RENDER` directly from the adapter.
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:531` already has
+- `packages/slate-react/src/projection-store.ts:531` already has
   the right conceptual owner: `projectionStore.refresh(...)`.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-decoration-source.ts:79`
+- `packages/slate-react/src/hooks/use-slate-decoration-source.ts:79`
   and `:125` have the same external refresh pattern for first-class decoration
   sources, so the architecture cannot be solved only in `Editable.decorate`.
-- `.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/decorations-async.test.ts`
   proves the browser bug: model selection stayed at offset `41`, while DOM
   selection stayed at offset `35` before the fix.
 
@@ -138,7 +138,7 @@ projection refresh requires DOM selection export.
 
 Keep the current browser proof:
 
-- `.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/decorations-async.test.ts`
 
 Add these before calling the architecture final:
 
@@ -165,7 +165,7 @@ Add these before calling the architecture final:
    `Editable.decorate`.
 4. Route `useSlateDecorationSource` through the same bridge.
 5. Add focused unit/browser tests above.
-6. Re-run `.tmp/slate-v2` gates:
+6. Re-run `Plate repo root` gates:
    - `bun --filter slate-react typecheck`
    - `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/decorations-async.test.ts --project=chromium`
    - new first-class decoration source Playwright row
@@ -202,7 +202,7 @@ Rejected alternatives:
 
 `ralph` implementation pass, if accepted.
 
-This review should not edit `.tmp/slate-v2` implementation code directly.
+This review should not edit `Plate repo root` implementation code directly.
 
 ## Ralph Execution Result
 
@@ -232,10 +232,10 @@ Regression proof:
 
 Verification:
 
-- `.tmp/slate-v2`: `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx`
-- `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/decorations-async.test.ts --project=chromium`
-- `.tmp/slate-v2`: `bun --filter slate-react typecheck`
-- `.tmp/slate-v2`: `bun lint:fix`
+- `Plate repo root`: `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx`
+- `Plate repo root`: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/decorations-async.test.ts --project=chromium`
+- `Plate repo root`: `bun --filter slate-react typecheck`
+- `Plate repo root`: `bun lint:fix`
 
 Diff review:
 

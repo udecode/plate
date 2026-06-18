@@ -25,7 +25,7 @@ runtime owners:
   `udecode/slate#5`, `#8`, `#15`
 
 No `Fixes` claim is allowed until the original repro is red against local
-`.tmp/slate-v2`, green against the live reference or a written expected model, and
+`Plate repo root`, green against the live reference or a written expected model, and
 then green after the implementation change. Rows that were already green stay
 `already-accounted`.
 
@@ -37,26 +37,26 @@ Live issue intake used GitHub CLI:
 gh issue list -R udecode/slate --state open --limit 1000 --json number,title,body,labels,url,updatedAt,createdAt,author
 ```
 
-Current local source owners checked in `.tmp/slate-v2`:
+Current local source owners checked in `Plate repo root`:
 
 - example server command exists as `bun serve`, serving `site` on port `3100`
-  from `.tmp/slate-v2/package.json`
+  from `Plate repo root/package.json`
 - history snapshots are owned by
-  `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
+  `packages/slate-history/src/with-history.ts`
 - beforeinput text replacement routes through
-  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts` and
-  `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+  `packages/slate-react/src/editable/editing-kernel.ts` and
+  `packages/slate-react/src/editable/mutation-controller.ts`
 - undo hotkeys route through
-  `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+  `packages/slate-react/src/editable/keyboard-input-strategy.ts`
 - selection import/export is owned by
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+  `packages/slate-react/src/editable/selection-controller.ts`
 - composition events are owned by
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`
-  and `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
+  `packages/slate-react/src/editable/runtime-composition-events.ts`
+  and `packages/slate-react/src/editable/composition-state.ts`
 - target bridge is owned by
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-target-bridge.ts`
+  `packages/slate-react/src/editable/runtime-target-bridge.ts`
 - clipboard export/import is owned by
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
+  `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
 - existing Playwright rows cover pieces of iframe, mentions, images,
   editable-voids, paste-html, richtext, and plaintext, but not the full issue
   repro set below
@@ -80,7 +80,7 @@ In scope:
 - `udecode/slate#5` through `#15`, all currently open as of the `gh` read
 - local reproduction against `http://localhost:3100`
 - live reference comparison against `https://www.slatejs.org`
-- `.tmp/slate-v2` runtime, history, clipboard, selection, composition, and example
+- `Plate repo root` runtime, history, clipboard, selection, composition, and example
   tests once execution starts
 
 Non-goals:
@@ -322,7 +322,7 @@ Only after phases 1-4 are green:
 - update `docs/slate-v2/ledgers/issue-coverage-matrix.md` only with issues that
   have exact repro proof
 - update `docs/slate-v2/references/pr-description.md` if a PR claim changes
-- run the relevant `.tmp/slate-v2` focused checks
+- run the relevant `Plate repo root` focused checks
 - run `bun run completion-check` in `plate-2` only for planning state
 
 ## Phase 1 Execution Evidence

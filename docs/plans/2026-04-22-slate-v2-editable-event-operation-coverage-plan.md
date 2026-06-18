@@ -82,7 +82,7 @@ state, not just model state.
 
 ## Current Runtime Owners
 
-Current owner files in `.tmp/slate-v2/packages/slate-react/src/editable/`:
+Current owner files in `packages/slate-react/src/editable/`:
 
 - `browser-handle.ts`
 - `clipboard-input-strategy.ts`
@@ -150,8 +150,8 @@ Before calling this lane complete, build a parity ledger from:
 - `../slate/packages/slate-react/**`
 - `../slate/site/examples/**`
 - `../slate/playwright/**` if present
-- current v2 examples/tests under `.tmp/slate-v2/playwright/integration/examples/**`
-- current v2 React contracts under `.tmp/slate-v2/packages/slate-react/test/**`
+- current v2 examples/tests under `apps/www/tests/slate-browser/donor/examples/**`
+- current v2 React contracts under `packages/slate-react/test/**`
 
 Every legacy browser-editing behavior must be classified:
 
@@ -182,7 +182,7 @@ Minimum columns:
 
 Skip inventory:
 
-- v2 `.tmp/slate-v2/playwright/integration/examples/**`: no skipped rows found
+- v2 `apps/www/tests/slate-browser/donor/examples/**`: no skipped rows found
   with `rg -n "test\\.skip|\\.skip\\(|skip\\("`.
 - legacy `../slate/playwright/integration/examples/**`: one skipped row,
   `inlines.test.ts` arrow-key read-only inline navigation.
@@ -660,7 +660,7 @@ Status: closed.
 Actions:
 
 - added `keeps caret editable after browser Backspace at selected text end` to
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 - changed the tracer to reproduce the real user path:
   - select end of first richtext block
   - browser-type `O`
@@ -678,10 +678,10 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
+- `packages/slate-react/src/editable/dom-repair-queue.ts`
+- `packages/slate-react/src/editable/model-input-strategy.ts`
+- `packages/slate-react/src/hooks/use-slate-node-ref.tsx`
 
 Evidence:
 
@@ -734,7 +734,7 @@ Status: closed.
 Actions:
 
 - added `keeps caret editable after browser Delete before trailing punctuation`
-  to `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+  to `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 - mirrored the Backspace contract:
   - native Delete removes trailing punctuation
   - Slate selection remains non-null and collapsed
@@ -744,7 +744,7 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -777,9 +777,9 @@ Status: closed.
 Actions:
 
 - added `keeps caret editable after browser Backspace deletes selected range`
-  to `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+  to `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 - added `keeps caret editable after browser Delete deletes selected range` to
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 - both rows assert:
   - visible DOM text after deletion
   - model text after deletion
@@ -789,7 +789,7 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -828,17 +828,17 @@ Status: closed.
 Actions:
 
 - added `keeps caret editable after Backspace inside decorated text` to
-  `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts`
 - added `keeps caret editable after Delete inside decorated text` to
-  `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts`
 - added `keeps caret editable after deleting a decorated selected range` to
-  `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts`
 - rows assert decorated rendering remains, model text, Slate selection, DOM
   selection, and follow-up typing
 
 Changed files:
 
-- `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts`
 
 Evidence:
 
@@ -888,7 +888,7 @@ Status: partially closed.
 Actions:
 
 - added `keeps caret editable after plain text paste over selected range` to
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 - the row uses real clipboard paste transport through `slate-browser`
 - asserts:
   - model text after paste
@@ -903,10 +903,10 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
+- `packages/slate-react/src/editable/model-input-strategy.ts`
+- `packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `packages/slate-react/src/components/editable.tsx`
 
 Evidence:
 
@@ -950,7 +950,7 @@ Status: partially closed.
 Actions:
 
 - added `keeps caret editable after rich HTML paste over selected content` to
-  `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
 - used real clipboard paste through `slate-browser`
 - asserted:
   - rich HTML paste preserves formatting
@@ -962,7 +962,7 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
 
 Evidence:
 
@@ -992,7 +992,7 @@ Status: partially closed.
 Actions:
 
 - added `keeps caret editable after cutting inline link text` to
-  `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`
 - the row uses real `ControlOrMeta+X`
 - asserted clipboard text, removal of the link text, non-null selection, and
   follow-up typing
@@ -1004,8 +1004,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`
+- `packages/slate-react/src/editable/clipboard-input-strategy.ts`
 
 Evidence:
 
@@ -1145,8 +1145,8 @@ Decision:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts`
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `packages/browser/src/playwright/ime.ts`
+- `packages/browser/src/playwright/index.ts`
 
 Rejected tactic:
 
@@ -1187,7 +1187,7 @@ Status: partially closed.
 Actions:
 
 - added `keeps selection synchronized after browser ArrowLeft and ArrowRight`
-  to `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+  to `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 - row asserts Slate selection and DOM caret after ArrowLeft and ArrowRight
 - initial attempt used immediate manual DOM selection and failed because Slate
   had not observed selectionchange yet
@@ -1196,7 +1196,7 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -1298,14 +1298,14 @@ Status: partially closed.
 Actions:
 
 - added `selects the current block on browser triple click` to
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 - row asserts:
   - Slate selection spans the first block
   - DOM selection is non-collapsed and inside the editor
 
 Changed files:
 
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -1340,13 +1340,13 @@ Status: partially closed.
 Actions:
 
 - added `selects void content by browser click without mutating content` to
-  `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/large-document-runtime.test.ts`
 - row clicks rendered void content in the final large-document runtime
 - asserts Slate selection collapses at the void path and content is not mutated
 
 Changed files:
 
-- `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/large-document-runtime.test.ts`
 
 Evidence:
 
@@ -1401,13 +1401,13 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/target-policy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/check-lists.test.ts`
+- `packages/slate-react/src/editable/target-policy.ts`
+- `packages/slate-react/src/editable/selection-reconciler.ts`
+- `packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `packages/slate-react/src/editable/input-router.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/check-lists.test.ts`
 
 Evidence:
 
@@ -1469,9 +1469,9 @@ Status: closed for focused lifecycle rows.
 Actions:
 
 - added `ignores selectionchange noise from input inside editable void`
-  to `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`
+  to `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts`
 - added `does not duplicate native input handling after route remount`
-  to `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+  to `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 - used route navigation through `/examples/plaintext` as the browser-visible
   unmount/remount proof
 - kept mobile remount follow-up insertion on semantic handle transport because
@@ -1480,8 +1480,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -1585,12 +1585,12 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 

@@ -11,12 +11,12 @@ move normal writes to `tx.*`, and internalize runtime-policy leftovers.
 The live source already has the right substrate:
 
 - `BaseEditor` is small: `read`, `subscribe`, `update`, `extend`
-  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:480-490`).
+  (`packages/slate/src/interfaces/editor.ts:480-490`).
 - `EditorCoreStateView` and `EditorCoreUpdateTransaction` already expose grouped
-  state/tx APIs (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:445-475`).
+  state/tx APIs (`packages/slate/src/interfaces/editor.ts:445-475`).
 - `EditorStaticApi` still exposes 99 methods and mixes reads, writes, runtime
   internals, extension registration, and legacy helper policy
-  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1113-1704`).
+  (`packages/slate/src/interfaces/editor.ts:1113-1704`).
 
 Blunt take: keeping all 99 public static methods is architectural debt. It keeps
 old Slate familiar, but it also preserves the exact object-shaped junk drawer
@@ -156,12 +156,12 @@ Current score: `0.93`.
 
 Completion gates met:
 
-- public root export hard cut is implemented in `.tmp/slate-v2`
+- public root export hard cut is implemented in `Plate repo root`
 - public type wildcard for the editor table is removed
 - `state.schema.isElementReadOnly` is renamed to `state.schema.isReadOnly`
 - current internal `Editor.*` remains behind internal entrypoints only
 - focused public-surface/state-tx/write-boundary/schema contracts are green
-- `bun check` is green in `.tmp/slate-v2`
+- `bun check` is green in `Plate repo root`
 
 ## 2026-05-03 method census and objection closure pass
 
@@ -169,16 +169,16 @@ Status: `complete`.
 
 Live source read:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts` still contains
+- `packages/slate/src/interfaces/editor.ts` still contains
   `EditorStaticApi`, `InternalEditor`, and `export { InternalEditor as Editor }`.
-- `.tmp/slate-v2/packages/slate/src/internal/index.ts` exports internal
+- `packages/slate/src/internal/index.ts` exports internal
   `Editor`.
-- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts` already asserts
+- `packages/slate/test/public-surface-contract.ts` already asserts
   the primary public package surface does not expose `Editor`, transform
   namespaces, command registry helpers, or broad editor instance methods.
-- `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts` already
+- `packages/slate/test/state-tx-public-api-contract.ts` already
   proves grouped `state` and `tx` reads/writes.
-- `.tmp/slate-v2/packages/slate/test/write-boundary-contract.ts` already proves
+- `packages/slate/test/write-boundary-contract.ts` already proves
   normal writes go through `editor.update` and `tx`.
 
 Census command shape:
@@ -242,31 +242,31 @@ Status: `complete`.
 
 Live source changes:
 
-- `.tmp/slate-v2/packages/slate/src/index.ts` no longer exports `./core`,
+- `packages/slate/src/index.ts` no longer exports `./core`,
   `./editor`, `./transforms-node`, `./transforms-selection`, or
   `./transforms-text`.
-- `.tmp/slate-v2/packages/slate/src/index.ts` now explicitly exports the intended
+- `packages/slate/src/index.ts` now explicitly exports the intended
   public root: `createEditor`, `defineEditorExtension`, `elementProperty`,
   `isEditor`, pure data namespaces, public editor lifecycle/state/tx types, and
   transform option types.
-- `.tmp/slate-v2/packages/slate/src/index.ts` no longer wildcard-exports
+- `packages/slate/src/index.ts` no longer wildcard-exports
   `./interfaces`, so `EditorStaticApi` and `EditorElementReadOnlyOptions` do
   not leak through the primary package.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`,
-  `.tmp/slate-v2/packages/slate/src/create-editor.ts`, and
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts` expose the public
+- `packages/slate/src/interfaces/editor.ts`,
+  `packages/slate/src/create-editor.ts`, and
+  `packages/slate/src/core/public-state.ts` expose the public
   read-only schema predicate as `isReadOnly`.
-- `.tmp/slate-v2/site/examples/ts/dom-coverage-boundaries.tsx` no longer imports
+- `apps/www/src/app/(app)/examples/slate/_examples/dom-coverage-boundaries.tsx` no longer imports
   internal `Editor` for a public example snapshot read.
-- `.tmp/slate-v2/scripts/benchmarks/core/current/*.mjs` import internal `Editor`
+- `benchmarks/slate-v2/donor/core/current/*.mjs` import internal `Editor`
   from the internal entrypoint instead of the primary package.
 
 Regression coverage:
 
-- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts` now asserts the
+- `packages/slate/test/public-surface-contract.ts` now asserts the
   intended small public root, rejects raw editor/core/transform helper exports,
   and rejects wildcard-exporting the internal editor type table.
-- `.tmp/slate-v2/packages/slate/test/schema-contract.ts` now proves
+- `packages/slate/test/schema-contract.ts` now proves
   `state.schema.isReadOnly(...)`.
 
 Verification:
@@ -335,7 +335,7 @@ Cut from public author API:
 Current source:
 
 - `BaseEditor.read`, `subscribe`, `update`, `extend`
-  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:480-490`).
+  (`packages/slate/src/interfaces/editor.ts:480-490`).
 
 Decision:
 
@@ -443,7 +443,7 @@ Hard cuts:
   `tx.nodes.insert(nodes, options)`.
 - Drop `tx.nodes.insertMany` unless a later proof shows it has a distinct
   semantic. Current live `insert` and `insertMany` both accept `T | T[]`
-  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:213-220`), so keeping
+  (`packages/slate/src/interfaces/editor.ts:213-220`), so keeping
   both is just API noise.
 - Drop `reset`; use `tx.value.replace`.
 - Drop public `withoutNormalizing(editor, fn)`; keep only inside `tx`.
@@ -546,7 +546,7 @@ Every current static method is accounted for below.
 
 Keep `EditorTransformApi` internal. Its comment already says normal public
 writes go through `editor.update((tx) => ...)`
-(`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:493-497`).
+(`packages/slate/src/interfaces/editor.ts:493-497`).
 
 Hard rule:
 
@@ -855,7 +855,7 @@ Rejected:
 
 | Pass                                         | Status                | Evidence added                                                                                                                             | Plan delta                                                                                     | Open issues                                      | Next owner    |
 | -------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------ | ------------- |
-| Current-state read and initial score         | complete              | live `.tmp/slate-v2` editor interfaces, public-state runtime, extension runtime; compiled research; local Lexical/ProseMirror/Tiptap greps | initial hard-cut matrix for all 99 methods                                                     | need import census and detailed ledger closure   | slate-ralplan |
+| Current-state read and initial score         | complete              | live `Plate repo root` editor interfaces, public-state runtime, extension runtime; compiled research; local Lexical/ProseMirror/Tiptap greps | initial hard-cut matrix for all 99 methods                                                     | need import census and detailed ledger closure   | slate-ralplan |
 | Intent/boundary and decision brief           | complete              | user request + live source mismatch                                                                                                        | intent/non-goals/decision boundaries added                                                     | none after method-census pass                    | slate-ralplan |
 | Research/live-source refresh                 | complete for pass 1   | research pages and local source greps                                                                                                      | Lexical/PM/Tiptap evidence recorded                                                            | no research page update needed yet               | slate-ralplan |
 | Performance/DX/migration/regression pressure | complete for planning | 1590-file source/docs/example census; 2284 `Editor.*` hits bucketed by docs/site/runtime/test                                              | confirms public teaching surface is already `state/tx`; static namespace is internal/test debt | implementation still needs batch red contracts   | slate-ralplan |
@@ -964,9 +964,9 @@ Status: next.
 
 ## Fast driver gates
 
-- `rg -n "Editor\\." .tmp/slate-v2/docs .tmp/slate-v2/site .tmp/slate-v2/packages`
+- `rg -n "Editor\\." content/docs/slate apps/www Plate repo root/packages`
   must only show internal/test-allowed rows after docs migration.
-- `bun check` in `.tmp/slate-v2` before closure.
+- `bun check` in `Plate repo root` before closure.
 - focused browser tests for read-only/void/selection/paste if those methods move
   in the implementation batch.
 - export-surface contract must fail if `EditorStaticApi` leaks again.
@@ -1011,38 +1011,38 @@ Fresh live-source read:
 
 - Public `slate` root exports `createEditor`, top-level `isEditor`, type-only
   `Editor`, and type-only state/tx groups; it does not export a public
-  `Editor` value (`.tmp/slate-v2/packages/slate/src/index.ts:1-90`).
+  `Editor` value (`packages/slate/src/index.ts:1-90`).
 - `BaseEditor` is already the right small instance spine:
   `read`, `subscribe`, `update`, `extend`
-  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:480-490`).
+  (`packages/slate/src/interfaces/editor.ts:480-490`).
 - `EditorCoreStateView` and `EditorCoreUpdateTransaction` are already the
   public read/write grouping target
-  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:445-475`).
+  (`packages/slate/src/interfaces/editor.ts:445-475`).
 - `EditorTransformApi` is documented as internal runtime transform API; normal
   writes belong in `editor.update((tx) => ...)`
-  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:493-608`).
+  (`packages/slate/src/interfaces/editor.ts:493-608`).
 - `EditorStaticApi` still contains the old mixed namespace for internal/tests:
   reads, writes, runtime metadata, refs, extension plumbing, lifecycle wrappers,
   `replace`, `reset`, `elementReadOnly`, and
   `shouldMergeNodesRemovePrevNode`
-  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1113-1704`).
+  (`packages/slate/src/interfaces/editor.ts:1113-1704`).
 - `InternalEditor` implements those wrappers and still exports them as
   `Editor` from `interfaces/editor`; this remains internal/friend surface, not
-  public root API (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1720-2190`).
+  public root API (`packages/slate/src/interfaces/editor.ts:1720-2190`).
 - Public-surface contract already bans root helper exports, public `Editor`
   value, transform namespaces, instance `replace` / `reset`, direct instance
   read aliases, and public docs/examples teaching internal `Editor` snapshot/ref
-  helpers (`.tmp/slate-v2/packages/slate/test/public-surface-contract.ts:70-420`).
+  helpers (`packages/slate/test/public-surface-contract.ts:70-420`).
 - `DOMEditor` / `ReactEditor` values are not normal public root APIs:
   `slate-dom` exports `DOMEditor` as a type and exposes `withDOM`; `slate-react`
   exports `ReactEditor` as a type and `withReact`
-  (`.tmp/slate-v2/packages/slate-dom/src/index.ts:1-7`,
-  `.tmp/slate-v2/packages/slate-react/src/index.ts:106-108`).
+  (`packages/slate-dom/src/index.ts:1-7`,
+  `packages/slate-react/src/index.ts:106-108`).
 - The DOM adapter already has the better public shape available as
   `editor.dom.*`, but its capability is still implemented by delegating through
   the internal static `DOMEditor.*` table
-  (`.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:57-119`,
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:1398-1464`).
+  (`packages/slate-dom/src/plugin/dom-editor.ts:57-119`,
+  `packages/slate-dom/src/plugin/dom-editor.ts:1398-1464`).
 - Lexical exposes `LexicalEditor.update` as the only safe mutation callback and
   `setEditorState` as an explicit whole-state setter; it does not expose a
   Slate-style `Editor.replace(editor, ...)` namespace
@@ -1153,7 +1153,7 @@ Proof gates for execution:
 - Focused tests cover whole-document replace through `tx.value.replace`.
 - Browser smoke covers iframe, mentions void navigation, selection, paste, and
   DOM mapping after the runtime shortcuts move.
-- `bun check` passes in `.tmp/slate-v2`.
+- `bun check` passes in `Plate repo root`.
 
 Decision status:
 
@@ -1193,32 +1193,32 @@ Scope executed:
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-dom/test/public-surface-contract.ts`
-- `.tmp/slate-v2/packages/slate-dom/test/public-surface-contract.test.ts`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-kernel-trace.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-text.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-node/merge-nodes.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/insert-text.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/normalize.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/without-normalizing.ts`
-- `.tmp/slate-v2/packages/slate/test/support/snapshot.ts`
-- `.tmp/slate-v2/packages/slate/test/test-helper-boundary-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/read-update-contract.ts`
+- `packages/slate-dom/test/public-surface-contract.ts`
+- `packages/slate-dom/test/public-surface-contract.test.ts`
+- `packages/slate-react/test/surface-contract.tsx`
+- `packages/slate-react/src/components/slate.tsx`
+- `packages/slate-react/src/editable/browser-handle.ts`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/editable/runtime-kernel-trace.ts`
+- `packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `packages/slate/src/transforms-text/insert-text.ts`
+- `packages/slate/src/transforms-text/insert-fragment.ts`
+- `packages/slate/src/transforms-node/merge-nodes.ts`
+- `packages/slate/src/editor/insert-text.ts`
+- `packages/slate/src/editor/normalize.ts`
+- `packages/slate/src/editor/without-normalizing.ts`
+- `packages/slate/test/support/snapshot.ts`
+- `packages/slate/test/test-helper-boundary-contract.ts`
+- `packages/slate/test/state-tx-public-api-contract.ts`
+- `packages/slate/test/read-update-contract.ts`
 
 Source inventory after execution:
 
 ```txt
 rg "\\bEditor\\.(read|update|subscribe|extend|replace|reset|getOperations|elementReadOnly|shouldMergeNodesRemovePrevNode|setNormalizing|isNormalizing)\\("
-  .tmp/slate-v2/packages/slate/src
-  .tmp/slate-v2/packages/slate-dom/src
-  .tmp/slate-v2/packages/slate-react/src
+  packages/slate/src
+  packages/slate-dom/src
+  packages/slate-react/src
 
 0 matches
 ```

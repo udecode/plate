@@ -68,11 +68,11 @@ Chosen option: add Slate-owned post-commit view effects and stable editor comman
 
 ### Current Slate v2
 
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:48-137`: Slate already uses selector cells plus `useSyncExternalStore`; do not downgrade to context-wide state reads.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:318-363`: runtime tracks mounted view editors per root and root selection cache.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx:574-625`: `useSlateViewState` already filters updates by root.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:213-387`: selector subscriptions already support runtime-id scoped fanout and deferred microtask flush.
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:197-257`: runtime root engine already owns composition, selection import/export, and repair bridges.
+- `packages/slate-react/src/hooks/use-generic-selector.tsx:48-137`: Slate already uses selector cells plus `useSyncExternalStore`; do not downgrade to context-wide state reads.
+- `packages/slate-react/src/hooks/use-slate-runtime.tsx:318-363`: runtime tracks mounted view editors per root and root selection cache.
+- `packages/slate-react/src/hooks/use-slate-runtime.tsx:574-625`: `useSlateViewState` already filters updates by root.
+- `packages/slate-react/src/hooks/use-editor-selector.tsx:213-387`: selector subscriptions already support runtime-id scoped fanout and deferred microtask flush.
+- `packages/slate-react/src/editable/runtime-root-engine.ts:197-257`: runtime root engine already owns composition, selection import/export, and repair bridges.
 
 ### Existing Research
 
@@ -320,7 +320,7 @@ Weighted score: `0.879`.
 
 Threshold status: ready for user review as a scoped steal/reject plan. The
 implementation-readiness score stays below release threshold because no Ralph
-execution or `.tmp/slate-v2` proof has run.
+execution or `Plate repo root` proof has run.
 
 ## Pass Schedule
 
@@ -382,15 +382,15 @@ bun lint:fix
 - issue accounting is skipped because this lane makes no fixed/improved issue
   claim and edits no Slate v2 behavior;
 - PR description is unchanged for the same reason;
-- `.tmp/slate-v2` verification is deferred to Ralph implementation because this
-  skill did not edit `.tmp/slate-v2`;
+- `Plate repo root` verification is deferred to Ralph implementation because this
+  skill did not edit `Plate repo root`;
 - next owner for implementation: Ralph, if the user asks to build it.
 
 ## Ralph Execution Ledger
 
 ### 2026-05-23 Activation
 
-- owner: `.tmp/slate-v2/packages/slate-react`
+- owner: `packages/slate-react`
 - current pass: `tdd-pass`
 - scope: implement the first public hook slice for `useSlateViewEffect` and
   `useSlateCommandCallback`, then add DOM identity/projection/composition proof
@@ -414,13 +414,13 @@ bun lint:fix
     registered;
   - explicit DOM identity proof for unaffected sibling element/text nodes.
 - changed files:
-  - `.tmp/slate-v2/packages/slate-react/src/context.tsx`
-  - `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-  - `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
-  - `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx`
-  - `.tmp/slate-v2/packages/slate-react/src/index.ts`
-  - `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`
-  - `.tmp/slate-v2/packages/slate-react/test/use-slate-view-command-hooks.test.tsx`
+  - `packages/slate-react/src/context.tsx`
+  - `packages/slate-react/src/components/editable-text-blocks.tsx`
+  - `packages/slate-react/src/components/slate.tsx`
+  - `packages/slate-react/src/hooks/use-slate-runtime.tsx`
+  - `packages/slate-react/src/index.ts`
+  - `packages/slate-react/test/rendered-dom-shape-contract.tsx`
+  - `packages/slate-react/test/use-slate-view-command-hooks.test.tsx`
 - verification:
   - `bun --filter slate-react test:vitest -- use-slate-view-command-hooks`
   - `bun --filter slate-react test:vitest -- rendered-dom-shape-contract`
@@ -443,5 +443,5 @@ bun lint:fix
 - fixed issue claims: none;
 - public API names recorded as candidates, not implemented;
 - DOM identity tests named for Ralph;
-- `.tmp/slate-v2` focused gates deferred to Ralph implementation;
+- `Plate repo root` focused gates deferred to Ralph implementation;
 - completion file may be `done` for this scoped planning request.

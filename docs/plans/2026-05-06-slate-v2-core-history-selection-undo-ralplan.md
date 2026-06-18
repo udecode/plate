@@ -109,14 +109,14 @@ Consequences:
 
 Live owners:
 
-- `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
-- `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`
-- `.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts`
-- `.tmp/slate-v2/packages/slate/src/core/apply.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/bookmark.ts`
-- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/selection-rebase-contract.ts`
+- `packages/slate-history/src/with-history.ts`
+- `packages/slate-history/test/history-contract.ts`
+- `packages/slate-history/test/integrity-contract.ts`
+- `packages/slate/src/core/apply.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/editor/bookmark.ts`
+- `packages/slate/test/collab-history-runtime-contract.ts`
+- `packages/slate/test/selection-rebase-contract.ts`
 
 Current implementation facts:
 
@@ -531,7 +531,7 @@ issue-fix claim and adds no public API.
 
 Status: execution slice complete.
 
-- Added issue-shaped package proof in `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`.
+- Added issue-shaped package proof in `packages/slate-history/test/history-contract.ts`.
 - Promoted #3534, #3551, and #4559 to exact `Fixes` claims.
 - Promoted #3705 and #3921 to `Improves` claims for the model-level partial
   `set_selection` guard.
@@ -543,11 +543,11 @@ Status: execution slice complete.
 Verification:
 
 ```bash
-cd .tmp/slate-v2 && bun test ./packages/slate-history/test/history-contract.ts ./packages/slate-history/test/integrity-contract.ts
-cd .tmp/slate-v2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate/test/selection-rebase-contract.ts
-cd .tmp/slate-v2 && bun --filter slate-history typecheck
-cd .tmp/slate-v2 && bun --filter slate typecheck
-cd .tmp/slate-v2 && bun lint:fix
+cd Plate repo root && bun test ./packages/slate-history/test/history-contract.ts ./packages/slate-history/test/integrity-contract.ts
+cd Plate repo root && bun test ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate/test/selection-rebase-contract.ts
+cd Plate repo root && bun --filter slate-history typecheck
+cd Plate repo root && bun --filter slate typecheck
+cd Plate repo root && bun lint:fix
 ```
 
 All gates passed after lint. The execution checkpoint is

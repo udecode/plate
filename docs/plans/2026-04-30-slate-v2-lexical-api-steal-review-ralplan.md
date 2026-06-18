@@ -1647,8 +1647,8 @@ Task statement:
 
 Desired outcome:
 
-- Add a friend/internal source bus in `.tmp/slate-v2/packages/slate`.
-- Route projection and annotation stores in `.tmp/slate-v2/packages/slate-react`
+- Add a friend/internal source bus in `packages/slate`.
+- Route projection and annotation stores in `packages/slate-react`
   through source-specific editor subscriptions where this slice owns them.
 - Prove selection-only commits wake `commit` and `selection`, not unrelated
   `text`, `node`, `decoration`, or `root` subscribers.
@@ -1666,13 +1666,13 @@ Completed passes:
 Actions taken:
 
 - Added friend/internal `Editor.subscribeSource(...)` in
-  `.tmp/slate-v2/packages/slate`.
+  `packages/slate`.
 - Added core source routing so selection-only commits notify `commit` and
   `selection`, not unrelated `text`, `node`, `decoration`, or `root`
   subscribers.
-- Routed `.tmp/slate-v2/packages/slate-react/src/projection-store.ts` through
+- Routed `packages/slate-react/src/projection-store.ts` through
   source-bus subscriptions selected by projection dirtiness.
-- Routed `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts` through a
+- Routed `packages/slate-react/src/annotation-store.ts` through a
   source-bus `commit` subscription while preserving candidate filtering.
 - Added tests that make projection and annotation stores throw if they fall back
   to broad instance `editor.subscribe` fan-in.
@@ -1685,15 +1685,15 @@ Actions taken:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
-- `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts`
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/test/snapshot-contract.ts`
+- `packages/slate/test/collab-history-runtime-contract.ts`
+- `packages/slate/test/commit-metadata-contract.ts`
+- `packages/slate-react/src/projection-store.ts`
+- `packages/slate-react/src/annotation-store.ts`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
+- `packages/slate-react/test/annotation-store-contract.tsx`
 - `docs/solutions/performance-issues/2026-04-30-slate-v2-source-bus-routing-must-prove-upstream-fan-in-and-runtime-bucket-locality-separately.md`
 - `active goal state`
 - `active goal state`
@@ -1701,23 +1701,23 @@ Changed files:
 Verification:
 
 - `bun test ./packages/slate/test/snapshot-contract.ts ./packages/slate-react/test/projections-and-selection-contract.tsx ./packages/slate-react/test/annotation-store-contract.tsx`
-  passed in `.tmp/slate-v2`.
+  passed in `Plate repo root`.
 - `bun test ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate-react/test/projections-and-selection-contract.tsx ./packages/slate/test/bookmark-contract.ts ./packages/slate-react/test/editing-kernel-contract.ts ./packages/slate-react/test/target-runtime-contract.tsx`
-  passed in `.tmp/slate-v2`.
+  passed in `Plate repo root`.
 - `bun test ./packages/slate/test/commit-metadata-contract.ts -t "types canonical update tags while preserving custom tags"`
-  passed in `.tmp/slate-v2`.
+  passed in `Plate repo root`.
 - `bun test ./packages/slate/test/snapshot-contract.ts ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate/test/commit-metadata-contract.ts ./packages/slate/test/bookmark-contract.ts ./packages/slate-react/test/projections-and-selection-contract.tsx ./packages/slate-react/test/annotation-store-contract.tsx ./packages/slate-react/test/editing-kernel-contract.ts ./packages/slate-react/test/target-runtime-contract.tsx`
-  passed in `.tmp/slate-v2`.
-- `bun --filter slate typecheck` passed in `.tmp/slate-v2`.
-- `bun --filter slate-react typecheck` passed in `.tmp/slate-v2`.
-- `bun lint:fix` passed in `.tmp/slate-v2`; after it fixed one file, the final
+  passed in `Plate repo root`.
+- `bun --filter slate typecheck` passed in `Plate repo root`.
+- `bun --filter slate-react typecheck` passed in `Plate repo root`.
+- `bun lint:fix` passed in `Plate repo root`; after it fixed one file, the final
   touched-contract test set and both package typechecks passed again.
 - Fresh closeout after compact recovery:
   `bun test ./packages/slate/test/snapshot-contract.ts ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate/test/commit-metadata-contract.ts ./packages/slate/test/bookmark-contract.ts ./packages/slate-react/test/projections-and-selection-contract.tsx ./packages/slate-react/test/annotation-store-contract.tsx ./packages/slate-react/test/editing-kernel-contract.ts ./packages/slate-react/test/target-runtime-contract.tsx`
-  passed in `.tmp/slate-v2` with 240 tests.
+  passed in `Plate repo root` with 240 tests.
 - Fresh closeout after compact recovery: `bun --filter slate typecheck`,
   `bun --filter slate-react typecheck`, and `bun lint:fix` passed in
-  `.tmp/slate-v2`; lint reported no fixes.
+  `Plate repo root`; lint reported no fixes.
 
 Rejected tactics:
 

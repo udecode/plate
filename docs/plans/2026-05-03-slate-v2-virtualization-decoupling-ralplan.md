@@ -1,7 +1,7 @@
 ---
 status: done
 owner: slate-v2-virtualization-decoupling-ralplan
-source_repo: .tmp/slate-v2
+source_repo: Plate repo root
 created: 2026-05-03
 score: 0.94
 next_owner: ralph-execution
@@ -87,58 +87,58 @@ Unresolved user-decision points:
 
 ## Live Source Grounding
 
-Current facts from `.tmp/slate-v2`:
+Current facts from `Plate repo root`:
 
 - `@tanstack/react-virtual` is already a `slate-react` dependency.
-  Source: `.tmp/slate-v2/packages/slate-react/package.json:18-23`.
+  Source: `packages/slate-react/package.json:18-23`.
 - `RenderingStrategyOptions` is owned by `create-segment-plan.ts`, and the
   virtualized object still exposes `previewChars`.
   Source:
-  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3-25`.
+  `packages/slate-react/src/rendering-strategy/create-segment-plan.ts:3-25`.
 - The TanStack hook is real and uses `useVirtualizer`, runtime-id item keys,
   retained selected/promoted indexes, coalesced missing ranges, `scrollToIndex`,
   and `measureElement`.
   Source:
-  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/use-virtualized-root-plan.ts:1-6`,
+  `packages/slate-react/src/rendering-strategy/use-virtualized-root-plan.ts:1-6`,
   `:89-179`, and `:181-293`.
 - `EditableTextBlocksInner` imports virtualized types/hooks/components directly,
   stores virtualized state, calls the TanStack plan hook, owns virtualized
   materialization, computes virtualized metrics, and renders virtualized rows
   inline.
   Source:
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:47-54`,
+  `packages/slate-react/src/components/editable-text-blocks.tsx:47-54`,
   `:1260-1377`, `:1436-1478`, `:1580-1664`, and `:1714-1761`.
 - The same component still contains a virtualized-flavored shell fallback:
   `RenderingStrategySegmentShell` receives `coverageReason:
 'viewport-virtualization'`.
   Source:
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1762-1794`.
+  `packages/slate-react/src/components/editable-text-blocks.tsx:1762-1794`.
 - `RenderingStrategySegmentShell` itself accepts
   `'shell-aggressive' | 'viewport-virtualization'`, derives selection policy
   from that reason, and records `state: 'virtualized'`.
   Source:
-  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/segment-shell.tsx:58-111`.
+  `packages/slate-react/src/rendering-strategy/segment-shell.tsx:58-111`.
 - `root-selector-sources.ts` is generic by name but imports
   `createSegmentPlan`, owns shell config with `previewChars`, and returns
   `segmentPlan`.
   Source:
-  `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts:7-14`
+  `packages/slate-react/src/editable/root-selector-sources.ts:7-14`
   and `:208-272`.
 - Keyboard strategy classifies virtualized as shell-backed through
   `isShellRenderingStrategy`.
   Source:
-  `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:55-60`,
+  `packages/slate-react/src/editable/keyboard-input-strategy.ts:55-60`,
   `:152-164`, and `:209-220`.
 - Tests prove the current behavior: virtualized mode registers viewport DOM
   coverage, keeps broad selections model-backed, reports metrics, and has a
   full browser example with bounded DOM.
   Source:
-  `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:171-364`
+  `packages/slate-react/test/rendering-strategy-and-scroll.tsx:171-364`
   and
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:329-365`.
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:329-365`.
 - The full example is present.
   Source:
-  `.tmp/slate-v2/site/examples/ts/rendering-strategy-runtime.tsx:32-37`
+  `apps/www/src/app/(app)/examples/slate/_examples/rendering-strategy-runtime.tsx:32-37`
   and `:380-417`.
 
 Research evidence:
@@ -390,7 +390,7 @@ Current good seed:
 - `EditableTextBlocks` already uses separate wrappers so the TanStack hook is
   only called in the virtualized wrapper.
   Source:
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1845-1860`.
+  `packages/slate-react/src/components/editable-text-blocks.tsx:1845-1860`.
 
 Target:
 
@@ -686,7 +686,7 @@ Rollback answer:
 ## Fast Driver Gates
 
 ```txt
-rg -n "@tanstack/react-virtual|useVirtualizer|Virtualized" .tmp/slate-v2/packages/slate-react/src
+rg -n "@tanstack/react-virtual|useVirtualizer|Virtualized" packages/slate-react/src
 ```
 
 Expected after refactor:

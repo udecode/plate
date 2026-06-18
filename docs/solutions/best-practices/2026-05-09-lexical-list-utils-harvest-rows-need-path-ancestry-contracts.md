@@ -49,7 +49,7 @@ Write one compact package proof against Slate's public query primitives:
 - `Node.has(editor, Path.next(path))` distinguishes terminal and non-terminal
   sibling positions.
 
-The proof belongs in `.tmp/slate-v2/packages/slate/test/query-contract.ts`.
+The proof belongs in `packages/slate/test/query-contract.ts`.
 
 ## Why This Works
 

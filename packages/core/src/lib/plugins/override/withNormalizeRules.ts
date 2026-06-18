@@ -1,4 +1,4 @@
-import { ElementApi } from '@platejs/slate';
+import { ElementApi } from '@platejs/slate-legacy';
 
 import type { NormalizeRules } from '../../plugin/BasePlugin';
 import type { OverrideEditor } from '../../plugin/SlatePlugin';

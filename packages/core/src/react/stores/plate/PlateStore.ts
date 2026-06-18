@@ -6,7 +6,7 @@ import type {
   TRange,
   TSelection,
   ValueOf,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 import type { Nullable } from '@udecode/utils';
 
 import type { EditableProps } from '../../../lib';

@@ -2,7 +2,7 @@
 
 ## Goal
 
-Fix any real `bun test:integration-local` failures in `.tmp/slate-v2`.
+Fix any real `bun test:integration-local` failures in `Plate repo root`.
 
 ## Constraints
 

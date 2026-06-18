@@ -55,7 +55,7 @@ Current answer:
 
 | Surface                    | Current read                                                                                                                                            | Verdict                                                                    |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Selector substrate         | `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx` uses `useSyncExternalStore` and preserves equality filtering plus error replay. | Keep. The previous biggest React substrate concern is handled.             |
+| Selector substrate         | `packages/slate-react/src/hooks/use-generic-selector.tsx` uses `useSyncExternalStore` and preserves equality filtering plus error replay. | Keep. The previous biggest React substrate concern is handled.             |
 | Selector fanout            | `useEditorSelectorContext` indexes runtime listeners by runtime id and fans out through `affectedNodeRuntimeIds` / `nodeImpactRuntimeIds`.              | Keep. This is the right direction.                                         |
 | Mounted node rendering     | `useMountedNodeRenderSelector` can skip synced text render for text / selection ops.                                                                    | Keep, but benchmark selector invocation counts, not only rerenders.        |
 | Default rendering strategy | `EditableTextBlocks` uses grouped staged mounting with `ROOT_GROUP_SIZE = 16`, active group first, background mount batches, and stale group tracking.  | Keep as default baseline.                                                  |
@@ -275,9 +275,9 @@ This plan can close. The performance program cannot.
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/shared/stats.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/shared/react-benchmark.tsx`
+- `benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs`
+- `benchmarks/slate-v2/donor/shared/stats.mjs`
+- `benchmarks/slate-v2/donor/shared/react-benchmark.tsx`
 
 Goal:
 
@@ -325,8 +325,8 @@ Artifact must include p75/p95/p99 and trace tags for every selected surface.
 Owner:
 
 - benchmark script above;
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`;
-- `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`.
+- `packages/slate-react/src/components/editable-text-blocks.tsx`;
+- `packages/slate-react/src/editable/root-selector-sources.ts`.
 
 Goal:
 
@@ -360,9 +360,9 @@ tail.
 
 Owner:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/editable/root-selector-sources.ts`
+- `packages/slate-react/src/editable/selection-controller.ts`
 - DOM coverage materialization owners in `slate-dom/internal`.
 
 Problem:
@@ -407,8 +407,8 @@ reclassified as diagnostic / non-default.
 
 Owner:
 
-- `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
-- `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/segment-shell.tsx`
+- `packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
+- `packages/slate-react/src/rendering-strategy/segment-shell.tsx`
 - shell behavior tests.
 
 Problem:
@@ -447,7 +447,7 @@ Shell docs and examples must state the degradation contract:
 
 Owner:
 
-- new benchmark command in `.tmp/slate-v2/scripts/benchmarks/browser/react/**`;
+- new benchmark command in `benchmarks/slate-v2/donor/browser/react/**`;
 - existing Playwright example fixture or a dedicated huge-document benchmark
   page.
 
@@ -537,8 +537,8 @@ DOM or reverse-engineering shell/staged mode.
 
 Owner:
 
-- `.tmp/slate-v2/packages/slate/**`
-- `.tmp/slate-v2/packages/slate-history/**`
+- `packages/slate/**`
+- `packages/slate-history/**`
 
 Goal:
 
@@ -643,7 +643,7 @@ All passed.
 
 Status: complete.
 
-Changes in `.tmp/slate-v2`:
+Changes in `Plate repo root`:
 
 - `scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs`
   preserves run-specific artifacts, keeps a latest artifact, emits p75/p95/p99,
@@ -668,7 +668,7 @@ All passed.
 
 Status: complete, but not sufficient for full lane closure.
 
-Change in `.tmp/slate-v2`:
+Change in `Plate repo root`:
 
 - `packages/slate/src/core/public-state.ts` keeps the full previous snapshot
   path for snapshot/source subscribers, but subscriber-free transactions use the
@@ -733,7 +733,7 @@ Next owner:
 
 Status: complete, but not sufficient for full lane closure.
 
-Changes in `.tmp/slate-v2`:
+Changes in `Plate repo root`:
 
 - `packages/slate/src/core/public-state.ts` publishes path-stable text
   snapshots for batched text commits so untouched 5,000-block siblings are not
@@ -792,7 +792,7 @@ Next owner:
 
 Status: complete, but not sufficient for full lane closure.
 
-Changes in `.tmp/slate-v2`:
+Changes in `Plate repo root`:
 
 - `scripts/benchmarks/browser/react/huge-document-browser-trace.mjs` adds a
   Chromium huge-document browser trace benchmark.
@@ -854,7 +854,7 @@ Next owner:
 
 Status: complete for this autonomous local lane.
 
-Changes in `.tmp/slate-v2`:
+Changes in `Plate repo root`:
 
 - `packages/slate-react/src/components/editable.tsx` exports
   `EditableRenderingStrategyDegradationMode`.

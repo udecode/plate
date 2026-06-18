@@ -42,7 +42,7 @@ Not:
 ## Current Public Shape
 
 ```ts
-import { openExample } from "slate-browser/playwright";
+import { openExample } from "@platejs/browser/playwright";
 
 const editor = await openExample(page, "placeholder");
 
@@ -85,7 +85,7 @@ The right API should steal their **shape discipline**, not their exact names.
 ## 1. Example Harness
 
 ```ts
-import { openExample } from "slate-browser/playwright";
+import { openExample } from "@platejs/browser/playwright";
 
 const editor = await openExample(page, "placeholder");
 ```
@@ -291,7 +291,7 @@ Playwright harness, so parallel tests do not casually stomp each other.
 ## 6. Placeholder / Zero-Width Module
 
 ```ts
-import { inspectZeroWidthPlaceholder } from "slate-browser/browser";
+import { inspectZeroWidthPlaceholder } from "@platejs/browser/browser";
 
 await editor.assert.placeholderShape({
   kind: "line-break",
@@ -306,12 +306,12 @@ Why:
 
 Current package split:
 
-- `slate-browser`
-- `slate-browser/core`
-- `slate-browser/browser`
-- `slate-browser/playwright`
+- `@platejs/browser/core`
+- `@platejs/browser/browser`
+- `@platejs/browser/playwright`
+- `@platejs/browser/transports`
 
-## 7. Future Extension Seam
+## 7. Future Extension Boundary
 
 ```ts
 const extended = editor.withExtension(agentDriver);
@@ -424,21 +424,19 @@ These are intentionally **not** part of the current public API:
 - `openFixture(...)`
 - `editor.driver()`
 
-If any of these come back later, they need a real backing seam first.
+If any of these come back later, they need a real backing boundary first.
 
 ## Build Contract
 
-Repo-local Playwright tests import `slate-browser/playwright` through the public
+Repo-local Playwright tests import `@platejs/browser/playwright` through the public
 package exports.
 
 That means the package must be built before those tests run.
 
 Current repo contract:
 
-- `yarn build:slate-browser:playwright`
-- then `yarn test:slate-browser:e2e`
-- `yarn test:slate-browser:ime`
-- `yarn test:slate-browser:anchors`
+- `pnpm --filter @platejs/browser build`
+- then `PLAYWRIGHT_BASE_URL=http://localhost:3100 pnpm --filter www test:slate-browser`
 
 The root commands already do this.
 

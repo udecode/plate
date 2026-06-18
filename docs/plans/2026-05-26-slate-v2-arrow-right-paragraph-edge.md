@@ -24,7 +24,7 @@ Task source:
 
 Completion threshold:
 - Focused harness reproduces and covers the freeze class.
-- Package-owned fix lands in `.tmp/slate-v2`.
+- Package-owned fix lands in `Plate repo root`.
 - Route Playwright proves p1-end movement and hidden-tab policy behavior.
 - `@Browser` proves the actual route interaction.
 - Slate React, Slate DOM, and site typechecks pass.
@@ -33,12 +33,12 @@ Completion threshold:
 - This plan passes the autogoal completion checker.
 
 Verification surface:
-- `.tmp/slate-v2/packages/slate-react`: focused Vitest contract for keyboard
+- `packages/slate-react`: focused Vitest contract for keyboard
   boundary movement.
-- `.tmp/slate-v2`: hidden-content Playwright route test.
-- `.tmp/slate-v2`: Slate React, Slate DOM, and site typechecks.
+- `Plate repo root`: hidden-content Playwright route test.
+- `Plate repo root`: Slate React, Slate DOM, and site typechecks.
 - `@Browser`: hidden-content route interaction proof.
-- `.tmp/slate-v2`: scoped format/lint plus autoreview.
+- `Plate repo root`: scoped format/lint plus autoreview.
 - `plate-2`: autogoal plan checker.
 
 Constraints:
@@ -50,7 +50,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: user report and live route behavior.
-- Allowed edit scope: `.tmp/slate-v2` package/runtime code, route test, and
+- Allowed edit scope: `Plate repo root` package/runtime code, route test, and
   matching changeset; this plan file records evidence.
 - Browser surface: `@Browser` on the hidden-content example route.
 - Tracker sync: N/A, no tracker or PR requested.
@@ -85,7 +85,7 @@ Start Gates:
 | TDD decision before behavior fix | yes | failing focused contract added before the durable fix |
 | Browser tool decision | yes | `@Browser` used for final route proof |
 | Package/API pack selected | yes | Slate DOM/React runtime behavior changed |
-| Release artifact selected | yes | `.tmp/slate-v2/.changeset/slate-react-hidden-tab-navigation.md` updated |
+| Release artifact selected | yes | `Plate repo root/.changeset/slate-react-hidden-tab-navigation.md` updated |
 | Barrel/export impact decision | yes | no exported file layout changed; no barrel generation needed |
 
 Work Checklist:
@@ -113,7 +113,7 @@ Completion Gates:
 | TypeScript changed | yes | Run package and site typechecks | `bun --filter slate-react typecheck`, `bun --filter slate-dom typecheck`, `bun typecheck:site` passed |
 | Package exports or file layout changed | no | N/A | no barrel/export layout changes |
 | Package manifests or install graph changed | no | N/A | no manifest or lockfile changes in this slice |
-| Workspace authority proof | yes | Run commands in `.tmp/slate-v2` | all package/site/playwright commands ran there |
+| Workspace authority proof | yes | Run commands in `Plate repo root` | all package/site/playwright commands ran there |
 | Browser surface changed | yes | Use `@Browser` | final Browser proof recorded below |
 | Package behavior changed | yes | Update changeset | `.changeset/slate-react-hidden-tab-navigation.md` includes `slate-react` and `slate-dom` patch entries |
 | Local install corruption suspected | no | N/A | no React/install corruption signature |
@@ -151,15 +151,15 @@ Review fixes:
 - Fixed plain line-move boundary crossing so it remains collapsed.
 
 Verification evidence:
-- `.tmp/slate-v2/packages/slate-react`: `bun test:vitest -- keyboard-input-strategy-contract.test.ts` passed, 14 tests.
-- `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium` passed, 3 tests.
-- `.tmp/slate-v2`: `bun --filter slate-react typecheck` passed.
-- `.tmp/slate-v2`: `bun --filter slate-dom typecheck` passed.
-- `.tmp/slate-v2`: `bun typecheck:site` passed.
-- `.tmp/slate-v2`: `bunx biome check packages/slate-dom/src/plugin/dom-coverage.ts packages/slate-react/src/editable/caret-engine.ts packages/slate-react/test/keyboard-input-strategy-contract.test.ts playwright/integration/examples/hidden-content-blocks.test.ts` passed.
-- `.tmp/slate-v2`: `bun eslint packages/slate-dom/src/plugin/dom-coverage.ts packages/slate-react/src/editable/caret-engine.ts packages/slate-react/test/keyboard-input-strategy-contract.test.ts playwright/integration/examples/hidden-content-blocks.test.ts` had zero errors; three files are ignored by ESLint config.
-- `.tmp/slate-v2`: full `bun lint` was attempted and stopped on unrelated formatting in `packages/slate-react/test/projected-collab-substrate-contract.test.ts`.
-- `.tmp/slate-v2`: final slice-diff autoreview exited 0 with no accepted/actionable findings.
+- `packages/slate-react`: `bun test:vitest -- keyboard-input-strategy-contract.test.ts` passed, 14 tests.
+- `Plate repo root`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium` passed, 3 tests.
+- `Plate repo root`: `bun --filter slate-react typecheck` passed.
+- `Plate repo root`: `bun --filter slate-dom typecheck` passed.
+- `Plate repo root`: `bun typecheck:site` passed.
+- `Plate repo root`: `bunx biome check packages/slate-dom/src/plugin/dom-coverage.ts packages/slate-react/src/editable/caret-engine.ts packages/slate-react/test/keyboard-input-strategy-contract.test.ts playwright/integration/examples/hidden-content-blocks.test.ts` passed.
+- `Plate repo root`: `bun eslint packages/slate-dom/src/plugin/dom-coverage.ts packages/slate-react/src/editable/caret-engine.ts packages/slate-react/test/keyboard-input-strategy-contract.test.ts playwright/integration/examples/hidden-content-blocks.test.ts` had zero errors; three files are ignored by ESLint config.
+- `Plate repo root`: full `bun lint` was attempted and stopped on unrelated formatting in `packages/slate-react/test/projected-collab-substrate-contract.test.ts`.
+- `Plate repo root`: final slice-diff autoreview exited 0 with no accepted/actionable findings.
 
 Browser proof:
 - Tool: `@Browser` / Codex in-app Browser.

@@ -22,10 +22,10 @@ Task source:
 - type: user-requested API/runtime task
 - id / link: current thread
 - title: Add `afterCommit` update context to Slate v2
-- acceptance criteria: `.tmp/slate-v2` exposes `editor.update((tx, { afterCommit }) => ...)`, effects are one-shot and commit-scoped, current behavior APIs remain intact, focused tests pass, and this plan closes.
+- acceptance criteria: `Plate repo root` exposes `editor.update((tx, { afterCommit }) => ...)`, effects are one-shot and commit-scoped, current behavior APIs remain intact, focused tests pass, and this plan closes.
 
 Completion threshold:
-- `.tmp/slate-v2` type surface supports `editor.update((tx, { afterCommit }) => ...)`.
+- `Plate repo root` type surface supports `editor.update((tx, { afterCommit }) => ...)`.
 - Focused tests prove success, rollback, no-op, nested updates, and ordering relative to extension `onCommit`.
 - Existing extension/update contract tests still pass.
 - Task closure is legal only when the source-of-truth acceptance criteria are
@@ -35,8 +35,8 @@ Completion threshold:
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-28-slate-update-after-commit.md` passes.
 
 Verification surface:
-- `.tmp/slate-v2` focused Bun tests for the new API and existing extension/update contracts.
-- Source audit of `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`, `.tmp/slate-v2/packages/slate/src/core/public-state.ts`, and extension commit listener behavior.
+- `Plate repo root` focused Bun tests for the new API and existing extension/update contracts.
+- Source audit of `packages/slate/src/interfaces/editor.ts`, `packages/slate/src/core/public-state.ts`, and extension commit listener behavior.
 - Autogoal checker for this plan.
 
 Constraints:
@@ -47,8 +47,8 @@ Constraints:
 - Do not add broad ceremony when the task is trivial or docs-only.
 
 Boundaries:
-- Source of truth: `.tmp/slate-v2/packages/slate/src` and focused Slate tests.
-- Allowed edit scope: `.tmp/slate-v2` source/tests and this goal plan.
+- Source of truth: `packages/slate/src` and focused Slate tests.
+- Allowed edit scope: `Plate repo root` source/tests and this goal plan.
 - Browser surface: N/A: core Slate transaction API, no UI route.
 - Tracker sync: N/A: current thread only, no issue/PR requested.
 - Non-goals: no new `behaviors` runtime, no command-bus redesign, no transform middleware contract rewrite, no PR/commit/push.
@@ -84,21 +84,21 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | Used `autogoal`; loaded `changeset` for package release artifact and `autoreview` for closeout review. |
 | Active goal checked or created | yes | `get_goal` returned no active goal; `create_goal` opened Slate update afterCommit objective. |
-| Source of truth read before edits | yes | Read current `.tmp/slate-v2` `editor.update`, `EditorUpdateTransaction`, `EditorUpdateOptions`, `onCommit`, middleware `next()`, and commit notification paths. |
+| Source of truth read before edits | yes | Read current `Plate repo root` `editor.update`, `EditorUpdateTransaction`, `EditorUpdateOptions`, `onCommit`, middleware `next()`, and commit notification paths. |
 | Tracker comments and attachments read | no | N/A: no tracker issue or attachments in this request. |
 | Video transcript evidence required | no | N/A: no video/screen recording for this API task. |
 | `docs/solutions` checked for non-trivial existing-code work | no | N/A: current source is authoritative and task is narrow API extension. |
 | TDD decision before behavior change or bug fix | yes | Add focused tests for `afterCommit` before/with implementation and preserve existing contract tests. |
 | Branch decision for code-changing task | no | N/A: no branch/PR requested; do not run git hygiene. |
-| Release artifact decision | yes | Record after source audit: likely `.changeset` if this package publishes types/API from `.tmp/slate-v2`; otherwise explicit N/A if sibling repo policy treats this as test-only/local. |
+| Release artifact decision | yes | Record after source audit: likely `.changeset` if this package publishes types/API from `Plate repo root`; otherwise explicit N/A if sibling repo policy treats this as test-only/local. |
 | Browser tool decision for browser surface | no | N/A: no browser surface. |
 | PR expectation decision | no | N/A: no PR requested. |
 | Tracker sync expectation decision | no | N/A: no tracker sync requested. |
 | Package/API pack selected | yes | `package-api` pack applied because public update callback type changes. |
 | Public surface or package boundary identified | yes | Public Slate package `Editor.update` callback signature and `EditorUpdateTransaction` companion context. |
-| Release artifact path selected | yes | Added `.tmp/slate-v2/.changeset/slate-update-after-commit.md` for published `slate` patch API/type delta. |
+| Release artifact path selected | yes | Added `Plate repo root/.changeset/slate-update-after-commit.md` for published `slate` patch API/type delta. |
 | `changeset` skill loaded when `.changeset` is required | yes | Loaded `.agents/skills/changeset/SKILL.md`; changeset uses one package and patch bump. |
-| Barrel/export impact decision recorded | yes | Public type export added in `.tmp/slate-v2/packages/slate/src/index.ts`; Slate v2 has no generated barrel command for this source index. |
+| Barrel/export impact decision recorded | yes | Public type export added in `packages/slate/src/index.ts`; Slate v2 has no generated barrel command for this source index. |
 
 Work Checklist:
 - [x] Objective includes outcome, completion threshold, verification surface,
@@ -140,33 +140,33 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | `bun test ./packages/slate/test/update-after-commit-contract.ts ./packages/slate/test/editor-runtime-view-contract.ts ./packages/slate/test/public-surface-contract.ts ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/write-boundary-contract.ts ./packages/slate/test/collab-adapter-extension-contract.ts` in `.tmp/slate-v2` -> 448 pass; `bun test ./packages/slate/test` -> 975 pass, 94 skip, 0 fail. |
+| Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | `bun test ./packages/slate/test/update-after-commit-contract.ts ./packages/slate/test/editor-runtime-view-contract.ts ./packages/slate/test/public-surface-contract.ts ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/write-boundary-contract.ts ./packages/slate/test/collab-adapter-extension-contract.ts` in `Plate repo root` -> 448 pass; `bun test ./packages/slate/test` -> 975 pass, 94 skip, 0 fail. |
 | Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | Initial `bun test ./packages/slate/test/update-after-commit-contract.ts` failed 6/6 because `afterCommit` context was undefined. |
 | Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | `update-after-commit-contract.ts` covers success, no-op, rollback, nested updates, effect-triggered updates, `onCommit`-triggered updates, ordering, and stale registration. |
-| TypeScript or typed config changed | yes | Run relevant typecheck | `bun --filter slate typecheck` in `.tmp/slate-v2` -> pass. |
-| Package exports or file layout changed | yes | Run `pnpm brl` before final verification and keep generated barrel updates | N/A to `pnpm brl`: Slate v2 source index is hand-owned. `.tmp/slate-v2/packages/slate/src/index.ts` exports `EditorUpdateContext`; public-surface test passes. |
+| TypeScript or typed config changed | yes | Run relevant typecheck | `bun --filter slate typecheck` in `Plate repo root` -> pass. |
+| Package exports or file layout changed | yes | Run `pnpm brl` before final verification and keep generated barrel updates | N/A to `pnpm brl`: Slate v2 source index is hand-owned. `packages/slate/src/index.ts` exports `EditorUpdateContext`; public-surface test passes. |
 | Package manifests, lockfile, or install graph changed | no | Run `pnpm install` and relevant package checks | N/A: no manifest, lockfile, or install graph change. |
 | Agent rules or skills changed | no | Run `pnpm install` and verify generated skill sync | N/A: no agent rules or skills changed. |
-| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | All Slate proof commands ran in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`. |
+| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | All Slate proof commands ran in `/Users/zbeyens/git/plate-2/Plate repo root`. |
 | Browser surface changed | no | Capture Browser Use proof or record explicit waiver/blocker | N/A: core Slate runtime/type API, no browser route. |
 | Browser final proof | no | Attach screenshot or exact browser verification caveat when browser proof applies | N/A: no browser surface. |
 | CI-controlled template output changed | no | Restore generated template output or record why it is intentionally kept | N/A: no CI-controlled templates touched. |
-| Package behavior or public API changed | yes | Add a changeset or record why no changeset applies | Added `.tmp/slate-v2/.changeset/slate-update-after-commit.md`. |
+| Package behavior or public API changed | yes | Add a changeset or record why no changeset applies | Added `Plate repo root/.changeset/slate-update-after-commit.md`. |
 | Registry-only component work changed | no | Update `docs/components/changelog.mdx` or record N/A | N/A: not registry work. |
 | Docs or content changed | no | For docs-heavy work, use `--template docs`; for incidental docs, verify source-backed claims, links, examples, and rendered output or record N/A | N/A: runtime plan and changeset only, no user docs. |
 | High-risk mini gate | yes | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | Failure modes tested: rollback/no-op leakage, nested queue ordering, `onCommit` mutation drift, root-bound view wrong snapshot, stale registration, public type export. Boundary: update lifecycle context, not `tx` mutation API. |
 | Agent-native review for agent/tooling changes | no | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | N/A: no agent/tooling changes. |
 | Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: failures were code/format-related, not install corruption. |
-| Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | Final `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local ...` in `.tmp/slate-v2` -> clean, no accepted/actionable findings. |
+| Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | Final `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local ...` in `Plate repo root` -> clean, no accepted/actionable findings. |
 | PR create or update | no | Run `check` before PR work and sync PR body to final handoff | N/A: no PR requested. |
 | PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: no PR/browser proof. |
 | Tracker sync-back | no | Post concise issue/Linear sync after PR exists, or record N/A/blocker | N/A: no tracker target. |
 | Final handoff contract | yes | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | Final handoff section filled. |
-| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | `bun biome check <touched files>` in `.tmp/slate-v2` -> pass. Full `bun check` attempted once and stopped on unrelated `packages/slate-react/src/hooks/use-slate-node-ref.tsx` import formatting. |
+| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | `bun biome check <touched files>` in `Plate repo root` -> pass. Full `bun check` attempted once and stopped on unrelated `packages/slate-react/src/hooks/use-slate-node-ref.tsx` import formatting. |
 | Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-28-slate-update-after-commit.md` | Will run after this final plan update. |
 | Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | `rg` shows `EditorUpdateContext` in `interfaces/editor.ts`, `core/public-state.ts`, and root `src/index.ts`; public-surface test added. |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published `slate` package API/types/runtime patch. |
-| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | `.tmp/slate-v2/.changeset/slate-update-after-commit.md` uses `"slate": patch`; forbidden core-package minor rule not triggered. |
+| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | `Plate repo root/.changeset/slate-update-after-commit.md` uses `"slate": patch`; forbidden core-package minor rule not triggered. |
 | Registry changelog | no | If the change is registry-only under `apps/www/src/registry/**`, update `docs/components/changelog.mdx` and do not add a package changeset | N/A: not registry-only work. |
 | No release artifact | no | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | N/A: release artifact required and added. |
 | Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | `bun --filter slate typecheck` -> pass; `bun test ./packages/slate/test` -> 975 pass, 94 skip, 0 fail. |
@@ -186,7 +186,7 @@ Findings:
 - `EditorUpdateTransaction` is the mutation/read API; keeping effects out of it preserves the `tx` contract.
 - Extension-level `onCommit` already exists and is backed by commit listeners; the new value is action-local one-shot effects.
 - Transform middleware already has `next()` and handled-result semantics, so adding `behaviors` would be unnecessary churn for this task.
-- Full `bun check` is not a reliable patch gate right now because it stops on unrelated existing Biome import ordering in `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`.
+- Full `bun check` is not a reliable patch gate right now because it stops on unrelated existing Biome import ordering in `packages/slate-react/src/hooks/use-slate-node-ref.tsx`.
 
 Decisions and tradeoffs:
 - API shape: prefer `editor.update((tx, { afterCommit }) => ...)` over `tx.afterCommit` because effects belong to update lifecycle, not transaction mutation.
@@ -197,7 +197,7 @@ Implementation notes:
 
 Review fixes:
 - Autoreview finding accepted: lazy afterCommit snapshot could drift if an earlier afterCommit handler started another update. Fixed by materializing snapshots before running handlers and added regression coverage.
-- Autoreview finding accepted: `EditorUpdateContext` was missing from the root public export list. Fixed in `.tmp/slate-v2/packages/slate/src/index.ts` and added public-surface coverage.
+- Autoreview finding accepted: `EditorUpdateContext` was missing from the root public export list. Fixed in `packages/slate/src/index.ts` and added public-surface coverage.
 - Autoreview finding accepted: `onCommit` listeners could advance the editor before afterCommit snapshot capture. Fixed by materializing afterCommit contexts before `notifyListeners` and added regression coverage.
 - Autoreview finding accepted: root-bound view handlers could receive a base-root snapshot. Fixed by storing each afterCommit handler's active root and added nested root-bound view coverage.
 
@@ -210,12 +210,12 @@ Error attempts:
 | Autoreview found `onCommit` drift and root-bound view snapshot issue | 1 | Root-scope queue entries and pre-notification snapshot materialization | Resolved; final autoreview clean. |
 
 Verification evidence:
-- `bun test ./packages/slate/test/update-after-commit-contract.ts` in `.tmp/slate-v2` initially failed 6/6 before implementation because `afterCommit` context was undefined.
-- `bun test ./packages/slate/test/update-after-commit-contract.ts ./packages/slate/test/editor-runtime-view-contract.ts ./packages/slate/test/public-surface-contract.ts ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/write-boundary-contract.ts ./packages/slate/test/collab-adapter-extension-contract.ts` in `.tmp/slate-v2` -> 448 pass, 0 fail.
-- `bun --filter slate typecheck` in `.tmp/slate-v2` -> pass.
-- `bun biome check packages/slate/src/interfaces/editor.ts packages/slate/src/core/public-state.ts packages/slate/src/create-editor.ts packages/slate/src/core/editor-runtime.ts packages/slate/src/editor-runtime-view.ts packages/slate/src/index.ts packages/slate/test/update-after-commit-contract.ts packages/slate/test/editor-runtime-view-contract.ts packages/slate/test/public-surface-contract.ts .changeset/slate-update-after-commit.md` in `.tmp/slate-v2` -> pass.
-- `bun test ./packages/slate/test` in `.tmp/slate-v2` -> 975 pass, 94 skip, 0 fail.
-- Final autoreview in `.tmp/slate-v2` -> clean, no accepted/actionable findings.
+- `bun test ./packages/slate/test/update-after-commit-contract.ts` in `Plate repo root` initially failed 6/6 before implementation because `afterCommit` context was undefined.
+- `bun test ./packages/slate/test/update-after-commit-contract.ts ./packages/slate/test/editor-runtime-view-contract.ts ./packages/slate/test/public-surface-contract.ts ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/write-boundary-contract.ts ./packages/slate/test/collab-adapter-extension-contract.ts` in `Plate repo root` -> 448 pass, 0 fail.
+- `bun --filter slate typecheck` in `Plate repo root` -> pass.
+- `bun biome check packages/slate/src/interfaces/editor.ts packages/slate/src/core/public-state.ts packages/slate/src/create-editor.ts packages/slate/src/core/editor-runtime.ts packages/slate/src/editor-runtime-view.ts packages/slate/src/index.ts packages/slate/test/update-after-commit-contract.ts packages/slate/test/editor-runtime-view-contract.ts packages/slate/test/public-surface-contract.ts .changeset/slate-update-after-commit.md` in `Plate repo root` -> pass.
+- `bun test ./packages/slate/test` in `Plate repo root` -> 975 pass, 94 skip, 0 fail.
+- Final autoreview in `Plate repo root` -> clean, no accepted/actionable findings.
 
 Final handoff contract:
 - PR line: N/A: no PR requested.
@@ -226,7 +226,7 @@ Final handoff contract:
   - Verified: focused tests, package typecheck, full Slate package tests, targeted formatting, final autoreview.
 - Browser check: N/A: no browser surface.
 - Outcome: `editor.update((tx, { afterCommit }) => ...)` is implemented with one-shot commit-bound effects.
-- Caveat: full `.tmp/slate-v2` `bun check` currently stops on unrelated `slate-react` import formatting outside this patch.
+- Caveat: full `Plate repo root` `bun check` currently stops on unrelated `slate-react` import formatting outside this patch.
 - Design:
   - Chosen boundary: update lifecycle context, not `tx`.
   - Why not quick patch: raw handler flushing after notify was not robust against nested effects, `onCommit` mutation, or root-bound views.
@@ -261,4 +261,4 @@ Reboot status:
 | What have I done? | Implemented API/runtime/types/export/tests/changeset; closed final review and verification gates. |
 
 Open risks:
-- Full `.tmp/slate-v2` `bun check` remains blocked by unrelated `packages/slate-react/src/hooks/use-slate-node-ref.tsx` Biome import formatting that predates this patch scope.
+- Full `Plate repo root` `bun check` remains blocked by unrelated `packages/slate-react/src/hooks/use-slate-node-ref.tsx` Biome import formatting that predates this patch scope.

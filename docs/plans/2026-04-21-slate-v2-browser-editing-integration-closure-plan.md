@@ -139,10 +139,10 @@ Do not spend time here before editing-critical rows are green.
 
 Owner:
 
-- `.tmp/slate-v2/site/examples/ts/mentions.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/mentions.tsx`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`
 
 Goal:
 
@@ -163,9 +163,9 @@ Do not close from DOM text alone. Assert app-visible portal and model behavior.
 
 Owner:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/plaintext.test.ts`
 
 Goal:
 
@@ -184,9 +184,9 @@ bunx playwright test ./playwright/integration/examples/richtext.test.ts ./playwr
 
 Owner:
 
-- `.tmp/slate-v2/packages/slate-dom/**`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts`
+- `packages/slate-dom/**`
+- `packages/slate-react/src/components/editable.tsx`
+- `apps/www/tests/slate-browser/donor/examples/shadow-dom.test.ts`
 
 Goal:
 
@@ -216,9 +216,9 @@ Expected result before expanding browsers:
 
 Owner:
 
-- `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
-- `.tmp/slate-v2/site/examples/ts/markdown-preview.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/markdown-preview.tsx`
+- `packages/slate-react/src/components/editable-text.tsx`
 - projection store/runtime only if measured by the row
 
 Driver gates:
@@ -360,11 +360,11 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
 
 Rejected tactics:
 
@@ -419,12 +419,12 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
+- `packages/slate-dom/src/plugin/dom-editor.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
 
 Rejected tactics:
 
@@ -471,8 +471,8 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/markdown-preview.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/code-highlighting.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/markdown-preview.test.ts`
 
 Rejected tactics:
 
@@ -545,18 +545,18 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/iframe.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/markdown-preview.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts`
+- `packages/slate-dom/src/plugin/dom-editor.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/iframe.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/code-highlighting.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/markdown-preview.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/markdown-shortcuts.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/plaintext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/shadow-dom.test.ts`
 
 Rejected tactics:
 

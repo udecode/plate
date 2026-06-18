@@ -191,19 +191,19 @@ Current issue claims:
 
 Current live Slate v2 owners:
 
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:4349` starts
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts:4349` starts
   the browser triple-click selection proof for `#3871`.
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:4390` starts
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts:4390` starts
   the triple-click plus Backspace proof for `#5847`.
-- `.tmp/slate-v2/packages/slate-history/test/history-contract.ts:1019` proves
+- `packages/slate-history/test/history-contract.ts:1019` proves
   multi-block selection restore after `insertBreak` undo for `#3534`.
-- `.tmp/slate-v2/packages/slate-history/test/history-contract.ts:1079` proves
+- `packages/slate-history/test/history-contract.ts:1079` proves
   `moveNodes` undo restores tree and selection for `#3551`.
-- `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx:501`
+- `packages/slate-react/test/app-owned-customization.tsx:501`
   proves `scrollSelectionIntoView` forwarding.
-- `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx:532`
+- `packages/slate-react/test/app-owned-customization.tsx:532`
   proves remote selection updates skip scroll forwarding.
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-input-events.ts:20`
+- `packages/slate-react/src/editable/runtime-input-events.ts:20`
   owns runtime `input` event handling.
 
 Live source gap:
@@ -325,9 +325,9 @@ justify a new API or rewrite. It strengthens the existing target:
   selection/input ownership, expose product-friendly commands/callbacks, and do
   not make raw native DOM events the default app contract.
 - Current source evidence is sufficient for Ralph execution planning:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
+  `packages/slate-react/src/editable/runtime-before-input-events.ts`
   owns beforeinput selection flush/import and app callback routing,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-input-events.ts`
+  `packages/slate-react/src/editable/runtime-input-events.ts`
   owns input repair, and selection export calls scroll only through the runtime
   skip policy.
 
@@ -565,11 +565,11 @@ Kept:
 ## Implementation Phases
 
 1. Cluster 14 repro-first browser row.
-   - Owner: `.tmp/slate-v2/packages/slate-react` and Playwright examples.
+   - Owner: `packages/slate-react` and Playwright examples.
    - Output: either `#5826` exact proof and fix, or recorded non-repro.
 
 2. Cluster 16 contract decision and proof.
-   - Owner: `.tmp/slate-v2/packages/slate-react/src/editable`.
+   - Owner: `packages/slate-react/src/editable`.
    - Output: callback/native event proof and conservative issue claim.
 
 3. Cluster 23 preservation gate.
@@ -594,12 +594,12 @@ Planning-only:
 
 Slate v2 execution gates:
 
-- cwd `.tmp/slate-v2`: `bun test packages/slate-history/test/history-contract.ts`
-- cwd `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium -g "triple click"`
-- cwd `.tmp/slate-v2`: focused cluster 14 browser test after it exists
-- cwd `.tmp/slate-v2`: focused cluster 16 browser test after it exists
-- cwd `.tmp/slate-v2`: `bun --filter slate-react typecheck`
-- cwd `.tmp/slate-v2`: `bun lint:fix`
+- cwd `Plate repo root`: `bun test packages/slate-history/test/history-contract.ts`
+- cwd `Plate repo root`: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium -g "triple click"`
+- cwd `Plate repo root`: focused cluster 14 browser test after it exists
+- cwd `Plate repo root`: focused cluster 16 browser test after it exists
+- cwd `Plate repo root`: `bun --filter slate-react typecheck`
+- cwd `Plate repo root`: `bun lint:fix`
 
 ## Confidence Scorecard
 
@@ -723,11 +723,11 @@ Public API decision for cluster 16:
 
 Execution proof commands:
 
-- cwd `.tmp/slate-v2`: `bun test ./packages/slate-history/test/history-contract.ts`
-- cwd `.tmp/slate-v2`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium -g "(exposes input intent|triple click)"`
-- cwd `.tmp/slate-v2`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium -g "keeps clicked refocus position visible in a long editor"`
-- cwd `.tmp/slate-v2`: `bun --filter slate-react typecheck`
-- cwd `.tmp/slate-v2`: `bun lint:fix`
+- cwd `Plate repo root`: `bun test ./packages/slate-history/test/history-contract.ts`
+- cwd `Plate repo root`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium -g "(exposes input intent|triple click)"`
+- cwd `Plate repo root`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium -g "keeps clicked refocus position visible in a long editor"`
+- cwd `Plate repo root`: `bun --filter slate-react typecheck`
+- cwd `Plate repo root`: `bun lint:fix`
 
 Ledger state:
 
@@ -747,11 +747,11 @@ Ledger state:
 
 Verification:
 
-- cwd `.tmp/slate-v2`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium -g "keeps clicked refocus position visible in a long editor"` -> `1 passed`
-- cwd `.tmp/slate-v2`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium -g "(exposes input intent|triple click)"` -> `3 passed`
-- cwd `.tmp/slate-v2`: `bun test ./packages/slate-history/test/history-contract.ts` -> `32 pass`
-- cwd `.tmp/slate-v2`: `bun --filter slate-react typecheck` -> passed
-- cwd `.tmp/slate-v2`: `bun lint:fix` -> no fixes applied on final run
+- cwd `Plate repo root`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium -g "keeps clicked refocus position visible in a long editor"` -> `1 passed`
+- cwd `Plate repo root`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium -g "(exposes input intent|triple click)"` -> `3 passed`
+- cwd `Plate repo root`: `bun test ./packages/slate-history/test/history-contract.ts` -> `32 pass`
+- cwd `Plate repo root`: `bun --filter slate-react typecheck` -> passed
+- cwd `Plate repo root`: `bun lint:fix` -> no fixes applied on final run
 
 ## Final Completion Gates
 

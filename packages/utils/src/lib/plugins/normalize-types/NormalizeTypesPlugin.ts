@@ -1,5 +1,5 @@
 import { createTSlatePlugin, type PluginConfig } from '@platejs/core';
-import type { Path } from '@platejs/slate';
+import type { Path } from '@platejs/slate-legacy';
 
 import { KEYS } from '../../plate-keys';
 import { withNormalizeTypes } from './withNormalizeTypes';

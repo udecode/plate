@@ -25,8 +25,8 @@ Draft contract rows:
 Current live owners:
 
 - [slate-history-api.md](/Users/zbeyens/git/plate-2/docs/slate-v2/ledgers/slate-history-api.md)
-- `.tmp/slate-v2/packages/slate-history/src/**`
-- `.tmp/slate-v2/packages/slate-history/test/**`
+- `packages/slate-history/src/**`
+- `packages/slate-history/test/**`
 
 ## `keep-now`
 
@@ -38,8 +38,8 @@ Current live owners:
 
 Immediate current proof owners to restore or create:
 
-- `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`
-- `.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts`
+- `packages/slate-history/test/history-contract.ts`
+- `packages/slate-history/test/integrity-contract.ts`
 
 Current read:
 
@@ -52,10 +52,10 @@ Current read:
 
 Source owners:
 
-- `.tmp/slate-v2/packages/slate-history/src/history.ts`
-- `.tmp/slate-v2/packages/slate-history/src/history-editor.ts`
-- `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
-- `.tmp/slate-v2/packages/slate-history/src/index.ts`
+- `packages/slate-history/src/history.ts`
+- `packages/slate-history/src/history-editor.ts`
+- `packages/slate-history/src/with-history.ts`
+- `packages/slate-history/src/index.ts`
 
 ## `keep-later`
 

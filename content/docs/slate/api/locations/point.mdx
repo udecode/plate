@@ -1,0 +1,59 @@
+---
+title: "Point API"
+---
+
+# Point API
+
+`Point` objects refer to a specific location in a text node in a Slate document. Its `path` refers to the location of the node in the tree, and its `offset` refers to distance into the node's string of text. Points may only refer to `Text` nodes.
+
+```typescript
+interface Point {
+  path: Path
+  offset: number
+  root?: string
+}
+```
+
+When `root` is omitted, Slate resolves the point against the current editor or
+view root. The base editor and pure helpers fall back to the primary document;
+root-bound views fall back to their own root. Points in header, footer,
+content-root, or other extra roots carry that root key.
+
+- [Static methods](point#static-methods)
+  - [Retrieval methods](point#retrieval-methods)
+  - [Check methods](point#check-methods)
+  - [Transform methods](point#transform-methods)
+
+## Static methods
+
+### Retrieval methods
+
+#### `PointApi.compare(point: Point, another: Point) => -1 | 0 | 1`
+
+Compare a `point` to `another`, returning an integer indicating whether the point was before, at or after the other.
+
+### Check methods
+
+#### `PointApi.isAfter(point: Point, another: Point) => boolean`
+
+Check if a `point` is after `another`.
+
+#### `PointApi.isBefore(point: Point, another: Point) => boolean`
+
+Check if a `point` is before `another`.
+
+#### `PointApi.equals(point: Point, another: Point) => boolean`
+
+Check if a `point` is exactly equal to `another`.
+
+#### `PointApi.isPoint(value: unknown) => value is Point`
+
+Check if a `value` implements the `Point` interface.
+
+### Transform methods
+
+#### `PointApi.transform(point: Point, op: Operation, options?) => Point | null`
+
+Transform a `point` by an `op`.
+
+Options: `{affinity?: 'forward' | 'backward' | null}`

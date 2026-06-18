@@ -54,7 +54,7 @@ Map the Lexical traversal doc shape onto Slate's public query APIs:
 isElement, mode: 'lowest' })`.
 
 The compact proof landed in
-`.tmp/slate-v2/packages/slate/test/query-contract.ts` and uses the same nested
+`packages/slate/test/query-contract.ts` and uses the same nested
 paragraph/link document shape as the Lexical docs test.
 
 ## Why This Works

@@ -8,7 +8,7 @@ status: completed
 
 ## Goal
 
-Build the first working `slate-browser` package tranche in `.tmp/slate-v2`:
+Build the first working `slate-browser` package tranche in `Plate repo root`:
 
 - Bun for core fast tests
 - Vitest browser for small DOM/browser contract tests
@@ -82,7 +82,7 @@ Build the first working `slate-browser` package tranche in `.tmp/slate-v2`:
     placeholder example
   - synthetic HTML paste through the current Playwright helper does not prove
     real paste behavior and currently does not update the editor
-- landed the first real follow-up tranche in `.tmp/slate-v2`:
+- landed the first real follow-up tranche in `Plate repo root`:
   - `assertSelection` now normalizes FEFF zero-width DOM offsets back to Slate
     offset `0`
   - `assertDomSelection` stays raw and proves the browser is really at native

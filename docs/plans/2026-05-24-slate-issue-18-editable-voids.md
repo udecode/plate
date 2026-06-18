@@ -14,7 +14,7 @@ Resolve `udecode/slate#18`: nested rich text editor inside `examples/editable-vo
 ## Current Plan
 
 1. Fetch issue source and transcript attached video.
-2. Inspect current `.tmp/slate-v2` and `/Users/zbeyens/git/slate-v2` owner for editable voids, nested editors, focus, and selection import.
+2. Inspect current `Plate repo root` and `/Users/zbeyens/git/slate-v2` owner for editable voids, nested editors, focus, and selection import.
 3. Reproduce current behavior on the local example.
 4. If red-current, add the smallest browser proof row, fix the durable owner, and verify from `/Users/zbeyens/git/slate-v2`.
 5. If already accounted, keep code unchanged, verify current behavior, comment, and close if confidence is high.
@@ -25,10 +25,10 @@ Resolve `udecode/slate#18`: nested rich text editor inside `examples/editable-vo
   - `[00:00]` editable-voids example is open.
   - `[00:01]` cursor starts at end of `This is editable rich text, much better than a <star>!`.
   - `[00:02]-[00:09]` user repeatedly clicks words inside the nested editor; expected caret remains usable and tracks clicked text.
-- `/Users/zbeyens/git/slate-v2` is only a stub (`.clawpatch`, `site/`) in this checkout; current source lives in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`, matching the resolve-slate-issue rule that `.tmp/slate-v2` wins.
-- Current `.tmp/slate-v2` already has editable-voids Playwright rows for semantic nested insert and focused nested input, but the issue flow needs real mouse-click caret relocation inside the nested editor.
+- `/Users/zbeyens/git/slate-v2` is only a stub (`.clawpatch`, `site/`) in this checkout; current source lives in `/Users/zbeyens/git/plate-2/Plate repo root`, matching the resolve-slate-issue rule that `Plate repo root` wins.
+- Current `Plate repo root` already has editable-voids Playwright rows for semantic nested insert and focused nested input, but the issue flow needs real mouse-click caret relocation inside the nested editor.
 - Current classification: `already-accounted` with missing browser regression proof.
-- The issue flow passes in current `.tmp/slate-v2` with a new desktop Chrome Playwright row that performs real mouse clicks inside the nested editor and native keyboard typing.
+- The issue flow passes in current `Plate repo root` with a new desktop Chrome Playwright row that performs real mouse clicks inside the nested editor and native keyboard typing.
 
 ## Verification Log
 

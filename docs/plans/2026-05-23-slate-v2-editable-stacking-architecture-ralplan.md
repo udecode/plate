@@ -46,9 +46,9 @@ gone.
 
 | Surface | Current source-backed shape | Verdict |
 | --- | --- | --- |
-| `EditableDOMRoot` | `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:327-341` sets default root styles, then hard-codes `zIndex: -1`, then spreads `userStyle`. | reject as public-root default |
-| `comment-mode` | `.tmp/slate-v2/site/examples/ts/comment-mode.tsx:276-280` renders plain `<Editable className={editorCss} id={id} readOnly={readOnly} />`; browser proof showed DOM text exists but root computes `z-index: -1`. | example call site is the desired DX |
-| local compensations | `.tmp/slate-v2/site/examples/ts/document-state.tsx:321-327` and `.tmp/slate-v2/site/examples/ts/multi-root-document.tsx:204-213` pass `style={{ zIndex: 0 }}`. | temporary workaround, not final architecture |
+| `EditableDOMRoot` | `packages/slate-react/src/components/editable.tsx:327-341` sets default root styles, then hard-codes `zIndex: -1`, then spreads `userStyle`. | reject as public-root default |
+| `comment-mode` | `apps/www/src/app/(app)/examples/slate/_examples/comment-mode.tsx:276-280` renders plain `<Editable className={editorCss} id={id} readOnly={readOnly} />`; browser proof showed DOM text exists but root computes `z-index: -1`. | example call site is the desired DX |
+| local compensations | `apps/www/src/app/(app)/examples/slate/_examples/document-state.tsx:321-327` and `apps/www/src/app/(app)/examples/slate/_examples/multi-root-document.tsx:204-213` pass `style={{ zIndex: 0 }}`. | temporary workaround, not final architecture |
 | prior learning | `docs/solutions/test-failures/2026-05-20-slate-v2-integration-local-editor-stacking-and-project-scope-failures.md:40-52` and `docs/solutions/ui-bugs/2026-05-20-slate-react-state-field-setters-must-preserve-external-focus.md:64-83` document the same workaround. | stale target; useful evidence of repeated smell |
 
 ## Decision Brief
@@ -194,7 +194,7 @@ visible text, real click/selection, and package default root contract.
 
 ## Fast Driver Gates
 
-All Slate behavior gates run from `.tmp/slate-v2`:
+All Slate behavior gates run from `Plate repo root`:
 
 ```bash
 PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/comment-mode.test.ts --project=chromium --workers=1
@@ -224,16 +224,16 @@ Result during this pass: pending, as expected:
 
 Touched or verified Slate v2 surfaces:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/editable-behavior.tsx`
-- `.tmp/slate-v2/site/examples/ts/document-state.tsx`
-- `.tmp/slate-v2/site/examples/ts/multi-root-document.tsx`
-- `.tmp/slate-v2/site/examples/ts/iframe.tsx`
-- `.tmp/slate-v2/site/examples/ts/shadow-dom.tsx`
-- `.tmp/slate-v2/site/examples/ts/dom-coverage-boundaries.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/comment-mode.test.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/test/editable-behavior.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/document-state.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/multi-root-document.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/iframe.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/shadow-dom.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/dom-coverage-boundaries.tsx`
+- `apps/www/tests/slate-browser/donor/examples/comment-mode.test.ts`
 
-Same-turn proof from `.tmp/slate-v2`:
+Same-turn proof from `Plate repo root`:
 
 ```bash
 PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bun run playwright playwright/integration/examples/comment-mode.test.ts --project=chromium --workers=1
@@ -310,5 +310,5 @@ Hard rules:
 - Preserve `userStyle` override and `disableDefaultStyles` opt-out.
 - Replace the dirty CSS-only comment-mode test with behavior-first proof unless
   it is retained only as a package default-root guard.
-- Verify with the fast driver gates in the plan from `.tmp/slate-v2`, then
+- Verify with the fast driver gates in the plan from `Plate repo root`, then
   reload the live route in Browser.

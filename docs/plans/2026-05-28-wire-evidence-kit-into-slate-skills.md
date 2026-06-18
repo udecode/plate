@@ -4,7 +4,7 @@ Objective:
 Wire Evidence Kit into the Slate agent workflow by updating the source rules for
 `slate-plan` and `slate-patch` so agents read benchmark registry/health state,
 refresh the control plane when relevant, record benchmark gaps or next owners,
-and keep `.tmp/slate-v2` behavior proof separate from `plate-2` benchmark
+and keep `Plate repo root` behavior proof separate from `plate-2` benchmark
 evidence.
 
 Goal plan:
@@ -31,7 +31,7 @@ Completion threshold:
 - `.agents/rules/slate-plan.mdc` contains an Evidence Kit control-plane gate for
   planning, scoring, refresh, gap/candidate handling, and next-action ownership.
 - `.agents/rules/slate-patch.mdc` contains a conditional Evidence Kit sync step
-  after `.tmp/slate-v2` proof and before final handoff.
+  after `Plate repo root` proof and before final handoff.
 - `pnpm install` regenerates `.agents/skills/slate-plan/SKILL.md` and
   `.agents/skills/slate-patch/SKILL.md` with the same Evidence Kit language.
 - `npm run bench:editor:health` proves the referenced benchmark health surface
@@ -193,7 +193,7 @@ Findings:
   bug fixes refresh or route benchmark evidence without taxing tiny fixes.
 
 Decisions and tradeoffs:
-- Evidence Kit remains `plate-2` control-plane evidence. `.tmp/slate-v2` remains
+- Evidence Kit remains `plate-2` control-plane evidence. `Plate repo root` remains
   the only proof source for Slate v2 runtime/browser/package behavior.
 - The patch makes `slate-patch` conditional, not unconditional, to avoid turning
   every small bug fix into benchmark ceremony.

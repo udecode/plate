@@ -18,10 +18,13 @@ const evidenceKitRegistryPath = path.join(
   'benchmarks/editor/research/benchmark-registry.json'
 );
 const evidenceKitRoot = path.join(root, 'benchmarks/editor');
-const autoresearchScript = path.resolve(
-  root,
-  '../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs'
-);
+const autoresearchScriptCandidates = [
+  process.env.CODEX_AUTORESEARCH_SCRIPT,
+  path.resolve(
+    root,
+    '../codex-autoresearch/plugins/codex-autoresearch/scripts/autoresearch.mjs'
+  ),
+].filter(Boolean);
 
 const usage = `Usage:
   node tooling/scripts/bench-targets.mjs list
@@ -37,6 +40,19 @@ const usage = `Usage:
 function fail(message) {
   console.error(message);
   process.exit(1);
+}
+
+function resolveAutoresearchScript({ required = true } = {}) {
+  const script = autoresearchScriptCandidates.find((candidate) =>
+    fs.existsSync(candidate)
+  );
+
+  if (script) return script;
+  if (!required) return null;
+
+  fail(
+    'Missing Codex Autoresearch script. Set CODEX_AUTORESEARCH_SCRIPT or clone codex-autoresearch next to this repo.'
+  );
 }
 
 function readJson(file) {
@@ -421,7 +437,7 @@ function autoresearchSetupArgs(target, command) {
   return [
     command,
     '--cwd',
-    path.join(root, '.tmp/slate-v2'),
+    root,
     '--name',
     target.id,
     '--metric-name',
@@ -442,8 +458,9 @@ function autoresearchSetupArgs(target, command) {
 function runAutoresearchSetupPlan(id) {
   const target = getTarget(id);
   const args = autoresearchSetupArgs(target, 'setup-plan');
+  const script = resolveAutoresearchScript();
 
-  const result = spawnSync(process.execPath, [autoresearchScript, ...args], {
+  const result = spawnSync(process.execPath, [script, ...args], {
     cwd: root,
     stdio: 'inherit',
   });
@@ -453,8 +470,9 @@ function runAutoresearchSetupPlan(id) {
 function runAutoresearchInit(id) {
   const target = getTarget(id);
   const args = autoresearchSetupArgs(target, 'setup');
+  const script = resolveAutoresearchScript();
 
-  const result = spawnSync(process.execPath, [autoresearchScript, ...args], {
+  const result = spawnSync(process.execPath, [script, ...args], {
     cwd: root,
     stdio: 'inherit',
   });
@@ -471,9 +489,27 @@ function dryRun(id = 'react-active-typing-breakdown') {
 
   const history = buildTargetHistory(registry);
   const target = getTarget(id);
+  const script = resolveAutoresearchScript({ required: false });
+
+  if (!script) {
+    console.log('benchmark-targets dry-run ok');
+    console.log(`targets=${history.counts.targets}`);
+    console.log(
+      `missingOptionalArtifacts=${history.counts.missingOptionalArtifacts}`
+    );
+    console.log(
+      `missingRequiredArtifacts=${history.counts.missingRequiredArtifacts}`
+    );
+    console.log(`target=${target.id}`);
+    console.log(`metric=${target.metrics.primary}`);
+    console.log('autoresearchSetupOk=skipped');
+    console.log('benchmarkMode=codex-autoresearch script unavailable');
+    return;
+  }
+
   const setup = spawnSync(
     process.execPath,
-    [autoresearchScript, ...autoresearchSetupArgs(target, 'setup-plan')],
+    [script, ...autoresearchSetupArgs(target, 'setup-plan')],
     {
       cwd: root,
       encoding: 'utf8',

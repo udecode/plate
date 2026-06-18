@@ -25,8 +25,8 @@ being rewritten.
 ## Strongest local evidence
 
 - `../slate/Readme.md`
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate-react/src/projection-store.ts`
 - `docs/slate-v2/decorations-annotations-cluster.md`
 
 ## Limits

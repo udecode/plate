@@ -1,4 +1,4 @@
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/slate-legacy';
 import type { RenderEditorReturnTuple } from 'slate-test-utils/dist/esm/buildTestHarness';
 
 import { buildTestHarness } from 'slate-test-utils';

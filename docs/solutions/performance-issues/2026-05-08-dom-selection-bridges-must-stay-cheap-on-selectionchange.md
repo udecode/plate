@@ -57,15 +57,15 @@ Keep the bridge private and make the hot path primitive:
 
 The execution plan records the specific source owners:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `packages/slate-react/src/editable/runtime-selection-engine.ts`
   owns native `selectionchange` throttling.
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-runtime.ts` and
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx` own
+- `packages/slate-react/src/editable/selection-runtime.ts` and
+  `packages/slate-react/src/hooks/use-editor-selector.tsx` own
   selection fanout filters.
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts` owns
+- `packages/slate-react/src/editable/selection-controller.ts` owns
   fast DOM selection range creation, fail-closed import, model export, and
   scroll timing.
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts` owns
+- `packages/slate-react/src/editable/runtime-root-engine.ts` owns
   React listener/effect wiring.
 
 ## Why This Works

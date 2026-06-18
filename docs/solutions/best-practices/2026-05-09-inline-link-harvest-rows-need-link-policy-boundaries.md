@@ -56,9 +56,9 @@ Split the rows by ownership:
 
 The Slate coverage added:
 
-- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`: browser proof
+- `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`: browser proof
   for plain-text and rich-HTML paste at inline-link boundaries.
-- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`: package proof for
+- `packages/slate/test/clipboard-contract.ts`: package proof for
   partial inline-link fragment copy/paste.
 
 ## Why This Works

@@ -76,12 +76,12 @@ Desired outcome:
 
 In scope:
 
-- `.tmp/slate-v2/packages/slate-react` provider, selectors, projection stores,
+- `packages/slate-react` provider, selectors, projection stores,
   decoration sources, annotation stores, widget stores, render leaf/text
   behavior, and examples/tests that prove them;
-- `.tmp/slate-v2/packages/slate` mark, range, anchor, runtime-id, and commit
+- `packages/slate` mark, range, anchor, runtime-id, and commit
   metadata only where React projection depends on them;
-- `.tmp/slate-v2/packages/slate-dom` only where decorated or annotated DOM shape
+- `packages/slate-dom` only where decorated or annotated DOM shape
   affects selection, focus, browser range translation, or input timing;
 - React runtime issue rows under `docs/slate-issues`;
 - decoration, mark, annotation, and overlay issue rows under
@@ -150,48 +150,48 @@ Live Slate v2 source shape:
 
 - `<Slate>` currently accepts `editor`, `decorationSources`, `annotationStore`,
   and change callbacks in
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:63-74`.
+  `packages/slate-react/src/components/slate.tsx:63-74`.
 - `<Slate>` subscribes to editor commits, batches focused state, DOM text sync,
   change callbacks, and selector dispatch in
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:108-172`.
+  `packages/slate-react/src/components/slate.tsx:108-172`.
 - `<Slate>` composes decoration sources and the annotation projection store in
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:175-184`.
+  `packages/slate-react/src/components/slate.tsx:175-184`.
 - Provider stack publishes selector, projection, annotation, editor, and focus
-  contexts in `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:216-228`.
+  contexts in `packages/slate-react/src/components/slate.tsx:216-228`.
 - `useEditorSelector` supports equality, runtime id, deferred fanout, and
   `shouldUpdate` in
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:68-151`.
+  `packages/slate-react/src/hooks/use-editor-selector.tsx:68-151`.
 - Selector fanout dedupes runtime-id listeners and skips stale mounted-node
   fanout for certain root changes in
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:212-330`.
+  `packages/slate-react/src/hooks/use-editor-selector.tsx:212-330`.
 - Projection store has `dirtiness`, `runtimeScope`, `sourceId`, source/runtime
   subscribers, metrics, and refresh options in
-  `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:31-100`.
+  `packages/slate-react/src/projection-store.ts:31-100`.
 - Projection dirty matching understands selection, text, mark, node,
   annotation, and external classes in
-  `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:206-243`.
+  `packages/slate-react/src/projection-store.ts:206-243`.
 - Decoration sources are product-noun wrappers over projection stores in
-  `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts:111-129`.
+  `packages/slate-react/src/decoration-source.ts:111-129`.
 - Multiple overlay sources are composed through runtime snapshot and
   runtime-id subscriptions in
-  `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts:131-204`.
+  `packages/slate-react/src/decoration-source.ts:131-204`.
 - Annotation stores carry id, anchor, data, projection payload, annotation
   subscriptions, and projection store output in
-  `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:13-87`.
+  `packages/slate-react/src/annotation-store.ts:13-87`.
 - Annotation refresh can target ids and avoid full fallback when candidates are
-  known in `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:215-267`
-  and `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:332-420`.
+  known in `packages/slate-react/src/annotation-store.ts:215-267`
+  and `packages/slate-react/src/annotation-store.ts:332-420`.
 - Annotation projection tracks changed runtime buckets, annotation subscribers,
-  and metrics in `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:664-742`.
+  and metrics in `packages/slate-react/src/annotation-store.ts:664-742`.
 - Annotation external refresh accepts `ids` and treats `[]` as no-op in
-  `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:761-767`.
+  `packages/slate-react/src/annotation-store.ts:761-767`.
 - Editable text consumes projection slices and passes them into segmented
   `renderLeaf` / `renderText` output in
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx:324-441`.
+  `packages/slate-react/src/components/editable-text.tsx:324-441`.
 
 Focused current verification:
 
-- cwd: `.tmp/slate-v2`
+- cwd: `Plate repo root`
 - command:
   `bun test ./packages/slate-react/test/provider-hooks-contract.tsx ./packages/slate-react/test/projections-and-selection-contract.tsx ./packages/slate-react/test/annotation-store-contract.tsx ./packages/slate-react/test/widget-layer-contract.tsx ./packages/slate-react/test/render-profiler-contract.test.tsx`
 - result: `40 pass`, `0 fail`, `200 expect() calls`.
@@ -530,7 +530,7 @@ Pass-10 score cap verdict:
   objections, high-risk gates, and ecosystem demands are now merged into the
   executable plan rather than parked as commentary.
 - This is plan confidence only. It does not mean implementation closure:
-  issue-ledger sync, final handoff, and the later `.tmp/slate-v2` implementation
+  issue-ledger sync, final handoff, and the later `Plate repo root` implementation
   gates remain required.
 
 ## 7. Ecosystem Strategy Synthesis
@@ -556,13 +556,13 @@ Evidence read:
   and
   `docs/solutions/performance-issues/2026-04-11-slate-v2-huge-document-typing-needs-selector-fanout-cuts-before-islands.md`
 - Live source refresh:
-  `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx`,
-  `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`,
+  `packages/slate-react/src/projection-store.ts`,
+  `packages/slate-react/src/decoration-source.ts`,
+  `packages/slate-react/src/annotation-store.ts`,
+  `packages/slate-react/src/hooks/use-editor-selector.tsx`,
+  `packages/slate-react/test/projections-and-selection-contract.tsx`,
   and
-  `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`.
+  `packages/slate-react/test/annotation-store-contract.tsx`.
 
 Strategy:
 
@@ -797,17 +797,17 @@ Package proof rows:
 
 | Surface                    | Required proof                 | Current owner                                                                    | Acceptance                                                                                                    |
 | -------------------------- | ------------------------------ | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Provider/editor identity   | provider hook contract         | `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`            | editor replacement and provider identity do not wake unrelated hot-path subscribers                           |
-| Projection slices          | projection contract            | `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx` | overlapping payloads stay multiplicity-safe; sibling projection changes do not rerender unrelated runtime ids |
-| Decoration selectors       | decoration selector contract   | `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx` | `useDecorationSelector` stays runtime-id scoped and advanced; no sibling projection rerender                  |
-| Annotation ids             | annotation store contract      | `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`          | annotation metadata-only changes wake annotation subscribers, not projection/runtime subscribers              |
-| Annotation runtime buckets | annotation projection contract | `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`          | only affected annotation ids and runtime buckets wake; unrelated annotations stay quiet                       |
-| Widgets                    | widget layer contract          | `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx`              | widget recompute stays separate from inline projection ranges                                                 |
-| Render profiling           | render profiler contract       | `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`      | selector/render profiling keeps stable ids for benchmark rows                                                 |
+| Provider/editor identity   | provider hook contract         | `packages/slate-react/test/provider-hooks-contract.tsx`            | editor replacement and provider identity do not wake unrelated hot-path subscribers                           |
+| Projection slices          | projection contract            | `packages/slate-react/test/projections-and-selection-contract.tsx` | overlapping payloads stay multiplicity-safe; sibling projection changes do not rerender unrelated runtime ids |
+| Decoration selectors       | decoration selector contract   | `packages/slate-react/test/projections-and-selection-contract.tsx` | `useDecorationSelector` stays runtime-id scoped and advanced; no sibling projection rerender                  |
+| Annotation ids             | annotation store contract      | `packages/slate-react/test/annotation-store-contract.tsx`          | annotation metadata-only changes wake annotation subscribers, not projection/runtime subscribers              |
+| Annotation runtime buckets | annotation projection contract | `packages/slate-react/test/annotation-store-contract.tsx`          | only affected annotation ids and runtime buckets wake; unrelated annotations stay quiet                       |
+| Widgets                    | widget layer contract          | `packages/slate-react/test/widget-layer-contract.tsx`              | widget recompute stays separate from inline projection ranges                                                 |
+| Render profiling           | render profiler contract       | `packages/slate-react/test/render-profiler-contract.test.tsx`      | selector/render profiling keeps stable ids for benchmark rows                                                 |
 
 Benchmark proof rows:
 
-| Lane                          | Command, cwd `.tmp/slate-v2`                       | Hard acceptance                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Lane                          | Command, cwd `Plate repo root`                       | Hard acceptance                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | ----------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Rerender breadth              | `bun run bench:react:rerender-breadth:local`       | selection changes: broad/left/right block renders `0`, selection renders equal operation count; many-leaf edit: edited leaf `1`, sibling leaves `0`, block `0`; deep edit: deep leaf `1`, ancestors/siblings `0`; decoration toggle: one matching overlay render, no text/sibling overlay render, projection recompute `1`; source-scoped invalidation: only the dirty source recomputes, unrelated source recompute counts `0`.                                           |
 | Current rerender evidence     | same command, run 2026-05-08                       | passed. Current maxes: selection 20 ops `5.71ms`, many-leaf edit `4.12ms`, deep edit `3.5ms`, decoration toggle `0.34ms`, source selection/text/external recompute split exactly matched source class. These numbers are evidence, not permanent cross-machine SLA.                                                                                                                                                                                                        |
@@ -832,18 +832,18 @@ Browser strategy:
 
 | Example / route owner                                                             | Behavior to prove                                                  | Closure condition                                                                                      |
 | --------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
-| `.tmp/slate-v2/site/examples/ts/search-highlighting.tsx`                          | search decoration updates while selection and typing stay coherent | search update, select result, type after selection, copy selected text                                 |
-| `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx`                  | explicit external source refresh                                   | refresh only matching source, caret remains stable, unrelated text does not rerender                   |
-| `.tmp/slate-v2/site/examples/ts/review-comments.tsx`                              | annotation sidebar plus inline projection                          | edit inside and before comment, sidebar range follows, inline projection follows                       |
-| `.tmp/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx`                | durable bookmark anchor behavior                                   | insert/delete around anchor, then select/copy/follow-up type                                           |
-| `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx` and `highlighted-text.tsx` | overlapping marks/decorations                                      | overlapping payloads render without `Object.assign`-style lossiness                                    |
-| `.tmp/slate-v2/site/examples/ts/rendering-strategy-runtime.tsx`                   | shell/staged rendering native-behavior contract                    | browser find, select-all, copy, paste, shell promotion, and follow-up typing have explicit mode status |
+| `apps/www/src/app/(app)/examples/slate/_examples/search-highlighting.tsx`                          | search decoration updates while selection and typing stay coherent | search update, select result, type after selection, copy selected text                                 |
+| `apps/www/src/app/(app)/examples/slate/_examples/external-decoration-sources.tsx`                  | explicit external source refresh                                   | refresh only matching source, caret remains stable, unrelated text does not rerender                   |
+| `apps/www/src/app/(app)/examples/slate/_examples/review-comments.tsx`                              | annotation sidebar plus inline projection                          | edit inside and before comment, sidebar range follows, inline projection follows                       |
+| `apps/www/src/app/(app)/examples/slate/_examples/persistent-annotation-anchors.tsx`                | durable bookmark anchor behavior                                   | insert/delete around anchor, then select/copy/follow-up type                                           |
+| `apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx` and `highlighted-text.tsx` | overlapping marks/decorations                                      | overlapping payloads render without `Object.assign`-style lossiness                                    |
+| `apps/www/src/app/(app)/examples/slate/_examples/rendering-strategy-runtime.tsx`                   | shell/staged rendering native-behavior contract                    | browser find, select-all, copy, paste, shell promotion, and follow-up typing have explicit mode status |
 
 Command policy:
 
 - iteration: focused package tests plus benchmark scripts above;
-- browser closure: `bun test:integration-local` from `.tmp/slate-v2`;
-- release-quality local closure: `bun check:full` from `.tmp/slate-v2`;
+- browser closure: `bun test:integration-local` from `Plate repo root`;
+- release-quality local closure: `bun check:full` from `Plate repo root`;
 - raw mobile/device claims: only `bun test:mobile-device-proof:raw` on a real
   device lane, and not in this React/decorations plan.
 
@@ -942,7 +942,7 @@ Expanded proof plan:
 | Proof layer         | Required proof before `ralph` closure                                                                                                                                                                                                                      |
 | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Unit/package        | Provider hook contract, projection contract, annotation store contract, widget layer contract, render profiler contract, plus explicit tests for source-scoped invalidation and metadata-only annotation wakes.                                            |
-| Integration         | Huge-overlay benchmark repaired against current API or deliberate compatibility shims, with `bench:react:huge-document-overlays:local` green in `.tmp/slate-v2`.                                                                                           |
+| Integration         | Huge-overlay benchmark repaired against current API or deliberate compatibility shims, with `bench:react:huge-document-overlays:local` green in `Plate repo root`.                                                                                           |
 | Browser/native      | Search highlighting, external decoration refresh, review comments, persistent annotation anchors, overlapping marks/decorations, and rendering-strategy runtime examples must prove find, selection, copy, paste, select-all, and follow-up typing status. |
 | Migration/adoption  | Plate-style comments/suggestions adapter compiles without projection internals as the primary API; slate-yjs-style remote text/structure edit proof maps bookmarks and annotation projection buckets.                                                      |
 | Docs/examples       | Beginner docs lead with `decorate`; scalable docs lead with decoration sources; durable docs name annotation anchors without product comment workflow; advanced docs isolate projection transport.                                                         |
@@ -995,23 +995,23 @@ Evidence refreshed for this pass:
 
 - current `<Slate>` public props are `editor`, `decorationSources`,
   `annotationStore`, and change callbacks in
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:63-74`;
+  `packages/slate-react/src/components/slate.tsx:63-74`;
 - current `<Slate>` composes decoration sources and annotation projection stores
-  in `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:175-184`;
+  in `packages/slate-react/src/components/slate.tsx:175-184`;
 - current `slate-react` exports `useEditorSelector`, decoration source hooks,
   annotation hooks, widget hooks, projection hooks, and projection store types
-  in `.tmp/slate-v2/packages/slate-react/src/index.ts:82-138`;
+  in `packages/slate-react/src/index.ts:82-138`;
 - current `createDecorationSource` wraps projection transport behind a
   product-noun source API in
-  `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts:111-129`;
+  `packages/slate-react/src/decoration-source.ts:111-129`;
 - current annotation stores own id, anchor, optional data/projection,
   projection store, and targeted subscription contracts in
-  `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:13-87`;
+  `packages/slate-react/src/annotation-store.ts:13-87`;
 - the huge-document overlay benchmark is stale: it imports
   `useSlateSelector` and passes `projectionStore` to `<Slate>` in
-  `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx:12-19`
+  `benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx:12-19`
   and
-  `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx:237-239`.
+  `benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx:237-239`.
 
 Challenge rows:
 
@@ -1021,7 +1021,7 @@ Challenge rows:
 | Keep projection transport available but advanced/internal by default.                                            | "If projection is powerful, hiding it blocks advanced users; if you expose it first, Slate React becomes an engine API."                          | Either expose raw projection as the main API, or make it fully private and force all authors through nouns. | Advanced authors need escape hatches; public projection contracts can fossilize internals.                                      | projection-first API; fully private projection; noun-first API with advanced export.                                                                  | Current exports already expose projection hooks/types, but current `<Slate>` props lead through decoration and annotation stores. That is the right split: power is present, but normal authors should not start there.                                                                               | Public examples lead with decoration source, annotation store, and widget store. Projection gets an advanced page with explicit escape-hatch language and stability caveats.                                        | API docs compile against current exports; examples do not import raw projection for normal overlay use; advanced tests cover raw projection behavior.  | keep, with advanced-tier wording |
 | Keep annotation stores in raw Slate as durable substrate, not product comments.                                  | "Annotations are app/product features. Raw Slate should not own comments, permissions, sidebars, review states, or collaboration service models." | Cut annotation store from raw Slate and leave everything to Plate or app code.                              | Raw Slate could leak product nouns into the core if this grows past anchors and projections.                                    | no raw annotation API; full raw comment framework; substrate-only annotation store.                                                                   | The live store shape is substrate-level: id, anchor, optional data/projection, snapshot, projection store, targeted subscriptions. It does not own comments, permissions, UI, or services. That solves durable anchor/projection mechanics without product lock-in.                                   | Docs call it durable anchors/annotations, not comments. Product examples live in Plate/app layers. Raw Slate examples stay metadata-light.                                                                          | annotation anchor rebase tests, metadata-only subscription tests, browser review-comment example as product-layer proof, no raw workflow APIs.         | keep, with boundary guard        |
 | Treat benchmarks as necessary but insufficient.                                                                  | "Benchmarks can lie. Real editor bugs are selection, IME, browser range, native copy/paste, and focus fallout."                                   | Ignore local benchmarks and rely on browser E2E/manual traces only.                                         | Benchmarks catch repeated-unit regressions cheaply, but they can bless unusable browser behavior.                               | benchmark-only; browser-only; layered proof gates.                                                                                                    | Source-scoped overlay work needs repeated-unit budgets and browser proof. The plan already separates package tests, benchmarks, browser rows, native behavior rows, and mobile/device rows.                                                                                                           | Every benchmark claim must name what it proves and what it does not prove. Browser/native rows stay first-class closure gates.                                                                                      | `bench:react:rerender-breadth:local`, fixed huge-overlay benchmark, focused browser examples, `bun test:integration-local` before closure.             | keep                             |
-| Repair the huge-overlay benchmark API drift before using it as evidence.                                         | "The red benchmark exposes public API drift. Adding `useSlateSelector` back might be cheap, but it could also create stale names forever."        | Restore `useSlateSelector` and a `projectionStore` prop as compatibility shims immediately.                 | Alias compatibility helps migration, but stale names and props make the new API less clear.                                     | restore both alias/prop; migrate benchmark to `useEditorSelector` plus `decorationSources`; create temporary benchmark-local adapter; drop benchmark. | Current live source names the selector `useEditorSelector` and current `<Slate>` accepts `decorationSources` / `annotationStore`. Default should be migrating the stale benchmark to the current API. Restore an alias only after a public API/docs audit proves legacy compatibility is intentional. | Implementation phase 2 must include an export/docs audit, then either migrate the benchmark or restore a typed alias with JSDoc and tests. No implementation or release closure while the benchmark is red.         | `bun run bench:react:huge-document-overlays:local` green in `.tmp/slate-v2`; type/API contract for whichever path is chosen.                           | revise                           |
+| Repair the huge-overlay benchmark API drift before using it as evidence.                                         | "The red benchmark exposes public API drift. Adding `useSlateSelector` back might be cheap, but it could also create stale names forever."        | Restore `useSlateSelector` and a `projectionStore` prop as compatibility shims immediately.                 | Alias compatibility helps migration, but stale names and props make the new API less clear.                                     | restore both alias/prop; migrate benchmark to `useEditorSelector` plus `decorationSources`; create temporary benchmark-local adapter; drop benchmark. | Current live source names the selector `useEditorSelector` and current `<Slate>` accepts `decorationSources` / `annotationStore`. Default should be migrating the stale benchmark to the current API. Restore an alias only after a public API/docs audit proves legacy compatibility is intentional. | Implementation phase 2 must include an export/docs audit, then either migrate the benchmark or restore a typed alias with JSDoc and tests. No implementation or release closure while the benchmark is red.         | `bun run bench:react:huge-document-overlays:local` green in `Plate repo root`; type/API contract for whichever path is chosen.                           | revise                           |
 | Keep browser/native proof rows before `ralph` closure, but do not make this lane claim Mobile/IME closure.       | "Selection and IME breakage is exactly where overlay engines fail; desktop React rows are not enough."                                            | Block all implementation until full mobile-device proof is available.                                       | Mobile proof belongs to the Mobile/IME lane, but this lane can still break desktop native selection and browser range behavior. | require raw mobile proof here; skip browser proof here; negative-control browser proof here and raw-device claims elsewhere.                          | This plan owns decorated/annotated DOM behavior, native selection, browser find/copy/paste/select-all, and IME negative controls. It must not claim raw-device Mobile/IME fixes.                                                                                                                      | The handoff must say "negative controls only" for IME/mobile. Browser examples must prove desktop native behavior before closure.                                                                                   | focused browser rows plus `bun test:integration-local`; raw mobile/device proof only in the Mobile/IME lane.                                           | keep                             |
 | Allow shell/staged rendering only as opt-in degradation, not the default Slate rendering model.                  | "This turns Slate React into a custom rendering engine and risks breaking native browser affordances."                                            | Keep only DOM-present rendering and reject shell/staged modes entirely.                                     | Staged rendering can improve stress cohorts but makes find, selection, copy, paste, accessibility, and IME behavior harder.     | DOM-present only; shell-first virtualization; DOM-present default with opt-in degradation contract.                                                   | Normal documents should stay DOM-present. Large/stress cohorts need an explicit degradation mode, and every mode must declare native/model-backed/materialize-first/unsupported behavior.                                                                                                             | Docs put DOM-present first. Shell/staged examples must show mode status and native-behavior tradeoffs rather than selling it as invisible performance magic.                                                        | rendering-strategy browser rows with find/select/copy/paste/follow-up typing; accessibility and IME status rows.                                       | keep, with degradation guard     |
 
@@ -1056,7 +1056,7 @@ Unresolved decisions:
 
 | Pass | Name                                                    | Status   | Evidence added                                                                                                                                                                                                | Plan delta                                                                                                                                         | Open issues                                                                                | Next owner                                   |
 | ---- | ------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------- |
-| 1    | Current-state read and initial score                    | complete | Live source/test reads; focused `.tmp/slate-v2` package tests; prior plan inventory                                                                                                                           | Created this combined plan, score `0.76`, no issue claims changed                                                                                  | ClawSweeper and issue-ledger passes pending                                                | ClawSweeper related issue discovery          |
+| 1    | Current-state read and initial score                    | complete | Live source/test reads; focused `Plate repo root` package tests; prior plan inventory                                                                                                                           | Created this combined plan, score `0.76`, no issue claims changed                                                                                  | ClawSweeper and issue-ledger passes pending                                                | ClawSweeper related issue discovery          |
 | 2    | Related issue discovery / ClawSweeper                   | complete | gitcrawl doctor/version; focused thread reads; neighbors for #5709/#4483/#5987/#3383/#4210/#3309/#5398/#4750/#4477; dossier append                                                                            | Raised score to `0.80`; kept claims conservative; separated Mobile/IME rows from React/decorations closure                                         | full corpus issue matrix still missing                                                     | Issue-ledger pass                            |
 | 3    | Issue-ledger pass                                       | complete | Full `docs/slate-issues` stack scan; live ledger overlay; test/benchmark/package/requirements maps; #4993/#4997 PR-ref explanation                                                                            | Added pass-3 matrix, reconciled future-proof rows, kept claims conservative, score `0.83`                                                          | no live ledger/PR sync until pass 11                                                       | Intent/boundary and decision brief           |
 | 4    | Intent/boundary and decision brief                      | complete | Intent-boundary pass; package ownership docs; pass-3 matrix; #4993/#4997 research refs                                                                                                                        | Hardened scope, non-goals, decision boundaries, consequences, and follow-up owners; score `0.84`                                                   | ecosystem strategy synthesis still missing                                                 | Research and ecosystem synthesis             |
@@ -1075,7 +1075,7 @@ Pass 1 deltas:
 
 - Created a new combined React/decorations slate-issues ralplan.
 - Reused prior done plans as evidence, not mutable state.
-- Recorded current live source owners and a focused `.tmp/slate-v2` test gate.
+- Recorded current live source owners and a focused `Plate repo root` test gate.
 - Seeded issue families and initial score.
 - Kept completion `pending`.
 
@@ -1148,9 +1148,9 @@ Pass 6 deltas:
 - Re-read live exports and confirmed `useDecorationSelector`,
   `useSlateDecorationSource`, annotation hooks, widget hooks, `EditorCommit`
   dirtiness, and `Slate` provider props as the current substrate.
-- Ran `bun run bench:react:rerender-breadth:local` in `.tmp/slate-v2`; it passed
+- Ran `bun run bench:react:rerender-breadth:local` in `Plate repo root`; it passed
   and produced exact current recompute/rerender evidence.
-- Ran `bun run bench:react:huge-document-overlays:local` in `.tmp/slate-v2`; it
+- Ran `bun run bench:react:huge-document-overlays:local` in `Plate repo root`; it
   failed because the benchmark imports stale `useSlateSelector` while live
   `slate-react` exports `useEditorSelector`.
 - Raised score from `0.87` to `0.88`; still below closure because pass 7/8
@@ -1293,7 +1293,7 @@ Executable draft after pass 10:
    - restore `useSlateSelector` or direct `<Slate projectionStore={...}>` only
      after an explicit public API audit, typed alias contract, and docs answer;
    - rerun `bun run bench:react:huge-document-overlays:local` in
-     `.tmp/slate-v2`.
+     `Plate repo root`.
 3. Source-scoped invalidation phase:
    - push dirty source class, source id, impacted runtime ids, annotation ids,
      and recompute metrics below React;
@@ -1340,7 +1340,7 @@ pnpm lint:fix
 bun run completion-check -- --file .tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md
 ```
 
-Focused Slate v2 behavior gates, cwd `.tmp/slate-v2`:
+Focused Slate v2 behavior gates, cwd `Plate repo root`:
 
 ```bash
 bun test ./packages/slate-react/test/provider-hooks-contract.tsx ./packages/slate-react/test/projections-and-selection-contract.tsx ./packages/slate-react/test/annotation-store-contract.tsx ./packages/slate-react/test/widget-layer-contract.tsx ./packages/slate-react/test/render-profiler-contract.test.tsx
@@ -1348,7 +1348,7 @@ bun run bench:react:rerender-breadth:local
 bun run bench:react:huge-document-overlays:local
 ```
 
-Final Slate v2 closure gate, cwd `.tmp/slate-v2`:
+Final Slate v2 closure gate, cwd `Plate repo root`:
 
 ```bash
 bun check
@@ -1432,7 +1432,7 @@ Proof gates for `ralph`:
 - add browser/native rows for decorated/annotated/shelled selection, find,
   copy, paste, select-all, and follow-up typing before claiming browser
   behavior;
-- use `bun check` in `.tmp/slate-v2` as the fast sibling-repo closure gate.
+- use `bun check` in `Plate repo root` as the fast sibling-repo closure gate.
 
 Recommended `ralph` slice order:
 
@@ -1459,8 +1459,8 @@ Current gate status:
 - ecosystem synthesis complete;
 - performance/DX/migration/regression pressure pass complete;
 - Ralph slice 1 complete: `bench:react:huge-document-overlays:local` green in
-  `.tmp/slate-v2`;
-- `bun check` passed in `.tmp/slate-v2` after the benchmark repair;
+  `Plate repo root`;
+- `bun check` passed in `Plate repo root` after the benchmark repair;
 - maintainer objection pass complete;
 - high-risk deliberate pass complete;
 - ecosystem-maintainer pass complete;
@@ -1468,7 +1468,7 @@ Current gate status:
 - issue-sync pass complete;
 - final handoff complete.
 - Ralph slice 8 complete: Plate/slate-yjs adapter substrate proof is green in
-  `.tmp/slate-v2` through public comment examples, commit metadata, deterministic
+  `Plate repo root` through public comment examples, commit metadata, deterministic
   replay, local runtime targets, and bookmark rebasing.
 - Ralph slice 9 complete: docs/examples now expose the simple
   `Editable.decorate` path, scalable `decorationSources`, annotation stores,
@@ -1484,7 +1484,7 @@ Status: complete.
 
 Files changed:
 
-- `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
+- `benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx`
 - `docs/slate-v2/references/pr-description.md`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
@@ -1500,11 +1500,11 @@ Decision:
 
 Evidence:
 
-- `bun run bench:react:huge-document-overlays:local` passed in `.tmp/slate-v2`;
+- `bun run bench:react:huge-document-overlays:local` passed in `Plate repo root`;
 - focused `slate-react` package tests passed: provider hooks, projections,
   annotations, widgets, and render profiling;
-- `bun run bench:react:rerender-breadth:local` passed in `.tmp/slate-v2`;
-- `bun check` passed in `.tmp/slate-v2`.
+- `bun run bench:react:rerender-breadth:local` passed in `Plate repo root`;
+- `bun check` passed in `Plate repo root`.
 
 Next owner:
 
@@ -1523,20 +1523,20 @@ Files changed:
 
 Live source owner:
 
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
+- `packages/slate-react/src/projection-store.ts`
   - maps dirtiness classes to editor commit sources;
   - subscribes projection stores through `Editor.subscribeSource(...)`;
   - gates recompute by `dirtiness`, `runtimeScope`, and targeted `sourceId`;
   - exposes metrics for source reads, runtime bucket changes, and source
     subscriber wakes.
-- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`
+- `packages/slate-react/src/decoration-source.ts`
   - passes decoration source `id`, `dirtiness`, and `runtimeScope` into the
     projection store.
 
 Decision:
 
 - no implementation patch needed; the plan's target is already present in
-  current `.tmp/slate-v2`;
+  current `Plate repo root`;
 - kept PR reference unchanged because this slice changes no public API, issue
   claim, or proof status beyond already-recorded benchmark/source-scoped rows;
 - kept issue claims unchanged.
@@ -1544,10 +1544,10 @@ Decision:
 Evidence:
 
 - `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx -t source`
-  passed in `.tmp/slate-v2`;
+  passed in `Plate repo root`;
 - `bun run bench:react:rerender-breadth:local` had already passed with
   `sourceScopedInvalidation` showing unrelated source recompute counts at `0`;
-- `bun check` passed in `.tmp/slate-v2`.
+- `bun check` passed in `Plate repo root`.
 
 Next owner:
 
@@ -1565,12 +1565,12 @@ Files changed:
 
 Live source owner:
 
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx`
+- `packages/slate-react/src/hooks/use-editor-selector.tsx`
   - routes selector listeners through global, deferred, or runtime-id buckets;
   - limits runtime fanout to `affectedNodeRuntimeIds` /
     `nodeImpactRuntimeIds`;
   - skips stale mounted runtime-id fanout for root-order-only commits.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-decoration-selector.tsx`
+- `packages/slate-react/src/hooks/use-decoration-selector.tsx`
   - reads one runtime id and subscribes through `store.subscribeRuntimeId(...)`
     when available.
 
@@ -1584,8 +1584,8 @@ Decision:
 Evidence:
 
 - `bun test ./packages/slate-react/test/provider-hooks-contract.tsx ./packages/slate-react/test/projections-and-selection-contract.tsx`
-  passed in `.tmp/slate-v2`;
-- prior full `bun check` passed in `.tmp/slate-v2` after slice 2.
+  passed in `Plate repo root`;
+- prior full `bun check` passed in `Plate repo root` after slice 2.
 
 Next owner:
 
@@ -1597,9 +1597,9 @@ Status: complete.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/index.ts`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
 - `docs/slate-v2/references/pr-description.md`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
@@ -1607,12 +1607,12 @@ Files changed:
 
 Live source owner:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
   - adds `Editable.decorate` as the simple transient range API;
   - implements it as a thin `createDecorationSource(...)` adapter below
     `Editable`, composed with any provider-level projection store;
   - keeps generated projection keys internal when simple ranges omit a key.
-- `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`
+- `packages/slate-react/src/decoration-source.ts`
   - remains the scalable source-id/runtime-bucket substrate for external or
     high-churn overlays.
 
@@ -1628,11 +1628,11 @@ Decision:
 Evidence:
 
 - `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx -t "simple Editable decorate"`
-  passed in `.tmp/slate-v2`;
+  passed in `Plate repo root`;
 - `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx ./packages/slate-react/test/app-owned-customization.tsx`
-  passed in `.tmp/slate-v2`;
-- `bun lint:fix` passed in `.tmp/slate-v2` and fixed formatting;
-- `bun check` passed in `.tmp/slate-v2`.
+  passed in `Plate repo root`;
+- `bun lint:fix` passed in `Plate repo root` and fixed formatting;
+- `bun check` passed in `Plate repo root`.
 
 Next owner:
 
@@ -1650,14 +1650,14 @@ Files changed:
 
 Live source owner:
 
-- `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts`
+- `packages/slate-react/src/annotation-store.ts`
   - keeps annotation subscribers separate from projection/runtime subscribers;
   - reprojects only candidate annotation ids when editor commit metadata allows;
   - wakes only changed annotation ids and changed runtime buckets.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotations.tsx`
+- `packages/slate-react/src/hooks/use-slate-annotations.tsx`
   - exposes whole-store and single-annotation subscriptions through
     `useSyncExternalStore`.
-- `.tmp/slate-v2/packages/slate-react/src/widget-store.ts`
+- `packages/slate-react/src/widget-store.ts`
   - owns widget visibility/state independently from text projection ranges.
 
 Decision:
@@ -1669,7 +1669,7 @@ Decision:
 Evidence:
 
 - `bun test ./packages/slate-react/test/annotation-store-contract.tsx ./packages/slate-react/test/widget-layer-contract.tsx`
-  passed in `.tmp/slate-v2`;
+  passed in `Plate repo root`;
 - `pnpm lint:fix` passed in `plate-2` after state sync.
 
 Next owner:
@@ -1682,14 +1682,14 @@ Status: complete.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
 - `active goal state`
 
 Live source owner:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx`
+- `packages/slate-react/src/components/editable-text.tsx`
   - splits text by all projection boundaries;
   - keeps `segment.slices` as multiplicity-safe projection metadata;
   - passes text marks through `leaf` / `segment.marks` without collapsing
@@ -1704,11 +1704,11 @@ Decision:
 Evidence:
 
 - `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx -t "renderLeaf receives"`
-  passed in `.tmp/slate-v2`;
+  passed in `Plate repo root`;
 - `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx`
-  passed in `.tmp/slate-v2`;
-- `bun lint:fix` passed in `.tmp/slate-v2`;
-- `bun check` passed in `.tmp/slate-v2`.
+  passed in `Plate repo root`;
+- `bun lint:fix` passed in `Plate repo root`;
+- `bun check` passed in `Plate repo root`.
 
 Next owner:
 
@@ -1750,11 +1750,11 @@ Rejected tactic:
 Evidence:
 
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/highlighted-text.test.ts --project=chromium`
-  passed in `.tmp/slate-v2`: 12 passed;
+  passed in `Plate repo root`: 12 passed;
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/review-comments.test.ts --project=chromium`
-  passed in `.tmp/slate-v2`: 1 passed;
+  passed in `Plate repo root`: 1 passed;
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium`
-  passed in `.tmp/slate-v2`: 7 passed, 1 mobile-only skipped.
+  passed in `Plate repo root`: 7 passed, 1 mobile-only skipped.
 
 Next owner:
 
@@ -1766,7 +1766,7 @@ Status: complete.
 
 Files changed:
 
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `packages/slate-react/test/surface-contract.tsx`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `docs/slate-v2/references/pr-description.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
@@ -1774,20 +1774,20 @@ Files changed:
 
 Live source owner:
 
-- `.tmp/slate-v2/site/examples/ts/review-comments.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/review-comments.tsx`
   - builds review comments from `Bookmark`, `useSlateAnnotationStore`,
     `useSlateAnnotations`, `useSlateWidgetStore`, and `useSlateWidgets`;
   - keeps comment workflow in the product example, not raw Slate core.
-- `.tmp/slate-v2/site/examples/ts/collaborative-comments.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/collaborative-comments.tsx`
   - models writer document writes and reviewer comment writes as separate
     channels over public annotation substrate;
   - keeps reviewer document writes at `0`.
-- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
+- `packages/slate/test/collab-history-runtime-contract.ts`
   - proves deterministic remote operation replay, remote metadata, history skip,
     bookmark rebasing, and local runtime target rebasing/nulling.
-- `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts`
+- `packages/slate/test/commit-metadata-contract.ts`
   - proves typed collaboration metadata, including Yjs-style origin metadata.
-- `.tmp/slate-v2/packages/slate/test/migration-backbone-contract.ts`
+- `packages/slate/test/migration-backbone-contract.ts`
   - proves extension/state/tx backbone without adapter-shaped public namespaces
     such as `api`, `tf`, `plate`, or `yjs`.
 
@@ -1803,9 +1803,9 @@ Decision:
 Evidence:
 
 - `bun test ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate/test/commit-metadata-contract.ts ./packages/slate/test/migration-backbone-contract.ts ./packages/slate-react/test/surface-contract.tsx`
-  passed in `.tmp/slate-v2`: 27 passed;
-- `bun lint:fix` passed in `.tmp/slate-v2`;
-- `bun check` passed in `.tmp/slate-v2`: lint, package/site/root typecheck, Bun
+  passed in `Plate repo root`: 27 passed;
+- `bun lint:fix` passed in `Plate repo root`;
+- `bun check` passed in `Plate repo root`: lint, package/site/root typecheck, Bun
   tests, and Vitest with 202 `slate-react` tests.
 
 Next owner:
@@ -1818,10 +1818,10 @@ Status: complete.
 
 Files changed:
 
-- `.tmp/slate-v2/docs/libraries/slate-react/editable.md`
-- `.tmp/slate-v2/docs/libraries/slate-react/hooks.md`
-- `.tmp/slate-v2/docs/libraries/slate-react/slate.md`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `content/docs/slate/libraries/slate-react/editable.md`
+- `content/docs/slate/libraries/slate-react/hooks.md`
+- `content/docs/slate/libraries/slate-react/slate.md`
+- `packages/slate-react/test/surface-contract.tsx`
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md`
 - `docs/slate-v2/references/pr-description.md`
 - `.tmp/completion-checks/slate-v2-react-decorations-slate-issues-ralplan.md`
@@ -1829,15 +1829,15 @@ Files changed:
 
 Live source owner:
 
-- `.tmp/slate-v2/docs/libraries/slate-react/editable.md`
+- `content/docs/slate/libraries/slate-react/editable.md`
   - documents `Editable.decorate` as the simple editor-local decoration path;
   - points shared/high-churn overlays to provider-owned `decorationSources`.
-- `.tmp/slate-v2/docs/libraries/slate-react/slate.md`
+- `content/docs/slate/libraries/slate-react/slate.md`
   - uses `useSlateDecorationSource(...)` for provider-owned decoration sources;
   - names `Editable.decorate` as the simple callback path.
-- `.tmp/slate-v2/docs/libraries/slate-react/hooks.md`
+- `content/docs/slate/libraries/slate-react/hooks.md`
   - documents `useSlateDecorationSource`, annotation hooks, and widget hooks.
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `packages/slate-react/test/surface-contract.tsx`
   - locks docs and product comments to public substrate nouns and rejects
     projection internals as the default path.
 
@@ -1851,9 +1851,9 @@ Decision:
 Evidence:
 
 - `bun test ./packages/slate-react/test/surface-contract.tsx` passed in
-  `.tmp/slate-v2`: 14 passed;
-- `bun lint:fix` passed in `.tmp/slate-v2`;
-- `bun check` passed in `.tmp/slate-v2`: lint, package/site/root typecheck, Bun
+  `Plate repo root`: 14 passed;
+- `bun lint:fix` passed in `Plate repo root`;
+- `bun check` passed in `Plate repo root`: lint, package/site/root typecheck, Bun
   tests, and Vitest with 203 `slate-react` tests.
 
 Next owner:

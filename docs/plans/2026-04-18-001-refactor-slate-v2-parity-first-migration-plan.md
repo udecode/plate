@@ -121,7 +121,7 @@ driver.
 
 - None. External research is unnecessary here because the authoritative
   evidence is the local draft corpus plus the sibling `../slate`,
-  `.tmp/slate-v2`, and `.tmp/slate-v2-draft` repos.
+  `Plate repo root`, and `.tmp/slate-v2-draft` repos.
 
 ## Key Technical Decisions
 
@@ -326,20 +326,20 @@ Rule:
 
 **Files:**
 
-- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/path.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/path-ref.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/point.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/point-ref.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/range.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/range-ref.ts`
-- Create: `.tmp/slate-v2/packages/slate/test/query-contract.ts`
-- Create: `.tmp/slate-v2/packages/slate/test/legacy-editor-nodes-fixtures.ts`
-- Create: `.tmp/slate-v2/packages/slate/test/legacy-interfaces-fixtures.ts`
+- Modify: `packages/slate/src/interfaces/editor.ts`
+- Modify: `packages/slate/src/interfaces/node.ts`
+- Modify: `packages/slate/src/interfaces/path.ts`
+- Modify: `packages/slate/src/interfaces/path-ref.ts`
+- Modify: `packages/slate/src/interfaces/point.ts`
+- Modify: `packages/slate/src/interfaces/point-ref.ts`
+- Modify: `packages/slate/src/interfaces/range.ts`
+- Modify: `packages/slate/src/interfaces/range-ref.ts`
+- Create: `packages/slate/test/query-contract.ts`
+- Create: `packages/slate/test/legacy-editor-nodes-fixtures.ts`
+- Create: `packages/slate/test/legacy-interfaces-fixtures.ts`
 - Modify: `docs/slate-v2/ledgers/slate-editor-api.md`
 - Modify: `docs/slate-v2/ledgers/slate-interfaces-api.md`
-- Modify: `.tmp/slate-v2/docs/api/nodes/editor.md`
+- Modify: `content/docs/slate/api/nodes/editor.md`
 
 **Approach:**
 
@@ -355,9 +355,9 @@ Rule:
 
 **Patterns to follow:**
 
-- `.tmp/slate-v2/packages/slate/test/query-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/legacy-editor-nodes-fixtures.ts`
-- `.tmp/slate-v2/packages/slate/test/legacy-interfaces-fixtures.ts`
+- `packages/slate/test/query-contract.ts`
+- `packages/slate/test/legacy-editor-nodes-fixtures.ts`
+- `packages/slate/test/legacy-interfaces-fixtures.ts`
 
 **Test scenarios:**
 
@@ -381,9 +381,9 @@ Current progress:
 
 - restored and green:
 
-  - `.tmp/slate-v2/packages/slate/test/query-contract.ts`
-  - `.tmp/slate-v2/packages/slate/test/legacy-editor-nodes-fixtures.ts`
-  - `.tmp/slate-v2/packages/slate/test/legacy-interfaces-fixtures.ts`
+  - `packages/slate/test/query-contract.ts`
+  - `packages/slate/test/legacy-editor-nodes-fixtures.ts`
+  - `packages/slate/test/legacy-interfaces-fixtures.ts`
 
 - [ ] **Unit 4: Recover `slate` Transform, Operation, Snapshot, and Transaction Surfaces from the Corpus**
 
@@ -395,23 +395,23 @@ Current progress:
 
 **Files:**
 
-- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/transforms/general.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/transforms/node.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/transforms/selection.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/interfaces/transforms/text.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/transforms-node/insert-nodes.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/transforms-node/set-nodes.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/transforms-node/split-nodes.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/core/apply.ts`
-- Modify: `.tmp/slate-v2/packages/slate/src/create-editor.ts`
-- Create: `.tmp/slate-v2/packages/slate/test/operations-contract.ts`
-- Create: `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
-- Modify: `.tmp/slate-v2/packages/slate/test/accessor-transaction.test.ts`
-- Create: `.tmp/slate-v2/packages/slate/test/legacy-transforms-fixtures.ts`
+- Modify: `packages/slate/src/interfaces/transforms/general.ts`
+- Modify: `packages/slate/src/interfaces/transforms/node.ts`
+- Modify: `packages/slate/src/interfaces/transforms/selection.ts`
+- Modify: `packages/slate/src/interfaces/transforms/text.ts`
+- Modify: `packages/slate/src/transforms-node/insert-nodes.ts`
+- Modify: `packages/slate/src/transforms-node/set-nodes.ts`
+- Modify: `packages/slate/src/transforms-node/split-nodes.ts`
+- Modify: `packages/slate/src/transforms-text/delete-text.ts`
+- Modify: `packages/slate/src/transforms-text/insert-fragment.ts`
+- Modify: `packages/slate/src/core/apply.ts`
+- Modify: `packages/slate/src/create-editor.ts`
+- Create: `packages/slate/test/operations-contract.ts`
+- Create: `packages/slate/test/snapshot-contract.ts`
+- Modify: `packages/slate/test/accessor-transaction.test.ts`
+- Create: `packages/slate/test/legacy-transforms-fixtures.ts`
 - Modify: `docs/slate-v2/ledgers/slate-transforms-api.md`
-- Modify: `.tmp/slate-v2/docs/api/transforms.md`
+- Modify: `content/docs/slate/api/transforms.md`
 
 **Approach:**
 
@@ -426,10 +426,10 @@ Current progress:
 
 **Patterns to follow:**
 
-- `.tmp/slate-v2/packages/slate/test/legacy-transforms-fixtures.ts`
-- `.tmp/slate-v2/packages/slate/test/operations-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/accessor-transaction.test.ts`
+- `packages/slate/test/legacy-transforms-fixtures.ts`
+- `packages/slate/test/operations-contract.ts`
+- `packages/slate/test/snapshot-contract.ts`
+- `packages/slate/test/accessor-transaction.test.ts`
 
 **Test scenarios:**
 
@@ -461,16 +461,16 @@ Current progress:
 
 **Files:**
 
-- Modify: `.tmp/slate-v2/packages/slate-history/src/index.ts`
-- Modify: `.tmp/slate-v2/packages/slate-history/src/history.ts`
-- Modify: `.tmp/slate-v2/packages/slate-history/src/history-editor.ts`
-- Modify: `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
-- Modify: `.tmp/slate-v2/packages/slate-history/test/index.spec.ts`
-- Create: `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`
-- Modify: `.tmp/slate-v2/packages/slate-hyperscript/src/index.ts`
-- Modify: `.tmp/slate-v2/packages/slate-hyperscript/src/hyperscript.ts`
-- Modify: `.tmp/slate-v2/packages/slate-hyperscript/src/creators.ts`
-- Modify: `.tmp/slate-v2/packages/slate-hyperscript/test/index.spec.ts`
+- Modify: `packages/slate-history/src/index.ts`
+- Modify: `packages/slate-history/src/history.ts`
+- Modify: `packages/slate-history/src/history-editor.ts`
+- Modify: `packages/slate-history/src/with-history.ts`
+- Modify: `packages/slate-history/test/index.spec.ts`
+- Create: `packages/slate-history/test/history-contract.ts`
+- Modify: `packages/slate-hyperscript/src/index.ts`
+- Modify: `packages/slate-hyperscript/src/hyperscript.ts`
+- Modify: `packages/slate-hyperscript/src/creators.ts`
+- Modify: `packages/slate-hyperscript/test/index.spec.ts`
 - Modify: `docs/slate-v2/ledgers/slate-history-api.md`
 
 **Approach:**
@@ -487,8 +487,8 @@ Current progress:
 
 **Patterns to follow:**
 
-- `.tmp/slate-v2/packages/slate-history/test/index.spec.ts`
-- `.tmp/slate-v2/packages/slate-hyperscript/test/index.spec.ts`
+- `packages/slate-history/test/index.spec.ts`
+- `packages/slate-hyperscript/test/index.spec.ts`
 
 **Test scenarios:**
 
@@ -516,48 +516,48 @@ Current progress:
 
 **Files:**
 
-- Modify: `.tmp/slate-v2/packages/slate-dom/src/index.ts`
-- Modify: `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
-- Modify: `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts`
-- Create: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`
-- Create: `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
-- Modify: `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- Modify: `.tmp/slate-v2/packages/slate-react/src/plugin/react-editor.ts`
-- Modify: `.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts`
-- Modify: `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- Modify: `.tmp/slate-v2/packages/slate-react/test/bun/editable.spec.tsx`
-- Modify: `.tmp/slate-v2/packages/slate-react/test/react-editor.test.tsx`
-- Modify: `.tmp/slate-v2/packages/slate-react/test/use-selected.test.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/check-lists.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/custom-placeholder.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/editable-voids.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/images.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/markdown-preview.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/plaintext.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/read-only.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/richtext.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/scroll-into-view.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/shadow-dom.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/styling.tsx`
-- Modify: `.tmp/slate-v2/site/examples/ts/tables.tsx`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/check-lists.test.ts`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/code-highlighting.test.ts`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/custom-placeholder.test.ts`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/images.test.ts`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/markdown-preview.test.ts`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/markdown-shortcuts.test.ts`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/read-only.test.ts`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/select.test.ts`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/styling.test.ts`
-- Modify: `.tmp/slate-v2/playwright/integration/examples/tables.test.ts`
+- Modify: `packages/slate-dom/src/index.ts`
+- Modify: `packages/slate-dom/src/plugin/dom-editor.ts`
+- Modify: `packages/slate-dom/src/plugin/with-dom.ts`
+- Create: `packages/slate-dom/test/bridge.ts`
+- Create: `packages/slate-dom/test/clipboard-boundary.ts`
+- Modify: `packages/slate-react/src/index.ts`
+- Modify: `packages/slate-react/src/plugin/react-editor.ts`
+- Modify: `packages/slate-react/src/plugin/with-react.ts`
+- Modify: `packages/slate-react/src/components/editable.tsx`
+- Modify: `packages/slate-react/test/bun/editable.spec.tsx`
+- Modify: `packages/slate-react/test/react-editor.test.tsx`
+- Modify: `packages/slate-react/test/use-selected.test.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/check-lists.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/custom-placeholder.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/images.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/markdown-preview.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/paste-html.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/plaintext.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/read-only.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/scroll-into-view.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/shadow-dom.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/styling.tsx`
+- Modify: `apps/www/src/app/(app)/examples/slate/_examples/tables.tsx`
+- Modify: `apps/www/tests/slate-browser/donor/examples/check-lists.test.ts`
+- Modify: `apps/www/tests/slate-browser/donor/examples/code-highlighting.test.ts`
+- Modify: `apps/www/tests/slate-browser/donor/examples/custom-placeholder.test.ts`
+- Modify: `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts`
+- Modify: `apps/www/tests/slate-browser/donor/examples/images.test.ts`
+- Modify: `apps/www/tests/slate-browser/donor/examples/markdown-preview.test.ts`
+- Modify: `apps/www/tests/slate-browser/donor/examples/markdown-shortcuts.test.ts`
+- Modify: `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
+- Modify: `apps/www/tests/slate-browser/donor/examples/plaintext.test.ts`
+- Modify: `apps/www/tests/slate-browser/donor/examples/read-only.test.ts`
+- Modify: `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
+- Modify: `apps/www/tests/slate-browser/donor/examples/select.test.ts`
+- Modify: `apps/www/tests/slate-browser/donor/examples/shadow-dom.test.ts`
+- Modify: `apps/www/tests/slate-browser/donor/examples/styling.test.ts`
+- Modify: `apps/www/tests/slate-browser/donor/examples/tables.test.ts`
 - Modify: `docs/slate-v2/ledgers/example-parity-matrix.md`
 - Modify: `docs/slate-v2/ledgers/slate-react-api.md`
 

@@ -61,7 +61,7 @@ Do not turn this into one giant benchmark lane. Keep it split by operation famil
 ### Current Proof
 
 The workload now has a stable harness lane in
-`.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`.
+`benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs`.
 The issue-size gate is:
 
 ```bash

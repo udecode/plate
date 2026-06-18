@@ -47,7 +47,7 @@ tests. It does not mean blindly port every upstream test.
 
 | Lane       | Aliases                  | Downstream skill                     | Owner                                                                   | Output                                                       |
 | ---------- | ------------------------ | ------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `slate-v2` | `slate`, `raw-slate`     | `.agents/skills/slate-plan/SKILL.md` | Raw Slate v2 substrate in `.tmp/slate-v2`                               | `docs/plans/YYYY-MM-DD-slate-v2-<repo>-harvest-plan.md`      |
+| `slate-v2` | `slate`, `raw-slate`     | `.agents/skills/slate-plan/SKILL.md` | Raw Slate v2 substrate in `Plate repo root`                               | `docs/plans/YYYY-MM-DD-slate-v2-<repo>-harvest-plan.md`      |
 | `plate`    | `platejs`, `plate-owned` | `.agents/skills/plate-plan/SKILL.md` | Plate packages, kits, docs, examples, and product behavior in this repo | `docs/plans/YYYY-MM-DD-plate-<repo>-harvest-plan.md`         |
 
 If the lane is unknown, infer only when the harvest row owner labels make the
@@ -58,7 +58,7 @@ pretend it is covered.
 
 - This is a planning/routing skill. Do not patch implementation code, tests,
   examples, package files, or build config.
-- For `slate-v2`, do not edit `.tmp/slate-v2` from this skill.
+- For `slate-v2`, do not edit `Plate repo root` from this skill.
 - For `plate`, do not edit packages, apps, docs, examples, or behavior from this
   skill except the plan.
 - User phrases like "go", "process", "apply", or "all tests" do not override
@@ -100,12 +100,12 @@ pretend it is covered.
 7. `docs/solutions/` entries about editor harvest routing, browser proof, IME,
    selection, placeholders, and Skiller/sync failures.
 8. Current owner evidence:
-   - `slate-v2`: `.tmp/slate-v2` tests, examples, package scripts, and relevant
+   - `slate-v2`: `Plate repo root` tests, examples, package scripts, and relevant
      ledgers.
    - `plate`: current Plate packages, kits, docs, examples, and behavior-law
      docs.
 
-For `slate-v2`, the live `.tmp/slate-v2` checkout wins over stale plans. Search
+For `slate-v2`, the live `Plate repo root` checkout wins over stale plans. Search
 current tests and source before saying a row is covered or missing.
 
 ## Goal And Plan State
@@ -239,7 +239,7 @@ Completion threshold:
    - React plugin hosts;
    - NodeView/PluginView-style authoring unless reduced to raw substrate.
 10. Search current owner coverage:
-    - for `slate-v2`, search `.tmp/slate-v2` by behavior words and adjacent
+    - for `slate-v2`, search `Plate repo root` by behavior words and adjacent
       concepts, not upstream API names;
     - for `plate`, search packages, kits, docs, examples, and behavior-law docs.
 11. Apply the downstream lane skill:
@@ -322,7 +322,7 @@ pnpm lint:fix
 ```
 
 Slate v2 behavior verification belongs only to accepted-plan execution from
-`.tmp/slate-v2`.
+`Plate repo root`.
 
 ## Final Response
 

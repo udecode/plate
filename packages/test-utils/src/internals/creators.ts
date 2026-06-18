@@ -9,7 +9,7 @@ import {
   type TNode,
   type TRange,
   type TText,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 
 import {
   AnchorToken,

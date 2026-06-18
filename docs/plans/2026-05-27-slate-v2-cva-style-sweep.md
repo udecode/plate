@@ -1,7 +1,7 @@
 # slate v2 cva style sweep
 
 Objective:
-Sweep `.tmp/slate-v2/site/examples/ts` for static inline style maps and
+Sweep `apps/www/src/app/(app)/examples/slate/_examples` for static inline style maps and
 variant style objects, migrating static variants to `cva()`/`cn()`/classes
 without changing runtime-owned layout/content styles.
 
@@ -43,9 +43,9 @@ Completion threshold:
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-slate-v2-cva-style-sweep.md` passes.
 
 Verification surface:
-- Source audits over `.tmp/slate-v2/site/examples/ts` and `.tmp/slate-v2`.
-- `.tmp/slate-v2`: `bun typecheck:site`.
-- `.tmp/slate-v2`: `bun lint`.
+- Source audits over `apps/www/src/app/(app)/examples/slate/_examples` and `Plate repo root`.
+- `Plate repo root`: `bun typecheck:site`.
+- `Plate repo root`: `bun lint`.
 - Focused browser smoke on touched examples, especially `/examples/linting`,
   `/examples/comment-mode`, `/examples/dom-coverage-boundaries`,
   `/examples/styling`, `/examples/images`, `/examples/code-highlighting`, and
@@ -60,10 +60,10 @@ Constraints:
 
 Boundaries:
 - Source of truth: user request in chat plus existing shadcn-style component
-  patterns in `.tmp/slate-v2/site/components/ui/button.tsx` and `badge.tsx`.
-- Allowed edit scope: `.tmp/slate-v2/site/examples/ts`,
-  `.tmp/slate-v2/site/public/index.css`, and this plan.
-- Browser surface: touched example routes under `.tmp/slate-v2/site`.
+  patterns in `apps/www/components/ui/button.tsx` and `badge.tsx`.
+- Allowed edit scope: `apps/www/src/app/(app)/examples/slate/_examples`,
+  `apps/www/public/index.css`, and this plan.
+- Browser surface: touched example routes under `apps/www`.
 - Tracker sync: N/A, chat-only task.
 - Non-goals: do not migrate runtime geometry, selection projection, pasted HTML,
   or document-attribute styles into class variants just to chase zero inline
@@ -138,7 +138,7 @@ Work Checklist:
 - [x] High-risk note recorded as N/A: no public API, runtime model, package
       boundary, agent action, or command contract changed.
 - [x] Review/autoreview target selected: implementation patch belongs to
-      `.tmp/slate-v2`; helper from that cwd hung and was recorded as tool
+      `Plate repo root`; helper from that cwd hung and was recorded as tool
       failure, then manual review was completed.
 - [x] Agent-native review marked N/A: no `.agents`, `.claude`, `.codex`, skill,
       hook, command, prompt, or user-action tooling changed.
@@ -153,11 +153,11 @@ Completion Gates:
 | Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | Source audits, `bun typecheck:site`, `bun lint`, `bun check`, and focused Chromium smoke passed. |
 | Bug reproduced before fix | no | Record failing test/repro or N/A with reason | N/A: cleanup/migration, not bug repro. |
 | Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | Browser smoke loaded 8 touched routes and interacted with linting, comment mode, and mentions. |
-| TypeScript or typed config changed | yes | Run relevant typecheck | `.tmp/slate-v2`: `bun typecheck:site` passed; `bun check` passed root/site/package typechecks. |
+| TypeScript or typed config changed | yes | Run relevant typecheck | `Plate repo root`: `bun typecheck:site` passed; `bun check` passed root/site/package typechecks. |
 | Package exports or file layout changed | no | Run `pnpm brl` before final verification and keep generated barrel updates | N/A: no package exports or exported file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | Run `pnpm install` and relevant package checks | N/A: no manifest or lockfile changed in this sweep. |
 | Agent rules or skills changed | no | Run `pnpm install` and verify generated skill sync | N/A: no agent rules or skills changed. |
-| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | Commands ran in `.tmp/slate-v2`; plan checker runs in `plate-2`. |
+| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | Commands ran in `Plate repo root`; plan checker runs in `plate-2`. |
 | Browser surface changed | yes | Capture Browser Use proof or record explicit waiver/blocker | Repo browser tool unavailable; local Chromium smoke used against existing `localhost:3100` dev server. |
 | Browser final proof | yes | Attach screenshot or exact browser verification caveat when browser proof applies | Screenshots saved for linting and comment mode; route/interactions passed with no app errors. |
 | CI-controlled template output changed | no | Restore generated template output or record why it is intentionally kept | N/A: no template output touched. |
@@ -167,12 +167,12 @@ Completion Gates:
 | High-risk mini gate | no | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | N/A: no high-risk surface changed. |
 | Agent-native review for agent/tooling changes | no | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | N/A: no agent/tooling changes. |
 | Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: no local-env-rot failure shape. |
-| Autoreview for non-trivial implementation changes | waived | Load `.agents/skills/autoreview/SKILL.md`; use dirty local target until clean, or record blocker | Skill loaded. Root cwd run failed on unrelated 2.7MB bundle; correct `.tmp/slate-v2` run hung >3 min and was terminated. Manual review of changed styling paths found no actionable issue. |
+| Autoreview for non-trivial implementation changes | waived | Load `.agents/skills/autoreview/SKILL.md`; use dirty local target until clean, or record blocker | Skill loaded. Root cwd run failed on unrelated 2.7MB bundle; correct `Plate repo root` run hung >3 min and was terminated. Manual review of changed styling paths found no actionable issue. |
 | PR create or update | no | Run `check` before PR work and sync PR body to final handoff | N/A: no PR requested. |
 | PR proof image hosting | no | If PR body needs browser proof, replace local image paths with hosted GitHub URLs or record N/A | N/A: no PR body. |
 | Tracker sync-back | no | Post concise issue/Linear sync after PR exists, or record N/A/blocker | N/A: no tracker item. |
 | Final handoff contract | yes | Fill the final handoff fields below with exact PR/issue/confidence/tests/browser/outcome/caveats/design/verification content or N/A reason | Filled below. |
-| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | `.tmp/slate-v2`: `bun lint:fix`, `bun lint`, and final `bun check` passed. |
+| Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | `Plate repo root`: `bun lint:fix`, `bun lint`, and final `bun check` passed. |
 | Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-slate-v2-cva-style-sweep.md` | To run after this update. |
 | Browser interaction proof | yes | Exercise the target route/interaction with the approved browser tool or record blocker | Local Chromium smoke passed route loads plus linting/comment/mentions interactions. |
 | Browser console/network check | yes | Record console/network state or why it is not applicable | No app errors; ignored only external Vimeo iframe 401/permissions/dev-console noise on `/examples/embeds`. |
@@ -227,7 +227,7 @@ Implementation notes:
 Review fixes:
 - Autoreview from root cwd was rejected as wrong checkout after it failed on an
   unrelated 2.7MB `plate-2` bundle.
-- Correct-checkout autoreview from `.tmp/slate-v2` hung for more than three
+- Correct-checkout autoreview from `Plate repo root` hung for more than three
   minutes with no output and was terminated.
 - Manual review covered the changed styling paths and declaration parity; no
   actionable findings.
@@ -235,23 +235,23 @@ Review fixes:
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| Root-cwd autoreview reviewed the wrong checkout and failed on input too large | 1 | Rerun helper from `.tmp/slate-v2` | Correct cwd run started. |
+| Root-cwd autoreview reviewed the wrong checkout and failed on input too large | 1 | Rerun helper from `Plate repo root` | Correct cwd run started. |
 | Correct-cwd autoreview hung with no output | 1 | Terminate helper and manually review changed paths | Manual review found no actionable issue. |
 | First browser smoke treated external Vimeo iframe console noise as app failure | 1 | Rerun with route attribution and filter external iframe noise | App errors were zero; ignored only `/examples/embeds` external iframe noise. |
 | First `bun check` failed because `renderPickupMarkdown` lacked a `.d.mts` declaration | 1 | Add declaration for existing JS export and rerun `bun check` | `bun check` passed. |
 
 Verification evidence:
-- `.tmp/slate-v2`: source audit over touched files for `lintStyles`,
+- `Plate repo root`: source audit over touched files for `lintStyles`,
   `Record<.*CSSProperties`, `satisfies Record<string, React.CSSProperties>`,
   and `style={{` returned no matches.
-- `.tmp/slate-v2`: source audit for `@emotion|emotion|css\\(|cx\\(` returned
+- `Plate repo root`: source audit for `@emotion|emotion|css\\(|cx\\(` returned
   no matches outside ignored build output.
-- `.tmp/slate-v2`: `bun lint:fix` passed and fixed 4 files.
-- `.tmp/slate-v2`: `bun typecheck:site` passed.
-- `.tmp/slate-v2`: `bun lint` passed.
-- `.tmp/slate-v2`: `bun check` passed: lint, packages/site/root typecheck, Bun
+- `Plate repo root`: `bun lint:fix` passed and fixed 4 files.
+- `Plate repo root`: `bun typecheck:site` passed.
+- `Plate repo root`: `bun lint` passed.
+- `Plate repo root`: `bun check` passed: lint, packages/site/root typecheck, Bun
   tests, and Slate React Vitest suite.
-- `.tmp/slate-v2`: focused Chromium smoke against `localhost:3100` passed:
+- `Plate repo root`: focused Chromium smoke against `localhost:3100` passed:
   route loads for `/examples/linting`, `/examples/comment-mode`,
   `/examples/dom-coverage-boundaries`, `/examples/styling`, `/examples/images`,
   `/examples/code-highlighting`, `/examples/embeds`, `/examples/mentions`;

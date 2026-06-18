@@ -21,7 +21,7 @@ Verification surface:
 - TODO: Name the planning checks, source audits, issue/reference sync, browser
   proof, Slate v2 workspace command, or report that proves the threshold.
 - Planning-only checks run in `plate-2`; any Slate v2 source/runtime/browser/API
-  claim must cite and verify the live `.tmp/slate-v2` workspace command.
+  claim must cite and verify the live `Plate repo root` workspace command.
 
 Constraints:
 - TODO: List lane constraints or write `no extra constraints`.
@@ -70,7 +70,7 @@ Start Gates:
 | Active goal checked or created | pending | pending |
 | Source of truth read before edits | pending | pending |
 | `docs/solutions` checked for non-trivial existing-code work | pending | pending |
-| Live `.tmp/slate-v2` grounding needed for current-state claims | pending | pending |
+| Live `Plate repo root` grounding needed for current-state claims | pending | pending |
 
 Work Checklist:
 - [ ] Short objective plus lane outcome, full pass schedule, one-pass-per-
@@ -100,7 +100,7 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
-| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | pending | Record live `.tmp/slate-v2` command/proof or mark as planning-only with reason | pending |
+| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | pending | Record live `Plate repo root` command/proof or mark as planning-only with reason | pending |
 | Issue ledger or PR reference changed | pending | Sync the relevant ledger/reference row or record why no sync applies | pending |
 | Autoreview for uncommitted implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md` and follow its dirty-local target selection until no accepted/actionable findings, or record N/A for planning-only/no local patch | pending |
 | Final user-review handoff | pending | Emit final handoff or keep the plan pending with the next pass | pending |
@@ -255,7 +255,7 @@ Fast driver gates:
 | Gate | Cwd | Command / artifact | Proves | Status |
 |------|-----|--------------------|--------|--------|
 | planning artifact check | plate-2 | pending | plan/template integrity | pending |
-| Slate v2 behavior check | .tmp/slate-v2 | pending | runtime/API/browser behavior | pending |
+| Slate v2 behavior check | Plate repo root | pending | runtime/API/browser behavior | pending |
 
 Final user-review handoff outline:
 - accepted plan items: pending

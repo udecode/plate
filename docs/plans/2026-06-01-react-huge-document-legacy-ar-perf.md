@@ -48,7 +48,7 @@ Verification surface:
   REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5
   REACT_HUGE_COMPARE_TYPE_OPS=10 bun run
   bench:react:huge-document:legacy-compare:local`.
-- Correctness: `bun check` in `.tmp/slate-v2` for every keep/measure packet
+- Correctness: `bun check` in `Plate repo root` for every keep/measure packet
   used as evidence.
 
 Constraints:
@@ -61,8 +61,8 @@ Constraints:
 Boundaries:
 - Source of truth: `benchmarks/targets/slate-v2.json` target
   `react-huge-document-legacy-compare`, the benchmark script under
-  `.tmp/slate-v2/scripts/benchmarks/browser/react`, and
-  `.tmp/slate-v2/autoresearch.*`.
+  `benchmarks/slate-v2/donor/browser/react`, and
+  `Plate repo root/autoresearch.*`.
 - Allowed edit scope: target registry/report artifacts, benchmark metric output,
   AR session files, and runtime code only if the benchmark exposes a real owner.
 - Browser surface: benchmark uses jsdom/React, not the site browser; no route
@@ -122,10 +122,10 @@ Start Gates:
 | Tracker sync expectation decision | yes | No tracker sync requested. |
 | Output budget strategy recorded | yes | Recorded above. |
 | Agent-native pack selected | yes | Target/AR package scripts are agent-facing workflow surfaces. |
-| Agent-facing action surface identified | yes | `bench:targets:*`, `slate:ar:*`, benchmark script, and `.tmp/slate-v2/autoresearch.*`. |
+| Agent-facing action surface identified | yes | `bench:targets:*`, `slate:ar:*`, benchmark script, and `Plate repo root/autoresearch.*`. |
 | Source rule versus generated mirror boundary identified | yes | Source is target registry plus benchmark script; target reports are generated. |
 | `agent-native-reviewer` loaded or waiver recorded | yes | Waived: no skill/rule/hook prompt source changed; target registry is benchmark tooling, verified by target checks. |
-| Package/API pack selected | yes | Possible runtime package changes in `.tmp/slate-v2/packages/**`. |
+| Package/API pack selected | yes | Possible runtime package changes in `packages/**`. |
 | Public surface or package boundary identified | yes | No public API planned; benchmark/runtime package behavior only if needed. |
 | Release artifact path selected | yes | No artifact path applies: benchmark harness, target report, and AR session only. |
 | `changeset` skill loaded when `.changeset` is required | no | N/A: no published package user-visible delta. |
@@ -150,7 +150,7 @@ Work Checklist:
 - [x] Local-env-rot retry policy recorded: N/A, no surprising install/runtime
       corruption shape remained after focused checks.
 - [x] Workspace authority recorded: proof commands ran in
-      `/Users/zbeyens/git/plate-2` and `/Users/zbeyens/git/plate-2/.tmp/slate-v2`.
+      `/Users/zbeyens/git/plate-2` and `/Users/zbeyens/git/plate-2/Plate repo root`.
 - [x] High-risk note recorded: command-contract benchmark output changed; proof
       is target check, dry-run, metric parser lint, and repeated AR run/check.
 - [x] Review/autoreview target selected: N/A, scoped benchmark harness/session
@@ -187,7 +187,7 @@ Completion Gates:
 | Package exports or file layout changed | no | Record N/A | N/A: no exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | Record N/A | N/A: no manifests, lockfile, or install graph changed. |
 | Agent rules or skills changed | no | Record N/A | N/A: no agent source changed. |
-| Workspace authority proof | yes | Run proof in owning workspaces | Target registry checks ran in `/Users/zbeyens/git/plate-2`; benchmark/check packets ran in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`. |
+| Workspace authority proof | yes | Run proof in owning workspaces | Target registry checks ran in `/Users/zbeyens/git/plate-2`; benchmark/check packets ran in `/Users/zbeyens/git/plate-2/Plate repo root`. |
 | Browser surface changed | no | Record waiver | N/A: jsdom benchmark target, no site/browser route changed. |
 | Browser final proof | no | Record waiver | N/A: no browser surface changed. |
 | CI-controlled template output changed | no | Record N/A | N/A: no templates changed. |
@@ -203,11 +203,11 @@ Completion Gates:
 | PR proof image hosting | no | Record N/A | N/A: no PR/browser proof image. |
 | Tracker sync-back | no | Record N/A | N/A: no tracker requested. |
 | Final handoff contract | yes | Fill final handoff fields | Completed below. |
-| Final lint | yes | Run scoped equivalent | `node --check .tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs` passed. |
+| Final lint | yes | Run scoped equivalent | `node --check benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs` passed. |
 | Output budget discipline | yes | Record output handling | Full benchmark JSON remains in artifact; final reports metric summaries. |
 | Goal plan complete | yes | Run mechanical autogoal check | `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-01-react-huge-document-legacy-ar-perf.md` passed. |
 | Agent source / generated sync | no | Record N/A | N/A: no `.agents/rules/**` change. |
-| Agent action discoverability | yes | Source-audit command surface | `benchmarks/targets/slate-v2.json`, `.tmp/slate-v2/autoresearch.sh`, and `.tmp/slate-v2/autoresearch.md` expose the target command. |
+| Agent action discoverability | yes | Source-audit command surface | `benchmarks/targets/slate-v2.json`, `Plate repo root/autoresearch.sh`, and `Plate repo root/autoresearch.md` expose the target command. |
 | Agent-native review | no | Record N/A | N/A: no agent source changed. |
 | Public API / package boundary proof | yes | Record impact | No public API/package boundary/export impact; benchmark harness and target metadata only. |
 | Release artifact classification | yes | Record classification | No release artifact: internal benchmark/AR tooling only. |
@@ -246,12 +246,12 @@ Decisions and tradeoffs:
   product optimization patch.
 
 Implementation notes:
-- `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs`
+- `benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs`
   now emits behavior-native `METRIC` lines and namespaces artifacts by isolated
   versus combined surface mode.
 - The benchmark forces Bun GC before samples and after disposal when available.
-- `benchmarks/targets/slate-v2.json`, `.tmp/slate-v2/autoresearch.sh`, and
-  `.tmp/slate-v2/autoresearch.md` use
+- `benchmarks/targets/slate-v2.json`, `Plate repo root/autoresearch.sh`, and
+  `Plate repo root/autoresearch.md` use
   `REACT_HUGE_COMPARE_ISOLATE_SURFACES=1`.
 - `benchmarks/targets/history/slate-v2-latest.json` and
   `benchmarks/targets/reports/slate-v2.md` were regenerated from the target
@@ -267,7 +267,7 @@ Error attempts:
 | `promote-gate` blocked on historical contaminated evidence | 2 | Use `autoresearch run` and explicit measure logs | Repeat evidence recorded as accepted measurements without creating commits. |
 
 Verification evidence:
-- `node --check .tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs` passed.
+- `node --check benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs` passed.
 - `pnpm bench:targets:check` passed: 26 targets valid.
 - `pnpm bench:targets:dry-run -- react-huge-document-legacy-compare` passed:
   `autoresearchSetupOk=true`, required artifact present, primary metric
@@ -281,7 +281,7 @@ Verification evidence:
 - AR run 8: ratio `0.61`, delta `-23.2ms`, checks passed.
 - AR run 9: ratio `0.87`, delta `-5.68ms`, checks passed.
 - AR run 10: ratio `0.53`, delta `-35.82ms`, checks passed.
-- AR checks covered `.tmp/slate-v2` `bun check`: Bun package tests
+- AR checks covered `Plate repo root` `bun check`: Bun package tests
   `1172 pass`, `95 skip`, `0 fail`; `slate-layout` `41 pass`; slate-react
   Vitest `56 files`, `590 tests passed`.
 

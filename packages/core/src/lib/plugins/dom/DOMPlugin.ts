@@ -1,4 +1,8 @@
-import type { Operation, ScrollIntoViewOptions, TRange } from '@platejs/slate';
+import type {
+  Operation,
+  ScrollIntoViewOptions,
+  TRange,
+} from '@platejs/slate-legacy';
 
 import { bindFirst } from '@udecode/utils';
 

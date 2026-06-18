@@ -83,7 +83,7 @@ Run this pre-commit path:
 1. keep the review unit as current-tree;
 2. run the narrowest relevant `slate-ar-gate` proof when editor behavior,
    browser behavior, perf, or public package behavior changed;
-3. run `autoreview` against the uncommitted `.tmp/slate-v2` diff when
+3. run `autoreview` against the uncommitted `Plate repo root` diff when
    non-trivial code changed;
 4. fix accepted P0/P1 findings that are in scope, then rerun the focused proof;
 5. only after review/proof is clean or blocked with accepted residual risk,

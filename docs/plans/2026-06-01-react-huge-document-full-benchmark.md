@@ -12,20 +12,20 @@ stable aggregate artifact, and passes target check, target dry-run, script
 syntax check, and a benchmark execution.
 
 Verification surface:
-- `node --check .tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-full.mjs`
+- `node --check benchmarks/slate-v2/donor/browser/react/huge-document-full.mjs`
 - `pnpm bench:targets:check`
 - `pnpm bench:targets:dry-run -- react-huge-document-full`
 - `HUGE_DOC_FULL_SMOKE=1 bun run bench:react:huge-document:full:local`
 
 Constraints:
 - Keep the existing benchmark owners authoritative.
-- Do not move benchmark state into `.tmp/slate-v2` permanently; this checkout is
+- Do not move benchmark state into `Plate repo root` permanently; this checkout is
   still the live lab boundary before the future Plate merge.
 - Do not commit, push, or open a PR.
 
 Boundaries:
-- Source of truth: `.tmp/slate-v2/scripts/benchmarks/**`,
-  `.tmp/slate-v2/package.json`, `benchmarks/targets/slate-v2.json`, and this
+- Source of truth: `benchmarks/slate-v2/donor/**`,
+  `Plate repo root/package.json`, `benchmarks/targets/slate-v2.json`, and this
   plan.
 - Non-goals: no product runtime optimization, no pagination UI work, no old
   Evidence Kit rewrite.
@@ -51,7 +51,7 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Script syntax | yes | `node --check .tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-full.mjs` passed. |
+| Script syntax | yes | `node --check benchmarks/slate-v2/donor/browser/react/huge-document-full.mjs` passed. |
 | Target registry | yes | `pnpm bench:targets:check` passed with 27 targets; `pnpm bench:targets:report --check` passed. |
 | Target dry-run | yes | `pnpm bench:targets:dry-run -- react-huge-document-full` passed with `autoresearchSetupOk=true`. |
 | Benchmark execution | yes | Smoke and full 5k packet passed; full packet emitted `react_huge_doc_full_max_budget_ratio=3.82`, `react_huge_doc_full_failure_count=0`, and `react_huge_doc_full_virtualized_type_to_paint_p95_ms=30`. |
@@ -63,19 +63,19 @@ Phase / pass table:
 | implementation | complete | Wrapper, script entry, target entry, report artifacts, benchmark execution, and correctness gate are complete. |
 
 Verification evidence:
-- `node --check .tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-full.mjs` passed.
+- `node --check benchmarks/slate-v2/donor/browser/react/huge-document-full.mjs` passed.
 - `pnpm bench:targets:check` passed with 27 targets.
 - `pnpm bench:targets:report --check` passed after regenerating target report/history.
 - `pnpm bench:targets:dry-run -- react-huge-document-full` passed with zero missing required artifacts and `autoresearchSetupOk=true`.
 - `HUGE_DOC_FULL_SMOKE=1 HUGE_DOC_FULL_SKIP_BROWSER_BUILD=1 bun run bench:react:huge-document:full:local` passed and wrote the smoke aggregate artifact.
 - `HUGE_DOC_FULL_SKIP_BROWSER_BUILD=1 bun run bench:react:huge-document:full:local` passed and wrote the full 5k aggregate artifact with `failureCount=0`, `maxBudgetRatio=3.82`, `legacyCompareWorstP95Ratio=0.69`, `typeToPaintP95Ms=286.7`, and `virtualizedTypeToPaintP95Ms=30`.
-- `bun check` passed in `.tmp/slate-v2`; lint reported one existing warning in `site/examples/ts/pagination.tsx`.
+- `bun check` passed in `Plate repo root`; lint reported one existing warning in `site/examples/ts/pagination.tsx`.
 
 Reboot status:
 The canonical full target is `react-huge-document-full`. Use
 `pnpm bench:targets:run react-huge-document-full` for the build-inclusive
 target path, or `HUGE_DOC_FULL_SKIP_BROWSER_BUILD=1 bun run
-bench:react:huge-document:full:local` in `.tmp/slate-v2` when `site/out`
+bench:react:huge-document:full:local` in `Plate repo root` when `site/out`
 already exists.
 
 Open risks:

@@ -68,7 +68,7 @@ Constraints:
 - Do not execute implementation unless this major goal explicitly includes it.
 
 Boundaries:
-- Source of truth: current `benchmarks/editor`, `.tmp/slate-v2` benchmark
+- Source of truth: current `benchmarks/editor`, `Plate repo root` benchmark
   artifacts, and local sibling editor source roots.
 - Allowed edit scope: Evidence Kit benchmark package, evidence notes, generated
   perf docs, and this plan.
@@ -115,7 +115,7 @@ Start Gates:
 |------|---------|----------|
 | `major-task` loaded | yes | `/Users/zbeyens/git/plate-2/.agents/skills/major-task/SKILL.md` |
 | Active goal checked or created | yes | `create_goal` active objective |
-| Source of truth read before analysis | yes | `benchmarks/editor/**`, docs/slate-v2 summaries, `.tmp/slate-v2` artifacts |
+| Source of truth read before analysis | yes | `benchmarks/editor/**`, docs/slate-v2 summaries, `Plate repo root` artifacts |
 | Major lane selected | yes | benchmark / performance |
 | Decision criteria stated | yes | completion threshold above |
 | Existing repo patterns / prior decisions checked | yes | existing Evidence Kit scripts, result rows, iteration notes, source map |
@@ -171,7 +171,7 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run the repo audit, benchmark, review, prototype, or artifact check named in this plan | `npm run check` passed in `benchmarks/editor`; rich result has 530 rows, 479 ok, 47 adapter-missing, no missing required artifacts |
-| Current-state source audit | yes | Map current owner, boundaries, constraints, and affected surfaces | `README.md`, `src/index.mjs`, `.tmp/slate-v2` artifact inventory, local editor source roots |
+| Current-state source audit | yes | Map current owner, boundaries, constraints, and affected surfaces | `README.md`, `src/index.mjs`, `Plate repo root` artifact inventory, local editor source roots |
 | Decision criteria closure | yes | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | Criteria satisfied for Slate v2 imported artifacts; explicitly narrowed for non-Slate runtime adapters as adapter gaps |
 | Options / tradeoffs / rejection record | yes | Record viable options, chosen recommendation, and why alternatives lose | Decisions and tradeoffs section records import-and-gap matrix vs fake cross-editor numbers |
 | Review / pressure pass | yes | Run selected reviewer/lens or record N/A with reason | Benchmark Guardian pressure applied: bad/unsupported/over-budget rows remain visible; no fake aggregate winner |
@@ -193,7 +193,7 @@ Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
 | Intake and source read | complete | read Evidence Kit package, Slate v2 docs/artifacts, local editor target roots | current-state map |
-| Current-state map | complete | first lane had 59 docs rows; new artifact sources available under `.tmp/slate-v2` | options |
+| Current-state map | complete | first lane had 59 docs rows; new artifact sources available under `Plate repo root` | options |
 | Options and recommendation | complete | choose import-and-gap matrix over fake cross-editor numbers | review |
 | Review / pressure pass | complete | kept adapter gaps and over-budget rows visible; rejected fake cross-editor numbers | implementation decision |
 | Implementation or plan artifact | complete | `rich-text-editors-benchmark.mjs`, `rich-text-editors-latest.json`, docs edits, generated perf docs | verification |
@@ -202,7 +202,7 @@ Phase / pass table:
 
 Findings:
 - Current Evidence Kit docs had 59 rows / 20 fixtures before the broad import.
-- `.tmp/slate-v2` already had required artifacts for React, core, clipboard,
+- `Plate repo root` already had required artifacts for React, core, clipboard,
   collab, history, and issue #6038 lanes.
 - Plate, legacy Slate, ProseMirror, Lexical, and Tiptap source roots exist
   locally.

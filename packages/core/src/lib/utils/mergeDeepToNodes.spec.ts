@@ -1,4 +1,4 @@
-import { ElementApi, NodeApi, createEditor } from '@platejs/slate';
+import { ElementApi, NodeApi, createEditor } from '@platejs/slate-legacy';
 
 import { mergeDeepToNodes } from './mergeDeepToNodes';
 

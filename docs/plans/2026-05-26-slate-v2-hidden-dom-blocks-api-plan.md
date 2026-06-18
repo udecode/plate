@@ -22,22 +22,22 @@ Completion threshold:
 - Score >= 0.90 and no dimension below 0.85.
 - Every pass row is complete or intentionally skipped with evidence.
 - Issue/reference sync rows are closed.
-- Every Slate v2 behavior/API claim cites live `.tmp/slate-v2` source and the
-  relevant `.tmp/slate-v2` command.
+- Every Slate v2 behavior/API claim cites live `Plate repo root` source and the
+  relevant `Plate repo root` command.
 - Final handoff is ready for user review.
 - `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-hidden-dom-blocks-api-plan.md` passes.
 
 Verification surface:
 - Planning source audit in `plate-2`.
-- Slate v2 source/test/example reads in `.tmp/slate-v2`.
-- Focused Slate React DOM coverage tests in `.tmp/slate-v2/packages/slate-react`.
+- Slate v2 source/test/example reads in `Plate repo root`.
+- Focused Slate React DOM coverage tests in `packages/slate-react`.
 - Planning closure records issue-ledger sync, current substrate tests, source
   grounding, and browser-proof execution gates. Browser route proof belongs to
   execution because the accepted `contentBoundary` target is not implemented in
   planning mode.
 
 Constraints:
-- Planning mode only. Do not patch `.tmp/slate-v2` implementation until the
+- Planning mode only. Do not patch `Plate repo root` implementation until the
   user explicitly accepts this plan.
 - Raw Slate stays unopinionated. Slate owns the runtime primitive; examples may
   be shadcn-shaped, but Slate should not ship product block kits.
@@ -49,9 +49,9 @@ Boundaries:
 - Allowed planning edits: `docs/plans/**`, `docs/research/**`,
   `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`,
   `docs/slate-v2/references/**`.
-- Live implementation source of truth: `.tmp/slate-v2/packages/slate-dom`,
-  `.tmp/slate-v2/packages/slate-react`, `.tmp/slate-v2/packages/slate`, and
-  `.tmp/slate-v2/site`.
+- Live implementation source of truth: `packages/slate-dom`,
+  `packages/slate-react`, `packages/slate`, and
+  `apps/www`.
 - Issue source of truth: generated live ledger, manual v2 sync ledger, fork
   dossier, and issue coverage matrix.
 
@@ -86,9 +86,9 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | `.agents/skills/slate-plan/SKILL.md` read before this plan edit |
 | Active goal checked or created | yes | `get_goal` returned null; `create_goal` created thread `019e63f8-9985-75c0-ae68-33575e324b41` |
-| Source of truth read before edits | yes | live `.tmp/slate-v2` files and prior DOM coverage solution read |
+| Source of truth read before edits | yes | live `Plate repo root` files and prior DOM coverage solution read |
 | `docs/solutions` checked for non-trivial existing-code work | yes | `docs/solutions/developer-experience/2026-05-02-slate-dom-incomplete-work-should-start-with-internal-coverage-boundaries.md:23` |
-| Live `.tmp/slate-v2` grounding needed for current-state claims | yes | source/test/example pointers below |
+| Live `Plate repo root` grounding needed for current-state claims | yes | source/test/example pointers below |
 
 Work Checklist:
 - [x] Objective includes lane outcome, full pass schedule, one-pass-per-activation policy, completion threshold, verification surface, constraints, boundaries, and blocked condition.
@@ -103,16 +103,16 @@ Work Checklist:
 - [x] Verification workspace gate recorded for current-pass Slate v2 claims.
 - [x] TDD acceptance surface complete for target behavior.
 - [x] Browser-proof disposition recorded: current substrate claims have focused
-  `.tmp/slate-v2` proof; future shadcn route/browser behavior remains an
+  `Plate repo root` proof; future shadcn route/browser behavior remains an
   execution gate because planning mode cannot implement it.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run closure commands named in this plan | focused Slate React DOM coverage tests passed; focused core migration/collab tests passed; `check-complete` passed |
-| Slate v2 behavior/API claim | yes | Record `.tmp/slate-v2` command/proof for every claim | current substrate claims cite live source/tests; accepted future API/browser claims are marked execution gates, not implemented behavior claims |
+| Slate v2 behavior/API claim | yes | Record `Plate repo root` command/proof for every claim | current substrate claims cite live source/tests; accepted future API/browser claims are marked execution gates, not implemented behavior claims |
 | Issue ledger or PR reference changed | yes | Sync issue rows when related issue pass changes claims | hidden/offscreen planning sync added to manual sync ledger, issue coverage matrix, fork dossier, and PR reference with zero fixed/improved claims |
-| Autoreview for uncommitted implementation changes | N/A now | Planning-only activation | no `.tmp/slate-v2` implementation patch |
+| Autoreview for uncommitted implementation changes | N/A now | Planning-only activation | no `Plate repo root` implementation patch |
 | Final user-review handoff | yes | Emit final handoff in this plan and final response | final handoff section is filled and lane state is ready for user review |
 | Goal plan complete | yes | Run `check-complete` at closure | final closure run passed |
 
@@ -123,7 +123,7 @@ Phase / pass table:
 | Related issue discovery | complete | reused existing ClawSweeper/ledger rows for hidden subtree, islands/content roots, virtualization, structural DOM exclusion, focus controls, and a11y guards; live generated rows read for related current issues | issue-ledger pass |
 | Issue-ledger pass | complete | scanned full issue ledger, clusters, test candidates, benchmark candidates, package-impact matrix, requirements, and relevant candidate leaf files; no new fixed/improved claims | intent/boundary pass |
 | Intent/boundary and decision brief | complete | decision: public slot should be `slots.contentBoundary`; `DOMCoverage` remains internal; app UI state stays app-owned; materialization must be per-boundary/composable | research refresh |
-| Research, ecosystem strategy, live-source refresh | complete | Context7 shadcn and Radix docs refreshed; compiled React/TanStack/editor research reused; live `.tmp/slate-v2` source re-read for current boundary slot, singleton materialize handler, metrics, exports, and debug example call sites | pressure passes |
+| Research, ecosystem strategy, live-source refresh | complete | Context7 shadcn and Radix docs refreshed; compiled React/TanStack/editor research reused; live `Plate repo root` source re-read for current boundary slot, singleton materialize handler, metrics, exports, and debug example call sites | pressure passes |
 | Performance/DX/migration/regression/simplicity pressure passes | complete | applied Vercel React, performance, performance-oracle, tdd, shadcn, and react-useeffect lenses; focused DOM coverage tests reran green; pressure result keeps `contentBoundary` but adds hard gates for boundary IDs, handler composition, native degradation, Radix shell mounting, and browser proof | objection ledger |
 | Slate maintainer objection ledger | complete | steelman ledger expanded for stable `contentBoundary`, optional boundary IDs, per-boundary materialization, model-present missing DOM, Radix shell examples, native degradation, and no raw path/ignore-DOM escapes; focused DOM coverage tests reran green | high-risk pass |
 | High-risk deliberate mode | complete | pre-mortem, expanded proof plan, blast radius, and rollback/hard-cut answer recorded for public slot, handler lifecycle, native degradation, Radix shells, collaboration UI state, and example/docs risks; focused DOM coverage tests reran green | ecosystem maintainer pass |
@@ -135,8 +135,8 @@ Phase / pass table:
 Scorecard:
 | Dimension | Weight | Score | Evidence |
 |-----------|-------:|------:|----------|
-| React 19.2 runtime performance | 0.20 | 0.90 | hidden 1000-descendant expansion avoids waking siblings in `.tmp/slate-v2/packages/slate-react/test/dom-coverage-boundary-contract.tsx:754`; hidden model updates avoid visible sibling render at `:834`; revision pass keeps repeated-unit, stress, and handler-lifecycle proof gates as execution blockers |
-| Slate-close unopinionated DX | 0.20 | 0.90 | current render props expose `slots.unstableBoundary` at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:445`; revision pass accepts stable `contentBoundary`, optional `boundaryId`, pathless `scope`, `mounted`, and object-shaped `onMaterialize({ boundary, reason, range })` |
+| React 19.2 runtime performance | 0.20 | 0.90 | hidden 1000-descendant expansion avoids waking siblings in `packages/slate-react/test/dom-coverage-boundary-contract.tsx:754`; hidden model updates avoid visible sibling render at `:834`; revision pass keeps repeated-unit, stress, and handler-lifecycle proof gates as execution blockers |
+| Slate-close unopinionated DX | 0.20 | 0.90 | current render props expose `slots.unstableBoundary` at `packages/slate-react/src/components/editable-text-blocks.tsx:445`; revision pass accepts stable `contentBoundary`, optional `boundaryId`, pathless `scope`, `mounted`, and object-shaped `onMaterialize({ boundary, reason, range })` |
 | Plate and slate-yjs migration backbone | 0.15 | 0.90 | ecosystem pass maps `contentBoundary` to Plate/plugin wrappers and keeps collab deterministic through document ops, state patch policy, commit metadata, local UI defaults, and no shared boundary IDs; focused core collab/migration tests passed |
 | Regression-proof testing strategy | 0.20 | 0.90 | focused current tests reran green: 2 files, 25 tests; revision pass keeps focused unit, native bridge, stress, browser route, issue-sync, and no-false-claim proof rows as explicit gates |
 | Research evidence completeness | 0.15 | 0.90 | Context7 refreshed shadcn/Radix docs; compiled React/TanStack/editor research reused; ecosystem pass read current extension/collab source and collab readiness artifact instead of relying on memory |
@@ -178,7 +178,7 @@ Source-backed architecture north star:
   stable, narrow render slot for intentionally unmounted editable content.
 - source evidence: `DOMCoverageBoundary` already carries state, reason,
   selection/copy/find policy, owner path/runtime metadata, and version at
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:72`.
+  `packages/slate-dom/src/plugin/dom-coverage.ts:72`.
 - rejected drift: do not add public `ignoreDOM`, `ignoreCursor`, raw path props,
   or product-specific Accordion/Tabs APIs to raw Slate.
 - migration posture: Plate can wrap the stable slot into branded components;
@@ -188,35 +188,35 @@ Source-backed architecture north star:
 Public API target:
 | Surface | Proposed shape | User-facing DX | Compatibility / migration | Evidence | Verdict |
 |---------|----------------|----------------|---------------------------|----------|---------|
-| React render slot | Promote `slots.unstableBoundary` to stable `slots.contentBoundary`; make `boundaryId` optional; keep `scope` pathless; add per-boundary `onMaterialize` with an object payload | `<slots.contentBoundary mounted={open} scope={{ type: 'children', from: 1 }} onMaterialize={({ boundary, reason, range }) => setOpen(true)} />` | Existing unstable call sites migrate mechanically; no raw path exposure; `coverage` vocabulary remains internal | current slot type at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:405`; slots passed to renderers at `:739` | revise |
-| Boundary IDs | Auto-generate from owner runtime id plus scope; allow explicit override only for debug/testing | no manual IDs for normal app authors | preserves current explicit IDs in tests/examples | current IDs are manual in example at `.tmp/slate-v2/site/examples/ts/dom-coverage-boundaries.tsx:252` | revise |
-| Materialization | Add per-boundary `onMaterialize({ boundary, reason, range })` through a composable handler registry; do not keep only one editor-wide handler | hidden accordion/tabs can open when selection/paste/focus targets hidden content | required before `selectionPolicy: materialize` is sane for app-hidden blocks | current singleton `DOMCoverage.setMaterializeHandler` at `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:638`; virtualized/staged handlers install at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1809` and `:1839` | revise |
-| Standard blocks | Keep out of raw package; add shadcn-shaped examples for Accordion and Tabs, maybe Collapsible if it stays tiny | users see real block patterns, not a debug harness | Plate owns polished kits later | current debug example at `.tmp/slate-v2/site/examples/ts/dom-coverage-boundaries.tsx:187` | keep example-only |
+| React render slot | Promote `slots.unstableBoundary` to stable `slots.contentBoundary`; make `boundaryId` optional; keep `scope` pathless; add per-boundary `onMaterialize` with an object payload | `<slots.contentBoundary mounted={open} scope={{ type: 'children', from: 1 }} onMaterialize={({ boundary, reason, range }) => setOpen(true)} />` | Existing unstable call sites migrate mechanically; no raw path exposure; `coverage` vocabulary remains internal | current slot type at `packages/slate-react/src/components/editable-text-blocks.tsx:405`; slots passed to renderers at `:739` | revise |
+| Boundary IDs | Auto-generate from owner runtime id plus scope; allow explicit override only for debug/testing | no manual IDs for normal app authors | preserves current explicit IDs in tests/examples | current IDs are manual in example at `apps/www/src/app/(app)/examples/slate/_examples/dom-coverage-boundaries.tsx:252` | revise |
+| Materialization | Add per-boundary `onMaterialize({ boundary, reason, range })` through a composable handler registry; do not keep only one editor-wide handler | hidden accordion/tabs can open when selection/paste/focus targets hidden content | required before `selectionPolicy: materialize` is sane for app-hidden blocks | current singleton `DOMCoverage.setMaterializeHandler` at `packages/slate-dom/src/plugin/dom-coverage.ts:638`; virtualized/staged handlers install at `packages/slate-react/src/components/editable-text-blocks.tsx:1809` and `:1839` | revise |
+| Standard blocks | Keep out of raw package; add shadcn-shaped examples for Accordion and Tabs, maybe Collapsible if it stays tiny | users see real block patterns, not a debug harness | Plate owns polished kits later | current debug example at `apps/www/src/app/(app)/examples/slate/_examples/dom-coverage-boundaries.tsx:187` | keep example-only |
 
 Internal runtime target:
 | Layer | Current owner | Target mechanism | Avoids | Evidence | Verdict |
 |-------|---------------|------------------|--------|----------|---------|
-| DOM lookup bridge | `slate-dom` `DOMCoverage` | boundary-aware point/range resolution before raw DOM assert | hidden content crash and stale DOM reads | `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:645` | keep |
-| Copy/paste/drag | `slate-react` input strategies plus `slate-dom` clipboard runtime | model-backed serialization when hidden ranges are selected | stale hidden DOM payloads | `.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:219` | keep |
-| Selection import/export | `selection-controller` | materialize or model-back boundary selections | invisible caret inside unmounted content | `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:268` | revise with per-boundary handler |
-| DOM strategy metrics | `Editable` metrics | expose mounted/pending/native-complete/degradation counters | false native-surface claims | `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1972` | keep |
+| DOM lookup bridge | `slate-dom` `DOMCoverage` | boundary-aware point/range resolution before raw DOM assert | hidden content crash and stale DOM reads | `packages/slate-dom/src/plugin/dom-coverage.ts:645` | keep |
+| Copy/paste/drag | `slate-react` input strategies plus `slate-dom` clipboard runtime | model-backed serialization when hidden ranges are selected | stale hidden DOM payloads | `packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:219` | keep |
+| Selection import/export | `selection-controller` | materialize or model-back boundary selections | invisible caret inside unmounted content | `packages/slate-react/src/editable/selection-controller.ts:268` | revise with per-boundary handler |
+| DOM strategy metrics | `Editable` metrics | expose mounted/pending/native-complete/degradation counters | false native-surface claims | `packages/slate-react/src/components/editable-text-blocks.tsx:1972` | keep |
 
 Hook / component / render DX target:
 | Surface | Call-site shape | Composition rule | Performance rule | Evidence | Verdict |
 |---------|-----------------|------------------|------------------|----------|---------|
-| Accordion body | `Trigger` is `contentEditable={false}`; body uses `contentBoundary` with `mounted=open` and `onMaterialize` | Shell stays mounted; Slate slot owns hidden editable children | closed body must not render descendants | shadcn Accordion docs: Root/Item/Trigger/Content via Context7; Slate hidden descendants not rendered at `.tmp/slate-v2/packages/slate-react/test/dom-coverage-boundary-contract.tsx:818` | target |
+| Accordion body | `Trigger` is `contentEditable={false}`; body uses `contentBoundary` with `mounted=open` and `onMaterialize` | Shell stays mounted; Slate slot owns hidden editable children | closed body must not render descendants | shadcn Accordion docs: Root/Item/Trigger/Content via Context7; Slate hidden descendants not rendered at `packages/slate-react/test/dom-coverage-boundary-contract.tsx:818` | target |
 | Tabs panel | active panel mounted; inactive panels register coverage boundaries | tab controls own roving focus; editor selection only enters active panel unless materialized | inactive panels do not mount editable descendants | shadcn Tabs docs: List/Trigger/Content via Context7 | target |
-| Collapsible/details | same primitive as Accordion, no separate API | example-local wrapper only | no duplicate runtime path | core already has collapsible-shaped normalization fixtures at `.tmp/slate-v2/packages/slate/test/normalization/text/merge-adjacent-non-selectable-ancestor.ts:36` | target |
+| Collapsible/details | same primitive as Accordion, no separate API | example-local wrapper only | no duplicate runtime path | core already has collapsible-shaped normalization fixtures at `packages/slate/test/normalization/text/merge-adjacent-non-selectable-ancestor.ts:36` | target |
 
 Plate migration-backbone target:
 | Pressure | Slate substrate target | Plate adaptation route | Non-goal | Evidence | Verdict |
 |----------|------------------------|------------------------|----------|---------|---------|
-| shadcn-quality blocks | stable pathless `contentBoundary` slot and per-boundary materialize | Plate can wrap into `<AccordionContent>` / `<TabsContent>` kits | raw Slate should not ship Plate UI or Tailwind classes | current slot hides runtime IDs from call sites at `.tmp/slate-v2/packages/slate-react/test/dom-coverage-boundary-contract.tsx:407` | good after revise |
+| shadcn-quality blocks | stable pathless `contentBoundary` slot and per-boundary materialize | Plate can wrap into `<AccordionContent>` / `<TabsContent>` kits | raw Slate should not ship Plate UI or Tailwind classes | current slot hides runtime IDs from call sites at `packages/slate-react/test/dom-coverage-boundary-contract.tsx:407` | good after revise |
 
 slate-yjs migration-backbone target:
 | Pressure | Slate substrate target | Collaboration route | Non-goal | Evidence | Verdict |
 |----------|------------------------|---------------------|----------|---------|---------|
-| hidden content edits and remote updates | model is authoritative even when DOM absent | document ops sync normally; open/active tab state is local UI by default, optionally app-persisted | no raw Slate shared UI-state protocol in this plan | hidden model update stays out of DOM/render at `.tmp/slate-v2/packages/slate-react/test/dom-coverage-boundary-contract.tsx:890` | needs policy row |
+| hidden content edits and remote updates | model is authoritative even when DOM absent | document ops sync normally; open/active tab state is local UI by default, optionally app-persisted | no raw Slate shared UI-state protocol in this plan | hidden model update stays out of DOM/render at `packages/slate-react/test/dom-coverage-boundary-contract.tsx:890` | needs policy row |
 
 Intent / boundary record:
 - intent: make model-present missing DOM a first-class editor contract. Slate
@@ -481,9 +481,9 @@ TDD acceptance surface:
 Legacy regression proof matrix:
 | Regression class | Legacy behavior | Slate v2 target | Proof route | Owner | Status |
 |------------------|-----------------|-----------------|-------------|-------|--------|
-| dropped editable descendants | crash or stale DOM lookup | dev warning unless boundary registered | `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:375`; test at `.tmp/slate-v2/packages/slate-react/test/dom-coverage-boundary-contract.tsx:908` | slate-react | current proof exists |
-| hidden copy/paste | stale DOM or empty payload | model-backed serialization/mutation | `.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:219` and `:244` | slate-react | current proof exists |
-| large hidden body | hidden descendants still render | zero hidden descendant renders until expanded | `.tmp/slate-v2/packages/slate-react/test/dom-coverage-boundary-contract.tsx:754` | slate-react | current proof exists |
+| dropped editable descendants | crash or stale DOM lookup | dev warning unless boundary registered | `packages/slate-react/src/components/editable-text-blocks.tsx:375`; test at `packages/slate-react/test/dom-coverage-boundary-contract.tsx:908` | slate-react | current proof exists |
+| hidden copy/paste | stale DOM or empty payload | model-backed serialization/mutation | `packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:219` and `:244` | slate-react | current proof exists |
+| large hidden body | hidden descendants still render | zero hidden descendant renders until expanded | `packages/slate-react/test/dom-coverage-boundary-contract.tsx:754` | slate-react | current proof exists |
 | app materialization | invisible model selection in hidden content | boundary asks app to mount/open | target per-boundary `onMaterialize` | slate-dom/slate-react | gap |
 | shadcn accordion/collapsible shell | Radix Content may unmount while closed | non-editable shell or forced Content remains mounted; editable descendants are owned by `contentBoundary` | Context7 Radix Content `forceMount` docs plus new example/browser contract | slate-react/site | gap |
 | shadcn tabs | inactive editable DOM either mounted or unsafe omitted | inactive panels covered and materializable | new example/browser contract; inactive panel shell must not unregister boundary | slate-react/site | gap |
@@ -491,7 +491,7 @@ Legacy regression proof matrix:
 Browser stress / parity strategy:
 | Surface | Scenario | Browser/device | Command or proof route | Expected signal | Status |
 |---------|----------|----------------|------------------------|-----------------|--------|
-| hidden blocks example | collapse, edit, re-collapse, select hidden, copy hidden | Chromium first | `.tmp/slate-v2/playwright/integration/examples/hidden-content-blocks.test.ts` | no stale DOM; model-backed payload; boundary count visible | planned |
+| hidden blocks example | collapse, edit, re-collapse, select hidden, copy hidden | Chromium first | `apps/www/tests/slate-browser/donor/examples/hidden-content-blocks.test.ts` | no stale DOM; model-backed payload; boundary count visible | planned |
 | Radix shell behavior | close Accordion/Collapsible and switch Tabs while boundary stays registered | Chromium first | same route test | shell or forced Content remains mounted; hidden editable descendants absent | planned |
 | tabs example | switch tabs, edit inactive model via command, materialize target tab | Chromium first | same route test | inactive text absent from DOM until active; materialization activates the right tab | planned |
 | native surface limits | browser find/screen reader over unmounted panels | docs/browser smoke only | route exposes `nativeSurfaceComplete=false` / degradation note | no false equivalence claim | planned |
@@ -499,9 +499,9 @@ Browser stress / parity strategy:
 Verification workspace gate:
 | Claim | Workspace | Command | Result | Owner |
 |-------|-----------|---------|--------|-------|
-| current DOM coverage React contracts are green | `.tmp/slate-v2/packages/slate-react` | `bun test:vitest -- dom-coverage-boundary-contract.test.tsx dom-coverage-native-bridge-contract.test.ts` | passed in closure: 2 files, 25 tests, 1.51s | closure pass |
-| core migration/collab backbone is green | `.tmp/slate-v2` | `bun test ./packages/slate/test/migration-backbone-contract.ts ./packages/slate/test/collab-document-state-contract.ts ./packages/slate/test/collab-selection-stress-contract.ts` | passed in closure: 9 tests across 3 files, 189ms | closure pass |
-| stable slot/per-boundary materialization target | `.tmp/slate-v2` | future focused tests plus browser example | execution gate, not a planning closure claim | execution mode |
+| current DOM coverage React contracts are green | `packages/slate-react` | `bun test:vitest -- dom-coverage-boundary-contract.test.tsx dom-coverage-native-bridge-contract.test.ts` | passed in closure: 2 files, 25 tests, 1.51s | closure pass |
+| core migration/collab backbone is green | `Plate repo root` | `bun test ./packages/slate/test/migration-backbone-contract.ts ./packages/slate/test/collab-document-state-contract.ts ./packages/slate/test/collab-selection-stress-contract.ts` | passed in closure: 9 tests across 3 files, 189ms | closure pass |
+| stable slot/per-boundary materialization target | `Plate repo root` | future focused tests plus browser example | execution gate, not a planning closure claim | execution mode |
 | plan artifact completion | `plate-2` | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-hidden-dom-blocks-api-plan.md` | passed | closure pass |
 
 Applicable implementation-skill review matrix:
@@ -527,19 +527,19 @@ High-risk deliberate mode:
 High-risk pre-mortem:
 | Failure scenario | Likely cause | Current evidence | Mitigation | Required proof | Status |
 |------------------|--------------|------------------|------------|----------------|--------|
-| handler clobbering breaks staged/virtualized/app-hidden content | replacing singleton materialization without ownership rules | staged and virtualized surfaces both call `DOMCoverage.setMaterializeHandler` at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1814` and `:1844` | registry composes handlers by boundary owner/scope; cleanup is idempotent; handler return value is explicit | unit test with app-hidden boundary plus staged and virtualized handlers mounted together | planned proof |
-| auto-generated boundary IDs become unstable across render/reorder | deriving IDs from display text, index, or React key instead of runtime owner and scope | current props require `boundaryId` at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:405`; debug route manually repeats IDs at `.tmp/slate-v2/site/examples/ts/dom-coverage-boundaries.tsx:252` | generate from owner runtime identity plus normalized scope; explicit override remains for tests/debug | rerender/reorder test proving boundary identity stays stable and duplicate-free | planned proof |
+| handler clobbering breaks staged/virtualized/app-hidden content | replacing singleton materialization without ownership rules | staged and virtualized surfaces both call `DOMCoverage.setMaterializeHandler` at `packages/slate-react/src/components/editable-text-blocks.tsx:1814` and `:1844` | registry composes handlers by boundary owner/scope; cleanup is idempotent; handler return value is explicit | unit test with app-hidden boundary plus staged and virtualized handlers mounted together | planned proof |
+| auto-generated boundary IDs become unstable across render/reorder | deriving IDs from display text, index, or React key instead of runtime owner and scope | current props require `boundaryId` at `packages/slate-react/src/components/editable-text-blocks.tsx:405`; debug route manually repeats IDs at `apps/www/src/app/(app)/examples/slate/_examples/dom-coverage-boundaries.tsx:252` | generate from owner runtime identity plus normalized scope; explicit override remains for tests/debug | rerender/reorder test proving boundary identity stays stable and duplicate-free | planned proof |
 | hidden UI state confuses collaboration and remote selection | app open/tab state is local while remote ops target hidden content | hidden model update tests prove model can change while DOM stays absent; no slate-yjs adapter closure is claimed | document app-local default; optional app-modeled UI state only when product needs shared open/tab state; remote selection materialization is a UI policy, not document data | collab policy row plus fake-adapter test showing document ops sync without shared UI state | planned proof |
 | Radix/shadcn Content unmounts the Slate boundary shell | example uses Radix default unmount behavior directly | current debug route keeps manual `slots.unstableBoundary` mounted; Radix Content commonly unmounts hidden content without `forceMount` | example uses persistent non-editable shell or Radix `forceMount`; only editable descendants are omitted by `contentBoundary` | browser test verifies closed Accordion/Tabs keeps boundary registered while editable descendants are absent | planned proof |
-| native behavior gets oversold | route/docs imply browser find or screen-reader parity over absent DOM | `DOMCoverageBoundary` has `findPolicy` and `copyPolicy` fields at `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:81`; absent DOM cannot be native-find equivalent | metrics expose `nativeSurfaceComplete=false` / degradation; docs say model-backed operations are supported, native parity is conditional on mounting | browser route assertion for degradation state plus copy/paste model-backed proof | planned proof |
-| performance claim regresses into hidden render work | content wrapper accidentally renders hidden descendants or subscribes per descendant while collapsed | existing test proves 1000 hidden descendants render zero while closed at `.tmp/slate-v2/packages/slate-react/test/dom-coverage-boundary-contract.tsx:754` | keep closed boundary at shell-level only; no descendant effects/listeners/subscriptions while closed | repeated-unit test and 1000/5000 hidden descendant stress row with DOM/editable descendant counts | planned proof |
+| native behavior gets oversold | route/docs imply browser find or screen-reader parity over absent DOM | `DOMCoverageBoundary` has `findPolicy` and `copyPolicy` fields at `packages/slate-dom/src/plugin/dom-coverage.ts:81`; absent DOM cannot be native-find equivalent | metrics expose `nativeSurfaceComplete=false` / degradation; docs say model-backed operations are supported, native parity is conditional on mounting | browser route assertion for degradation state plus copy/paste model-backed proof | planned proof |
+| performance claim regresses into hidden render work | content wrapper accidentally renders hidden descendants or subscribes per descendant while collapsed | existing test proves 1000 hidden descendants render zero while closed at `packages/slate-react/test/dom-coverage-boundary-contract.tsx:754` | keep closed boundary at shell-level only; no descendant effects/listeners/subscriptions while closed | repeated-unit test and 1000/5000 hidden descendant stress row with DOM/editable descendant counts | planned proof |
 
 Expanded proof plan:
 | Proof lane | Required proof | Command / route | Closure bar |
 |------------|----------------|-----------------|-------------|
-| Unit API | `slots.contentBoundary` supports self and child-range scopes, optional `boundaryId`, explicit debug ID override, and no raw path/runtime ID exposure | `.tmp/slate-v2/packages/slate-react`: targeted Vitest for boundary slot API | public API tests pass |
-| Unit runtime | app-hidden, staged, and virtualized materialization handlers compose without clobbering; cleanup removes only the owning handler | `.tmp/slate-v2/packages/slate-react`: materialization registry Vitest | all handler coexistence rows pass |
-| Browser | Accordion, Collapsible, and Tabs examples keep non-editable shell mounted while editable descendants are absent, then materialize on selection/focus/copy/paste target | `.tmp/slate-v2`: `playwright test playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium` | route proves no stale DOM crash and correct materialized panel |
+| Unit API | `slots.contentBoundary` supports self and child-range scopes, optional `boundaryId`, explicit debug ID override, and no raw path/runtime ID exposure | `packages/slate-react`: targeted Vitest for boundary slot API | public API tests pass |
+| Unit runtime | app-hidden, staged, and virtualized materialization handlers compose without clobbering; cleanup removes only the owning handler | `packages/slate-react`: materialization registry Vitest | all handler coexistence rows pass |
+| Browser | Accordion, Collapsible, and Tabs examples keep non-editable shell mounted while editable descendants are absent, then materialize on selection/focus/copy/paste target | `Plate repo root`: `playwright test playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium` | route proves no stale DOM crash and correct materialized panel |
 | Native parity/degradation | copy/paste/select-all can be model-backed; browser find/screen-reader parity is degraded unless content is mounted | hidden-block browser route plus native bridge unit tests | model-backed operations pass and degradation is visible |
 | Stress/perf | hidden body has 0 editable descendants and no hidden descendant renders while closed; expansion wakes only covered content; sibling render budget holds | focused large-boundary Vitest plus huge-document artifact row | repeated-unit budgets and DOM counts recorded |
 | Migration | existing `unstableBoundary` call sites have a mechanical rename; manual `boundaryId` becomes optional without breaking explicit tests | package API tests plus example diff review | migration note in plan and docs is concrete |
@@ -551,7 +551,7 @@ Blast radius:
 |------|----------------|------|-----------|
 | `slate-dom` | materialize handler registry or dispatch protocol | broad runtime bridge risk | keep `DOMCoverageBoundary` internal; focused registry tests before public docs |
 | `slate-react` | slot rename/wrapper, optional ID generation, handler registration, metrics wiring | React lifecycle/render churn risk | use layout-effect registration only for boundary registry; no per-descendant work while closed |
-| `.tmp/slate-v2/site` | hidden content blocks example using shadcn-shaped Accordion/Tabs/Collapsible | example looks like a core UI kit | example-local wrappers, direct raw slot call site first |
+| `apps/www` | hidden content blocks example using shadcn-shaped Accordion/Tabs/Collapsible | example looks like a core UI kit | example-local wrappers, direct raw slot call site first |
 | Tests | unit, native bridge, stress, and browser rows | tests can become implementation-coupled | assert public behavior, DOM counts, copy/paste payloads, and registered boundaries |
 | Plate/plugin consumers | product block wrappers around `contentBoundary` | wrapper layer becomes compatibility junk drawer | one primitive target; no raw path props or Radix-specific Slate API |
 | slate-yjs/collab | local UI state vs shared document ops | remote peers may disagree on open panels | document local default; shared UI only if app models it explicitly |
@@ -597,7 +597,7 @@ Ecosystem maintainer matrix:
 Current ecosystem source grounding:
 - extension/plugin backbone: `EditorExtension` exposes `api`, `state`, `tx`,
   `onCommit`, `operations`, queries, transforms, normalizers, setup cleanup, and
-  runtime state at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1447`
+  runtime state at `packages/slate/src/interfaces/editor.ts:1447`
   and `:1475`.
 - plugin authoring proof: `generic-extension-install-contract.ts` shows state
   groups under `editor.read`, tx groups under `editor.update`, `editor.api`, and
@@ -630,21 +630,21 @@ Ecosystem non-goals and hard constraints:
 Slate maintainer objection ledger:
 | Change | Who feels pain | Strong objection | Steelman antithesis | Tradeoff tension | Payoff / evidence | Rejected alternative | Migration / docs / proof answer | Ecosystem answer | Verdict |
 |--------|----------------|------------------|--------------------|------------------|-----------------|----------------------|-------------------------------|------------------|---------|
-| Promote `slots.unstableBoundary` to stable `slots.contentBoundary` | raw Slate users, app authors, docs authors | "This exposes a weird boundary concept instead of just letting me render children." | Do nothing until the lower-level primitive has more field mileage; unstable names are honest. | Public API freezes a concept that still needs sharp docs and browser proof. | Current slot is explicitly unstable at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:450`; legacy all-DOM constraint blocks accordion/tabs use cases; `coverage` naming would leak internals. | Keep `unstableBoundary`: weaker because users still cannot build serious hidden/offscreen content without experimental API. | Mechanical rename path; JSDoc must define "model-present, editable-DOM absent"; example must show the call site directly before helpers; regression proof is unit plus hidden-block browser route. | Plate wraps the slot into product components; slate-yjs is unaffected because document ops remain model-owned. | keep |
-| Make `boundaryId` optional with explicit override | raw Slate users, test authors, plugin authors | "Auto IDs are spooky; explicit IDs are easier to debug." | Keep explicit IDs so every boundary is named by user code. | Auto IDs must be deterministic across render and owner/scope changes; debug failures can become opaque. | Current prop requires `boundaryId` at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:405`; debug example repeats manual IDs at `.tmp/slate-v2/site/examples/ts/dom-coverage-boundaries.tsx:252`; normal authors should not mint registry keys. | Keep required ID: weaker DX and creates accidental collisions/copy-paste bugs. | Generate from owner runtime identity plus scope; keep explicit `boundaryId` for tests/debug; docs say most users omit it; tests cover duplicate-free self and child-range scopes. | Plate can pass explicit IDs only when product analytics/debug wants them; collab must not treat generated boundary IDs as shared document identity. | keep |
-| Replace singleton editor materialize handler with per-boundary/composable materialization | browser-runtime maintainer, virtualization owner, app author | "Callbacks that open accordions are app state, not editor runtime; don't put React UI control flow in Slate." | Keep materialization editor-wide and let one strategy own it. | More lifecycle surface; handler ordering and cleanup bugs become possible. | Current `DOMCoverage.setMaterializeHandler` stores one handler at `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:638`; staged and virtualized strategies both install editor-wide handlers at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1814` and `:1844`; app-hidden content needs to coexist with both. | Keep singleton: weaker because app-hidden, staged, and virtualized materialization clobber each other. | Register handler per boundary or compose handlers by boundary ownership; callback payload includes reason/range/boundary metadata; tests prove app-hidden + staged + virtualized handlers coexist and cleanup. | Plate needs local product state callbacks; slate-yjs keeps document sync separate and does not sync open/tab UI unless app models it. | keep |
-| Treat model-present missing DOM as supported only through Slate-owned coverage boundaries | raw Slate users, browser behavior maintainers | "This sounds like blessing hidden DOM and breaking browser-native expectations." | Legacy all-nodes-in-DOM is simpler and aligns with native browser behavior. | Slate now owns an explicit degraded native surface and must explain it. | `DOMCoverageBoundary` tracks selection/copy/find policy and covered ranges at `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:72`; tests prove hidden copy/paste uses model-backed data at `.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:219`; browser find/screen reader parity is not free. | Raw omission without a boundary: weaker because it recreates stale DOM crashes with no declared policy. | Docs must say absent DOM is valid only through `contentBoundary`; route shows `nativeSurfaceComplete=false`/degradation; browser tests cover selection/copy/paste and explicit non-parity for find/screen-reader. | Plate can expose polished hidden blocks while preserving honest degradation; collab syncs content ops, not native DOM presence. | keep |
+| Promote `slots.unstableBoundary` to stable `slots.contentBoundary` | raw Slate users, app authors, docs authors | "This exposes a weird boundary concept instead of just letting me render children." | Do nothing until the lower-level primitive has more field mileage; unstable names are honest. | Public API freezes a concept that still needs sharp docs and browser proof. | Current slot is explicitly unstable at `packages/slate-react/src/components/editable-text-blocks.tsx:450`; legacy all-DOM constraint blocks accordion/tabs use cases; `coverage` naming would leak internals. | Keep `unstableBoundary`: weaker because users still cannot build serious hidden/offscreen content without experimental API. | Mechanical rename path; JSDoc must define "model-present, editable-DOM absent"; example must show the call site directly before helpers; regression proof is unit plus hidden-block browser route. | Plate wraps the slot into product components; slate-yjs is unaffected because document ops remain model-owned. | keep |
+| Make `boundaryId` optional with explicit override | raw Slate users, test authors, plugin authors | "Auto IDs are spooky; explicit IDs are easier to debug." | Keep explicit IDs so every boundary is named by user code. | Auto IDs must be deterministic across render and owner/scope changes; debug failures can become opaque. | Current prop requires `boundaryId` at `packages/slate-react/src/components/editable-text-blocks.tsx:405`; debug example repeats manual IDs at `apps/www/src/app/(app)/examples/slate/_examples/dom-coverage-boundaries.tsx:252`; normal authors should not mint registry keys. | Keep required ID: weaker DX and creates accidental collisions/copy-paste bugs. | Generate from owner runtime identity plus scope; keep explicit `boundaryId` for tests/debug; docs say most users omit it; tests cover duplicate-free self and child-range scopes. | Plate can pass explicit IDs only when product analytics/debug wants them; collab must not treat generated boundary IDs as shared document identity. | keep |
+| Replace singleton editor materialize handler with per-boundary/composable materialization | browser-runtime maintainer, virtualization owner, app author | "Callbacks that open accordions are app state, not editor runtime; don't put React UI control flow in Slate." | Keep materialization editor-wide and let one strategy own it. | More lifecycle surface; handler ordering and cleanup bugs become possible. | Current `DOMCoverage.setMaterializeHandler` stores one handler at `packages/slate-dom/src/plugin/dom-coverage.ts:638`; staged and virtualized strategies both install editor-wide handlers at `packages/slate-react/src/components/editable-text-blocks.tsx:1814` and `:1844`; app-hidden content needs to coexist with both. | Keep singleton: weaker because app-hidden, staged, and virtualized materialization clobber each other. | Register handler per boundary or compose handlers by boundary ownership; callback payload includes reason/range/boundary metadata; tests prove app-hidden + staged + virtualized handlers coexist and cleanup. | Plate needs local product state callbacks; slate-yjs keeps document sync separate and does not sync open/tab UI unless app models it. | keep |
+| Treat model-present missing DOM as supported only through Slate-owned coverage boundaries | raw Slate users, browser behavior maintainers | "This sounds like blessing hidden DOM and breaking browser-native expectations." | Legacy all-nodes-in-DOM is simpler and aligns with native browser behavior. | Slate now owns an explicit degraded native surface and must explain it. | `DOMCoverageBoundary` tracks selection/copy/find policy and covered ranges at `packages/slate-dom/src/plugin/dom-coverage.ts:72`; tests prove hidden copy/paste uses model-backed data at `packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts:219`; browser find/screen reader parity is not free. | Raw omission without a boundary: weaker because it recreates stale DOM crashes with no declared policy. | Docs must say absent DOM is valid only through `contentBoundary`; route shows `nativeSurfaceComplete=false`/degradation; browser tests cover selection/copy/paste and explicit non-parity for find/screen-reader. | Plate can expose polished hidden blocks while preserving honest degradation; collab syncs content ops, not native DOM presence. | keep |
 | Use shadcn/Radix Accordion/Tabs as examples, not raw Slate components | Plate maintainer, raw Slate maintainer, app author | "Why are we designing around shadcn? Slate should be UI-library agnostic." | Avoid examples tied to Radix/shadcn and ship only a low-level debug harness. | Real examples can look like product endorsement and add docs maintenance. | Current debug route uses `DOMCoverage` internal imports and manual `slots.unstableBoundary`; shadcn/Radix grammar is composition-first and maps cleanly to Trigger/Content without core APIs. | Ship Slate Accordion/Tabs components: weaker package boundary and turns Slate into a Plate-style kit. | Example-local wrappers only; first example shows raw `slots.contentBoundary`; Radix `forceMount`/persistent shell is documented as shell plumbing, not editor API. | Plate may own polished kit components; slate-yjs unaffected except docs must state UI open/tab state is local by default. | keep |
-| Expose native-surface degradation instead of claiming browser find/screen-reader parity | a11y maintainer, browser-runtime maintainer, app author | "A feature that hides DOM is hostile to accessibility and browser find." | Refuse hidden editable content until parity can be guaranteed. | Some users will dislike an API that tells them native parity is degraded. | Existing boundary policies include `findPolicy` and `copyPolicy` at `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts:81`; pressure gates require honest metrics; absent DOM cannot be screen-reader/find-equivalent without mounting. | Pretend parity: weaker and dangerous. Always mount hidden DOM: weaker performance and loses accordion/tabs use cases. | Metrics and docs must surface degradation; examples should show no false native claim; browser proof covers model-backed operations and explicit degradation state. | Plate can choose stricter defaults for a11y-sensitive kits; collab has no native-surface dependency. | keep |
-| Reject raw path props, public `ignoreDOM`/`ignoreCursor`, and raw Radix adapters | plugin authors, app authors, test authors | "Escape hatches are easier than a new boundary API." | Give advanced users low-level knobs and let them own the risk. | Fewer escape hatches means more initial runtime work. | Current child-range slot test proves a pathless range shape is possible at `.tmp/slate-v2/packages/slate-react/test/dom-coverage-boundary-contract.tsx:407`; issue rows keep structural DOM exclusion as not claimed; raw escape hatches would hide missing-DOM bugs. | Public `ignoreDOM`, raw paths, or `coverageBoundary`: weaker because they push runtime invariants into app code. | Keep escape hatches internal; public API is `contentBoundary` with scoped range; docs include "unsupported omissions" warning; tests assert no runtime IDs/path props needed. | Plate gets a stable wrapper target; collab avoids UI/runtime identifiers leaking into shared document semantics. | keep |
+| Expose native-surface degradation instead of claiming browser find/screen-reader parity | a11y maintainer, browser-runtime maintainer, app author | "A feature that hides DOM is hostile to accessibility and browser find." | Refuse hidden editable content until parity can be guaranteed. | Some users will dislike an API that tells them native parity is degraded. | Existing boundary policies include `findPolicy` and `copyPolicy` at `packages/slate-dom/src/plugin/dom-coverage.ts:81`; pressure gates require honest metrics; absent DOM cannot be screen-reader/find-equivalent without mounting. | Pretend parity: weaker and dangerous. Always mount hidden DOM: weaker performance and loses accordion/tabs use cases. | Metrics and docs must surface degradation; examples should show no false native claim; browser proof covers model-backed operations and explicit degradation state. | Plate can choose stricter defaults for a11y-sensitive kits; collab has no native-surface dependency. | keep |
+| Reject raw path props, public `ignoreDOM`/`ignoreCursor`, and raw Radix adapters | plugin authors, app authors, test authors | "Escape hatches are easier than a new boundary API." | Give advanced users low-level knobs and let them own the risk. | Fewer escape hatches means more initial runtime work. | Current child-range slot test proves a pathless range shape is possible at `packages/slate-react/test/dom-coverage-boundary-contract.tsx:407`; issue rows keep structural DOM exclusion as not claimed; raw escape hatches would hide missing-DOM bugs. | Public `ignoreDOM`, raw paths, or `coverageBoundary`: weaker because they push runtime invariants into app code. | Keep escape hatches internal; public API is `contentBoundary` with scoped range; docs include "unsupported omissions" warning; tests assert no runtime IDs/path props needed. | Plate gets a stable wrapper target; collab avoids UI/runtime identifiers leaking into shared document semantics. | keep |
 
 Hard cuts and rejected alternatives:
 | Option / API | Keep / cut / reject | Why | Migration cost | Evidence | Follow-up |
 |--------------|---------------------|-----|----------------|----------|-----------|
 | public `ignoreDOM` / `ignoreCursor` | reject | hides missing-DOM bugs instead of modeling them | none, do not add | #5924 rows keep this not claimed | issue pass |
-| raw `RenderElementProps.path` for block wrappers | reject | leaks paths into app renderers and hurts migration | none, do not add | current slot test proves no runtime IDs exposed at `.tmp/slate-v2/packages/slate-react/test/dom-coverage-boundary-contract.tsx:407` | keep pathless |
+| raw `RenderElementProps.path` for block wrappers | reject | leaks paths into app renderers and hurts migration | none, do not add | current slot test proves no runtime IDs exposed at `packages/slate-react/test/dom-coverage-boundary-contract.tsx:407` | keep pathless |
 | raw Slate Accordion/Tabs components | reject | product/UI package boundary | Plate can wrap later | shadcn docs are examples, not Slate core law | example only |
-| permanent `unstableBoundary` | reject as final | correct bridge, bad public DX | mechanical rename/wrapper | current API line at `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:455` | replace with `contentBoundary` |
+| permanent `unstableBoundary` | reject as final | correct bridge, bad public DX | mechanical rename/wrapper | current API line at `packages/slate-react/src/components/editable-text-blocks.tsx:455` | replace with `contentBoundary` |
 
 Plan deltas from review:
 - Created plan.
@@ -704,19 +704,19 @@ Implementation phases with owners:
 Fast driver gates:
 | Gate | Cwd | Command / artifact | Proves | Status |
 |------|-----|--------------------|--------|--------|
-| current DOM coverage tests | `.tmp/slate-v2/packages/slate-react` | `bun test:vitest -- dom-coverage-boundary-contract.test.tsx dom-coverage-native-bridge-contract.test.ts` | existing substrate is green | passed |
+| current DOM coverage tests | `packages/slate-react` | `bun test:vitest -- dom-coverage-boundary-contract.test.tsx dom-coverage-native-bridge-contract.test.ts` | existing substrate is green | passed |
 | related issue discovery | `plate-2` | `rg -n "#2072|#1769|#3893|#5211|#5355|#5924|#790|#2793|#2572|#3892" docs/slate-issues docs/slate-v2/ledgers docs/slate-v2/references/pr-description.md` | live rows and existing classifications cover the hidden/offscreen block surface | complete by reuse |
 | issue-ledger pass | `plate-2` | `rg -n "DOM coverage|hidden|offscreen|accordion|tabs|Island|dynamic rendering|structural DOM|screen readers|HTML button|non-editable" docs/slate-issues/open-issues-ledger.md docs/slate-issues/gitcrawl-clusters.md docs/slate-issues/issue-clusters.md docs/slate-issues/test-candidate-map.md docs/slate-issues/benchmark-candidate-map.md docs/slate-issues/package-impact-matrix.md docs/slate-issues/requirements-from-issues.md` | broad issue artifacts do not add a better public API than `contentBoundary` plus per-boundary materialization | complete |
-| intent and decision brief | `.tmp/slate-v2` + `plate-2` | source reads for `DOMCoverageBoundary`, current `unstableBoundary`, singleton materialize handlers, and debug example call sites | proves current architecture supports the decision but current public DX does not | complete |
-| research/ecosystem/live-source refresh | `plate-2` + Context7 + `.tmp/slate-v2` | Context7 `/shadcn-ui/ui`; Context7 `/websites/radix-ui_primitives`; compiled research files; live Slate v2 `rg` and `nl` reads | Radix hidden Content needs shell/forceMount control; Slate source has not drifted past `unstableBoundary`; metrics/handler gaps remain | complete |
-| pressure pass | `.tmp/slate-v2/packages/slate-react` + `plate-2` | `bun test:vitest -- dom-coverage-boundary-contract.test.tsx dom-coverage-native-bridge-contract.test.ts`; benchmark artifact summaries from `.tmp/slate-v2/tmp/*huge-document*` and `.tmp/slate-v2/tmp/slate-collab-readiness-benchmark.json` | substrate remains viable, but public DX/per-boundary handler/browser proof are still hard gates | complete |
-| maintainer objection pass | `.tmp/slate-v2/packages/slate-react` + `plate-2` | source reads for current slot props, singleton materialization, debug example, and focused DOM coverage tests | every major paradigm/API decision has a steelman objection, antithesis, tradeoff, migration/docs/proof answer, ecosystem answer, and `keep` verdict | complete |
-| high-risk deliberate pass | `.tmp/slate-v2/packages/slate-react` + `plate-2` | source reads for boundary registration, current slot props, singleton materialization, metrics, debug route, and focused DOM coverage tests | pre-mortem, expanded proof plan, blast radius, and hard-cut/rollback answer are recorded | complete |
-| ecosystem maintainer pass | `.tmp/slate-v2` + `plate-2` | `bun test ./packages/slate/test/migration-backbone-contract.ts ./packages/slate/test/collab-document-state-contract.ts ./packages/slate/test/collab-selection-stress-contract.ts`; focused Slate React DOM coverage tests; collab readiness artifact read | Plate/plugin and slate-yjs/collab backbone is viable without current adapter closure | complete |
-| revision pass | `.tmp/slate-v2` + `plate-2` | focused Slate React DOM coverage tests; focused core migration/collab tests; plan consistency scan | accepted target, score threshold, callback payload, hard cuts, and closure gaps are consolidated | complete |
+| intent and decision brief | `Plate repo root` + `plate-2` | source reads for `DOMCoverageBoundary`, current `unstableBoundary`, singleton materialize handlers, and debug example call sites | proves current architecture supports the decision but current public DX does not | complete |
+| research/ecosystem/live-source refresh | `plate-2` + Context7 + `Plate repo root` | Context7 `/shadcn-ui/ui`; Context7 `/websites/radix-ui_primitives`; compiled research files; live Slate v2 `rg` and `nl` reads | Radix hidden Content needs shell/forceMount control; Slate source has not drifted past `unstableBoundary`; metrics/handler gaps remain | complete |
+| pressure pass | `packages/slate-react` + `plate-2` | `bun test:vitest -- dom-coverage-boundary-contract.test.tsx dom-coverage-native-bridge-contract.test.ts`; benchmark artifact summaries from `tmp/*huge-document*` and `tmp/slate-collab-readiness-benchmark.json` | substrate remains viable, but public DX/per-boundary handler/browser proof are still hard gates | complete |
+| maintainer objection pass | `packages/slate-react` + `plate-2` | source reads for current slot props, singleton materialization, debug example, and focused DOM coverage tests | every major paradigm/API decision has a steelman objection, antithesis, tradeoff, migration/docs/proof answer, ecosystem answer, and `keep` verdict | complete |
+| high-risk deliberate pass | `packages/slate-react` + `plate-2` | source reads for boundary registration, current slot props, singleton materialization, metrics, debug route, and focused DOM coverage tests | pre-mortem, expanded proof plan, blast radius, and hard-cut/rollback answer are recorded | complete |
+| ecosystem maintainer pass | `Plate repo root` + `plate-2` | `bun test ./packages/slate/test/migration-backbone-contract.ts ./packages/slate/test/collab-document-state-contract.ts ./packages/slate/test/collab-selection-stress-contract.ts`; focused Slate React DOM coverage tests; collab readiness artifact read | Plate/plugin and slate-yjs/collab backbone is viable without current adapter closure | complete |
+| revision pass | `Plate repo root` + `plate-2` | focused Slate React DOM coverage tests; focused core migration/collab tests; plan consistency scan | accepted target, score threshold, callback payload, hard cuts, and closure gaps are consolidated | complete |
 | issue-sync accounting | `plate-2` | `rg` checks over live ledger, manual sync ledger, coverage matrix, fork dossier, and PR reference; hidden/offscreen sync sections added | related issue and PR-reference accounting is closed with zero fixed/improved claims | complete |
-| future public API tests | `.tmp/slate-v2/packages/slate-react` | targeted Vitest files added in execution | stable API/materialization | execution gate |
-| future browser route | `.tmp/slate-v2` | `playwright test playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium` | shadcn-style behavior | execution gate |
+| future public API tests | `packages/slate-react` | targeted Vitest files added in execution | stable API/materialization | execution gate |
+| future browser route | `Plate repo root` | `playwright test playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium` | shadcn-style behavior | execution gate |
 | planning artifact check | `plate-2` | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-hidden-dom-blocks-api-plan.md` | plan closure only | passed |
 
 Final user-review handoff outline:
@@ -738,7 +738,7 @@ Final user-review handoff outline:
   descendant counts, native-degradation assertions, and no false issue claims.
 - accepted-plan execution handoff: after explicit user acceptance, start a new
   Slate Plan execution goal for this plan path and implement phases 1-4 in
-  `.tmp/slate-v2`.
+  `Plate repo root`.
 
 Final completion gates:
 | Gate | Required evidence | Status |
@@ -789,7 +789,7 @@ External/browser findings:
 
 Timeline:
 - 2026-05-26T11:15:03.086Z Slate Plan goal plan created.
-- 2026-05-26T13:16:43+02:00 Focused `.tmp/slate-v2/packages/slate-react`
+- 2026-05-26T13:16:43+02:00 Focused `packages/slate-react`
   DOM coverage tests passed.
 - 2026-05-26 Current-state read and initial score completed.
 - 2026-05-26 Related issue discovery completed by ledger/ClawSweeper reuse; no
@@ -802,7 +802,7 @@ Timeline:
   open/tab state remains app-owned, and per-boundary materialization is required.
 - 2026-05-26 Research/ecosystem/live-source refresh completed; Context7 shadcn
   and Radix docs checked; compiled React/TanStack research reused; live
-  `.tmp/slate-v2` source re-read for slot, handler, metric, export, and example
+  `Plate repo root` source re-read for slot, handler, metric, export, and example
   surfaces.
 - 2026-05-26 Pressure pass completed; Vercel React, performance,
   performance-oracle, tdd, shadcn, and react-useeffect lenses applied; focused
@@ -851,18 +851,18 @@ Timeline:
 - 2026-05-26 `check-complete` rerun in `plate-2`; final closure passed.
 
 Verification evidence:
-- `.tmp/slate-v2/packages/slate-react`: `bun test:vitest -- dom-coverage-boundary-contract.test.tsx dom-coverage-native-bridge-contract.test.ts`
+- `packages/slate-react`: `bun test:vitest -- dom-coverage-boundary-contract.test.tsx dom-coverage-native-bridge-contract.test.ts`
   passed in the closure pass: 2 files, 25 tests, 1.51s.
-- `.tmp/slate-v2`: `bun test ./packages/slate/test/migration-backbone-contract.ts ./packages/slate/test/collab-document-state-contract.ts ./packages/slate/test/collab-selection-stress-contract.ts`
+- `Plate repo root`: `bun test ./packages/slate/test/migration-backbone-contract.ts ./packages/slate/test/collab-document-state-contract.ts ./packages/slate/test/collab-selection-stress-contract.ts`
   passed in the closure pass: 9 tests across 3 files, 189ms.
-- `.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark.json`:
+- `tmp/slate-react-huge-document-legacy-compare-benchmark.json`:
   current `v2VirtualizedExperimental` artifact read for 5000 blocks; ready-time
   and DOM-count data support bounded-surface pressure, not closure proof.
-- `.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-v2DefaultRenderAuto-v2DomPresent-blocks-5000-iters-5-ops-10-split-selection-no-profile.json`:
+- `tmp/slate-react-huge-document-legacy-compare-benchmark-compare-v2DefaultRenderAuto-v2DomPresent-blocks-5000-iters-5-ops-10-split-selection-no-profile.json`:
   current artifact read for staged/default DOM-present comparisons; both lanes
   report one mounted group at ready and bounded editable descendants, but this
   is not a hidden Accordion/Tabs browser proof.
-- `.tmp/slate-v2/tmp/slate-collab-readiness-benchmark.json`: current collab
+- `tmp/slate-collab-readiness-benchmark.json`: current collab
   readiness artifact read; replay/bookmark substrate is useful migration
   evidence, but no slate-yjs adapter closure is claimed.
 - `plate-2`: `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-hidden-dom-blocks-api-plan.md`
@@ -899,7 +899,7 @@ Verification evidence:
   `docs/slate-issues/requirements-from-issues.md`, plus targeted reads of the
   candidate leaf files for `#2072`, `#1769`, `#3893`, `#5211`, `#5355`, `#5924`,
   `#790`, `#2793`, and `#2572`.
-- `.tmp/slate-v2` source reads for intent/decision pass:
+- `Plate repo root` source reads for intent/decision pass:
   `packages/slate-dom/src/plugin/dom-coverage.ts` lines covering
   `DOMCoverageBoundary`, `DOMCoverageMaterializeReason`, `registerBoundary`,
   `setMaterializeHandler`, and `resolveDOMPointOrBoundary`;
@@ -919,14 +919,14 @@ Verification evidence:
   and
   `docs/solutions/developer-experience/2026-05-02-slate-dom-incomplete-work-should-start-with-internal-coverage-boundaries.md`.
 - Live source refresh reads:
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+  `packages/slate-react/src/components/editable-text-blocks.tsx`
   for current `unstableBoundary` implementation and metrics,
-  `.tmp/slate-v2/packages/slate-react/src/components/dom-coverage-boundary.tsx`
+  `packages/slate-react/src/components/dom-coverage-boundary.tsx`
   for boundary registration behavior,
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts` for singleton
-  materialization, and `.tmp/slate-v2/packages/slate-react/src/index.ts` for
+  `packages/slate-dom/src/plugin/dom-coverage.ts` for singleton
+  materialization, and `packages/slate-react/src/index.ts` for
   current exported boundary types.
-- `.tmp/slate-v2` objection-pass source reads:
+- `Plate repo root` objection-pass source reads:
   `packages/slate-react/src/components/editable-text-blocks.tsx` for required
   `boundaryId`, `unstableBoundary`, and staged/virtualized singleton
   materialize-handler installation; `packages/slate-dom/src/plugin/dom-coverage.ts`
@@ -935,7 +935,7 @@ Verification evidence:
   current debug route; `packages/slate-react/test/dom-coverage-boundary-contract.tsx`
   and `packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts`
   for pathless slot, hidden render-count, and model-backed copy/paste proof.
-- `.tmp/slate-v2` high-risk source reads:
+- `Plate repo root` high-risk source reads:
   `packages/slate-react/src/components/dom-coverage-boundary.tsx` for cleanup
   based boundary registration and default policies; `packages/slate-react/src/components/editable-text-blocks.tsx`
   for required boundary IDs, `unstableBoundary`, singleton materialization, and
@@ -943,7 +943,7 @@ Verification evidence:
   composition guard and single handler storage; `site/examples/ts/dom-coverage-boundaries.tsx`
   for current manual-ID debug route; focused tests for large hidden range and
   model-backed copy/paste behavior.
-- `.tmp/slate-v2` ecosystem source reads:
+- `Plate repo root` ecosystem source reads:
   `packages/slate/src/interfaces/editor.ts` for extension `api`/`state`/`tx`,
   runtime state, setup cleanup, commit listeners, commit metadata, bookmarks,
   collab state-patch helpers, and extension registry; `packages/slate/test/generic-extension-install-contract.ts`
@@ -952,16 +952,16 @@ Verification evidence:
   `packages/slate/test/collab-document-state-contract.ts`, and
   `packages/slate/test/collab-selection-stress-contract.ts` for collab metadata,
   shared/local state, remote replay, and selection behavior; `packages/slate-history/src/history-extension.ts`
-  for remote history skip/rebase policy; `.tmp/slate-v2/tmp/slate-collab-readiness-benchmark.json`
+  for remote history skip/rebase policy; `tmp/slate-collab-readiness-benchmark.json`
   for calibration-only collab benchmark invariants.
 
 Execution correction - real shadcn coverage:
 - User correction: replace the hand-rolled shadcn-shaped route with real shadcn
   source components and cover the minimum editor-relevant hidden-content
   components with maximum useful shadcn signal.
-- Decision: install shadcn in the existing `.tmp/slate-v2/site` Pages app, not
+- Decision: install shadcn in the existing `apps/www` Pages app, not
   a nested demo app. Keep raw Slate unopinionated: shadcn components are
-  example-local source files under `.tmp/slate-v2/site/components/ui/**`.
+  example-local source files under `apps/www/components/ui/**`.
 - Component scope: Accordion, Collapsible, and Tabs are the editor-relevant
   hidden-content shells because they can hide document-flow editor descendants.
   Dialog, Sheet, Popover, menus, and HoverCard hide overlay UI, not normal
@@ -969,11 +969,11 @@ Execution correction - real shadcn coverage:
 - Installed shadcn surface: `site/components.json`, `site/styles/shadcn.css`,
   `site/postcss.config.mjs`, `site/utils/cn.ts`, and UI files for `accordion`,
   `collapsible`, `tabs`, `button`, `badge`, `separator`, and `card`.
-- Example delta: `.tmp/slate-v2/site/examples/ts/hidden-content-blocks.tsx`
+- Example delta: `apps/www/src/app/(app)/examples/slate/_examples/hidden-content-blocks.tsx`
   now uses real shadcn Accordion/Collapsible/Tabs shells with `forceMount`
   Content and `slots.contentBoundary` owning hidden editable descendants. Trigger
   and tab-list chrome is explicitly `contentEditable={false}`.
-- Browser delta: `.tmp/slate-v2/playwright/integration/examples/hidden-content-blocks.test.ts`
+- Browser delta: `apps/www/tests/slate-browser/donor/examples/hidden-content-blocks.test.ts`
   now proves Accordion, Collapsible, and Tabs hidden text stays absent from the
   DOM until opened, boundary count starts at 3, tab switching leaves one hidden
   boundary, model-backed copy works for all three hidden surfaces, and native
@@ -986,20 +986,20 @@ Execution correction - real shadcn coverage:
   components cover Accordion, Collapsible, and Tabs with zero fixed/improved
   issue claims.
 - Verification:
-  - `.tmp/slate-v2`: `bunx --bun shadcn@latest info --json --cwd site` passed
+  - `Plate repo root`: `bunx --bun shadcn@latest info --json --cwd site` passed
     and reported Next Pages, Tailwind v4, import alias `@`, and installed
     components `tabs`, `card`, `accordion`, `badge`, `separator`, `button`, and
     `collapsible`.
-  - `.tmp/slate-v2`: `bun typecheck:site` passed.
-  - `.tmp/slate-v2`: `bun lint` passed.
-  - `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium`
+  - `Plate repo root`: `bun typecheck:site` passed.
+  - `Plate repo root`: `bun lint` passed.
+  - `Plate repo root`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium`
     passed, 2 tests.
-  - `.tmp/slate-v2`: `bun test ./packages/slate-dom/test/dom-coverage.ts`
+  - `Plate repo root`: `bun test ./packages/slate-dom/test/dom-coverage.ts`
     passed, 17 tests.
-  - `.tmp/slate-v2/packages/slate-react`: `bun test:vitest -- dom-coverage-boundary-contract.test.tsx dom-coverage-native-bridge-contract.test.ts`
+  - `packages/slate-react`: `bun test:vitest -- dom-coverage-boundary-contract.test.tsx dom-coverage-native-bridge-contract.test.ts`
     passed, 2 files and 26 tests.
-  - `.tmp/slate-v2`: `bun --filter slate-dom typecheck` passed.
-  - `.tmp/slate-v2`: `bun --filter slate-react typecheck` passed.
+  - `Plate repo root`: `bun --filter slate-dom typecheck` passed.
+  - `Plate repo root`: `bun --filter slate-react typecheck` passed.
 - Autoreview corrections:
   - Moved shadcn `cn` helper out of ignored `site/lib/**` into tracked
     `site/utils/cn.ts`.
@@ -1011,20 +1011,20 @@ Execution correction - real shadcn coverage:
     input-router, keyboard, clipboard/drop, split decorated strings, and
     outside-click behavior.
 - Final verification after accepted autoreview fixes:
-  - `.tmp/slate-v2`: `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local`
+  - `Plate repo root`: `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local`
     passed clean with no accepted/actionable findings.
-  - `.tmp/slate-v2`: `bun lint` passed.
-  - `.tmp/slate-v2`: `bun typecheck:site` passed.
-  - `.tmp/slate-v2`: `bun --filter slate-dom typecheck` passed.
-  - `.tmp/slate-v2`: `bun --filter slate-react typecheck` passed.
-  - `.tmp/slate-v2`: `bunx --bun shadcn@latest info --json --cwd site` passed
+  - `Plate repo root`: `bun lint` passed.
+  - `Plate repo root`: `bun typecheck:site` passed.
+  - `Plate repo root`: `bun --filter slate-dom typecheck` passed.
+  - `Plate repo root`: `bun --filter slate-react typecheck` passed.
+  - `Plate repo root`: `bunx --bun shadcn@latest info --json --cwd site` passed
     and reported installed components `tabs`, `card`, `accordion`, `badge`,
     `separator`, `button`, and `collapsible`.
-  - `.tmp/slate-v2`: `bun test ./packages/slate-dom/test/dom-coverage.ts`
+  - `Plate repo root`: `bun test ./packages/slate-dom/test/dom-coverage.ts`
     passed, 17 tests.
-  - `.tmp/slate-v2/packages/slate-react`: `bun test:vitest -- dom-coverage-boundary-contract.test.tsx dom-coverage-native-bridge-contract.test.ts composition-state-contract.test.ts selection-reconciler-contract.test.tsx input-router-contract.test.tsx slate-runtime-provider-contract.test.tsx keyboard-input-strategy-contract.test.ts`
+  - `packages/slate-react`: `bun test:vitest -- dom-coverage-boundary-contract.test.tsx dom-coverage-native-bridge-contract.test.ts composition-state-contract.test.ts selection-reconciler-contract.test.tsx input-router-contract.test.tsx slate-runtime-provider-contract.test.tsx keyboard-input-strategy-contract.test.ts`
     passed, 7 files and 82 tests.
-  - `.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium`
+  - `Plate repo root`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium`
     passed, 2 tests.
 
 Reboot status:
@@ -1034,7 +1034,7 @@ Reboot status:
 | Where am I going? | Run completion audit, then close the execution handoff |
 | What is the goal? | Implement and prove the hidden/offscreen content API with real shadcn hidden-content coverage and zero false issue claims |
 | What have I learned? | The right shadcn coverage is Accordion, Collapsible, and Tabs; read-only `contentEditable=true` roots require explicit native-default cancellation and DOM reset |
-| What have I done? | Installed shadcn/Tailwind wiring in `.tmp/slate-v2/site`, converted the example to real shadcn source components, extended browser proof to Accordion/Collapsible/Tabs, hardened read-only fallback input paths from autoreview, reran focused package/type/lint/browser gates, and synced issue/reference wording |
+| What have I done? | Installed shadcn/Tailwind wiring in `apps/www`, converted the example to real shadcn source components, extended browser proof to Accordion/Collapsible/Tabs, hardened read-only fallback input paths from autoreview, reran focused package/type/lint/browser gates, and synced issue/reference wording |
 
 Open risks:
 - None for this execution lane.

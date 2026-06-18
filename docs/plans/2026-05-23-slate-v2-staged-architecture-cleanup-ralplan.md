@@ -2,7 +2,7 @@
 
 Status: done
 Runtime id: `019e46be-4ec4-7d11-bc6e-9fcf033a8803`
-Scope: staged changes in `.tmp/slate-v2`
+Scope: staged changes in `Plate repo root`
 Skill: `slate-ralplan`
 
 ## Intent
@@ -16,7 +16,7 @@ lane Ralph should execute next.
 ## Evidence Read
 
 - `git diff --cached --stat` and `git diff --cached --name-only` in
-  `.tmp/slate-v2`: 164 staged files, 15,854 insertions, 1,715 deletions.
+  `Plate repo root`: 164 staged files, 15,854 insertions, 1,715 deletions.
 - Root/runtime/state:
   - `packages/slate/src/internal/root-location.ts`
   - `packages/slate/src/interfaces/path-ref.ts`
@@ -215,7 +215,7 @@ Expected implementation order:
 4. DOM strategy vocabulary cleanup.
 5. Focused tests, package typechecks, lint, and relevant browser/example proof.
 
-Lane is closed. The cleanup was executed in `.tmp/slate-v2` and verified with:
+Lane is closed. The cleanup was executed in `Plate repo root` and verified with:
 
 - `bun test ./packages/slate/test/root-location-contract.ts ./packages/slate/test/rooted-operation-contract.ts ./packages/slate-history/test/history-contract.ts ./packages/slate-history/test/document-state-history-contract.ts ./packages/slate-layout/test/page-layout-contract.test.ts ./packages/slate-layout/test/pretext-page-layout-engine.test.ts ./packages/slate-react/test/surface-contract.tsx ./packages/slate-react/test/dom-strategy-and-scroll.test.tsx`
 - `bun --filter ./packages/slate typecheck`
@@ -229,7 +229,7 @@ Lane is closed. The cleanup was executed in `.tmp/slate-v2` and verified with:
 
 ## Post-Closure Staged Re-Audit
 
-Current staged scope in `.tmp/slate-v2`: 184 files, 19,110 insertions, 2,117
+Current staged scope in `Plate repo root`: 184 files, 19,110 insertions, 2,117
 deletions.
 
 Verdict: no further architecture refactor is justified.

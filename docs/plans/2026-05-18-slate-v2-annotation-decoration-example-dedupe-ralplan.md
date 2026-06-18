@@ -31,33 +31,33 @@ worse. The right move is:
 
 ## Evidence
 
-- `.tmp/slate-v2/site/examples/ts/review-comments.tsx:175-191` creates
+- `apps/www/src/app/(app)/examples/slate/_examples/review-comments.tsx:175-191` creates
   annotation-backed widgets from comments.
-- `.tmp/slate-v2/site/examples/ts/review-comments.tsx:211-249` creates bookmark
+- `apps/www/src/app/(app)/examples/slate/_examples/review-comments.tsx:211-249` creates bookmark
   comments from selection and seeded ranges.
-- `.tmp/slate-v2/site/examples/ts/review-comments.tsx:284-328` already proves
+- `apps/www/src/app/(app)/examples/slate/_examples/review-comments.tsx:284-328` already proves
   prefix and paragraph insertion before the first comment.
-- `.tmp/slate-v2/site/examples/ts/review-comments.tsx:514-529` maps comments into
+- `apps/www/src/app/(app)/examples/slate/_examples/review-comments.tsx:514-529` maps comments into
   `useSlateAnnotationStore`.
-- `.tmp/slate-v2/playwright/integration/examples/review-comments.test.ts:1-46`
+- `apps/www/tests/slate-browser/donor/examples/review-comments.test.ts:1-46`
   proves inline comment slices, sidebar cards, widgets, structural inserts, and
   clearing.
-- `.tmp/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx:457-499`
+- `apps/www/src/app/(app)/examples/slate/_examples/persistent-annotation-anchors.tsx:457-499`
   does the same annotation-store + widget-store shape with a single bookmark.
-- `.tmp/slate-v2/playwright/integration/examples/persistent-annotation-anchors.test.ts:1-64`
+- `apps/www/tests/slate-browser/donor/examples/persistent-annotation-anchors.test.ts:1-64`
   proves a stronger minimal fragment/prefix/clear anchor row.
-- `.tmp/slate-v2/site/examples/ts/collaborative-comments.tsx:452-543` creates two
+- `apps/www/src/app/(app)/examples/slate/_examples/collaborative-comments.tsx:452-543` creates two
   editors, two annotation stores, syncs the reviewer value from writer edits, and
   keeps reviewer comment writes outside document writes.
-- `.tmp/slate-v2/playwright/integration/examples/collaborative-comments.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/collaborative-comments.test.ts`
   asserts comment writes do not increment document writes and reviewer document
   writes stay `0`.
-- `.tmp/slate-v2/site/examples/ts/external-decoration-sources.tsx:166-170` uses
+- `apps/www/src/app/(app)/examples/slate/_examples/external-decoration-sources.tsx:166-170` uses
   `useSlateDecorationSource`; `:264-288` wires it to
   `<Slate decorationSources>` and `renderSegment`.
-- `.tmp/slate-v2/site/constants/examples.ts:5-24` exposes all four in the public
+- `apps/www/constants/examples.ts:5-24` exposes all four in the public
   example list, which makes the annotation/comment story look duplicated.
-- `.tmp/slate-v2/docs/libraries/slate-react/annotations.md:138-170` documents
+- `content/docs/slate/libraries/slate-react/annotations.md:138-170` documents
   `collaborative-comments` as a separate comment-only collaboration pattern.
 - `docs/plans/2026-05-08-slate-v2-react-decorations-slate-issues-ralplan.md:831-839`
   gives separate browser owners for external decorations, review comments, and
@@ -181,9 +181,9 @@ If the user says go:
 ## Verification Target For Execution
 
 ```bash
-cd .tmp/slate-v2/site && bun tsc --project tsconfig.json
-cd .tmp/slate-v2 && PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/review-comments.test.ts playwright/integration/examples/collaborative-comments.test.ts playwright/integration/examples/external-decoration-sources.test.ts --project=chromium
-cd .tmp/slate-v2 && bunx biome check site/examples/ts/review-comments.tsx site/examples/ts/collaborative-comments.tsx site/examples/ts/external-decoration-sources.tsx site/constants/examples.ts && bunx eslint site/examples/ts/review-comments.tsx site/examples/ts/collaborative-comments.tsx site/examples/ts/external-decoration-sources.tsx site/constants/examples.ts
+cd apps/www && bun tsc --project tsconfig.json
+cd Plate repo root && PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/review-comments.test.ts playwright/integration/examples/collaborative-comments.test.ts playwright/integration/examples/external-decoration-sources.test.ts --project=chromium
+cd Plate repo root && bunx biome check site/examples/ts/review-comments.tsx site/examples/ts/collaborative-comments.tsx site/examples/ts/external-decoration-sources.tsx site/constants/examples.ts && bunx eslint site/examples/ts/review-comments.tsx site/examples/ts/collaborative-comments.tsx site/examples/ts/external-decoration-sources.tsx site/constants/examples.ts
 ```
 
 If `persistent-annotation-anchors` remains hidden but changed, include its file
@@ -193,17 +193,17 @@ and test in the touched-file checks.
 
 Implementation update:
 
-- `.tmp/slate-v2/site/examples/ts/review-comments.tsx` is now the public two-pane
+- `apps/www/src/app/(app)/examples/slate/_examples/review-comments.tsx` is now the public two-pane
   comment-mode example.
-- `.tmp/slate-v2/site/constants/examples.ts` hides `collaborative-comments` and
+- `apps/www/constants/examples.ts` hides `collaborative-comments` and
   `persistent-annotation-anchors`, and labels `review-comments` as
   `Comment Mode`.
-- `.tmp/slate-v2/docs/libraries/slate-react/annotations.md` points comment-only
+- `content/docs/slate/libraries/slate-react/annotations.md` points comment-only
   collaboration docs at `review-comments`.
-- `.tmp/slate-v2/playwright/integration/examples/review-comments.test.ts` and
-  `.tmp/slate-v2/playwright/stress/generated-editing.test.ts` now expect two
+- `apps/www/tests/slate-browser/donor/examples/review-comments.test.ts` and
+  `apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts` now expect two
   inline comment slices.
-- `.tmp/slate-v2/playwright/integration/examples/review-comments.test.ts` selects
+- `apps/www/tests/slate-browser/donor/examples/review-comments.test.ts` selects
   the read-only comment pane through `#review-comments` instead of the shared
   editable harness root.
 - `docs/solutions/test-failures/2026-05-18-slate-read-only-selection-tests-need-selector-owned-dom-selection.md`
@@ -211,10 +211,10 @@ Implementation update:
 
 Verification:
 
-- `cd .tmp/slate-v2 && bunx biome check site/examples/ts/review-comments.tsx site/constants/examples.ts playwright/integration/examples/review-comments.test.ts playwright/stress/generated-editing.test.ts docs/libraries/slate-react/annotations.md --fix`
-- `cd .tmp/slate-v2 && bun lint:fix`
-- `cd .tmp/slate-v2 && bun typecheck:site`
-- `cd .tmp/slate-v2 && bun typecheck:root`
-- `cd .tmp/slate-v2 && PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/review-comments.test.ts --project=chromium`
-- `cd .tmp/slate-v2 && PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/collaborative-comments.test.ts playwright/integration/examples/persistent-annotation-anchors.test.ts --project=chromium`
-- `cd .tmp/slate-v2 && STRESS_ROUTES=review-comments STRESS_FAMILIES=overlay-annotation-metadata-only,overlay-annotation-bookmark-rebase,overlay-widget-dirty-id,overlay-mixed-update PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/stress/generated-editing.test.ts --project=chromium`
+- `cd Plate repo root && bunx biome check site/examples/ts/review-comments.tsx site/constants/examples.ts playwright/integration/examples/review-comments.test.ts playwright/stress/generated-editing.test.ts docs/libraries/slate-react/annotations.md --fix`
+- `cd Plate repo root && bun lint:fix`
+- `cd Plate repo root && bun typecheck:site`
+- `cd Plate repo root && bun typecheck:root`
+- `cd Plate repo root && PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/review-comments.test.ts --project=chromium`
+- `cd Plate repo root && PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/collaborative-comments.test.ts playwright/integration/examples/persistent-annotation-anchors.test.ts --project=chromium`
+- `cd Plate repo root && STRESS_ROUTES=review-comments STRESS_FAMILIES=overlay-annotation-metadata-only,overlay-annotation-bookmark-rebase,overlay-widget-dirty-id,overlay-mixed-update PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/stress/generated-editing.test.ts --project=chromium`

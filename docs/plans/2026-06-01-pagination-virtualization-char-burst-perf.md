@@ -7,9 +7,9 @@ Completion threshold:
 Rows=800 virtualized pagination passes the source-backed char-burst benchmark with `pagination_virtualized_failed=0`, correct inserted text, bounded DOM/page surfaces, p95 typing <= 16ms, scroll <= 400ms, and app-ready <= 800ms.
 
 Verification surface:
-- `.tmp/slate-v2` benchmark: `bun run bench:react:pagination-virtualized-char-burst:local`
-- `.tmp/slate-v2` focused browser correctness: pagination rows800 perf, insert-break burst, double-click word selection, and right-margin wrapped-line selection tests
-- `.tmp/slate-v2` package/site checks: slate-layout typecheck/tests, slate-react typecheck, site typecheck
+- `Plate repo root` benchmark: `bun run bench:react:pagination-virtualized-char-burst:local`
+- `Plate repo root` focused browser correctness: pagination rows800 perf, insert-break burst, double-click word selection, and right-margin wrapped-line selection tests
+- `Plate repo root` package/site checks: slate-layout typecheck/tests, slate-react typecheck, site typecheck
 - root benchmark target checks: `pnpm bench:targets:check`, `pnpm bench:targets:dry-run -- react-pagination-virtualized-char-burst`, `pnpm slate:ar:benchmark-lint`
 
 Constraints:
@@ -18,7 +18,7 @@ Constraints:
 - Do not create PRs or pushes for this task.
 
 Boundaries:
-- Source of truth: `.tmp/slate-v2` packages and pagination example, with root benchmark target wiring in `benchmarks/targets/slate-v2.json`.
+- Source of truth: `Plate repo root` packages and pagination example, with root benchmark target wiring in `benchmarks/targets/slate-v2.json`.
 - Allowed edit scope: pagination virtualization package code, focused pagination example code, benchmark target/script, and this goal plan.
 - Browser surface: `/examples/pagination?page_layout=single&rows=800&strategy=virtualized`.
 - Tracker sync: N/A, no issue or PR was requested.

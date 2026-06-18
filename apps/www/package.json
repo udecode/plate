@@ -29,6 +29,7 @@
     "shadcn:dev": "shadcn build public/rd/registry.json --output public/rd",
     "shadcn:dev:docs": "shadcn build public/rd/registry-docs.json --output public/rd",
     "start": "next start",
+    "test:slate-browser": "playwright test --config playwright.slate.config.ts",
     "typecheck": "pnpm build:source && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.package-integration.json",
     "typecheck:watch": "pnpm build:source && concurrently \"tsc --noEmit -p tsconfig.json --watch\" \"tsc --noEmit -p tsconfig.package-integration.json --watch\""
   },
@@ -59,6 +60,7 @@
     "@platejs/ai": "workspace:^",
     "@platejs/basic-nodes": "workspace:^",
     "@platejs/basic-styles": "workspace:^",
+    "@platejs/browser": "workspace:^",
     "@platejs/callout": "workspace:^",
     "@platejs/caption": "workspace:^",
     "@platejs/code-block": "workspace:^",
@@ -91,6 +93,9 @@
     "@platejs/selection": "workspace:^",
     "@platejs/slash-command": "workspace:^",
     "@platejs/slate": "workspace:^",
+    "@platejs/slate-dom": "workspace:^",
+    "@platejs/slate-legacy": "workspace:^",
+    "@platejs/slate-react": "workspace:^",
     "@platejs/suggestion": "workspace:^",
     "@platejs/tabbable": "workspace:^",
     "@platejs/table": "workspace:^",
@@ -186,7 +191,15 @@
     "uploadthing": "7.7.2",
     "use-file-picker": "2.1.2",
     "y-webrtc": "10.3.0",
-    "zod": "3.25.61"
+    "zod": "3.25.61",
+    "@platejs/slate-history": "workspace:^",
+    "@platejs/slate-hyperscript": "workspace:^",
+    "@platejs/slate-layout": "workspace:^",
+    "@radix-ui/react-switch": "1.2.5",
+    "radix-ui": "^1.4.3",
+    "image-extensions": "^1.1.0",
+    "is-url": "^1.2.4",
+    "yjs": "13.6.30"
   },
   "devDependencies": {
     "@shikijs/compat": "1.1.7",

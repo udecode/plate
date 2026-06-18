@@ -15,9 +15,9 @@ decision: Treat the clipboard over-budget rows as a stale issue-target artifact 
 
 Both rows came from:
 
-- artifact: `../../.tmp/slate-v2/tmp/slate-clipboard-large-payload-benchmark.json`
+- artifact: `../../tmp/slate-clipboard-large-payload-benchmark.json`
 - registry id: `clipboard-large-payload`
-- command owner: `.tmp/slate-v2`
+- command owner: historical Slate v2 donor checkout
 
 Rows:
 
@@ -41,7 +41,7 @@ The correct reproducible command is:
 SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun run bench:core:clipboard-large-payload:local
 ```
 
-Fresh run from `/Users/zbeyens/git/plate-2/.tmp/slate-v2`:
+Fresh historical donor-checkout run:
 
 - `cutTwoBlocksEditMsP50`: `145.74ms` against `150ms`
 - `cutTwoBlocksMsP50`: `147.1ms` against `250ms`
@@ -56,7 +56,7 @@ not a current failing threshold.
 ## Verification
 
 ```sh
-cd /Users/zbeyens/git/plate-2/.tmp/slate-v2
+cd <historical-slate-v2-donor-checkout>
 SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun run bench:core:clipboard-large-payload:local
 
 cd /Users/zbeyens/git/plate-2/benchmarks/editor

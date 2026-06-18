@@ -2,11 +2,11 @@
 
 Status: done
 
-Objective: install `nuqs` in `.tmp/slate-v2` and make shareable example controls read from and write to the URL query string.
+Objective: install `nuqs` in `Plate repo root` and make shareable example controls read from and write to the URL query string.
 
 Source of truth:
 - User request: "install nuqs, so controls of any example is stored in url. scan each example to use nuqs where relevant."
-- Workspace: `/Users/zbeyens/git/plate-2/.tmp/slate-v2`
+- Workspace: `/Users/zbeyens/git/plate-2/Plate repo root`
 
 Decision:
 - Use one app-level `NuqsAdapter` in `site/pages/_app.tsx`.

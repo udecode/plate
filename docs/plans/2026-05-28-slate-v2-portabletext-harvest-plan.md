@@ -1,7 +1,7 @@
 # Slate v2 PortableText Harvest Plan
 
 Objective:
-Produce a Slate v2 editor-harvest execution plan from local ../portabletext. Completion means the Portable Text harvest artifacts exist, license and output mode are recorded, all 502 inventory rows are classified, all 16 behavior rows are routed for slate-v2 as in-lane, split, or out-of-lane, current .tmp/slate-v2 owner coverage is mapped, downstream slate-plan rules are applied, and this file gives an accepted execution handoff without changing .tmp/slate-v2 code.
+Produce a Slate v2 editor-harvest execution plan from local ../portabletext. Completion means the Portable Text harvest artifacts exist, license and output mode are recorded, all 502 inventory rows are classified, all 16 behavior rows are routed for slate-v2 as in-lane, split, or out-of-lane, current Plate repo root owner coverage is mapped, downstream slate-plan rules are applied, and this file gives an accepted execution handoff without changing Plate repo root code.
 
 Goal plan:
 docs/plans/2026-05-28-slate-v2-portabletext-harvest-plan.md
@@ -24,7 +24,7 @@ Completion threshold:
 - All 502 inventory rows are classified in inventory.md; no uncertain row remains.
 - All 16 behavior rows are accounted for in this plan as in-lane, split, or out-of-lane.
 - Every in-lane or split raw-Slate row has a lane reason, current coverage mapping, target, proof route, and verification command.
-- Downstream slate-plan gates are applied as planning-only boundaries: .tmp/slate-v2 is the owner, Plate/product rows stay out, current source wins, and no implementation/test edits happen in this pass.
+- Downstream slate-plan gates are applied as planning-only boundaries: Plate repo root is the owner, Plate/product rows stay out, current source wins, and no implementation/test edits happen in this pass.
 - Accepted-plan execution handoff is present.
 - Behavior rows use fresh invariant wording plus source-path provenance only.
 - node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-28-slate-v2-portabletext-harvest-plan.md passes.
@@ -32,7 +32,7 @@ Completion threshold:
 Verification surface:
 - Harvest artifacts: docs/editor-test-harvester/portabletext/report.md, inventory.md, test-index.md.
 - Inventory command: rg --files ../portabletext piped through the editor-test-harvester include/exclude regex; exact count is 502.
-- Owner coverage searches: rg over .tmp/slate-v2/packages/slate/test, slate-react/test, slate-browser/test, and .tmp/slate-v2/playwright for selection, fragment, insert, delete, paste, clipboard, history, collab, composition, IME, drag/drop, void, root, operation, and transform owners.
+- Owner coverage searches: rg over packages/slate/test, slate-react/test, slate-browser/test, and Plate repo root/playwright for selection, fragment, insert, delete, paste, clipboard, history, collab, composition, IME, drag/drop, void, root, operation, and transform owners.
 - Downstream lane skill: .agents/skills/slate-plan/SKILL.md.
 - Plan integrity grep: rg for Harvest grounding, Lane contract, Full harvest row accounting, In-lane candidate matrix, Execution queue, Downstream lane application, and Accepted-plan execution handoff in this file.
 - Final mechanical gate: node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-28-slate-v2-portabletext-harvest-plan.md.
@@ -47,12 +47,12 @@ Boundaries:
 - Harvest report: docs/editor-test-harvester/portabletext/report.md.
 - Lane: slate-v2.
 - Downstream skill: .agents/skills/slate-plan/SKILL.md.
-- Owner boundary: .tmp/slate-v2 for raw Slate and slate-react behavior tests; Plate packages/docs for schema, list, annotation, serializer, plugin, toolbar, and Sanity bridge rows.
+- Owner boundary: Plate repo root for raw Slate and slate-react behavior tests; Plate packages/docs for schema, list, annotation, serializer, plugin, toolbar, and Sanity bridge rows.
 - Allowed edit scope in this pass: docs/editor-test-harvester/portabletext/** and docs/plans/2026-05-28-slate-v2-portabletext-harvest-plan.md.
 - Non-goals: implementation, package/runtime edits, GitHub comments, commits, pushes, PRs, and browser proof execution unless explicitly requested later.
 
 Blocked condition:
-The only blocker would be losing access to ../portabletext, losing access to .tmp/slate-v2, or the user choosing a different lane owner for schema/list/plugin rows. None of those blockers is active.
+The only blocker would be losing access to ../portabletext, losing access to Plate repo root, or the user choosing a different lane owner for schema/list/plugin rows. None of those blockers is active.
 
 Lane state:
 - harvest_report: done at docs/editor-test-harvester/portabletext/report.md
@@ -67,7 +67,7 @@ Lane state:
 Current verdict:
 - verdict: accept plan
 - score: 0.94
-- next owner: slate-patch or slate-plan execution pass in .tmp/slate-v2
+- next owner: slate-patch or slate-plan execution pass in Plate repo root
 - reason: Portable Text gives strong raw pressure for roots, projected selection, object boundaries, insert/delete, drag/drop, IME, and remote rebasing; schema/list/plugin/serializer rows belong to Plate.
 
 Completion rule:
@@ -79,7 +79,7 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | editor-harvest-plan, editor-test-harvester, and slate-plan skill bodies were read before writing the harvest and plan artifacts. |
 | Active goal checked or created | yes | Active goal 019e6fd0-9a50-7120-ac35-068d11f61bcc exists for this exact Portable Text harvest plan. |
-| Source of truth read before edits | yes | ../portabletext/LICENSE, package.json, editor tests, selector tests, DOM structure tests, collaboration tests, and .tmp/slate-v2 owner test files were read before routing rows. |
+| Source of truth read before edits | yes | ../portabletext/LICENSE, package.json, editor tests, selector tests, DOM structure tests, collaboration tests, and Plate repo root owner test files were read before routing rows. |
 
 Work Checklist:
 - [x] Objective includes lane outcome, completion threshold, verification surface, constraints, boundaries, and blocked condition.
@@ -110,7 +110,7 @@ Phase / pass table:
 |-------|--------|----------|------|
 | Harvest grounding | complete | MIT license read; harvest artifacts written. | done |
 | Lane filter and row accounting | complete | 16 behavior rows routed; 502 inventory rows classified. | done |
-| Current owner coverage mapping | complete | .tmp/slate-v2 owner searches recorded. | done |
+| Current owner coverage mapping | complete | Plate repo root owner searches recorded. | done |
 | Execution queue and proof routing | complete | Queue Q1 through Q6 written with targets and commands. | done |
 | Downstream lane gate application | complete | slate-plan raw/Plate boundaries recorded. | done |
 | Issue and claim accounting | complete | No issue or claim sync applies. | done |
@@ -122,7 +122,7 @@ Confidence score:
 |-----------|-------:|------:|----------|---------|
 | Harvest source readiness | 0.15 | 0.97 | MIT license, package scripts, 502-row inventory, 321 runnable rows, 211 portable/portable-mixed indexed rows. | none |
 | Lane-filter completeness | 0.25 | 0.94 | 16 behavior rows routed; 502 file rows classified; no uncertain row remains. | none |
-| Current owner coverage mapping | 0.25 | 0.91 | .tmp/slate-v2 package and Playwright owner searches map every raw row to current owners or gaps. | no tests run because this is planning-only |
+| Current owner coverage mapping | 0.25 | 0.91 | Plate repo root package and Playwright owner searches map every raw row to current owners or gaps. | no tests run because this is planning-only |
 | Actionability of execution queue | 0.20 | 0.93 | Q1-Q6 list IDs, targets, proof kinds, focused commands, and stop rules. | browser rows still need execution when implementation starts |
 | License/provenance discipline | 0.15 | 0.95 | Permissive license recorded; generated docs use source paths, line anchors, and fresh invariant wording. | none |
 | Weighted total | 1.00 | 0.94 | Passes the 0.92 threshold and no dimension is below 0.85. | none |
@@ -145,7 +145,7 @@ Lane contract:
 | Lane | slate-v2 |
 | Aliases | slate, raw-slate, Slate v2 substrate |
 | Downstream skill | .agents/skills/slate-plan/SKILL.md |
-| Owner boundary | .tmp/slate-v2/packages/slate, slate-react, slate-browser, and .tmp/slate-v2/playwright for raw behavior; Plate owns product APIs and package policy |
+| Owner boundary | packages/slate, slate-react, slate-browser, and Plate repo root/playwright for raw behavior; Plate owns product APIs and package policy |
 | Exclusions / split rules | Do not import Portable Text schema shape, behavior API names, list policy, annotation/decorator policy, serializers, plugins, toolbar, or Sanity bridge into raw Slate |
 
 Full harvest row accounting:
@@ -173,7 +173,7 @@ All 502 file rows are classified in docs/editor-test-harvester/portabletext/inve
 In-lane candidate matrix:
 | Row | Source ref | Tag | Behavior invariant | Lane reason | Current coverage | Action | Target | Proof |
 |-----|------------|-----|--------------------|-------------|------------------|--------|--------|-------|
-| PT-SV2-01 | boundary-equivalent.test.ts line anchors | selection-boundary | Adjacent text-node edge points compare as one logical caret while preserving direction. | Raw point/range/projection law. | operations-contract.ts, selection-rebase-contract.ts, projections-and-selection-contract.test.tsx. | refactor-existing plus add named edge matrix if absent. | .tmp/slate-v2/packages/slate/test/selection-rebase-contract.ts and slate-react/projections tests. | bun test focused package files; Playwright only if DOM projection changes. |
+| PT-SV2-01 | boundary-equivalent.test.ts line anchors | selection-boundary | Adjacent text-node edge points compare as one logical caret while preserving direction. | Raw point/range/projection law. | operations-contract.ts, selection-rebase-contract.ts, projections-and-selection-contract.test.tsx. | refactor-existing plus add named edge matrix if absent. | packages/slate/test/selection-rebase-contract.ts and slate-react/projections tests. | bun test focused package files; Playwright only if DOM projection changes. |
 | PT-SV2-02 | selector.get-fragment.test.ts line anchors | fragment-roots | Fragment extraction unwraps only when selection is wholly inside one content root. | Multi-root/content-root projection. | multi-root-document.test.ts, projected-clipboard-contract.test.ts, content-root navigation tests. | create/refactor content-root fragment contract. | slate-react projected clipboard/selection tests and multi-root browser example. | focused package tests plus Playwright multi-root example grep. |
 | PT-SV2-03 | selector.get-selected-value.test.ts line anchors | nested-containers | Selection slicing across nested containers keeps logical order and trims only endpoints. | Root ordering and projected selection. | projections-and-selection, root interaction, projected clipboard. | create browser proof if package owners lack nested root range coverage. | slate-react projection tests and browser examples. | package tests plus browser drag/selection route. |
 | PT-SV2-04 | selector.is-overlapping-selection.test.ts line anchors | overlap-compare | Text, inline objects, and block objects share consistent inclusive endpoint overlap semantics. | Raw range compare. | view-selection-contract and root interaction resolver. | add focused unit if not already explicit. | slate-react/view-selection-contract.test.ts or slate package point/range tests. | bun test focused owner. |
@@ -221,12 +221,12 @@ Coverage dedupe:
 Execution queue:
 | ID | Action | Target | Proof kind | Focused verification | Notes |
 |----|--------|--------|------------|----------------------|-------|
-| Q1 | Apply PT-SV2-01 through PT-SV2-04. | .tmp/slate-v2/packages/slate/test/selection-rebase-contract.ts; .tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.test.tsx; view-selection-contract.test.ts; multi-root browser example. | unit plus browser where DOM projection changes. | cd .tmp/slate-v2 && bun test ./packages/slate/test/selection-rebase-contract.ts ./packages/slate-react/test/projections-and-selection-contract.test.tsx ./packages/slate-react/test/view-selection-contract.test.ts; focused Playwright multi-root grep if browser row changes. | First slice; highest value after recent selection/root bugs. |
-| Q2 | Apply PT-SV2-05 through PT-SV2-07. | slate transform delete/insert fixtures, transforms-contract.ts, projected-clipboard-contract.test.ts, paste-html example. | unit plus clipboard/browser proof. | cd .tmp/slate-v2 && bun test ./packages/slate/test/transforms-contract.ts ./packages/slate-react/test/projected-clipboard-contract.test.ts; Playwright paste-html grep when touched. | Keep matchers/MIME out of raw Slate. |
-| Q3 | Apply PT-SV2-08 and PT-SV2-09. | root-interaction-resolver.test.ts, content-root-navigation-contract.test.ts, slate-void-shell-contract.test.tsx, browser examples. | unit plus Playwright drag/selection proof. | cd .tmp/slate-v2 && bun test ./packages/slate-react/test/root-interaction-resolver.test.ts ./packages/slate-react/test/content-root-navigation-contract.test.ts ./packages/slate-react/test/slate-void-shell-contract.test.tsx; focused browser route grep. | Owns drag over roots/voids and full-path mapping. |
-| Q4 | Apply PT-SV2-10 and PT-SV2-11. | collab-selection-stress-contract.ts, collab-document-state-contract.ts, projected-collab-substrate-contract.test.ts, collab-history-runtime-contract.ts. | package unit. | cd .tmp/slate-v2 && bun test ./packages/slate/test/collab-selection-stress-contract.ts ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate-react/test/projected-collab-substrate-contract.test.ts. | No provider-specific Yjs policy in raw Slate. |
-| Q5 | Apply PT-SV2-12 and PT-SV2-13 only for exact gaps. | slate-browser IME tests, composition-state-contract, selection controller/runtime tests. | browser input plus unit. | cd .tmp/slate-v2 && bun test ./packages/slate-browser/test/core/playwright-ime.test.ts ./packages/slate-react/test/composition-state-contract.test.ts ./packages/slate-react/test/selection-controller-contract.test.ts. | Avoid importing Portable Text behavior API names. |
-| Q6 | Route PT-SV2-14 through PT-SV2-16 to Plate backlog. | Plate schema/list/serializer/plugin packages and docs. | package/docs when Plate work starts. | No .tmp/slate-v2 command. | Keep raw Slate unopinionated. |
+| Q1 | Apply PT-SV2-01 through PT-SV2-04. | packages/slate/test/selection-rebase-contract.ts; packages/slate-react/test/projections-and-selection-contract.test.tsx; view-selection-contract.test.ts; multi-root browser example. | unit plus browser where DOM projection changes. | cd Plate repo root && bun test ./packages/slate/test/selection-rebase-contract.ts ./packages/slate-react/test/projections-and-selection-contract.test.tsx ./packages/slate-react/test/view-selection-contract.test.ts; focused Playwright multi-root grep if browser row changes. | First slice; highest value after recent selection/root bugs. |
+| Q2 | Apply PT-SV2-05 through PT-SV2-07. | slate transform delete/insert fixtures, transforms-contract.ts, projected-clipboard-contract.test.ts, paste-html example. | unit plus clipboard/browser proof. | cd Plate repo root && bun test ./packages/slate/test/transforms-contract.ts ./packages/slate-react/test/projected-clipboard-contract.test.ts; Playwright paste-html grep when touched. | Keep matchers/MIME out of raw Slate. |
+| Q3 | Apply PT-SV2-08 and PT-SV2-09. | root-interaction-resolver.test.ts, content-root-navigation-contract.test.ts, slate-void-shell-contract.test.tsx, browser examples. | unit plus Playwright drag/selection proof. | cd Plate repo root && bun test ./packages/slate-react/test/root-interaction-resolver.test.ts ./packages/slate-react/test/content-root-navigation-contract.test.ts ./packages/slate-react/test/slate-void-shell-contract.test.tsx; focused browser route grep. | Owns drag over roots/voids and full-path mapping. |
+| Q4 | Apply PT-SV2-10 and PT-SV2-11. | collab-selection-stress-contract.ts, collab-document-state-contract.ts, projected-collab-substrate-contract.test.ts, collab-history-runtime-contract.ts. | package unit. | cd Plate repo root && bun test ./packages/slate/test/collab-selection-stress-contract.ts ./packages/slate/test/collab-history-runtime-contract.ts ./packages/slate-react/test/projected-collab-substrate-contract.test.ts. | No provider-specific Yjs policy in raw Slate. |
+| Q5 | Apply PT-SV2-12 and PT-SV2-13 only for exact gaps. | slate-browser IME tests, composition-state-contract, selection controller/runtime tests. | browser input plus unit. | cd Plate repo root && bun test ./packages/slate-browser/test/core/playwright-ime.test.ts ./packages/slate-react/test/composition-state-contract.test.ts ./packages/slate-react/test/selection-controller-contract.test.ts. | Avoid importing Portable Text behavior API names. |
+| Q6 | Route PT-SV2-14 through PT-SV2-16 to Plate backlog. | Plate schema/list/serializer/plugin packages and docs. | package/docs when Plate work starts. | No Plate repo root command. | Keep raw Slate unopinionated. |
 
 Issue and claim accounting:
 - Fixed issues: none; this pass is planning-only.
@@ -239,17 +239,17 @@ Downstream lane application:
 | Gate | Status | Evidence |
 |------|--------|----------|
 | downstream skill read | complete | .agents/skills/slate-plan/SKILL.md was read before lane routing. |
-| lane-specific completion gates applied | complete | Raw Slate owns substrate behavior; Plate owns product/schema/plugin policy; current .tmp/slate-v2 tests are mapped before new targets. |
-| implementation boundaries recorded | complete | This pass edits only harvest/plan docs. Execution queue targets .tmp/slate-v2 for a later accepted pass. |
-| verification commands recorded | complete | Each queue row names focused bun/Playwright commands; broad final gate is cd .tmp/slate-v2 && bun check. |
+| lane-specific completion gates applied | complete | Raw Slate owns substrate behavior; Plate owns product/schema/plugin policy; current Plate repo root tests are mapped before new targets. |
+| implementation boundaries recorded | complete | This pass edits only harvest/plan docs. Execution queue targets Plate repo root for a later accepted pass. |
+| verification commands recorded | complete | Each queue row names focused bun/Playwright commands; broad final gate is cd Plate repo root && bun check. |
 
 Accepted-plan execution handoff:
 - read-first plan path: docs/plans/2026-05-28-slate-v2-portabletext-harvest-plan.md
 - requested lane: slate-v2 raw substrate tests from Portable Text harvest.
 - exact execution queue IDs: Q1 first, then Q2, Q3, Q4, Q5 only for exact gaps, Q6 for Plate backlog routing.
-- implementation boundaries: edit .tmp/slate-v2 only in a later execution pass; do not edit .tmp/slate-v2 in this planning pass; do not pull Portable Text schema/list/plugin policy into raw Slate.
+- implementation boundaries: edit Plate repo root only in a later execution pass; do not edit Plate repo root in this planning pass; do not pull Portable Text schema/list/plugin policy into raw Slate.
 - focused verification commands: the commands in Execution queue, scoped to changed owners.
-- broad final gate: cd .tmp/slate-v2 && bun check; use bun check:full only when browser architecture or release-quality browser claims are changed.
+- broad final gate: cd Plate repo root && bun check; use bun check:full only when browser architecture or release-quality browser claims are changed.
 - issue/claim sync rule: sync claim ledgers only if the execution pass changes a public issue/claim status.
 - stop rule: stop and reroute if a row requires schema/list/plugin/product semantics rather than raw editor substrate behavior.
 
@@ -263,7 +263,7 @@ Decisions and tradeoffs:
 - Use Portable Text as a behavior oracle, not as an API model.
 - Prioritize Q1 because recent Slate v2 bugs were selection/root/projection failures.
 - Keep Plate-owned rows explicit instead of pretending raw Slate should own lists, schema categories, decorators, annotations, serializers, toolbar, or Sanity bridge policy.
-- Do not run .tmp/slate-v2 tests in this pass because no .tmp/slate-v2 code changed.
+- Do not run Plate repo root tests in this pass because no Plate repo root code changed.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
@@ -285,7 +285,7 @@ Reboot status:
 |----------|--------|
 | Where am I? | Closure verification for the Portable Text to Slate v2 harvest plan. |
 | Where am I going? | Run artifact checks and the autogoal mechanical completion check, then close the active goal. |
-| What is the goal? | A complete planning-only Slate v2 test harvest plan from ../portabletext with all rows routed and no .tmp/slate-v2 code edits. |
+| What is the goal? | A complete planning-only Slate v2 test harvest plan from ../portabletext with all rows routed and no Plate repo root code edits. |
 | What have I learned? | Portable Text is excellent pressure for root/projection/object-boundary tests; it is a bad source for raw Slate API shape. |
 | What have I done? | Generated the harvest report, full inventory, test index, and filled this lane plan. |
 

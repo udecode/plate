@@ -2,14 +2,14 @@
 
 ## Goal
 
-Fix every valid finding from `.tmp/slate-v2/.clawpatch/reports/20260517T152655-41ac65.md`, skip false positives with evidence, and revalidate with Clawpatch where the CLI can verify the result.
+Fix every valid finding from `Plate repo root/.clawpatch/reports/20260517T152655-41ac65.md`, skip false positives with evidence, and revalidate with Clawpatch where the CLI can verify the result.
 
 ## Source Of Truth
 
 - Clawpatch docs: `https://clawpatch.ai/`
-- Report: `.tmp/slate-v2/.clawpatch/reports/20260517T152655-41ac65.md`
-- Findings state: `.tmp/slate-v2/.clawpatch/findings/*.json`
-- Implementation repo: `.tmp/slate-v2`
+- Report: `Plate repo root/.clawpatch/reports/20260517T152655-41ac65.md`
+- Findings state: `Plate repo root/.clawpatch/findings/*.json`
+- Implementation repo: `Plate repo root`
 
 ## Finding Verdicts
 
@@ -113,12 +113,12 @@ Source review:
 
 - `clawpatch review --json --limit 50`
 - Run: `20260518T033126-00862f`
-- Report: `.tmp/slate-v2/.clawpatch/reports/20260518T033126-00862f.md`
+- Report: `Plate repo root/.clawpatch/reports/20260518T033126-00862f.md`
 - Result before this fix batch: 72 open findings.
 
 Execution target:
 
-1. Temporarily set `.tmp/slate-v2/.clawpatch/config.json` `git.requireCleanWorktreeForFix` to `false` so later Clawpatch fixes are not blocked by earlier Clawpatch edits.
+1. Temporarily set `Plate repo root/.clawpatch/config.json` `git.requireCleanWorktreeForFix` to `false` so later Clawpatch fixes are not blocked by earlier Clawpatch edits.
 2. Run `clawpatch fix --finding <id> --json` in controlled chunks.
 3. Inspect Clawpatch changes after each chunk; stop on validation failure, provider failure, or broad suspicious edits.
 4. Restore `requireCleanWorktreeForFix: true` before handoff.
@@ -128,9 +128,9 @@ Execution target:
 Result:
 
 - Fixed and revalidated all remaining valid findings from `20260518T033126-00862f`.
-- Final Clawpatch state in `.tmp/slate-v2`: `findings: 95`, `openFindings: 0`, `activeLocks: 0`.
+- Final Clawpatch state in `Plate repo root`: `findings: 95`, `openFindings: 0`, `activeLocks: 0`.
 - `clawpatch report --status open --json`: returned no items.
-- Restored `.tmp/slate-v2/.clawpatch/config.json` to `"requireCleanWorktreeForFix": true`.
+- Restored `Plate repo root/.clawpatch/config.json` to `"requireCleanWorktreeForFix": true`.
 
 Final same-turn verification:
 
@@ -143,11 +143,11 @@ Final same-turn verification:
 Source state before review:
 
 - `clawpatch status --json`: `findings: 95`, `openFindings: 0`, `activeLocks: 0`, `lockFiles: 0`.
-- `.tmp/slate-v2/.clawpatch/config.json`: `"requireCleanWorktreeForFix": true`.
+- `Plate repo root/.clawpatch/config.json`: `"requireCleanWorktreeForFix": true`.
 
 Execution target:
 
-1. Run `clawpatch review --json --limit 50` in `.tmp/slate-v2`.
+1. Run `clawpatch review --json --limit 50` in `Plate repo root`.
 2. Inspect the generated report and `clawpatch status --json`.
 3. Record new findings, or record a zero-open result if the review produces none.
 4. Keep `active goal state` pending until this review batch is closed.
@@ -155,7 +155,7 @@ Execution target:
 Result:
 
 - `clawpatch review --json --limit 50`: run `20260519T143737-1f263b`.
-- Report: `.tmp/slate-v2/.clawpatch/reports/20260519T143737-1f263b.md`.
+- Report: `Plate repo root/.clawpatch/reports/20260519T143737-1f263b.md`.
 - Reviewed `31` features and produced `12` new open findings.
 - `clawpatch status --json`: `findings: 107`, `openFindings: 12`, `activeLocks: 0`, `lockFiles: 0`.
 - Quick source pass: no obvious false positives. Treat the 12 findings as valid enough for a fix batch unless a targeted repro proves otherwise.
@@ -179,7 +179,7 @@ Open findings:
 
 Source report:
 
-- `.tmp/slate-v2/.clawpatch/reports/20260519T143737-1f263b.md`
+- `Plate repo root/.clawpatch/reports/20260519T143737-1f263b.md`
 
 Validity pass:
 
@@ -187,7 +187,7 @@ Validity pass:
 
 Execution target:
 
-1. Temporarily set `.tmp/slate-v2/.clawpatch/config.json` `git.requireCleanWorktreeForFix` to `false` so multiple Clawpatch fixes can run in one dirty working tree.
+1. Temporarily set `Plate repo root/.clawpatch/config.json` `git.requireCleanWorktreeForFix` to `false` so multiple Clawpatch fixes can run in one dirty working tree.
 2. Run `clawpatch fix --finding <id> --json` for the 12 valid findings.
 3. Stop and inspect manually if a fix fails validation, looks too broad, or touches an unrelated surface.
 4. Restore `requireCleanWorktreeForFix: true` before handoff.

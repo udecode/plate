@@ -107,8 +107,8 @@ Class:
 
 Immediate current proof owners to restore or keep alive:
 
-- `.tmp/slate-v2/packages/slate/test/query-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/legacy-editor-nodes-fixtures.ts`
+- `packages/slate/test/query-contract.ts`
+- `packages/slate/test/legacy-editor-nodes-fixtures.ts`
 
 Current read:
 
@@ -133,8 +133,8 @@ Class:
 
 Immediate current proof owners to restore or keep alive:
 
-- `.tmp/slate-v2/packages/slate/test/interfaces-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/legacy-interfaces-fixtures.ts`
+- `packages/slate/test/interfaces-contract.ts`
+- `packages/slate/test/legacy-interfaces-fixtures.ts`
 
 Current read:
 
@@ -158,9 +158,9 @@ Class:
 
 Immediate current proof owners to restore or keep alive:
 
-- `.tmp/slate-v2/packages/slate/test/transforms-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/operations-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/legacy-transforms-fixtures.ts`
+- `packages/slate/test/transforms-contract.ts`
+- `packages/slate/test/operations-contract.ts`
+- `packages/slate/test/legacy-transforms-fixtures.ts`
 
 ### Draft-backed public transaction/snapshot/store rows
 
@@ -183,11 +183,11 @@ Class:
 
 Immediate current proof owners to restore or keep alive:
 
-- `.tmp/slate-v2/packages/slate/test/surface-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/bookmark-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/range-ref-contract.ts`
+- `packages/slate/test/surface-contract.ts`
+- `packages/slate/test/transaction-contract.ts`
+- `packages/slate/test/snapshot-contract.ts`
+- `packages/slate/test/bookmark-contract.ts`
+- `packages/slate/test/range-ref-contract.ts`
 
 ### Draft-backed current contract rows that still matter to product truth
 
@@ -204,10 +204,10 @@ Class:
 
 Immediate current proof owners to restore or keep alive:
 
-- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/normalization-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/headless-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/text-units-contract.ts`
+- `packages/slate/test/clipboard-contract.ts`
+- `packages/slate/test/normalization-contract.ts`
+- `packages/slate/test/headless-contract.ts`
+- `packages/slate/test/text-units-contract.ts`
 
 ## `keep-later`
 
@@ -264,5 +264,5 @@ source similarity:
 5. `bookmark-contract.ts` + `range-ref-contract.ts` +
    `clipboard-contract.ts` + `normalization-contract.ts`
 
-If current `.tmp/slate-v2/packages/slate/src/**` cannot satisfy those rows
+If current `packages/slate/src/**` cannot satisfy those rows
 cleanly, rewrite it.

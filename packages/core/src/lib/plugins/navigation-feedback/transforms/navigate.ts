@@ -1,4 +1,4 @@
-import type { Point } from '@platejs/slate';
+import type { Point } from '@platejs/slate-legacy';
 import type { SlateEditor } from '../../../editor';
 import type { NavigationNavigateOptions } from '../types';
 

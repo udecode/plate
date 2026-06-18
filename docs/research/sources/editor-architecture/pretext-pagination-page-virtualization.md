@@ -14,7 +14,7 @@ Evidence for the Slate v2 pagination / virtualization planning lane.
 Sources:
 
 - live `../pretext` source and research log, read on 2026-05-25.
-- live `.tmp/slate-v2` layout and React source, read on 2026-05-25.
+- live `Plate repo root` layout and React source, read on 2026-05-25.
 - Cyrus Radfar, "Pretext is a text measurement library. The most interesting
   use cases have no DOM at all.", fetched on 2026-05-25.
 - local `../tiptap-docs` Pages limitations and table-with-pages docs, read on
@@ -83,28 +83,28 @@ Slate implication:
 
 Slate v2 already has enough layout substrate:
 
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts:105` defines box kinds for
+- `packages/slate-layout/src/index.ts:105` defines box kinds for
   block, code line, image, table, table cell, and thematic break.
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts:113` defines split policy
+- `packages/slate-layout/src/index.ts:113` defines split policy
   vocabulary: `avoid`, `line`, `page`, and `row`.
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts:236` defines snapshots with
+- `packages/slate-layout/src/index.ts:236` defines snapshots with
   blocks, fragments, page, pages, root, settings, and version.
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts:277` defines an engine
+- `packages/slate-layout/src/index.ts:277` defines an engine
   boundary.
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts:1349` implements the
+- `packages/slate-layout/src/index.ts:1349` implements the
   Pretext-backed page layout engine.
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts:1698` paginates measured
+- `packages/slate-layout/src/index.ts:1698` paginates measured
   blocks into fragments and pages.
 
 The wrong part is the repeated unit used by paged rendering:
 
-- `.tmp/slate-v2/packages/slate-layout/src/react.tsx:185` maps projected blocks
+- `packages/slate-layout/src/react.tsx:185` maps projected blocks
   into `getVirtualizedTopLevelItems`.
-- `.tmp/slate-v2/packages/slate-layout/src/react.tsx:219` renders every page
+- `packages/slate-layout/src/react.tsx:219` renders every page
   surface.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:548`
+- `packages/slate-react/src/components/editable-text-blocks.tsx:548`
   exposes only a top-level-item layout hook for virtualization.
-- `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:212`
+- `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:212`
   virtualizes top-level runtime ids, not pages/spreads.
 
 Slate implication:

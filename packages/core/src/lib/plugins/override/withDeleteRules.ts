@@ -1,4 +1,4 @@
-import { PointApi, RangeApi } from '@platejs/slate';
+import { PointApi, RangeApi } from '@platejs/slate-legacy';
 
 import type { OverrideEditor } from '../../plugin';
 

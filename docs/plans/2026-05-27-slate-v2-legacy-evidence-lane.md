@@ -2,7 +2,7 @@
 
 Objective:
 Add the first real editor comparison lane to
-`/Users/zbeyens/git/plate-2/benchmarks/editor` for `.tmp/slate-v2` versus
+`/Users/zbeyens/git/plate-2/benchmarks/editor` for `Plate repo root` versus
 `../slate` only. Completion means Evidence Kit benchmark results contain
 normalized Slate v2 and legacy Slate rows from the Slate v2 legacy-compare
 artifact, other editor runtimes stay deferred, docs/search expose the lane,
@@ -26,10 +26,10 @@ Applied packs:
 Major source:
 - type: local benchmark artifact plus Evidence Kit package source
 - id / link:
-  `.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-v2DefaultRenderAuto-v2DomPresent-blocks-5000-iters-5-ops-10-split-selection-no-profile.json`
+  `tmp/slate-react-huge-document-legacy-compare-benchmark-compare-v2DefaultRenderAuto-v2DomPresent-blocks-5000-iters-5-ops-10-split-selection-no-profile.json`
 - title: Slate React huge document legacy compare
 - decision to make: first comparison lane is Slate v2 versus legacy Slate only
-- decision criteria: exact `.tmp/slate-v2` and `../slate` repos, structured
+- decision criteria: exact `Plate repo root` and `../slate` repos, structured
   Evidence Kit rows, visible mixed results, no ProseMirror/Lexical/Tiptap
   runtime claims
 - likely files / surfaces:
@@ -51,7 +51,7 @@ Major lane:
 
 Completion threshold:
 - Fresh local Slate benchmark run records `currentRepo` as
-  `/Users/zbeyens/git/plate-2/.tmp/slate-v2` and `legacyRepo` as
+  `/Users/zbeyens/git/plate-2/Plate repo root` and `legacyRepo` as
   `/Users/zbeyens/git/slate`.
 - Evidence Kit writes
   `benchmarks/editor/benchmarks/results/slate-v2-legacy-latest.json` with
@@ -66,7 +66,7 @@ Completion threshold:
   passes.
 
 Verification surface:
-- Fresh benchmark command in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`:
+- Fresh benchmark command in `/Users/zbeyens/git/plate-2/Plate repo root`:
   `REACT_HUGE_COMPARE_LEGACY_REPO=../../../slate REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 REACT_HUGE_COMPARE_SPLIT_SELECTION=1 REACT_HUGE_COMPARE_DISPOSE_DELAY_MS=0 REACT_HUGE_COMPARE_SURFACES=v2DefaultRenderAuto,v2DomPresent bun run bench:react:huge-document:legacy-compare:local`
 - Evidence Kit command in `/Users/zbeyens/git/plate-2`:
   `npm run bench:editor:check`
@@ -77,7 +77,7 @@ Verification surface:
 
 Constraints:
 - Start from local repo evidence before external claims.
-- Keep the first comparison narrow: `.tmp/slate-v2` versus `../slate`.
+- Keep the first comparison narrow: `Plate repo root` versus `../slate`.
 - Preserve unsupported, slow, and uncomfortable rows instead of reducing the
   result to a winner.
 - Do not restore the deleted benchmark app/template lab.
@@ -98,7 +98,7 @@ Boundaries:
 
 Blocked condition:
 - Autonomous work would stop only if the Slate v2 legacy-compare script could
-  not produce an artifact for `.tmp/slate-v2` versus `../slate`, or if Evidence
+  not produce an artifact for `Plate repo root` versus `../slate`, or if Evidence
   Kit rejected the normalized benchmark rows. Neither blocker occurred.
 
 Major state:
@@ -134,7 +134,7 @@ Start Gates:
 | Helper stack selected | yes | Used local Node scripts plus Evidence Kit CLI; no new framework. |
 | External research decision recorded | yes | External research not used because local artifacts settle this lane. |
 | Implementation expectation recorded | yes | Implementation expected and completed in `benchmarks/editor`. |
-| Workspace authority selected | yes | Authority is `/Users/zbeyens/git/plate-2` plus `.tmp/slate-v2` benchmark artifact source. |
+| Workspace authority selected | yes | Authority is `/Users/zbeyens/git/plate-2` plus `Plate repo root` benchmark artifact source. |
 | Branch / PR expectation decided | yes | No commit or PR requested. |
 
 Work Checklist:
@@ -165,7 +165,7 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run benchmark, Evidence Kit check, search, and formatting | Fresh Slate benchmark passed; `npm run bench:editor:check` passed; search returns Slate lane rows; Biome passed. |
-| Current-state source audit | yes | Map current owner, boundaries, constraints, and affected surfaces | Current owner is `benchmarks/editor`; artifact source is `.tmp/slate-v2`; legacy source is `../slate`. |
+| Current-state source audit | yes | Map current owner, boundaries, constraints, and affected surfaces | Current owner is `benchmarks/editor`; artifact source is `Plate repo root`; legacy source is `../slate`. |
 | Decision criteria closure | yes | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | Satisfied for Slate v2 vs legacy; narrowed other editors to deferred. |
 | Options / tradeoffs / rejection record | yes | Record viable options, chosen recommendation, and why alternatives lose | Chose artifact normalizer over new app; rejected cross-editor adapters for this first lane. |
 | Review / pressure pass | yes | Run selected reviewer/lens or record reason | Manual pressure pass: result is mixed and cannot be sold as a blanket Slate v2 win. |
@@ -192,7 +192,7 @@ Findings:
   `slate-v2-legacy-latest.json` is enough for docs/search without changing the
   core benchmark result.
 - The refreshed artifact is exact to the requested repos:
-  `currentRepo=/Users/zbeyens/git/plate-2/.tmp/slate-v2` and
+  `currentRepo=/Users/zbeyens/git/plate-2/Plate repo root` and
   `legacyRepo=/Users/zbeyens/git/slate`.
 - Rows are mixed: `readyMs` strongly favors Slate v2, while `selectAllMs`
   strongly favors legacy chunking.
@@ -222,7 +222,7 @@ Implementation notes:
 
 Review fixes:
 - Fixed the artifact exactness issue by rerunning the Slate v2 benchmark from
-  `.tmp/slate-v2` with `REACT_HUGE_COMPARE_LEGACY_REPO=../../../slate`.
+  `Plate repo root` with `REACT_HUGE_COMPARE_LEGACY_REPO=../../../slate`.
 - Kept V2-only metrics out of the first comparison so each fixture has both
   Slate v2 and legacy rows.
 - Kept other editor runtimes deferred; no fake unsupported rows were added for
@@ -234,7 +234,7 @@ Error attempts:
 | Browser plugin reload unavailable after tool discovery | 1 | Use regenerated docs/search artifacts as proof | Static docs and search proof passed; no browser-only behavior changed. |
 
 Verification evidence:
-- In `/Users/zbeyens/git/plate-2/.tmp/slate-v2`, fresh benchmark command
+- In `/Users/zbeyens/git/plate-2/Plate repo root`, fresh benchmark command
   passed and wrote the 5,000-block compare artifact with exact repo paths.
 - In `/Users/zbeyens/git/plate-2/benchmarks/editor`, `npm run bench:evidence`
   passed and wrote 52 Slate compare rows.
@@ -249,7 +249,7 @@ Final handoff contract:
 - Recommendation: use this as the first Evidence Kit comparison lane and defer
   other editor runtimes until each has its own source-backed fixture.
 - Confidence: high for integration; medium for benchmark interpretation.
-- Evidence: 52 rows, 13 fixtures, 4 surfaces, exact `.tmp/slate-v2` and
+- Evidence: 52 rows, 13 fixtures, 4 surfaces, exact `Plate repo root` and
   `../slate` repo paths.
 - Tests / commands: fresh Slate benchmark, `npm run bench:editor:check`,
   `npm run bench:editor:search -- slate-v2 legacy`, scoped Biome.
@@ -263,7 +263,7 @@ Final handoff contract:
 
 Timeline:
 - 2026-05-27T18:43:52.543Z Major-task goal plan created.
-- 2026-05-27T18:52:00Z Fresh `.tmp/slate-v2` versus `../slate` benchmark
+- 2026-05-27T18:52:00Z Fresh `Plate repo root` versus `../slate` benchmark
   artifact created.
 - 2026-05-27T18:53:45Z Root editor Evidence Kit check passed.
 - 2026-05-27T18:54:00Z Perf docs/search and formatting proof completed.
@@ -273,7 +273,7 @@ Reboot status:
 |----------|--------|
 | Where am I? | Closeout complete |
 | Where am I going? | Final response after autogoal closure |
-| What is the goal? | First real Evidence Kit editor comparison lane: `.tmp/slate-v2` versus `../slate` |
+| What is the goal? | First real Evidence Kit editor comparison lane: `Plate repo root` versus `../slate` |
 | What have I learned? | The lane is meaningful but mixed: Slate v2 wins readiness/full-document rows; legacy chunking wins some selection rows |
 | What have I done? | Implemented parser, benchmark writer, tests, generated result/docs, and verification |
 

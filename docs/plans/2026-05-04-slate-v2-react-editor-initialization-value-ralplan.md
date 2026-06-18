@@ -554,7 +554,7 @@ Change: Reject `withEditors` / composer arrays.
 - Answer: TypeScript proof matters more. The array shape failed to preserve
   `HistoryEditor` without tuple machinery, while `withEditor: withHistory` passed
   once `withHistory` used `ValueOf<T>`.
-- Evidence: in-memory TypeScript bake-off against live `.tmp/slate-v2` paths:
+- Evidence: in-memory TypeScript bake-off against live `Plate repo root` paths:
   current `withHistory` chain fails; `ValueOf<T>` `withHistory` plus
   `withEditor: withHistory` passes; variadic composer arrays still fail.
 - Rejected alternative: variadic tuple array plus `as const`. Too much ceremony
@@ -647,9 +647,9 @@ Phase 5: browser proof.
 | current-state read   | complete | live code-highlighting, Slate provider, projection store, createEditor                                                                          | identified provider-late initialization bug                                                                                   | none        |
 | ecosystem comparison | complete | local Lexical, Tiptap, ProseMirror source                                                                                                       | chose editor/state creation over provider render                                                                              | none        |
 | issue mining         | complete | `#5488`, `#5710`, `#4564`, `#3465`, `#5351`                                                                                                     | added issue-solve targets                                                                                                     | none        |
-| API bake-off         | complete | in-memory TypeScript proof against live `.tmp/slate-v2` package paths                                                                           | rejected `withEditors` / composer arrays, accepted `withEditor`, added `withHistory` typing prerequisite                      | none        |
+| API bake-off         | complete | in-memory TypeScript proof against live `Plate repo root` package paths                                                                           | rejected `withEditors` / composer arrays, accepted `withEditor`, added `withHistory` typing prerequisite                      | none        |
 | closure score        | complete | revised public API target, objection ledger, phases, and scorecard                                                                              | plan reaches `0.93`                                                                                                           | none        |
-| Ralph execution      | complete | `createEditor` options, `useSlateEditor`, `withHistory` generic preservation, provider cleanup, example migration, focused tests, browser proof | active plan executed in `.tmp/slate-v2`; dynamic import errors surfaced; production `Editor.isEditor` chunk-order crash fixed | user review |
+| Ralph execution      | complete | `createEditor` options, `useSlateEditor`, `withHistory` generic preservation, provider cleanup, example migration, focused tests, browser proof | active plan executed in `Plate repo root`; dynamic import errors surfaced; production `Editor.isEditor` chunk-order crash fixed | user review |
 
 ## Scorecard
 

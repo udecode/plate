@@ -1,4 +1,4 @@
-import type { ScrollIntoViewOptions } from '@platejs/slate';
+import type { ScrollIntoViewOptions } from '@platejs/slate-legacy';
 
 import isUndefined from 'lodash/isUndefined.js';
 import omitBy from 'lodash/omitBy.js';

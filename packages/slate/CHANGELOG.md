@@ -1,696 +1,731 @@
-# @udecode/slate
+# slate
 
-## 54.0.0-beta.0
-
-### Major Changes
-
-- [#5031](https://github.com/udecode/plate/pull/5031) by [@felixfeng33](https://github.com/felixfeng33) – Prepare v54 beta prerelease versioning for Slate.
-
-## 53.0.7
+## 0.124.1
 
 ### Patch Changes
 
-- [#4987](https://github.com/udecode/plate/pull/4987) by [@zbeyens](https://github.com/zbeyens) – Add experimental `editor.tf.setNodesBatch` for exact-path node prop updates on large documents
+- [#6040](https://github.com/ianstormtaylor/slate/pull/6040) [`20a1a937`](https://github.com/ianstormtaylor/slate/commit/20a1a9371538dda1911d533e0f02b1655ffffa12) Thanks [@12joan](https://github.com/12joan)! - - Harden property accessors against untrusted keys
+  - Fix incorrect argument types for the `compare` and `merge` options of `Transforms.setNodes`
 
-  - Cut the large-document `set_node` hot path from `18.56 ms` to `2.63 ms` at `1k` blocks (`7.05x` faster)
-  - Cut the same path from `118.54 ms` to `4.92 ms` at `5k` blocks (`24.10x` faster)
-  - Let `@platejs/core` batch live `nodeId` normalization instead of paying one `setNodes` call per missing id
-  - Keep `editor.tf.setNodesBatch` explicitly temporary. It is experimental and will be removed in a future release
-
-- [`231b986`](https://github.com/udecode/plate/commit/231b9869825e38678621f55a4c4d1812704056e0) by [@github-actions[bot]](https://github.com/github-actions%5Bbot%5D) – Updated `slate-hyperscript`.
-
-## 53.0.5
-
-### Patch Changes
-
-- [`ce9ec87`](https://github.com/udecode/plate/commit/ce9ec871c9547a8a3c78ded13a93049ef9fe049c) by [@github-actions[bot]](https://github.com/github-actions%5Bbot%5D) – Updated `slate-react`.
-
-## 53.0.0
-
-### Patch Changes
-
-- [`081cbe9`](https://github.com/udecode/plate/commit/081cbe92d2284fd6f1b6babc7134405fe7e957c6) by [@github-actions[bot]](https://github.com/github-actions%5Bbot%5D) – Updated `slate`, `slate-dom`.
-
-## 52.3.21
-
-### Patch Changes
-
-- [`0af3236`](https://github.com/udecode/plate/commit/0af323602ab08b2dbe9282c0a8a2db011da10ab6) by [@github-actions[bot]](https://github.com/github-actions%5Bbot%5D) – Updated `slate`, `slate-dom`, `slate-react`.
-
-## 52.3.12
-
-### Patch Changes
-
-- [#4902](https://github.com/udecode/plate/pull/4902) by [@zbeyens](https://github.com/zbeyens) – Fix redo to restore selection after undoing history batches that clear the active selection
-
-## 52.3.4
-
-### Patch Changes
-
-- [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
-
-  - Fixed `editor.tf.duplicateNodes({ block: true })` to duplicate the selected block even when `nodes` is omitted.
-
-- [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
-
-  - Fixed `withHistory(createEditor())` legacy method sync so `editor`, `editor.api`, and `editor.tf` all use the history-aware `apply`, `undo`, and `redo` methods.
-
-- [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
-
-  - Fixed `queryEditor`, `isAt`, and `editor.api.descendant` so bottom-up location checks, point start/end checks, and non-path descendant searches behave consistently.
-
-- [#4857](https://github.com/udecode/plate/pull/4857) by [@zbeyens](https://github.com/zbeyens) –
-  - Update internal `@udecode/*` dependency ranges to workspace references.
-
-## 52.3.3
-
-### Patch Changes
-
-- [#4853](https://github.com/udecode/plate/pull/4853) by [@zbeyens](https://github.com/zbeyens) –
-  - Update Slate dependencies to `0.123.0`
-
-## 52.0.10
-
-### Patch Changes
-
-- [`a4d093b`](https://github.com/udecode/plate/commit/a4d093bf0b0c78c40b6bb1bfe5fd15e4198b8942) by [@zbeyens](https://github.com/zbeyens) – slate 0.120.0
-
-## 52.0.1
-
-### Patch Changes
-
-- [#4750](https://github.com/udecode/plate/pull/4750) by [@zbeyens](https://github.com/zbeyens) – Add React Compiler support.
-
-## 52.0.0
-
-### Major Changes
-
-- [#4747](https://github.com/udecode/plate/pull/4747) by [@zbeyens](https://github.com/zbeyens) – ESM-only
-
-## 51.1.2
-
-### Patch Changes
-
-- [#4732](https://github.com/udecode/plate/pull/4732) by [@zbeyens](https://github.com/zbeyens) – Format code with Biome
-
-## 49.2.21
-
-### Patch Changes
-
-- [#4600](https://github.com/udecode/plate/pull/4600) by [@zbeyens](https://github.com/zbeyens) – slate 0.118
-
-## 49.2.4
-
-### Patch Changes
-
-- [#4537](https://github.com/udecode/plate/pull/4537) by [@zbeyens](https://github.com/zbeyens) –
-  - Fixed `duplicateNodes` to allow undefined `at`
-  - Improved error handling by only checking for `nodes` parameter instead of both `nodes` and `at`
-
-## 49.1.13
-
-### Patch Changes
-
-- [#4512](https://github.com/udecode/plate/pull/4512) by [@zbeyens](https://github.com/zbeyens) –
-  - Added `combineTransformMatchOptions` utility for combining match predicates in transforms. This utility provides default matching behavior that matches the native Slate transform behavior when no match is provided.
-  - Added `editor.meta.isNormalizing` flag to track when the editor is normalizing nodes. This flag is automatically set to `true` during `editor.tf.normalizeNode` and `plugin.normalizeInitialValue` and restored to its previous value when normalization completes.
-
-## 49.0.2
-
-### Patch Changes
-
-- [#4351](https://github.com/udecode/plate/pull/4351) by [@felixfeng33](https://github.com/felixfeng33) – upgrade slate
-
-## 49.0.0
-
-### Major Changes
-
-- [#4340](https://github.com/udecode/plate/pull/4340) by [@zbeyens](https://github.com/zbeyens) – Migration from `@udecode/plate-*` to `@platejs/*`
-
-## 49.0.0
-
-### Major Changes
-
-- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
-
-  - Renamed all `@udecode/plate-*` packages to `@platejs/*`. Replace `@udecode/plate-` with `@platejs/` in your code.
-
-- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
-
-  - Replaced `editor.api.shouldMergeNodesRemovePrevNode` with `editor.api.shouldMergeNodes`. `shouldMergeNodes` is now controlling the remove + merge behavior
-
-    - Returns `true` if the default merging behavior should be applied.
-    - Returns `false` if the default merging behavior should not be applied. This is used by Plate to prevent void blocks deletion, and to prioritize empty block deletion over merging.
-
-    ```ts
-    // Before
-    editor.api.shouldMergeNodesRemovePrevNode(prev, current);
-
-    // After
-    editor.api.shouldMergeNodes(prev, current);
-    ```
-
-  - Replace `editor.api.fragment` option `structuralTypes` with `unwrap`.
-
-    ```ts
-    // Before
-    editor.api.fragment(editor.selection, { structuralTypes: ["table"] });
-
-    // After
-    editor.api.fragment(editor.selection, { unwrap: ["table"] });
-    ```
+## 0.124.0
 
 ### Minor Changes
 
-- [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
-  - `editor.tf.insertSoftBreak` now inserts a soft break instead of a hard break.
-
-# @udecode/plate-slate
-
-## 48.0.1
+- [#6006](https://github.com/ianstormtaylor/slate/pull/6006) [`72e4f025`](https://github.com/ianstormtaylor/slate/commit/72e4f025761ea7670d4944c0f25fc6da97f1e5f5) Thanks [@skorenb](https://github.com/skorenb)! - Added `force` property to `normalizeNode` passed from `normalize` method
 
 ### Patch Changes
 
-- [`24b81d7`](https://github.com/udecode/plate/commit/24b81d724314c81b70aa951fd8e08d52b131f29f) by [@zbeyens](https://github.com/zbeyens) – New api `editor.api.shouldNormalizeNode`: use case is to prevent `normalizeNode` from being called when the editor is not ready
+- [#6018](https://github.com/ianstormtaylor/slate/pull/6018) [`91321bdc`](https://github.com/ianstormtaylor/slate/commit/91321bdcd2c6c0baef010bbcde3079e11841e69f) Thanks [@12joan](https://github.com/12joan)! - Do not allow paths to contain strings when getting nodes
 
-## 47.3.1
+- [#6024](https://github.com/ianstormtaylor/slate/pull/6024) [`a1729221`](https://github.com/ianstormtaylor/slate/commit/a1729221a0c5785f48493177beb81b4b8ef08594) Thanks [@juliankrispel](https://github.com/juliankrispel)! - Fix normalization hanging when merging text under non-selectable elements
 
-### Patch Changes
-
-- [#4267](https://github.com/udecode/plate/pull/4267) by [@zbeyens](https://github.com/zbeyens) – Update `slate` to `0.114.0` and `slate-react` to `0.114.1`
-
-## 47.2.7
-
-## 47.2.3
-
-### Patch Changes
-
-- [#4246](https://github.com/udecode/plate/pull/4246) by [@felixfeng33](https://github.com/felixfeng33) –
-  - New `editor.api.scrollIntoView` - Scrolls the editor to a specified position.
-  - New `editor.tf.withScrolling` - Wraps a function and automatically scrolls the editor after `insertNode` and `insertText` operations (configurable).
-  - New `editor.api.isScrolling` - Boolean flag indicating whether the editor is currently in a scrolling operation initiated by `withScrolling`.
-
-## 45.0.6
-
-### Patch Changes
-
-- [#4107](https://github.com/udecode/plate/pull/4107) by [@12joan](https://github.com/12joan) – Change type of `editor.id` from `any` to `string`. The previous value of `any` was causing `NodeIn<Value>['id']` to have type `any`.
-
-## 44.0.0
-
-### Patch Changes
-
-- [#4048](https://github.com/udecode/plate/pull/4048) by [@zbeyens](https://github.com/zbeyens) – Fix duplicateNodes when nodes is not passed
-
-## 42.2.5
-
-### Patch Changes
-
-- [#4015](https://github.com/udecode/plate/pull/4015) by [@yf-yang](https://github.com/yf-yang) – Fix `editor.tf.moveNodes` type
-
-## 42.0.3
-
-### Patch Changes
-
-- [#3952](https://github.com/udecode/plate/pull/3952) by [@zbeyens](https://github.com/zbeyens) –
-  - Fix `editor.api.last(at, { level: 0 })` when editor has no children, it should return `undefined`. Fixes error on cmd+a > backspace.
-  - Fix `editor.tf.removeNodes` when `previousEmptyBlock` is true without `at` option, it should return early.
-    - Fixes #3960
-  - Add `RangeApi.contains` to check if a range fully contains another range (both start and end points).
-  - Add `editor.api.isSelected(target, { contains?: boolean })` to check if a path or range is selected by the current selection. When `contains` is true, checks if selection fully contains the target.
-  - `editor.tf.insertText` now support both legacy slate transforms `editor.insertText` and `Transforms.insertText`:
-    - `editor.insertText` -> `editor.tf.insertText` without `at` option. In addition, `marks: false` option can be used to exclude current marks. Default is `true`.
-    - `Transforms.insertText` -> `editor.tf.insertText` with `at` option
-  - Add `editor.api.next` option `from`:
-    - `from?: 'after' | 'child'` (default: `'after'`): Determines where to start traversing from
-    - `'after'`: Start from the point after the current location
-    - `'child'`: Start from the first child of the current path. `at` must be a path.
-  - Add `editor.api.previous` option `from`:
-    - `from?: 'before' | 'parent'` (default: `'before'`): Determines where to start traversing from
-    - `'before'`: Start from the point before the current location
-    - `'parent'`: Start from the parent of the current path. `at` must be a path.
-
-## 42.0.1
-
-### Patch Changes
-
-- [#3948](https://github.com/udecode/plate/pull/3948) by [@zbeyens](https://github.com/zbeyens) –
-  - Fix `deselect`, `deselectDOM` methods
-  - Remove all `LegacyEditorMethods` from `Editor`
-
-## 42.0.0
-
-### Major Changes
-
-- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
-
-  - Remove `slate`, `slate-dom`, `slate-react`, `slate-history` and `slate-hyperscript` from your dependencies. It's now part of this package and `@udecode/plate`. All exports remain the same or have equivalents (see below).
-  - Renamed `createTEditor` to `createEditor`.
-  - `createEditor` now returns an editor (`Editor`) with all queries under `editor.api` and transforms under `editor.tf`. You can see or override them at a glance. For example, we now use `editor.tf.setNodes` instead of importing `setNodes`. This marks the completion of generic typing and the removal of error throws from `slate`, `slate-dom`, and `slate-history` queries/transforms, without forking implementations. We’ve also reduced the number of queries/transforms by merging a bunch of them.
-
-  The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
-
-  - `Editor`, `EditorInterface`
-  - `Transforms`
-  - `HistoryEditor` (noop, unchanged), `HistoryEditorInterface`
-  - `DOMEditor` (noop, unchanged), `DOMEditorInterface`
-  - `editor.findPath` now returns `DOMEditor.findPath` (memo) and falls back to `findNodePath` (traversal, less performant) if not found.
-  - Removed the first parameter (`editor`) from:
-    - `editor.hasEditableTarget`
-    - `editor.hasSelectableTarget`
-    - `editor.isTargetInsideNonReadonlyVoid`
-    - `editor.hasRange`
-    - `editor.hasTarget`
-  - `editor.api.node(options)` (previously `findNode`) `at` option is now `at ?? editor.selection` instead of `at ?? editor.selection ?? []`. That means if you want to lookup the entire document, you need to pass `[]` explicitly.
-  - Removed `setNode` in favor of `setNodes` (you can now pass a `TNode` to `at` directly).
-  - Removed `setElements` in favor of `setNodes`.
-  - Removed unused `isWordAfterTrigger`, `setBlockAboveNode`, `setBlockAboveTexts`, `setBlockNodes`, `getPointNextToVoid`.
-  - Replaced `Path` from slate with `Path` (type) and `PathApi` (static methods).
-  - Replaced `Operation` from slate with `Operation` (type) and `OperationApi` (static methods).
-  - Replaced `Point` from slate with `Point` (type) and `PointApi` (static methods).
-  - Replaced `Text` from slate with `TText` (type) and `TextApi` (static methods). We also export `Text` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
-  - Replaced `Range` from slate with `TRange` (type) and `RangeApi` (static methods). We also export `Range` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
-  - Replaced `Location` from slate with `TLocation` (type) and `LocationApi` (static methods). We also export `Location` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
-  - Replaced `Span` from slate with `Span` (type) and `SpanApi` (static methods).
-  - Replaced `Node` from slate with `TNode` (type) and `NodeApi` (static methods). We also export `Node` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
-  - Replaced `Element` from slate with `TElement` (type) and `ElementApi` (static methods). We also export `Element` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
-  - Signature change:
-
-    - `editor.tf.toggle.block({ type, ...options })` -> `editor.tf.toggleBlock(type, options)`
-    - `editor.tf.toggle.mark({ key, clear })` -> `editor.tf.toggleMark(key, { remove: clear })`
-
-  - Moved editor functions:
-
-    - `addMark` -> `editor.tf.addMark`
-    - `addRangeMarks` -> `editor.tf.setNodes(props, { at, marks: true })`
-    - `blurEditor` -> `editor.tf.blur`
-    - `collapseSelection` -> `editor.tf.collapse`
-    - `createDocumentNode` -> `editor.api.create.value` (core)
-    - `createNode` -> `editor.api.create.block`
-    - `createPathRef` -> `editor.api.pathRef`
-    - `createPointRef` -> `editor.api.pointRef`
-    - `createRangeRef` -> `editor.api.rangeRef`
-    - `deleteBackward({ unit })` -> `editor.tf.deleteBackward(unit)`
-    - `deleteForward({ unit })` -> `editor.tf.deleteForward(unit)`
-    - `deleteFragment` -> `editor.tf.deleteFragment`
-    - `deleteText` -> `editor.tf.delete`
-    - `deselect` -> `editor.tf.deselect`
-    - `deselectEditor` -> `editor.tf.deselectDOM`
-    - `duplicateBlocks` -> `editor.tf.duplicateNodes({ nodes })`
-    - `findDescendant` -> `editor.api.descendant`
-    - `findEditorDocumentOrShadowRoot` -> `editor.api.findDocumentOrShadowRoot`
-    - `findEventRange` -> `editor.api.findEventRange`
-    - `findNode(options)` -> `editor.api.node(options)`
-    - `findNodeKey` -> `editor.api.findKey`
-    - `findNodePath` -> `editor.api.findPath`
-    - `findPath` -> `editor.api.findPath`
-    - `focusEditor` -> `editor.tf.focus({ at })`
-    - `focusEditorEdge` -> `editor.tf.focus({ at, edge: 'startEditor' | 'endEditor' })`
-    - `getAboveNode` -> `editor.api.above`
-    - `getAncestorNode` -> `editor.api.block({ highest: true })`
-    - `getBlockAbove` -> `editor.api.block({ at, above: true })` or `editor.api.block()` if `at` is not a path
-    - `getBlocks` -> `editor.api.blocks`
-    - `getEdgeBlocksAbove` -> `editor.api.edgeBlocks`
-    - `getEdgePoints` -> `editor.api.edges`
-    - `getEditorString` -> `editor.api.string`
-    - `getEditorWindow` -> `editor.api.getWindow`
-    - `getEndPoint` -> `editor.api.end`
-    - `getFirstNode` -> `editor.api.first`
-    - `getFragment` -> `editor.api.fragment`
-    - `getFragmentProp(fragment, options)` -> `editor.api.prop({ nodes, ...options})`
-    - `getLastNode` -> `editor.api.last`
-    - `getLastNodeByLevel(level)` -> `editor.api.last([], { level })`
-    - `getLeafNode` -> `editor.api.leaf`
-    - `getLevels` -> `editor.api.levels`
-    - `getMark` -> `editor.api.mark`
-    - `getMarks` -> `editor.api.marks`
-    - `getNextNode` -> `editor.api.next`
-    - `getNextNodeStartPoint` -> `editor.api.start(at, { next: true })`
-    - `getNodeEntries` -> `editor.api.nodes`
-    - `getNodeEntry` -> `editor.api.node(at, options)`
-    - `getNodesRange` -> `editor.api.nodesRange`
-    - `getParentNode` -> `editor.api.parent`
-    - `getPath` -> `editor.api.path`
-    - `getPathRefs` -> `editor.api.pathRefs`
-    - `getPoint` -> `editor.api.point`
-    - `getPointAfter` -> `editor.api.after`
-    - `getPointBefore` -> `editor.api.before`
-    - `getPointBeforeLocation` -> `editor.api.before`
-    - `getPointRefs` -> `editor.api.pointRefs`
-    - `getPositions` -> `editor.api.positions`
-    - `getPreviousBlockById` -> `editor.api.previous({ id, block: true })`
-    - `getPreviousNode` -> `editor.api.previous`
-    - `getPreviousNodeEndPoint` -> `editor.api.end({ previous: true })`
-    - `getPreviousSiblingNode` -> `editor.api.previous({ at, sibling: true })`
-    - `getRange` -> `editor.api.range`
-    - `getRangeBefore` -> `editor.api.range('before', to, { before })`
-    - `getRangeFromBlockStart` -> `editor.api.range('start', to)`
-    - `getRangeRefs` -> `editor.api.rangeRefs`
-    - `getSelectionFragment` -> `editor.api.fragment(editor.selection, { structuralTypes })`
-    - `getSelectionText` -> `editor.api.string()`
-    - `getStartPoint` -> `editor.api.start`
-    - `getVoidNode` -> `editor.api.void`
-    - `hasBlocks` -> `editor.api.hasBlocks`
-    - `hasEditorDOMNode` -> `editor.api.hasDOMNode`
-    - `hasEditorEditableTarget` -> `editor.api.hasEditableTarget`
-    - `hasEditorSelectableTarget` -> `editor.api.hasSelectableTarget`
-    - `hasEditorTarget` -> `editor.api.hasTarget`
-    - `hasInlines` -> `editor.api.hasInlines`
-    - `hasTexts` -> `editor.api.hasTexts`
-    - `insertBreak` -> `editor.tf.insertBreak`
-    - `insertData` -> `editor.tf.insertData`
-    - `insertElements` -> `editor.tf.insertNodes<TElement>`
-    - `insertEmptyElement` -> `editor.tf.insertNodes(editor.api.create.block({ type }))`
-    - `insertFragment` -> `editor.tf.insertFragment`
-    - `insertNode` -> `editor.tf.insertNode`
-    - `insertNodes` -> `editor.tf.insertNodes`
-    - `insertText` -> `editor.tf.insertText`
-    - `isAncestorEmpty` -> `editor.api.isEmpty`
-    - `isBlock` -> `editor.api.isBlock`
-    - `isBlockAboveEmpty` -> `editor.api.isEmpty(editor.selection, { block: true })`
-    - `isBlockTextEmptyAfterSelection` -> `editor.api.isEmpty(editor.selection, { after: true })`
-    - `isCollapsed(editor.selection)` -> `editor.api.isCollapsed()`
-    - `isComposing` -> `editor.api.isComposing`
-    - `isDocumentEnd` -> `editor.api.isEditorEnd`
-    - `isEdgePoint` -> `editor.api.isEdge`
-    - `isEditor` -> `editor.api.isEditor`
-    - `isEditorEmpty` -> `editor.api.isEmpty()`
-    - `isEditorFocused` -> `editor.api.isFocused`
-    - `isEditorNormalizing` -> `editor.api.isNormalizing`
-    - `isEditorReadOnly` -> `editor.api.isReadOnly`
-    - `isElementEmpty` -> `editor.api.isEmpty`
-    - `isElementReadOnly` -> `editor.api.elementReadOnly`
-    - `isEndPoint` -> `editor.api.isEnd`
-    - `isExpanded(editor.selection)` -> `editor.api.isCollapsed()`
-    - `isInline` -> `editor.api.isInline`
-    - `isMarkableVoid` -> `editor.api.markableVoid`
-    - `isMarkActive` -> `editor.api.hasMark(key)`
-    - `isPointAtWordEnd` -> `editor.api.isAt({ at, word: true, end: true })`
-    - `isRangeAcrossBlocks` -> `editor.api.isAt({ at, blocks: true })`
-    - `isRangeInSameBlock` -> `editor.api.isAt({ at, block: true })`
-    - `isRangeInSingleText` -> `editor.api.isAt({ at, text: true })`
-    - `isSelectionAtBlockEnd` -> `editor.api.isAt({ end: true })`
-    - `isSelectionAtBlockStart` -> `editor.api.isAt({ start: true })`
-    - `isSelectionCoverBlock` -> `editor.api.isAt({ block: true, start: true, end: true })`
-    - `isSelectionExpanded` -> `editor.api.isExpanded()`
-    - `isStartPoint` -> `editor.api.isStart`
-    - `isTargetinsideNonReadonlyVoidEditor` -> `editor.api.isTargetInsideNonReadonlyVoid`
-    - `isTextByPath` -> `editor.api.isText(at)`
-    - `isVoid` -> `editor.api.isVoid`
-    - `liftNodes` -> `editor.tf.liftNodes`
-    - `mergeNodes` -> `editor.tf.mergeNodes`
-    - `moveChildren` -> `editor.tf.moveNodes({ at, to, children: true, fromIndex, match: (node, path) => boolean })`
-    - `moveNodes` -> `editor.tf.moveNodes`
-    - `moveSelection` -> `editor.tf.move`
-    - `normalizeEditor` -> `editor.tf.normalize`
-    - `removeEditorMark` -> `editor.tf.removeMark`
-    - `removeEditorText` -> `editor.tf.removeNodes({ text: true, empty: false })`
-    - `removeEmptyPreviousBlock` -> `editor.tf.removeNodes({ previousEmptyBlock: true })`
-    - `removeMark(options)` -> `editor.tf.removeMarks(keys, options)`
-    - `removeNodeChildren` -> `editor.tf.removeNodes({ at, children: true })`
-    - `removeNodes` -> `editor.tf.removeNodes`
-    - `removeSelectionMark` -> `editor.tf.removeMarks()`
-    - `replaceNode(editor, { nodes, insertOptions, removeOptions })` -> `editor.tf.replaceNodes(nodes, { removeNodes, ...insertOptions })`
-    - `select` -> `editor.tf.select`
-    - `selectEndOfBlockAboveSelection` -> `editor.tf.select(editor.selection, { edge: 'end' })`
-    - `selectNodes` -> `editor.tf.select(editor.api.nodesRange(nodes))`
-    - `setFragmentData` -> `editor.tf.setFragmentData`
-    - `setMarks(marks, clear)` -> `editor.tf.addMarks(marks, { remove: string | string[] })`
-    - `setNodes` -> `editor.tf.setNodes`
-    - `setPoint` -> `editor.tf.setPoint`
-    - `setSelection` -> `editor.tf.setSelection`
-    - `someNode` -> `editor.api.some(options)`
-    - `splitNodes` -> `editor.tf.splitNodes`
-    - `toDOMNode` -> `editor.api.toDOMNode`
-    - `toDOMPoint` -> `editor.api.toDOMPoint`
-    - `toDOMRange` -> `editor.api.toDOMRange`
-    - `toggleWrapNodes` -> `editor.tf.toggleBlock(type, { wrap: true })`
-    - `toSlateNode` -> `editor.api.toSlateNode`
-    - `toSlatePoint` -> `editor.api.toSlatePoint`
-    - `toSlateRange` -> `editor.api.toSlateRange`
-    - `unhangCharacterRange` -> `editor.api.unhangRange(range, { character: true })`
-    - `unhangRange` -> `editor.api.unhangRange`
-    - `unsetNodes` -> `editor.tf.unsetNodes`
-    - `unwrapNodes` -> `editor.tf.unwrapNodes`
-    - `withoutNormalizing` -> `editor.tf.withoutNormalizing`
-    - `wrapNodeChildren` -> `editor.tf.wrapNodes(element, { children: true })`
-    - `wrapNodes` -> `editor.tf.wrapNodes`
-    - `replaceNodeChildren` -> `editor.tf.replaceNodes({ at, children: true })`
-    - `resetEditor` -> `editor.tf.reset`
-    - `resetEditorChildren` -> `editor.tf.reset({ children: true })`
-    - `selectEditor` -> `editor.tf.select([], { focus, edge })`
-    - `selectSiblingNodePoint` -> `editor.tf.select(at, { next, previous })`
-
-  - Moved to `NodeApi.`:
-    - `getNextSiblingNodes(parentEntry, path)` -> `NodeApi.children(editor, path, { from: path.at(-1) + 1 })`
-    - `getFirstNodeText` -> `NodeApi.firstText`
-    - `getFirstChild([node, path])` -> `NodeApi.firstChild(editor, path)`
-    - `getLastChild([node, path])` -> `NodeApi.lastChild(editor, path)`
-    - `getLastChildPath([node, path])` -> `NodeApi.lastChild(editor, path)`
-    - `isLastChild([node, path], childPath)` -> `NodeApi.isLastChild(editor, childPath)`
-    - `getChildren([node, path])` -> `Array.from(NodeApi.children(editor, path))`
-    - `getCommonNode` -> `NodeApi.common`
-    - `getNode` -> `NodeApi.get`
-    - `getNodeAncestor` -> `NodeApi.ancestor`
-    - `getNodeAncestors` -> `NodeApi.ancestors`
-    - `getNodeChild` -> `NodeApi.child`
-    - `getNodeChildren` -> `NodeApi.children`
-    - `getNodeDescendant` -> `NodeApi.descendant`
-    - `getNodeDescendants` -> `NodeApi.descendants`
-    - `getNodeElements` -> `NodeApi.elements`
-    - `getNodeFirstNode` -> `NodeApi.first`
-    - `getNodeFragment` -> `NodeApi.fragment`
-    - `getNodeLastNode` -> `NodeApi.last`
-    - `getNodeLeaf` -> `NodeApi.leaf`
-    - `getNodeLevels` -> `NodeApi.levels`
-    - `getNodeParent` -> `NodeApi.parent`
-    - `getNodeProps` -> `NodeApi.extractProps`
-    - `getNodes` -> `NodeApi.nodes`
-    - `getNodeString` -> `NodeApi.string`
-    - `getNodeTexts` -> `NodeApi.texts`
-    - `hasNode` -> `NodeApi.has`
-    - `hasSingleChild` -> `NodeApi.hasSingleChild`
-    - `isAncestor` -> `NodeApi.isAncestor`
-    - `isDescendant` -> `NodeApi.isDescendant`
-    - `isNode` -> `NodeApi.isNode`
-    - `isNodeList` -> `NodeApi.isNodeList`
-    - `nodeMatches` -> `NodeApi.matches`
-  - Moved to `ElementApi.`:
-    - `elementMatches` -> `ElementApi.matches`
-    - `isElement` -> `ElementApi.isElement`
-    - `isElementList` -> `ElementApi.isElementList`
-  - Moved to `TextApi.`:
-
-    - `isText` -> `TextApi.isText(at)`
-
-  - Moved to `RangeApi.`:
-
-    - `isCollapsed` -> `RangeApi.isCollapsed`
-    - `isExpanded` -> `RangeApi.isExpanded`
-
-  - Moved to `PathApi.`:
-
-    - `isFirstChild` -> `!PathApi.hasPrevious`
-    - `getPreviousPath` -> `PathApi.previous`
-
-  - Moved to `PointApi.`:
-
-    - `getPointFromLocation({ at, focus })` -> `PointApi.get(at, { focus })`
-
-  - Moved from `@udecode/plate/react` to `@udecode/plate`:
-
-    - `Hotkeys`
-
-  - Upgraded to `zustand@5` and `zustand-x@5`:
-    - Replace `createZustandStore('name')(initialState)` with `createZustandStore(initialState, { mutative: true, name: 'name' })`
-    - All plugin stores now use [zustand-mutative](https://github.com/mutativejs/zustand-mutative) for immutable state updates, which is faster than `immer`.
-
-  Types:
-
-  - Rename the following types:
-    - `TEditor` -> `Editor`
-    - `TOperation` -> `Operation`
-    - `TPath` -> `Path`
-    - `TNodeProps` -> `NodeProps`
-    - `TNodeChildEntry` -> `NodeChildEntry`
-    - `TNodeEntry` -> `NodeEntry`
-    - `TDescendant` -> `Descendant`
-    - `TDescendantEntry` -> `DescendantEntry`
-    - `TAncestor` -> `Ancestor`
-    - `TAncestorEntry` -> `AncestorEntry`
-    - `TElementEntry` -> `ElementEntry`
-    - `TTextEntry` -> `TextEntry`
-  - Query/transform options now use generic `V extends Value` instead of `E extends Editor`.
-  - `getEndPoint`, `getEdgePoints`, `getFirstNode`, `getFragment`, `getLastNode`, `getLeafNode`, `getPath`, `getPoint`, `getStartPoint` can return `undefined` if not found (suppressing error throws).
-  - `NodeApi.ancestor`, `NodeApi.child`, `NodeApi.common`, `NodeApi.descendant`, `NodeApi.first`, `NodeApi.get`, `NodeApi.last`, `NodeApi.leaf`, `NodeApi.parent`, `NodeApi.getIf`, `PathApi.previous` return `undefined` if not found instead of throwing
-  - Replace `NodeOf` type with `DescendantOf` in `editor.tf.setNodes` `editor.tf.unsetNodes`, `editor.api.previous`, `editor.api.node`, `editor.api.nodes`, `editor.api.last`
-  - Enhanced `editor.tf.setNodes`:
-    - Added `marks` option to handle mark-specific operations
-    - When `marks: true`:
-      - Only applies to text nodes in non-void nodes or markable void nodes
-      - Automatically sets `split: true` and `voids: true`
-      - Handles both expanded ranges and collapsed selections in markable voids
-    - Replaces `addRangeMarks` functionality
+## 0.123.0
 
 ### Minor Changes
 
-- [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
-  - Merged `@udecode/slate-react` and `@udecode/slate-utils` queries and transforms into this package.
-  - `editor.insertNode`: added an `options` parameter.
-  - Added `| TNode` to the `at` type of the following methods’ options: `editor.api.above`, `editor.api.edges`, `editor.api.string`, `editor.api.end`, `editor.api.first`, `editor.api.fragment`, `editor.api.last`, `editor.api.leaf`, `editor.api.levels`, `editor.api.next`, `editor.api.nodes`, `editor.api.node`, `editor.api.parent`, `editor.api.path`, `editor.api.point`, `editor.api.after`, `editor.api.before`, `editor.api.positions`, `editor.api.previous`, `editor.api.range`, `editor.api.start`, `editor.api.void`, `editor.tf.insertNode`, `editor.tf.delete`, `editor.tf.focus`, `editor.tf.insertFragment`, `editor.tf.insertNodes`, `editor.tf.insertText`, `editor.tf.liftNodes`, `editor.tf.mergeNodes`, `editor.tf.moveNodes`, `editor.tf.removeNodes`, `editor.tf.select`, `editor.tf.setNodes`, `editor.tf.splitNodes`, `editor.tf.unsetNodes`, `editor.tf.unwrapNodes`, `editor.tf.wrapNodes`
-  - `match` query option: Added `text` and `empty` options.
-    - Added `id` option to query options for finding nodes by id.
-    - Added `text?: boolean` option to match only text nodes.
-    - Added `empty?: boolean` option to match only empty nodes.
+- [#6000](https://github.com/ianstormtaylor/slate/pull/6000) [`8d9bf305`](https://github.com/ianstormtaylor/slate/commit/8d9bf30595a6fad62ff15e302ab489ff46a2515a) Thanks [@nabbydude](https://github.com/nabbydude)! - Added `Location.isPath`, `Location.isPoint`, `Location.isRange`, and `Location.isSpan` functions, as efficient type discriminators.
+  Use these instead of `Path.isPath`, `Point.isPoint`, `Range.isRange`, and `Span.isSpan` whenever possible.
 
-## 41.0.0
+## 0.122.0
 
 ### Minor Changes
 
-- [#3830](https://github.com/udecode/plate/pull/3830) by [@felixfeng33](https://github.com/felixfeng33) – Add `findNodePath` - a traversal-based node path finder with O(n) complexity. This is the headless alternative to `findPath` from `@udecode/slate-react`, recommended for:
+- [#5970](https://github.com/ianstormtaylor/slate/pull/5970) [`893cac3e`](https://github.com/ianstormtaylor/slate/commit/893cac3e4ec9233e8499ad93b2b063dddb22371f) Thanks [@nabbydude](https://github.com/nabbydude)! - Optimized normalizeNode implementation, should work the same, but may behave slightly differently if you give it something really malformed
 
-  - Non-React contexts
-  - Plugin logic that doesn't require React dependencies
-  - Non-performance-critical paths where O(n) traversal is acceptable
-
-### Patch Changes
-
-- [#3868](https://github.com/udecode/plate/pull/3868) by [@zbeyens](https://github.com/zbeyens) – export type NodeTextsOptions
-
-## 40.3.1
-
-### Patch Changes
-
-- [#3837](https://github.com/udecode/plate/pull/3837) by [@yf-yang](https://github.com/yf-yang) – feat: Change Decorate's return type to DecoratedRange/TDecoratedRange
-
-## 39.2.1
-
-### Patch Changes
-
-- [`a17b84f1aa09ac5bcc019823b5d0dfea581ada57`](https://github.com/udecode/plate/commit/a17b84f1aa09ac5bcc019823b5d0dfea581ada57) by [@zbeyens](https://github.com/zbeyens) – Add `withNewBatch` to history plugin
-
-## 38.0.4
-
-### Patch Changes
-
-- [#3537](https://github.com/udecode/plate/pull/3537) by [@felixfeng33](https://github.com/felixfeng33) – Missing export
-
-## 38.0.3
-
-### Patch Changes
-
-- [#3534](https://github.com/udecode/plate/pull/3534) by [@felixfeng33](https://github.com/felixfeng33) – Sync slate add `withMerging`
-
-## 37.0.0
-
-### Major Changes
-
-- [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – `createTEditor`:
-
-  - Implement default methods for `slate-react` and `slate-history` in `createTEditor`
-  - Add `noop` function to provide default implementations for unimplemented editor methods
-
-  Types:
-
-  - Merge `ReactEditor` and `HistoryEditor` interfaces into `TEditor`, removing `TReactEditor` and `THistoryEditor`
-  - Remove `Value` generic type parameter from function signatures and type definitions
-  - Replace `V extends Value` with `E extends TEditor` for improved type inference
-  - Simplify `TEditor<V>` to `TEditor` in many places
-  - Refactor element-related types, where `E extends TEditor` in all cases:
-    - `EElement<V>` to `ElementOf<E>`
-    - `EText<V>` to `TextOf<E>`
-    - `ENode<V>` to `NodeOf<E>`
-    - `EDescendant<V>` to `DescendantOf<E>`
-    - `EAncestor<V>` to `AncestorOf<E>`
-    - `EElementOrText<V>` to `ElementOrTextOf<E>`
-  - Update `TNodeEntry` related types:
-    - `ENodeEntry<V>` to `NodeEntryOf<E>`
-    - `EElementEntry<V>` to `ElementEntryOf<E>`
-    - `ETextEntry<V>` to `TextEntryOf<E>`
-    - `EAncestorEntry<V>` to `AncestorEntryOf<E>`
-    - `EDescendantEntry<V>` to `DescendantEntryOf<E>`
-  - Remove unused types:
-    - `EElementEntry<V>`
-    - `ETextEntry<V>`
-    - `EDescendantEntry<V>`
-
-## 36.0.6
-
-### Patch Changes
-
-- [#3354](https://github.com/udecode/plate/pull/3354) by [@yf-yang](https://github.com/yf-yang) – feat: add option parameter to normalizeNode following slate#5295
-
-## 32.0.1
-
-### Patch Changes
-
-- [#3164](https://github.com/udecode/plate/pull/3164) by [@felixfeng33](https://github.com/felixfeng33) – Add writeHistory
-
-## 31.0.0
-
-## 25.0.0
+## 0.121.0
 
 ### Minor Changes
 
-- [#2719](https://github.com/udecode/plate/pull/2719) by [@12joan](https://github.com/12joan) – Add `removeEmpty: boolean | QueryNodeOptions` option to insertNodes
+- [#5982](https://github.com/ianstormtaylor/slate/pull/5982) [`dd4a77b3`](https://github.com/ianstormtaylor/slate/commit/dd4a77b3c5bb5d2d3cd6a62f49d6f318d30d6727) Thanks [@nabbydude](https://github.com/nabbydude)! - Add `Node.isEditor`, `Node.isElement`, and `Node.isText` as alternative type guards for when we already know the object is a node.
+  Use these new functions instead of `Editor.isEditor`, `Element.isElement`, and `Text.isText` whenever possible, the classic functions are only necessary for typechecking an entirely unknown object.
+  ===
 
-## 24.3.6
-
-### Patch Changes
-
-- [#2671](https://github.com/udecode/plate/pull/2671) by [@zbeyens](https://github.com/zbeyens) – Fix lodash import
-
-## 24.3.5
+## 0.120.0
 
 ### Patch Changes
 
-- [#2669](https://github.com/udecode/plate/pull/2669) by [@zbeyens](https://github.com/zbeyens) – Replace lodash by lodash-es
+- [#5971](https://github.com/ianstormtaylor/slate/pull/5971) [`addf0c51`](https://github.com/ianstormtaylor/slate/commit/addf0c5128bd48693f86a2c97cea133b66dd87e6) Thanks [@nabbydude](https://github.com/nabbydude)! - Removed the last traces of immer and eliminated it as a dependency
 
-## 24.3.2
-
-### Patch Changes
-
-- [`3f17d0bb`](https://github.com/udecode/plate/commit/3f17d0bbcd9e31437d1f1325c8458cac2db0e3da) by [@zbeyens](https://github.com/zbeyens) – fix build
-
-## 24.3.1
+## 0.118.1
 
 ### Patch Changes
 
-- [#2659](https://github.com/udecode/plate/pull/2659) by [@zbeyens](https://github.com/zbeyens) – fix build (types)
+- [#5929](https://github.com/ianstormtaylor/slate/pull/5929) [`fdaa9c80`](https://github.com/ianstormtaylor/slate/commit/fdaa9c8088e81bde2618784b42027be44598d11c) Thanks [@12joan](https://github.com/12joan)! - - Fix error when a non-selectable node has no next or previous node
 
-## 24.3.0
+  - Do not return points from `Editor.positions` that are inside non-selectable nodes
+    - Previously, `editor.isSelectable` was handled incorrectly inside `Editor.positions`. When encountering a non-selectable node, it would immediately return the point before or after it (depending on `reverse`), but it would not skip returning points inside the non-selectable node if more than one point was consumed from `Editor.positions`.
 
-## 23.7.4
+- [#5943](https://github.com/ianstormtaylor/slate/pull/5943) [`aaad6717`](https://github.com/ianstormtaylor/slate/commit/aaad6717d2f3a74c2295b59c40bcc86cbb5a9b54) Thanks [@12joan](https://github.com/12joan)! - Fix: The `split: true` option on `Transforms.wrapNodes` does not work correctly when one or more points is at the start or end of a text node.
 
-### Patch Changes
+- [#5926](https://github.com/ianstormtaylor/slate/pull/5926) [`cf10119a`](https://github.com/ianstormtaylor/slate/commit/cf10119ad858b79d624d1e35814f534c20a9d362) Thanks [@12joan](https://github.com/12joan)! - Use generics for the return type of `Node.fragment`
 
-- [#2622](https://github.com/udecode/plate/pull/2622) by [@12joan](https://github.com/12joan) – Ensure the return type of `unhangRange` matches the argument type
-
-## 22.0.2
-
-### Patch Changes
-
-- [`f44dbd3`](https://github.com/udecode/plate/commit/f44dbd3f322a828753da31ec28576587e63ea047) by [@zbeyens](https://github.com/zbeyens) – v22
-
-## 21.4.1
-
-## 21.3.0
+## 0.118.0
 
 ### Minor Changes
 
-- [#2410](https://github.com/udecode/plate/pull/2410) by [@zbeyens](https://github.com/zbeyens) –
-  - ✨ `addRangeMarks`: Add marks to each node of a range.
-  - ✨ `unhangCharacterRange`: Unhang the range of length 1 so both edges are in the same text node.
+- [#5923](https://github.com/ianstormtaylor/slate/pull/5923) [`ba33735a`](https://github.com/ianstormtaylor/slate/commit/ba33735a8ca7ca7437e891365451d25a6646a4c7) Thanks [@12joan](https://github.com/12joan)! - - When removing a text node containing the cursor, always perfer placing the cursor in a sibling text node if one exists.
+  - Previously, the selection would enter a sibling inline in some circumstances, even when a sibling text node was available.
+  - The most noticeable effect of this change occurs when pressing backspace at the start of line N when the last non-empty node in line N-1 is an inline.
+    - Before, the cursor would be placed inside the inline.
+    - Now, the cursor is placed outside the inline.
 
-## 21.0.0
+## 0.117.2
 
-### Major Changes
+### Patch Changes
 
-- [#2369](https://github.com/udecode/plate/pull/2369) by [@zbeyens](https://github.com/zbeyens) – Support `slate@0.94.0`, `slate-react@0.94.0` and `slate-history@0.93.0` by upgrading the peer dependencies.
+- [#5899](https://github.com/ianstormtaylor/slate/pull/5899) [`94fb04a4`](https://github.com/ianstormtaylor/slate/commit/94fb04a42c0d071c0778dd1369afb360c1ce5f11) Thanks [@12joan](https://github.com/12joan)! - Fix: `editor.selection` is sometimes replaced with a new object even if the selection did not change
 
-## 19.8.0
+## 0.117.0
 
 ### Minor Changes
 
-- [#2289](https://github.com/udecode/plate/pull/2289) by [@zbeyens](https://github.com/zbeyens) –
-  - `getNodeEntry`: now returns `undefined` instead of throwing if not found.
+- [#5885](https://github.com/ianstormtaylor/slate/pull/5885) [`c56a98fd`](https://github.com/ianstormtaylor/slate/commit/c56a98fd65183ddd9e0e711e615687bf2437e677) Thanks [@felixfeng33](https://github.com/felixfeng33)! - - Remove `ignoreNonSelectable` option from positions,before,after,nodes.
+  - Fix move behavior when encounter non-selectable inline voids.
+
+### Patch Changes
+
+- [#5890](https://github.com/ianstormtaylor/slate/pull/5890) [`9862ae71`](https://github.com/ianstormtaylor/slate/commit/9862ae71bff60d99f423b44937ec9cf662698622) Thanks [@joblolin95](https://github.com/joblolin95)! - Handle backspace correctly for grapheme clusters in Burmese, Hindi, Khmer, Malayalam, Oriya, Punjabi, Tamil, and Telugu.
+
+## 0.116.0
+
+### Patch Changes
+
+- [#5871](https://github.com/ianstormtaylor/slate/pull/5871) [`fb87646e`](https://github.com/ianstormtaylor/slate/commit/fb87646e8643e1d0547134cea9d1f57912f06a92) Thanks [@12joan](https://github.com/12joan)! - - PERF: Use pure JS instead of Immer for applying operations and transforming points and ranges. Immer is now used only for producing fragments.
+
+## 0.115.1
+
+### Patch Changes
+
+- [#5887](https://github.com/ianstormtaylor/slate/pull/5887) [`293aca9c`](https://github.com/ianstormtaylor/slate/commit/293aca9c7aa20ec5b99bbe1130237fa6b7ee758d) Thanks [@12joan](https://github.com/12joan)! - Handle backspace correctly for grapheme clusters in Bengali
+
+## 0.115.0
+
+### Minor Changes
+
+- [#5878](https://github.com/ianstormtaylor/slate/pull/5878) [`11b957a4`](https://github.com/ianstormtaylor/slate/commit/11b957a44171634d032d79ad8feaf548b78e58b0) Thanks [@ahoisl](https://github.com/ahoisl)! - Allow to prevent data-loss in normalizeNode
+
+### Patch Changes
+
+- [#5880](https://github.com/ianstormtaylor/slate/pull/5880) [`de260565`](https://github.com/ianstormtaylor/slate/commit/de260565c70c1a39acd02961f76ede6ff094b881) Thanks [@nabbydude](https://github.com/nabbydude)! - Optimize editor#above and allow passing a location that doesnt exist as long as its parent exists
+
+- [#5875](https://github.com/ianstormtaylor/slate/pull/5875) [`896bc9c7`](https://github.com/ianstormtaylor/slate/commit/896bc9c7c75e929e861e341fc4d7cc7395e8e82a) Thanks [@12joan](https://github.com/12joan)! - Fix: Inserting a fragment containing exactly two blocks merges those blocks together.
+
+- [#5859](https://github.com/ianstormtaylor/slate/pull/5859) [`72532fd2`](https://github.com/ianstormtaylor/slate/commit/72532fd2d7be594251ea26fefb5c1ce8337b76ed) Thanks [@12joan](https://github.com/12joan)! - Optimize `isElement`, `isText`, `isNodeList` and `isEditor` by removing dependency on `is-plain-object` and by performing shallow checks by default. To perform a full check, including all descendants, pass the `{ deep: true }` option to `isElement`, `isNodeList` or `isEditor`.
+
+## 0.114.0
+
+### Minor Changes
+
+- [#5850](https://github.com/ianstormtaylor/slate/pull/5850) [`22a3dda3`](https://github.com/ianstormtaylor/slate/commit/22a3dda36d4362d5dfdb9a75836297dae8cd7f9e) Thanks [@zbeyens](https://github.com/zbeyens)! - - Update `Text.decorations` to return the positions in addition to the leaf nodes: `{ leaf: Text, position?: { start: number, end: number, isFirst: boolean, isLast: boolean } }[]`.
+
+## 0.113.0
+
+### Minor Changes
+
+- [#5843](https://github.com/ianstormtaylor/slate/pull/5843) [`63c0db5b`](https://github.com/ianstormtaylor/slate/commit/63c0db5b862137490baf2883d4378efd0b6311de) Thanks [@12joan](https://github.com/12joan)! - Add `pass` option to `Editor.nodes`, which is passed through to `Node.nodes`.
+
+### Patch Changes
+
+- [#5842](https://github.com/ianstormtaylor/slate/pull/5842) [`463ef3a6`](https://github.com/ianstormtaylor/slate/commit/463ef3a6504020a869fa06e4dd722f72de32677a) Thanks [@wkq](https://github.com/wkq)! - fix: correct dirty path update for Text nodes
+
+## 0.112.0
+
+### Minor Changes
+
+- [#5776](https://github.com/ianstormtaylor/slate/pull/5776) [`5a1c728c`](https://github.com/ianstormtaylor/slate/commit/5a1c728c62bcc6bafe60b9598946bb3adde21cdf) Thanks [@yf-yang](https://github.com/yf-yang)! - Add `merge` optional function to decorations and change related type signatures to `DecoratedRange`. Now developers can specify how two decoration object with the same key but different value are merged together if they overlap"
+
+### Patch Changes
+
+- [#5768](https://github.com/ianstormtaylor/slate/pull/5768) [`4bc552f7`](https://github.com/ianstormtaylor/slate/commit/4bc552f71ff75c4b7ad18386a65dabdd8b4e1bba) Thanks [@ahoisl](https://github.com/ahoisl)! - Keep data in normalization when blocks are not allowed
+
+## 0.110.2
+
+### Patch Changes
+
+- [#5723](https://github.com/ianstormtaylor/slate/pull/5723) [`ee2c4540`](https://github.com/ianstormtaylor/slate/commit/ee2c45408cba9ca827df3bab0696ba5cb5ace886) Thanks [@RavenColEvol](https://github.com/RavenColEvol)! - feat: add Node.getIf method
+
+- [#5725](https://github.com/ianstormtaylor/slate/pull/5725) [`f31167cf`](https://github.com/ianstormtaylor/slate/commit/f31167cf5fa0b4f0385cd4db9123ebe403141e11) Thanks [@WindRunnerMax](https://github.com/WindRunnerMax)! - fix marks at the start of the selection
+
+- [#5729](https://github.com/ianstormtaylor/slate/pull/5729) [`b1a10216`](https://github.com/ianstormtaylor/slate/commit/b1a1021612b504bbc75488d650dc4d3eb926f20c) Thanks [@electroluxcode](https://github.com/electroluxcode)! - feat: add prop surrounds with range
+
+## 0.103.0
+
+### Minor Changes
+
+- [#5621](https://github.com/ianstormtaylor/slate/pull/5621) [`d271c4be`](https://github.com/ianstormtaylor/slate/commit/d271c4be543027be2197f353d7ea61b51e9c48c6) Thanks [@felixfeng33](https://github.com/felixfeng33)! - Add a `shouldMergeNodesRemovePrevNode` editor method to control when `Transforms.mergeNodes` should remove the previous node rather than carrying out a merge operation.
+
+### Patch Changes
+
+- [#5620](https://github.com/ianstormtaylor/slate/pull/5620) [`4470f370`](https://github.com/ianstormtaylor/slate/commit/4470f370570ed1f2dce8b4b58d6117d3a87fa6c0) Thanks [@JohnCosta27](https://github.com/JohnCosta27)! - Making `normalizeNode` capable of normalizing erronous nodes, making slate more resilient.
+
+## 0.102.0
+
+### Minor Changes
+
+- [#5543](https://github.com/ianstormtaylor/slate/pull/5543) [`3aaf3b51`](https://github.com/ianstormtaylor/slate/commit/3aaf3b517c2020c198bffe0f3aa8156746914408) Thanks [@mainhanu](https://github.com/mainhanu)! - Transform.insertNodes & Transform.insertFragment performance optimize
+
+## 0.101.5
+
+### Patch Changes
+
+- [#5316](https://github.com/ianstormtaylor/slate/pull/5316) [`8ba3a9c0`](https://github.com/ianstormtaylor/slate/commit/8ba3a9c0348f73324b7c9ec32a4bbd348564d4f0) Thanks [@GeneralChauhan](https://github.com/GeneralChauhan)! - Punctuation Mark "+" Support Added
+
+## 0.101.4
+
+### Patch Changes
+
+- [#5580](https://github.com/ianstormtaylor/slate/pull/5580) [`a374895b`](https://github.com/ianstormtaylor/slate/commit/a374895b3265ad60dbfe563eaa1a9415a440620e) Thanks [@Kaporos](https://github.com/Kaporos)! - Fix firefox double-click marks issue
+
+## 0.101.1
+
+### Patch Changes
+
+- [#5562](https://github.com/ianstormtaylor/slate/pull/5562) [`91400a8e`](https://github.com/ianstormtaylor/slate/commit/91400a8e341b20194ce2fca078d8ba4b7a0476ea) Thanks [@YaoKaiLun](https://github.com/YaoKaiLun)! - Fix the 'select' parameter of the insertNodes function has been overridden
+
+## 0.100.0
+
+### Minor Changes
+
+- [#5528](https://github.com/ianstormtaylor/slate/pull/5528) [`c4c14882`](https://github.com/ianstormtaylor/slate/commit/c4c14882edf13828f6583a88e50754ce63583bd7) Thanks [@dylans](https://github.com/dylans)! - Update dependencies to React 18, Node 20, TS 5.2, etc.
+
+## 0.94.1
+
+### Patch Changes
+
+- [#5415](https://github.com/ianstormtaylor/slate/pull/5415) [`01f0210b`](https://github.com/ianstormtaylor/slate/commit/01f0210bccfe2c3a81c252f527bad9ded36a68ff) Thanks [@zbeyens](https://github.com/zbeyens)! - `Editor.insertFragment`, `Editor.insertNode`, `Editor.insertText` now accept `options`.
+  For all insert methods, the default location is now the editor selection if `at` is not defined, or the end of document if `editor.selection` is not defined.
+
+## 0.94.0
+
+### Minor Changes
+
+- [#5307](https://github.com/ianstormtaylor/slate/pull/5307) [`3243c7e3`](https://github.com/ianstormtaylor/slate/commit/3243c7e34ac2602618c67c88b1b7df07fde1c2ec) Thanks [@zbeyens](https://github.com/zbeyens)! - New Features:
+
+  - All **`Editor`** and **`Transforms`** methods now call **`editor`** methods. For example: **`Transforms.insertBreak`** now calls **`editor.insertBreak`**.
+  - **`editor.setNodes`** now calls **`setNodes`**, an exported function that implements the default editor behavior.
+  - You can now override **`editor.setNodes`** with your own implementation.
+  - You can use either **`Editor.setNodes`** or **`editor.setNodes`** in your code, and both will use your overridden behavior.
+
+  The **`editor`** object now has many more methods:
+
+  ```tsx
+  export interface BaseEditor {
+    // Core state.
+
+    children: Descendant[]
+    selection: Selection
+    operations: Operation[]
+    marks: EditorMarks | null
+
+    // Overrideable core methods.
+
+    apply: (operation: Operation) => void
+    getDirtyPaths: (operation: Operation) => Path[]
+    getFragment: () => Descendant[]
+    isElementReadOnly: (element: Element) => boolean
+    isSelectable: (element: Element) => boolean
+    markableVoid: (element: Element) => boolean
+    normalizeNode: (
+      entry: NodeEntry,
+      options?: { operation?: Operation }
+    ) => void
+    onChange: (options?: { operation?: Operation }) => void
+    shouldNormalize: ({
+      iteration,
+      dirtyPaths,
+      operation,
+    }: {
+      iteration: number
+      initialDirtyPathsLength: number
+      dirtyPaths: Path[]
+      operation?: Operation
+    }) => boolean
+
+    // Overrideable core transforms.
+
+    addMark: OmitFirstArg<typeof Editor.addMark>
+    collapse: OmitFirstArg<typeof Transforms.collapse>
+    delete: OmitFirstArg<typeof Transforms.delete>
+    deleteBackward: (unit: TextUnit) => void
+    deleteForward: (unit: TextUnit) => void
+    deleteFragment: OmitFirstArg<typeof Editor.deleteFragment>
+    deselect: OmitFirstArg<typeof Transforms.deselect>
+    insertBreak: OmitFirstArg<typeof Editor.insertBreak>
+    insertFragment: OmitFirstArg<typeof Transforms.insertFragment>
+    insertNode: OmitFirstArg<typeof Editor.insertNode>
+    insertNodes: OmitFirstArg<typeof Transforms.insertNodes>
+    insertSoftBreak: OmitFirstArg<typeof Editor.insertSoftBreak>
+    insertText: OmitFirstArg<typeof Transforms.insertText>
+    liftNodes: OmitFirstArg<typeof Transforms.liftNodes>
+    mergeNodes: OmitFirstArg<typeof Transforms.mergeNodes>
+    move: OmitFirstArg<typeof Transforms.move>
+    moveNodes: OmitFirstArg<typeof Transforms.moveNodes>
+    normalize: OmitFirstArg<typeof Editor.normalize>
+    removeMark: OmitFirstArg<typeof Editor.removeMark>
+    removeNodes: OmitFirstArg<typeof Transforms.removeNodes>
+    select: OmitFirstArg<typeof Transforms.select>
+    setNodes: <T extends Node>(
+      props: Partial<T>,
+      options?: {
+        at?: Location
+        match?: NodeMatch<T>
+        mode?: MaximizeMode
+        hanging?: boolean
+        split?: boolean
+        voids?: boolean
+        compare?: PropsCompare
+        merge?: PropsMerge
+      }
+    ) => void
+    setNormalizing: OmitFirstArg<typeof Editor.setNormalizing>
+    setPoint: OmitFirstArg<typeof Transforms.setPoint>
+    setSelection: OmitFirstArg<typeof Transforms.setSelection>
+    splitNodes: OmitFirstArg<typeof Transforms.splitNodes>
+    unsetNodes: OmitFirstArg<typeof Transforms.unsetNodes>
+    unwrapNodes: OmitFirstArg<typeof Transforms.unwrapNodes>
+    withoutNormalizing: OmitFirstArg<typeof Editor.withoutNormalizing>
+    wrapNodes: OmitFirstArg<typeof Transforms.wrapNodes>
+
+    // Overrideable core queries.
+
+    above: <T extends Ancestor>(
+      options?: EditorAboveOptions<T>
+    ) => NodeEntry<T> | undefined
+    after: OmitFirstArg<typeof Editor.after>
+    before: OmitFirstArg<typeof Editor.before>
+    edges: OmitFirstArg<typeof Editor.edges>
+    elementReadOnly: OmitFirstArg<typeof Editor.elementReadOnly>
+    end: OmitFirstArg<typeof Editor.end>
+    first: OmitFirstArg<typeof Editor.first>
+    fragment: OmitFirstArg<typeof Editor.fragment>
+    getMarks: OmitFirstArg<typeof Editor.marks>
+    hasBlocks: OmitFirstArg<typeof Editor.hasBlocks>
+    hasInlines: OmitFirstArg<typeof Editor.hasInlines>
+    hasPath: OmitFirstArg<typeof Editor.hasPath>
+    hasTexts: OmitFirstArg<typeof Editor.hasTexts>
+    isBlock: OmitFirstArg<typeof Editor.isBlock>
+    isEdge: OmitFirstArg<typeof Editor.isEdge>
+    isEmpty: OmitFirstArg<typeof Editor.isEmpty>
+    isEnd: OmitFirstArg<typeof Editor.isEnd>
+    isInline: OmitFirstArg<typeof Editor.isInline>
+    isNormalizing: OmitFirstArg<typeof Editor.isNormalizing>
+    isStart: OmitFirstArg<typeof Editor.isStart>
+    isVoid: OmitFirstArg<typeof Editor.isVoid>
+    last: OmitFirstArg<typeof Editor.last>
+    leaf: OmitFirstArg<typeof Editor.leaf>
+    levels: <T extends Node>(
+      options?: EditorLevelsOptions<T>
+    ) => Generator<NodeEntry<T>, void, undefined>
+    next: <T extends Descendant>(
+      options?: EditorNextOptions<T>
+    ) => NodeEntry<T> | undefined
+    node: OmitFirstArg<typeof Editor.node>
+    nodes: <T extends Node>(
+      options?: EditorNodesOptions<T>
+    ) => Generator<NodeEntry<T>, void, undefined>
+    parent: OmitFirstArg<typeof Editor.parent>
+    path: OmitFirstArg<typeof Editor.path>
+    pathRef: OmitFirstArg<typeof Editor.pathRef>
+    pathRefs: OmitFirstArg<typeof Editor.pathRefs>
+    point: OmitFirstArg<typeof Editor.point>
+    pointRef: OmitFirstArg<typeof Editor.pointRef>
+    pointRefs: OmitFirstArg<typeof Editor.pointRefs>
+    positions: OmitFirstArg<typeof Editor.positions>
+    previous: <T extends Node>(
+      options?: EditorPreviousOptions<T>
+    ) => NodeEntry<T> | undefined
+    range: OmitFirstArg<typeof Editor.range>
+    rangeRef: OmitFirstArg<typeof Editor.rangeRef>
+    rangeRefs: OmitFirstArg<typeof Editor.rangeRefs>
+    start: OmitFirstArg<typeof Editor.start>
+    string: OmitFirstArg<typeof Editor.string>
+    unhangRange: OmitFirstArg<typeof Editor.unhangRange>
+    void: OmitFirstArg<typeof Editor.void>
+  }
+  ```
+
+  Note:
+
+  - None of these method implementations have changed.
+  - **`getMarks`** is an exception, as there is already **`editor.marks`** that stores the current marks.
+  - **`Transforms.insertText`** has not been moved to **`editor`** yet: there is already an **`editor.insertText`** method with extended behavior. This may change in a future release, but this release is trying to avoid any breaking changes.
+  - **`editor.insertText`** has a new argument (third): **`options?: TextInsertTextOptions`** to match **`Transforms.insertText`**.
+
+  Bug Fixes:
+
+  - Moving JSDoc's to the interface type to allow IDEs access to the interface methods.
+
+### Patch Changes
+
+- [#5396](https://github.com/ianstormtaylor/slate/pull/5396) [`bc945eb1`](https://github.com/ianstormtaylor/slate/commit/bc945eb12c612ef2688869d256416c8e37e32c07) Thanks [@Moerphy](https://github.com/Moerphy)! - Correct core normalization that could cause wrong nodes to be removed
+
+## 0.93.0
+
+### Minor Changes
+
+- [#5374](https://github.com/ianstormtaylor/slate/pull/5374) [`b52e08b0`](https://github.com/ianstormtaylor/slate/commit/b52e08b0eafdcf1c77439e282c9dc89a4c72fbf1) Thanks [@12joan](https://github.com/12joan)! - - Add `isSelectable` to `editor` (default true). A non-selectable element is skipped over when navigating using arrow keys.
+  - Add `ignoreNonSelectable` to `Editor.nodes`, `Editor.positions`, `Editor.after` and `Editor.before` (default false)
+  - `Transforms.move` ignores non-selectable elements
+
+* [#5374](https://github.com/ianstormtaylor/slate/pull/5374) [`b52e08b0`](https://github.com/ianstormtaylor/slate/commit/b52e08b0eafdcf1c77439e282c9dc89a4c72fbf1) Thanks [@12joan](https://github.com/12joan)! - - Add `isElementReadOnly` to `editor`. A read-only element behaves much like a void with regard to selection and deletion, but renders its `children` the same as any other non-void node.
+
+## 0.91.4
+
+### Patch Changes
+
+- [#5311](https://github.com/ianstormtaylor/slate/pull/5311) [`0ac72a62`](https://github.com/ianstormtaylor/slate/commit/0ac72a626c41a9e259dc945b408d09367eca4b3f) Thanks [@zbeyens](https://github.com/zbeyens)! - Fix #5295 regression. `editor.shouldNormalize` new option: `initialDirtyPathsLength: number`
+
+## 0.91.3
+
+### Patch Changes
+
+- [#5295](https://github.com/ianstormtaylor/slate/pull/5295) [`84f811a7`](https://github.com/ianstormtaylor/slate/commit/84f811a79c9b76050cb3dbe424efca3192cc44c6) Thanks [@zbeyens](https://github.com/zbeyens)! - New `editor` method that can be overridden to control when the normalization should stop. Default behavior (unchanged) is to throw an error when it iterates over 42 times the dirty paths length.
+
+  ```ts
+  shouldNormalize: ({
+    iteration,
+    dirtyPaths,
+    operation,
+  }: {
+    iteration: number
+    dirtyPaths: Path[]
+    operation?: Operation
+  }) => boolean
+  ```
+
+  - `editor.onChange` signature change: `(options?: { operation?: Operation }) => void` where `operation` is triggering the function.
+  - `editor.normalizeNode` signature change: `(entry: NodeEntry, options?: { operation?: Operation }) => void` where `operation` is triggering the function.
+  - `EditorNormalizeOptions` new option `operation?: Operation` where `operation` is triggering the function.
+
+## 0.91.1
+
+### Patch Changes
+
+- [#5251](https://github.com/ianstormtaylor/slate/pull/5251) [`6fa4b954`](https://github.com/ianstormtaylor/slate/commit/6fa4b954a5e4c67cff87d00b1253b2a838c0db94) Thanks [@YaoKaiLun](https://github.com/YaoKaiLun)! - Fix the cursor jump to an unexpected position after deleting in android
+
+## 0.90.0
+
+### Patch Changes
+
+- [#5278](https://github.com/ianstormtaylor/slate/pull/5278) [`9c4097a2`](https://github.com/ianstormtaylor/slate/commit/9c4097a26fa92718e6f4fc1f984a70fb5af42ca2) Thanks [@kylemclean](https://github.com/kylemclean)! - Revert to using inline styles for default editor styles
+
+## 0.88.1
+
+### Patch Changes
+
+- [#5235](https://github.com/ianstormtaylor/slate/pull/5235) [`36203b3f`](https://github.com/ianstormtaylor/slate/commit/36203b3f10fc1ee154923c7c75ce7912fec1e6f7) Thanks [@ppiotrowicz](https://github.com/ppiotrowicz)! - Fixed Editor.above method that always returned undefined with Point location
+
+## 0.87.0
+
+### Minor Changes
+
+- [#5206](https://github.com/ianstormtaylor/slate/pull/5206) [`96b7fcdb`](https://github.com/ianstormtaylor/slate/commit/96b7fcdbf98a7c8908f5d9613d9898cb24a8ae47) Thanks [@kylemclean](https://github.com/kylemclean)! - Use stylesheet for default styles on Editable components
+
+## 0.86.0
+
+### Patch Changes
+
+- [#5189](https://github.com/ianstormtaylor/slate/pull/5189) [`fbc9838f`](https://github.com/ianstormtaylor/slate/commit/fbc9838fd72e78bfa9af49013981939773dcca11) Thanks [@SmilinBrian](https://github.com/SmilinBrian)! - Add hanging option to unsetNodes so it matches setNodes
+
+* [#5193](https://github.com/ianstormtaylor/slate/pull/5193) [`6909a8f7`](https://github.com/ianstormtaylor/slate/commit/6909a8f7da0f70b1ef3b5c3a665e8d0d09e6fa99) Thanks [@SmilinBrian](https://github.com/SmilinBrian)! - Stops Editor.unhangRange() from adjusting the range in some cases when it was not actually hanging
+
+- [#5186](https://github.com/ianstormtaylor/slate/pull/5186) [`e416d00b`](https://github.com/ianstormtaylor/slate/commit/e416d00b6c95d05a1e10f738bfbbddd6cb940ab6) Thanks [@SmilinBrian](https://github.com/SmilinBrian)! - Report marks applied to a markableVoid if selection is collapsed
+
+## 0.85.0
+
+### Patch Changes
+
+- [#5135](https://github.com/ianstormtaylor/slate/pull/5135) [`346f6572`](https://github.com/ianstormtaylor/slate/commit/346f6572fc8fdb6504bb18d8676f5bdeef7014eb) Thanks [@SmilinBrian](https://github.com/SmilinBrian)! - Allow void elements to receive marks via markableVoid()
+
+* [#5168](https://github.com/ianstormtaylor/slate/pull/5168) [`3c49ff28`](https://github.com/ianstormtaylor/slate/commit/3c49ff28b3d188f69d8361bd682b7e8d0a1c13b6) Thanks [@i-artist](https://github.com/i-artist)! - Fixed above method that failed to get parentEntry when selection was range
+
+## 0.84.0
+
+### Minor Changes
+
+- [#5137](https://github.com/ianstormtaylor/slate/pull/5137) [`a2184d86`](https://github.com/ianstormtaylor/slate/commit/a2184d86571cfd0d89beb67863c444a988174937) Thanks [@mainhanu](https://github.com/mainhanu)! - transform.delete and transform.insertFragment performance optimize
+
+## 0.82.1
+
+### Patch Changes
+
+- [#5069](https://github.com/ianstormtaylor/slate/pull/5069) [`46d113fe`](https://github.com/ianstormtaylor/slate/commit/46d113fe1e102c87772681fdd90a086e37a3200d) Thanks [@krenzke](https://github.com/krenzke)! - Expose getDirtyPaths method on Editor object to allow for customization
+
+## 0.82.0
+
+### Patch Changes
+
+- [#4988](https://github.com/ianstormtaylor/slate/pull/4988) [`fbab6331`](https://github.com/ianstormtaylor/slate/commit/fbab6331a5ecebd9e98c6c8c87d6f4b3b7c43bd0) Thanks [@BitPhinix](https://github.com/BitPhinix)! - Android input handling rewrite, replace composition insert prefixes with decoration based mark placeholders
+
+## 0.81.3
+
+### Patch Changes
+
+- [#5042](https://github.com/ianstormtaylor/slate/pull/5042) [`11a93e65`](https://github.com/ianstormtaylor/slate/commit/11a93e65de4b197a43777e575caf13d7a05d5dc9) Thanks [@bryanph](https://github.com/bryanph)! - Upgrade next.js and source-map-loader packages
+
+* [#5018](https://github.com/ianstormtaylor/slate/pull/5018) [`f13cd6b9`](https://github.com/ianstormtaylor/slate/commit/f13cd6b9180e18201b2a001b6f5d109218071319) Thanks [@ulion](https://github.com/ulion)! - Fix for insertFragment text/inline + block mixed fragments.
+
+## 0.81.2
+
+### Patch Changes
+
+- [#5029](https://github.com/ianstormtaylor/slate/pull/5029) [`736662f8`](https://github.com/ianstormtaylor/slate/commit/736662f80838902f8560554fae704c13c5d8e227) Thanks [@hanagejet](https://github.com/hanagejet)! - fix: `Path.previous()` dose not working when path is `null`
+
+## 0.81.1
+
+### Patch Changes
+
+- [#5015](https://github.com/ianstormtaylor/slate/pull/5015) [`9ae37287`](https://github.com/ianstormtaylor/slate/commit/9ae372875df1ee3ef6041f5d6bd2f57ee8291ea0) Thanks [@tithanayut](https://github.com/tithanayut)! - Fix deleteBackward behavior for Thai script where deleting N character(s) backward should delete
+  N code point(s) instead of an entire grapheme cluster
+
+## 0.81.0
+
+### Minor Changes
+
+- [#4999](https://github.com/ianstormtaylor/slate/pull/4999) [`fe13a8f9`](https://github.com/ianstormtaylor/slate/commit/fe13a8f9e750569342ee004951e34233ab6614bf) Thanks [@alexandercampbell](https://github.com/alexandercampbell)! - Add new Slate.Scrubber interface to allow scrubbing end user data from exception
+  text. The default behavior remains unchanged.
+
+## 0.80.0
+
+### Minor Changes
+
+- [#4892](https://github.com/ianstormtaylor/slate/pull/4892) [`d2fc25c3`](https://github.com/ianstormtaylor/slate/commit/d2fc25c3c31453597f59cd2ac6ba087a1beb1fe3) Thanks [@suilang](https://github.com/suilang)! - update insertText logic when selection is not collapsed
+
+### Patch Changes
+
+- [#5008](https://github.com/ianstormtaylor/slate/pull/5008) [`e9ea2815`](https://github.com/ianstormtaylor/slate/commit/e9ea2815950fc6b78fb0a2ba0e5d95c8553ac023) Thanks [@steve-codaio](https://github.com/steve-codaio)! - Revert to previous position behavior around inline voids
+
+## 0.78.0
+
+### Minor Changes
+
+- [#4974](https://github.com/ianstormtaylor/slate/pull/4974) [`3b7a1bf7`](https://github.com/ianstormtaylor/slate/commit/3b7a1bf72d0c3951416c771f7f149bfbda411111) Thanks [@dylans](https://github.com/dylans)! - Added types for options and common string literals, thanks @JoshuaKGoldberg
+
+## 0.77.2
+
+### Patch Changes
+
+- [#4952](https://github.com/ianstormtaylor/slate/pull/4952) [`9ce0a08c`](https://github.com/ianstormtaylor/slate/commit/9ce0a08c2a8b2b72df14141a06ca08825a66d472) Thanks [@steve-codaio](https://github.com/steve-codaio)! - Fix positions iteration when starting inside an inline void node
+
+## 0.77.0
+
+### Patch Changes
+
+- [#4939](https://github.com/ianstormtaylor/slate/pull/4939) [`c39c8082`](https://github.com/ianstormtaylor/slate/commit/c39c8082a97dec8fc9ba64568d817ba87e348b48) Thanks [@ahoisl](https://github.com/ahoisl)! - Fix pointRef leaks caused by not unref'ing
+
+## 0.76.1
+
+### Patch Changes
+
+- [#4914](https://github.com/ianstormtaylor/slate/pull/4914) [`aff67312`](https://github.com/ianstormtaylor/slate/commit/aff67312cbfa7e45df5cf6abcaec9f4f7d5f1a89) Thanks [@sennpang](https://github.com/sennpang)! - Fixed Triple click selection and copy&paste in read-only mode
+
+## 0.76.0
+
+### Minor Changes
+
+- [#4873](https://github.com/ianstormtaylor/slate/pull/4873) [`20acca4b`](https://github.com/ianstormtaylor/slate/commit/20acca4bc8f31bd1aa6fbca2c49aaae5f31cadfe) Thanks [@bryanph](https://github.com/bryanph)! - A different behavior for inserting a soft break with shift+enter is quite common in rich text editors. Right now you have to do this in onKeyDown which is not so nice. This adds a separate insertSoftBreak method on the editor instance that gets called when a soft break is inserted. This maintains the current default behavior for backwards compatibility (it just splits the block). But at least you can easily overwrite it now.
+
+  If you rely on overwriting editor.insertBreak for extra behavior for soft breaks this might be a breaking change for you and you should overwrite editor.insertSoftBreak instead.
+
+### Patch Changes
+
+- [#4912](https://github.com/ianstormtaylor/slate/pull/4912) [`43ca2b56`](https://github.com/ianstormtaylor/slate/commit/43ca2b56c8bd8bcc30dd38808dd191f804d53ae4) Thanks [@zhugexinxin](https://github.com/zhugexinxin)! - feat: add merge to setNodes and test
+
+## 0.75.0
+
+### Patch Changes
+
+- [#4889](https://github.com/ianstormtaylor/slate/pull/4889) [`970523f`](https://github.com/ianstormtaylor/slate/commit/970523f881bf1918f91cb9de87c961dfb965e8a1)(https://github.com/ianstormtaylor/slate/commit/970523f881bf1918f91cb9de87c961dfb965e8a1) Thanks [@zhugexinxin](https://github.com/zhugexinxin)! - feat: add custom compare node props
+
+## 0.73.1
+
+### Patch Changes
+
+- [#4858](https://github.com/ianstormtaylor/slate/pull/4858) [`33be22f3`](https://github.com/ianstormtaylor/slate/commit/33be22f3e3a0321ded199b13c0d97ae577c6b941) Thanks [@TheSpyder](https://github.com/TheSpyder)! - Reverted #4804 as it triggered an exception when inserting text with multi-block selection
+
+## 0.73.0
+
+### Minor Changes
+
+- [#4848](https://github.com/ianstormtaylor/slate/pull/4848) [`482b090e`](https://github.com/ianstormtaylor/slate/commit/482b090e6f6f4c5fbc85e6dd2ea65387156ae8b5) Thanks [@rockettomatooo](https://github.com/rockettomatooo)! - fix point transform for insert_text operations to account for affinity
+
+## 0.72.8
+
+### Patch Changes
+
+- [#4804](https://github.com/ianstormtaylor/slate/pull/4804) [`03861afc`](https://github.com/ianstormtaylor/slate/commit/03861afc62c3b27339d20151ca8a3e52f51ff973) Thanks [@suilang](https://github.com/suilang)! - update insertText logic when selection is not collapsed
+
+## 0.72.3
+
+### Patch Changes
+
+- [#4703](https://github.com/ianstormtaylor/slate/pull/4703) [`205d4b7e`](https://github.com/ianstormtaylor/slate/commit/205d4b7e66b30ec911e8968a736593aaf2be1567) Thanks [@e1himself](https://github.com/e1himself)! - Add tests for Editor.unhangRange() behavior
+
+## 0.72.2
+
+### Patch Changes
+
+- [#4729](https://github.com/ianstormtaylor/slate/pull/4729) [`ab62da20`](https://github.com/ianstormtaylor/slate/commit/ab62da2064921f534ce158f20cd853d2d904f6f6) Thanks [@ahoisl](https://github.com/ahoisl)! - chore: add vscode launch.json debug config
+
+* [#4735](https://github.com/ianstormtaylor/slate/pull/4735) [`e5427ddd`](https://github.com/ianstormtaylor/slate/commit/e5427dddfc57b4362b7545e9971cdfb9b05d5c3d) Thanks [@steve-codaio](https://github.com/steve-codaio)! - Optimize path transforms during normalization
+
+## 0.72.0
+
+### Patch Changes
+
+- [#4708](https://github.com/ianstormtaylor/slate/pull/4708) [`2fc7ad92`](https://github.com/ianstormtaylor/slate/commit/2fc7ad924cfbb75de59f685eeabb0375769201b9) Thanks [@bryanph](https://github.com/bryanph)! - Allow `Operation` type to be extended
+
+  For example:
+
+  ```
+  import type { BaseOperation } from '@platejs/slate'
+
+  type CustomOperation =
+   | BaseOperation
+   | YourCustomOperation
+   | AnotherCustomOperation
+
+  declare module '@platejs/slate' {
+    interface CustomTypes {
+      Operation: CustomOperation;
+    }
+  }
+  ```
+
+## 0.71.0
+
+### Minor Changes
+
+- [#4672](https://github.com/ianstormtaylor/slate/pull/4672) [`2523dc4f`](https://github.com/ianstormtaylor/slate/commit/2523dc4f6e7fee81baf77a67da4c3adaab921f15) Thanks [@VictorBaron](https://github.com/VictorBaron)! - Fix - deep-equals was always returning true when array props were equals.
+
+### Patch Changes
+
+- [#4671](https://github.com/ianstormtaylor/slate/pull/4671) [`e3afda94`](https://github.com/ianstormtaylor/slate/commit/e3afda946685795237f748e76c7bb051c09cb7fa) Thanks [@unageek](https://github.com/unageek)! - Fixed the issue where the cursor jumps more than one character unexpectedly
+
+## 0.70.0
+
+### Minor Changes
+
+- [#4565](https://github.com/ianstormtaylor/slate/pull/4565) [`5818aca5`](https://github.com/ianstormtaylor/slate/commit/5818aca5038f38465a5769fe944f184be0255341) Thanks [@oliger](https://github.com/oliger)! - Fix issue with unicode 1.1 smileys followed by a variation selector.
+
+### Patch Changes
+
+- [#4638](https://github.com/ianstormtaylor/slate/pull/4638) [`e0f41514`](https://github.com/ianstormtaylor/slate/commit/e0f41514a1e0e866297904be16eff82702e8afd8) Thanks [@e1himself](https://github.com/e1himself)! - Improve typescript type of `props` argument of `Transforms.setNodes()`
+
+## 0.67.1
+
+### Patch Changes
+
+- [#4578](https://github.com/ianstormtaylor/slate/pull/4578) [`67badb7d`](https://github.com/ianstormtaylor/slate/commit/67badb7dd03c6d36d31b90689247553c0386d771) Thanks [@jameshfisher](https://github.com/jameshfisher)! - Allow typing at the end of inline elements
+
+## 0.66.5
+
+### Patch Changes
+
+- [#4552](https://github.com/ianstormtaylor/slate/pull/4552) [`37d60c58`](https://github.com/ianstormtaylor/slate/commit/37d60c58b8d4fb844f31888b518be6c2a01fb110) Thanks [@clauderic](https://github.com/clauderic)! - Only apply Firefox `toSlatePoint()` offset fix when the cloned contents end in `\n\n` instead of just `\n`.
+
+## 0.66.2
+
+### Patch Changes
+
+- [#4523](https://github.com/ianstormtaylor/slate/pull/4523) [`0da12c17`](https://github.com/ianstormtaylor/slate/commit/0da12c17dc0484f065af2a270d352593a65c1577) Thanks [@steve-codaio](https://github.com/steve-codaio)! - Fix setNodes when called with 'split' and a collapsed range
+
+## 0.66.1
+
+### Patch Changes
+
+- [#4518](https://github.com/ianstormtaylor/slate/pull/4518) [`6ec399d4`](https://github.com/ianstormtaylor/slate/commit/6ec399d4db60f1a8d59268c333b43a26dc518b79) Thanks [@TheSpyder](https://github.com/TheSpyder)! - Fixed flaw in deep-equal algorithm when dealing with nested mark objects
+
+* [#4511](https://github.com/ianstormtaylor/slate/pull/4511) [`2af6868d`](https://github.com/ianstormtaylor/slate/commit/2af6868d41b8d797eebdcba5edb18638fe62fd45) Thanks [@dylans](https://github.com/dylans)! - update release process for yarn 3
+
+- [#4516](https://github.com/ianstormtaylor/slate/pull/4516) [`59ca7a8f`](https://github.com/ianstormtaylor/slate/commit/59ca7a8f518c7735c89148ff1d9a8ae9dcf4297f) Thanks [@dylans](https://github.com/dylans)! - another attempt to get the automated changeset workflow working again
+
+## 0.66.0
+
+### Minor Changes
+
+- [#4489](https://github.com/ianstormtaylor/slate/pull/4489) [`1b560de3`](https://github.com/ianstormtaylor/slate/commit/1b560de3e13d08cdc95d7f659a497ff0f07d296a) Thanks [@nemanja-tosic](https://github.com/nemanja-tosic)! - Fix paste to empty node losing structure of first block
+
+* [#4326](https://github.com/ianstormtaylor/slate/pull/4326) [`00259003`](https://github.com/ianstormtaylor/slate/commit/0025900349b2c2ff92c044b97389969fa32a9200) Thanks [@oliger](https://github.com/oliger)! - Add support for [flag](https://emojipedia.org/emoji-flag-sequence/), [keycap](https://emojipedia.org/emoji-keycap-sequence/) and [tag](https://emojipedia.org/emoji-tag-sequence/) unicode sequences.
+
+- [#4276](https://github.com/ianstormtaylor/slate/pull/4276) [`6f47cbbe`](https://github.com/ianstormtaylor/slate/commit/6f47cbbe0d8f320be8baf02a6e26d756d226cfca) Thanks [@TheSpyder](https://github.com/TheSpyder)! - Switched from `fast-deep-equal` to a custom deep equality check. This restores the ability for text nodes with mark values set to `undefined` to merge with text nodes missing those keys.
+
+* [#4431](https://github.com/ianstormtaylor/slate/pull/4431) [`55ff8f00`](https://github.com/ianstormtaylor/slate/commit/55ff8f00e46e5fd0f2aef41da321c02b6d3a0f70) Thanks [@TheSpyder](https://github.com/TheSpyder)! - Fixed regression in #4208 where normalization on empty block nodes could not be overridden
+
+- [#3820](https://github.com/ianstormtaylor/slate/pull/3820) [`c6203a2d`](https://github.com/ianstormtaylor/slate/commit/c6203a2d682325e550d4f4b9fc3ee3ca3429e466) Thanks [@githoniel](https://github.com/githoniel)! - unwrapNode call liftNode in reverse order to keep nested block
+
+* [#4428](https://github.com/ianstormtaylor/slate/pull/4428) [`b47d3fd1`](https://github.com/ianstormtaylor/slate/commit/b47d3fd191c6b76585898ec9b8c490f15dcff2da) Thanks [@TheSpyder](https://github.com/TheSpyder)! - Don't set `null` in `set_node`'s `newProperties` object when using `Transforms.unsetNodes()`
+
+### Patch Changes
+
+- [#4132](https://github.com/ianstormtaylor/slate/pull/4132) [`48b71294`](https://github.com/ianstormtaylor/slate/commit/48b7129447347c9cf7a0535026287896ef59779b) Thanks [@ulion](https://github.com/ulion)! - Make onDomSelectionChange trigger after onClick.
+
+* [#4500](https://github.com/ianstormtaylor/slate/pull/4500) [`50bb3d7e`](https://github.com/ianstormtaylor/slate/commit/50bb3d7e32d640957018831526235ca656963f1d) Thanks [@tubbo](https://github.com/tubbo)! - Upgrade `is-plain-object` to v5.0.0
+
+- [#4482](https://github.com/ianstormtaylor/slate/pull/4482) [`dd752df1`](https://github.com/ianstormtaylor/slate/commit/dd752df11dc90da6bd6add88d1cfa6f00f03912b) Thanks [@Jokcy](https://github.com/Jokcy)! - Fix cursor not correct issue after insert multiple nodes with `Transform.insertNodes`
+
+* [#4296](https://github.com/ianstormtaylor/slate/pull/4296) [`479a7591`](https://github.com/ianstormtaylor/slate/commit/479a759108bc0f903715e08d542307566b077227) Thanks [@kellyjosephprice](https://github.com/kellyjosephprice)! - Fix mergeNodes moving node into parent sibling
+
+- [#4458](https://github.com/ianstormtaylor/slate/pull/4458) [`95c759a1`](https://github.com/ianstormtaylor/slate/commit/95c759a19c1e057bbc99148867298a73b014831d) Thanks [@taj-codaio](https://github.com/taj-codaio)! - Normalization now removes empty text nodes after nonempty nodes with differing styles, but before inline nodes.
+
+* [#4505](https://github.com/ianstormtaylor/slate/pull/4505) [`269e59c9`](https://github.com/ianstormtaylor/slate/commit/269e59c93aea31cdb438e9cc07d34cec0e482798) Thanks [@dylans](https://github.com/dylans)! - Immer 9 security update, refactor to support immer 9 API changes
+
+## 0.65.3
+
+### Patch Changes
+
+- [#4253](https://github.com/ianstormtaylor/slate/pull/4253) [`0214b630`](https://github.com/ianstormtaylor/slate/commit/0214b630778e7fa3b6ebcdf6cd9a8e4cf7351bd3) Thanks [@TheSpyder](https://github.com/TheSpyder)! - Fix `Transforms.wrapNodes` crashing when the `match` function matched only the editor
+
+* [#4049](https://github.com/ianstormtaylor/slate/pull/4049) [`6c844227`](https://github.com/ianstormtaylor/slate/commit/6c8442272105ec78b88d38efecb7aab9bb4e41de) Thanks [@ulion](https://github.com/ulion)! - Fix ios chrome ime double input issue.
+
+- [#4421](https://github.com/ianstormtaylor/slate/pull/4421) [`237edc6e`](https://github.com/ianstormtaylor/slate/commit/237edc6ea616c9171611e632e146872a245bdb0e) Thanks [@jaked](https://github.com/jaked)! - fix decorate bug (#4277) without adding extra layers of render tree
+
+* [#4349](https://github.com/ianstormtaylor/slate/pull/4349) [`236754c4`](https://github.com/ianstormtaylor/slate/commit/236754c4d2811d50f8e116cfd5de8d7619553cd9) Thanks [@imdbsd](https://github.com/imdbsd)! - Add isElementType utility to Element interface
+
+## 0.63.0
+
+### Minor Changes
+
+- [#4230](https://github.com/ianstormtaylor/slate/pull/4230) [`796389c7`](https://github.com/ianstormtaylor/slate/commit/796389c7d3d9cead1493abcba6c678cb9dfa979f) Thanks [@TheSpyder](https://github.com/TheSpyder)! - Applying invalid `insert_node` operations will now throw an exception for all invalid paths, not just invalid parent paths.
+
+### Patch Changes
+
+- [#4245](https://github.com/ianstormtaylor/slate/pull/4245) [`b33a531b`](https://github.com/ianstormtaylor/slate/commit/b33a531bd0395ecb23bd9fd1ac1cd1c3b31f92ca) Thanks [@JonasKruckenberg](https://github.com/JonasKruckenberg)! - Removed lodash dependecy to reduce bundled footprint
+
+* [#4208](https://github.com/ianstormtaylor/slate/pull/4208) [`feb293aa`](https://github.com/ianstormtaylor/slate/commit/feb293aaa2c02fe3ad319bd021e66908ee770a6e) Thanks [@TheSpyder](https://github.com/TheSpyder)! - Fix `Error: Cannot get the start point in the node at path [...] because it has no start text node` caused by normalizing a document where some elements have no children
+
+- [#4230](https://github.com/ianstormtaylor/slate/pull/4230) [`796389c7`](https://github.com/ianstormtaylor/slate/commit/796389c7d3d9cead1493abcba6c678cb9dfa979f) Thanks [@TheSpyder](https://github.com/TheSpyder)! - Exceptions in `editor.apply()` and `Editor.withoutNormalizing()` will no longer leave the editor in an invalid state
+
+* [#4227](https://github.com/ianstormtaylor/slate/pull/4227) [`e6413d46`](https://github.com/ianstormtaylor/slate/commit/e6413d46256f6fc60549974242d3ff6ba61e2968) Thanks [@ulion](https://github.com/ulion)! - Fixed a bug that would allow multiple changes to be scheduled at the same time.
+
+## 0.62.1
+
+### Patch Changes
+
+- [#4193](https://github.com/ianstormtaylor/slate/pull/4193) [`fd70dc0b`](https://github.com/ianstormtaylor/slate/commit/fd70dc0b2c0d06edb9490874fb831161b9759cba) Thanks [@beorn](https://github.com/beorn)! - Fixed insert and remove text operations to no-op without any text.
+
+* [#4078](https://github.com/ianstormtaylor/slate/pull/4078) [`2dad21d1`](https://github.com/ianstormtaylor/slate/commit/2dad21d1d75750e7148b10bdea3ce921a79cbf33) Thanks [@TheSpyder](https://github.com/TheSpyder)! - Fixed inversion of `set_node` operations that delete properties on nodes.
+
+- [#4168](https://github.com/ianstormtaylor/slate/pull/4168) [`95f402c5`](https://github.com/ianstormtaylor/slate/commit/95f402c59414331b2eeca9a19bd2c73c0ab6cd6c) Thanks [@ridhambhat](https://github.com/ridhambhat)! - Fixed a bug in splitting and applying overlapping marks to text nodes.
+
+## 0.62.0
+
+### Minor Changes
+
+- [`c6002024`](https://github.com/ianstormtaylor/slate/commit/c60020244b9d25094edb0ffcca8b49dead9b31dc) - **Updated `Text.equals` to deeply compare text node properties.** Previously it only did a shallow comparison, but this made it harder to keep track of more complex data structures at the text level.
+
+* [#4154](https://github.com/ianstormtaylor/slate/pull/4154) [`7283c51f`](https://github.com/ianstormtaylor/slate/commit/7283c51feb83cb8522bc16efce09bb01c29400b9) Thanks [@ianstormtaylor](https://github.com/ianstormtaylor)! - **Start using [🦋 Changesets](https://github.com/atlassian/changesets) to manage releases.** Going forward, whenever a pull request is made that fixes or adds functionality to Slate, it will need to be accompanied by a changset Markdown file describing the change. These files will be automatically used in the release process when bump the versions of Slate and compiling the changelog.
+
+- [`c6002024`](https://github.com/ianstormtaylor/slate/commit/c60020244b9d25094edb0ffcca8b49dead9b31dc) - **Added support for custom selection properties.** Previously you could set custom properties on the selection objects but it was not a fully supported feature because there was no way to delete them later. Now custom properties are officially supported and deleting them once set is possible.
+
+### Patch Changes
+
+- [`c6002024`](https://github.com/ianstormtaylor/slate/commit/c60020244b9d25094edb0ffcca8b49dead9b31dc) - Fixed `move_node` operations to normalize the node in question.
+
+* [`c6002024`](https://github.com/ianstormtaylor/slate/commit/c60020244b9d25094edb0ffcca8b49dead9b31dc) - Added memoization logic to `Node.isNodeList` and `Editor.isEditor` to speed up common code paths.
+
+- [`c6002024`](https://github.com/ianstormtaylor/slate/commit/c60020244b9d25094edb0ffcca8b49dead9b31dc) - Fixed a bug when merging deeply nested multi-child nodes.
+
+* [`c6002024`](https://github.com/ianstormtaylor/slate/commit/c60020244b9d25094edb0ffcca8b49dead9b31dc) - Fixed a bug when deleting a hanging range with a trailing void block node.
+
+- [`c6002024`](https://github.com/ianstormtaylor/slate/commit/c60020244b9d25094edb0ffcca8b49dead9b31dc) - Fixed a bug in `Editor.positions` which caused it to sometimes skip positions in text nodes that were segmented across inlines or marks.

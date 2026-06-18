@@ -7,7 +7,7 @@ Original broad inference execution completed on 2026-05-12.
 Reopened on 2026-05-14 for the `useEditorSelector<boolean, CustomEditor>` DX
 question. The selector generic inference subplan is ready for Ralph execution.
 
-This is a planning pass only. No `.tmp/slate-v2` implementation files were
+This is a planning pass only. No `Plate repo root` implementation files were
 edited.
 
 ## Current Verdict
@@ -253,7 +253,7 @@ Rejected alternatives:
 
 ### Phase 1 - Core Runtime Binder
 
-Owner: `.tmp/slate-v2/packages/slate`.
+Owner: `packages/slate`.
 
 Target:
 
@@ -293,7 +293,7 @@ Proof:
 
 ### Phase 2 - React Context And DOM Event Type Guards
 
-Owner: `.tmp/slate-v2/packages/slate-react`.
+Owner: `packages/slate-react`.
 
 Target:
 
@@ -318,7 +318,7 @@ Proof:
 
 ### Phase 3 - React Hook Inference Cleanup
 
-Owner: `.tmp/slate-v2/packages/slate-react`.
+Owner: `packages/slate-react`.
 
 Target:
 
@@ -345,7 +345,7 @@ Proof:
 
 ### Phase 4 - Examples Inference Cleanup
 
-Owner: `.tmp/slate-v2/site/examples`.
+Owner: `apps/www/examples`.
 
 Target:
 
@@ -371,8 +371,8 @@ Proof:
 
 ### Phase 5 - Test And Benchmark Type Derivation
 
-Owner: `.tmp/slate-v2/packages/**/test`, `.tmp/slate-v2/playwright`,
-`.tmp/slate-v2/scripts/benchmarks`.
+Owner: `packages/**/test`, `Plate repo root/playwright`,
+`benchmarks/slate-v2/donor`.
 
 Target:
 
@@ -495,7 +495,7 @@ the implementation trials/type-contract bake-off have not run.
 | Current-state read and initial score | complete | live scanner counts, config reads, hotspot line refs                                                                                  | created this plan                                                                                                                        | scanner regex is approximate, so ralph should trust compiler over counts                                                              | ralph                                 |
 | Related issue cache pass             | complete | ledger search for type/API issue rows                                                                                                 | no fix claims                                                                                                                            | no live GH refresh needed                                                                                                             | ralph if implementation claims issues |
 | Ralph activation                     | complete | `active goal state`, session completion reset to this plan                                        | execution handoff written                                                                                                                | none                                                                                                                                  | ralph                                 |
-| TypeScript binder design pass        | complete | `bun --filter slate typecheck`; core runtime now has one local binder boundary instead of per-method `as any` wrappers                | implemented in `.tmp/slate-v2/packages/slate/src/create-editor.ts`; extension group registration no longer casts factories through `any` | one intentional helper-level `any[]` remains to bind arbitrary static editor methods                                                  | closed                                |
+| TypeScript binder design pass        | complete | `bun --filter slate typecheck`; core runtime now has one local binder boundary instead of per-method `as any` wrappers                | implemented in `packages/slate/src/create-editor.ts`; extension group registration no longer casts factories through `any` | one intentional helper-level `any[]` remains to bind arbitrary static editor methods                                                  | closed                                |
 | React context and DOM event pass     | complete | `bun --filter slate-react typecheck`; selector/input/clipboard/rendering tests passed                                                 | nullable selector context, typed DOM input helpers, context-first `useElementSelected` path lookup                                       | native `onBeforeInput` fallback still needs `unknown as React.FormEvent` because React synthetic and DOM native events do not overlap | closed                                |
 | Hook and example inference pass      | complete | `bun typecheck:site`; `useMemo<...>` and `useCallback<...>` audit count is `0`                                                        | examples use `satisfies` for style/rule objects; render-prop path usage moved to hooks                                                   | remaining `CSSProperties` annotations are prop/return contracts, not redundant literals                                               | closed                                |
 | Public API any classification        | complete | `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit --pretty false`; surface contract passed                 | `ElementOf`/`TextOf`/entry helpers now derive through `Editor<V>`; stale primitive instance-method contract rewritten to transaction API | repo still has intentional test/mock escape hatches outside package source                                                            | closed                                |
@@ -507,7 +507,7 @@ Completed on 2026-05-12.
 
 Primary outcomes:
 
-- `.tmp/slate-v2/packages/slate/src` and `.tmp/slate-v2/packages/slate-react/src`
+- `packages/slate/src` and `packages/slate-react/src`
   now have no repeated implementation `as any` wrappers. The remaining package
   source `any` is the single editor binder rest tuple in `create-editor.ts`.
 - Repository audit counts after the pass: `as any` = 36, `as unknown as` = 89,
@@ -587,7 +587,7 @@ bun run completion-check
 - No implementation `as any` reduction replaced by behavior drift.
 - Remaining assertions documented in an allowlist or local comment at the true
   boundary.
-- `.tmp/slate-v2` package gates pass for touched packages.
+- `Plate repo root` package gates pass for touched packages.
 - `bun check` passes before claiming closure.
 - Issue ledgers updated only for real fix/improve claims.
 
@@ -648,9 +648,9 @@ Intent:
 
 In scope:
 
-- `.tmp/slate-v2/site/examples/ts/{richtext,hovering-toolbar,inlines,iframe}.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/{richtext,hovering-toolbar,inlines,iframe}.tsx`
   call sites that currently use `useEditorSelector<boolean, CustomEditor>`.
-- `.tmp/slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx`
+- `packages/slate-react/test/generic-react-editor-contract.tsx`
   type-contract coverage for inferred selector return values.
 - Slate React hook docs if examples need a short rule: prefer `useEditorState`
   for state reads, `useEditorSelector` only for editor/operation reads.
@@ -677,14 +677,14 @@ Decision boundary:
 
 | Surface                        | Current owner                                                                  | Current shape                                                                             | Decision                                                                                                                         |
 | ------------------------------ | ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| Slate selector API             | `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:82`      | `useEditorSelector<T, TEditor>(selector, equalityFn?, options?)` returns `T`.             | Keep runtime API; infer `T` at call sites.                                                                                       |
-| Slate state selector API       | `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:161`     | `useEditorState<T, TEditor>(selector, options?)` wraps `editor.read` and has `deps`.      | Prefer for toolbar/shell state reads.                                                                                            |
-| Slate hook docs                | `.tmp/slate-v2/docs/libraries/slate-react/hooks.md:25` and `:55`               | Docs already say normal app reads use `useEditorState`; `useEditorSelector` is low-level. | Align examples with docs.                                                                                                        |
-| Slate richtext example         | `.tmp/slate-v2/site/examples/ts/richtext.tsx:500` and `:540`                   | `useEditorSelector<boolean, CustomEditor>(...)`.                                          | Replace with inferred return, preferably via `useEditorState`.                                                                   |
-| Slate hovering toolbar example | `.tmp/slate-v2/site/examples/ts/hovering-toolbar.tsx:147`                      | `useEditorSelector<boolean, CustomEditor>(...)`.                                          | Replace with inferred return, preferably via `useEditorState`.                                                                   |
-| Slate inlines example          | `.tmp/slate-v2/site/examples/ts/inlines.tsx:414` and `:436`                    | `useEditorSelector<boolean, CustomEditor>(...)`.                                          | Replace with inferred return, preferably via `useEditorState`.                                                                   |
-| Slate iframe example           | `.tmp/slate-v2/site/examples/ts/iframe.tsx:97`                                 | `useEditorSelector<boolean, CustomEditor>(...)`.                                          | Replace with inferred return, preferably via `useEditorState`.                                                                   |
-| Slate generic type contract    | `.tmp/slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx:87` | `useEditorSelector<number, typeof reactEditor>(...)`.                                     | Add/replace a contract that proves return inference without spelling `number`.                                                   |
+| Slate selector API             | `packages/slate-react/src/hooks/use-editor-selector.tsx:82`      | `useEditorSelector<T, TEditor>(selector, equalityFn?, options?)` returns `T`.             | Keep runtime API; infer `T` at call sites.                                                                                       |
+| Slate state selector API       | `packages/slate-react/src/hooks/use-editor-selector.tsx:161`     | `useEditorState<T, TEditor>(selector, options?)` wraps `editor.read` and has `deps`.      | Prefer for toolbar/shell state reads.                                                                                            |
+| Slate hook docs                | `content/docs/slate/libraries/slate-react/hooks.md:25` and `:55`               | Docs already say normal app reads use `useEditorState`; `useEditorSelector` is low-level. | Align examples with docs.                                                                                                        |
+| Slate richtext example         | `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx:500` and `:540`                   | `useEditorSelector<boolean, CustomEditor>(...)`.                                          | Replace with inferred return, preferably via `useEditorState`.                                                                   |
+| Slate hovering toolbar example | `apps/www/src/app/(app)/examples/slate/_examples/hovering-toolbar.tsx:147`                      | `useEditorSelector<boolean, CustomEditor>(...)`.                                          | Replace with inferred return, preferably via `useEditorState`.                                                                   |
+| Slate inlines example          | `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx:414` and `:436`                    | `useEditorSelector<boolean, CustomEditor>(...)`.                                          | Replace with inferred return, preferably via `useEditorState`.                                                                   |
+| Slate iframe example           | `apps/www/src/app/(app)/examples/slate/_examples/iframe.tsx:97`                                 | `useEditorSelector<boolean, CustomEditor>(...)`.                                          | Replace with inferred return, preferably via `useEditorState`.                                                                   |
+| Slate generic type contract    | `packages/slate-react/test/generic-react-editor-contract.tsx:87` | `useEditorSelector<number, typeof reactEditor>(...)`.                                     | Add/replace a contract that proves return inference without spelling `number`.                                                   |
 | Plate selector API             | `packages/core/src/react/stores/plate/useEditorSelector.ts:15`                 | `useEditorSelector<T, E>(selector, deps, options?)`.                                      | Plate has similar generic ordering, but most call sites infer `T`; copy that usage lesson, not Plate's deps signature wholesale. |
 
 ### Decision Brief
@@ -714,8 +714,8 @@ Viable options:
 | System                          | Source                                                                                                                               | Mechanism                                                                                      | Avoids                                                    | Steal                                                                                  | Reject                                                           | Slate target                                                                                                      | Verdict |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------- |
 | Plate                           | `packages/core/src/react/stores/plate/useEditorSelector.ts:15`, `packages/core/src/react/stores/plate/useEditorSelector.spec.tsx:24` | Selector return type is inferred at normal call sites; dependencies are explicit.              | Repeated `<boolean, Editor>` spelling in app code.        | Teach inferred selector returns and explicit closure deps where Slate has that option. | Do not copy Plate's product-layer selector shape into raw Slate. | Inferred `useEditorSelector` returns now; revisit state-hook inference only with an API pass, not local wrappers. | partial |
-| Slate v2 docs                   | `.tmp/slate-v2/docs/libraries/slate-react/hooks.md:25-68`                                                                            | Separate `useEditorState` from low-level `useEditorSelector`.                                  | App code opening `editor.read` inside a generic selector. | Align examples with the documented hook split.                                         | Do not document raw selectors as the common toolbar path.        | Examples stop spelling return generics and prefer state selectors.                                                | agree   |
-| React 19.2 external-store model | `.tmp/slate-v2/packages/slate-react/src/hooks/use-generic-selector.tsx:48-136`                                                       | Selector result equality controls rerender; selector identity changes recompute during render. | Broad rerenders from unrelated commits.                   | Keep equality/invalidation runtime unchanged.                                          | Do not make type cleanup alter subscriptions.                    | Type-only/example cleanup with existing selector runtime proof.                                                   | agree   |
+| Slate v2 docs                   | `content/docs/slate/libraries/slate-react/hooks.md:25-68`                                                                            | Separate `useEditorState` from low-level `useEditorSelector`.                                  | App code opening `editor.read` inside a generic selector. | Align examples with the documented hook split.                                         | Do not document raw selectors as the common toolbar path.        | Examples stop spelling return generics and prefer state selectors.                                                | agree   |
+| React 19.2 external-store model | `packages/slate-react/src/hooks/use-generic-selector.tsx:48-136`                                                       | Selector result equality controls rerender; selector identity changes recompute during render. | Broad rerenders from unrelated commits.                   | Keep equality/invalidation runtime unchanged.                                          | Do not make type cleanup alter subscriptions.                    | Type-only/example cleanup with existing selector runtime proof.                                                   | agree   |
 
 ### Public API Target
 
@@ -743,12 +743,12 @@ useEditorSelector<boolean, CustomEditor>(...)
 ### Implementation Phases For Ralph
 
 1. Replace the six example call sites:
-   - `.tmp/slate-v2/site/examples/ts/richtext.tsx:500`
-   - `.tmp/slate-v2/site/examples/ts/richtext.tsx:540`
-   - `.tmp/slate-v2/site/examples/ts/hovering-toolbar.tsx:147`
-   - `.tmp/slate-v2/site/examples/ts/inlines.tsx:414`
-   - `.tmp/slate-v2/site/examples/ts/inlines.tsx:436`
-   - `.tmp/slate-v2/site/examples/ts/iframe.tsx:97`
+   - `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx:500`
+   - `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx:540`
+   - `apps/www/src/app/(app)/examples/slate/_examples/hovering-toolbar.tsx:147`
+   - `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx:414`
+   - `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx:436`
+   - `apps/www/src/app/(app)/examples/slate/_examples/iframe.tsx:97`
 2. Prefer `useEditorState(..., { deps: [...] })` only when the custom value type
    stays inferred without explicit return generics or a wrapper.
 3. If a helper needs the editor object, use
@@ -759,7 +759,7 @@ useEditorSelector<boolean, CustomEditor>(...)
    - operations are `Operation<CustomValue>[]`;
    - returned value is inferred as `number` without
      `useEditorSelector<number, typeof reactEditor>`.
-5. Grep gate: no `useEditorSelector<boolean,` remains in `.tmp/slate-v2`.
+5. Grep gate: no `useEditorSelector<boolean,` remains in `Plate repo root`.
 
 ### Issue Ledger Accounting
 
@@ -863,7 +863,7 @@ above.
 
 Completed on 2026-05-14.
 
-Changed files in `.tmp/slate-v2`:
+Changed files in `Plate repo root`:
 
 - `site/examples/ts/richtext.tsx`
 - `site/examples/ts/hovering-toolbar.tsx`
@@ -885,7 +885,7 @@ Implementation:
 - Reference docs: no change. No issue claims, public API shape, release gates,
   proof status, or PR narrative changed.
 
-Verification from `.tmp/slate-v2`:
+Verification from `Plate repo root`:
 
 ```bash
 bun --filter slate-react typecheck

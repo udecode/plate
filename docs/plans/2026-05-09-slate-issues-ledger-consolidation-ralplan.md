@@ -57,7 +57,7 @@ In scope:
 
 Non-goals:
 
-- no `.tmp/slate-v2` implementation edits
+- no `Plate repo root` implementation edits
 - no upstream GitHub comments, labels, or closures
 - no manual one-by-one pass across all `630` live issues
 - no new issue fix claims without exact repro proof
@@ -526,7 +526,7 @@ This Slate Ralplan is complete because:
 - the drift checker contract is specified
 - the PR fixed-claim mismatch is enumerated issue by issue
 - the next `ralph` slices are ordered with gates
-- no `.tmp/slate-v2` runtime implementation work is hidden inside the plan
+- no `Plate repo root` runtime implementation work is hidden inside the plan
 
 ## Execution Completion Criteria
 

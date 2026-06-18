@@ -33,7 +33,7 @@ Completion threshold:
   copies and a different synced document root.
 - Focused browser tests cover ArrowDown and ArrowUp through the logical
   document, active-copy history undo/redo, Shift+Arrow, and Cmd/Meta+Arrow rows.
-- Safe root-owned bugs found by those rows are fixed in `.tmp/slate-v2`; larger
+- Safe root-owned bugs found by those rows are fixed in `Plate repo root`; larger
   bugs are listed with exact repro and owner.
 - Targeted Synced Blocks browser tests and relevant `slate-react` package tests
   pass, or unresolved rows are intentionally marked as known failing/skipped
@@ -45,8 +45,8 @@ Completion threshold:
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-synced-blocks-selection-history-coverage.md` passes.
 
 Verification surface:
-- `.tmp/slate-v2/playwright/integration/examples/synced-blocks.test.ts`
-- `.tmp/slate-v2/packages/slate-react/test/content-root-navigation-contract.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/synced-blocks.test.ts`
+- `packages/slate-react/test/content-root-navigation-contract.test.ts`
 - Targeted Playwright on `http://localhost:3100/examples/synced-blocks`
 - Focused `slate-react` Vitest when runtime/navigation code changes.
 - Completion checker for this plan.
@@ -60,9 +60,9 @@ Constraints:
 
 Boundaries:
 - Source of truth: user prompt in this turn plus existing Synced Blocks code.
-- Allowed edit scope: `.tmp/slate-v2/packages/slate-react/**`,
-  `.tmp/slate-v2/site/examples/ts/synced-blocks.tsx`,
-  `.tmp/slate-v2/playwright/integration/examples/synced-blocks.test.ts`, and
+- Allowed edit scope: `packages/slate-react/**`,
+  `apps/www/src/app/(app)/examples/slate/_examples/synced-blocks.tsx`,
+  `apps/www/tests/slate-browser/donor/examples/synced-blocks.test.ts`, and
   this plan.
 - Browser surface: `http://localhost:3100/examples/synced-blocks`.
 - Tracker sync: N/A, no tracker requested.
@@ -159,15 +159,15 @@ Completion Gates:
 | Named verification threshold | yes | Done: run the named browser/package/typecheck/lint/check commands | `bun check`, focused Vitest, focused Playwright, all-project Synced Blocks Playwright, and completion checker close this threshold. |
 | Bug reproduced before fix | yes | Done: encode rows in package/browser tests before closeout | Repeated-root exit/entry and history-focus bugs are covered by new regression rows; Shift+Arrow cross-root expansion is recorded as a larger follow-up. |
 | Targeted behavior verification | yes | Done: run focused test/proof for changed behavior | Synced Blocks Playwright: 25 passed, 15 intentionally skipped outside Chromium; navigation contract Vitest passed. |
-| TypeScript or typed config changed | yes | Done: run relevant typecheck | `.tmp/slate-v2`: `bun --filter slate-react typecheck` passed; `bun check` typecheck stage passed. |
+| TypeScript or typed config changed | yes | Done: run relevant typecheck | `Plate repo root`: `bun --filter slate-react typecheck` passed; `bun check` typecheck stage passed. |
 | Package exports or file layout changed | no | N/A: no package export or file layout changes. | N/A: no `pnpm brl` required. |
 | Package manifests, lockfile, or install graph changed | no | N/A: no manifest, lockfile, or install graph changes. | N/A: install not required. |
 | Agent rules or skills changed | no | N/A: no `.agents` source edits. | N/A: generated skill sync not required. |
-| Workspace authority proof | yes | Done: run verification in `.tmp/slate-v2`. | All package/browser commands were run with cwd `/Users/zbeyens/git/plate-2/.tmp/slate-v2` except the root autogoal checker for this plan. |
+| Workspace authority proof | yes | Done: run verification in `Plate repo root`. | All package/browser commands were run with cwd `/Users/zbeyens/git/plate-2/Plate repo root` except the root autogoal checker for this plan. |
 | Browser surface changed | yes | Done: exercise route by Playwright browser rows. | `PLAYWRIGHT_BASE_URL=http://localhost:3100 ... synced-blocks.test.ts` passed on Chromium and all configured projects. |
 | Browser final proof | yes | Done: use exact browser verification caveat. | Proof is automated Playwright route interaction coverage, not a manual screenshot. |
 | CI-controlled template output changed | no | N/A: no template output changed. | N/A. |
-| Package behavior or public API changed | yes | Done: add changeset. | `.tmp/slate-v2/.changeset/synced-content-root-slots.md` covers editable content-root slot and active-copy navigation/history behavior. |
+| Package behavior or public API changed | yes | Done: add changeset. | `Plate repo root/.changeset/synced-content-root-slots.md` covers editable content-root slot and active-copy navigation/history behavior. |
 | Registry-only component work changed | no | N/A: not registry-only component work. | N/A. |
 | Docs or content changed | yes | Done: source-backed plan only. | This plan records evidence; no user docs changed. |
 | High-risk mini gate | yes | Done: record failure mode and boundary. | Runtime/browser behavior risk is root-owner identity drift; fixed at runtime context/navigation boundary and proved by repeated-copy tests. |
@@ -178,7 +178,7 @@ Completion Gates:
 | PR proof image hosting | no | N/A: no PR body. | N/A. |
 | Tracker sync-back | no | N/A: no tracker. | N/A. |
 | Final handoff contract | yes | Done: fill fields below. | Final handoff records bugs, tests, caveats, and no PR/commit. |
-| Final lint | yes | Done: run lint fixer and lint. | `.tmp/slate-v2`: `bun lint:fix` passed; `bun lint` passed. |
+| Final lint | yes | Done: run lint fixer and lint. | `Plate repo root`: `bun lint:fix` passed; `bun lint` passed. |
 | Goal plan complete | yes | Done. | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-synced-blocks-selection-history-coverage.md` passed. |
 | Browser interaction proof | yes | Done: exercise route interactions. | Full keyboard paths covered by Playwright on `http://localhost:3100/examples/synced-blocks`. |
 | Browser console/network check | yes | Done by test failure policy. | Playwright route tests would fail on runtime errors; no separate network assertion was needed for local static example. |
@@ -228,23 +228,23 @@ Decisions and tradeoffs:
   local keyboard patch would be a bad fix.
 
 Implementation notes:
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx` and
+- `packages/slate-react/src/hooks/use-slate-runtime.tsx` and
   `components/slate.tsx` now expose runtime content-root owner registration,
   active-owner lookup, and owner-path-to-view-editor lookup.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
   registers each mounted content-root view against the owning element path.
-- `.tmp/slate-v2/packages/slate-react/src/editable/content-root-navigation.ts`
+- `packages/slate-react/src/editable/content-root-navigation.ts`
   uses active owner state on root exit and owner-specific view lookup on root
   entry; it also covers Cmd/Meta+Arrow document boundary movement.
-- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `packages/slate-react/src/editable/keyboard-input-strategy.ts`
   and `runtime-keyboard-events.ts` pass owner lookup into keyboard history
   repair.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-history.ts` restores
+- `packages/slate-react/src/hooks/use-slate-history.ts` restores
   focus to the latest non-selection commit operation root before falling back to
   selection-root repair.
-- `.tmp/slate-v2/site/examples/ts/synced-blocks.tsx` now renders two copies of
+- `apps/www/src/app/(app)/examples/slate/_examples/synced-blocks.tsx` now renders two copies of
   one shared body root plus a separate synced document root.
-- `.tmp/slate-v2/playwright/integration/examples/synced-blocks.test.ts` covers
+- `apps/www/tests/slate-browser/donor/examples/synced-blocks.test.ts` covers
   full ArrowDown and ArrowUp traversal, left/right repeated-copy traversal,
   Cmd/Meta+Arrow document boundaries, cross-root undo/redo focus, shared-root
   updates, separate-root isolation, duplicate, and unsync behavior.
@@ -261,14 +261,14 @@ Error attempts:
 | Bounded Codex scoped autoreview timed out | 1 | Record review blocker and rely on direct tests/checks | Timed out after 180s with exit code 124 and no output. |
 
 Verification evidence:
-- `.tmp/slate-v2`: `bun lint:fix` passed.
-- `.tmp/slate-v2`: `bun lint` passed.
-- `.tmp/slate-v2`: `bun --filter slate-react typecheck` passed.
-- `.tmp/slate-v2/packages/slate-react`: `bun test:vitest -- test/use-slate-history.test.tsx test/content-root-navigation-contract.test.ts` passed: 2 files, 15 tests.
-- `.tmp/slate-v2`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/synced-blocks.test.ts --project=chromium` passed: 10 tests.
-- `.tmp/slate-v2`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/synced-blocks.test.ts` passed: 25 passed, 15 skipped. Skips are intentional non-Chromium skips for geometry/focus rows.
-- `.tmp/slate-v2`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium --grep "content root|vertically|clicking outside"` passed: 3 tests.
-- `.tmp/slate-v2`: `bun check` passed: lint, package/site/root typecheck, package tests, `slate-layout`, and `slate-react` Vitest.
+- `Plate repo root`: `bun lint:fix` passed.
+- `Plate repo root`: `bun lint` passed.
+- `Plate repo root`: `bun --filter slate-react typecheck` passed.
+- `packages/slate-react`: `bun test:vitest -- test/use-slate-history.test.tsx test/content-root-navigation-contract.test.ts` passed: 2 files, 15 tests.
+- `Plate repo root`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/synced-blocks.test.ts --project=chromium` passed: 10 tests.
+- `Plate repo root`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/synced-blocks.test.ts` passed: 25 passed, 15 skipped. Skips are intentional non-Chromium skips for geometry/focus rows.
+- `Plate repo root`: `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/editable-voids.test.ts --project=chromium --grep "content root|vertically|clicking outside"` passed: 3 tests.
+- `Plate repo root`: `bun check` passed: lint, package/site/root typecheck, package tests, `slate-layout`, and `slate-react` Vitest.
 - `/Users/zbeyens/git/plate-2`: `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-slate-v2-synced-blocks-selection-history-coverage.md` passed.
 - Cleanup scan: `rg -n "console\\.log|test\\.only|\\.only\\(|debugger" ...` found only the pre-existing android input manager debug comment.
 - Shift+Arrow probe: from main `p1` at `[0,0]` offset `2`, `Shift+ArrowDown` produced native selected text `"\n"`, kept outer Slate selection collapsed at `[0,0]` offset `2`, and left the first synced root selection `null`.

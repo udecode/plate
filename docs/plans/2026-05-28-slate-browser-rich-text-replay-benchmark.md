@@ -9,7 +9,7 @@ Goal plan:
 docs/plans/2026-05-28-slate-browser-rich-text-replay-benchmark.md
 
 Completion threshold:
-The benchmark is complete when `.tmp/slate-v2` can generate a row artifact from
+The benchmark is complete when `Plate repo root` can generate a row artifact from
 the Slate v2 and Slate Playwright browser test corpus, `benchmarks/editor`
 ingests it into the rich-text Evidence Kit result, `rich-text.html` exposes the
 new rows without the old `legacy-slate` label, package checks pass, the served
@@ -17,8 +17,8 @@ route returns the regenerated data, and this plan passes the autogoal completion
 check.
 
 Verification surface:
-- Generator: `/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/browser/rich-text-replay-coverage.mjs`
-- Generated artifact: `/Users/zbeyens/git/plate-2/.tmp/slate-v2/tmp/slate-browser-rich-text-replay-coverage-benchmark.json`
+- Generator: `/Users/zbeyens/git/plate-2/benchmarks/slate-v2/donor/browser/rich-text-replay-coverage.mjs`
+- Generated artifact: `/Users/zbeyens/git/plate-2/tmp/slate-browser-rich-text-replay-coverage-benchmark.json`
 - Evidence Kit ingestion: `/Users/zbeyens/git/plate-2/benchmarks/editor/src/index.mjs`
 - Viewer generation: `/Users/zbeyens/git/plate-2/benchmarks/editor/benchmarks/render-rich-text-viewer.mjs`
 - Served page: `http://127.0.0.1:8765/rich-text.html`
@@ -33,9 +33,9 @@ Constraints:
 - The existing Evidence Kit row contract stays the integration point.
 
 Boundaries:
-- Source of truth: `.tmp/slate-v2/playwright/integration/examples` and
+- Source of truth: `apps/www/tests/slate-browser/donor/examples` and
   `/Users/zbeyens/git/slate/playwright/integration/examples`.
-- Allowed edit scope: `.tmp/slate-v2` benchmark scripts/package script,
+- Allowed edit scope: `Plate repo root` benchmark scripts/package script,
   `benchmarks/editor` ingestion, viewer generation, generated benchmark data,
   generated perf docs, and this plan.
 - External sources: N/A; local editor test corpora settle this step.
@@ -53,7 +53,7 @@ conditions occurred.
 
 Major source:
 - type: local benchmark and browser test corpus
-- id / link: `.tmp/slate-v2` plus `/Users/zbeyens/git/slate`
+- id / link: `Plate repo root` plus `/Users/zbeyens/git/slate`
 - title: Slate v2 vs Slate browser rich-text replay coverage
 - decision to make: whether the rich-text benchmark covers real browser editing
   scenarios beyond synthetic/core rows
@@ -64,7 +64,7 @@ Major lane:
 - lane: benchmark implementation
 - output type: Evidence Kit rows plus static viewer data
 - implementation expected: yes
-- affected packages / surfaces: `.tmp/slate-v2` benchmark script and
+- affected packages / surfaces: `Plate repo root` benchmark script and
   `benchmarks/editor`
 - dominant risk: mistaking coverage inventory for measured runtime speed
 
@@ -89,7 +89,7 @@ Start Gates:
 | Helper stack selected | yes | Local generator script plus Evidence Kit ingestion; no external research helper needed. |
 | External research decision recorded | yes | N/A because local repo evidence was authoritative. |
 | Implementation expectation recorded | yes | Implementation expected and completed. |
-| Workspace authority selected | yes | `plate-2` controls benchmark harness; `.tmp/slate-v2` controls generator artifact. |
+| Workspace authority selected | yes | `plate-2` controls benchmark harness; `Plate repo root` controls generator artifact. |
 | Branch / PR expectation decided | yes | No commit, push, or PR requested. |
 | Browser pack selected | yes | Browser route proof used for generated `rich-text.html` and data JSON. |
 | Browser route / app surface identified | yes | `http://127.0.0.1:8765/rich-text.html`. |
@@ -128,12 +128,12 @@ Completion Gates:
 | Autogoal completion check | yes | `check-complete` run after this file update. |
 
 Verification evidence:
-- `node --check .tmp/slate-v2/scripts/benchmarks/browser/rich-text-replay-coverage.mjs`
+- `node --check benchmarks/slate-v2/donor/browser/rich-text-replay-coverage.mjs`
   passed.
 - `bunx biome check package.json scripts/benchmarks/browser/rich-text-replay-coverage.mjs --fix`
-  passed in `.tmp/slate-v2`.
+  passed in `Plate repo root`.
 - `bun run bench:browser:rich-text-replay-coverage:local` generated
-  `.tmp/slate-v2/tmp/slate-browser-rich-text-replay-coverage-benchmark.json`.
+  `tmp/slate-browser-rich-text-replay-coverage-benchmark.json`.
 - Artifact evidence: 280 rows, status counts `{ ok: 150, coverage-gap: 130 }`.
 - Source-count evidence: 134 Slate v2 Chromium listed tests, 8 Slate Chromium
   listed tests, 136 union browser replay fixtures.

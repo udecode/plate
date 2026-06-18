@@ -11,13 +11,13 @@ Task source:
 - User clarification: the bug is `insertBreak` inserting relative to a stale cursor after native text input.
 
 Completion threshold:
-The route is stable when virtualized huge-document typing followed by Enter splits at the live caret, the structural keydown policy has a focused unit contract, the full Chromium huge-document suite passes, and `bun check` passes in `.tmp/slate-v2`.
+The route is stable when virtualized huge-document typing followed by Enter splits at the live caret, the structural keydown policy has a focused unit contract, the full Chromium huge-document suite passes, and `bun check` passes in `Plate repo root`.
 
 Verification surface:
-- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react && bun run test:vitest -- input-router-contract.test.tsx`
-- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright -- playwright/integration/examples/huge-document.test.ts --project=chromium --grep "keeps virtualized insert-break bursts split at the live caret"`
-- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright -- playwright/integration/examples/huge-document.test.ts --project=chromium`
-- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun check`
+- `cd /Users/zbeyens/git/plate-2/packages/slate-react && bun run test:vitest -- input-router-contract.test.tsx`
+- `cd /Users/zbeyens/git/plate-2/Plate repo root && PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright -- playwright/integration/examples/huge-document.test.ts --project=chromium --grep "keeps virtualized insert-break bursts split at the live caret"`
+- `cd /Users/zbeyens/git/plate-2/Plate repo root && PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright -- playwright/integration/examples/huge-document.test.ts --project=chromium`
+- `cd /Users/zbeyens/git/plate-2/Plate repo root && bun check`
 
 Constraints:
 - Keep printable virtualized text input native/fast.
@@ -26,7 +26,7 @@ Constraints:
 - Keep proof in the Slate v2 checkout that owns the runtime behavior.
 
 Boundaries:
-- Source of truth: `.tmp/slate-v2` runtime, tests, and the supplied video/report.
+- Source of truth: `Plate repo root` runtime, tests, and the supplied video/report.
 - Allowed edit scope: `packages/slate-react/src/editable/runtime-keyboard-events.ts`, `packages/slate-react/test/input-router-contract.test.tsx`, and `playwright/integration/examples/huge-document.test.ts`.
 - Browser surface: `/examples/huge-document?blocks=10000&strategy=virtualized&overscan=0&threshold=2000&editor_height=420&content_visibility=element`.
 - Tracker sync: N/A, no issue tracker item was supplied.
@@ -56,7 +56,7 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | Used `slate-ar-stabilize`; routed failed behavior to `slate-patch`-style TDD. |
 | Active goal checked or created | yes | No active goal existed; created goal for huge-document behavior stabilization. |
-| Source of truth read before edits | yes | Read `.tmp/slate-v2` huge-document test, runtime keyboard/input files, and AR status ledger. |
+| Source of truth read before edits | yes | Read `Plate repo root` huge-document test, runtime keyboard/input files, and AR status ledger. |
 | Tracker comments and attachments read | yes | Read supplied video frames and user clarification; no tracker item supplied. |
 | Video transcript evidence required | yes | Extracted frames from the 5.03s CleanShot video and identified virtualized huge-document config. |
 | `docs/solutions` checked for non-trivial existing-code work | yes | Checked Slate v2 docs/plans/solutions paths; relevant lane evidence was in AR ledger and tests. |
@@ -102,7 +102,7 @@ Completion Gates:
 | Package exports or file layout changed | N/A | No export or layout change | No public file layout touched. |
 | Package manifests, lockfile, or install graph changed | N/A | No install graph change | No manifest or lockfile touched. |
 | Agent rules or skills changed | N/A | No agent rules changed | No `.agents` source edited. |
-| Workspace authority proof | yes | Run in `.tmp/slate-v2` | All proof commands ran in the Slate v2 checkout. |
+| Workspace authority proof | yes | Run in `Plate repo root` | All proof commands ran in the Slate v2 checkout. |
 | Browser surface changed | yes | Exercise target route | Full Chromium huge-document suite passed, 9/9. |
 | Browser final proof | yes | Record exact route proof | New insert-break route test and full suite passed. |
 | CI-controlled template output changed | N/A | No template output touched | No `templates/**` edits. |

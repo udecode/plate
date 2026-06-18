@@ -58,16 +58,16 @@ Keep Slate-close DX through lazy current-path APIs:
 
 | Surface                        | Current owner                                                                    | Current shape                                                                                                  | Verdict                                                            |
 | ------------------------------ | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Public render props            | `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:480` | `EditableRenderElementProps` includes `index: number` and `path: Path`.                                        | Cut eager props.                                                   |
-| Props construction             | `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:800` | `renderElementPropsBase` passes `index` and `path` into every custom element render.                           | Cut from base props.                                               |
-| Void render props              | `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:505` | `EditableRenderVoidProps` includes `path: Path`.                                                               | Cut eager path; use lazy resolver.                                 |
-| Runtime-id lookup              | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:640`                      | `Editor.getPathByRuntimeId(editor, runtimeId)` returns the current path from the live runtime index.           | Keep as the backbone.                                              |
-| Runtime node selector          | `.tmp/slate-v2/packages/slate-react/src/editable/runtime-live-state.ts:35`       | `readRuntimeNodeById` already resolves current path from runtime id before snapshot fallback.                  | Reuse.                                                             |
-| Runtime fanout skip            | `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:218`       | root-order commits with null affected ids can skip runtime fanout when selection/full document did not change. | Keep; do not weaken for path props.                                |
-| Existing fanout proof          | `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx:695`        | Appending a root node does not notify every mounted runtime node.                                              | Good but not the leading-insert proof.                             |
-| Existing path-shift hook proof | `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:441`               | `useElementSelected` survives selected path shift, but selection-changing structural edits may still fan out.  | Not enough for public path prop.                                   |
-| Weak-map path lookup           | `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:598`                  | `DOMEditor.findPath` walks `NODE_TO_PARENT` / `NODE_TO_INDEX`.                                                 | Must become runtime-id-first to be safe after skipped rerenders.   |
-| DOM path metadata              | `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx:198`        | node refs set `data-slate-path` from the provided/current path.                                                | Keep runtime-owned, but do not expose as public render-prop truth. |
+| Public render props            | `packages/slate-react/src/components/editable-text-blocks.tsx:480` | `EditableRenderElementProps` includes `index: number` and `path: Path`.                                        | Cut eager props.                                                   |
+| Props construction             | `packages/slate-react/src/components/editable-text-blocks.tsx:800` | `renderElementPropsBase` passes `index` and `path` into every custom element render.                           | Cut from base props.                                               |
+| Void render props              | `packages/slate-react/src/components/editable-text-blocks.tsx:505` | `EditableRenderVoidProps` includes `path: Path`.                                                               | Cut eager path; use lazy resolver.                                 |
+| Runtime-id lookup              | `packages/slate/src/core/public-state.ts:640`                      | `Editor.getPathByRuntimeId(editor, runtimeId)` returns the current path from the live runtime index.           | Keep as the backbone.                                              |
+| Runtime node selector          | `packages/slate-react/src/editable/runtime-live-state.ts:35`       | `readRuntimeNodeById` already resolves current path from runtime id before snapshot fallback.                  | Reuse.                                                             |
+| Runtime fanout skip            | `packages/slate-react/src/hooks/use-editor-selector.tsx:218`       | root-order commits with null affected ids can skip runtime fanout when selection/full document did not change. | Keep; do not weaken for path props.                                |
+| Existing fanout proof          | `packages/slate-react/test/provider-hooks-contract.tsx:695`        | Appending a root node does not notify every mounted runtime node.                                              | Good but not the leading-insert proof.                             |
+| Existing path-shift hook proof | `packages/slate-react/test/surface-contract.tsx:441`               | `useElementSelected` survives selected path shift, but selection-changing structural edits may still fan out.  | Not enough for public path prop.                                   |
+| Weak-map path lookup           | `packages/slate-dom/src/plugin/dom-editor.ts:598`                  | `DOMEditor.findPath` walks `NODE_TO_PARENT` / `NODE_TO_INDEX`.                                                 | Must become runtime-id-first to be safe after skipped rerenders.   |
+| DOM path metadata              | `packages/slate-react/src/hooks/use-slate-node-ref.tsx:198`        | node refs set `data-slate-path` from the provided/current path.                                                | Keep runtime-owned, but do not expose as public render-prop truth. |
 
 Verification run from `/Users/zbeyens/git/slate-v2`:
 
@@ -316,10 +316,10 @@ stale public props. A compat alias would preserve the footgun.
 
 Files:
 
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`
-- `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
+- `packages/slate-react/test/provider-hooks-contract.tsx`
+- `packages/slate-react/test/rendered-dom-shape-contract.tsx`
+- `packages/slate-dom/test/bridge.ts`
+- `packages/slate-react/test/surface-contract.tsx`
 
 Add tests:
 
@@ -336,10 +336,10 @@ Add tests:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate-dom/src/utils/weak-maps.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-dom/src/utils/weak-maps.ts`
+- `packages/slate-dom/src/plugin/dom-editor.ts`
+- `packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
 
 Implement:
 
@@ -352,10 +352,10 @@ Implement:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/index.ts`
+- `packages/slate-react/test/surface-contract.tsx`
+- `packages/slate/test/public-surface-contract.ts`
 
 Implement:
 
@@ -369,10 +369,10 @@ Implement:
 
 Files to inspect first:
 
-- `.tmp/slate-v2/site/examples/ts/check-lists.tsx`
-- `.tmp/slate-v2/site/examples/ts/images.tsx`
-- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
-- `.tmp/slate-v2/site/examples/ts/inlines.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/check-lists.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/images.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/embeds.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx`
 - any `RenderElementPropsFor<...>` custom example types.
 
 Migration rule:
@@ -435,7 +435,7 @@ Implementation status: `done`.
 | Regression proof plan                | complete | leading-insert tests named                                                                                                                                                                                                                                                                                                      | red tests are execution gates                                                    | implementation tests                                                         | ralph           |
 | Closure score                        | complete | weighted score `0.93`                                                                                                                                                                                                                                                                                                           | plan ready for user review and Ralph execution                                   | none for planning                                                            | ralph           |
 | Ralph execution start                | complete | `active goal state`; `active goal state`                                                                                                                                                                                                        | reopened scoped completion state as pending; started red contracts and hard cut  | none                                                                         | ralph           |
-| Ralph hard cut                       | complete | `RenderElementProps` no longer exposes `path` / `index`; `RenderVoidProps` no longer exposes `path`; `DOMEditor.findPath` is runtime-id-first; touched examples resolve paths at event time; `.tmp/slate-v2/.changeset/slate-react-render-path-props.md` and `.tmp/slate-v2/.changeset/slate-dom-runtime-id-find-path.md` added | public render contract cut, lazy `useElementPath()` added, docs/reference synced | check-list Backspace browser row still fails independently of this migration | done            |
+| Ralph hard cut                       | complete | `RenderElementProps` no longer exposes `path` / `index`; `RenderVoidProps` no longer exposes `path`; `DOMEditor.findPath` is runtime-id-first; touched examples resolve paths at event time; `Plate repo root/.changeset/slate-react-render-path-props.md` and `Plate repo root/.changeset/slate-dom-runtime-id-find-path.md` added | public render contract cut, lazy `useElementPath()` added, docs/reference synced | check-list Backspace browser row still fails independently of this migration | done            |
 
 ## Ralph Execution Gates
 
@@ -444,7 +444,7 @@ Implementation status: `done`.
 - `editor.dom.findPath` is runtime-id-first and current after skipped-rerender
   structural shifts.
 - Examples no longer close over render-time `path`.
-- Focused tests and rerender breadth benchmark pass from `.tmp/slate-v2`.
+- Focused tests and rerender breadth benchmark pass from `Plate repo root`.
 - Browser rows for touched example behavior pass; the unrelated check-list
   Backspace row remains a separate failure.
 

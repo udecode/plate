@@ -1,4 +1,4 @@
-import type { Descendant, NodeOperation } from '@platejs/slate';
+import type { Descendant, NodeOperation } from '@platejs/slate-legacy';
 
 import type { SlateEditor } from '../editor/SlateEditor';
 

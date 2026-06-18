@@ -31,7 +31,7 @@ Constraints:
   uses fresh invariant wording and local proof language.
 - Do not browse GitHub files. Use local checkouts or clone missing repos under
   `..`.
-- Do not edit `.tmp/slate-v2`, Plate packages, docs, examples, or build config
+- Do not edit `Plate repo root`, Plate packages, docs, examples, or build config
   unless the user explicitly requested an apply run.
 
 Boundaries:
@@ -93,7 +93,7 @@ Work Checklist:
 - [ ] Negative-control skip pressure applied to large skip families.
 - [ ] Behavior rows extracted with source ref, tag, invariant, proof kind,
       owner coverage, and action.
-- [ ] `.tmp/slate-v2` coverage searches recorded for raw Slate rows.
+- [ ] `Plate repo root` coverage searches recorded for raw Slate rows.
 - [ ] Plate owner searches recorded for plugin/product rows.
 - [ ] Every create/refactor/copy/fresh-invariant/defer/plate-owned row names
       target owner, proof kind, and command or defer reason.

@@ -1,7 +1,7 @@
 ---
 status: done
 owner: slate-v2-tanstack-virtual-ios-perf-ralplan
-source_repo: .tmp/slate-v2
+source_repo: Plate repo root
 created: 2026-05-23
 ---
 
@@ -15,7 +15,7 @@ The 2026-05-19 TanStack Virtual release is not "just inner" for Slate because
 our virtualized mode currently bypasses TanStack for one layout-backed scroll
 branch. The right plan is:
 
-1. bump `.tmp/slate-v2` from `@tanstack/react-virtual@3.13.24` /
+1. bump `Plate repo root` from `@tanstack/react-virtual@3.13.24` /
    `@tanstack/virtual-core@3.14.0` to `@tanstack/react-virtual@3.13.25` /
    `@tanstack/virtual-core@3.15.0`;
 2. keep `domStrategy={{ type: 'virtualized', threshold, overscan,
@@ -62,7 +62,7 @@ External:
   `@tanstack/virtual-core@3.15.0`.
 - TanStack Virtual latest Virtualizer API docs read on 2026-05-23.
 
-Live `.tmp/slate-v2`:
+Live `Plate repo root`:
 
 - `packages/slate-react/package.json:18-24` declares
   `@tanstack/react-virtual` as a `slate-react` dependency with range
@@ -151,7 +151,7 @@ Do not expose:
 
 Ralph implementation target:
 
-- run the package manager update in `.tmp/slate-v2` so `bun.lock` resolves
+- run the package manager update in `Plate repo root` so `bun.lock` resolves
   `@tanstack/react-virtual@3.13.25` and `@tanstack/virtual-core@3.15.0`;
 - change layout-backed `scrollToTopLevelIndex` to call
   `virtualizer.scrollToOffset(Math.max(0, top))` or an equivalent TanStack-owned
@@ -181,7 +181,7 @@ Ralph implementation target:
   limited until mounted
 - plan delta: upgrade dependency and remove direct scroll-write bypass
 
-## Regression Proof Required From `.tmp/slate-v2`
+## Regression Proof Required From `Plate repo root`
 
 Focused commands for Ralph:
 
@@ -388,8 +388,8 @@ Closure pass applied.
 | Issue sync | pass | `#790`, scroll/focus rows, and iOS/mobile rows were classified with zero new fixed/improved claims. |
 | PR-reference decision | pass | PR reference intentionally unchanged because this plan changes no public API shape, no exact fixed claim, and no release-ready proof row before Ralph execution. |
 | Maintainer/high-risk pass | pass | Objection ledger, blast radius, pre-mortem, and final proof matrix are complete. |
-| Allowed edit scope | pass | This Slate Ralplan edited only planning, research, issue-ledger/reference, and scoped `.tmp` state artifacts. No `.tmp/slate-v2` implementation files were edited. |
-| Ralph handoff | pass | Implementation scope and `.tmp/slate-v2` verification commands are named. |
+| Allowed edit scope | pass | This Slate Ralplan edited only planning, research, issue-ledger/reference, and scoped `.tmp` state artifacts. No `Plate repo root` implementation files were edited. |
+| Ralph handoff | pass | Implementation scope and `Plate repo root` verification commands are named. |
 
 ### Done Handoff
 
@@ -399,7 +399,7 @@ Closure pass applied.
   `rangeExtractor`, `shouldAdjustScrollPositionOnItemSizeChange`,
   `takeSnapshot`, `initialMeasurementsCache`, `lanes`, or raw TanStack
   `Virtualizer`.
-- Dependency: upgrade `.tmp/slate-v2` to `@tanstack/react-virtual@3.13.25`,
+- Dependency: upgrade `Plate repo root` to `@tanstack/react-virtual@3.13.25`,
   which resolves `@tanstack/virtual-core@3.15.0`.
 - Internal runtime: route layout-backed `scrollToTopLevelIndex` through
   TanStack's scroll path where practical instead of direct
@@ -442,8 +442,8 @@ bun lint:fix
 
 - 2026-05-23 08:32 CEST: Ralph execution started. Completion state reset to
   `pending` for runtime id `019e5374-b6ff-78f3-848c-dda660d40b64`; active
-  implementation owner is `.tmp/slate-v2`.
-- 2026-05-23 08:40 CEST: Ralph execution complete. `.tmp/slate-v2` updated
+  implementation owner is `Plate repo root`.
+- 2026-05-23 08:40 CEST: Ralph execution complete. `Plate repo root` updated
   `slate-react` to `@tanstack/react-virtual@3.13.25` /
   `@tanstack/virtual-core@3.15.0`, routed layout-backed virtualized scroll
   through `virtualizer.scrollToOffset`, added exact-offset and dynamic-height

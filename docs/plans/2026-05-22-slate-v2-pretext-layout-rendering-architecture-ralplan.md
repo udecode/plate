@@ -209,9 +209,9 @@ native DOM availability contract.
 
 Current source:
 
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts` exposes
+- `packages/slate-layout/src/index.ts` exposes
   `SlatePageLayout*` types and `createSlatePageLayout`.
-- `.tmp/slate-v2/packages/slate-layout/src/react.tsx` exposes
+- `packages/slate-layout/src/react.tsx` exposes
   `useSlatePageLayout`, `useSlatePageLayoutSnapshot`, and `PagedEditable`.
 
 Target:
@@ -230,7 +230,7 @@ Target:
 
 Current source:
 
-- `.tmp/slate-v2/packages/slate-layout-pretext/src/index.ts` calls
+- `packages/slate-layout-pretext/src/index.ts` calls
   `layoutWithLines(prepared, input.page.content.width, block.lineHeight)` using
   `block.textStyle`, then creates run widths afterward.
 
@@ -256,10 +256,10 @@ Target:
 
 Current source:
 
-- `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
+- `packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
   defines `RenderingStrategyOptions` with `auto`, `full`, `staged`, `shell`,
   and object-only `virtualized`.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
   normalizes that into staged root groups, shell segments, or virtualized plan.
 
 Problem:
@@ -319,7 +319,7 @@ Rules:
 
 Current source:
 
-- `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/use-virtualized-root-plan.ts`
+- `packages/slate-react/src/rendering-strategy/use-virtualized-root-plan.ts`
   uses `estimatedBlockSize` and top-level runtime indexes.
 - It correctly uses runtime ids as keys, retains selected/promoted indexes, and
   computes missing ranges.
@@ -371,7 +371,7 @@ Target:
 | Pretext | `../pretext/README.md`, `../pretext/src/rich-inline.ts` | prepare/cache text, then run cheap line layout and rich-inline ranges | DOM reflow measurement and guessed heights | rich-inline line fitting and prepared cache | editor semantics in layout engine | built-in `slate-layout` engine behind an internal boundary | agree |
 | Premirror | `../premirror/docs/design-proposal.md` | document truth -> snapshot -> measure -> compose -> render/mapping | page nodes and duplicated editing truth | composer/mapping split | ProseMirror position model | Slate path/root/run/box mapping | agree |
 | TanStack Virtual | `docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md` | headless viewport range engine | too many DOM nodes in tail cohorts | range extraction and runtime-id keys | owning editor semantics | adapter under layout-aware `domStrategy` | partial |
-| Current Slate v2 | live `.tmp/slate-v2` sources listed above | runtime ids, DOM coverage, staged/shell/virtualized modes, page layout package | child-count chunking | substrate and metrics | vague `renderingStrategy` boundary | generic layout + DOM strategy split | revise |
+| Current Slate v2 | live `Plate repo root` sources listed above | runtime ids, DOM coverage, staged/shell/virtualized modes, page layout package | child-count chunking | substrate and metrics | vague `renderingStrategy` boundary | generic layout + DOM strategy split | revise |
 
 ## Performance Target
 
@@ -528,18 +528,18 @@ Accounting decision:
 
 Live source pressure:
 
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts` already accepts
+- `packages/slate-layout/src/index.ts` already accepts
   `settings?: EditorStateField<TSettings>` and refreshes on
   `dirtyStateKeys`, so page presets and margins already fit the state-field
   direction.
-- `.tmp/slate-v2/packages/slate-layout/src/react.tsx` still exposes only
+- `packages/slate-layout/src/react.tsx` still exposes only
   `useSlatePageLayout`, `useSlatePageLayoutSnapshot`, and `PagedEditable`.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx` and
+- `packages/slate-react/src/components/editable.tsx` and
   `editable-text-blocks.tsx` still expose `renderingStrategy` and
   `onRenderingStrategyMetrics`.
-- `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/use-virtualized-root-plan.ts`
+- `packages/slate-react/src/rendering-strategy/use-virtualized-root-plan.ts`
   still virtualizes top-level runtime ids with an estimated block size.
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts` and
+- `packages/slate-react/src/editable/runtime-root-engine.ts` and
   `keyboard-input-strategy.ts` still treat shell and virtualized modes through
   the same shell-backed selection policy.
 
@@ -821,7 +821,7 @@ Status: complete. All Slate Ralplan closure gates pass for planning review.
 
 | Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
 | --- | --- | --- | --- | --- | --- |
-| current-state-read | complete | live `.tmp/slate-v2` layout, Pretext, rendering strategy, virtualization, DOM coverage, pagination example, and docs/solutions reads | chose boundary rewrite: generic layout + `domStrategy` split + layout-driven virtualization | final API naming closed by performance/DX/migration pass | done |
+| current-state-read | complete | live `Plate repo root` layout, Pretext, rendering strategy, virtualization, DOM coverage, pagination example, and docs/solutions reads | chose boundary rewrite: generic layout + `domStrategy` split + layout-driven virtualization | final API naming closed by performance/DX/migration pass | done |
 | related-issue-discovery | complete | live/open issue ledgers, benchmark map, issue coverage matrix, fork dossier, and PR reference reviewed for `#790`, `#4141`, `#5944`, `#5924`, `#3892`, `#2572`, `#5131`, `#2051` | added no-claim related issue matrix for layout/domStrategy plan | external ledger sync closed by issue-ledger-accounting pass | done |
 | issue-ledger-accounting | complete | sync ledger, issue coverage matrix, fork dossier, and PR reference updated with architecture-only rows | preserved zero new fixed/improved issue claims and recorded no-claim boundaries | performance/DX/migration pressure closed by later pass | done |
 | intent-decision-brief | complete | explicit boundary and decision brief | none | none | done |
@@ -875,7 +875,7 @@ Completion threshold audit:
 | Intent/decision boundaries explicit | pass | intent boundary and decision brief sections present |
 | Ecosystem strategy complete | pass | Pretext, Premirror, TanStack, and current Slate v2 mechanisms mapped to Slate targets |
 | High-risk deliberate mode complete | pass | trigger, blast radius, pre-mortem, steelman rows, proof plan, and rollback policy recorded |
-| Verification workspace gate | pass for planning | no `.tmp/slate-v2` implementation changed; live source was read for current-state evidence; implementation gates are named for Ralph execution |
+| Verification workspace gate | pass for planning | no `Plate repo root` implementation changed; live source was read for current-state evidence; implementation gates are named for Ralph execution |
 | Final handoff in plan | pass | Done Handoff section below |
 
 Applicable implementation-skill review matrix:
@@ -950,8 +950,8 @@ Ralph execution target:
 Open proof gaps for Ralph, not this planning lane:
 
 - Package tests and browser rows are not run here because Slate Ralplan did not
-  edit `.tmp/slate-v2` implementation.
-- Implementation must run the focused and broad `.tmp/slate-v2` gates below
+  edit `Plate repo root` implementation.
+- Implementation must run the focused and broad `Plate repo root` gates below
   before claiming behavior.
 
 ## Ralph Execution Ledger
@@ -960,14 +960,14 @@ Open proof gaps for Ralph, not this planning lane:
 
 Changed scope:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx`
-- `.tmp/slate-v2/site/examples/ts/huge-document.tsx`
-- `.tmp/slate-v2/site/examples/ts/pagination.tsx`
-- `.tmp/slate-v2/docs/**` DOM-strategy wording references
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/index.ts`
+- `packages/slate-react/test/surface-contract.tsx`
+- `packages/slate-react/test/rendering-strategy-and-scroll.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/huge-document.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx`
+- `content/docs/slate/**` DOM-strategy wording references
 
 Result:
 
@@ -989,7 +989,7 @@ Review findings:
 Verification:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun --filter slate-react test -- surface-contract provider-hooks-contract rendering-strategy-and-scroll
 bun --filter slate-react typecheck
 bun typecheck:site
@@ -1008,9 +1008,9 @@ Browser proof:
 
 Changed scope:
 
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts`
-- `.tmp/slate-v2/packages/slate-layout/src/react.tsx`
-- `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts`
+- `packages/slate-layout/src/index.ts`
+- `packages/slate-layout/src/react.tsx`
+- `packages/slate-layout/test/page-layout-contract.test.ts`
 
 Result:
 
@@ -1032,7 +1032,7 @@ Review findings:
 Verification:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun --filter slate-layout test
 bun --filter slate-layout typecheck
 bun lint:fix
@@ -1042,15 +1042,15 @@ bun lint:fix
 
 Changed scope:
 
-- `.tmp/slate-v2/packages/slate-layout/package.json`
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts`
-- `.tmp/slate-v2/packages/slate-layout/src/react.tsx`
-- `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts`
-- `.tmp/slate-v2/packages/slate-layout-pretext/package.json`
-- `.tmp/slate-v2/packages/slate-layout-pretext/src/index.ts`
-- `.tmp/slate-v2/site/examples/ts/pagination.tsx`
-- `.tmp/slate-v2/site/tsconfig.json`
-- `.tmp/slate-v2/bun.lock`
+- `packages/slate-layout/package.json`
+- `packages/slate-layout/src/index.ts`
+- `packages/slate-layout/src/react.tsx`
+- `packages/slate-layout/test/page-layout-contract.test.ts`
+- `packages/slate-layout-pretext/package.json`
+- `packages/slate-layout-pretext/src/index.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx`
+- `apps/www/tsconfig.json`
+- `Plate repo root/bun.lock`
 
 Result:
 
@@ -1079,7 +1079,7 @@ Review findings:
 Verification:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun --filter slate-layout test
 bun --filter slate-layout-pretext test
 bun --filter slate-layout typecheck
@@ -1098,10 +1098,10 @@ Browser proof:
 
 Changed scope:
 
-- `.tmp/slate-v2/packages/slate-layout/package.json`
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts`
-- `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts`
-- `.tmp/slate-v2/bun.lock`
+- `packages/slate-layout/package.json`
+- `packages/slate-layout/src/index.ts`
+- `packages/slate-layout/test/page-layout-contract.test.ts`
+- `Plate repo root/bun.lock`
 
 Result:
 
@@ -1128,7 +1128,7 @@ Review findings:
 Verification:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun install
 bun --filter slate-layout test
 bun --filter slate-layout-pretext test
@@ -1149,11 +1149,11 @@ Browser proof:
 
 Changed scope:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/use-virtualized-root-plan.ts`
-- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx`
-- `.tmp/slate-v2/packages/slate-layout/src/react.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/index.ts`
+- `packages/slate-react/src/rendering-strategy/use-virtualized-root-plan.ts`
+- `packages/slate-react/test/rendering-strategy-and-scroll.tsx`
+- `packages/slate-layout/src/react.tsx`
 
 Result:
 
@@ -1185,7 +1185,7 @@ Review findings:
 Verification:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun --filter slate-react test -- rendering-strategy-and-scroll surface-contract
 bun --filter slate-react typecheck
 bun --filter slate-layout typecheck
@@ -1205,15 +1205,15 @@ Browser proof:
 
 Changed scope:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`
-- `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
-- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `.tmp/slate-v2/site/examples/ts/huge-document.tsx`
-- `.tmp/slate-v2/docs/libraries/slate-react/editable.md`
-- `.tmp/slate-v2/docs/walkthroughs/09-performance.md`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/editable/root-selector-sources.ts`
+- `packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
+- `packages/slate-react/test/rendering-strategy-and-scroll.tsx`
+- `packages/slate-react/test/surface-contract.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/huge-document.tsx`
+- `content/docs/slate/libraries/slate-react/editable.md`
+- `content/docs/slate/walkthroughs/09-performance.md`
 
 Result:
 
@@ -1245,7 +1245,7 @@ Review findings:
 Verification:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun --filter slate-react test -- surface-contract rendering-strategy-and-scroll
 bun --filter slate-react typecheck
 bun typecheck:site
@@ -1273,19 +1273,19 @@ Knowledge capture:
 
 Changed scope:
 
-- `.tmp/slate-v2/packages/slate-react/src/dom-strategy/**`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/**`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll*.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/create-segment-plan-contract.test.ts`
-- `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts`
-- `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `.tmp/slate-v2/docs/general/docs-proof-map.md`
-- `.tmp/slate-v2/docs/libraries/slate-react/experimental-virtualized-rendering.md`
+- `packages/slate-react/src/dom-strategy/**`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/editable/**`
+- `packages/slate-react/src/index.ts`
+- `packages/slate-react/test/dom-strategy-and-scroll*.tsx`
+- `packages/slate-react/test/create-segment-plan-contract.test.ts`
+- `packages/slate-react/test/editing-kernel-contract.ts`
+- `packages/slate-react/test/keyboard-input-strategy-contract.test.ts`
+- `packages/slate-react/test/provider-hooks-contract.tsx`
+- `packages/slate-react/test/surface-contract.tsx`
+- `content/docs/slate/general/docs-proof-map.md`
+- `content/docs/slate/libraries/slate-react/experimental-virtualized-rendering.md`
 
 Result:
 
@@ -1316,7 +1316,7 @@ Review findings:
 Verification:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun --filter slate-react test -- surface-contract dom-strategy-and-scroll create-segment-plan-contract keyboard-input-strategy-contract editing-kernel-contract provider-hooks-contract
 bun --filter slate-react typecheck
 bun typecheck:site
@@ -1359,10 +1359,10 @@ Planning gate:
 node tooling/scripts/completion-check.mjs --id 019e46be-4ec4-7d11-bc6e-9fcf033a8803
 ```
 
-Implementation gates after Ralph edits `.tmp/slate-v2`:
+Implementation gates after Ralph edits `Plate repo root`:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun --filter slate-layout test
 bun --filter slate-react test
 bun --filter slate-layout typecheck
@@ -1393,7 +1393,7 @@ score: 0.91
 Hard take: the review fix is behaviorally right, but not the absolute best
 architecture yet.
 
-The live `.tmp/slate-v2` diff proves the correct bug class:
+The live `Plate repo root` diff proves the correct bug class:
 
 - rootless `PointRef` / `RangeRef` created inside a non-main view must bind to
   the invoking view root;
@@ -1441,7 +1441,7 @@ Non-goals:
 - Claiming browser issue fixes from this cleanup alone.
 
 Decision boundary: this is a core Slate data-model/runtime cleanup. It belongs
-in `.tmp/slate-v2/packages/slate`, not `slate-react`, `slate-layout`, or Plate.
+in `packages/slate`, not `slate-react`, `slate-layout`, or Plate.
 
 ### Decision Brief
 
@@ -1533,7 +1533,7 @@ for visibility.
 
 ### Full Coverage Target
 
-Add or tighten these tests in `.tmp/slate-v2`:
+Add or tighten these tests in `Plate repo root`:
 
 | File | Required coverage |
 | --- | --- |
@@ -1589,7 +1589,7 @@ Coverage rejects:
 Focused gates:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun test ./packages/slate/test/root-location-contract.ts ./packages/slate/test/editor-runtime-view-contract.ts ./packages/slate/test/rooted-operation-contract.ts ./packages/slate/test/range-ref-contract.ts ./packages/slate/test/transaction-contract.ts ./packages/slate/test/interfaces-contract.ts ./packages/slate-history/test/document-state-history-contract.ts
 bun typecheck:packages
 bun lint:fix
@@ -1599,7 +1599,7 @@ codex review --uncommitted
 Broad gate before closeout:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun test:bun
 bun typecheck:packages
 bun lint
@@ -1657,15 +1657,15 @@ Current next owner:
 
 - `state-field-large-patch-policy-fix`
 - Touchpoint:
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+  `packages/slate/src/core/public-state.ts`
 - Test touchpoint:
-  `.tmp/slate-v2/packages/slate/test/collab-document-state-contract.ts` or a
+  `packages/slate/test/collab-document-state-contract.ts` or a
   nearby state-field/history contract file.
 
 Resume gates:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun test ./packages/slate/test/collab-document-state-contract.ts ./packages/slate/test/root-location-contract.ts ./packages/slate/test/editor-runtime-view-contract.ts ./packages/slate/test/rooted-operation-contract.ts ./packages/slate/test/range-ref-contract.ts ./packages/slate/test/transaction-contract.ts ./packages/slate/test/interfaces-contract.ts ./packages/slate-history/test/document-state-history-contract.ts
 bun typecheck:packages
 bun lint:fix
@@ -1675,7 +1675,7 @@ codex review --uncommitted
 Closeout gates after the fix:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun test:bun
 bun typecheck:packages
 bun lint
@@ -1697,8 +1697,8 @@ Changed scope:
 
 - `active goal state`
 - `active goal state`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/test/document-state-patch-contract.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/test/document-state-patch-contract.ts`
 - `docs/plans/2026-05-22-slate-v2-pretext-layout-rendering-architecture-ralplan.md`
 
 Result:
@@ -1714,7 +1714,7 @@ Result:
 Verification evidence:
 
 ```bash
-# cwd: /Users/zbeyens/git/plate-2/.tmp/slate-v2
+# cwd: /Users/zbeyens/git/plate-2/Plate repo root
 bun test ./packages/slate/test/document-state-patch-contract.ts
 bun test ./packages/slate/test/document-state-patch-contract.ts ./packages/slate/test/collab-document-state-contract.ts ./packages/slate/test/root-location-contract.ts ./packages/slate/test/editor-runtime-view-contract.ts ./packages/slate/test/rooted-operation-contract.ts ./packages/slate/test/range-ref-contract.ts ./packages/slate/test/transaction-contract.ts ./packages/slate/test/interfaces-contract.ts ./packages/slate-history/test/document-state-history-contract.ts
 bun typecheck:packages

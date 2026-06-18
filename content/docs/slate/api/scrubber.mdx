@@ -1,0 +1,37 @@
+---
+title: "Debug Value Scrubbing"
+---
+
+# Debug Value Scrubbing
+
+Slate formats some thrown error details with document values and nodes. Text
+fields are redacted by default. Apps that need stricter diagnostics can install
+a scrubber for additional fields.
+
+```typescript
+import { setDebugValueScrubber } from '@platejs/slate'
+
+setDebugValueScrubber((key, value) => {
+  if (key === 'text' || key === 'src') return '[redacted]'
+  return value
+})
+```
+
+Pass `null` or `undefined` to restore the default scrubber.
+
+```typescript
+setDebugValueScrubber(null)
+```
+
+## API
+
+#### `setDebugValueScrubber(scrubber?: DebugValueScrubber | null): void`
+
+Set the function used before Slate formats debug values.
+
+```typescript
+type DebugValueScrubber = (key: string, value: unknown) => unknown
+```
+
+The custom scrubber runs before Slate's default text redaction. Return the
+original value to let the default scrubber handle it.

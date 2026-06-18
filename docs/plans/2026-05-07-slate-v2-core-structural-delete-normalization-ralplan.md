@@ -4,7 +4,7 @@ topic: slate-v2-core-structural-delete-normalization
 status: slate-ralplan-done
 score: 0.94
 completion: .tmp/completion-checks/slate-v2-core-structural-delete-normalization-ralplan.md
-owner: .tmp/slate-v2/packages/slate
+owner: packages/slate
 ---
 
 # Slate v2 Core Structural Delete And Normalization Ralplan
@@ -47,11 +47,11 @@ Current result:
 
 Implementation:
 
-- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-node/merge-nodes.ts`
-- `.tmp/slate-v2/packages/slate/test/delete-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/normalization-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/transforms-contract.ts`
+- `packages/slate/src/transforms-text/delete-text.ts`
+- `packages/slate/src/transforms-node/merge-nodes.ts`
+- `packages/slate/test/delete-contract.ts`
+- `packages/slate/test/normalization-contract.ts`
+- `packages/slate/test/transforms-contract.ts`
 
 Verification so far:
 
@@ -89,17 +89,17 @@ Gitcrawl pressure:
 
 Live source owners:
 
-- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts:89` already has
+- `packages/slate/src/transforms-text/delete-text.ts:89` already has
   same-mark adjacent text merge helpers.
-- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts:186` owns the
+- `packages/slate/src/transforms-text/delete-text.ts:186` owns the
   post-delete structural cleanup that just had to stop deleting nested blocks.
-- `.tmp/slate-v2/packages/slate/test/delete-contract.ts:105` already proves
+- `packages/slate/test/delete-contract.ts:105` already proves
   Backspace after a table keeps row lengths `[4, 4, 4]`.
-- `.tmp/slate-v2/packages/slate/src/editor/normalize.ts:79` owns dirty normalize
+- `packages/slate/src/editor/normalize.ts:79` owns dirty normalize
   passes, mutation-version iteration, and loop detection.
-- `.tmp/slate-v2/packages/slate/src/core/normalize-node.ts:238` owns default
+- `packages/slate/src/core/normalize-node.ts:238` owns default
   block/inline child repair and direct-child operation targeting.
-- `.tmp/slate-v2/packages/slate/src/transforms-node/merge-nodes.ts:147` still
+- `packages/slate/src/transforms-node/merge-nodes.ts:147` still
   calls `shouldMergeNodesRemovePrevNode`, which is exactly the kind of
   standalone legacy-shaped policy that should collapse into the structural
   boundary model if this lane needs a real merge rule.
@@ -130,13 +130,13 @@ Outcome:
 
 In scope:
 
-- `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-node/merge-nodes.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-node/split-nodes.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-node/remove-nodes.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/normalize.ts`
-- `.tmp/slate-v2/packages/slate/src/core/normalize-node.ts`
-- core tests under `.tmp/slate-v2/packages/slate/test/**`
+- `packages/slate/src/transforms-text/delete-text.ts`
+- `packages/slate/src/transforms-node/merge-nodes.ts`
+- `packages/slate/src/transforms-node/split-nodes.ts`
+- `packages/slate/src/transforms-node/remove-nodes.ts`
+- `packages/slate/src/editor/normalize.ts`
+- `packages/slate/src/core/normalize-node.ts`
+- core tests under `packages/slate/test/**`
 
 Non-goals:
 
@@ -317,21 +317,21 @@ After tests are green:
 Run the smallest meaningful proof first:
 
 ```bash
-cd .tmp/slate-v2 && bun test ./packages/slate/test/delete-contract.ts ./packages/slate/test/normalization-contract.ts ./packages/slate/test/transforms-contract.ts
-cd .tmp/slate-v2 && bun --filter slate typecheck
-cd .tmp/slate-v2 && bun lint:fix
+cd Plate repo root && bun test ./packages/slate/test/delete-contract.ts ./packages/slate/test/normalization-contract.ts ./packages/slate/test/transforms-contract.ts
+cd Plate repo root && bun --filter slate typecheck
+cd Plate repo root && bun lint:fix
 ```
 
 If #5972 becomes browser-owned:
 
 ```bash
-cd .tmp/slate-v2 && bun test:integration-local --grep "inlines"
+cd Plate repo root && bun test:integration-local --grep "inlines"
 ```
 
 If #1654 lands a structural boundary:
 
 ```bash
-cd .tmp/slate-v2 && bun test ./packages/slate/test/delete-contract.ts ./packages/slate/test/transforms-contract.ts ./packages/slate/test/collab-history-runtime-contract.ts
+cd Plate repo root && bun test ./packages/slate/test/delete-contract.ts ./packages/slate/test/transforms-contract.ts ./packages/slate/test/collab-history-runtime-contract.ts
 ```
 
 ## Maintainer Objections

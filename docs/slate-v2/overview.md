@@ -10,12 +10,12 @@ status: active
 
 Front door to the live `slate-v2` migration program.
 
-This stack now describes the final-state program for the fresh `.tmp/slate-v2`
+This stack now describes the final-state program for the fresh `Plate repo root`
 clone. It is not the old rewrite archive.
 
 ## Current Read
 
-- `.tmp/slate-v2` is the live target
+- `Plate repo root` is the live target
 - `.tmp/slate-v2-draft` is the evidence/value bank
 - `docs/slate-v2/**` is the final-state spec lane
 - `docs/slate-v2-draft/**` is the archived prior doc lane

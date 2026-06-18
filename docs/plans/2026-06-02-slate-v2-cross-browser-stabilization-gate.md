@@ -19,10 +19,10 @@ Task source:
 - type: chat request
 - id / link: current Codex thread
 - title: commit fixes and run old-failure cross-browser gate
-- acceptance criteria: `.tmp/slate-v2` contract fixes committed or already committed, old failure cluster passes across Chromium/Firefox/WebKit/mobile, concrete regressions patched if found, and goal completion check passes.
+- acceptance criteria: `Plate repo root` contract fixes committed or already committed, old failure cluster passes across Chromium/Firefox/WebKit/mobile, concrete regressions patched if found, and goal completion check passes.
 
 Completion threshold:
-- Confirm the three Slate v2 contract fixes are committed in `.tmp/slate-v2` or commit them.
+- Confirm the three Slate v2 contract fixes are committed in `Plate repo root` or commit them.
 - Run focused cross-browser Playwright gate for `dom-coverage-boundaries`, `query-controls`, `markdown-shortcuts`, `plaintext`, and `hidden-content-blocks`.
 - If the gate finds a concrete regression, patch it and rerun the targeted failing proof.
 - Record skipped rows as intentional project/browser skips, not failures.
@@ -33,7 +33,7 @@ Completion threshold:
   `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-02-slate-v2-cross-browser-stabilization-gate.md` passes.
 
 Verification surface:
-- `.tmp/slate-v2` git state and `HEAD` commit contents.
+- `Plate repo root` git state and `HEAD` commit contents.
 - Focused cross-browser Playwright command for the old failure cluster.
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-02-slate-v2-cross-browser-stabilization-gate.md`.
 
@@ -45,7 +45,7 @@ Constraints:
 - Do not add broad ceremony when the task is trivial or docs-only.
 
 Boundaries:
-- Source of truth: `/Users/zbeyens/git/plate-2/.tmp/slate-v2` for Slate v2 tests and runtime examples.
+- Source of truth: `/Users/zbeyens/git/plate-2/Plate repo root` for Slate v2 tests and runtime examples.
 - Allowed edit scope: focused Slate v2 test/runtime files only if a concrete gate failure appears.
 - Browser surface: DOM coverage, query controls, markdown shortcuts, plaintext, and hidden-content examples.
 - Tracker sync: N/A, no issue/Linear requested.
@@ -85,12 +85,12 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | Used `autogoal`, `git-commit`, and Slate AR gate routing. |
 | Active goal checked or created | yes | Created goal for commit plus cross-browser stabilization. |
-| Source of truth read before edits | yes | Read `.tmp/slate-v2` git state, latest commit, target files, and gate command. |
+| Source of truth read before edits | yes | Read `Plate repo root` git state, latest commit, target files, and gate command. |
 | Tracker comments and attachments read | N/A | Chat request only. |
 | Video transcript evidence required | N/A | No video supplied for this pass. |
 | `docs/solutions` checked for non-trivial existing-code work | N/A | Gate-only run; no new implementation needed. |
 | TDD decision before behavior change or bug fix | yes | Existing gates would be red proof; none failed. |
-| Branch decision for code-changing task | yes | Stayed on `.tmp/slate-v2` branch `v2`; no branch creation. |
+| Branch decision for code-changing task | yes | Stayed on `Plate repo root` branch `v2`; no branch creation. |
 | Release artifact decision | N/A | No package release change. |
 | Browser tool decision for browser surface | yes | Used Playwright browser gates. |
 | PR expectation decision | N/A | No PR requested. |
@@ -147,7 +147,7 @@ Completion Gates:
 | Package exports or file layout changed | N/A | No package export or file layout change | N/A. |
 | Package manifests, lockfile, or install graph changed | N/A | No manifest or install changes | N/A. |
 | Agent rules or skills changed | N/A | No agent rules changed | N/A. |
-| Workspace authority proof | yes | Run verification in owning checkout | Command ran in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`. |
+| Workspace authority proof | yes | Run verification in owning checkout | Command ran in `/Users/zbeyens/git/plate-2/Plate repo root`. |
 | Browser surface changed | yes | Browser examples proof | Playwright exercised the target examples. |
 | Browser final proof | yes | Record command result | 142 passed, 22 skipped. |
 | CI-controlled template output changed | N/A | No template output touched | N/A. |
@@ -180,12 +180,12 @@ Phase / pass table:
 | Closeout | complete | Plan updated, checker run next | final response |
 
 Findings:
-- `.tmp/slate-v2` was clean at start of commit step; the expected fixes were already committed in `faa3b003 fix`.
+- `Plate repo root` was clean at start of commit step; the expected fixes were already committed in `faa3b003 fix`.
 - `faa3b003 fix` contains `playwright/stress/generated-editing.test.ts`, `scripts/benchmarks/browser/react/huge-document-overlays.tsx`, and `scripts/benchmarks/browser/react/pagination-virtualized-char-burst.mjs`.
 - Focused old-failure cluster passed across Chromium, Firefox, WebKit, and mobile: 142 passed, 22 skipped, 0 failed.
 
 Decisions and tradeoffs:
-- Did not create an empty duplicate commit because `.tmp/slate-v2` had no diff and `HEAD` already contained the three fixes.
+- Did not create an empty duplicate commit because `Plate repo root` had no diff and `HEAD` already contained the three fixes.
 - Did not patch skipped tests; skips are intentional project/browser skips, not failures.
 
 Implementation notes:
@@ -200,9 +200,9 @@ Error attempts:
 | Expected dirty contract fixes were already committed | 1 | Inspect `HEAD` contents before committing | Confirmed `faa3b003 fix` contains the three files; skipped empty commit. |
 
 Verification evidence:
-- `.tmp/slate-v2 git status --short --untracked-files=all`: clean.
-- `.tmp/slate-v2 git show --stat --oneline --decorate --name-only HEAD`: `faa3b003 (HEAD -> v2) fix`, containing the three contract files.
-- Cross-browser gate command in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright -- playwright/integration/examples/dom-coverage-boundaries.test.ts playwright/integration/examples/query-controls.test.ts playwright/integration/examples/markdown-shortcuts.test.ts playwright/integration/examples/plaintext.test.ts playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium --project=firefox --project=webkit --project=mobile`.
+- `Plate repo root git status --short --untracked-files=all`: clean.
+- `Plate repo root git show --stat --oneline --decorate --name-only HEAD`: `faa3b003 (HEAD -> v2) fix`, containing the three contract files.
+- Cross-browser gate command in `/Users/zbeyens/git/plate-2/Plate repo root`: `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright -- playwright/integration/examples/dom-coverage-boundaries.test.ts playwright/integration/examples/query-controls.test.ts playwright/integration/examples/markdown-shortcuts.test.ts playwright/integration/examples/plaintext.test.ts playwright/integration/examples/hidden-content-blocks.test.ts --project=chromium --project=firefox --project=webkit --project=mobile`.
 - Cross-browser gate result: 142 passed, 22 skipped, 0 failed.
 
 Final handoff contract:
@@ -251,7 +251,7 @@ Final handoff / sync:
 Timeline:
 - 2026-06-02T17:36:35.509Z Task goal plan created.
 - 2026-06-02T19:36Z Goal created for commit plus cross-browser stabilization.
-- 2026-06-02T19:37Z Confirmed `.tmp/slate-v2` was clean and `faa3b003 fix` already contains the three fixes.
+- 2026-06-02T19:37Z Confirmed `Plate repo root` was clean and `faa3b003 fix` already contains the three fixes.
 - 2026-06-02T19:39Z Focused cross-browser old-failure gate passed with 142 passed, 22 skipped, 0 failed.
 
 Reboot status:

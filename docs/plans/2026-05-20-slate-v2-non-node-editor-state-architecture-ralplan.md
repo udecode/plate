@@ -68,13 +68,13 @@ runtime/view APIs, but the React public provider shape is not good enough for
 multi-root examples yet. Live source shows:
 
 - core already has `createEditorRuntime` and `createEditorView` in
-  `.tmp/slate-v2/packages/slate/src/editor-runtime-view.ts`;
+  `packages/slate/src/editor-runtime-view.ts`;
 - `createEditorView` currently exposes root/read-only/focus policy over one
   runtime, but it is core-only and not a React provider API;
 - `useSlateEditor` still creates one React editor from `createReactEditor` in
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-editor.ts`;
+  `packages/slate-react/src/hooks/use-slate-editor.ts`;
 - `<Slate>` still takes `editor` and creates one editor context plus one
-  selector bus in `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`;
+  selector bus in `packages/slate-react/src/components/slate.tsx`;
 - no public `SlateRuntime`, `useSlateRuntime`, `useSlateViewState`, or
   `<Slate root="...">` API exists in live `slate-react`;
 - the current `Document State` example is correctly single-root and should
@@ -334,16 +334,16 @@ transport stream, but raw Slate should not pretend a title change is a node op.
 
 | Surface | Current live shape | Implication |
 | --- | --- | --- |
-| Update metadata | `EditorUpdateMetadata` has `history`, `collab`, `origin`, `selection`; history mode is `merge | push | skip` in `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:147` and `:162`. | The policy channel exists. Extend it, do not invent ad hoc setter flags. |
-| State/tx groups | `EditorStateExtensionGroups` and `EditorTxExtensionGroups` exist in `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:454` and `:462`; `BaseEditor.read/update` is public at `:515`. | Store APIs should appear as extension/state/tx groups. |
-| Operations | operation union is node/text/selection/replace only in `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:130`. | No durable non-node state operation exists today. |
-| Operation law | operation docs say operations are what enable history/collab in `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:142`. | Any persisted state change needs equivalent replay law. |
-| History state | slate-history uses WeakMaps for history/control state in `.tmp/slate-v2/packages/slate-history/src/history-extension.ts:54`. | Runtime state already exists, but it is not a persisted document-state model. |
-| History policy | historic updates use `metadata: { history: { mode: 'skip' } }` in `.tmp/slate-v2/packages/slate-history/src/history-extension.ts:131`; merge/push logic reads metadata/tags at `:265`. | Store history defaults can compose with existing update metadata. |
-| Dirtiness | `getOperationDirtiness` computes classes from operations in `.tmp/slate-v2/packages/slate/src/core/public-state.ts:667`. | A state patch channel must add state dirtiness, or React will miss field-specific subscriptions. |
-| Transaction snapshot | current transaction snapshot stores children, marks, metadata, operations, selection, and tags in `.tmp/slate-v2/packages/slate/src/core/public-state.ts:2810`. | Add state patch capture here, not after commit. |
-| Runtime extension state | extension setup has `context.runtimeState(initialValue)` in `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:429`. | Keep for ephemeral extension runtime. Do not overload it for persisted title/settings. |
-| Annotation store | `SlateAnnotation` has external `anchor`, `data`, `id`, `projection` in `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:18`; store source can be array or function at `:787`. | Comments already point to external anchored channels. |
+| Update metadata | `EditorUpdateMetadata` has `history`, `collab`, `origin`, `selection`; history mode is `merge | push | skip` in `packages/slate/src/interfaces/editor.ts:147` and `:162`. | The policy channel exists. Extend it, do not invent ad hoc setter flags. |
+| State/tx groups | `EditorStateExtensionGroups` and `EditorTxExtensionGroups` exist in `packages/slate/src/interfaces/editor.ts:454` and `:462`; `BaseEditor.read/update` is public at `:515`. | Store APIs should appear as extension/state/tx groups. |
+| Operations | operation union is node/text/selection/replace only in `packages/slate/src/interfaces/operation.ts:130`. | No durable non-node state operation exists today. |
+| Operation law | operation docs say operations are what enable history/collab in `packages/slate/src/interfaces/operation.ts:142`. | Any persisted state change needs equivalent replay law. |
+| History state | slate-history uses WeakMaps for history/control state in `packages/slate-history/src/history-extension.ts:54`. | Runtime state already exists, but it is not a persisted document-state model. |
+| History policy | historic updates use `metadata: { history: { mode: 'skip' } }` in `packages/slate-history/src/history-extension.ts:131`; merge/push logic reads metadata/tags at `:265`. | Store history defaults can compose with existing update metadata. |
+| Dirtiness | `getOperationDirtiness` computes classes from operations in `packages/slate/src/core/public-state.ts:667`. | A state patch channel must add state dirtiness, or React will miss field-specific subscriptions. |
+| Transaction snapshot | current transaction snapshot stores children, marks, metadata, operations, selection, and tags in `packages/slate/src/core/public-state.ts:2810`. | Add state patch capture here, not after commit. |
+| Runtime extension state | extension setup has `context.runtimeState(initialValue)` in `packages/slate/src/core/editor-extension.ts:429`. | Keep for ephemeral extension runtime. Do not overload it for persisted title/settings. |
+| Annotation store | `SlateAnnotation` has external `anchor`, `data`, `id`, `projection` in `packages/slate-react/src/annotation-store.ts:18`; store source can be array or function at `:787`. | Comments already point to external anchored channels. |
 
 ## Ecosystem Strategy
 
@@ -486,11 +486,11 @@ Evidence read:
   `docs/research/decisions/slate-v2-collaborative-annotation-channels.md`, and
   `docs/research/systems/editor-architecture-landscape.md`.
 - current local Slate v2 source:
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`,
-  `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts`,
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts`,
-  `.tmp/slate-v2/packages/slate-history/src/history-extension.ts`, and
-  `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts`.
+  `packages/slate/src/interfaces/editor.ts`,
+  `packages/slate/src/interfaces/operation.ts`,
+  `packages/slate/src/core/public-state.ts`,
+  `packages/slate-history/src/history-extension.ts`, and
+  `packages/slate-react/src/annotation-store.ts`.
 - raw official source/docs for ProseMirror, Lexical, and Tiptap under
   `../raw/prosemirror`, `../raw/lexical`, and `../raw/tiptap`.
 - Context7 official-doc checks for `/websites/prosemirror_net`,
@@ -499,25 +499,25 @@ Evidence read:
 Current-source result:
 
 - Slate v2 already has update metadata for history/collab/selection
-  (`.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:162`), commit
+  (`packages/slate/src/interfaces/editor.ts:162`), commit
   sources including `decoration`, `annotation`, and `external` (`:1081`), and
   commit records with operations/metadata/dirtiness (`:1623`).
 - Slate v2 operations remain node/text/selection/replace only
-  (`.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:130`), and the
+  (`packages/slate/src/interfaces/operation.ts:130`), and the
   current transaction snapshot captures children/marks/metadata/operations/tags
   but no state patches
-  (`.tmp/slate-v2/packages/slate/src/core/public-state.ts:65` and `:2810`).
+  (`packages/slate/src/core/public-state.ts:65` and `:2810`).
 - Commit dirtiness is derived from operations and maps to dirty paths/runtime
-  ids (`.tmp/slate-v2/packages/slate/src/core/public-state.ts:667`). A document
+  ids (`packages/slate/src/core/public-state.ts:667`). A document
   state field channel must add keyed state dirtiness instead of widening all state
   writes to `dirtyScope: all`.
 - Slate history already uses metadata/tag policy for `push`, `merge`, and
-  `skip` (`.tmp/slate-v2/packages/slate-history/src/history-extension.ts:131`
+  `skip` (`packages/slate-history/src/history-extension.ts:131`
   and `:265`), but it currently consumes committed operations, not state
   patches (`:233`).
 - Slate annotations are already external anchored stores with id/data/projection
   and per-id subscriptions
-  (`.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:13` and `:71`).
+  (`packages/slate-react/src/annotation-store.ts:13` and `:71`).
 
 Ecosystem decision changes:
 
@@ -826,15 +826,15 @@ const headerEditor = createEditorView(runtime, { root: 'header' })
 
 Implementation owners:
 
-- transaction capture: extend `.tmp/slate-v2/packages/slate/src/core/public-state.ts:2810`.
-- commit dirtiness: extend `.tmp/slate-v2/packages/slate/src/core/public-state.ts:667`.
-- public types: extend `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:80`,
+- transaction capture: extend `packages/slate/src/core/public-state.ts:2810`.
+- commit dirtiness: extend `packages/slate/src/core/public-state.ts:667`.
+- public types: extend `packages/slate/src/interfaces/editor.ts:80`,
   `:454`, `:462`, and `:1005`.
 - source listeners: add an `EditorCommitSource` for state fields around
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1081`; recommended
+  `packages/slate/src/interfaces/editor.ts:1081`; recommended
   literal is `'state'`, not another use of `'external'`. Then key
   subscriptions by field key rather than waking all source subscribers.
-- history: teach `.tmp/slate-v2/packages/slate-history/src/history-extension.ts:233` to batch state patches plus operations.
+- history: teach `packages/slate-history/src/history-extension.ts:233` to batch state patches plus operations.
 - serialization: hard-break `Value` to canonical `{ roots, state? }`; keep
   `InitialValue` convenience for old `Element[]` and `{ children, state? }`
   inputs.
@@ -1198,15 +1198,15 @@ Evidence read:
 - current Slate v2 source for metadata, commit sources, commit shape,
   operations, transaction capture, source subscriptions, `CreateEditorOptions`,
   history batching, React selectors, projection stores, and annotation stores:
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:162`,
+  `packages/slate/src/interfaces/editor.ts:162`,
   `:1005`, `:1081`, `:1623`, and `:2342`;
-  `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:130`;
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts:65`, `:667`,
+  `packages/slate/src/interfaces/operation.ts:130`;
+  `packages/slate/src/core/public-state.ts:65`, `:667`,
   `:2621`, `:2703`, `:2784`, and `:2972`;
-  `.tmp/slate-v2/packages/slate-history/src/history-extension.ts:131` and
-  `:233`; `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:180`;
-  `.tmp/slate-v2/packages/slate-react/src/projection-store.ts:486`; and
-  `.tmp/slate-v2/packages/slate-react/src/annotation-store.ts:71` and `:893`.
+  `packages/slate-history/src/history-extension.ts:131` and
+  `:233`; `packages/slate-react/src/hooks/use-editor-selector.tsx:180`;
+  `packages/slate-react/src/projection-store.ts:486`; and
+  `packages/slate-react/src/annotation-store.ts:71` and `:893`.
 - performance rules:
   `.agents/skills/performance/rules/cohort-segmentation.md`,
   `.agents/skills/performance/rules/repeated-unit-budget.md`,
@@ -1218,7 +1218,7 @@ Evidence read:
 API correction:
 
 - `CreateEditorOptions` currently exposes `initialValue?: V` for content only
-  in `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1005`. The earlier
+  in `packages/slate/src/interfaces/editor.ts:1005`. The earlier
   draft's runtime `Value = { children, state }` example was incomplete for
   planned multi-root support.
 - Hard-break runtime `Value` to `{ roots, state? }` so history/collab/rooted
@@ -1298,22 +1298,22 @@ pending because handoff hardening and final gates are still runnable.
 Evidence read:
 
 - core runtime/view source:
-  `.tmp/slate-v2/packages/slate/src/editor-runtime-view.ts:39` and `:58`.
+  `packages/slate/src/editor-runtime-view.ts:39` and `:58`.
 - core public runtime/view types:
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:590`.
+  `packages/slate/src/interfaces/editor.ts:590`.
 - current React `<Slate>` provider:
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx:89`, `:135`,
+  `packages/slate-react/src/components/slate.tsx:89`, `:135`,
   `:233`, and `:259`.
 - current selector bus:
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:104`
+  `packages/slate-react/src/hooks/use-editor-selector.tsx:104`
   and `:213`.
 - current single-editor hook and state-field hooks:
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-editor.ts:14` and
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-state-field.ts:40`.
+  `packages/slate-react/src/hooks/use-slate-editor.ts:14` and
+  `packages/slate-react/src/hooks/use-state-field.ts:40`.
 - current proof and example rows:
-  `.tmp/slate-v2/packages/slate/test/editor-runtime-view-contract.ts:13`,
-  `.tmp/slate-v2/packages/slate-react/test/state-field-selector-contract.tsx:25`,
-  and `.tmp/slate-v2/site/examples/ts/document-state.tsx:333`.
+  `packages/slate/test/editor-runtime-view-contract.ts:13`,
+  `packages/slate-react/test/state-field-selector-contract.tsx:25`,
+  and `apps/www/src/app/(app)/examples/slate/_examples/document-state.tsx:333`.
 - skill lenses applied: Vercel React rerender/subscription rules, performance
   cohort/budget/native-behavior rules, performance-oracle complexity checks,
   high-risk deliberate pass, and TDD vertical-slice discipline.
@@ -1496,22 +1496,22 @@ Status: complete.
 Evidence read:
 
 - active plan after steelman pass.
-- current Slate v2 scripts and gates in `.tmp/slate-v2/package.json`.
-- package scripts in `.tmp/slate-v2/packages/slate/package.json`,
-  `.tmp/slate-v2/packages/slate-history/package.json`, and
-  `.tmp/slate-v2/packages/slate-react/package.json`.
-- existing proof families under `.tmp/slate-v2/packages/slate/test`,
-  `.tmp/slate-v2/packages/slate-history/test`,
-  `.tmp/slate-v2/packages/slate-react/test`,
-  `.tmp/slate-v2/playwright/integration/examples`, and
-  `.tmp/slate-v2/scripts/benchmarks`.
+- current Slate v2 scripts and gates in `Plate repo root/package.json`.
+- package scripts in `packages/slate/package.json`,
+  `packages/slate-history/package.json`, and
+  `packages/slate-react/package.json`.
+- existing proof families under `packages/slate/test`,
+  `packages/slate-history/test`,
+  `packages/slate-react/test`,
+  `apps/www/tests/slate-browser/donor/examples`, and
+  `benchmarks/slate-v2/donor`.
 - representative contracts:
-  `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts`,
-  `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`,
-  `.tmp/slate-v2/packages/slate/test/collab-adapter-extension-contract.ts`,
-  `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`,
-  `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`,
-  and `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`.
+  `packages/slate/test/commit-metadata-contract.ts`,
+  `packages/slate/test/state-tx-public-api-contract.ts`,
+  `packages/slate/test/collab-adapter-extension-contract.ts`,
+  `packages/slate-history/test/history-contract.ts`,
+  `packages/slate-react/test/render-profiler-contract.test.tsx`,
+  and `packages/slate-react/test/annotation-store-contract.tsx`.
 
 Ralph execution entry gates:
 
@@ -1527,7 +1527,7 @@ Ralph execution entry gates:
 
 Expanded proof plan:
 
-| Stage | Required new or expanded proof | Command from `.tmp/slate-v2` |
+| Stage | Required new or expanded proof | Command from `Plate repo root` |
 | --- | --- | --- |
 | Core value/input | `packages/slate/test/create-editor-value-contract.ts`: `Element[]`, `{ children, state? }`, and `{ roots, state? }` all normalize to canonical `{ roots, state? }`; persisted field descriptors serialize only their own keys. | `bun test ./packages/slate/test/create-editor-value-contract.ts` |
 | Rooted operations | `packages/slate/test/rooted-operation-contract.ts`: committed content operations include `root`; `Path` remains numeric; `Point`/`Range` carry root; transforms ignore unrelated roots. | `bun test ./packages/slate/test/rooted-operation-contract.ts` |
@@ -1604,9 +1604,9 @@ Evidence read:
 - active plan sections for public API, internal runtime, perf contracts, history,
   persistence/collab, comments, multi-root, and pass ledger.
 - current Slate v2 extension slots:
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1299`,
+  `packages/slate/src/interfaces/editor.ts:1299`,
   `:1310`, `:1367`, `:1461`, and `:1554`, plus commit listener setup in
-  `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:584`.
+  `packages/slate/src/core/editor-extension.ts:584`.
 - `steelman-pass` and `high-risk-deliberate-pass` rules.
 
 Accepted revisions:
@@ -1692,29 +1692,29 @@ Next owner: Ralph only when the user invokes it.
 ## Implementation Phases
 
 1. Canonical value and input normalization.
-   - owner: `.tmp/slate-v2/packages/slate`.
+   - owner: `packages/slate`.
    - gate: `InitialValue` normalization and canonical `Value` contracts.
 2. Rooted content model.
-   - owner: `.tmp/slate-v2/packages/slate`.
+   - owner: `packages/slate`.
    - gate: root-explicit operations, root-aware points/ranges, refs, dirty
      paths, history/collab replay contracts.
 3. Runtime/view split.
-   - owner: `.tmp/slate-v2/packages/slate` and `.tmp/slate-v2/packages/slate-react`.
+   - owner: `packages/slate` and `packages/slate-react`.
    - gate: single-root `createEditor` shortcut plus advanced runtime/view tests.
 4. Core state field descriptors and transaction state patches.
-   - owner: `.tmp/slate-v2/packages/slate`.
-   - gate: focused core tests from `.tmp/slate-v2`.
+   - owner: `packages/slate`.
+   - gate: focused core tests from `Plate repo root`.
 5. History patch batching.
-   - owner: `.tmp/slate-v2/packages/slate-history`.
+   - owner: `packages/slate-history`.
    - gate: undo/redo state patch contracts.
 6. Snapshot persistence API.
-   - owner: `.tmp/slate-v2/packages/slate`.
+   - owner: `packages/slate`.
    - gate: serialize/deserialize roundtrip.
 7. Collab adapter contract.
-   - owner: `.tmp/slate-v2/packages/slate`.
+   - owner: `packages/slate`.
    - gate: fake adapter export/import tests.
 8. React selector/subscription support.
-   - owner: `.tmp/slate-v2/packages/slate-react`.
+   - owner: `packages/slate-react`.
    - gate: field-key subscriber locality tests.
 9. Examples/docs.
    - owner: site/docs after API stabilizes.
@@ -1725,10 +1725,10 @@ Next owner: Ralph only when the user invokes it.
 
 - planning state: `node tooling/scripts/completion-check.mjs` from
   `/Users/zbeyens/git/plate-2` once the lane is eligible for closure.
-- core source gate: targeted `.tmp/slate-v2` package tests for document state.
-- history gate: targeted `.tmp/slate-v2` history tests.
-- react gate: targeted `.tmp/slate-v2` slate-react selector tests.
-- broad gate before implementation closure: `.tmp/slate-v2` `bun check`, then
+- core source gate: targeted `Plate repo root` package tests for document state.
+- history gate: targeted `Plate repo root` history tests.
+- react gate: targeted `Plate repo root` slate-react selector tests.
+- broad gate before implementation closure: `Plate repo root` `bun check`, then
   the relevant focused browser/integration rows if React/browser examples change.
 
 ## Confidence Scorecard
@@ -1758,7 +1758,7 @@ is `status: done` for this lane. A future reopened pass must set it back to
 
 | Pass | Status | Evidence added | Plan delta | Open issues | Next owner |
 | --- | --- | --- | --- | --- | --- |
-| runtime-provider-and-multi-root-example-current-state | complete | live source read: `.tmp/slate-v2/packages/slate/src/editor-runtime-view.ts`, `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`, `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-editor.ts`, `.tmp/slate-v2/site/examples/ts/document-state.tsx`, research index/log, live issue ledger, v2 sync ledger, PR reference | reopened lane; accepted `SlateRuntime` as optional common provider, kept public `<Slate>` as view provider, rejected public `SlateViewProvider`, added `useSlateRuntimeState`, `useSlateViewState`, and separate multi-root example target | issue/reference sync not run in this activation; no fixed/improved issue claim | related-issue-discovery |
+| runtime-provider-and-multi-root-example-current-state | complete | live source read: `packages/slate/src/editor-runtime-view.ts`, `packages/slate-react/src/components/slate.tsx`, `packages/slate-react/src/hooks/use-slate-editor.ts`, `apps/www/src/app/(app)/examples/slate/_examples/document-state.tsx`, research index/log, live issue ledger, v2 sync ledger, PR reference | reopened lane; accepted `SlateRuntime` as optional common provider, kept public `<Slate>` as view provider, rejected public `SlateViewProvider`, added `useSlateRuntimeState`, `useSlateViewState`, and separate multi-root example target | issue/reference sync not run in this activation; no fixed/improved issue claim | related-issue-discovery |
 | related-issue-discovery | complete | cache-first scan of live ledger, v2 sync ledger, coverage matrix, fork dossier, open-issue dossiers, and PR reference for `#6016`, `#5537`, `#5117`, `#4612`, `#4477`, `#4483`, `#3383`, `#5515`, `#3741`, `#3715`, and `#3482` | synced provider API non-claim text; added `#5117` fork-dossier section; kept fixed/improved counts unchanged | provider/example proof still pending by design | runtime-provider-pressure-pass |
 | runtime-provider-pressure-pass | complete | live source read for core runtime/view, React `<Slate>`, selector bus, state-field hooks, current core/react tests, and document-state example; Vercel React, performance, performance-oracle, high-risk, and tdd lenses applied | added prop XOR policy, listener/subscription budgets, cohort/memory/INP rows, high-risk failure guards, and vertical red-test order for `SlateRuntime`, `<Slate root>`, cross-view hooks, and multi-root example | handoff still needs one hardening pass before final gates | runtime-provider-handoff-hardening |
 | runtime-provider-handoff-hardening | complete | Ralph-ready handoff, implementation slices, first red tests, required commands, issue sync, and stop rules read and updated | hardened objective, scope lock, accepted target, slice 9/10 requirements, prop-boundary/browser proof rows, issue surface, and stop rules for the runtime provider API | final gates still need to audit state, references, and pass rows | closure-score-final-gates-runtime-provider |
@@ -1770,7 +1770,7 @@ is `status: done` for this lane. A future reopened pass must set it back to
 | research/ecosystem | complete | compiled research, local raw ProseMirror/Lexical/Tiptap docs/source, Context7 official-doc check, and current Slate v2 source refresh | strategy table strengthened; rejected Lexical RootNode metadata as Slate target; no new research page needed | none for this pass | performance-dx-migration-regression-pressure |
 | performance/DX/migration/regression | complete | current source paths plus performance rules read; `initialDocument`, keyed dirtiness, cohorts, budgets, and regression contracts added | removed bad `value: { children, state }` draft; added `dirtyStateKeys`, state source, and descriptor diff pressure | no implementation proof yet | steelman-maintainer-objection |
 | steelman maintainer-objection | complete | current extension slot source plus steelman/high-risk skill rules read | added detailed objection ledger; accepted optional typed extension aliases, replay invariants, descriptor-key subscriptions, and patch-hook constraints | none for this pass | high-risk-deliberate-proof-expansion |
-| high-risk deliberate proof expansion | complete | `.tmp/slate-v2` package scripts, test families, benchmark scripts, representative contracts, and high-risk/tdd rules read | expanded blast radius, proof gates, rollback/remediation, Ralph entry gates, and vertical TDD order | implementation proof still pending by design | revision-and-handoff-hardening |
+| high-risk deliberate proof expansion | complete | `Plate repo root` package scripts, test families, benchmark scripts, representative contracts, and high-risk/tdd rules read | expanded blast radius, proof gates, rollback/remediation, Ralph entry gates, and vertical TDD order | implementation proof still pending by design | revision-and-handoff-hardening |
 | revision and handoff hardening | complete | plan, completion state, continuation prompt, issue ledgers, PR reference, and Ralph skill read | added Ralph-ready handoff, locked public API names, synced PR reference as non-claim, raised score to threshold | none | closure-score-final-gates |
 | closure-score/final-gates | complete | requirement audit, state file sync, continuation sync, PR non-claim check, issue-sync check, learning check | closed plan as Ralph-ready; no source implementation started | none | Ralph only when user invokes it |
 | jotai atom granularity current-state read | complete | current plan/source, solution notes, Context7 Jotai atom/store/select/focus/split docs | reopened API target around `defineEditorStateField`, `initialDocument.state`, `state.fields`, `tx.fields`, `dirtyStateKeys`, and source `'state'` | follow-up passes must reconcile store wording, issue impact, objections, and final gates | related-issue-discovery |
@@ -1778,12 +1778,12 @@ is `status: done` for this lane. A future reopened pass must set it back to
 | state-field issue-ledger pass | complete | live rows, sync note, frozen corpus, cluster rows, fork dossier, coverage matrix, and PR reference read; `#4612` matrix note tightened | no count changes; PR reference and sync ledger stay non-claim; state-field pressure set confirmed | none for this pass | state-field terminology/handoff hardening |
 | state-field terminology/handoff hardening | complete | active plan authority, proof rows, high-risk proof plan, maintainer objection ledger, Ralph-ready handoff, and previous store-based handoff read | current API/proof/handoff wording moved to state-field vocabulary; remaining store wording is external/source/historical only | none for this pass | state-field maintainer objection and risk pass |
 | state-field maintainer objection and risk pass | complete | final authority, proof rows, performance/DX contract, high-risk proof plan, maintainer objection ledger, Ralph-ready handoff, and state files read | kept state fields, `statePatches`, `dirtyStateKeys`, field-key subscriptions, optional typed aliases, patch-hook guard, external comments, and deferred multi-root/shared-runtime scope | none for this pass | closure-score-final-gates-state-field-final |
-| closure-score/final-gates-state-field-final | complete | plan top, final authority, pass ledger, Ralph-ready handoff, completion state, continue prompt, PR reference, sync ledger, and coverage matrix read | closed lane as Ralph-ready; no `.tmp/slate-v2` implementation claim or issue count change | none | Ralph only when user invokes it |
+| closure-score/final-gates-state-field-final | complete | plan top, final authority, pass ledger, Ralph-ready handoff, completion state, continue prompt, PR reference, sync ledger, and coverage matrix read | closed lane as Ralph-ready; no `Plate repo root` implementation claim or issue count change | none | Ralph only when user invokes it |
 | latest-api authority refresh | complete | current user decision chain, active plan, live Slate v2 operation/value source, and stale completion/continue state read | current authority now uses `defineStateField`, canonical `Value = { roots, state? }`, `InitialValue`, `state.getField`, `tx.setField`, rooted operations, root-aware points/ranges, and runtime/view split | closed by later issue/reference/proof sync | issue-reference-and-proof-sync-latest-api |
 | issue-reference-and-proof-sync-latest-api | complete | PR reference, v2 sync ledger, issue coverage matrix, active proof rows, and Ralph handoff read | synced non-claim PR note, `#4612` coverage row, sync ledger, proof commands, and final summary to latest API names | none; no fixed/improved count change | closure-score-final-gates-latest-api-final |
-| closure-score-final-gates-latest-api-final | complete | plan top, authority, scorecard, pass ledger, final handoff, completion state, continue prompt, PR reference, sync ledger, and coverage matrix read | closed latest-API lane as Ralph-ready; no `.tmp/slate-v2` implementation claim or issue count change | none | Ralph only when user invokes it |
+| closure-score-final-gates-latest-api-final | complete | plan top, authority, scorecard, pass ledger, final handoff, completion state, continue prompt, PR reference, sync ledger, and coverage matrix read | closed latest-API lane as Ralph-ready; no `Plate repo root` implementation claim or issue count change | none | Ralph only when user invokes it |
 | state-field-policy-shorthand-dx | complete | current authority, public API target, runtime descriptor type, history policy, Ralph handoff, and final summary read | changed `history`/`collab` examples and descriptor type to shorthand-first DX with object policy escape hatches | none; no issue/reference count change | closure-score-final-gates-state-field-policy-shorthand |
-| closure-score-final-gates-state-field-policy-shorthand | complete | plan top, authority, policy type, handoff, final summary, completion state, and continue state read | closed policy-shorthand update; no `.tmp/slate-v2` implementation claim | none | Ralph only when user invokes it |
+| closure-score-final-gates-state-field-policy-shorthand | complete | plan top, authority, policy type, handoff, final summary, completion state, and continue state read | closed policy-shorthand update; no `Plate repo root` implementation claim | none | Ralph only when user invokes it |
 | ralph tdd canonical value/initialvalue | complete | red: `bun test ./packages/slate/test/create-editor-value-contract.ts` failed on object `initialValue`; green: `bun test ./packages/slate/test/create-editor-value-contract.ts ./packages/slate/test/state-tx-public-api-contract.ts`, `bun test ./packages/slate/test`, `bun --filter slate typecheck`, `bun --filter slate-dom typecheck`, `bun --filter slate-react typecheck`, and `bun lint:fix` passed | added first runtime normalization slice for legacy children, `{ children, state }`, and `{ roots, state }`; `state.value.get()` now returns canonical rooted value; PR reference synced as non-claim first-slice proof | full plan remains pending; rooted operations are next | rooted-operation-contract |
 | ralph rooted-operation-contract | complete | red: `bun test ./packages/slate/test/rooted-operation-contract.ts` failed because committed `insert_text` lacked `root` and a header `Point` transformed against a main-root operation; green: `bun test ./packages/slate/test/rooted-operation-contract.ts ./packages/slate/test/create-editor-value-contract.ts ./packages/slate/test/state-tx-public-api-contract.ts`, `bun test ./packages/slate/test`, `bun --filter slate typecheck`, `bun --filter slate-dom typecheck`, `bun --filter slate-react typecheck`, and `bun lint:fix` passed | added root-stamped content operations, root-local `Point`/`Range` transforms, root-preserving selection clone, and tightened `NodeIn<V>` so editor objects do not leak into node transform generics | full plan remains pending; runtime/view split is next | editor-runtime-view-contract |
 | ralph editor-runtime-view-contract | complete | red: `bun test ./packages/slate/test/editor-runtime-view-contract.ts` failed because `createEditorRuntime` and `createEditorView` were missing; green: `bun test ./packages/slate/test/editor-runtime-view-contract.ts ./packages/slate/test/rooted-operation-contract.ts ./packages/slate/test/create-editor-value-contract.ts ./packages/slate/test/state-tx-public-api-contract.ts`, `bun test ./packages/slate/test`, `bun --filter slate typecheck`, `bun --filter slate-dom typecheck`, `bun --filter slate-react typecheck`, and `bun lint:fix` passed | added `createEditorRuntime`, `createEditorView`, `state.view`, view-local root/focus/read-only policy, and root-bound read/update facades over one runtime editor | full plan remains pending; document state fields are next | document-state-contract |
@@ -1801,7 +1801,7 @@ is `status: done` for this lane. A future reopened pass must set it back to
 | header-focus-regression | complete | red then green: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium -g "focuses the header editor"`; green full file: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium`; green `bun lint:fix`; green `bun typecheck:site`; green `dev-browser --connect http://127.0.0.1:9222` label-click proof; learning captured in `docs/solutions/ui-bugs/2026-05-21-slate-v2-multi-root-chrome-clicks-must-activate-root-before-focus.md` | root chrome clicks now activate the root, make the root editable before focus handling, focus the editable, and put follow-up typing in the header | none | none |
 | header-text-surface-caret-regression | complete | red then green: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium -g "inactive header text surface"`; green full file: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium`; green `bun lint:fix`; green `bun typecheck:site`; green Browser plugin proof with `selectionAnchorInHeader: true` and header-only typing | removed the inactive-root `readOnly` toggle so all root text surfaces stay natively editable; kept chrome-click activation/focus handoff for non-editable labels/badges | none | none |
 | header-sequential-key-order-regression | complete | Browser plugin reproduced the bug by clicking the header and pressing ordered keys `h`, `e`, `l`, `l`, `o`, yielding `ollehConfidential quarterly plan`; green: `bun -e` Playwright probe against `http://localhost:3100/examples/multi-root-document` yielded `Confidential quarterly planhello`; green: `bun test ./packages/slate/test/rooted-operation-contract.ts ./packages/slate/test/create-editor-value-contract.ts ./packages/slate/test/state-tx-public-api-contract.ts ./packages/slate/test/editor-runtime-view-contract.ts`; green: `bun --filter slate typecheck`; green: `bun typecheck:site`; green: `bun lint:fix`; green after lint: `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/multi-root-document.test.ts --project=chromium` | root-bound views now stamp rootless imported selection points onto the view root; the multi-root browser row presses ordered keys and asserts `hello` is present while `olleh` is absent; learning note updated | none | none |
-| cursor-selection-drift-current-state-read | complete | live source read: core rooted operations and view root scoping in `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:13`, `.tmp/slate-v2/packages/slate/src/core/public-state.ts:456`, `.tmp/slate-v2/packages/slate/src/core/public-state.ts:2079`, `.tmp/slate-v2/packages/slate/src/editor-runtime-view.ts:52`; React selection import/export and provenance in `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:533`, `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts:30`, `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:265`; regression rows in `.tmp/slate-v2/packages/slate/test/editor-runtime-view-contract.ts:89` and `.tmp/slate-v2/playwright/integration/examples/multi-root-document.test.ts:155`; ecosystem evidence in `../prosemirror/state/src/transaction.ts:26`, `../prosemirror/view/src/selection.ts:9`, `../lexical/packages/lexical/src/LexicalEditorState.ts:105`, and `../lexical/packages/lexical/src/LexicalUpdates.ts:616` | current architecture is good but not absolute-best; accepted a targeted selection-authority consolidation: internal rooted selection invariant, single event-frame import/export boundary, root/provenance dev asserts, authority inventory guards, and generated browser gauntlets | no issue/reference sync in this activation; next pass must classify the related selection/focus/history issue surface | related-issue-discovery |
+| cursor-selection-drift-current-state-read | complete | live source read: core rooted operations and view root scoping in `packages/slate/src/interfaces/operation.ts:13`, `packages/slate/src/core/public-state.ts:456`, `packages/slate/src/core/public-state.ts:2079`, `packages/slate/src/editor-runtime-view.ts:52`; React selection import/export and provenance in `packages/slate-react/src/editable/selection-controller.ts:533`, `packages/slate-react/src/editable/runtime-selection-engine.ts:30`, `packages/slate-react/src/editable/editing-kernel.ts:265`; regression rows in `packages/slate/test/editor-runtime-view-contract.ts:89` and `apps/www/tests/slate-browser/donor/examples/multi-root-document.test.ts:155`; ecosystem evidence in `../prosemirror/state/src/transaction.ts:26`, `../prosemirror/view/src/selection.ts:9`, `../lexical/packages/lexical/src/LexicalEditorState.ts:105`, and `../lexical/packages/lexical/src/LexicalUpdates.ts:616` | current architecture is good but not absolute-best; accepted a targeted selection-authority consolidation: internal rooted selection invariant, single event-frame import/export boundary, root/provenance dev asserts, authority inventory guards, and generated browser gauntlets | no issue/reference sync in this activation; next pass must classify the related selection/focus/history issue surface | related-issue-discovery |
 | related-issue-discovery | complete | cache-first reads: `docs/slate-v2/ledgers/fork-issue-dossier.md`, `docs/slate-v2/ledgers/issue-coverage-matrix.md`, `docs/slate-issues/gitcrawl-v2-sync-ledger.md`, and `docs/slate-issues/gitcrawl-live-open-ledger.md`; focused rows covered selection, cursor, focus, undo/redo/history, multi-root, browser, beforeinput, composition, paste, and drop pressure | selection drift rewrite is issue-backed by recurring families, not just the multi-root demo bug; no new fixed/improved claim is justified without exact browser/device proof | synced non-claim cluster note in `docs/slate-issues/gitcrawl-v2-sync-ledger.md`; no PR reference count change | closure-score-final-gates-cursor-selection-drift |
 | closure-score-final-gates-cursor-selection-drift | complete | audited plan top state, cursor-selection architecture section, related issue discovery section, pass ledger, completion state, continuation prompt, and sync ledger note; ran `node tooling/scripts/completion-check.mjs` after state sync | closed the Ralplan review as Ralph-ready; selection-authority consolidation remains an implementation target, not a completed Slate v2 source/browser claim | none for this planning lane | Ralph only when user invokes it |
 | react-prosemirror-lifecycle-amendment | complete | read `../react-prosemirror/src/hooks/useEditor.ts:33`, `../react-prosemirror/src/hooks/useEditorEffect.ts:12`, `../react-prosemirror/src/hooks/useEditorEventCallback.ts:25`, and `../react-prosemirror/src/ReactEditorView.ts:124` / `:275` | added React lifecycle access as part of `SelectionFrame`: lifecycle phase, view/commit epoch, runtime-owned event callback access, post-commit layout-effect access, static guard against stale render/effect DOM selection imports, and proof row | none; no implementation or issue-count claim | none |
@@ -1813,7 +1813,7 @@ is `status: done` for this lane. A future reopened pass must set it back to
 ## Ralph-Ready Handoff
 
 Use this only after the user explicitly invokes `[$ralph]`. Slate Ralplan does
-not edit `.tmp/slate-v2` source.
+not edit `Plate repo root` source.
 
 ### Objective
 
@@ -1826,7 +1826,7 @@ external anchored stores by default.
 
 ### Scope Lock
 
-Allowed implementation owners in `.tmp/slate-v2`:
+Allowed implementation owners in `Plate repo root`:
 
 - `packages/slate/src/interfaces/editor.ts`
 - `packages/slate/src/interfaces/operation.ts`
@@ -1978,7 +1978,7 @@ Do not write the whole suite upfront.
 
 ### Required Commands
 
-Focused gates from `.tmp/slate-v2`:
+Focused gates from `Plate repo root`:
 
 - `bun test ./packages/slate/test/create-editor-value-contract.ts`
 - `bun test ./packages/slate/test/rooted-operation-contract.ts`
@@ -2018,7 +2018,7 @@ The `multi-root-document` browser row must include:
 - placeholder measurement does not leak between roots.
 - follow-up typing after selection repair stays in the active root.
 
-Broad gates from `.tmp/slate-v2`:
+Broad gates from `Plate repo root`:
 
 - `bun bench:core:editor-store:local`
 - `bun bench:core:history-retained-memory:local`
@@ -2369,28 +2369,28 @@ Intent and boundary:
 Live current shape:
 
 - core operations carry optional `root` fields at
-  `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts:13`, and core stamps
+  `packages/slate/src/interfaces/operation.ts:13`, and core stamps
   a default operation root at
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts:456`.
+  `packages/slate/src/core/public-state.ts:456`.
 - root-bound views filter selection and stamp update root through
   `createEditorView` at
-  `.tmp/slate-v2/packages/slate/src/editor-runtime-view.ts:52`.
+  `packages/slate/src/editor-runtime-view.ts:52`.
 - the recent key-order fix normalizes rootless imported selections in
   `setCurrentSelection` at
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts:2079`.
+  `packages/slate/src/core/public-state.ts:2079`.
 - React selection import/export lives in
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:533`
-  and `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:707`.
+  `packages/slate-react/src/editable/selection-controller.ts:533`
+  and `packages/slate-react/src/editable/selection-controller.ts:707`.
 - runtime selectionchange provenance and repair-induced model ownership live in
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts:30`.
+  `packages/slate-react/src/editable/runtime-selection-engine.ts:30`.
 - the editing kernel already models selection policy and repair policy at
-  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:265`, and
+  `packages/slate-react/src/editable/editing-kernel.ts:265`, and
   selectionchange ownership at
-  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:447`.
+  `packages/slate-react/src/editable/editing-kernel.ts:447`.
 - current tests cover the exact rootless import bug in
-  `.tmp/slate-v2/packages/slate/test/editor-runtime-view-contract.ts:89` and
+  `packages/slate/test/editor-runtime-view-contract.ts:89` and
   the human click/ordered key path in
-  `.tmp/slate-v2/playwright/integration/examples/multi-root-document.test.ts:155`.
+  `apps/www/tests/slate-browser/donor/examples/multi-root-document.test.ts:155`.
 
 Diagnosis:
 
@@ -2630,7 +2630,7 @@ Final gate audit:
 | Gate | Result |
 | --- | --- |
 | Plan top state | At the original closeout: `status: done`, `current_pass: closure-score-final-gates-cursor-selection-drift`, `next_pass: none`, `final_handoff_status: complete`, `ralplan_lane_status: complete`. The later lifecycle amendment updates `current_pass` without reopening the lane. |
-| Source edit boundary | No `.tmp/slate-v2` implementation edit belongs to this Ralplan closeout. The rewrite remains a later Ralph implementation target. |
+| Source edit boundary | No `Plate repo root` implementation edit belongs to this Ralplan closeout. The rewrite remains a later Ralph implementation target. |
 | Architecture verdict | Current architecture is good but not absolute-best. The accepted target is targeted selection-authority consolidation, not a whole-editor rewrite. |
 | Evidence | Live source, local ecosystem source, regression rows, solution notes, and issue ledgers are recorded in the current-state and related-issue passes. |
 | Issue accounting | New fixed claims: `0`. New improved claims: `0`. Existing issue classifications remain scoped. |
@@ -2707,7 +2707,7 @@ future multi-root model.
 
 ### Scope Lock
 
-Allowed implementation owners in `.tmp/slate-v2`:
+Allowed implementation owners in `Plate repo root`:
 
 - `packages/slate/src/interfaces/editor.ts`
 - `packages/slate/src/create-editor.ts`
@@ -2792,7 +2792,7 @@ Do not write the whole suite upfront.
 
 ### Required Commands
 
-Focused gates from `.tmp/slate-v2`:
+Focused gates from `Plate repo root`:
 
 - `bun test ./packages/slate/test/create-editor-document-contract.ts`
 - `bun test ./packages/slate/test/document-state-contract.ts`
@@ -2805,7 +2805,7 @@ Focused gates from `.tmp/slate-v2`:
 - `bun --filter slate-react typecheck`
 - `playwright test playwright/integration/examples/document-state.test.ts --project=chromium`
 
-Broad gates from `.tmp/slate-v2`:
+Broad gates from `Plate repo root`:
 
 - `bun bench:core:editor-store:local`
 - `bun bench:core:history-retained-memory:local`
@@ -2896,7 +2896,7 @@ Requirement audit:
 | realistic examples and migration pressure | proof matrix, browser stress rows, performance/DX/migration pass, and Ralph handoff require title/settings state-field examples, external comments split, old `initialValue`, and new `initialDocument.state`. | complete |
 | non-contiguous and shared-history architecture | `Non-Contiguous And Multi-Editor Proposal` defers header/footer to root-id multi-root design and rejects shared node objects for multi-editor history. | complete |
 | Ralph readiness | `Ralph-Ready Handoff` gives objective, scope lock, public target, implementation slices, first red tests, required commands, issue sync, and stop rules. | complete |
-| boundary discipline | plan and completion state keep Slate Ralplan as docs/ledger/state only; `.tmp/slate-v2` implementation belongs to a later explicit Ralph run. | complete |
+| boundary discipline | plan and completion state keep Slate Ralplan as docs/ledger/state only; `Plate repo root` implementation belongs to a later explicit Ralph run. | complete |
 
 Final decision:
 
@@ -2904,7 +2904,7 @@ Final decision:
 - No Slate v2 implementation claim is made.
 - No issue fixed/improved counts change from this plan.
 - Closure verification remains limited to planning artifacts in `plate-2`;
-  implementation proof must run from `.tmp/slate-v2` during Ralph.
+  implementation proof must run from `Plate repo root` during Ralph.
 
 Previous Done Handoff, superseded by Jotai reopen:
 
@@ -2948,7 +2948,7 @@ Final gate audit:
 | public API authority | complete at the time: `defineEditorStateField`, `initialDocument.state`, `state.fields`, `tx.fields`, `statePatches`, `dirtyStateKeys`, source `'state'`, `useEditorStateFieldValue`, and `useSetEditorStateField`. Superseded by latest API authority. |
 | terminology | complete: current proof/handoff wording is field-based; store wording is external/source terminology or explicitly historical. |
 | issue accounting | complete: no `Fixes #...` claim, no fixed/improved count change, #4612 matrix note tightened, PR reference remains non-claim. |
-| boundary | complete: Slate Ralplan edited docs/ledgers/state only; `.tmp/slate-v2` implementation belongs to explicit Ralph execution. |
+| boundary | complete: Slate Ralplan edited docs/ledgers/state only; `Plate repo root` implementation belongs to explicit Ralph execution. |
 | handoff | complete: Ralph-ready handoff has objective, forbidden paths, slices, red tests, commands, issue sync, and stop rules. |
 
 Final decision:
@@ -2958,7 +2958,7 @@ Final decision:
 - No Slate v2 implementation claim is made.
 - No issue fixed/improved counts change from this plan.
 - Closure verification is limited to planning artifacts in `plate-2`;
-  implementation proof must run from `.tmp/slate-v2` during Ralph.
+  implementation proof must run from `Plate repo root` during Ralph.
 
 ## Latest API Issue/Reference/Proof Sync Pass - 2026-05-20
 
@@ -2986,7 +2986,7 @@ Decisions:
   `state.fields`, or old hook names as current API.
 - update the `#4612` coverage row so future document state fields are tied to
   `initialValue` normalization and `tx.setField`, not React controlled `value`.
-- keep the implementation proof boundary: no `.tmp/slate-v2` source edits and
+- keep the implementation proof boundary: no `Plate repo root` source edits and
   no implementation closure claim from this Ralplan.
 
 ## Closure-Score/Final-Gates Latest API Final - 2026-05-20
@@ -3001,7 +3001,7 @@ Final gate audit:
 | proof rows | complete: proof matrix and Ralph handoff use value normalization, rooted operations, runtime/view, state field, history, collab, React selector, browser, and benchmark rows. |
 | issue/reference sync | complete: PR reference, v2 sync ledger, and `#4612` coverage row are latest-API non-claim rows with no count change. |
 | historical drift | complete: stale API names remain only in explicitly historical/superseded pass notes or previous handoff sections. |
-| boundary | complete: Slate Ralplan edited only plan/ledger/reference/state artifacts; `.tmp/slate-v2` implementation belongs to explicit Ralph execution. |
+| boundary | complete: Slate Ralplan edited only plan/ledger/reference/state artifacts; `Plate repo root` implementation belongs to explicit Ralph execution. |
 | stop-hook state | complete: completion state may be `done` because no runnable Slate Ralplan pass remains. |
 
 Final decision:
@@ -3037,7 +3037,7 @@ Plan deltas:
   policy target.
 - updated Ralph handoff/final summary expectations.
 - no issue fixed/improved count changes.
-- no `.tmp/slate-v2` source edits.
+- no `Plate repo root` source edits.
 
 ## Closure-Score/Final-Gates State-Field Policy Shorthand - 2026-05-20
 
@@ -3050,7 +3050,7 @@ Final gate audit:
 | public examples | complete: active examples use `history: 'push'`, `history: 'skip'`, `collab: 'shared'`, and `collab: 'local'`. |
 | descriptor type | complete: `StateField<T>` accepts shorthand policies and object escape hatches. |
 | scope control | complete: no new universal policy axis was added. |
-| boundary | complete: Slate Ralplan edited plan/state artifacts only; `.tmp/slate-v2` implementation belongs to explicit Ralph execution. |
+| boundary | complete: Slate Ralplan edited plan/state artifacts only; `Plate repo root` implementation belongs to explicit Ralph execution. |
 | stop-hook state | complete: completion state may be `done` because no runnable Slate Ralplan pass remains. |
 
 ## Final User-Review Handoff Outline
@@ -3078,4 +3078,4 @@ Final handoff:
 
 ## Next Action
 
-Wait for explicit `[$ralph]` before editing `.tmp/slate-v2` source.
+Wait for explicit `[$ralph]` before editing `Plate repo root` source.

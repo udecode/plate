@@ -13,7 +13,7 @@ import {
   isTextDecorationsEqual,
   RangeApi,
   TextApi,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 import clsx from 'clsx';
 
 import type { EditableProps, SlateEditor } from '../../lib';

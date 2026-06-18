@@ -88,7 +88,7 @@ Decision boundaries:
 
 ## Current Slate v2 evidence
 
-Read from `.tmp/slate-v2`:
+Read from `Plate repo root`:
 
 - `packages/slate/src/interfaces/editor.ts`
 - `packages/slate/src/core/public-state.ts`
@@ -340,12 +340,12 @@ Applicability: applied.
 
 Existing benchmark lanes inspected:
 
-- `.tmp/slate-v2/scripts/benchmarks/README.md`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/refs-projection.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/query-ref-observation.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/history-retained-memory.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/shared/stats.mjs`
+- `benchmarks/slate-v2/donor/README.md`
+- `benchmarks/slate-v2/donor/core/current/transaction-execution.mjs`
+- `benchmarks/slate-v2/donor/core/current/refs-projection.mjs`
+- `benchmarks/slate-v2/donor/core/current/query-ref-observation.mjs`
+- `benchmarks/slate-v2/donor/core/current/history-retained-memory.mjs`
+- `benchmarks/slate-v2/donor/shared/stats.mjs`
 
 Existing lanes already cover:
 
@@ -363,11 +363,11 @@ skip, canonical reconcile, pause/reconnect cleanup, and heap tags in one lane.
 
 Add during `ralph` execution, not in this planning pass:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/collab-readiness.mjs`
+- `benchmarks/slate-v2/donor/core/current/collab-readiness.mjs`
 - package script:
   - `bench:core:collab-readiness:local`: `bun ./scripts/benchmarks/core/current/collab-readiness.mjs`
 - artifact:
-  - `.tmp/slate-v2/tmp/slate-collab-readiness-benchmark.json`
+  - `tmp/slate-collab-readiness-benchmark.json`
 
 Use `scripts/benchmarks/shared/stats.mjs` for summaries. Do not add another
 stats helper.
@@ -527,7 +527,7 @@ the API change proposal.
 
 Target file:
 
-- `.tmp/slate-v2/packages/slate/test/collab-adapter-extension-contract.ts`
+- `packages/slate/test/collab-adapter-extension-contract.ts`
 
 Public APIs only:
 
@@ -575,8 +575,8 @@ Why this matters:
 
 Target file:
 
-- either extend `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
-- or create `.tmp/slate-v2/packages/slate/test/collab-selection-stress-contract.ts`
+- either extend `packages/slate/test/collab-history-runtime-contract.ts`
+- or create `packages/slate/test/collab-selection-stress-contract.ts`
 
 Use the separate file if the test grows past a few scenarios.
 
@@ -633,7 +633,7 @@ Why this matters:
 
 Target file:
 
-- `.tmp/slate-v2/packages/slate/test/collab-bookmark-position-contract.ts`
+- `packages/slate/test/collab-bookmark-position-contract.ts`
 
 Document shape:
 
@@ -669,7 +669,7 @@ Why this matters:
 
 Target file:
 
-- `.tmp/slate-v2/packages/slate/test/collab-canonical-reconcile-contract.ts`
+- `packages/slate/test/collab-canonical-reconcile-contract.ts`
 
 Core operation:
 
@@ -909,7 +909,7 @@ Next pass: none for `slate-ralplan`.
 
 Next owner:
 
-1. `ralph` executes the accepted core readiness queue in `.tmp/slate-v2`.
+1. `ralph` executes the accepted core readiness queue in `Plate repo root`.
 2. `ralph` keeps `slate-yjs` package creation blocked until P0 tests and the
    collab-readiness benchmark are green.
 
@@ -928,7 +928,7 @@ Decision: planning is complete and execution-ready. Do not create a
 Why this can close:
 
 - Intent, outcome, scope, non-goals, and ownership boundaries are explicit.
-- Existing core substrate evidence is grounded in live `.tmp/slate-v2` files and
+- Existing core substrate evidence is grounded in live `Plate repo root` files and
   focused tests.
 - External editor evidence is converted into Slate-specific mechanisms instead
   of copy-pasted adapter shapes.
@@ -953,7 +953,7 @@ What remains before package creation:
 
 Ralph handoff:
 
-- Execute the plan in `.tmp/slate-v2`.
+- Execute the plan in `Plate repo root`.
 - Do not touch `plate-2` issue claims until passing proof justifies a ledger
   update.
 - Do not create a `slate-yjs` package until all P0 rows and the benchmark gate
@@ -965,7 +965,7 @@ Ralph handoff:
 
 Status: complete.
 
-Current owner: `.tmp/slate-v2/packages/slate`.
+Current owner: `packages/slate`.
 
 Current pass: `p0-collab-adapter-extension-contract`.
 
@@ -974,7 +974,7 @@ Continuation prompt:
 
 Scope:
 
-- Add `.tmp/slate-v2/packages/slate/test/collab-adapter-extension-contract.ts`.
+- Add `packages/slate/test/collab-adapter-extension-contract.ts`.
 - Prove a fake collaboration adapter can use public extension/runtime/commit
   APIs without editor monkey-patching.
 - Keep issue ledgers unchanged unless passing proof changes a claim.
@@ -982,7 +982,7 @@ Scope:
 Next action:
 
 - Completed
-  `.tmp/slate-v2/packages/slate/test/collab-adapter-extension-contract.ts`.
+  `packages/slate/test/collab-adapter-extension-contract.ts`.
 
 Evidence:
 
@@ -1000,16 +1000,16 @@ Verdict:
 Next action:
 
 - Implement
-  `.tmp/slate-v2/packages/slate/test/collab-selection-stress-contract.ts`.
+  `packages/slate/test/collab-selection-stress-contract.ts`.
 
 ### 2026-05-13 - P0 remote selection stress
 
 Status: complete.
 
-Current owner: `.tmp/slate-v2/packages/slate`.
+Current owner: `packages/slate`.
 
 Changed file:
-`.tmp/slate-v2/packages/slate/test/collab-selection-stress-contract.ts`.
+`packages/slate/test/collab-selection-stress-contract.ts`.
 
 Evidence:
 
@@ -1030,16 +1030,16 @@ Verdict:
 Next action:
 
 - Implement
-  `.tmp/slate-v2/packages/slate/test/collab-bookmark-position-contract.ts`.
+  `packages/slate/test/collab-bookmark-position-contract.ts`.
 
 ### 2026-05-13 - P0 bookmark position matrix
 
 Status: complete.
 
-Current owner: `.tmp/slate-v2/packages/slate`.
+Current owner: `packages/slate`.
 
 Changed file:
-`.tmp/slate-v2/packages/slate/test/collab-bookmark-position-contract.ts`.
+`packages/slate/test/collab-bookmark-position-contract.ts`.
 
 Evidence:
 
@@ -1060,16 +1060,16 @@ Verdict:
 Next action:
 
 - Implement
-  `.tmp/slate-v2/packages/slate/test/collab-canonical-reconcile-contract.ts`.
+  `packages/slate/test/collab-canonical-reconcile-contract.ts`.
 
 ### 2026-05-13 - P0 canonical remote reconcile
 
 Status: complete.
 
-Current owner: `.tmp/slate-v2/packages/slate`.
+Current owner: `packages/slate`.
 
 Changed file:
-`.tmp/slate-v2/packages/slate/test/collab-canonical-reconcile-contract.ts`.
+`packages/slate/test/collab-canonical-reconcile-contract.ts`.
 
 Evidence:
 
@@ -1089,7 +1089,7 @@ Verdict:
 
 Next action:
 
-- Inspect `.tmp/slate-v2/packages/slate-react` handling for
+- Inspect `packages/slate-react` handling for
   `skip-scroll-into-view`, `skip-selection-focus`, and
   `metadata.selection`, then add the smallest proof or queue the exact owner.
 
@@ -1099,17 +1099,17 @@ Status: complete.
 
 Current owners:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-side-effect-policy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
+- `packages/slate-react/src/editable/selection-side-effect-policy.ts`
+- `packages/slate-react/src/editable/selection-controller.ts`
+- `packages/slate-react/src/editable/selection-reconciler.ts`
+- `packages/slate-react/src/editable/mutation-controller.ts`
+- `packages/slate-react/src/editable/dom-repair-queue.ts`
 
 Changed tests:
 
-- `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/selection-side-effect-policy-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/test/selection-side-effect-policy-contract.test.ts`
+- `packages/slate-react/test/app-owned-customization.tsx`
+- `packages/slate-react/test/selection-side-effect-policy-contract.ts`
+- `packages/slate-react/test/selection-side-effect-policy-contract.test.ts`
 
 Evidence:
 
@@ -1129,7 +1129,7 @@ Verdict:
 Next action:
 
 - Implement
-  `.tmp/slate-v2/scripts/benchmarks/core/current/collab-readiness.mjs` and
+  `benchmarks/slate-v2/donor/core/current/collab-readiness.mjs` and
   `bench:core:collab-readiness:local`.
 
 ### 2026-05-13 - Collab-readiness benchmark
@@ -1139,8 +1139,8 @@ sweep.
 
 Current owners:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/collab-readiness.mjs`
-- `.tmp/slate-v2/package.json`
+- `benchmarks/slate-v2/donor/core/current/collab-readiness.mjs`
+- `Plate repo root/package.json`
 
 Evidence:
 
@@ -1206,12 +1206,12 @@ Source inspected from live local checkouts:
 - `../y-prosemirror/src/positions.js`
 - `../y-prosemirror/src/undo-plugin.js`
 - `../y-prosemirror/src/cursor-plugin.js`
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-- `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`
-- `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
-- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/core/editor-extension.ts`
+- `packages/slate/src/core/extension-registry.ts`
+- `packages/slate-history/src/with-history.ts`
+- `packages/slate/test/collab-history-runtime-contract.ts`
 
 Final verification sweep:
 

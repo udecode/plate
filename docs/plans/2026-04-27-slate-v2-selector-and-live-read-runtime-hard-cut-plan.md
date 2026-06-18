@@ -28,7 +28,7 @@ hard-cut lane:
 - Changed files: `active goal state`, `active goal state`,
   `docs/plans/2026-04-27-slate-v2-selector-and-live-read-runtime-hard-cut-plan.md`.
 - Rejected tactics: no code-first refactor before a selector contract.
-- Next action: in `.tmp/slate-v2`, add selector contracts proving public
+- Next action: in `Plate repo root`, add selector contracts proving public
   `useTextSelector` reports text changes while mounted render subscriptions
   can skip directly synced text-only commits.
 
@@ -78,18 +78,18 @@ hard-cut lane:
   - `active goal state`
   - `active goal state`
   - `docs/plans/2026-04-27-slate-v2-selector-and-live-read-runtime-hard-cut-plan.md`
-  - `.tmp/slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx`
-  - `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx`
-  - `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/runtime-live-state.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-state.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/editable/runtime-mutation-state.ts`
-  - `.tmp/slate-v2/packages/slate-react/src/**` callers migrated to runtime
+  - `packages/slate-react/src/hooks/use-node-selector.tsx`
+  - `packages/slate-react/src/components/editable-text.tsx`
+  - `packages/slate-react/src/components/editable-text-blocks.tsx`
+  - `packages/slate-react/src/editable/runtime-live-state.ts`
+  - `packages/slate-react/src/editable/runtime-selection-state.ts`
+  - `packages/slate-react/src/editable/runtime-mutation-state.ts`
+  - `packages/slate-react/src/**` callers migrated to runtime
     facades.
-  - `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`
-  - `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-  - `.tmp/slate-v2/packages/slate-react/test/runtime-live-state-contract.ts`
-  - `.tmp/slate-v2/packages/slate-react/test/runtime-live-state-contract.test.ts`
+  - `packages/slate-react/test/provider-hooks-contract.tsx`
+  - `packages/slate-react/test/surface-contract.tsx`
+  - `packages/slate-react/test/runtime-live-state-contract.ts`
+  - `packages/slate-react/test/runtime-live-state-contract.test.ts`
 - Rejected tactics:
   - No public stale-data selector option.
   - No broad `forceRender()` fallback.

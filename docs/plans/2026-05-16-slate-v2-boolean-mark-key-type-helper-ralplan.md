@@ -41,7 +41,7 @@ type BooleanTextKey<T> = {
 export type CustomTextKey = Extract<BooleanTextKey<CustomText>, string>;
 ```
 
-Source: `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`.
+Source: `apps/www/src/app/(app)/examples/slate/_examples/custom-types.d.ts`.
 
 The copied type feeds public example helpers:
 
@@ -55,7 +55,7 @@ export const toggleMark = (editor: CustomEditor, format: CustomTextKey) => {
 };
 ```
 
-Source: `.tmp/slate-v2/site/examples/ts/mark-utils.ts`.
+Source: `apps/www/src/app/(app)/examples/slate/_examples/mark-utils.ts`.
 
 Current core already owns adjacent generic mark helpers:
 
@@ -65,7 +65,7 @@ export type MarksIn<V extends readonly unknown[]> = MarksOf<V[number]>;
 export type MarkKeysOf<N> = {} extends MarksOf<N> ? unknown : keyof MarksOf<N>;
 ```
 
-Source: `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`.
+Source: `packages/slate/src/interfaces/text.ts`.
 
 Current tests intentionally preserve the `MarkKeysOf` fallback:
 
@@ -75,7 +75,7 @@ type _OptionalMarkKeysFollowPlateFallback = Assert<
 >;
 ```
 
-Source: `.tmp/slate-v2/packages/slate/test/generic-value-contract.ts`.
+Source: `packages/slate/test/generic-value-contract.ts`.
 
 ## Decision Brief
 
@@ -136,7 +136,7 @@ Follow-ups:
 
 ## Public API Target
 
-Add to `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`:
+Add to `packages/slate/src/interfaces/text.ts`:
 
 ```ts
 export type BooleanMarkKeysOf<N> = Extract<
@@ -151,7 +151,7 @@ export type BooleanMarkKeysOf<N> = Extract<
 export type BooleanMarksOf<N> = Partial<Pick<MarksOf<N>, BooleanMarkKeysOf<N>>>;
 ```
 
-Export through `.tmp/slate-v2/packages/slate/src/index.ts` next to `MarksOf`,
+Export through `packages/slate/src/index.ts` next to `MarksOf`,
 `MarksIn`, and `MarkKeysOf`.
 
 Example target:
@@ -191,11 +191,11 @@ Examples should show:
 
 Affected live examples:
 
-- `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`
-- `.tmp/slate-v2/site/examples/ts/mark-utils.ts`
-- `.tmp/slate-v2/site/examples/ts/richtext.tsx`
-- `.tmp/slate-v2/site/examples/ts/hovering-toolbar.tsx`
-- `.tmp/slate-v2/site/examples/ts/iframe.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/custom-types.d.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/mark-utils.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/hovering-toolbar.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/iframe.tsx`
 
 ## Migration Backbone
 
@@ -228,8 +228,8 @@ PR reference sync: required because accepted API shape and examples change.
 
 | System                 | Source                                                              | Mechanism                                                                 | Avoids                                            | Steal                                              | Reject                                           | Slate target                                       | Verdict |
 | ---------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------- | ------------------------------------------------ | -------------------------------------------------- | ------- |
-| Current Slate v2       | `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`               | `MarksOf<N>` derives marks from `TextOf<N>` and strips `text`.            | Ad hoc `Omit<T, 'text'>` copies in every example. | Reuse `MarksOf<N>` as the base.                    | Changing `MarkKeysOf` fallback.                  | Add boolean-specific helpers beside `MarksOf`.     | agree   |
-| Current Slate v2 tests | `.tmp/slate-v2/packages/slate/test/generic-value-contract.ts`       | `MarkKeysOf` intentionally returns `unknown` for optional marks.          | Breaking existing type expectations.              | Add new contracts for boolean mark keys.           | Mutating old helper semantics.                   | Keep old tests green, add new helper tests.        | agree   |
+| Current Slate v2       | `packages/slate/src/interfaces/text.ts`               | `MarksOf<N>` derives marks from `TextOf<N>` and strips `text`.            | Ad hoc `Omit<T, 'text'>` copies in every example. | Reuse `MarksOf<N>` as the base.                    | Changing `MarkKeysOf` fallback.                  | Add boolean-specific helpers beside `MarksOf`.     | agree   |
+| Current Slate v2 tests | `packages/slate/test/generic-value-contract.ts`       | `MarkKeysOf` intentionally returns `unknown` for optional marks.          | Breaking existing type expectations.              | Add new contracts for boolean mark keys.           | Mutating old helper semantics.                   | Keep old tests green, add new helper tests.        | agree   |
 | Prior generics plan    | `docs/plans/2026-04-26-slate-v2-plate-generics-type-system-plan.md` | Value-first helpers derive marks from text unions.                        | Declaration-merging and `any` mark objects.       | Keep helper derivation value-first.                | A generic schema object as primary typing model. | Type-only helper derived from current value model. | agree   |
 | Issue corpus           | `docs/slate-issues/requirements-from-issues.md`                     | Public API/type surface needs helpers matching actual runtime guarantees. | Growing core because docs are weak.               | Small type helper where runtime guarantee is real. | Product toolbar helper in raw core.              | Type-only public helper, no runtime abstraction.   | partial |
 
@@ -316,11 +316,11 @@ does not change here.
 ## Implementation Phases
 
 1. Type contract RED: add `BooleanMarkKeysOf` / `BooleanMarksOf` expectations
-   to `.tmp/slate-v2/packages/slate/test/generic-value-contract.ts`.
+   to `packages/slate/test/generic-value-contract.ts`.
 2. Core helper: add type exports in
-   `.tmp/slate-v2/packages/slate/src/interfaces/text.ts` and public index export.
+   `packages/slate/src/interfaces/text.ts` and public index export.
 3. Example cleanup: replace `BooleanTextKey` in
-   `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`; use
+   `apps/www/src/app/(app)/examples/slate/_examples/custom-types.d.ts`; use
    `BooleanMarksOf<CustomText>` in `mark-utils.ts`.
 4. Example audit: ensure richtext, hovering toolbar, and iframe keep inferred
    `CustomTextKey` usage without local generic gymnastics.
@@ -329,11 +329,11 @@ does not change here.
 
 ## Fast Driver Gates
 
-- cwd `.tmp/slate-v2`: `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit --pretty false`
-- cwd `.tmp/slate-v2`: `bun --filter slate typecheck`
-- cwd `.tmp/slate-v2`: `bun typecheck:site` or the repo's current site/example
+- cwd `Plate repo root`: `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit --pretty false`
+- cwd `Plate repo root`: `bun --filter slate typecheck`
+- cwd `Plate repo root`: `bun typecheck:site` or the repo's current site/example
   typecheck command if different
-- cwd `.tmp/slate-v2`: `rg "BooleanTextKey" site/examples/ts`
+- cwd `Plate repo root`: `rg "BooleanTextKey" site/examples/ts`
 - cwd `plate-2`: `pnpm lint:fix`
 - cwd `plate-2`: `node tooling/scripts/completion-check.mjs`
 
@@ -448,7 +448,7 @@ Execution checkpoints:
 
 - Added the generic type contract first and observed the expected RED failure.
 - Implemented `BooleanMarkKeysOf<N>` and `BooleanMarksOf<N>` in
-  `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`.
+  `packages/slate/src/interfaces/text.ts`.
 - Replaced example-local `BooleanTextKey` with `BooleanMarkKeysOf<CustomText>`.
 - Replaced local active-mark `Partial<Pick<...>>` with
   `BooleanMarksOf<CustomText>`.
@@ -458,12 +458,12 @@ Execution checkpoints:
 
 Execution verification:
 
-- cwd `.tmp/slate-v2`: `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit --pretty false` red before helper.
-- cwd `.tmp/slate-v2`: `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit --pretty false` pass after helper.
-- cwd `.tmp/slate-v2`: `bun --filter slate typecheck` pass.
-- cwd `.tmp/slate-v2`: `bun typecheck:site` pass.
-- cwd `.tmp/slate-v2`: `rg "BooleanTextKey" site/examples/ts` no matches.
-- cwd `.tmp/slate-v2`: `bun lint:fix` pass; Biome fixed one file.
-- cwd `.tmp/slate-v2`: `bun check` pass; lint, package/site/root typecheck,
+- cwd `Plate repo root`: `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit --pretty false` red before helper.
+- cwd `Plate repo root`: `bunx tsc --project packages/slate/test/tsconfig.generic-types.json --noEmit --pretty false` pass after helper.
+- cwd `Plate repo root`: `bun --filter slate typecheck` pass.
+- cwd `Plate repo root`: `bun typecheck:site` pass.
+- cwd `Plate repo root`: `rg "BooleanTextKey" site/examples/ts` no matches.
+- cwd `Plate repo root`: `bun lint:fix` pass; Biome fixed one file.
+- cwd `Plate repo root`: `bun check` pass; lint, package/site/root typecheck,
   1008 Bun tests, and 267 Slate React Vitest tests passed.
 - cwd `plate-2`: `pnpm lint:fix` pass; no fixes applied.

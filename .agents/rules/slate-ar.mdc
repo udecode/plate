@@ -1,5 +1,5 @@
 ---
-description: Wrap Codex Autoresearch for Slate v2 measured loops. Delegates generic packet/dashboard/finalization mechanics to codex-autoresearch while enforcing `.tmp/slate-v2`, Slate correctness routing, target registry context, and short operator modes.
+description: Wrap Codex Autoresearch for Slate v2 measured loops. Delegates generic packet/dashboard/finalization mechanics to codex-autoresearch while enforcing `Plate repo root`, Slate correctness routing, target registry context, and short operator modes.
 argument-hint: '[continue | status | finalize preview | research <topic> | quality gap | measured Slate v2 target]'
 disable-model-invocation: true
 ---
@@ -78,11 +78,11 @@ or finalization rules.
 
 ## Slate Defaults
 
-- Target cwd is `.tmp/slate-v2`.
+- Target cwd is `Plate repo root`.
 - `plate-2` is the control plane for package shortcuts and target registry
   commands. It does not prove Slate v2 runtime behavior.
-- Active loop truth lives in `.tmp/slate-v2/autoresearch.*` and
-  `.tmp/slate-v2/autoresearch.research/**`.
+- Active loop truth lives in `.tmp/slate-autoresearch/autoresearch.*` and
+  `.tmp/slate-autoresearch/research/**`.
 - `benchmarks/targets/slate-v2.json` is supporting context for target-backed
   loops; perf-specific registry policy lives in `slate-ar-perf`.
 - Slate correctness beats local metric movement. A packet that breaks editor
@@ -128,7 +128,7 @@ Use the `slate-ar*` skills as the operator entrypoints. Do not invent package
 scripts for Slate AR; Plate only exposes benchmark target scripts.
 
 For exact shell execution, load `codex-autoresearch:codex-autoresearch` and use
-its CLI fallback with `--cwd .tmp/slate-v2`. For target-backed setup from the
+its CLI fallback with `--cwd .`. For target-backed setup from the
 Plate control repo, use:
 
 ```bash
@@ -148,7 +148,7 @@ node tooling/scripts/bench-targets.mjs autoresearch-init <target-id>
    - performance optimization: `slate-ar-perf`;
    - public API/runtime redesign: `slate-plan`;
    - measured loop, quality gap, status, or finalization: continue here.
-3. Read existing `.tmp/slate-v2/autoresearch.*` session files when present.
+3. Read existing `.tmp/slate-autoresearch/autoresearch.*` session files when present.
 4. Use generic Codex Autoresearch for onboarding, recommendation, doctor,
    dashboard, packet, log, stale-packet, segment, and finalization mechanics.
 5. Keep Slate-specific routing in force after every packet:
@@ -164,7 +164,7 @@ node tooling/scripts/bench-targets.mjs autoresearch-init <target-id>
 Use generic Codex Autoresearch deep-research and quality-gap workflow. Slate
 additions:
 
-- keep sources under `.tmp/slate-v2/autoresearch.research/**`;
+- keep sources under `.tmp/slate-autoresearch/research/**`;
 - turn accepted implementation gaps into Slate proof rows or target rows;
 - route test/behavior suite gaps with an existing oracle to `slate-ar-gate`;
 - route perf-specific gaps to `slate-ar-perf`;
@@ -178,14 +178,14 @@ that no more Slate gaps exist.
 
 Use generic Codex Autoresearch finalization flow. Slate defaults:
 
-- run Codex Autoresearch `finalize-preview --cwd .tmp/slate-v2` first;
+- run Codex Autoresearch `finalize-preview --cwd .` first;
 - default finalization is preview-only. It may generate/read finalization plan
   JSON, but must not execute `finalize-autoresearch.mjs <plan>` or create
   `autoresearch-review/*` branches unless the user explicitly asks to create
   review branches;
 - exclude `autoresearch.*`, `autoresearch.research/**`, dashboard exports, and
   finalization scratch files unless the user asks to review session artifacts;
-- use Codex Autoresearch `finalize-current-tree --cwd .tmp/slate-v2` only as a
+- use Codex Autoresearch `finalize-current-tree --cwd .` only as a
   readiness preview when the current tree is the review unit because kept
   commits were later corrected, bundled, or reverted;
 - branch creation, cleanup, commit, push, and PR work require explicit user

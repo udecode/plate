@@ -393,9 +393,9 @@ Allowed internally:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/create-editor.ts`
+- `packages/slate/src/core/public-state.ts`
 
 Implement:
 
@@ -416,17 +416,17 @@ Implement:
 
 Tests:
 
-- `.tmp/slate-v2/packages/slate/test/read-update-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
+- `packages/slate/test/read-update-contract.ts`
+- `packages/slate/test/transaction-contract.ts`
 
 ### Phase 2: Primitive Method Runtime Contract
 
 Files:
 
-- `.tmp/slate-v2/packages/slate/src/transforms-node/**`
-- `.tmp/slate-v2/packages/slate/src/transforms-text/**`
-- `.tmp/slate-v2/packages/slate/src/transforms-selection/**`
-- `.tmp/slate-v2/packages/slate/src/editor/**`
+- `packages/slate/src/transforms-node/**`
+- `packages/slate/src/transforms-text/**`
+- `packages/slate/src/transforms-selection/**`
+- `packages/slate/src/editor/**`
 
 Implement:
 
@@ -439,17 +439,17 @@ Implement:
 
 Tests:
 
-- `.tmp/slate-v2/packages/slate/test/primitive-method-runtime-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/editor-methods-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
+- `packages/slate/test/primitive-method-runtime-contract.ts`
+- `packages/slate/test/editor-methods-contract.ts`
+- `packages/slate/test/transaction-target-runtime-contract.ts`
 
 ### Phase 3: Extension Runtime
 
 Files:
 
-- `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`
+- `packages/slate/src/core/extension-registry.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/test/extension-methods-contract.ts`
 
 Implement:
 
@@ -464,10 +464,10 @@ Implement:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/**`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/**`
+- `packages/slate-react/src/components/slate.tsx`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/**`
+- `packages/slate-react/src/hooks/**`
 
 Implement:
 
@@ -480,18 +480,18 @@ Implement:
 
 Tests:
 
-- `.tmp/slate-v2/packages/slate-react/test/target-runtime-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/test/dom-text-sync-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `packages/slate-react/test/target-runtime-contract.ts`
+- `packages/slate-react/test/dom-text-sync-contract.ts`
+- `packages/slate-react/test/large-doc-and-scroll.tsx`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
 
 ### Phase 5: Public API Hard Cuts
 
 Files:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/index.ts`
-- `.tmp/slate-v2/site/examples/ts/**`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/index.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/**`
 - docs under `docs/slate-v2/**`
 
 Cut:
@@ -504,16 +504,16 @@ Cut:
 
 Tests:
 
-- `.tmp/slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/write-boundary-contract.ts`
+- `packages/slate/test/public-field-hard-cut-contract.ts`
+- `packages/slate/test/write-boundary-contract.ts`
 - type tests for public surface if available
 
 ### Phase 6: Browser Gauntlets
 
 Files:
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/**`
-- `.tmp/slate-v2/playwright/integration/examples/**`
+- `packages/browser/src/playwright/**`
+- `apps/www/tests/slate-browser/donor/examples/**`
 
 Generate scenario families:
 
@@ -1062,15 +1062,15 @@ Before new code, inventory the actual current state.
 
 Do:
 
-- list existing editor methods in `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- list existing editor methods in `packages/slate/src/interfaces/editor.ts`
 - list which methods already call `Editor.withTransaction`
 - list which methods or transforms resolve implicit selection unsafely
 - list `Transforms.*` wrappers that already delegate to editor methods and
   wrappers that still bypass the method runtime
 - list public mutable field reads/writes in:
-  - `.tmp/slate-v2/packages/slate/**`
-  - `.tmp/slate-v2/packages/slate-react/**`
-  - `.tmp/slate-v2/site/examples/ts/**`
+  - `packages/slate/**`
+  - `packages/slate-react/**`
+  - `apps/www/src/app/(app)/examples/slate/_examples/**`
 - list direct `Transforms.*` use in examples and React-facing tests
 - classify each mutable field use:
   - internal storage
@@ -1162,7 +1162,7 @@ Scenario:
 
 Primary file:
 
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Expected first owner:
 
@@ -1436,10 +1436,10 @@ Add the framework-neutral target runtime hook.
 
 Primary files:
 
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/core/transaction.ts`
-- `.tmp/slate-v2/packages/slate/src/core/apply.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/core/transaction.ts`
+- `packages/slate/src/core/apply.ts`
+- `packages/slate/src/interfaces/editor.ts`
 
 Required behavior:
 
@@ -1452,7 +1452,7 @@ Required behavior:
 
 Tests:
 
-- `.tmp/slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
+- `packages/slate/test/transaction-target-runtime-contract.ts`
 
 Scenarios:
 
@@ -1468,11 +1468,11 @@ Promote editor methods as the only primary write API.
 
 Primary files:
 
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-node/**`
-- `.tmp/slate-v2/packages/slate/src/transforms-selection/**`
-- `.tmp/slate-v2/packages/slate/src/transforms-text/**`
+- `packages/slate/src/create-editor.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/transforms-node/**`
+- `packages/slate/src/transforms-selection/**`
+- `packages/slate/src/transforms-text/**`
 
 Required methods:
 
@@ -1504,8 +1504,8 @@ Rules:
 
 Tests:
 
-- `.tmp/slate-v2/packages/slate/test/editor-methods-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
+- `packages/slate/test/editor-methods-contract.ts`
+- `packages/slate/test/public-field-hard-cut-contract.ts`
 
 ### Phase 4: Public Field Hard Cut
 
@@ -1513,10 +1513,10 @@ Hard cut stalable fields from the public type/documented surface.
 
 Primary files:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/index.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/create-editor.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/index.ts`
 
 Cut from public primary surface:
 
@@ -1547,7 +1547,7 @@ Rules:
 
 Tests:
 
-- `.tmp/slate-v2/packages/slate/test/public-field-hard-cut-contract.ts`
+- `packages/slate/test/public-field-hard-cut-contract.ts`
 - type-level public API test if the package already has a type-test lane
 
 ### Phase 5: React Target Runtime
@@ -1556,11 +1556,11 @@ Install browser implicit-target resolution in `slate-react`.
 
 Primary files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/components/slate.tsx`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/selection-controller.ts`
+- `packages/slate-react/src/editable/input-controller.ts`
+- `packages/slate-react/src/editable/editing-kernel.ts`
 
 Required behavior:
 
@@ -1574,9 +1574,9 @@ Required behavior:
 
 Tests:
 
-- `.tmp/slate-v2/packages/slate-react/test/target-runtime-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts`
+- `packages/slate-react/test/target-runtime-contract.ts`
+- `packages/slate-react/test/editing-kernel-contract.ts`
+- `packages/slate-react/test/selection-controller-contract.ts`
 
 ### Phase 6: Example And Plugin Surface Migration
 
@@ -1584,9 +1584,9 @@ Migrate examples from `Transforms.*` and stale public fields to editor methods.
 
 Primary files:
 
-- `.tmp/slate-v2/site/examples/ts/richtext.tsx`
-- `.tmp/slate-v2/site/examples/ts/hovering-toolbar.tsx`
-- `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx` only after Android
+- `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/hovering-toolbar.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx` only after Android
   scheduling is accounted for
 - other examples only when a search proves direct `Transforms.*` use
 
@@ -1634,10 +1634,10 @@ Every row asserts:
 
 Primary files:
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`
+- `packages/browser/src/playwright/index.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/highlighted-text.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`
 
 ### Phase 8: Public Surface Cleanup
 
@@ -1971,23 +1971,23 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/add-mark.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/remove-mark.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/toggle-mark.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/index.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/is-editor.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/test/editor-methods-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
-- `.tmp/slate-v2/site/examples/ts/richtext.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
-- `.tmp/slate-v2/.changeset/editor-method-target-fresh-marks.md`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/create-editor.ts`
+- `packages/slate/src/editor/add-mark.ts`
+- `packages/slate/src/editor/remove-mark.ts`
+- `packages/slate/src/editor/toggle-mark.ts`
+- `packages/slate/src/editor/index.ts`
+- `packages/slate/src/editor/is-editor.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/test/editor-methods-contract.ts`
+- `packages/slate/test/transaction-target-runtime-contract.ts`
+- `packages/slate-react/src/components/slate.tsx`
+- `packages/slate-react/src/editable/selection-reconciler.ts`
+- `packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `packages/slate-react/test/large-doc-and-scroll.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
+- `Plate repo root/.changeset/editor-method-target-fresh-marks.md`
 - `docs/solutions/ui-bugs/2026-04-23-slate-react-unsynced-dom-text-ops-must-force-react-fallback.md`
 
 Rejected tactics:

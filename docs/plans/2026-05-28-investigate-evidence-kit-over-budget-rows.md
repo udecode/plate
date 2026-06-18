@@ -24,7 +24,7 @@ Task source:
 - id / link: current Codex thread
 - title: Investigate Evidence Kit over-budget rows
 - acceptance criteria: exact over-budget rows identified, source artifact and
-  threshold traced, current benchmark rerun performed from `.tmp/slate-v2`,
+  threshold traced, current benchmark rerun performed from `Plate repo root`,
   control-plane registry corrected when needed, Evidence Kit health/docs
   refreshed, and goal plan check passes.
 
@@ -42,7 +42,7 @@ Completion threshold:
 
 Verification surface:
 - `SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun run bench:core:clipboard-large-payload:local`
-  from `/Users/zbeyens/git/plate-2/.tmp/slate-v2`
+  from `/Users/zbeyens/git/plate-2/Plate repo root`
 - `npm run evidence:refresh` from `/Users/zbeyens/git/plate-2/benchmarks/editor`
 - `npm run docs:perf:check` from `/Users/zbeyens/git/plate-2/benchmarks/editor`
 - `node -e "JSON.parse(...benchmark-registry.json...)"`
@@ -61,7 +61,7 @@ Boundaries:
   Slate v2 clipboard benchmark artifact.
 - Allowed edit scope: `benchmarks/editor/research/benchmark-registry.json`,
   `benchmarks/editor/iterations/**`, generated benchmark/docs outputs, Slate v2
-  benchmark artifact under `.tmp/slate-v2/tmp`, and this plan.
+  benchmark artifact under `Plate repo root/tmp`, and this plan.
 - Browser surface: generated static perf index only.
 - Tracker sync: N/A, no issue tracker target.
 - Non-goals: no Slate v2 runtime optimization, no non-Slate adapter work, no PR.
@@ -145,12 +145,12 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | Fresh issue-shaped clipboard benchmark passed; Evidence Kit refresh/docs checks passed. |
 | Bug reproduced before fix | N/A | Record failing test/repro or N/A with reason | Not a product bug; this was benchmark health triage. |
-| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | Reran the exact `.tmp/slate-v2` clipboard issue-target benchmark. |
+| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | Reran the exact `Plate repo root` clipboard issue-target benchmark. |
 | TypeScript or typed config changed | N/A | Run relevant typecheck | No TypeScript or typed config changed. |
 | Package exports or file layout changed | N/A | Run `pnpm brl` before final verification and keep generated barrel updates | No package exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | N/A | Run `pnpm install` and relevant package checks | No package manifest or lockfile changed. |
 | Agent rules or skills changed | N/A | Run `pnpm install` and verify generated skill sync | No agent rule changed in this task. |
-| Workspace authority proof | yes | Run verification in owning repo/package/app/route/tool and record cwd | Clipboard benchmark ran from `.tmp/slate-v2`; Evidence Kit refresh ran from `benchmarks/editor`. |
+| Workspace authority proof | yes | Run verification in owning repo/package/app/route/tool and record cwd | Clipboard benchmark ran from `Plate repo root`; Evidence Kit refresh ran from `benchmarks/editor`. |
 | Browser surface changed | yes | Capture Browser Use proof or record explicit waiver/blocker | Static index smoke via served URL returned 200 and no over-budget action. |
 | Browser final proof | yes | Attach screenshot or exact browser verification caveat when browser proof applies | Node fetch of `http://127.0.0.1:8765/index.html` verified generated page content. |
 | CI-controlled template output changed | N/A | Restore generated template output or record why intentionally kept | No CI-controlled template output changed. |
@@ -180,7 +180,7 @@ Phase / pass table:
 Findings:
 - Over-budget rows were `cutTwoBlocksEditMsP50` and `cutTwoBlocksMsP50` from
   `slate-clipboard-large-payload-threshold`.
-- They came from `.tmp/slate-v2/tmp/slate-clipboard-large-payload-benchmark.json`
+- They came from `tmp/slate-clipboard-large-payload-benchmark.json`
   and the registered `clipboard-large-payload` artifact.
 - The registry command used default mode, which does not reproduce the
   issue-shaped 50,000-block threshold artifact.
@@ -208,7 +208,7 @@ Error attempts:
 | None yet | 0 | | |
 
 Verification evidence:
-- `.tmp/slate-v2`: `SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun run bench:core:clipboard-large-payload:local` passed.
+- `Plate repo root`: `SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun run bench:core:clipboard-large-payload:local` passed.
 - Fresh thresholds: `cutTwoBlocksEditMsP50=145.74ms < 150ms`, `cutTwoBlocksMsP50=147.1ms < 250ms`, `operationCount=1`.
 - `benchmarks/editor`: `npm run evidence:refresh` passed and reported `nextActions=9`.
 - `benchmarks/editor`: `npm run docs:perf:check` passed.

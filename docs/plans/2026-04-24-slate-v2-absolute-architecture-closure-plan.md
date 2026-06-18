@@ -617,7 +617,7 @@ A pivot is not stop. A replan is not stop. A red browser lane is not stop.
 Start with Batch 1:
 
 1. inventory mutable fields, `Transforms.*`, `editor.apply`, and
-   `editor.onChange` usage in `.tmp/slate-v2`
+   `editor.onChange` usage in `Plate repo root`
 2. classify every hit by public, example, test, internal runtime, or compat
 3. add the first hard-cut contract for primary docs/examples
 4. migrate the highest-signal example rows first
@@ -704,8 +704,8 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`
-- `.tmp/slate-v2/site/examples/js/richtext.jsx`
+- `packages/slate/test/public-surface-contract.ts`
+- `apps/www/examples/js/richtext.jsx`
 
 Evidence:
 
@@ -784,34 +784,34 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`
-- `.tmp/slate-v2/packages/slate/package.json`
-- `.tmp/slate-v2/site/examples/ts/richtext.tsx`
-- `.tmp/slate-v2/site/examples/js/richtext.jsx`
-- `.tmp/slate-v2/site/examples/ts/forced-layout.tsx`
-- `.tmp/slate-v2/site/examples/js/forced-layout.jsx`
-- `.tmp/slate-v2/site/examples/ts/editable-voids.tsx`
-- `.tmp/slate-v2/site/examples/js/editable-voids.jsx`
-- `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
-- `.tmp/slate-v2/site/examples/js/paste-html.jsx`
-- `.tmp/slate-v2/site/examples/ts/check-lists.tsx`
-- `.tmp/slate-v2/site/examples/js/check-lists.jsx`
-- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
-- `.tmp/slate-v2/site/examples/js/embeds.jsx`
-- `.tmp/slate-v2/site/examples/ts/images.tsx`
-- `.tmp/slate-v2/site/examples/js/images.jsx`
-- `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
-- `.tmp/slate-v2/site/examples/js/code-highlighting.jsx`
-- `.tmp/slate-v2/site/examples/ts/inlines.tsx`
-- `.tmp/slate-v2/site/examples/js/inlines.jsx`
-- `.tmp/slate-v2/site/examples/ts/mentions.tsx`
-- `.tmp/slate-v2/site/examples/js/mentions.jsx`
-- `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
-- `.tmp/slate-v2/site/examples/js/markdown-shortcuts.jsx`
-- `.tmp/slate-v2/site/examples/ts/large-document-runtime.tsx`
-- `.tmp/slate-v2/site/examples/ts/review-comments.tsx`
-- `.tmp/slate-v2/site/examples/ts/persistent-annotation-anchors.tsx`
-- `.tmp/slate-v2/site/examples/js/huge-document.jsx`
+- `packages/slate/test/public-surface-contract.ts`
+- `packages/slate/package.json`
+- `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx`
+- `apps/www/examples/js/richtext.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/forced-layout.tsx`
+- `apps/www/examples/js/forced-layout.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx`
+- `apps/www/examples/js/editable-voids.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/paste-html.tsx`
+- `apps/www/examples/js/paste-html.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/check-lists.tsx`
+- `apps/www/examples/js/check-lists.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/embeds.tsx`
+- `apps/www/examples/js/embeds.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/images.tsx`
+- `apps/www/examples/js/images.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx`
+- `apps/www/examples/js/code-highlighting.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx`
+- `apps/www/examples/js/inlines.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/mentions.tsx`
+- `apps/www/examples/js/mentions.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx`
+- `apps/www/examples/js/markdown-shortcuts.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/large-document-runtime.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/review-comments.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/persistent-annotation-anchors.tsx`
+- `apps/www/examples/js/huge-document.jsx`
 
 Evidence:
 
@@ -893,8 +893,8 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts`
+- `packages/slate/test/transaction-target-runtime-contract.ts`
+- `packages/slate/test/commit-metadata-contract.ts`
 
 Evidence:
 
@@ -966,26 +966,26 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`
-- `.tmp/slate-v2/site/examples/ts/editable-voids.tsx`
-- `.tmp/slate-v2/site/examples/js/editable-voids.jsx`
-- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
-- `.tmp/slate-v2/site/examples/js/embeds.jsx`
-- `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
-- `.tmp/slate-v2/site/examples/js/paste-html.jsx`
-- `.tmp/slate-v2/site/examples/ts/images.tsx`
-- `.tmp/slate-v2/site/examples/js/images.jsx`
-- `.tmp/slate-v2/site/examples/ts/inlines.tsx`
-- `.tmp/slate-v2/site/examples/js/inlines.jsx`
-- `.tmp/slate-v2/site/examples/ts/mentions.tsx`
-- `.tmp/slate-v2/site/examples/js/mentions.jsx`
-- `.tmp/slate-v2/site/examples/ts/forced-layout.tsx`
-- `.tmp/slate-v2/site/examples/js/forced-layout.jsx`
-- `.tmp/slate-v2/site/examples/ts/large-document-runtime.tsx`
-- `.tmp/slate-v2/site/examples/js/tables.jsx`
-- `.tmp/slate-v2/site/examples/js/huge-document.jsx`
+- `packages/slate/src/core/editor-extension.ts`
+- `packages/slate/test/extension-methods-contract.ts`
+- `packages/slate/test/public-surface-contract.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx`
+- `apps/www/examples/js/editable-voids.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/embeds.tsx`
+- `apps/www/examples/js/embeds.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/paste-html.tsx`
+- `apps/www/examples/js/paste-html.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/images.tsx`
+- `apps/www/examples/js/images.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx`
+- `apps/www/examples/js/inlines.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/mentions.tsx`
+- `apps/www/examples/js/mentions.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/forced-layout.tsx`
+- `apps/www/examples/js/forced-layout.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/large-document-runtime.tsx`
+- `apps/www/examples/js/tables.jsx`
+- `apps/www/examples/js/huge-document.jsx`
 
 Evidence:
 
@@ -1072,10 +1072,10 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/dom-repair-queue.ts`
-- `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/editing-kernel.ts`
+- `packages/slate-react/src/editable/dom-repair-queue.ts`
+- `packages/slate-react/test/editing-kernel-contract.ts`
 
 Evidence:
 
@@ -1145,7 +1145,7 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Evidence:
 
@@ -1210,9 +1210,9 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/model-input-strategy.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Evidence:
 
@@ -1285,9 +1285,9 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Evidence:
 
@@ -1376,9 +1376,9 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Evidence:
 
@@ -1462,7 +1462,7 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Evidence:
 
@@ -1538,9 +1538,9 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts`
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/input-router.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Evidence:
 
@@ -1621,9 +1621,9 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `packages/slate-react/src/editable/mutation-controller.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Evidence:
 
@@ -1702,9 +1702,9 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/editable/model-input-strategy.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Evidence:
 
@@ -1786,8 +1786,8 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/src/editable/model-input-strategy.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Evidence:
 
@@ -1867,10 +1867,10 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/caret-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/src/editable/caret-engine.ts`
+- `packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Evidence:
 
@@ -1961,8 +1961,8 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts`
+- `packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `packages/slate-react/test/kernel-authority-audit-contract.ts`
 
 Evidence:
 
@@ -2049,9 +2049,9 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `packages/browser/src/playwright/index.ts`
+- `packages/browser/test/core/scenario.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -2135,9 +2135,9 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `packages/browser/src/playwright/index.ts`
+- `packages/browser/test/core/scenario.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -2233,9 +2233,9 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `packages/browser/src/playwright/index.ts`
+- `packages/browser/test/core/scenario.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -2322,8 +2322,8 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `packages/browser/src/playwright/index.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -2416,8 +2416,8 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `packages/browser/src/playwright/index.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -2524,8 +2524,8 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `packages/browser/src/playwright/index.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Evidence:
 
@@ -2637,11 +2637,11 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
+- `packages/browser/src/playwright/index.ts`
+- `packages/browser/test/core/scenario.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/large-document-runtime.test.ts`
 
 Evidence:
 
@@ -2755,9 +2755,9 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-browser/src/transports/contracts.ts`
-- `.tmp/slate-v2/packages/slate-browser/test/core/proof.test.ts`
-- `.tmp/slate-v2/packages/slate-browser/README.md`
+- `packages/browser/src/transports/contracts.ts`
+- `packages/browser/test/core/proof.test.ts`
+- `packages/browser/README.md`
 
 Evidence:
 
@@ -2856,9 +2856,9 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/tmp/react-rerender-breadth-local.json`
-- `.tmp/slate-v2/packages/slate-react/tmp/huge-document-legacy-compare-local.json`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/tmp/react-rerender-breadth-local.json`
+- `packages/slate-react/tmp/huge-document-legacy-compare-local.json`
 
 Evidence:
 
@@ -3084,14 +3084,14 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/turbo.json`
-- `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-browser/src/transports/contracts.ts`
-- `.tmp/slate-v2/packages/slate-browser/test/core/proof.test.ts`
-- `.tmp/slate-v2/packages/slate-browser/README.md`
-- final benchmark artifacts under `.tmp/slate-v2/packages/slate-react/tmp/**`
-- final Playwright artifacts under `.tmp/slate-v2/test-results/**`
+- `Plate repo root/turbo.json`
+- `apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/browser/src/transports/contracts.ts`
+- `packages/browser/test/core/proof.test.ts`
+- `packages/browser/README.md`
+- final benchmark artifacts under `packages/slate-react/tmp/**`
+- final Playwright artifacts under `Plate repo root/test-results/**`
 
 Evidence:
 
@@ -3222,24 +3222,24 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/is-editor.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/next.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/previous.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/transforms/general.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-node/insert-nodes.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-node/lift-nodes.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-node/merge-nodes.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-node/move-nodes.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-node/unwrap-nodes.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`
-- `.tmp/slate-v2/packages/slate/src/core/get-fragment.ts`
-- `.tmp/slate-v2/packages/slate/src/utils/modify.ts`
-- `.tmp/slate-v2/packages/slate/test/**`
-- `.tmp/slate-v2/docs/general/changelog.md`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/create-editor.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/editor/is-editor.ts`
+- `packages/slate/src/editor/next.ts`
+- `packages/slate/src/editor/previous.ts`
+- `packages/slate/src/interfaces/node.ts`
+- `packages/slate/src/interfaces/transforms/general.ts`
+- `packages/slate/src/transforms-node/insert-nodes.ts`
+- `packages/slate/src/transforms-node/lift-nodes.ts`
+- `packages/slate/src/transforms-node/merge-nodes.ts`
+- `packages/slate/src/transforms-node/move-nodes.ts`
+- `packages/slate/src/transforms-node/unwrap-nodes.ts`
+- `packages/slate/src/transforms-text/insert-fragment.ts`
+- `packages/slate/src/core/get-fragment.ts`
+- `packages/slate/src/utils/modify.ts`
+- `packages/slate/test/**`
+- `content/docs/slate/general/changelog.md`
 - `active goal state`
 - `docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md`
 
@@ -3346,32 +3346,32 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-- `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/is-editor.ts`
-- `.tmp/slate-v2/packages/slate/test/apply-onchange-hard-cut-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/escape-hatch-inventory-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/extension-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/surface-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/utils/range-list.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/utils/weak-maps.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/index.ts`
-- `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
-- `.tmp/slate-v2/packages/slate-history/test/index.spec.ts`
-- `.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/create-editor.ts`
+- `packages/slate/src/core/editor-extension.ts`
+- `packages/slate/src/core/extension-registry.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/editor/is-editor.ts`
+- `packages/slate/test/apply-onchange-hard-cut-contract.ts`
+- `packages/slate/test/escape-hatch-inventory-contract.ts`
+- `packages/slate/test/extension-contract.ts`
+- `packages/slate/test/snapshot-contract.ts`
+- `packages/slate/test/surface-contract.ts`
+- `packages/slate/test/transaction-contract.ts`
+- `packages/slate-dom/src/plugin/dom-editor.ts`
+- `packages/slate-dom/src/plugin/with-dom.ts`
+- `packages/slate-dom/src/utils/range-list.ts`
+- `packages/slate-dom/src/utils/weak-maps.ts`
+- `packages/slate-dom/src/index.ts`
+- `packages/slate-history/src/with-history.ts`
+- `packages/slate-history/test/index.spec.ts`
+- `packages/slate-history/test/integrity-contract.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/slate.tsx`
+- `packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `packages/slate-react/src/editable/composition-state.ts`
+- `packages/slate-react/src/editable/selection-reconciler.ts`
+- `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
 - `docs/solutions/developer-experience/2026-04-19-slate-public-single-op-writes-should-use-editor-apply-and-keep-onchange-behind-subscribers.md`
 - `active goal state`
 - `docs/plans/2026-04-24-slate-v2-absolute-architecture-closure-plan.md`
@@ -3448,9 +3448,9 @@ Decision:
 Owner classification:
 
 - active owner: `Transforms.*` namespace hard cut
-- source owner: `.tmp/slate-v2/packages/slate/**`
-- dependent owners: `.tmp/slate-v2/packages/slate-history/**`,
-  `.tmp/slate-v2/packages/slate-react/**`, and legacy fixtures that import from
+- source owner: `packages/slate/**`
+- dependent owners: `packages/slate-history/**`,
+  `packages/slate-react/**`, and legacy fixtures that import from
   `slate`
 
 Changed files:
@@ -3577,23 +3577,23 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/slate-v2/.changeset/remove-transforms-namespace.md`
-- `.tmp/slate-v2/docs/Summary.md`
-- `.tmp/slate-v2/docs/walkthroughs/03-defining-custom-elements.md`
-- `.tmp/slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md`
-- `.tmp/slate-v2/packages/slate/src/core/apply.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/insert-text.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/index.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/transforms/general.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/transforms/index.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/transforms/node.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/transforms/selection.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/transforms/text.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-text.ts`
-- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/surface-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/escape-hatch-inventory-contract.ts`
+- `Plate repo root/.changeset/remove-transforms-namespace.md`
+- `content/docs/slate/Summary.md`
+- `content/docs/slate/walkthroughs/03-defining-custom-elements.md`
+- `content/docs/slate/walkthroughs/07-enabling-collaborative-editing.md`
+- `packages/slate/src/core/apply.ts`
+- `packages/slate/src/editor/insert-text.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/interfaces/index.ts`
+- `packages/slate/src/interfaces/transforms/general.ts`
+- `packages/slate/src/interfaces/transforms/index.ts`
+- `packages/slate/src/interfaces/transforms/node.ts`
+- `packages/slate/src/interfaces/transforms/selection.ts`
+- `packages/slate/src/interfaces/transforms/text.ts`
+- `packages/slate/src/transforms-text/insert-text.ts`
+- `packages/slate/test/public-surface-contract.ts`
+- `packages/slate/test/surface-contract.ts`
+- `packages/slate/test/escape-hatch-inventory-contract.ts`
 - package source, fixture, and contract-test call sites migrated mechanically
   from `Transforms.*` to editor primitives
 - `docs/solutions/developer-experience/2026-04-09-slate-transform-namespaces-should-stay-thin-sugar-over-the-current-engine.md`
@@ -3647,16 +3647,16 @@ Commands:
 
 - `rg -n "slate-v2|read/update|editor.update|completion-check|hard cut" /Users/zbeyens/.codex/memories/MEMORY.md`
 - `rg -n "auto.?transaction|compatibility auto|write boundary|editor\\.update|read-update" docs/solutions docs/plans docs/research active goal state --glob '*.md'`
-- `rg -n "auto.?transaction|compatibility auto|write boundary|editor\\.update|withTransaction|applyOperations" .tmp/slate-v2/packages/slate/src .tmp/slate-v2/packages/slate/test .tmp/slate-v2/docs --glob '!**/dist/**'`
-- `sed -n '1,220p' .tmp/slate-v2/packages/slate/test/write-boundary-contract.ts`
-- `sed -n '1,1240p' .tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- `rg -n "auto.?transaction|compatibility auto|write boundary|editor\\.update|withTransaction|applyOperations" packages/slate/src packages/slate/test content/docs/slate --glob '!**/dist/**'`
+- `sed -n '1,220p' packages/slate/test/write-boundary-contract.ts`
+- `sed -n '1,1240p' packages/slate/src/core/public-state.ts`
 
 Evidence:
 
-- `.tmp/slate-v2/packages/slate/test/write-boundary-contract.ts` still has a
+- `packages/slate/test/write-boundary-contract.ts` still has a
   contract named `keeps direct primitive calls as compatibility
 auto-transactions`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts` only rejects direct
+- `packages/slate/src/core/public-state.ts` only rejects direct
   primitive writes from inside `editor.read`, not from ordinary userland
 - docs already mostly teach `editor.update(...)`, so the remaining gap is
   runtime enforcement and fixture/test migration
@@ -3677,7 +3677,7 @@ Decision:
 Owner classification:
 
 - active owner: primitive auto-transaction hard cut
-- source owner: `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
+- source owner: `packages/slate/src/core/public-state.ts`
 - dependent owners: Slate tests/fixtures and any React/history codepaths that
   relied on implicit primitive transactions
 
@@ -3853,7 +3853,7 @@ Evidence:
   - scoped mobile proof: semantic/proxy rows cannot satisfy raw mobile IME or
     clipboard claims
 - `SLATE_BROWSER_SOAK_ITERATIONS=2 bun test:persistent-soak` passed and wrote
-  `.tmp/slate-v2/test-results/release-proof/persistent-browser-soak.json`
+  `Plate repo root/test-results/release-proof/persistent-browser-soak.json`
 - `bunx turbo build --filter=./packages/slate-browser --force` passed
 - `bunx turbo typecheck --filter=./packages/slate-browser --force` passed
 - `bun run lint:fix` and `bun run lint` passed
@@ -3886,17 +3886,17 @@ Owner classification:
 
 Changed files:
 
-- `.tmp/slate-v2/package.json`
-- `.tmp/slate-v2/packages/slate-browser/package.json`
-- `.tmp/slate-v2/packages/slate-browser/src/core/index.ts`
-- `.tmp/slate-v2/packages/slate-browser/src/core/release-proof.ts`
-- `.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts`
-- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`
-- `.tmp/slate-v2/scripts/proof/mobile-device-proof.mjs`
-- `.tmp/slate-v2/scripts/proof/persistent-browser-soak.mjs`
-- `.tmp/slate-v2/site/examples/js/hovering-toolbar.jsx`
-- `.tmp/slate-v2/site/examples/ts/hovering-toolbar.tsx`
-- `.tmp/slate-v2/site/examples/ts/tables.tsx`
+- `Plate repo root/package.json`
+- `packages/browser/package.json`
+- `packages/browser/src/core/index.ts`
+- `packages/browser/src/core/release-proof.ts`
+- `packages/browser/test/core/release-proof.test.ts`
+- `packages/slate/test/public-surface-contract.ts`
+- `tooling/slate-v2/donor/proof/mobile-device-proof.mjs`
+- `tooling/slate-v2/donor/proof/persistent-browser-soak.mjs`
+- `apps/www/examples/js/hovering-toolbar.jsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/hovering-toolbar.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/tables.tsx`
 - `.agents/AGENTS.md`
 - `AGENTS.md`
 - `active goal state`

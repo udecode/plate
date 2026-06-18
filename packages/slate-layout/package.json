@@ -1,0 +1,75 @@
+{
+  "name": "@platejs/slate-layout",
+  "version": "54.0.0-beta.0",
+  "description": "Derived layout primitives for Slate editors.",
+  "keywords": [
+    "editor",
+    "layout",
+    "page",
+    "pagination",
+    "@platejs/slate"
+  ],
+  "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/slate-layout"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js",
+      "default": "./dist/react.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "brl": "echo 'No barrels to generate'",
+    "build": "tsdown --config ./tsdown.config.mts --log-level warn",
+    "clean": "rimraf dist lib",
+    "lint": "plate-pkg p:lint",
+    "lint:fix": "plate-pkg p:lint:fix",
+    "test": "bun test --preload ../../config/slate-source-test-setup.ts ./test",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@chenglou/pretext": "^0.0.7"
+  },
+  "devDependencies": {
+    "@happy-dom/global-registrator": "20.0.10",
+    "@testing-library/react": "16.3.0",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "@platejs/slate": "workspace:^",
+    "@platejs/slate-react": "workspace:^",
+    "@plate/scripts": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0",
+    "@platejs/slate": ">=54.0.0-beta.0",
+    "@platejs/slate-react": ">=54.0.0-beta.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

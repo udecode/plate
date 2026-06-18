@@ -1,7 +1,7 @@
 # slate v2 emotion shadcn hard cut
 
 Objective:
-Hard cut Emotion from `/Users/zbeyens/git/plate-2/.tmp/slate-v2` and migrate
+Hard cut Emotion from `/Users/zbeyens/git/plate-2/Plate repo root` and migrate
 the example/site styling surface to the existing shadcn default-style stack.
 Completion requires no live `@emotion`/`emotion`/`css(`/`cx(` references outside
 ignored generated build output, no `@emotion/css` dependency in the manifest or
@@ -25,17 +25,17 @@ Applied packs:
 Task source:
 - type: user prompt
 - id / link: N/A: direct chat request
-- title: `.tmp/slate-v2` Emotion hard cut to shadcn default style
+- title: `Plate repo root` Emotion hard cut to shadcn default style
 - acceptance criteria: remove Emotion dependency/usages, migrate examples to
   className/CSS/shadcn-style primitives, verify site and browser behavior.
 
 Completion threshold:
 - `rg -n '@emotion|emotion|css\(|cx\(' . --glob '!site/.next/**' --glob '!site/out/**'`
-  has zero matches from `/Users/zbeyens/git/plate-2/.tmp/slate-v2`.
+  has zero matches from `/Users/zbeyens/git/plate-2/Plate repo root`.
 - `package.json` and `bun.lock` no longer contain `@emotion/css`.
 - Affected example files no longer import or call Emotion and use stable
   class names backed by `site/public/index.css`.
-- `bun check` passes from `/Users/zbeyens/git/plate-2/.tmp/slate-v2`.
+- `bun check` passes from `/Users/zbeyens/git/plate-2/Plate repo root`.
 - Browser proof exercises representative migrated routes with zero console
   errors and zero generated Emotion-style `css-*` classes.
 
@@ -55,14 +55,14 @@ Constraints:
 - Do not add compatibility shims, fallback styling helpers, or new styling
   libraries.
 - Do not create commits, pushes, or PRs.
-- Do not revert unrelated dirty work in `.tmp/slate-v2`.
+- Do not revert unrelated dirty work in `Plate repo root`.
 
 Boundaries:
-- Source of truth: direct user prompt plus live `.tmp/slate-v2` source.
-- Allowed edit scope: `.tmp/slate-v2/site/**`, `.tmp/slate-v2/package.json`,
-  `.tmp/slate-v2/bun.lock`, and adjacent root-check fixes required to keep
+- Source of truth: direct user prompt plus live `Plate repo root` source.
+- Allowed edit scope: `apps/www/**`, `Plate repo root/package.json`,
+  `Plate repo root/bun.lock`, and adjacent root-check fixes required to keep
   verification honest.
-- Browser surface: `.tmp/slate-v2/site` examples app.
+- Browser surface: `apps/www` examples app.
 - Tracker sync: N/A: no tracker issue supplied.
 - Non-goals: no package runtime redesign and no PR work.
 
@@ -77,7 +77,7 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | Used `autogoal`, `hard-cut`, `task`, Browser skill, and attempted `autoreview` closeout |
 | Active goal checked or created | yes | `get_goal` returned no goal; `create_goal` created this objective |
-| Source of truth read before edits | yes | User prompt, `.tmp/slate-v2/package.json`, shadcn wiring, and Emotion audit read |
+| Source of truth read before edits | yes | User prompt, `Plate repo root/package.json`, shadcn wiring, and Emotion audit read |
 | Tracker comments and attachments read | N/A | No tracker item supplied |
 | Video transcript evidence required | N/A | No video supplied |
 | `docs/solutions` checked | yes | Searched `docs/solutions` for slate-v2/example/shadcn/emotion context |
@@ -102,7 +102,7 @@ Work Checklist:
 - [x] Release artifact requirement recorded as N/A because no published package
       user-visible delta is part of this patch.
 - [x] Branch handling recorded as N/A because no commit or PR was requested.
-- [x] Workspace authority recorded: proof commands ran in `.tmp/slate-v2`.
+- [x] Workspace authority recorded: proof commands ran in `Plate repo root`.
 - [x] Browser route, interaction path, and visible outcome recorded.
 - [x] Browser proof uses approved Browser first and records fallback after
       client-side local URL blocking.
@@ -124,7 +124,7 @@ Completion Gates:
 | Targeted behavior verification | yes | Browser-smoke representative migrated routes | Pagination, markdown-preview, search-highlighting, and comment-mode mounted expected migrated selectors; search produced 3 highlights |
 | TypeScript or typed config changed | yes | Run relevant typecheck | `bun typecheck:site`, `bun typecheck:root`, and full `bun check` passed |
 | Package manifests, lockfile, or install graph changed | yes | Run install and checks | `bun install` removed one package; `bun check` passed |
-| Workspace authority proof | yes | Run proof in owning checkout | All commands ran from `/Users/zbeyens/git/plate-2/.tmp/slate-v2` |
+| Workspace authority proof | yes | Run proof in owning checkout | All commands ran from `/Users/zbeyens/git/plate-2/Plate repo root` |
 | Browser surface changed | yes | Exercise route/interaction | Local Chromium smoke passed; Browser-client blocked local URLs with `ERR_BLOCKED_BY_CLIENT` |
 | Browser console/network check | yes | Record console state | Final browser smoke reported `errors: []` |
 | Browser final proof artifact | yes | Record screenshot path | `/tmp/slate-v2-shadcn-search.png` |
@@ -207,20 +207,20 @@ Error attempts:
 | Autoreview helper produced no output for >3 minutes | 1 | Terminate helper and do manual source review | Manual review cleanup applied and reverified |
 
 Verification evidence:
-- command: `bun install` from `.tmp/slate-v2` -> pass, saved lockfile, one
+- command: `bun install` from `Plate repo root` -> pass, saved lockfile, one
   package removed.
 - command: `rg -n '@emotion|emotion|css\(|cx\(' . --glob '!site/.next/**' --glob '!site/out/**'`
-  from `.tmp/slate-v2` -> zero matches.
+  from `Plate repo root` -> zero matches.
 - command: `rg -n '"@emotion/css"|@emotion|emotion' package.json bun.lock site/examples/ts site/public/index.css scripts --glob '!site/.next/**' --glob '!site/out/**'`
-  from `.tmp/slate-v2` -> zero matches.
-- command: `bun typecheck:site` from `.tmp/slate-v2` -> pass.
-- command: `bun typecheck:root` from `.tmp/slate-v2` -> pass.
-- command: `bun lint:fix` from `.tmp/slate-v2` -> pass.
-- command: `bun lint` from `.tmp/slate-v2` -> pass.
-- command: `bun check` from `.tmp/slate-v2` -> pass: lint, package/site/root
+  from `Plate repo root` -> zero matches.
+- command: `bun typecheck:site` from `Plate repo root` -> pass.
+- command: `bun typecheck:root` from `Plate repo root` -> pass.
+- command: `bun lint:fix` from `Plate repo root` -> pass.
+- command: `bun lint` from `Plate repo root` -> pass.
+- command: `bun check` from `Plate repo root` -> pass: lint, package/site/root
   typecheck, 1258 Bun tests, 35 slate-layout tests, and 457 slate-react Vitest
   tests.
-- browser: local Chromium smoke from `.tmp/slate-v2` against
+- browser: local Chromium smoke from `Plate repo root` against
   `http://localhost:3100` -> pass: pagination, markdown-preview,
   search-highlighting, and comment-mode selectors present; `css-*` class count
   0 on every checked route; search interaction produced 3 highlights; console
@@ -252,7 +252,7 @@ Reboot status:
 |----------|--------|
 | Where am I? | Closeout complete |
 | Where am I going? | Final response after checker and goal completion |
-| What is the goal? | Hard cut Emotion from `.tmp/slate-v2` and migrate site examples to shadcn/default-style CSS |
+| What is the goal? | Hard cut Emotion from `Plate repo root` and migrate site examples to shadcn/default-style CSS |
 | What have I learned? | Emotion was limited to example styling plus root dependency graph; shadcn was already wired |
 | What have I done? | Removed dependency/imports/runtime classes, moved styles to stylesheet, fixed fast-check blockers, verified with source audit, `bun check`, and browser smoke |
 

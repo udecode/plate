@@ -47,7 +47,7 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/slate": "workspace:*",
+    "@platejs/slate-legacy": "workspace:*",
     "@udecode/react-hotkeys": "workspace:*",
     "@udecode/react-utils": "workspace:*",
     "@udecode/utils": "workspace:*",

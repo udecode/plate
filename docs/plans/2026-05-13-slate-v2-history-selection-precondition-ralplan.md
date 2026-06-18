@@ -13,20 +13,20 @@ Completion:
 
 | Time                 | Pass                                      | Owner                                  | Status   | Evidence                                                                                                                                                                                                                        |
 | -------------------- | ----------------------------------------- | -------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-05-13T05:44:53Z | `ralph-history-selection-precondition`    | `.tmp/slate-v2/packages/slate-history` | started  | Completion state set back to `pending`; continuation prompt refreshed with repo-relative gates.                                                                                                                                 |
-| 2026-05-13T05:48:06Z | `ralph-history-selection-precondition`    | `.tmp/slate-v2/packages/slate-history` | complete | Added mixed-commit package red/green tests, fixed batch precondition capture, kept trailing selection ops, and passed focused package/type/browser/lint gates.                                                                  |
-| 2026-05-13T06:39:00Z | `ralph-scroll-into-view-caret-regression` | `.tmp/slate-v2/packages/slate-react`   | complete | Added strict scroll-into-view Playwright row for repeated manual scroll-away, delayed undo, restored selection, and third typing target; repaired model-owned history caret ownership and passed focused browser/package gates. |
+| 2026-05-13T05:44:53Z | `ralph-history-selection-precondition`    | `packages/slate-history` | started  | Completion state set back to `pending`; continuation prompt refreshed with repo-relative gates.                                                                                                                                 |
+| 2026-05-13T05:48:06Z | `ralph-history-selection-precondition`    | `packages/slate-history` | complete | Added mixed-commit package red/green tests, fixed batch precondition capture, kept trailing selection ops, and passed focused package/type/browser/lint gates.                                                                  |
+| 2026-05-13T06:39:00Z | `ralph-scroll-into-view-caret-regression` | `packages/slate-react`   | complete | Added strict scroll-into-view Playwright row for repeated manual scroll-away, delayed undo, restored selection, and third typing target; repaired model-owned history caret ownership and passed focused browser/package gates. |
 
 Implementation files:
 
-- `.tmp/slate-v2/packages/slate-history/src/with-history.ts`
-- `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`
-- `.tmp/slate-v2/playwright/integration/examples/scroll-into-view.test.ts`
+- `packages/slate-history/src/with-history.ts`
+- `packages/slate-history/test/history-contract.ts`
+- `packages/slate-react/src/editable/input-controller.ts`
+- `packages/slate-react/src/editable/keyboard-input-strategy.ts`
+- `packages/slate-react/src/editable/mutation-controller.ts`
+- `packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `packages/slate-react/src/editable/selection-controller.ts`
+- `apps/www/tests/slate-browser/donor/examples/scroll-into-view.test.ts`
 
 Implementation proof:
 
@@ -126,15 +126,15 @@ Pressure test:
 
 | Surface              | Current owner                                                             | Current shape                                                                                                                        | Verdict                                                                              |
 | -------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| History batch shape  | `.tmp/slate-v2/packages/slate-history/src/history.ts:9-12`                | `Batch` stores `operations` and `selectionBefore`.                                                                                   | Keep the shape for now; compute `selectionBefore` correctly.                         |
-| Undo                 | `.tmp/slate-v2/packages/slate-history/src/with-history.ts:56-78`          | Replays inverse batch operations, then sets `batch.selectionBefore`.                                                                 | Correct order, wrong value when the batch start selection is stale.                  |
-| Redo                 | `.tmp/slate-v2/packages/slate-history/src/with-history.ts:33-54`          | Sets `batch.selectionBefore`, then replays original operations.                                                                      | Can stay if leading selection imports are trimmed or made harmless.                  |
-| Batch capture        | `.tmp/slate-v2/packages/slate-history/src/with-history.ts:140-148`        | New batch stores all `committedOps` and `change.selectionBefore`.                                                                    | Root bug: commit-wide `selectionBefore` predates leading DOM-import `set_selection`. |
-| Save policy          | `.tmp/slate-v2/packages/slate-history/src/with-history.ts:219-228`        | `set_selection` does not make a commit saveable.                                                                                     | Reuse this distinction to find the first saveable op.                                |
-| Commit metadata      | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:943-983`           | Commits include operations, metadata, tags, `selectionBefore`, and `selectionAfter`.                                                 | Enough data exists; no public API needed.                                            |
-| Commit dirtiness     | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:659-827`           | Text commits may include `set_selection` and text ops in one commit.                                                                 | History must understand mixed commits.                                               |
-| Existing browser row | `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:271-300` | Plaintext middle-line typing undo restores caret.                                                                                    | Useful guard, but not enough; it does not catch the mixed-commit package bug.        |
-| Existing history row | `.tmp/slate-v2/packages/slate-history/test/history-contract.ts:356-396`   | Covers selection import sharing a later text commit, but starts from `null` and does not assert stale model selection before import. | Keep, then add the exact red.                                                        |
+| History batch shape  | `packages/slate-history/src/history.ts:9-12`                | `Batch` stores `operations` and `selectionBefore`.                                                                                   | Keep the shape for now; compute `selectionBefore` correctly.                         |
+| Undo                 | `packages/slate-history/src/with-history.ts:56-78`          | Replays inverse batch operations, then sets `batch.selectionBefore`.                                                                 | Correct order, wrong value when the batch start selection is stale.                  |
+| Redo                 | `packages/slate-history/src/with-history.ts:33-54`          | Sets `batch.selectionBefore`, then replays original operations.                                                                      | Can stay if leading selection imports are trimmed or made harmless.                  |
+| Batch capture        | `packages/slate-history/src/with-history.ts:140-148`        | New batch stores all `committedOps` and `change.selectionBefore`.                                                                    | Root bug: commit-wide `selectionBefore` predates leading DOM-import `set_selection`. |
+| Save policy          | `packages/slate-history/src/with-history.ts:219-228`        | `set_selection` does not make a commit saveable.                                                                                     | Reuse this distinction to find the first saveable op.                                |
+| Commit metadata      | `packages/slate/src/interfaces/editor.ts:943-983`           | Commits include operations, metadata, tags, `selectionBefore`, and `selectionAfter`.                                                 | Enough data exists; no public API needed.                                            |
+| Commit dirtiness     | `packages/slate/src/core/public-state.ts:659-827`           | Text commits may include `set_selection` and text ops in one commit.                                                                 | History must understand mixed commits.                                               |
+| Existing browser row | `apps/www/tests/slate-browser/donor/examples/plaintext.test.ts:271-300` | Plaintext middle-line typing undo restores caret.                                                                                    | Useful guard, but not enough; it does not catch the mixed-commit package bug.        |
+| Existing history row | `packages/slate-history/test/history-contract.ts:356-396`   | Covers selection import sharing a later text commit, but starts from `null` and does not assert stale model selection before import. | Keep, then add the exact red.                                                        |
 
 Verification evidence from `/Users/zbeyens/git/slate-v2`:
 
@@ -394,7 +394,7 @@ Rollback/hard-cut answer:
 
 ## Implementation Phases For Ralph
 
-1. Add red tests in `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`:
+1. Add red tests in `packages/slate-history/test/history-contract.ts`:
    - leading `set_selection` plus `insert_text` undo restores the imported
      caret;
    - redo returns to the post-insert caret;

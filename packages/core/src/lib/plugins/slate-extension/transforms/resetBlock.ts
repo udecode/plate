@@ -1,4 +1,4 @@
-import { type Path, NodeApi } from '@platejs/slate';
+import { type Path, NodeApi } from '@platejs/slate-legacy';
 
 import type { SlateEditor } from '../../../editor';
 

@@ -23,7 +23,7 @@ starting a broad `slate` rewrite.
 Primary truth, in order:
 
 1. legacy same-path source and fixtures in `../slate/packages/slate/**`
-2. live shipped `.tmp/slate-v2/packages/slate/**`
+2. live shipped `packages/slate/**`
 3. supporting tranche-3 classification in
    [2026-04-18-slate-v2-slate-claim-width-classification.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-18-slate-v2-slate-claim-width-classification.md)
 4. draft package files in `.tmp/slate-v2-draft/packages/slate/**` only as

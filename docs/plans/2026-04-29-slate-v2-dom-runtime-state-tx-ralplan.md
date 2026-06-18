@@ -1097,7 +1097,7 @@ Closure pass verified:
 Implementation activation:
 
 - 2026-04-29T20:48:32Z: `ralph` started implementation in sibling
-  `.tmp/slate-v2`.
+  `Plate repo root`.
 - Phase 1 complete: added `state.fragment.get(...)` and
   `tx.fragment.get(...)`, migrated selected-fragment clipboard contract reads,
   and verified with focused package tests plus `bun --filter slate typecheck`.

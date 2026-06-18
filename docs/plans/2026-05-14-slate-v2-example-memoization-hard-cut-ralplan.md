@@ -4,7 +4,7 @@ Date: 2026-05-14
 Status: done
 Score: 0.92
 Owner: Slate Ralplan planning only
-Execution owner: ralph in `.tmp/slate-v2`
+Execution owner: ralph in `Plate repo root`
 
 ## Verdict
 
@@ -33,9 +33,9 @@ can keep memoization when identity is a real implementation detail.
 
 Inventory source:
 
-- `.tmp/slate-v2/site/examples/ts`
-- `.tmp/slate-v2/docs`
-- `.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples`
+- `content/docs/slate`
+- `packages/slate-react/test/input-router-contract.test.tsx`
 
 Implementation edits are out of scope for this pass.
 
@@ -280,20 +280,20 @@ important architecture issue.
 
 This pass re-grounded the plan in current Slate v2 source and docs:
 
-- `.tmp/slate-v2/site/examples/ts`: searched for all `useCallback` and `useMemo`
+- `apps/www/src/app/(app)/examples/slate/_examples`: searched for all `useCallback` and `useMemo`
   examples.
-- `.tmp/slate-v2/docs`: searched for all docs that teach `useCallback` or
+- `content/docs/slate`: searched for all docs that teach `useCallback` or
   `useMemo`.
-- `.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx`: read
+- `packages/slate-react/test/input-router-contract.test.tsx`: read
   test-only memoization.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-editor.ts`: read
+- `packages/slate-react/src/hooks/use-slate-editor.ts`: read
   current editor construction API.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotation-store.tsx`
-  and `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-widget-store.tsx`:
+- `packages/slate-react/src/hooks/use-slate-annotation-store.tsx`
+  and `packages/slate-react/src/hooks/use-slate-widget-store.tsx`:
   read projection-store identity behavior.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`: read current
+- `packages/slate/src/interfaces/editor.ts`: read current
   non-React `EditorElementSpec`.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`:
+- `packages/slate-react/src/components/editable-text-blocks.tsx`:
   read renderer and rendering-strategy prop identity pressure.
 
 Initial score is intentionally below the completion threshold:
@@ -333,7 +333,7 @@ Passes 1 through 12 are complete. The plan is ready for user review and later
 
 ## Verification Plan
 
-From `.tmp/slate-v2`:
+From `Plate repo root`:
 
 - focused `slate-react` unit tests for renderer capability and key command
   routing
@@ -461,33 +461,33 @@ Status: complete.
 
 Live source refresh for this pass:
 
-- `.tmp/slate-v2/docs/walkthroughs/09-performance.md:44` still tells users to
+- `content/docs/slate/walkthroughs/09-performance.md:44` still tells users to
   stabilize `renderElement`, `renderLeaf`, `renderText`, and `renderSegment`
   with top-level functions or `useCallback`.
-- `.tmp/slate-v2/docs/concepts/09-rendering.md:17` and
-  `.tmp/slate-v2/docs/concepts/09-rendering.md:45` still teach
+- `content/docs/slate/concepts/09-rendering.md:17` and
+  `content/docs/slate/concepts/09-rendering.md:45` still teach
   `useCallback`-wrapped render functions.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:87` exposes
+- `packages/slate-react/src/components/editable.tsx:87` exposes
   `inputRules`, `renderingStrategy`, `onDOMBeforeInput`, `onCommand`,
   `onKeyDown`, and `scrollSelectionIntoView` as raw `Editable` props.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:216` defines
-  `EditableCommandHandler`; `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:227`
+- `packages/slate-react/src/components/editable.tsx:216` defines
+  `EditableCommandHandler`; `packages/slate-react/src/components/editable.tsx:227`
   defines the raw `onDOMBeforeInput` escape hatch with command context.
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:144`
+- `packages/slate-react/src/editable/runtime-root-engine.ts:144`
   still rebuilds effective input rules from the `inputRules` prop identity.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:501`
+- `packages/slate-react/src/components/editable-text-blocks.tsx:501`
   still accepts raw `renderElement`; the render callback remains a hot path.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotation-store.tsx:15`
-  and `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-widget-store.tsx:17`
+- `packages/slate-react/src/hooks/use-slate-annotation-store.tsx:15`
+  and `packages/slate-react/src/hooks/use-slate-widget-store.tsx:17`
   still take projected arrays directly and refresh when array identity changes.
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-editor.ts:23` constructs
-  the editor lazily, but `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:619`
+- `packages/slate-react/src/hooks/use-slate-editor.ts:23` constructs
+  the editor lazily, but `packages/slate/src/interfaces/editor.ts:619`
   still types `CreateEditorOptions.initialValue` as a value, while extension
-  runtime state at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:869`
+  runtime state at `packages/slate/src/interfaces/editor.ts:869`
   already permits lazy initializers.
-- `.tmp/slate-v2/site/examples/ts/tables.tsx:105`,
-  `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx:87`, and
-  `.tmp/slate-v2/site/examples/ts/rendering-strategy-runtime.tsx:508` remain
+- `apps/www/src/app/(app)/examples/slate/_examples/tables.tsx:105`,
+  `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx:87`, and
+  `apps/www/src/app/(app)/examples/slate/_examples/rendering-strategy-runtime.tsx:508` remain
   representative example-local memoization sites.
 
 Intent:
@@ -747,13 +747,13 @@ Live source pressure evidence:
 
 - `EditableDOMRootProps` still exposes `inputRules`, `renderingStrategy`,
   `onDOMBeforeInput`, `onCommand`, and `onKeyDown` as raw props in
-  `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`.
+  `packages/slate-react/src/components/editable.tsx`.
 - Rendering strategy metrics already include cohort, degradation mode,
   DOM node count, mounted counts, shell counts, and `nativeSurfaceComplete` in
-  `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`.
+  `packages/slate-react/src/components/editable.tsx`.
 - `EditableTextBlocks` still accepts raw `renderElement`, `renderLeaf`,
   `renderText`, `renderSegment`, and `renderVoid` props in
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`.
+  `packages/slate-react/src/components/editable-text-blocks.tsx`.
 - `runtime-root-engine.ts` still memoizes effective input rules by
   `inputRules` prop identity.
 - `useSlateAnnotationStore` and `useSlateWidgetStore` still refresh when the
@@ -1036,11 +1036,11 @@ Live API refresh used for this pass:
 
 - `EditableDOMRootProps` still exposes `inputRules`, `renderingStrategy`,
   `onDOMBeforeInput`, `onCommand`, and `onKeyDown` in
-  `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`.
+  `packages/slate-react/src/components/editable.tsx`.
 - `EditableTextBlocks` still forwards `renderElement`, `renderLeaf`,
   `renderText`, `renderSegment`, and `renderVoid`, and memo comparison still
   includes renderer identity in
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`.
+  `packages/slate-react/src/components/editable-text-blocks.tsx`.
 - `runtime-root-engine.ts` still derives effective input rules from
   `inputRules` prop identity and owns Android/native input routing.
 - `useSlateAnnotationStore` and `useSlateWidgetStore` still refresh from
@@ -1155,7 +1155,7 @@ Ecosystem evidence refreshed:
 - Slate v2 current source already exposes `editor.read`, `editor.update`,
   extension `state`/`tx`, commands, commit listeners, metadata, operations,
   bookmarks, and selection impact metadata in
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`.
+  `packages/slate/src/interfaces/editor.ts`.
 - Lexical confirms command listeners, dirty node tracking, root/decorator/update
   listeners, and read/update lifecycle are worth stealing structurally.
 - ProseMirror confirms transactions should own document changes, selection,
@@ -1502,7 +1502,7 @@ Execution slices:
 Closeout:
 
 - `completion-closeout`
-- Owner: `.tmp/slate-v2` package, site, lint, browser, and `plate-2` checkpoint
+- Owner: `Plate repo root` package, site, lint, browser, and `plate-2` checkpoint
   gates.
 - Result: scoped checkpoint set to `done` after all in-scope implementation,
   reference sync, compound note, and verification gates closed.

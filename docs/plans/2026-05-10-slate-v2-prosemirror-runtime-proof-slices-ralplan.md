@@ -22,7 +22,7 @@ runtime proof slices:
 
 The broad ProseMirror harvest is already complete. The all-editor and
 remaining-harvest plans already closed the first execution wave, and the live
-`.tmp/slate-v2` owner scan confirms that several rows are now covered directly.
+`Plate repo root` owner scan confirms that several rows are now covered directly.
 So the next move is not "add all five again." The next move is a focused
 ClawSweeper and live-source revalidation pass that classifies each row as:
 already sufficient, needs one hardening row, or explicitly no-claim/defer.
@@ -43,7 +43,7 @@ the PR narrative.
 In scope:
 
 - The five raw Slate rows PM-08, PM-09, PM-10, PM-12, and PM-13.
-- Live `.tmp/slate-v2` owner tests for input routing, editing kernel,
+- Live `Plate repo root` owner tests for input routing, editing kernel,
   collaboration, projection, widgets, annotations, and browser selection.
 - Issue-ledger accounting before any fixed/improved claim changes.
 - Plate-owned routing for ProseMirror PluginView/NodeView/MarkView leftovers.
@@ -93,7 +93,7 @@ Drivers:
 Chosen path:
 
 - Run one issue-facing ClawSweeper revalidation for the five PM rows.
-- Read the exact current live source ranges in `.tmp/slate-v2`.
+- Read the exact current live source ranges in `Plate repo root`.
 - Only schedule hardening rows where the live tests still miss a ProseMirror
   invariant.
 - Keep PM plugin/view authoring rows as Plate-owned unless reduced to a raw
@@ -121,7 +121,7 @@ Consequences:
 Live-source probe:
 
 ```bash
-rg -n "describe\(|it\(|test\(" .tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts .tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts .tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts .tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts .tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx .tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx .tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx .tmp/slate-v2/packages/slate-browser/test/browser/selection.browser.test.ts .tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts .tmp/slate-v2/playwright/stress/generated-editing.test.ts
+rg -n "describe\(|it\(|test\(" packages/slate-react/test/model-input-strategy-contract.test.ts packages/slate-react/test/editing-kernel-contract.ts packages/slate-react/test/selection-reconciler-contract.ts packages/slate/test/collab-history-runtime-contract.ts packages/slate-react/test/projections-and-selection-contract.tsx packages/slate-react/test/annotation-store-contract.tsx packages/slate-react/test/widget-layer-contract.tsx packages/browser/test/browser/selection.browser.test.ts apps/www/tests/slate-browser/donor/examples/dom-coverage-boundaries.test.ts apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
 ```
 
 | PM row                          | Current owner evidence                                                                                                                                                                                                          | Initial classification                                                                                                                                                                                                                                                                     |
@@ -151,22 +151,22 @@ rg -n "describe\(|it\(|test\(" .tmp/slate-v2/packages/slate-react/test/model-inp
      solution notes.
    - If any PM pressure is missing, add exactly one focused row to the existing
      package or browser owner. Browser rows must use honest DOM/native proof.
-   - Fast gate: `cd .tmp/slate-v2 && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/selection-reconciler-contract.ts`
-   - Browser gate if changed: `cd .tmp/slate-v2 && bun playwright test playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium`
+   - Fast gate: `cd Plate repo root && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/selection-reconciler-contract.ts`
+   - Browser gate if changed: `cd Plate repo root && bun playwright test playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium`
 
 2. PM-09 DOM-change:
 
    - Read ambiguous replacement, Android backspace, Enter split, DOM selection
      refresh, and generated stress ownership.
    - If still thin, add one package routing row before touching browser stress.
-   - Fast gate: `cd .tmp/slate-v2 && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/editing-kernel-contract.ts`
+   - Fast gate: `cd Plate repo root && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/editing-kernel-contract.ts`
 
 3. PM-08 collaboration convergence:
 
    - Read the three-peer convergence and history rebase rows.
    - If PM's delayed-local or undo/redo peer case is not covered, add one small
      convergence row to `collab-history-runtime-contract.ts`.
-   - Fast gate: `cd .tmp/slate-v2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts`
+   - Fast gate: `cd Plate repo root && bun test ./packages/slate/test/collab-history-runtime-contract.ts`
 
 4. PM-12 projection/widget mapping:
 
@@ -175,14 +175,14 @@ rg -n "describe\(|it\(|test\(" .tmp/slate-v2/packages/slate-react/test/model-inp
    - If missing, add one hardening row only in the existing owner file.
    - Keep NodeView/MarkView/contentDOM/update/ignoreMutation/destroy/getPos as
      Plate-owned unless the row reduces to raw projection/widget behavior.
-   - Fast gate: `cd .tmp/slate-v2/packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`
+   - Fast gate: `cd packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`
 
 5. PM-13 geometry/RTL:
    - Read simple snapshot, FEFF zero-width, RTL geometry, and wrapped-line
      rectangle rows.
    - If missing, schedule atom arrow-motion or block-boundary rectangle as a
      browser-only future row.
-   - Fast gate: `cd .tmp/slate-v2 && bun --filter slate-browser test:selection`
+   - Fast gate: `cd Plate repo root && bun --filter slate-browser test:selection`
 
 ## Issue-Ledger Accounting
 
@@ -301,7 +301,7 @@ bun --filter slate-browser test:selection
 | Pass                                 | Status   | Evidence                                                                                                                    | Next owner |
 | ------------------------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------- | ---------- |
 | Skill reload                         | complete | Loaded `slate-ralplan`, `editor-test-harvester`, `clawsweeper`, `ralph`, `goal workflow`, and `learnings-researcher`. | n/a        |
-| Current-state read and initial score | complete | Read ProseMirror harvest, current done plans, focused live `.tmp/slate-v2` owner probes, and IME learnings.                 | n/a        |
+| Current-state read and initial score | complete | Read ProseMirror harvest, current done plans, focused live `Plate repo root` owner probes, and IME learnings.                 | n/a        |
 | Related issue revalidation           | complete | Existing ledgers already preserve conservative statuses; fork dossier audit section appended.                               | n/a        |
 | Exact live-source row reads          | complete | Read package/browser owner rows for all five PM slices.                                                                     | n/a        |
 | Hardening/no-op decision             | complete | All five rows are covered or explicitly future-owned; no current hardening row remains.                                     | n/a        |

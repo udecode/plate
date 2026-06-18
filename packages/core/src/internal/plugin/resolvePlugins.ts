@@ -2,7 +2,7 @@ import {
   assignLegacyApi,
   assignLegacyTransforms,
   syncLegacyMethods,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 import { isDefined } from '@udecode/utils';
 import merge from 'lodash/merge.js';
 import { createVanillaStore } from 'zustand-x/vanilla';

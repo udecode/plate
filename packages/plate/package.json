@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@platejs/core": "workspace:^",
-    "@platejs/slate": "workspace:^",
+    "@platejs/slate-legacy": "workspace:^",
     "@platejs/utils": "workspace:^",
     "@udecode/react-hotkeys": "workspace:^",
     "@udecode/react-utils": "workspace:^",

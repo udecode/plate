@@ -1,6 +1,6 @@
 import type { OverrideEditor } from '@platejs/core';
 
-import { PathApi, queryNode } from '@platejs/slate';
+import { PathApi, queryNode } from '@platejs/slate-legacy';
 
 import { KEYS } from '../../plate-keys';
 import type { TrailingBlockConfig } from './TrailingBlockPlugin';

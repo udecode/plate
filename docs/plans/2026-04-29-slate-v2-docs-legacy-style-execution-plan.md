@@ -7,7 +7,7 @@ Current phase: complete
 
 ## Goal
 
-Rewrite the public `.tmp/slate-v2/docs` tree so it keeps legacy Slate's calm
+Rewrite the public `content/docs/slate` tree so it keeps legacy Slate's calm
 information architecture and walkthrough voice while teaching only the live
 Slate v2 contracts.
 
@@ -26,14 +26,14 @@ Slate v2 contracts.
 
 Allowed:
 
-- Edit `.tmp/slate-v2/docs/**`.
+- Edit `content/docs/slate/**`.
 - Add lightweight docs proof artifacts only if needed.
-- Read `.tmp/slate-v2/packages/**`, `.tmp/slate-v2/test/**`, `../slate/docs/**`,
+- Read `packages/**`, `Plate repo root/test/**`, `../slate/docs/**`,
   and relevant `docs/research/**` / `docs/solutions/**`.
 
 Avoid:
 
-- Implementation changes in `.tmp/slate-v2/packages/**`.
+- Implementation changes in `packages/**`.
 - Current-version Plate or slate-yjs adapter promises.
 - Changelog/migration voice in current docs.
 - App-owned void spacer docs.
@@ -51,11 +51,11 @@ Avoid:
 
 ## Phase 1 Plan
 
-1. Rewrite `.tmp/slate-v2/docs/Introduction.md` from legacy copy into current
+1. Rewrite `content/docs/slate/Introduction.md` from legacy copy into current
    Slate v2 positioning.
-2. Keep `.tmp/slate-v2/docs/Summary.md` structure, but remove the normal-path
+2. Keep `content/docs/slate/Summary.md` structure, but remove the normal-path
    bundled-source walkthrough link and label historical content carefully.
-3. Rewrite `.tmp/slate-v2/docs/walkthroughs/01-installing-slate.md` around
+3. Rewrite `content/docs/slate/walkthroughs/01-installing-slate.md` around
    package-manager-neutral install commands, typed `createEditor`, `Slate`,
    `Editable`, and `initialValue`.
 4. Remove broken UMD/global bundle claims from the normal docs path.
@@ -63,24 +63,24 @@ Avoid:
 ## Current Evidence
 
 - Review scorecard closed at `0.92`.
-- `.tmp/slate-v2/docs/Introduction.md` is still legacy copy with stale beta and
+- `content/docs/slate/Introduction.md` is still legacy copy with stale beta and
   plugin-positioning claims.
-- `.tmp/slate-v2/docs/walkthroughs/01-installing-slate.md` still links
+- `content/docs/slate/walkthroughs/01-installing-slate.md` still links
   `xx-using-the-bundled-source.md` and mentions `dist/slate.js`.
-- `.tmp/slate-v2/docs/walkthroughs/08-using-the-bundled-source.md` documents UMD
+- `content/docs/slate/walkthroughs/08-using-the-bundled-source.md` documents UMD
   artifacts that do not match current package exports.
-- `.tmp/slate-v2/packages/slate/package.json` and
-  `.tmp/slate-v2/packages/slate-react/package.json` expose ESM package entries,
+- `packages/slate/package.json` and
+  `packages/slate-react/package.json` expose ESM package entries,
   not the old normal-path UMD bundle story.
 
 ## Fast Driver Gates
 
 ```bash
-rg -n "beta|xx-using|dist/slate|dist/slate-react|under construction|editor\\.children|editor\\.selection|editor\\.operations|editor\\.marks|methods\\(|Editor.addMark\\(|Editor.removeMark\\(|editor\\.insertNodes\\(" .tmp/slate-v2/docs
+rg -n "beta|xx-using|dist/slate|dist/slate-react|under construction|editor\\.children|editor\\.selection|editor\\.operations|editor\\.marks|methods\\(|Editor.addMark\\(|Editor.removeMark\\(|editor\\.insertNodes\\(" content/docs/slate
 ```
 
 ```bash
-rg -n "createEditor<|initialValue|renderVoid|useElementSelected|decorationSources|annotationStores|applyOperations|editor\\.update|editor\\.read" .tmp/slate-v2/docs .tmp/slate-v2/packages
+rg -n "createEditor<|initialValue|renderVoid|useElementSelected|decorationSources|annotationStores|applyOperations|editor\\.update|editor\\.read" content/docs/slate Plate repo root/packages
 ```
 
 ## Completion Target
@@ -103,8 +103,8 @@ Set `active goal state` to `done` only when:
 | Date       | Slice                                               | Files changed                                                                                                                                                                                                                                                                                                      | Evidence                                                                                                                                                                                                                                                                                | Next owner                             |
 | ---------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
 | 2026-04-29 | Activated execution lane from accepted review plan. | This plan, `active goal state`, `active goal state`                                                                                                                                                                                                                                             | Review lane closed at `0.92`; Phase 1 is runnable.                                                                                                                                                                                                                                      | Phase 1 front door and navigation docs |
-| 2026-04-29 | Completed Phase 1 front door and navigation.        | `.tmp/slate-v2/docs/Introduction.md`, `.tmp/slate-v2/docs/Summary.md`, `.tmp/slate-v2/docs/walkthroughs/01-installing-slate.md`, `.tmp/slate-v2/docs/walkthroughs/08-using-the-bundled-source.md`                                                                                                                  | Focused stale-term grep over touched docs returned no matches for beta, broken bundled-source, direct mutable fields, extension methods, or direct write snippets. Changelog and migration links are labeled historical.                                                                | Phase 2 core lifecycle docs            |
-| 2026-04-29 | Completed Phase 2 core lifecycle docs.              | `.tmp/slate-v2/docs/walkthroughs/04-applying-custom-formatting.md`, `.tmp/slate-v2/docs/walkthroughs/05-executing-commands.md`, `.tmp/slate-v2/docs/concepts/07-editor.md`, `.tmp/slate-v2/docs/concepts/08-plugins.md`, `.tmp/slate-v2/docs/concepts/11-normalizing.md`, `.tmp/slate-v2/docs/api/nodes/editor.md` | Focused stale-write/API grep over Phase 2 docs returned no matches for extension `methods`, direct mutable fields, direct `Editor.addMark` / `Editor.removeMark` calls, or normal-path primitive writes.                                                                                | Phase 3 React runtime docs             |
-| 2026-04-29 | Completed Phase 3 React runtime docs.               | `.tmp/slate-v2/docs/libraries/slate-react/slate.md`, `.tmp/slate-v2/docs/libraries/slate-react/editable.md`, `.tmp/slate-v2/docs/concepts/09-rendering.md`, `.tmp/slate-v2/docs/api/nodes/element.md`                                                                                                              | Focused React docs grep found no `useSlate`, `<Editor>`, under-construction source escape hatch, app-owned void spacer example, eager `selected` / `focused` void props, or unsafe void action props.                                                                                   | Phase 4 collaboration substrate docs   |
-| 2026-04-29 | Completed Phase 4 collaboration substrate docs.     | `.tmp/slate-v2/docs/walkthroughs/07-enabling-collaborative-editing.md`, `.tmp/slate-v2/docs/Summary.md`                                                                                                                                                                                                            | Replaced current-adapter recipe with commit/operation substrate docs. Focused grep returned no `withYjs`, `YjsEditor`, `withCursors`, `@slate-yjs`, `Liveblocks`, `YjsProvider`, direct mutable fields, extension `methods`, or direct `editor.insertNodes` recipe in the touched docs. | Phase 5 proof wiring                   |
-| 2026-04-29 | Completed Phase 5 proof wiring and final cleanup.   | `.tmp/slate-v2/docs/general/docs-proof-map.md`, `.tmp/slate-v2/docs/Summary.md`, `.tmp/slate-v2/docs/walkthroughs/04-applying-custom-formatting.md`, `.tmp/slate-v2/docs/walkthroughs/06-saving-to-a-database.md`                                                                                                  | Added source/test/browser contract map. Normal-path stale grep is clean when historical changelog and migration pages are excluded. Changelog-voice grep over current docs returned no matches after cleaning two old walkthrough openings.                                             | Complete                               |
+| 2026-04-29 | Completed Phase 1 front door and navigation.        | `content/docs/slate/Introduction.md`, `content/docs/slate/Summary.md`, `content/docs/slate/walkthroughs/01-installing-slate.md`, `content/docs/slate/walkthroughs/08-using-the-bundled-source.md`                                                                                                                  | Focused stale-term grep over touched docs returned no matches for beta, broken bundled-source, direct mutable fields, extension methods, or direct write snippets. Changelog and migration links are labeled historical.                                                                | Phase 2 core lifecycle docs            |
+| 2026-04-29 | Completed Phase 2 core lifecycle docs.              | `content/docs/slate/walkthroughs/04-applying-custom-formatting.md`, `content/docs/slate/walkthroughs/05-executing-commands.md`, `content/docs/slate/concepts/07-editor.md`, `content/docs/slate/concepts/08-plugins.md`, `content/docs/slate/concepts/11-normalizing.md`, `content/docs/slate/api/nodes/editor.md` | Focused stale-write/API grep over Phase 2 docs returned no matches for extension `methods`, direct mutable fields, direct `Editor.addMark` / `Editor.removeMark` calls, or normal-path primitive writes.                                                                                | Phase 3 React runtime docs             |
+| 2026-04-29 | Completed Phase 3 React runtime docs.               | `content/docs/slate/libraries/slate-react/slate.md`, `content/docs/slate/libraries/slate-react/editable.md`, `content/docs/slate/concepts/09-rendering.md`, `content/docs/slate/api/nodes/element.md`                                                                                                              | Focused React docs grep found no `useSlate`, `<Editor>`, under-construction source escape hatch, app-owned void spacer example, eager `selected` / `focused` void props, or unsafe void action props.                                                                                   | Phase 4 collaboration substrate docs   |
+| 2026-04-29 | Completed Phase 4 collaboration substrate docs.     | `content/docs/slate/walkthroughs/07-enabling-collaborative-editing.md`, `content/docs/slate/Summary.md`                                                                                                                                                                                                            | Replaced current-adapter recipe with commit/operation substrate docs. Focused grep returned no `withYjs`, `YjsEditor`, `withCursors`, `@slate-yjs`, `Liveblocks`, `YjsProvider`, direct mutable fields, extension `methods`, or direct `editor.insertNodes` recipe in the touched docs. | Phase 5 proof wiring                   |
+| 2026-04-29 | Completed Phase 5 proof wiring and final cleanup.   | `content/docs/slate/general/docs-proof-map.md`, `content/docs/slate/Summary.md`, `content/docs/slate/walkthroughs/04-applying-custom-formatting.md`, `content/docs/slate/walkthroughs/06-saving-to-a-database.md`                                                                                                  | Added source/test/browser contract map. Normal-path stale grep is clean when historical changelog and migration pages are excluded. Changelog-voice grep over current docs returned no matches after cleaning two old walkthrough openings.                                             | Complete                               |

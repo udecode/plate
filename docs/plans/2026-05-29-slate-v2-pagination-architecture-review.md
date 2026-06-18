@@ -16,7 +16,7 @@ final_handoff_status: complete
 
 ## Objective
 
-Review whether the current pagination architecture in `.tmp/slate-v2` is clean,
+Review whether the current pagination architecture in `Plate repo root` is clean,
 spaghetti, or needs decoupling. Close the Slate Plan only after every scheduled
 pass, issue/reference sync row, Evidence Kit mapping, pressure review, score
 gate, and final handoff is complete.
@@ -58,27 +58,27 @@ substrate, not a product table kit.
 | --- | --- | --- |
 | Active goal checked or created | complete | `get_goal` returned no active goal; created Slate Plan planning goal for this lane. |
 | Slate Plan template used | complete | `node .agents/rules/autogoal/scripts/create-goal-scratchpad.mjs --template slate-plan --title "Slate v2 pagination architecture review"` created this plan. |
-| Live `.tmp/slate-v2` source grounded | complete | Read `site/examples/ts/pagination.tsx`, `packages/slate-layout/src/react.tsx`, `packages/slate-layout/src/page-mount-plan.ts`, `packages/slate-layout/src/index.ts`, `packages/slate-react/src/components/editable-text-blocks.tsx`. |
+| Live `Plate repo root` source grounded | complete | Read `site/examples/ts/pagination.tsx`, `packages/slate-layout/src/react.tsx`, `packages/slate-layout/src/page-mount-plan.ts`, `packages/slate-layout/src/index.ts`, `packages/slate-react/src/components/editable-text-blocks.tsx`. |
 | Prior plan/research checked | complete | Read 2026-05-23 virtualization plan, 2026-05-03 virtualization decoupling plan, research index/log, Pretext pagination page, TanStack virtualization page. |
 | `docs/solutions` checked | complete | Read pagination DX solution and raw-Slate table/Markdown ownership solution. |
 | Evidence Kit baseline read | complete | Read benchmark registry and health: active artifacts 23, rows 801, no missing required artifacts, next actions 3. |
-| Live command proof baseline | complete | `cwd=.tmp/slate-v2`: `bun --filter slate-layout test -- page-layout-contract` passed: 37 tests. |
+| Live command proof baseline | complete | `cwd=Plate repo root`: `bun --filter slate-layout test -- page-layout-contract` passed: 37 tests. |
 
 ## Live source current state
 
 | Surface | Current owner | Current shape | Verdict |
 | --- | --- | --- | --- |
-| Example controls and URL state | `.tmp/slate-v2/site/examples/ts/pagination.tsx:80-138`, `:1343-1463` | URL-backed controls for DOM strategy, page layout, rows, media split/height, page overscan, stress pages. | Keep controls; split them out of the main example body. |
-| Example fixture/stress mutation | `.tmp/slate-v2/site/examples/ts/pagination.tsx:906-1008` | Effects mutate table rows and stress blocks in the editor model. | Useful stress harness; not best public DX. Needs separation from the canonical API call-site. |
-| Provider-owned table/media sizing | `.tmp/slate-v2/site/examples/ts/pagination.tsx:1010-1058` | Example `nodeLayout` returns table row units and image boxes with split policy. | Correct substrate demonstration. Keep as example-local provider until a second consumer justifies helper/API. |
-| Layout snapshot and projection | `.tmp/slate-v2/site/examples/ts/pagination.tsx:1059-1155` | Example subscribes to `useSlateLayout`, computes geometry/projection, decorations, visible flow paths. | This is the noisy part. Package APIs exist, but the example still looks like a mini layout engine. |
-| Public paged surface | `.tmp/slate-v2/packages/slate-layout/src/react.tsx:378-384`, `:422-691`, `:707-780` | `PagedEditable` wraps `Editable`, owns page surfaces plus editor overlay, passes layout data into `Editable`. | Keep. This is the right package boundary. |
-| Page mount plan | `.tmp/slate-v2/packages/slate-layout/src/page-mount-plan.ts:57-126`, `:177-206` | Groups pages/spreads, maps page fragments to top-level indexes and unit paths, filters by viewport/overscan. | Keep. This is good decoupling already. |
-| Page virtualization bridge | `.tmp/slate-v2/packages/slate-layout/src/react.tsx:491-607`, `:647-679` | `PagedEditable` computes page mount items and exposes page/top-level layout items to `Editable`. | Keep as an internal bridge; revision keeps the only follow-up as memoized returned arrays or profiler proof, not a new public API. |
-| Slate React DOM strategy | `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1758-1853`, `:2115-2175`, `:2328-2428` | Generic DOM strategy still handles virtualized plans, metrics, placeholders, and DOM coverage. | Not pagination-specific spaghetti, but still broad. Reuse existing virtualization decoupling plan; do not add pagination hacks here. |
-| Table row windowing | `.tmp/slate-v2/site/examples/ts/pagination.tsx:229-321`, `:736-779` | Example computes visible row ranges from fragments and inserts `slots.contentBoundary` for hidden rows. | Architecture smell. Keep local for now, but mark as first candidate for a small reusable provider/windowing helper if another structured node needs it. |
-| Layout primitives | `.tmp/slate-v2/packages/slate-layout/src/index.ts:105-129`, `:245-280`, `:1840-1888`, `:2408-2495` | Boxes/units/split policy, projections, decoration rects, cached Pretext preparation, derived layout store. | Strong. This is the part to protect. |
-| Tests | `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts:1602-1818`, `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts` | Package contracts cover page mount plans; Playwright has broad pagination rows including virtualized click/drag/typing/fast scroll. | Better than most experimental features, but issue #5944 still not closable without page-boundary stability proof. |
+| Example controls and URL state | `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:80-138`, `:1343-1463` | URL-backed controls for DOM strategy, page layout, rows, media split/height, page overscan, stress pages. | Keep controls; split them out of the main example body. |
+| Example fixture/stress mutation | `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:906-1008` | Effects mutate table rows and stress blocks in the editor model. | Useful stress harness; not best public DX. Needs separation from the canonical API call-site. |
+| Provider-owned table/media sizing | `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:1010-1058` | Example `nodeLayout` returns table row units and image boxes with split policy. | Correct substrate demonstration. Keep as example-local provider until a second consumer justifies helper/API. |
+| Layout snapshot and projection | `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:1059-1155` | Example subscribes to `useSlateLayout`, computes geometry/projection, decorations, visible flow paths. | This is the noisy part. Package APIs exist, but the example still looks like a mini layout engine. |
+| Public paged surface | `packages/slate-layout/src/react.tsx:378-384`, `:422-691`, `:707-780` | `PagedEditable` wraps `Editable`, owns page surfaces plus editor overlay, passes layout data into `Editable`. | Keep. This is the right package boundary. |
+| Page mount plan | `packages/slate-layout/src/page-mount-plan.ts:57-126`, `:177-206` | Groups pages/spreads, maps page fragments to top-level indexes and unit paths, filters by viewport/overscan. | Keep. This is good decoupling already. |
+| Page virtualization bridge | `packages/slate-layout/src/react.tsx:491-607`, `:647-679` | `PagedEditable` computes page mount items and exposes page/top-level layout items to `Editable`. | Keep as an internal bridge; revision keeps the only follow-up as memoized returned arrays or profiler proof, not a new public API. |
+| Slate React DOM strategy | `packages/slate-react/src/components/editable-text-blocks.tsx:1758-1853`, `:2115-2175`, `:2328-2428` | Generic DOM strategy still handles virtualized plans, metrics, placeholders, and DOM coverage. | Not pagination-specific spaghetti, but still broad. Reuse existing virtualization decoupling plan; do not add pagination hacks here. |
+| Table row windowing | `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:229-321`, `:736-779` | Example computes visible row ranges from fragments and inserts `slots.contentBoundary` for hidden rows. | Architecture smell. Keep local for now, but mark as first candidate for a small reusable provider/windowing helper if another structured node needs it. |
+| Layout primitives | `packages/slate-layout/src/index.ts:105-129`, `:245-280`, `:1840-1888`, `:2408-2495` | Boxes/units/split policy, projections, decoration rects, cached Pretext preparation, derived layout store. | Strong. This is the part to protect. |
+| Tests | `packages/slate-layout/test/page-layout-contract.test.ts:1602-1818`, `apps/www/tests/slate-browser/donor/examples/pagination.test.ts` | Package contracts cover page mount plans; Playwright has broad pagination rows including virtualized click/drag/typing/fast scroll. | Better than most experimental features, but issue #5944 still not closable without page-boundary stability proof. |
 
 ## Intent / boundary record
 
@@ -111,7 +111,7 @@ In scope:
 
 Non-goals:
 
-- no `.tmp/slate-v2` implementation edits while the plan is still pending;
+- no `Plate repo root` implementation edits while the plan is still pending;
 - no raw Slate Markdown/table product package;
 - no AST table splitting for visual page fragments;
 - no CSS-float pagination;
@@ -452,7 +452,7 @@ Read:
 - `docs/solutions/developer-experience/2026-05-21-slate-layout-source-entry-and-paged-editable-dx.md:88-125`,
   `:361-391`, `:444-498`
 - `docs/solutions/developer-experience/2026-05-22-raw-slate-should-not-own-markdown-table-product-packages.md:18-70`
-- live `.tmp/slate-v2` source rows for `useSlateLayout`, `PagedEditable`,
+- live `Plate repo root` source rows for `useSlateLayout`, `PagedEditable`,
   `EditableLayout`, page overlay rendering, `pageBreaks`, table/media
   `nodeLayout`, table row windowing, and TanStack virtualized root planning.
 
@@ -460,14 +460,14 @@ Current live-source corrections:
 
 | Surface | Current fact | Plan implication |
 | --- | --- | --- |
-| TanStack version | `.tmp/slate-v2/bun.lock:145`, `:773-775` resolves `@tanstack/react-virtual@3.13.25` and `@tanstack/virtual-core@3.15.0`. | The prior "upgrade TanStack" research action is already satisfied in this checkout. Do not keep it as future architecture work. |
-| TanStack ownership | `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:400-424`, `:572-640` uses `rangeExtractor`, stable keys, `scrollToOffset`, `scrollToIndex`, and disables `measureElement` for page-layout items. | TanStack remains internal range machinery. Slate still owns retained pages, DOM coverage, materialization, selection, and missing-DOM policy. |
-| Layout entrypoint | `.tmp/slate-v2/packages/slate-layout/src/react.tsx:117-150` creates/destroys a layout store from editor/options; `:188-205` exposes snapshot/fragments via `useSyncExternalStore` and context. | Keep `useSlateLayout` as the public derived-layout entrypoint. |
-| Paged surface | `.tmp/slate-v2/packages/slate-layout/src/react.tsx:378-384`, `:422-455`, `:707-780` keeps `PagedEditable` as page chrome plus a single editable overlay. | Keep `PagedEditable`; this matches the Premirror-like page-surface/overlay lesson. |
-| Editable bridge | `.tmp/slate-v2/packages/slate-layout/src/react.tsx:647-684` passes `getVirtualizedPageItems`, `getVisibleVirtualizedPageItems`, and `getVirtualizedTopLevelItems` into `Editable`. | Good enough as a current internal bridge; do not turn it into public API unless profiler proof or a second consumer proves the current bridge is too wide. |
-| Provider/split protocol | `.tmp/slate-v2/packages/slate-layout/src/index.ts:105-129`, `:411-420`, `:1549-1566` defines boxes/units/split policy and passes `measurementProfile` into `nodeLayout`. | Keep provider-owned boxes/units/split policy. Do not promote table/media product policy into raw Slate. |
-| Strict page breaks | `.tmp/slate-v2/packages/slate-layout/src/index.ts:2488-2534` reads/writes page-break snapshots with `documentKey`, `measurementProfile`, `root`, `version`, and `writerId`. | Strict collab/export fidelity belongs in opt-in `pageBreaks`, not in the Slate value. |
-| Example complexity | `.tmp/slate-v2/site/examples/ts/pagination.tsx:80-138`, `:229-321`, `:1010-1066`, `:1518-1526` still mixes controls, table child windowing, provider layout, layout subscription, and `PagedEditable`. | Public example DX still needs the split; the source refresh does not weaken that verdict. |
+| TanStack version | `Plate repo root/bun.lock:145`, `:773-775` resolves `@tanstack/react-virtual@3.13.25` and `@tanstack/virtual-core@3.15.0`. | The prior "upgrade TanStack" research action is already satisfied in this checkout. Do not keep it as future architecture work. |
+| TanStack ownership | `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts:400-424`, `:572-640` uses `rangeExtractor`, stable keys, `scrollToOffset`, `scrollToIndex`, and disables `measureElement` for page-layout items. | TanStack remains internal range machinery. Slate still owns retained pages, DOM coverage, materialization, selection, and missing-DOM policy. |
+| Layout entrypoint | `packages/slate-layout/src/react.tsx:117-150` creates/destroys a layout store from editor/options; `:188-205` exposes snapshot/fragments via `useSyncExternalStore` and context. | Keep `useSlateLayout` as the public derived-layout entrypoint. |
+| Paged surface | `packages/slate-layout/src/react.tsx:378-384`, `:422-455`, `:707-780` keeps `PagedEditable` as page chrome plus a single editable overlay. | Keep `PagedEditable`; this matches the Premirror-like page-surface/overlay lesson. |
+| Editable bridge | `packages/slate-layout/src/react.tsx:647-684` passes `getVirtualizedPageItems`, `getVisibleVirtualizedPageItems`, and `getVirtualizedTopLevelItems` into `Editable`. | Good enough as a current internal bridge; do not turn it into public API unless profiler proof or a second consumer proves the current bridge is too wide. |
+| Provider/split protocol | `packages/slate-layout/src/index.ts:105-129`, `:411-420`, `:1549-1566` defines boxes/units/split policy and passes `measurementProfile` into `nodeLayout`. | Keep provider-owned boxes/units/split policy. Do not promote table/media product policy into raw Slate. |
+| Strict page breaks | `packages/slate-layout/src/index.ts:2488-2534` reads/writes page-break snapshots with `documentKey`, `measurementProfile`, `root`, `version`, and `writerId`. | Strict collab/export fidelity belongs in opt-in `pageBreaks`, not in the Slate value. |
+| Example complexity | `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:80-138`, `:229-321`, `:1010-1066`, `:1518-1526` still mixes controls, table child windowing, provider layout, layout subscription, and `PagedEditable`. | Public example DX still needs the split; the source refresh does not weaken that verdict. |
 
 Ecosystem synthesis:
 
@@ -500,17 +500,17 @@ Status: complete.
 Read:
 
 - live pressure source:
-  `.tmp/slate-v2/packages/slate-layout/src/react.tsx:520-684`,
-  `.tmp/slate-v2/site/examples/ts/pagination.tsx:906-1008`,
+  `packages/slate-layout/src/react.tsx:520-684`,
+  `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx:906-1008`,
   `:1067-1184`, `:1206-1220`, `:1430-1465`, `:1488-1498`,
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1758-1858`,
+  `packages/slate-react/src/components/editable-text-blocks.tsx:1758-1858`,
   `:1894-1995`, `:2115-2205`, `:2220-2295`
 - package/browser proof rows:
-  `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts:477-509`,
+  `packages/slate-layout/test/page-layout-contract.test.ts:477-509`,
   `:973-1035`, `:1602-1822`,
-  `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:2295-2335`,
+  `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:2295-2335`,
   `:2566-2710`, `:2792-2968`, `:2970-3192`, `:3431-3570`,
-  `.tmp/slate-v2/playwright/integration/examples/query-controls.test.ts:118-160`
+  `apps/www/tests/slate-browser/donor/examples/query-controls.test.ts:118-160`
 - pressure lenses:
   `.agents/skills/performance/SKILL.md`, `.agents/skills/performance-oracle/SKILL.md`,
   `.agents/skills/tdd/SKILL.md`, `.agents/skills/react-useeffect/SKILL.md`
@@ -740,14 +740,14 @@ High-risk gates:
 
 | Risk | Failure mode | Owner | Required proof before execution closeout |
 | --- | --- | --- | --- |
-| Hidden DOM selection drift | Page virtualization or row windowing selects the wrong block, jumps to a table, or loses margin hit testing. | `slate-react` DOM materialization + `PagedEditable` projection | Keep/fix pagination Playwright rows for first-page margins/corners, current visible page corners, left/right paragraph margins, virtualized block clicks, virtualized page-line drag selection, virtualized line-start margin clicks, and split projected paragraph click/edit alignment: `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:1722-2106`, `:2338-2709`. |
-| Table fragment corruption | A visual table fragment becomes document structure or copy/edit crosses page units incorrectly. | provider-owned units + `slate-react` coverage boundaries | Keep package table-unit contract and browser table rows: `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts:973-1035`, browser table render/edit/copy rows at `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:1573-1718`, deferred table input row at `:2709-2785`, and 1000-page table row at `:2792-2968`. |
-| Scroll long tasks / blank pages | Fast scrolling through virtualized pages blocks React, loses content, or overmounts DOM. | `PagedEditable` viewport tracking + `slate-react` page mount plan | Keep startup/dropdown latency rows and fast-scroll row: `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:2228-2335`, `:3431-3570`; preserve p50 `<= 80ms`, p95 `<= 500ms`, DOM `< 1400`, rows `<= 80`, cells `<= 240`, page surfaces `<= 10`. |
-| Middle-document typing lag | Typing in a 1000-page document drops or reorders characters. | layout refresh scheduling + `EditableTextBlocks` text sync | Keep deferred refresh package contract and browser typing rows: `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts:477-509`, `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:2970-3192`, `:3194-3302`, `:3315-3418`; preserve p95 event-to-paint `<= 80ms` and bounded DOM `< 1400`. |
-| Page-surface alignment drift | Scaled or virtualized page chrome no longer matches editable overlay coordinates. | `slate-layout` geometry/projection + `PagedEditable` page surfaces | Keep scaled page surface alignment and projected click rows: `.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:2566-2709`, `:3573-3657`. |
+| Hidden DOM selection drift | Page virtualization or row windowing selects the wrong block, jumps to a table, or loses margin hit testing. | `slate-react` DOM materialization + `PagedEditable` projection | Keep/fix pagination Playwright rows for first-page margins/corners, current visible page corners, left/right paragraph margins, virtualized block clicks, virtualized page-line drag selection, virtualized line-start margin clicks, and split projected paragraph click/edit alignment: `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:1722-2106`, `:2338-2709`. |
+| Table fragment corruption | A visual table fragment becomes document structure or copy/edit crosses page units incorrectly. | provider-owned units + `slate-react` coverage boundaries | Keep package table-unit contract and browser table rows: `packages/slate-layout/test/page-layout-contract.test.ts:973-1035`, browser table render/edit/copy rows at `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:1573-1718`, deferred table input row at `:2709-2785`, and 1000-page table row at `:2792-2968`. |
+| Scroll long tasks / blank pages | Fast scrolling through virtualized pages blocks React, loses content, or overmounts DOM. | `PagedEditable` viewport tracking + `slate-react` page mount plan | Keep startup/dropdown latency rows and fast-scroll row: `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:2228-2335`, `:3431-3570`; preserve p50 `<= 80ms`, p95 `<= 500ms`, DOM `< 1400`, rows `<= 80`, cells `<= 240`, page surfaces `<= 10`. |
+| Middle-document typing lag | Typing in a 1000-page document drops or reorders characters. | layout refresh scheduling + `EditableTextBlocks` text sync | Keep deferred refresh package contract and browser typing rows: `packages/slate-layout/test/page-layout-contract.test.ts:477-509`, `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:2970-3192`, `:3194-3302`, `:3315-3418`; preserve p95 event-to-paint `<= 80ms` and bounded DOM `< 1400`. |
+| Page-surface alignment drift | Scaled or virtualized page chrome no longer matches editable overlay coordinates. | `slate-layout` geometry/projection + `PagedEditable` page surfaces | Keep scaled page surface alignment and projected click rows: `apps/www/tests/slate-browser/donor/examples/pagination.test.ts:2566-2709`, `:3573-3657`. |
 | Over-decoupling | Split files but hide the same policy tangle behind magical helpers. | example owner | Add a decoupling guard in execution: canonical `/examples/pagination` call-site must stay centered on `useSlateLayout` + `PagedEditable`; fixtures, controls, provider/renderers, metrics, and stress mutation move one import away; no test asserts filenames. |
 | Public API bloat | Local table/windowing glue becomes a raw Slate product API too early. | `slate-layout` API owner | Helper promotion requires either a second structured-node provider or a post-split call-site that is still unreadable. Until then, table row windowing remains example-local. |
-| Strict page-break drift | Browser/canvas measurement drift makes collab/export page breaks disagree. | `slate-layout` `pageBreaks` metadata | Keep opt-in page-break contracts at `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts:364-437`, `:1064-1143`, and source profile checks at `.tmp/slate-v2/packages/slate-layout/src/index.ts:2488-2534`; app-level authority owns writer/server/client policy. |
+| Strict page-break drift | Browser/canvas measurement drift makes collab/export page breaks disagree. | `slate-layout` `pageBreaks` metadata | Keep opt-in page-break contracts at `packages/slate-layout/test/page-layout-contract.test.ts:364-437`, `:1064-1143`, and source profile checks at `packages/slate-layout/src/index.ts:2488-2534`; app-level authority owns writer/server/client policy. |
 | Native/a11y overclaim | Virtualized missing DOM is sold as native browser find or screen-reader parity. | release narrative + docs | Keep as non-claim until there is assistive-tech/native traversal proof. The final handoff must explicitly call this a degradation boundary, not solved behavior. |
 | Issue-claim inflation | Architecture review accidentally claims `#5944` or `#790`. | issue/reference sync owner | Closure must re-read issue ledgers and PR reference. No fixed/improved claim unless the browser/perf rows above are green and issue-specific proof is mapped. |
 
@@ -755,9 +755,9 @@ Proof commands for execution mode:
 
 | Command | Cwd | Required when |
 | --- | --- | --- |
-| `bun --filter slate-layout test -- page-layout-contract` | `.tmp/slate-v2` | Any layout/provider/page-break/page-mount change. |
-| focused pagination Playwright rows named above | `.tmp/slate-v2` | Any pagination example, `PagedEditable`, projection, DOM strategy, selection, table, or scroll change. |
-| `bun test playwright/integration/examples/query-controls.test.ts --grep pagination` or repo-local equivalent | `.tmp/slate-v2` | Any URL control/example split change. |
+| `bun --filter slate-layout test -- page-layout-contract` | `Plate repo root` | Any layout/provider/page-break/page-mount change. |
+| focused pagination Playwright rows named above | `Plate repo root` | Any pagination example, `PagedEditable`, projection, DOM strategy, selection, table, or scroll change. |
+| `bun test playwright/integration/examples/query-controls.test.ts --grep pagination` or repo-local equivalent | `Plate repo root` | Any URL control/example split change. |
 | Evidence Kit `react-pagination-page-virtualization` refresh once registered | `plate-2` | Any broad performance claim or issue `#790` claim. |
 
 Release blockers created by this pass:
@@ -811,9 +811,9 @@ Evidence used:
 - `docs/solutions/developer-experience/2026-05-22-raw-slate-should-not-own-markdown-table-product-packages.md:45-79`
   keeps raw Slate focused on substrate and leaves Markdown/table product UX to
   Plate/app packages.
-- `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts:364-437`
+- `packages/slate-layout/test/page-layout-contract.test.ts:364-437`
   proves opt-in, profile-checked, shared, persistent page-break snapshots.
-- `.tmp/slate-v2/packages/slate-layout/test/page-layout-contract.test.ts:1064-1143`
+- `packages/slate-layout/test/page-layout-contract.test.ts:1064-1143`
   proves provider-owned unit fragments can write/read authoritative page breaks
   without splitting the table node.
 
@@ -939,9 +939,9 @@ Planning only. Execution requires user acceptance of the final plan.
 
 | Gate | Cwd | Command / proof | Status |
 | --- | --- | --- | --- |
-| Layout contract | `.tmp/slate-v2` | `bun --filter slate-layout test -- page-layout-contract` | passed, 37 tests |
-| Pagination browser sweep | `.tmp/slate-v2` | focused `playwright/integration/examples/pagination.test.ts` rows | execution gate named; not run in planning |
-| Example query controls | `.tmp/slate-v2` | `playwright/integration/examples/query-controls.test.ts` pagination row | execution gate named; not run in planning |
+| Layout contract | `Plate repo root` | `bun --filter slate-layout test -- page-layout-contract` | passed, 37 tests |
+| Pagination browser sweep | `Plate repo root` | focused `playwright/integration/examples/pagination.test.ts` rows | execution gate named; not run in planning |
+| Example query controls | `Plate repo root` | `playwright/integration/examples/query-controls.test.ts` pagination row | execution gate named; not run in planning |
 | Evidence Kit refresh | `plate-2` | `npm run bench:editor:refresh` | candidate benchmark gap; required before broad perf or `#790` claim |
 | Plan completion check | `plate-2` | Slate Plan closure audit | passed; generic autogoal script not run because this plan uses the Slate Plan markdown shape |
 
@@ -953,7 +953,7 @@ Planning only. Execution requires user acceptance of the final plan.
 | Related issue discovery | complete | generated live rows, v2 sync ledger, coverage matrix, fork dossier, test-candidate maps, PR reference | reused existing pagination/fast-scroll issue coverage; no new ClawSweeper or broad live issue sweep | score 0.78, next pass completed below | issue-ledger pass |
 | Issue-ledger pass | complete | full ledger family scan: live rows, frozen cluster ledger, macro clusters, package impact matrix, issue requirements, benchmark candidate map, current sync ledger, PR reference | no durable ledger/reference update needed then; score 0.80; decouple example/provider/proof boundaries, not packages | final sync closed in issue-sync pass | intent/boundary and decision brief |
 | Intent/boundary and decision brief | complete | refreshed intent, scope, non-goals, hard boundaries, adoption story, decision drivers, invalidated alternatives, consequences | score 0.82; package substrate kept; example/proof harness split made explicit | none known | research/ecosystem/live-source refresh |
-| Research/ecosystem/live-source refresh | complete | Pretext, Premirror, TanStack, Tiptap, Plate/app-boundary, local solutions, and current `.tmp/slate-v2` source rows | score 0.84; TanStack upgrade action marked already satisfied; ecosystem synthesis closed; pageBreaks/provider/overlay boundary confirmed | none from research | performance/DX/migration/regression/simplicity pressure |
+| Research/ecosystem/live-source refresh | complete | Pretext, Premirror, TanStack, Tiptap, Plate/app-boundary, local solutions, and current `Plate repo root` source rows | score 0.84; TanStack upgrade action marked already satisfied; ecosystem synthesis closed; pageBreaks/provider/overlay boundary confirmed | none from research | performance/DX/migration/regression/simplicity pressure |
 | Performance/DX/migration/regression/simplicity pressure | complete | React/performance/TDD/effect/DX pressure rows; Playwright/package test budgets; live source pressure rows | score 0.86; package architecture survives; example/proof harness and getter allocations remain pressure points | maintainer objections closed below | Slate maintainer objection ledger |
 | Slate maintainer objection ledger | complete | twelve maintainer objections with keep/split/defer/reject decisions and acceptance conditions | score 0.88; package boundary stands; high-risk proof rows now need exact gates | none from objections | high-risk deliberate mode |
 | High-risk deliberate mode | complete | proof gates for hidden DOM, table fragments, scroll, middle typing, page-surface alignment, over-decoupling, API bloat, page-break drift, native/a11y non-claims, and issue-claim inflation | score 0.90; exact execution proof rows and release blockers named | none from high-risk pass | ecosystem maintainer pass |
@@ -1054,7 +1054,7 @@ Closure audit:
 
 | Requirement | Status | Evidence |
 | --- | --- | --- |
-| Live-source current state recorded | complete | `Live source current state` and `Research / ecosystem / live-source refresh` cite current `.tmp/slate-v2` owners. |
+| Live-source current state recorded | complete | `Live source current state` and `Research / ecosystem / live-source refresh` cite current `Plate repo root` owners. |
 | Issue/reference accounting complete | complete | `Issue sync accounting` updated the manual sync ledger and PR reference. |
 | Evidence Kit mapping complete | complete | `Evidence Kit benchmark mapping` records current coverage and the `react-pagination-page-virtualization` candidate. |
 | React/performance/TDD pressure complete | complete | `Performance / DX / migration / regression / simplicity pressure` records React, performance, TDD, effect, and DX findings. |
@@ -1167,12 +1167,12 @@ Verification:
 
 | Command | Cwd | Result |
 | --- | --- | --- |
-| `bunx biome check packages/slate-react/src/editable/root-interaction-controller.ts site/examples/ts/pagination.tsx site/examples/ts/pagination-constants.ts site/examples/ts/pagination-controls.tsx site/examples/ts/pagination-fixtures.ts site/examples/ts/pagination-page-view.tsx site/examples/ts/pagination-renderers.tsx --fix` | `.tmp/slate-v2` | passed; no fixes needed on final run |
-| `bunx eslint packages/slate-react/src/editable/root-interaction-controller.ts site/examples/ts/pagination.tsx site/examples/ts/pagination-controls.tsx site/examples/ts/pagination-page-view.tsx site/examples/ts/pagination-renderers.tsx` | `.tmp/slate-v2` | passed |
-| `bun typecheck:site` | `.tmp/slate-v2` | passed |
-| `bun --filter slate-react typecheck` | `.tmp/slate-v2` | passed |
-| `bun --filter slate-layout test -- page-layout-contract` | `.tmp/slate-v2` | passed, 37 tests |
-| `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/pagination.test.ts playwright/integration/examples/query-controls.test.ts --project=chromium --grep "pagination"` | `.tmp/slate-v2` | passed, 33 Chromium tests |
-| `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local` | `.tmp/slate-v2` | clean on rerun; no accepted/actionable findings |
+| `bunx biome check packages/slate-react/src/editable/root-interaction-controller.ts site/examples/ts/pagination.tsx site/examples/ts/pagination-constants.ts site/examples/ts/pagination-controls.tsx site/examples/ts/pagination-fixtures.ts site/examples/ts/pagination-page-view.tsx site/examples/ts/pagination-renderers.tsx --fix` | `Plate repo root` | passed; no fixes needed on final run |
+| `bunx eslint packages/slate-react/src/editable/root-interaction-controller.ts site/examples/ts/pagination.tsx site/examples/ts/pagination-controls.tsx site/examples/ts/pagination-page-view.tsx site/examples/ts/pagination-renderers.tsx` | `Plate repo root` | passed |
+| `bun typecheck:site` | `Plate repo root` | passed |
+| `bun --filter slate-react typecheck` | `Plate repo root` | passed |
+| `bun --filter slate-layout test -- page-layout-contract` | `Plate repo root` | passed, 37 tests |
+| `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/pagination.test.ts playwright/integration/examples/query-controls.test.ts --project=chromium --grep "pagination"` | `Plate repo root` | passed, 33 Chromium tests |
+| `/Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local` | `Plate repo root` | clean on rerun; no accepted/actionable findings |
 
 No accepted execution item remains runnable.

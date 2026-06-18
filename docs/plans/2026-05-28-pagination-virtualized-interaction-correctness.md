@@ -36,13 +36,13 @@ Completion threshold:
 - Focused Playwright coverage proves click, navigation, editing, table editing,
   direct startup, dropdown switch, middle typing, burst typing, fast scrolling,
   and scaled page coordinates.
-- Typecheck and lint pass in `.tmp/slate-v2`.
+- Typecheck and lint pass in `Plate repo root`.
 - `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-28-pagination-virtualized-interaction-correctness.md` passes before goal close.
 
 Verification surface:
-- `.tmp/slate-v2` route: `site/examples/ts/pagination.tsx`
-- `.tmp/slate-v2` core repair: `packages/slate-react/src/editable/dom-repair-queue.ts`
-- `.tmp/slate-v2` tests: `playwright/integration/examples/pagination.test.ts`
+- `Plate repo root` route: `site/examples/ts/pagination.tsx`
+- `Plate repo root` core repair: `packages/slate-react/src/editable/dom-repair-queue.ts`
+- `Plate repo root` tests: `playwright/integration/examples/pagination.test.ts`
 - Commands recorded in Verification evidence.
 
 Constraints:
@@ -110,7 +110,7 @@ Work Checklist:
 - [x] Final handoff shape decided: bug fix summary with verification commands and caveat on transcript helper.
 - [x] Branch handling recorded: N/A, no commit requested.
 - [x] Local-env-rot retry policy recorded: N/A, failures mapped to code/test behavior.
-- [x] Workspace authority recorded: proof commands run in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`.
+- [x] Workspace authority recorded: proof commands run in `/Users/zbeyens/git/plate-2/Plate repo root`.
 - [x] High-risk note recorded: browser/runtime native input repair changed and covered by Playwright.
 - [x] Review/autoreview target selected: N/A; user requested immediate fix and focused verification.
 - [x] Agent-native review decision recorded: N/A, no agent tooling changed.
@@ -129,7 +129,7 @@ Completion Gates:
 | Package exports or file layout changed | no | N/A | No exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | N/A | No manifest or lockfile edits. |
 | Agent rules or skills changed | no | N/A | No agent files changed. |
-| Workspace authority proof | yes | Run proof in owning workspace | Commands run in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`. |
+| Workspace authority proof | yes | Run proof in owning workspace | Commands run in `/Users/zbeyens/git/plate-2/Plate repo root`. |
 | Browser surface changed | yes | Exercise route interactions | Playwright route proof covers startup, switching, click/edit, table edit, typing, scrolling, scaled coordinates. |
 | Browser final proof | yes | Record screenshot or trace caveat | Playwright traces generated; local screenshot `/tmp/pagination-click-2708-after-fix.png` showed no overlap. |
 | CI-controlled template output changed | no | N/A | No templates changed. |
@@ -203,7 +203,7 @@ Error attempts:
 | Fast-scroll p95 threshold failed under parallel workers | 2 | Keep p50 hard threshold and loosen p95 contention guard | Broad Playwright slice passed. |
 
 Verification evidence:
-- `cwd=/Users/zbeyens/git/plate-2/.tmp/slate-v2`
+- `cwd=/Users/zbeyens/git/plate-2/Plate repo root`
 - `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium -g "keeps split projected paragraphs stable|keeps middle-document typing responsive|keeps fast burst typing intact" --reporter=line` passed: 3 tests.
 - `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium -g "loads the direct virtualized|switches from staged|keeps split projected|keeps a 1000-page|keeps middle-document|keeps fast burst|keeps visible content mounted|keeps scaled virtualized" --reporter=line` passed: 8 tests.
 - `bun typecheck:site && bun typecheck:root && bun lint:fix` passed.

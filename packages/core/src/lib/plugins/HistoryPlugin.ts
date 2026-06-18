@@ -1,4 +1,4 @@
-import { withHistory } from '@platejs/slate';
+import { withHistory } from '@platejs/slate-legacy';
 
 import type { SlateEditor } from '../editor';
 

@@ -6,7 +6,7 @@ Hard cut accidental public API throws. Do not hard cut invariant throws.
 
 ## Context Grounding
 
-Task: execute the Slate v2 public throw-policy plan in `.tmp/slate-v2`, including
+Task: execute the Slate v2 public throw-policy plan in `Plate repo root`, including
 the final DOM mapping API decision.
 
 Desired outcome: Slate v2 runtime/event code uses absence-returning APIs for
@@ -33,9 +33,9 @@ Constraints:
 
 Likely touchpoints:
 
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
-- `.tmp/slate-v2/packages/slate-dom/test/**`
-- `.tmp/slate-v2/packages/slate-react/src/**` DOM-boundary call sites
+- `packages/slate-dom/src/plugin/dom-editor.ts`
+- `packages/slate-dom/test/**`
+- `packages/slate-react/src/**` DOM-boundary call sites
 - Slate examples/docs that currently call DOM mapping `to*` / throwing `find*`
 
 ## Repair Note
@@ -81,7 +81,7 @@ Generated inventory:
 - `.tmp/019e390b-a7f2-7423-af90-d7dd8e45f8fb/slate-v2-throw-inventory.tsv`
 - `.tmp/019e390b-a7f2-7423-af90-d7dd8e45f8fb/slate-v2-throw-inventory-summary.json`
 
-Scan command equivalent: non-test `*.ts` / `*.tsx` files under `.tmp/slate-v2/packages`, excluding `test`, `tests`, `__tests__`, `.test.*`, `.spec.*`, `dist`, `coverage`, and `node_modules`.
+Scan command equivalent: non-test `*.ts` / `*.tsx` files under `Plate repo root/packages`, excluding `test`, `tests`, `__tests__`, `.test.*`, `.spec.*`, `dist`, `coverage`, and `node_modules`.
 
 Totals:
 
@@ -651,11 +651,11 @@ Weighted score: 0.920. Planning closure is ready. Source execution belongs to Ra
 ## Completion Gates
 
 - Current plan status: `done` for Slate Ralplan planning.
-- Ralph execution implemented the throw-policy source slices in `.tmp/slate-v2`.
+- Ralph execution implemented the throw-policy source slices in `Plate repo root`.
 - Public DOM mapping uses `resolve*` for optional mapping and `assert*` for strict mapping. The old public DOM mapping `to*`, throwing `find*`, and `suppressThrow` names are absent from the public DOM API.
 - `Editor.next` / `Editor.previous` return `undefined` at root. `Editor.positions` returns an empty iterator for stale range endpoints and still throws for invalid live offsets.
 - `liftNodes` / `unwrapNodes` no-op when the current selection has no valid wrapper/lift target instead of leaking "currently supports only" throws.
 - React MutationObserver lifecycle code waits on initially-null refs. Browser-handle `undo` / `redo` no-op when history is disabled or absent.
 - Slate React reference docs teach `resolvePath` in event handlers and list the canonical `resolve*` / `assert*` DOM API.
 - No new issue fix claim was made. Existing related issue accounting remains reference-only.
-- Closure evidence from `.tmp/slate-v2`: `bun check` passed after implementation and docs sync.
+- Closure evidence from `Plate repo root`: `bun check` passed after implementation and docs sync.

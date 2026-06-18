@@ -52,7 +52,7 @@ or product helpers across raw Slate.
 Current score: `0.93`.
 
 The current-state, ecosystem, high-risk API, proof-plan, and closure passes are
-complete. This is ready for a later Ralph execution. No `.tmp/slate-v2` source was
+complete. This is ready for a later Ralph execution. No `Plate repo root` source was
 edited by Slate Ralplan.
 
 ## 2. Intent And Boundary
@@ -70,10 +70,10 @@ Desired outcome:
 
 In scope:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/test/query-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/test/query-contract.ts`
+- `packages/slate/test/state-tx-public-api-contract.ts`
 - first-party callers that materialize `state.nodes.entries` or return it out of
   `read`
 - first-party callers that use `Array.from(...)[0]` or `.length` on high-fanout
@@ -91,7 +91,7 @@ Non-goals:
 Decision boundary:
 
 - Slate Ralplan owns this API target and proof plan only.
-- Ralph owns any `.tmp/slate-v2` code edits.
+- Ralph owns any `Plate repo root` code edits.
 - The completed node-query plan stays valid for `entries` / `find` / `some`;
   this plan supersedes only its earlier rejection of a materializer.
 
@@ -106,16 +106,16 @@ Live Slate v2 source read:
 
 | Surface                   | Current owner                                                                                             | Finding                                                                                                                                    |
 | ------------------------- | --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| State node API            | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:180`                                               | `state.nodes` exposes `levels`, `entries`, `find`, and `some`. No materializer exists.                                                     |
-| State implementation      | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:928`                                               | `entries` returns `getNodes(editor, options)` directly; `find` and `some` early-exit.                                                      |
-| Read lifecycle            | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:1211`                                              | `editor.read` only keeps `READ_DEPTH` active during the callback. A returned generator can be consumed after the read boundary.            |
-| Write guard               | `.tmp/slate-v2/packages/slate/src/core/public-state.ts:493`                                               | Writes are blocked inside `editor.read`; iterator consumption itself is not guarded.                                                       |
-| DOM bridge caller         | `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts:277`                                             | `getPathRefMatches` hand-rolls an array inside `read` so it can safely use entries after the callback. This is exactly the missing helper. |
-| Query tests               | `.tmp/slate-v2/packages/slate/test/query-contract.ts:71`                                                  | `getNodeEntries` returns `state.nodes.entries(options)` from `read`, which teaches the wrong lifecycle shape.                              |
-| Low-level node generators | `.tmp/slate-v2/packages/slate/src/interfaces/node.ts:129`, `:143`, `:162`, `:172`, `:254`, `:270`, `:292` | Raw `NodeApi` traversal methods are generator-based and should stay that way.                                                              |
-| Static editor generators  | `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1435`, `:1521`                                     | `Editor.levels` and `Editor.positions` remain legacy-compatible generators.                                                                |
-| Bounded level traversal   | `.tmp/slate-v2/packages/slate/src/editor/levels.ts:23`                                                    | `Editor.levels` already buffers path-depth entries internally for reverse support; this is bounded by path depth.                          |
-| Position traversal        | `.tmp/slate-v2/packages/slate/src/editor/positions.ts:515`                                                | `Editor.positions` can be high-fanout and should stay lazy; array materialization needs call-site justification.                           |
+| State node API            | `packages/slate/src/interfaces/editor.ts:180`                                               | `state.nodes` exposes `levels`, `entries`, `find`, and `some`. No materializer exists.                                                     |
+| State implementation      | `packages/slate/src/core/public-state.ts:928`                                               | `entries` returns `getNodes(editor, options)` directly; `find` and `some` early-exit.                                                      |
+| Read lifecycle            | `packages/slate/src/core/public-state.ts:1211`                                              | `editor.read` only keeps `READ_DEPTH` active during the callback. A returned generator can be consumed after the read boundary.            |
+| Write guard               | `packages/slate/src/core/public-state.ts:493`                                               | Writes are blocked inside `editor.read`; iterator consumption itself is not guarded.                                                       |
+| DOM bridge caller         | `packages/slate-dom/src/plugin/with-dom.ts:277`                                             | `getPathRefMatches` hand-rolls an array inside `read` so it can safely use entries after the callback. This is exactly the missing helper. |
+| Query tests               | `packages/slate/test/query-contract.ts:71`                                                  | `getNodeEntries` returns `state.nodes.entries(options)` from `read`, which teaches the wrong lifecycle shape.                              |
+| Low-level node generators | `packages/slate/src/interfaces/node.ts:129`, `:143`, `:162`, `:172`, `:254`, `:270`, `:292` | Raw `NodeApi` traversal methods are generator-based and should stay that way.                                                              |
+| Static editor generators  | `packages/slate/src/interfaces/editor.ts:1435`, `:1521`                                     | `Editor.levels` and `Editor.positions` remain legacy-compatible generators.                                                                |
+| Bounded level traversal   | `packages/slate/src/editor/levels.ts:23`                                                    | `Editor.levels` already buffers path-depth entries internally for reverse support; this is bounded by path depth.                          |
+| Position traversal        | `packages/slate/src/editor/positions.ts:515`                                                | `Editor.positions` can be high-fanout and should stay lazy; array materialization needs call-site justification.                           |
 
 ## 4. Decision Brief
 
@@ -227,13 +227,13 @@ if first-party or Plate call sites prove repeated need.
 
 Implementation units:
 
-1. Add `state.nodes.toArray(options, map?)` in `.tmp/slate-v2/packages/slate`.
+1. Add `state.nodes.toArray(options, map?)` in `packages/slate`.
 2. Add focused tests proving:
    - `toArray` returns the same sequence as `entries`;
    - mapper overload runs in one traversal;
    - `find` and `some` still early-exit;
    - no test helper returns `state.nodes.entries(...)` from `read`.
-3. Replace `getPathRefMatches` in `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts`
+3. Replace `getPathRefMatches` in `packages/slate-dom/src/plugin/with-dom.ts`
    with `state.nodes.toArray(...)`.
 4. Audit first-party `Array.from` on Slate generators:
    - keep transform snapshot arrays where mutation requires stable paths;
@@ -261,7 +261,7 @@ multi-line read callback may still be valid when the plan explicitly accepts it.
 Slate v2 gates:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun test ./packages/slate/test/query-contract.ts
 bun test ./packages/slate/test/state-tx-public-api-contract.ts
 bun --filter slate typecheck
@@ -492,19 +492,19 @@ Broad-gate cleanup:
 
 Changed implementation files:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/test/query-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/query-ref-observation.mjs`
-- `.tmp/slate-v2/.changeset/slate-state-nodes-to-array.md`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/test/query-contract.ts`
+- `packages/slate/test/state-tx-public-api-contract.ts`
+- `packages/slate-dom/src/plugin/with-dom.ts`
+- `benchmarks/slate-v2/donor/core/current/query-ref-observation.mjs`
+- `Plate repo root/.changeset/slate-state-nodes-to-array.md`
 
 Additional broad-gate cleanup files:
 
-- `.tmp/slate-v2/site/examples/ts/inlines.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-annotation-store.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-widget-store.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx`
+- `packages/slate-react/src/hooks/use-slate-annotation-store.tsx`
+- `packages/slate-react/src/hooks/use-slate-widget-store.tsx`
 
 Changed reference/state files:
 

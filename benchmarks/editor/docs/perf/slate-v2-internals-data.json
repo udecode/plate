@@ -2737,7 +2737,7 @@
           "cells": {
             "slate-v2:core-current": {
               "status": "optional-missing-artifact",
-              "note": "missing artifact ../../.tmp/slate-v2/tmp/slate-transaction-benchmark.json"
+              "note": "missing artifact ../../tmp/slate-transaction-benchmark.json"
             }
           },
           "fixture": "core-transaction-current"
@@ -2752,7 +2752,7 @@
           "cells": {
             "slate-v2:history-memory": {
               "status": "optional-missing-artifact",
-              "note": "missing artifact ../../.tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json"
+              "note": "missing artifact ../../tmp/slate-history-retained-memory-benchmark.json"
             }
           },
           "fixture": "history-retained-memory"
@@ -2776,7 +2776,7 @@
       "fixture": "core-transaction-current",
       "library": "slate-v2:core-current",
       "medianUs": null,
-      "note": "missing artifact ../../.tmp/slate-v2/tmp/slate-transaction-benchmark.json",
+      "note": "missing artifact ../../tmp/slate-transaction-benchmark.json",
       "ops": null,
       "p95Us": null,
       "status": "optional-missing-artifact"
@@ -2786,7 +2786,7 @@
       "fixture": "history-retained-memory",
       "library": "slate-v2:history-memory",
       "medianUs": null,
-      "note": "missing artifact ../../.tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json",
+      "note": "missing artifact ../../tmp/slate-history-retained-memory-benchmark.json",
       "ops": null,
       "p95Us": null,
       "status": "optional-missing-artifact"

@@ -1735,7 +1735,7 @@ const [storeState, setStoreState] = React.useState<JotaiStore>(() =>
 - Add a fan-out lane when the argument is really about store hooks. Without that, mount-time core cost and post-mount subscription cost get mixed together and people end up blaming the wrong state library.
 - Add a core-mount lane when the argument is really about the remaining prebuilt mount cliff. Without that, provider/setup, `Editable`, and hook-consumed render plumbing all get blamed together.
 - If a plugin mutates the initial value and already owns `editor.children`, do not default to live per-node Slate transforms. The `nodeId` init bug was exactly that mistake.
-- If the suspect is a repeated Slate transform, benchmark the same op in `.tmp/slate-v2` with both flat and grouped document shapes before blaming React or store glue. Shape-sensitive collapse is a strong sign that immutable ancestor-array cloning is the real cost.
+- If the suspect is a repeated Slate transform, benchmark the same op in `/Users/zbeyens/git/plate-2` with both flat and grouped document shapes before blaming React or store glue. Shape-sensitive collapse is a strong sign that immutable ancestor-array cloning is the real cost.
 - If the remaining culprit is still too broad, split the `Editable` path again. Static `Editable`, element-only pipe, leaf/text-only pipes, and full render-pipe stack together are enough to tell whether the first fix should land in element wrappers or leaf/text wrappers.
 - If a component only needs mounted state to gate an optional DOM attribute, do not subscribe every node by default. Split the mounted-only path so non-candidate nodes stay hook-free.
 - Keep both a realistic chunked lane and a no-chunk stress lane.

@@ -1,4 +1,4 @@
-import type { Path, TElement, TText } from '@platejs/slate';
+import type { Path, TElement, TText } from '@platejs/slate-legacy';
 import type { AnyObject } from '@udecode/utils';
 
 import clsx from 'clsx';

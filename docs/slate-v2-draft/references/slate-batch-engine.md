@@ -39,7 +39,7 @@ Current hard read:
 - if engine work reopens later, it should reopen intentionally instead of being
   inferred from this reference doc
 
-The exact-path `set_node` rewrite is now in the right architectural shape locally in `.tmp/slate-v2`:
+The exact-path `set_node` rewrite is now in the right architectural shape locally in `Plate repo root`:
 
 - `Editor.withBatch(editor, fn)` is the lifecycle boundary
 - `Transforms.applyBatch(editor, ops)` is the public batch entry point
@@ -135,7 +135,7 @@ This is the real end goal:
 
 ### Public and internal state today
 
-Current local Slate checkpoint in `.tmp/slate-v2`:
+Current local Slate checkpoint in `Plate repo root`:
 
 - `Editor.withBatch(editor, fn)` exists
 - `Transforms.applyBatch(editor, ops)` exists

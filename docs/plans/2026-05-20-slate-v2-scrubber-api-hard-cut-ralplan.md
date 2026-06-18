@@ -46,50 +46,50 @@ ScrubberApi.stringify(value)
 
 Current live source exposes a public API:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/scrubber.ts:1` defines
+- `packages/slate/src/interfaces/scrubber.ts:1` defines
   `Scrubber`.
-- `.tmp/slate-v2/packages/slate/src/interfaces/scrubber.ts:3` defines
+- `packages/slate/src/interfaces/scrubber.ts:3` defines
   `ScrubberInterface`.
-- `.tmp/slate-v2/packages/slate/src/interfaces/scrubber.ts:26` exports
+- `packages/slate/src/interfaces/scrubber.ts:26` exports
   `ScrubberApi`.
-- `.tmp/slate-v2/packages/slate/src/index.ts:130` exports
+- `packages/slate/src/index.ts:130` exports
   `./interfaces/scrubber` from the root `slate` package.
-- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts:238` requires
+- `packages/slate/test/public-surface-contract.ts:238` requires
   `ScrubberApi` as a root export.
-- `.tmp/slate-v2/packages/slate/test/interfaces/Scrubber/scrubber.ts:1`
+- `packages/slate/test/interfaces/Scrubber/scrubber.ts:1`
   preserves the legacy interface fixture.
-- `.tmp/slate-v2/docs/api/scrubber.md:1` publishes a Scrubber API page.
+- `content/docs/slate/api/scrubber.md:1` publishes a Scrubber API page.
 
 Current docs are actively misleading:
 
-- `.tmp/slate-v2/docs/api/scrubber.md:62` calls
+- `content/docs/slate/api/scrubber.md:62` calls
   `ScrubberApi.textRandomizer(...)`, but live `ScrubberApi` only exposes
   `setScrubber` and `stringify`.
 
 Current internal usage is real and broader than the first obvious call sites:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/transforms/general.ts:207` and
+- `packages/slate/src/interfaces/transforms/general.ts:207` and
   `:516` format merge-node and set-selection invariant details.
-- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts:528`, `:552`, `:564`,
+- `packages/slate/src/interfaces/node.ts:528`, `:552`, `:564`,
   `:602`, `:760`, and `:876` format node/path lookup failures.
-- `.tmp/slate-v2/packages/slate/src/transforms-node/merge-nodes.ts:168` formats
+- `packages/slate/src/transforms-node/merge-nodes.ts:168` formats
   merge-node kind mismatch errors.
-- `.tmp/slate-v2/packages/slate/src/transforms-selection/select.ts:20` formats
+- `packages/slate/src/transforms-selection/select.ts:20` formats
   incomplete selection input.
-- `.tmp/slate-v2/packages/slate/src/utils/modify.ts:97` and `:119` format
+- `packages/slate/src/utils/modify.ts:97` and `:119` format
   element/leaf lookup failures.
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:800`, `:1041`,
+- `packages/slate-dom/src/plugin/dom-editor.ts:800`, `:1041`,
   `:1150`, `:1162`, and `:1229` format DOM bridge resolution failures.
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:155` defines
+- `packages/slate-dom/src/plugin/dom-editor.ts:155` defines
   `SlateDOMResolutionError` with raw `details`, which means `ScrubberApi` is not
   a complete privacy boundary anyway.
 
 Current package-boundary fact:
 
-- `.tmp/slate-v2/packages/slate/package.json:11` exports `./internal`.
-- `.tmp/slate-v2/packages/slate/src/internal/index.ts:1` owns the internal
+- `packages/slate/package.json:11` exports `./internal`.
+- `packages/slate/src/internal/index.ts:1` owns the internal
   cross-package bridge.
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:13` already imports
+- `packages/slate-dom/src/plugin/dom-editor.ts:13` already imports
   `Editor` and `getEditorLiveSelection` from `slate/internal`.
 
 That makes the best implementation target a shared internal helper exposed only
@@ -194,7 +194,7 @@ DOM package options:
 | System | Source | Mechanism | Avoids | Steal | Reject | Slate target | Verdict |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Legacy Slate | `../slate/packages/slate/src/interfaces/scrubber.ts:1` and `../slate/docs/api/scrubber.md:62` | global `Scrubber` replacer for internal error stringification | leaking clear text in some error messages | the desire for central formatting | global mutable public API and stale `textRandomizer` docs | internal formatter only | diverge |
-| Slate v2 live | `.tmp/slate-v2/packages/slate/src/interfaces/scrubber.ts:26`, `.tmp/slate-v2/docs/api/scrubber.md:62` | API-suffixed copy of legacy scrubber | legacy parity drift | source-backed call-site inventory | keeping parity for parity's sake | hard cut public, keep internal helper | diverge |
+| Slate v2 live | `packages/slate/src/interfaces/scrubber.ts:26`, `content/docs/slate/api/scrubber.md:62` | API-suffixed copy of legacy scrubber | legacy parity drift | source-backed call-site inventory | keeping parity for parity's sake | hard cut public, keep internal helper | diverge |
 | ProseMirror | `../prosemirror-*` grep found JSON formatting but no global scrubber/redaction API | editor core does not expose logging policy as schema/editor API | public API bloat | keep diagnostics local to failures | app-wide global redaction hook | no public diagnostics API | agree |
 | Lexical | `../lexical/scripts/error-codes/*` uses build-time/dev invariant message handling; grep found no editor-level scrubber API | diagnostics are build/tool/runtime concern, not editor document API | runtime public API pollution | keep error policy separate from editor model | public mutable formatter | internal debug formatter only | partial |
 | Tiptap | `../tiptap` grep found JSON examples/tests, no global scrubber/redaction API | extension DX focuses on commands/extensions, not logging policy | product logging leaking into core editor API | do not teach editor users a logging API | adding diagnostics to extension API | no public replacement | agree |
@@ -208,8 +208,8 @@ Related rows:
 | Issue | Cluster | Claim | Why | Proof route | V2 sync ledger | PR line |
 | --- | --- | --- | --- | --- | --- | --- |
 | #3948 | singleton | Not claimed | The issue says Slate errors cannot be caught by error boundaries. Cutting `ScrubberApi` does not prove catchability or runtime recovery. | no claim; repro-first only | `docs/slate-issues/gitcrawl-v2-sync-ledger.md:204` already says current repro required | related matrix only |
-| #3641 | singleton-dom-selection | Related | Public Scrubber cut is adjacent to error policy, but selection failure strictness belongs to DOM bridge policy. | `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`; existing ledger row | `docs/slate-issues/gitcrawl-v2-sync-ledger.md:260` keeps cluster-synced | preserve existing related row |
-| #4643 | singleton-dom-selection | Related | DOM point throwing and uncatchable selection failures need bridge/runtime proof, not message redaction. | `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`; existing ledger row | `docs/slate-issues/gitcrawl-v2-sync-ledger.md:410` keeps cluster-synced | preserve existing related row |
+| #3641 | singleton-dom-selection | Related | Public Scrubber cut is adjacent to error policy, but selection failure strictness belongs to DOM bridge policy. | `packages/slate-dom/test/bridge.ts`; existing ledger row | `docs/slate-issues/gitcrawl-v2-sync-ledger.md:260` keeps cluster-synced | preserve existing related row |
+| #4643 | singleton-dom-selection | Related | DOM point throwing and uncatchable selection failures need bridge/runtime proof, not message redaction. | `packages/slate-dom/test/bridge.ts`; existing ledger row | `docs/slate-issues/gitcrawl-v2-sync-ledger.md:410` keeps cluster-synced | preserve existing related row |
 | #2039 | singleton-normalization | Not claimed | Better internal debug formatting is not named infinite-loop diagnostics. | no claim | `docs/slate-issues/gitcrawl-v2-sync-ledger.md:683` already not-claimed | preserve existing not-claimed row |
 
 ClawSweeper status: applied by ledger reuse for the related-issue discovery
@@ -333,7 +333,7 @@ Final planning score: `0.93`.
 | shadcn-style composability/minimalism | 0.94 | No UI and no config object; one internal helper through existing `slate/internal` bridge is the smallest composable first-party shape. |
 
 Threshold note: this closes the planning/handoff objective, not the later Ralph
-implementation. `.tmp/slate-v2` implementation proof is intentionally a Ralph
+implementation. `Plate repo root` implementation proof is intentionally a Ralph
 gate and remains listed under Implementation Phases / Fast Driver Gates.
 
 ## Applicable Implementation-Skill Review Matrix
@@ -361,7 +361,7 @@ gate and remains listed under Implementation Phases / Fast Driver Gates.
 No browser stress gate is required for the planning pass because this cut does
 not change selection import/export, DOM repair, rendering, or input handling.
 If Ralph implementation changes DOM bridge throw semantics, run the focused
-`.tmp/slate-v2` DOM bridge tests named by the implementation and keep issue
+`Plate repo root` DOM bridge tests named by the implementation and keep issue
 claims conservative.
 
 ## Plan Deltas From Related-Issue Review
@@ -382,8 +382,8 @@ claims conservative.
 ## Implementation Phases
 
 1. Cut public surface:
-   - delete `.tmp/slate-v2/packages/slate/src/interfaces/scrubber.ts`;
-   - remove `.tmp/slate-v2/packages/slate/src/index.ts:130`;
+   - delete `packages/slate/src/interfaces/scrubber.ts`;
+   - remove `packages/slate/src/index.ts:130`;
    - remove `ScrubberApi` and `Scrubber` from public-surface contracts.
 2. Add internal formatter:
    - add internal `formatDebugValue`;
@@ -397,20 +397,20 @@ claims conservative.
    - remove `docs/Summary.md` Scrubber entry;
    - add/update tests for public absence and internal formatter.
 4. Verify:
-   - `.tmp/slate-v2`: focused `slate` public-surface contract;
-   - `.tmp/slate-v2`: focused package tests covering representative error
+   - `Plate repo root`: focused `slate` public-surface contract;
+   - `Plate repo root`: focused package tests covering representative error
      formatting;
-   - `.tmp/slate-v2`: `bun --filter slate typecheck`;
-   - `.tmp/slate-v2`: broader `bun check` if public export churn affects
+   - `Plate repo root`: `bun --filter slate typecheck`;
+   - `Plate repo root`: broader `bun check` if public export churn affects
      package graph.
 
 ## Fast Driver Gates
 
-- cwd `.tmp/slate-v2`: `rg -n "ScrubberApi|Scrubber\\b|setScrubber|interfaces/scrubber" packages docs site --glob '!site/out/**'` returns only intentional changelog/archive references or zero current public references.
-- cwd `.tmp/slate-v2`: public-surface contract proves `ScrubberApi` is absent.
-- cwd `.tmp/slate-v2`: internal formatter test proves circular/unserializable
+- cwd `Plate repo root`: `rg -n "ScrubberApi|Scrubber\\b|setScrubber|interfaces/scrubber" packages docs site --glob '!site/out/**'` returns only intentional changelog/archive references or zero current public references.
+- cwd `Plate repo root`: public-surface contract proves `ScrubberApi` is absent.
+- cwd `Plate repo root`: internal formatter test proves circular/unserializable
   value formatting cannot mask the original throw.
-- cwd `.tmp/slate-v2`: focused representative node/DOM error tests still pass.
+- cwd `Plate repo root`: focused representative node/DOM error tests still pass.
 - cwd `plate-2`: `node tooling/scripts/completion-check.mjs --id 019e46be-4ec4-7d11-bc6e-9fcf033a8803` reflects this review state.
 
 ## Pass-State Ledger
@@ -447,7 +447,7 @@ Implemented:
 Diff-review result:
 
 - P0/P1/P2 findings: none.
-- Accepted risk: the `.tmp/slate-v2` checkout already contains unrelated dirty
+- Accepted risk: the `Plate repo root` checkout already contains unrelated dirty
   changes in overlapping files such as `packages/slate/src/index.ts`,
   `packages/slate/src/internal/index.ts`, and
   `packages/slate/src/interfaces/node.ts`; this pass reviewed only the
@@ -459,18 +459,18 @@ Diff-review result:
 
 Verification:
 
-- `.tmp/slate-v2`: `bun test ./packages/slate/test/public-surface-contract.ts ./packages/slate/test/format-debug-value-contract.ts`
+- `Plate repo root`: `bun test ./packages/slate/test/public-surface-contract.ts ./packages/slate/test/format-debug-value-contract.ts`
   passed, `342 pass, 0 fail`.
-- `.tmp/slate-v2`: `bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/public-surface-contract.ts`
+- `Plate repo root`: `bun test ./packages/slate-dom/test/bridge.ts ./packages/slate-dom/test/public-surface-contract.ts`
   passed, `21 pass, 0 fail`.
-- `.tmp/slate-v2`: `bun --filter slate typecheck` passed.
-- `.tmp/slate-v2`: `bun --filter slate-dom typecheck` passed.
-- `.tmp/slate-v2`: `bun lint:fix` ran and fixed formatting.
-- `.tmp/slate-v2`: post-lint focused tests passed,
+- `Plate repo root`: `bun --filter slate typecheck` passed.
+- `Plate repo root`: `bun --filter slate-dom typecheck` passed.
+- `Plate repo root`: `bun lint:fix` ran and fixed formatting.
+- `Plate repo root`: post-lint focused tests passed,
   `363 pass, 0 fail`.
-- `.tmp/slate-v2`: post-lint `bun --filter slate typecheck` and
+- `Plate repo root`: post-lint `bun --filter slate typecheck` and
   `bun --filter slate-dom typecheck` passed.
-- `.tmp/slate-v2`: `bun check` passed, including lint/typecheck and test suites.
+- `Plate repo root`: `bun check` passed, including lint/typecheck and test suites.
 
 ## Open Questions
 
@@ -506,4 +506,4 @@ Accepted final state:
 - no fixed or improved issue claims;
 - related/not-claimed issue accounting is recorded for `#3948`, `#3641`,
   `#4643`, `#2039`, `#5202`, and `#4971`;
-- implementation gates passed in `.tmp/slate-v2`, including `bun check`.
+- implementation gates passed in `Plate repo root`, including `bun check`.

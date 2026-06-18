@@ -1,4 +1,8 @@
-import type { EditorTransforms, TSelection, Value } from '@platejs/slate';
+import type {
+  EditorTransforms,
+  TSelection,
+  Value,
+} from '@platejs/slate-legacy';
 
 import type { SlateEditor } from '../../../editor';
 

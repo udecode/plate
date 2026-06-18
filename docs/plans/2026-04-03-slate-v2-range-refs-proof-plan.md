@@ -97,7 +97,7 @@ Verify, deslop, re-verify, architect review, cleanup.
   - `RangeRefAffinity`
   - default affinity `inward`
   - transaction-aware draft ref publishing
-- landed the proof in `.tmp/slate-v2`
+- landed the proof in `Plate repo root`
 - added focused contract coverage for:
   - commit-boundary publication
   - move-node rebasing

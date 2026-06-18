@@ -33,12 +33,12 @@ operationMiddlewares: [
 
 Live source:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1177` defines operation middleware context as `{ editor, operation }`.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1341` and `:1358` expose `operationMiddlewares` on extension registration output and extension objects.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts:1779` routes every applied operation through registered operation middleware before base apply.
-- `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts:225` stores/removes operation middleware in the extension registry.
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts:143` uses it to keep DOM-side pending text diffs, pending selection, path refs, and key maps coherent as operations apply.
-- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts:409` proves `tx.apply` routes through operation middleware.
+- `packages/slate/src/interfaces/editor.ts:1177` defines operation middleware context as `{ editor, operation }`.
+- `packages/slate/src/interfaces/editor.ts:1341` and `:1358` expose `operationMiddlewares` on extension registration output and extension objects.
+- `packages/slate/src/core/public-state.ts:1779` routes every applied operation through registered operation middleware before base apply.
+- `packages/slate/src/core/extension-registry.ts:225` stores/removes operation middleware in the extension registry.
+- `packages/slate-dom/src/plugin/with-dom.ts:143` uses it to keep DOM-side pending text diffs, pending selection, path refs, and key maps coherent as operations apply.
+- `packages/slate/test/transaction-contract.ts:409` proves `tx.apply` routes through operation middleware.
 
 Real use:
 
@@ -80,13 +80,13 @@ commitListeners: [
 
 Live source:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1347` exposes `commitListeners` from registration output.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1364` exposes `commitListeners` on extension objects.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1583` defines a listener as `(commit, snapshot) => void`.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts:2616` notifies commit listeners after a snapshot change and lazily computes snapshot only when needed.
-- `.tmp/slate-v2/packages/slate-history/src/history-extension.ts:233` uses commit listeners to build undo batches, merge/push/skip history, clear redo, and rebase history on remote/collab commits.
-- `.tmp/slate-v2/packages/slate/test/collab-adapter-extension-contract.ts:122` uses commit listeners to export local commits for a fake collaboration adapter.
-- `.tmp/slate-v2/packages/slate/test/generic-extension-contract.ts:40` proves typed commit/snapshot access.
+- `packages/slate/src/interfaces/editor.ts:1347` exposes `commitListeners` from registration output.
+- `packages/slate/src/interfaces/editor.ts:1364` exposes `commitListeners` on extension objects.
+- `packages/slate/src/interfaces/editor.ts:1583` defines a listener as `(commit, snapshot) => void`.
+- `packages/slate/src/core/public-state.ts:2616` notifies commit listeners after a snapshot change and lazily computes snapshot only when needed.
+- `packages/slate-history/src/history-extension.ts:233` uses commit listeners to build undo batches, merge/push/skip history, clear redo, and rebase history on remote/collab commits.
+- `packages/slate/test/collab-adapter-extension-contract.ts:122` uses commit listeners to export local commits for a fake collaboration adapter.
+- `packages/slate/test/generic-extension-contract.ts:40` proves typed commit/snapshot access.
 
 Real use:
 
@@ -132,15 +132,15 @@ register({ editor, options, runtimeState, signal }) {
 
 Live source:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1328` defines registration context with `editor`, `name`, `options`, `runtimeState`, and `signal`.
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:351` builds that context.
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:545` calls `extension.register(context)`, registers both static slots and returned slots, wires runtime-state cleanup, returned cleanup, and abort signal.
-- `.tmp/slate-v2/packages/slate-history/src/history-extension.ts:211` uses `register` to initialize history state, expose `editor.api.history`, return cleanup, and attach commit listener.
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts:273` uses `register` to install DOM runtime, remove the temporary root `editor.dom`, and expose `editor.api.dom` / `editor.api.clipboard`.
-- `.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts:87` uses `register` to install DOM/React runtime and expose API groups.
-- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts:136` proves options, cleanup signal, and extension-local runtime state.
-- `.tmp/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts:174` proves registration can return typed `state` and `tx` groups.
-- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts:1265` proves cleanup and abort after unextend.
+- `packages/slate/src/interfaces/editor.ts:1328` defines registration context with `editor`, `name`, `options`, `runtimeState`, and `signal`.
+- `packages/slate/src/core/editor-extension.ts:351` builds that context.
+- `packages/slate/src/core/editor-extension.ts:545` calls `extension.register(context)`, registers both static slots and returned slots, wires runtime-state cleanup, returned cleanup, and abort signal.
+- `packages/slate-history/src/history-extension.ts:211` uses `register` to initialize history state, expose `editor.api.history`, return cleanup, and attach commit listener.
+- `packages/slate-dom/src/plugin/with-dom.ts:273` uses `register` to install DOM runtime, remove the temporary root `editor.dom`, and expose `editor.api.dom` / `editor.api.clipboard`.
+- `packages/slate-react/src/plugin/with-react.ts:87` uses `register` to install DOM/React runtime and expose API groups.
+- `packages/slate/test/extension-methods-contract.ts:136` proves options, cleanup signal, and extension-local runtime state.
+- `packages/slate/test/generic-extension-namespace-contract.ts:174` proves registration can return typed `state` and `tx` groups.
+- `packages/slate/test/transaction-contract.ts:1265` proves cleanup and abort after unextend.
 
 Real use:
 
@@ -394,34 +394,34 @@ visible rendering is still separate at the call site.
 
 | File                                                                     | Current live shape                                                                                                            | Required change                                                                                                                                                                                            | Why                                                                                                                        |
 | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `.tmp/slate-v2/site/examples/ts/check-lists.tsx`                         | `extensions: [checklist()]`; `transforms.deleteBackward`; `Editable renderElement`                                            | Keep transform shape; move checklist element rendering into extension-owned renderer registration when the renderer API is finalized.                                                                      | This is the canonical checklist DX example. It should show one feature extension owning behavior plus rendering.           |
-| `.tmp/slate-v2/site/examples/ts/tables.tsx`                              | `extensions: [table()]`; `transforms.deleteBackward`, `deleteForward`, `insertBreak`; `Editable renderElement` / `renderLeaf` | Keep transform middleware; move table element rendering into the table feature extension if raw Slate keeps renderer registration, otherwise keep `renderElement` and document it as per-editor rendering. | Table behavior already proves transform middleware is the right answer instead of keydown interception.                    |
-| `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`                  | `extensions: [markdownShortcuts()]`; transform middleware; `Editable renderElement`                                           | Keep transform middleware. Renderer move is optional because the extension is mainly behavior, not a schema package.                                                                                       | This is a behavior-extension example; rendering can stay explicit if we want to teach local block rendering separately.    |
-| `.tmp/slate-v2/site/examples/ts/inlines.tsx`                             | `extensions: [inline()]`; clipboard + transform middleware + elements; `Editable renderElement` / `renderText`                | Keep clipboard/transform/elements; move link/button/badge renderers into the extension only if renderer registration stays in raw Slate.                                                                   | It is a mixed schema/behavior/rendering feature, so split teaching is noisy.                                               |
-| `.tmp/slate-v2/site/examples/ts/images.tsx`                              | `extensions: [image()]`; `clipboard.insertData`; `elements`; `Editable renderElement` / `renderVoid`                          | Keep `clipboard.insertData`; move image void rendering into the image extension when renderer registration is accepted.                                                                                    | This is the strongest public example for extension-owned clipboard + void rendering.                                       |
-| `.tmp/slate-v2/site/examples/ts/editable-voids.tsx`                      | `extensions: [editableVoid()]`; `elements`; `Editable renderElement` / `renderVoid`                                           | Move editable-void rendering into the extension if renderer registration is retained; otherwise keep the explicit render props.                                                                            | It demonstrates the void/embedded editor model and should not teach two extension paths unless one is clearly an override. |
-| `.tmp/slate-v2/site/examples/ts/embeds.tsx`                              | `extensions: [embed()]`; `elements`; `Editable renderElement` / `renderVoid`                                                  | Same as images/editable-voids: renderer ownership belongs with the feature if raw Slate keeps renderer registration.                                                                                       | Embeds are feature-level schema + rendering, not only per-editor decoration.                                               |
-| `.tmp/slate-v2/site/examples/ts/mentions.tsx`                            | `extensions: [mention()]`; `elements`; `Editable renderElement` / `renderLeaf` / `renderVoid`                                 | Keep mention schema extension; decide whether mention renderer belongs in raw Slate extension or stays as an app override.                                                                                 | Mentions mix schema, popup UI, marks, and void rendering, so raw Slate must avoid becoming Plate.                          |
-| `.tmp/slate-v2/site/examples/ts/forced-layout.tsx`                       | `normalizers.editor`; `Editable renderElement`                                                                                | No slot rename change. Keep normalizer shape; renderer can stay explicit because the example is about document constraints.                                                                                | The public-surface contract already forbids stale post-commit repair here.                                                 |
-| `.tmp/slate-v2/site/examples/ts/richtext.tsx`                            | `richText()` extension with clipboard + transforms; `Editable renderElement` / `renderLeaf`                                   | Do not shove the whole rich-text UI into raw extension slots. Keep as a broader example unless a dedicated renderer-registration API is accepted.                                                          | This is closest to a product bundle. Raw Slate should avoid turning it into Plate.                                         |
-| `.tmp/slate-v2/site/examples/ts/paste-html-import.ts` / `paste-html.tsx` | `html()` extension with `clipboard.insertData` and elements; rendering remains in the example                                 | Keep `clipboard.insertData`; no direct slot rename change.                                                                                                                                                 | Clipboard ingress shape is already right; output/rendering is separate policy.                                             |
+| `apps/www/src/app/(app)/examples/slate/_examples/check-lists.tsx`                         | `extensions: [checklist()]`; `transforms.deleteBackward`; `Editable renderElement`                                            | Keep transform shape; move checklist element rendering into extension-owned renderer registration when the renderer API is finalized.                                                                      | This is the canonical checklist DX example. It should show one feature extension owning behavior plus rendering.           |
+| `apps/www/src/app/(app)/examples/slate/_examples/tables.tsx`                              | `extensions: [table()]`; `transforms.deleteBackward`, `deleteForward`, `insertBreak`; `Editable renderElement` / `renderLeaf` | Keep transform middleware; move table element rendering into the table feature extension if raw Slate keeps renderer registration, otherwise keep `renderElement` and document it as per-editor rendering. | Table behavior already proves transform middleware is the right answer instead of keydown interception.                    |
+| `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx`                  | `extensions: [markdownShortcuts()]`; transform middleware; `Editable renderElement`                                           | Keep transform middleware. Renderer move is optional because the extension is mainly behavior, not a schema package.                                                                                       | This is a behavior-extension example; rendering can stay explicit if we want to teach local block rendering separately.    |
+| `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx`                             | `extensions: [inline()]`; clipboard + transform middleware + elements; `Editable renderElement` / `renderText`                | Keep clipboard/transform/elements; move link/button/badge renderers into the extension only if renderer registration stays in raw Slate.                                                                   | It is a mixed schema/behavior/rendering feature, so split teaching is noisy.                                               |
+| `apps/www/src/app/(app)/examples/slate/_examples/images.tsx`                              | `extensions: [image()]`; `clipboard.insertData`; `elements`; `Editable renderElement` / `renderVoid`                          | Keep `clipboard.insertData`; move image void rendering into the image extension when renderer registration is accepted.                                                                                    | This is the strongest public example for extension-owned clipboard + void rendering.                                       |
+| `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx`                      | `extensions: [editableVoid()]`; `elements`; `Editable renderElement` / `renderVoid`                                           | Move editable-void rendering into the extension if renderer registration is retained; otherwise keep the explicit render props.                                                                            | It demonstrates the void/embedded editor model and should not teach two extension paths unless one is clearly an override. |
+| `apps/www/src/app/(app)/examples/slate/_examples/embeds.tsx`                              | `extensions: [embed()]`; `elements`; `Editable renderElement` / `renderVoid`                                                  | Same as images/editable-voids: renderer ownership belongs with the feature if raw Slate keeps renderer registration.                                                                                       | Embeds are feature-level schema + rendering, not only per-editor decoration.                                               |
+| `apps/www/src/app/(app)/examples/slate/_examples/mentions.tsx`                            | `extensions: [mention()]`; `elements`; `Editable renderElement` / `renderLeaf` / `renderVoid`                                 | Keep mention schema extension; decide whether mention renderer belongs in raw Slate extension or stays as an app override.                                                                                 | Mentions mix schema, popup UI, marks, and void rendering, so raw Slate must avoid becoming Plate.                          |
+| `apps/www/src/app/(app)/examples/slate/_examples/forced-layout.tsx`                       | `normalizers.editor`; `Editable renderElement`                                                                                | No slot rename change. Keep normalizer shape; renderer can stay explicit because the example is about document constraints.                                                                                | The public-surface contract already forbids stale post-commit repair here.                                                 |
+| `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx`                            | `richText()` extension with clipboard + transforms; `Editable renderElement` / `renderLeaf`                                   | Do not shove the whole rich-text UI into raw extension slots. Keep as a broader example unless a dedicated renderer-registration API is accepted.                                                          | This is closest to a product bundle. Raw Slate should avoid turning it into Plate.                                         |
+| `apps/www/src/app/(app)/examples/slate/_examples/paste-html-import.ts` / `paste-html.tsx` | `html()` extension with `clipboard.insertData` and elements; rendering remains in the example                                 | Keep `clipboard.insertData`; no direct slot rename change.                                                                                                                                                 | Clipboard ingress shape is already right; output/rendering is separate policy.                                             |
 
 Hard answer: for the three-slot rename, the examples that must change are not
 site examples; they are first-party packages and contracts:
 
-- `.tmp/slate-v2/packages/slate-history/src/history-extension.ts`: `register` ->
+- `packages/slate-history/src/history-extension.ts`: `register` ->
   `setup`, returned `commitListeners` -> returned or top-level `onCommit`.
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts`: ad-hoc DOM
+- `packages/slate-dom/src/plugin/with-dom.ts`: ad-hoc DOM
   operation middleware -> `operations.apply`; `dom()` lifecycle `register` ->
   `setup`.
-- `.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts`: lifecycle
+- `packages/slate-react/src/plugin/with-react.ts`: lifecycle
   `register` -> `setup`.
-- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`: operation
+- `packages/slate/test/transaction-contract.ts`: operation
   middleware and lifecycle tests must use `operations.apply`, `onCommit`, and
   `setup`.
-- `.tmp/slate-v2/packages/slate/test/collab-adapter-extension-contract.ts`:
+- `packages/slate/test/collab-adapter-extension-contract.ts`:
   fake adapter uses `setup` + `onCommit`.
-- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts` and generic
+- `packages/slate/test/extension-methods-contract.ts` and generic
   extension contracts: public typing must reject old slot names and prove the
   new ones.
 
@@ -442,19 +442,19 @@ Example policy after this review:
 | Pass                       | Status   | Evidence                                                                                                                                                                       | Next                    |
 | -------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------- |
 | Activation reset           | complete | `active goal state` reset from previous `done` state                                                                               | none                    |
-| Current-state read         | complete | live `.tmp/slate-v2` source, tests, first-party history/dom/react/collab uses, compiled Lexical/ProseMirror/Tiptap research                                                    | related issue discovery |
+| Current-state read         | complete | live `Plate repo root` source, tests, first-party history/dom/react/collab uses, compiled Lexical/ProseMirror/Tiptap research                                                    | related issue discovery |
 | Related issue discovery    | complete | related rows checked in coverage matrix, fork dossier, current sync ledger, and frozen open issue ledger                                                                       | ledger sync             |
 | Issue ledger sync          | complete | updated `#3557` in coverage matrix and current sync ledger; added fork dossier section; PR reference synced                                                                    | decision brief          |
 | Decision brief             | complete | options, drivers, rejected alternatives, and consequence recorded above                                                                                                        | maintainer objection    |
 | Maintainer objection pass  | complete | objections for `operations.apply`, `onCommit`, `setup`, and churn recorded above                                                                                               | deliberate pass         |
 | High-risk deliberate mode  | complete | pre-mortem and Ralph proof matrix recorded above                                                                                                                               | closure gate            |
 | Closure gate               | complete | planning artifacts synced; no Slate v2 source edit made; completion-check passes                                                                                               | none                    |
-| Example impact refresh     | complete | live example grep/read over `.tmp/slate-v2/site/examples/ts` and package contracts; table recorded above                                                                       | closure refresh         |
+| Example impact refresh     | complete | live example grep/read over `apps/www/src/app/(app)/examples/slate/_examples` and package contracts; table recorded above                                                                       | closure refresh         |
 | Closure refresh            | complete | example-impact refresh added no new issue claim, no Slate v2 source edit, and no new ledger sync requirement; completion state closed for current hook id                      | none                    |
 | Ralph execution activation | complete | `active goal state` reset to `pending`; `active goal state` rewritten for execution            | public API TDD slice    |
 | Public API TDD slice       | complete | RED: focused `transaction-contract` showed `operations.apply` not wired; GREEN: runtime contracts and package typechecks pass with `setup`, `onCommit`, and `operations.apply` | diff review             |
 | Diff review pass           | complete | Fixed snapshot eagerness in the `onCommit` wrapper by keeping the internal listener arity 1 and exposing lazy `snapshot`                                                       | verification sweep      |
-| Verification sweep         | complete | `bun check` passed in `.tmp/slate-v2`; targeted runtime contracts, package typechecks, `slate-react` vitest, lint fix, and solution capture completed                          | none                    |
+| Verification sweep         | complete | `bun check` passed in `Plate repo root`; targeted runtime contracts, package typechecks, `slate-react` vitest, lint fix, and solution capture completed                          | none                    |
 
 ## Ralph Execution Activation - 2026-05-18
 
@@ -462,7 +462,7 @@ The accepted planning verdict is now an implementation lane.
 
 Completed owner:
 
-- Public extension-slot API and type contract in `.tmp/slate-v2`.
+- Public extension-slot API and type contract in `Plate repo root`.
 - First-party migration in history, DOM, React, transaction, collab, and generic extension contracts.
 
 TDD slice:

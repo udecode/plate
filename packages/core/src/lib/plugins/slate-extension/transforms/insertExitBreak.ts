@@ -2,7 +2,7 @@ import {
   type EditorAboveOptions,
   combineMatchOptions,
   PathApi,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 
 import type { SlateEditor } from '../../../editor';
 

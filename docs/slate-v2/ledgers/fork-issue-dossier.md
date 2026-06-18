@@ -34,7 +34,7 @@ Source plan:
 
 Reviewed surface:
 The first execution slice implements the public API/lifecycle baseline for the
-closed void roots / editable islands plan. `.tmp/slate-v2` now exposes
+closed void roots / editable islands plan. `Plate repo root` now exposes
 `EditorElementSpec.contentRoot`, `tx.roots.create/replace/delete`, and
 `useSlateContentRoot`; the editable-voids example uses `tx.roots.create` for
 child-root creation.
@@ -220,9 +220,9 @@ Evidence:
 
 - live gitcrawl checked: open singleton issue, all-browser report.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts`.
+  `packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts`.
 - implementation:
-  `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`.
+  `packages/slate-react/src/editable/clipboard-input-strategy.ts`.
 - checkpoint:
   `.tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-structural-cut-delete-execution.md`.
 
@@ -251,7 +251,7 @@ Evidence:
 
 - live gitcrawl checked: open singleton issue.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`.
+  `packages/slate/test/clipboard-contract.ts`.
 - checkpoint:
   `.tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-structural-cut-delete-execution.md`.
 
@@ -278,7 +278,7 @@ Evidence:
 
 - live gitcrawl checked: open singleton issue with current activity in 2025.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`.
+  `packages/slate/test/clipboard-contract.ts`.
 - checkpoint:
   `.tmp/completion-checks/slate-v2-clawsweeper-v2-clipboard-structural-cut-delete-execution.md`.
 
@@ -335,7 +335,7 @@ Evidence:
 - current v2 proof: Slice 4 hardens `cut` event handling once a clipboard event
   with `clipboardData` reaches Slate.
 - related runtime file:
-  `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`.
+  `packages/slate-react/src/editable/clipboard-input-strategy.ts`.
 
 Decision:
 Keep this as `not-claimed`. Shift+Delete needs OS/browser shortcut dispatch and
@@ -366,7 +366,7 @@ Evidence:
 - duplicate/stale/invalid proof: none.
 - live GitHub checked: yes, open.
 - current v2 proof:
-  `.tmp/slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`;
+  `benchmarks/slate-v2/donor/core/current/transaction-execution.mjs`;
   `docs/slate-v2/slate-tranche-3-execution.md`;
   `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
 
@@ -401,9 +401,9 @@ Evidence:
   table, and boundary bridge cluster.
 - duplicate/stale/invalid proof: none.
 - live GitHub checked: yes, open, `bug` label.
-- current v2 proof: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`;
-  `.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts`;
-  `.tmp/slate-v2/playwright/integration/examples/tables.test.ts`;
+- current v2 proof: `packages/slate-dom/test/bridge.ts`;
+  `packages/slate-dom/test/dom-coverage.ts`;
+  `apps/www/tests/slate-browser/donor/examples/tables.test.ts`;
   `docs/plans/2026-05-04-slate-v2-full-issue-ledger-architecture-ralplan.md`;
   `docs/plans/2026-05-04-slate-v2-full-issue-ledger-architecture-ralplan-issue-matrix.md`.
 - proof command:
@@ -444,11 +444,11 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-threads-6022-6027.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`,
-  `.tmp/slate-v2/packages/slate-react/test/android-input-manager-contract.test.ts`,
-  `.tmp/slate-v2/packages/slate-react/test/with-react-contract.tsx`, and
-  `.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts`.
+  `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`,
+  `packages/slate-react/src/editable/runtime-android-engine.ts`,
+  `packages/slate-react/test/android-input-manager-contract.test.ts`,
+  `packages/slate-react/test/with-react-contract.tsx`, and
+  `packages/browser/test/core/release-proof.test.ts`.
 - 2026-05-23 no-Appium proof: package contract reproduced the stale selection
   sub-bug from the #6027 root-cause class. Before the fix, marked collapsed
   Android typing inserted the marked leaf correctly but restored selection to
@@ -490,9 +490,9 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-10-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`,
-  `.tmp/slate-v2/site/examples/ts/decorations-async.tsx`,
-  `.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts`,
+  `packages/slate-react/src/components/editable-text-blocks.tsx`,
+  `apps/www/src/app/(app)/examples/slate/_examples/decorations-async.tsx`,
+  `apps/www/tests/slate-browser/donor/examples/decorations-async.test.ts`,
   and
   `docs/plans/2026-05-23-slate-v2-async-decoration-caret-cluster-proof.md`.
 
@@ -528,9 +528,9 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch1-9-14.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`, and
-  `.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts`.
+  `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`,
+  `packages/slate-react/src/editable/composition-state.ts`, and
+  `packages/browser/test/core/release-proof.test.ts`.
 
 Decision:
 Keep as `cluster-synced`. The owner is Android empty-node IME insertion, but
@@ -559,9 +559,9 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-12-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts`,
-  `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`, and
-  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/segment-shell.tsx`.
+  `packages/browser/test/core/scenario.test.ts`,
+  `packages/browser/src/playwright/index.ts`, and
+  `packages/slate-react/src/rendering-strategy/segment-shell.tsx`.
 
 Decision:
 Keep as `cluster-synced`. Inline void boundary navigation is represented, but
@@ -591,9 +591,9 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-12-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts`,
-  `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`, and
-  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/segment-shell.tsx`.
+  `packages/browser/test/core/scenario.test.ts`,
+  `packages/browser/src/playwright/index.ts`, and
+  `packages/slate-react/src/rendering-strategy/segment-shell.tsx`.
 
 Decision:
 Keep as `cluster-synced`. It strengthens the mobile inline-void boundary owner,
@@ -623,10 +623,10 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-13-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`,
-  and `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`.
+  `packages/slate-react/src/editable/runtime-composition-events.ts`,
+  `packages/slate-react/src/editable/composition-state.ts`,
+  `packages/slate-react/src/editable/runtime-android-engine.ts`,
+  and `packages/slate-react/test/editing-kernel-contract.ts`.
 
 Decision:
 Keep as `cluster-synced`. Composition ownership exists, but Android Chrome IME
@@ -654,10 +654,10 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-13-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`,
-  and `.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts`.
+  `packages/slate-react/src/editable/runtime-composition-events.ts`,
+  `packages/slate-react/src/editable/composition-state.ts`,
+  `packages/slate-react/src/editable/runtime-android-engine.ts`,
+  and `packages/browser/test/core/release-proof.test.ts`.
 
 Decision:
 Keep as `cluster-synced`. It is the right input-runtime family, but exact empty
@@ -684,10 +684,10 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch1-9-14.json`.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts`,
-  `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`, and
-  `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+  `apps/www/tests/slate-browser/donor/examples/huge-document.test.ts`,
+  `packages/slate-react/test/app-owned-customization.tsx`,
+  `packages/slate-react/src/editable/selection-reconciler.ts`, and
+  `packages/browser/src/playwright/index.ts`.
 
 Decision:
 Claim `Fixes #5826`. The huge-document browser row follows the reported flow:
@@ -756,7 +756,7 @@ Evidence:
 - live GitHub checked: yes, open, `improvement` label.
 - current v2 proof: `docs/slate-v2/ledgers/issue-coverage-matrix.md`;
   `docs/slate-v2/references/pr-description.md`;
-  `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`.
+  `packages/slate/test/state-tx-public-api-contract.ts`.
 
 Decision:
 Keep the exact `Fixes #6013` claim. Slate v2 makes editor initialization own
@@ -792,9 +792,9 @@ Evidence:
 - live GitHub checked: yes; issue is open and uses Slate `0.124.1` plus the
   public Rich Text example.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`;
-  `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`;
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`.
+  `packages/slate-react/src/editable/runtime-before-input-events.ts`;
+  `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`;
+  `packages/slate-dom/src/plugin/dom-editor.ts`.
 
 Decision:
 Route to the input runtime. Do not claim a fix without device proof. This is not
@@ -821,7 +821,7 @@ Evidence:
 - neighbor evidence: #4680, #5181, #5211, #3497, and #4323 are adjacent
   React/runtime and focus pressure, not the same exact replacement proof.
 - current matrix proof:
-  `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`.
+  `packages/slate-react/test/provider-hooks-contract.tsx`.
 
 Decision:
 Keep the existing exact claim. This is the one issue in the pass-2 surface where
@@ -848,7 +848,7 @@ Evidence:
   `gitcrawl threads --numbers 5709,4680,4165,5404,5131,3656,4141,4210,2051,3430 --include-closed --json ianstormtaylor/slate`.
 - neighbor evidence from #5709 lists #4680 as the closest adjacent issue.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`.
+  `packages/slate-react/test/provider-hooks-contract.tsx`.
 
 Decision:
 Keep as related. The `#6053` pass confirms this is editor identity pressure
@@ -875,9 +875,9 @@ Evidence:
   `gitcrawl threads --numbers 5709,4680,4165,5404,5131,3656,4141,4210,2051,3430 --include-closed --json ianstormtaylor/slate`.
 - live ledger row classifies it under `react-hook-surface-and-subscriptions`.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor.tsx`,
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx`, and
-  `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`.
+  `packages/slate-react/src/hooks/use-editor.tsx`,
+  `packages/slate-react/src/hooks/use-editor-selector.tsx`, and
+  `packages/slate-react/test/provider-hooks-contract.tsx`.
 
 Decision:
 Keep as cluster-synced. Hook naming and broad-vs-narrow subscription law are
@@ -905,7 +905,7 @@ Evidence:
 - local search:
   `gitcrawl search ianstormtaylor/slate --query "useSlate selection rerender" --mode hybrid --limit 20 --json`.
 - current matrix proof owner:
-  `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`.
+  `benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx`.
 
 Decision:
 Keep the existing non-claim. Broad editor hooks may rerender by contract; the
@@ -933,7 +933,7 @@ Evidence:
 - neighbor evidence from #4210 returns #3656 as the closest rerender-breadth
   sibling.
 - current matrix proof owner:
-  `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`.
+  `benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx`.
 
 Decision:
 Keep as improves-claimed. The benchmark represents the leaf breadth pressure,
@@ -958,7 +958,7 @@ Evidence:
   `gitcrawl threads --numbers 5709,4680,4165,5404,5131,3656,4141,4210,2051,3430 --include-closed --json ianstormtaylor/slate`.
 - neighbor evidence from #4210 returns #4141 as the same nested rerender family.
 - current matrix proof owner:
-  `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`.
+  `benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx`.
 
 Decision:
 Keep as improves-claimed. Nested-block rerender breadth is benchmark-owned; no
@@ -984,7 +984,7 @@ Evidence:
   `gitcrawl threads --numbers 5709,4680,4165,5404,5131,3656,4141,4210,2051,3430 --include-closed --json ianstormtaylor/slate`.
 - neighbor evidence: #5274, #3656, #4141, #5433, #2051, #4225, and #5131.
 - current v2 proof owner:
-  `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`.
+  `benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx`.
 
 Decision:
 Keep as cluster-synced until pass 3/6 defines the exact benchmark threshold and
@@ -1037,7 +1037,7 @@ Evidence:
   `gitcrawl threads --numbers 4483,5987,4993,4997,4392,3382,3352,3383,3309,3162 --include-closed --json ianstormtaylor/slate`.
 - local ledger classifies this as future proof pressure.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`
+  `packages/slate-react/src/editable/runtime-composition-events.ts`
   and decoration projection tests.
 
 Decision:
@@ -1064,8 +1064,8 @@ Evidence:
   `gitcrawl threads --numbers 4712,4581,5398,5433,4750,4298,4225,2465,2564,4477,3478,3497,5509 --include-closed --json ianstormtaylor/slate`.
 - local matrix currently keeps #4712 in future proof pressure.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx` and
-  `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`.
+  `packages/slate-react/src/components/editable-text.tsx` and
+  `packages/slate-react/test/projections-and-selection-contract.tsx`.
 
 Decision:
 Keep as related. Projection slices must not lie about model text length unless a
@@ -1090,7 +1090,7 @@ Evidence:
   `gitcrawl threads --numbers 4712,4581,5398,5433,4750,4298,4225,2465,2564,4477,3478,3497,5509 --include-closed --json ianstormtaylor/slate`.
 - neighbor evidence: #5433, #5524, #4466, #3943, #3497, #5181, and #5023.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`
+  `packages/slate-react/src/editable/runtime-composition-events.ts`
   and Mobile/IME browser/device proof rows.
 
 Decision:
@@ -1117,7 +1117,7 @@ Evidence:
 - neighbor evidence from #5398 and #4210 ties it to both composition and
   rerender breadth.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`
+  `packages/slate-react/src/editable/runtime-composition-events.ts`
   and decoration projection tests.
 
 Decision:
@@ -1144,7 +1144,7 @@ Evidence:
   `gitcrawl threads --numbers 4712,4581,5398,5433,4750,4298,4225,2465,2564,4477,3478,3497,5509 --include-closed --json ianstormtaylor/slate`.
 - neighbor evidence: #3433, #4225, #4298, #3671, #3383, #4317, and #3568.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate/src` mark query semantics and React selection
+  `packages/slate/src` mark query semantics and React selection
   proof rows.
 
 Decision:
@@ -1173,7 +1173,7 @@ Evidence:
   `gitcrawl search ianstormtaylor/slate --query "render marks overlapping decorations" --mode hybrid --limit 20 --json`.
 - neighbor evidence from #3383 lists #2465 as the closest mark/render sibling.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx`.
+  `packages/slate-react/src/components/editable-text.tsx`.
 
 Decision:
 Keep as cluster-synced. This is real render-DX pressure, but the plan must
@@ -1200,7 +1200,7 @@ Evidence:
 - neighbor evidence from #4483 and #3383 ties #2564 to decoration and
   mark-render semantics.
 - current v2 proof owner:
-  public API law in this plan, plus `.tmp/slate-v2/packages/slate-react` render
+  public API law in this plan, plus `packages/slate-react` render
   and projection contracts.
 
 Decision:
@@ -1235,9 +1235,9 @@ Evidence:
 - live GitHub checked: yes, live-gitcrawl-only via
   `gitcrawl threads ianstormtaylor/slate --numbers 5690 --include-closed --json`.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts`,
-  and `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`.
+  `packages/slate-react/src/editable/selection-reconciler.ts`,
+  `packages/slate-react/src/editable/runtime-keyboard-events.ts`,
+  and `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`.
 
 Decision:
 Keep as `cluster-synced`. The row belongs to inline-boundary DOM selection
@@ -1265,9 +1265,9 @@ Evidence:
 - live GitHub checked: yes, live-gitcrawl-only via
   `gitcrawl threads ianstormtaylor/slate --numbers 5689 --include-closed --json`.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`,
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`, and
-  `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+  `packages/slate-react/src/editable/selection-reconciler.ts`,
+  `packages/slate-dom/src/plugin/dom-editor.ts`, and
+  `packages/browser/src/playwright/index.ts`.
 
 Decision:
 Keep as `cluster-synced`. Browser gesture-selection direction needs a focused
@@ -1297,9 +1297,9 @@ Evidence:
 - live GitHub checked: yes, live-gitcrawl-only via
   `gitcrawl threads ianstormtaylor/slate --numbers 4995 --include-closed --json`.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`,
-  `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx`,
-  and `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`.
+  `packages/slate-react/src/editable/selection-reconciler.ts`,
+  `packages/slate-react/test/rendering-strategy-and-scroll.tsx`,
+  and `packages/slate-react/test/app-owned-customization.tsx`.
 
 Decision:
 Keep as `cluster-synced`. React selection-scroll policy owns the contract, but
@@ -1329,9 +1329,9 @@ Evidence:
 - live GitHub checked: yes, live-gitcrawl-only via
   `gitcrawl threads ianstormtaylor/slate --numbers 5632 --include-closed --json`.
 - current v2 proof owner:
-  `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`, and
-  `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`.
+  `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`,
+  `packages/slate-react/src/editable/selection-reconciler.ts`, and
+  `packages/slate/src/transforms-text/delete-text.ts`.
 
 Decision:
 Keep as `cluster-synced`. Inline/void delete-caret ownership is in scope, but
@@ -1361,9 +1361,9 @@ Evidence:
 - live GitHub checked: yes, live-gitcrawl-only via
   `gitcrawl threads ianstormtaylor/slate --numbers 5559 --include-closed --json`.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`,
-  `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts`,
-  and `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`.
+  `packages/slate-react/src/editable/selection-reconciler.ts`,
+  `packages/slate-react/test/selection-controller-contract.ts`,
+  and `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`.
 
 Decision:
 Keep as `cluster-synced`. Void selection import/export is the right owner, but
@@ -1393,9 +1393,9 @@ Evidence:
 - live GitHub checked: yes, live-gitcrawl-only via
   `gitcrawl threads ianstormtaylor/slate --numbers 3909 --include-closed --json`.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`, and
-  `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`.
+  `packages/slate-dom/src/plugin/dom-editor.ts`,
+  `packages/slate-react/src/editable/selection-reconciler.ts`, and
+  `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts`.
 
 Decision:
 Keep as `cluster-synced`. Nested target ownership is in scope, but exact
@@ -1424,9 +1424,9 @@ Evidence:
 - live GitHub checked: yes, live-gitcrawl-only via
   `gitcrawl threads ianstormtaylor/slate --numbers 3893 --include-closed --json`.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`,
-  `.tmp/slate-v2/playwright/integration/examples/check-lists.test.ts`, and
-  `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`.
+  `packages/slate-react/src/editable/selection-reconciler.ts`,
+  `apps/www/tests/slate-browser/donor/examples/check-lists.test.ts`, and
+  `packages/slate-react/test/selection-runtime-contract.test.ts`.
 
 Decision:
 Keep as `cluster-synced`. React focus timing owns the state update, but exact
@@ -1512,7 +1512,7 @@ Evidence:
 - live GitHub checked: yes, live-gitcrawl-only via
   `gitcrawl threads ianstormtaylor/slate --numbers 5524 --include-closed --json`.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate/src/editor/positions.ts`.
+  `packages/slate/src/editor/positions.ts`.
 
 Decision:
 Route to core caret/navigation first. It is related to selection correctness,
@@ -1575,12 +1575,12 @@ Evidence:
   stale IE11 support, maintainer-noise cleanup, and API typing rows.
 - live GitHub checked: yes; issue is open with no comments.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`
+  `packages/slate-react/test/use-element-selected.test.tsx`
   covers a selected rendered element that removes itself and unmounts cleanly,
   plus an explicit `useElementSelected(path)` watcher that returns `false`
   after the watched path is removed. Existing path-shift coverage remains in
-  the same file and `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`.
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts` guards
+  the same file and `packages/slate-react/test/surface-contract.tsx`.
+  `packages/slate-react/src/hooks/use-element-selected.ts` guards
   path validity before calling `Editor.range`.
 
 Decision:
@@ -1611,7 +1611,7 @@ Evidence:
   repro; not a duplicate of `#6053`.
 - live GitHub checked: yes, live-gitcrawl-only.
 - current v2 proof: exact `#6053` self-removal proof exists in
-  `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`.
+  `packages/slate-react/test/use-element-selected.test.tsx`.
 
 Decision:
 Related only. The `#6053` hook closure is proved, but broader external value
@@ -1939,10 +1939,10 @@ Evidence:
   path.
 - live GitHub checked: yes, live-gitcrawl-only.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate/src/interfaces/text.ts`;
-  `.tmp/slate-v2/packages/slate/test/generic-value-contract.ts`;
-  `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`;
-  `.tmp/slate-v2/site/examples/ts/mark-utils.ts`;
+  `packages/slate/src/interfaces/text.ts`;
+  `packages/slate/test/generic-value-contract.ts`;
+  `apps/www/src/app/(app)/examples/slate/_examples/custom-types.d.ts`;
+  `apps/www/src/app/(app)/examples/slate/_examples/mark-utils.ts`;
   `docs/plans/2026-05-16-slate-v2-boolean-mark-key-type-helper-ralplan.md`.
 
 Decision:
@@ -1979,7 +1979,7 @@ Evidence:
 - live GitHub checked: yes; issue remains open.
 - current v2 proof: `useSlateEditor({ initialValue })`, selector hooks, and
   the snapshot-driven provider tests in
-  `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`.
+  `packages/slate-react/test/provider-hooks-contract.tsx`.
 
 Decision:
 Keep as `cluster-synced` under `v2-react-runtime`. The owner is React runtime,
@@ -2010,9 +2010,9 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch2.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`,
-  and `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`.
+  `packages/slate-react/src/editable/runtime-before-input-events.ts`,
+  `packages/slate-react/src/editable/runtime-composition-events.ts`,
+  and `packages/slate-react/src/editable/selection-reconciler.ts`.
 
 Decision:
 Keep as `cluster-synced`. It belongs to input/composition and DOM point repair,
@@ -2042,8 +2042,8 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-19-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx` and
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`.
+  `packages/slate-react/test/app-owned-customization.tsx` and
+  `packages/slate-react/src/editable/selection-reconciler.ts`.
 
 Decision:
 Keep as `cluster-synced`. Scroll forwarding and selection reconciliation are
@@ -2071,8 +2071,8 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-19-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx` and
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`.
+  `packages/slate-react/test/app-owned-customization.tsx` and
+  `packages/slate-react/src/editable/selection-reconciler.ts`.
 
 Decision:
 Keep as `cluster-synced`. Exact closure needs delete-empty-paragraph browser
@@ -2100,10 +2100,10 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-20-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/document-state.test.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`,
-  and `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/document-state.test.ts`,
+  `packages/slate-react/src/editable/selection-reconciler.ts`,
+  `packages/slate-react/src/editable/runtime-selection-engine.ts`,
+  and `packages/slate-react/test/selection-runtime-contract.test.ts`.
 
 Decision:
 Claim `Fixes #4376`. WebKit browser proof preserves the Slate model selection
@@ -2133,10 +2133,10 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-20-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/document-state.test.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`,
-  and `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/document-state.test.ts`,
+  `packages/slate-react/src/editable/selection-reconciler.ts`,
+  `packages/slate-react/src/editable/runtime-selection-engine.ts`,
+  and `packages/slate-react/test/selection-runtime-contract.test.ts`.
 
 Decision:
 Claim `Fixes #5171`. Firefox browser proof changes editor content while the
@@ -2166,9 +2166,9 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-22-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`, and
-  `.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts`.
+  `packages/slate-react/src/editable/runtime-before-input-events.ts`,
+  `packages/slate-react/src/editable/model-input-strategy.ts`, and
+  `packages/browser/test/core/release-proof.test.ts`.
 
 Decision:
 Keep as `cluster-synced`. The owner is browser/native text input semantics, but
@@ -2195,9 +2195,9 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-22-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts`, and
-  `.tmp/slate-v2/packages/slate-browser/test/core/release-proof.test.ts`.
+  `packages/slate-react/src/editable/runtime-before-input-events.ts`,
+  `packages/slate-react/src/editable/model-input-strategy.ts`, and
+  `packages/browser/test/core/release-proof.test.ts`.
 
 Decision:
 Keep as `cluster-synced`. The owner is browser/native text input semantics, but
@@ -2226,9 +2226,9 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-23-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`, and
-  `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`,
+  `packages/slate-react/src/editable/selection-reconciler.ts`, and
+  `packages/browser/src/playwright/index.ts`.
 - proof command:
   `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/richtext.test.ts --project=chromium --grep "selects the current block on browser triple click|removes the current block after browser triple click and Backspace"`.
 
@@ -2260,10 +2260,10 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-23-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts`, and
-  `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`,
+  `packages/slate-react/src/editable/mutation-controller.ts`,
+  `packages/slate-react/src/editable/editing-kernel.ts`, and
+  `packages/browser/src/playwright/index.ts`.
 - proof command:
   `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/richtext.test.ts --project=chromium --grep "removes the current block after browser triple click and Backspace"`.
 
@@ -2297,10 +2297,10 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-16-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-input-events.ts`, and
-  `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`,
+  `packages/slate-react/src/editable/runtime-before-input-events.ts`,
+  `packages/slate-react/src/editable/runtime-input-events.ts`, and
+  `packages/slate-react/test/model-input-strategy-contract.ts`.
 
 Decision:
 Keep as `cluster-synced`. The owner is model-owned beforeinput/input handling,
@@ -2329,10 +2329,10 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-16-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-input-events.ts`, and
-  `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`,
+  `packages/slate-react/src/editable/runtime-before-input-events.ts`,
+  `packages/slate-react/src/editable/runtime-input-events.ts`, and
+  `packages/slate-react/test/model-input-strategy-contract.ts`.
 
 Decision:
 Keep as `cluster-synced`. Number typing is proven through `beforeinput`, and
@@ -2362,8 +2362,8 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-17-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/images.test.ts` and
-  `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`.
+  `apps/www/tests/slate-browser/donor/examples/images.test.ts` and
+  `packages/slate-react/src/editable/mutation-controller.ts`.
 - focused proof command:
   `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/images.test.ts --project=chromium --grep "removes an empty paragraph after an image before deleting the image|inserts a paragraph after a clicked selected image on Enter"`.
 
@@ -2395,8 +2395,8 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-17-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/images.test.ts` and
-  `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`.
+  `apps/www/tests/slate-browser/donor/examples/images.test.ts` and
+  `packages/slate-react/src/editable/mutation-controller.ts`.
 - focused proof command:
   `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/images.test.ts --project=chromium --grep "removes an empty paragraph after an image before deleting the image|inserts a paragraph after a clicked selected image on Enter"`.
 
@@ -2428,9 +2428,9 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-18-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`, and
-  `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`.
+  `packages/slate-react/src/editable/runtime-android-engine.ts`,
+  `packages/slate-react/src/editable/runtime-event-engine.ts`, and
+  `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`.
 
 Decision:
 Keep as `cluster-synced`. The owner is Android input lifecycle and readOnly
@@ -2457,9 +2457,9 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-18-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`, and
-  `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`.
+  `packages/slate-react/src/editable/runtime-android-engine.ts`,
+  `packages/slate-react/src/editable/runtime-event-engine.ts`, and
+  `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`.
 
 Decision:
 Keep as `cluster-synced`. Exact Android readOnly operation proof is not
@@ -2487,12 +2487,12 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-21-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` no
+  `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` no
   longer assumes block-void `data-slate-spacer` DOM when exporting a selected
-  inline void; `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
+  inline void; `packages/slate-dom/test/clipboard-boundary.ts`
   proves the Slate fragment payload is preserved and external text output does
   not leak FEFF or neighboring text. Browser proof in
-  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts` selects a
+  `apps/www/tests/slate-browser/donor/examples/mentions.test.ts` selects a
   mention-shaped inline void, confirms deterministic native `text/html` and
   `text/plain`, decodes the embedded Slate fragment, and pastes visible content
   into an external contenteditable target.
@@ -2525,11 +2525,11 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-21-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` exports a
+  `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` exports a
   selected inline void through a safe attach node when no block spacer exists;
-  `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts` proves copy,
+  `packages/slate-dom/test/clipboard-boundary.ts` proves copy,
   paste round-trip, and cut ordering for a selected mention-shaped inline void.
-  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts` proves the
+  `apps/www/tests/slate-browser/donor/examples/mentions.test.ts` proves the
   same path through Chromium's native clipboard: copy exposes the selected
   inline void as deterministic HTML/text plus Slate fragment, paste inserts a
   second mention, and cut removes one mention node with model-owned caret
@@ -2562,7 +2562,7 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-25-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`.
 - focused proof command:
   `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/inlines.test.ts --project=chromium --grep "types inside an editable inline at its end|keeps the start of following text distinct from the end of an inline|places the caret outside a padded inline before typing"`.
 
@@ -2593,8 +2593,8 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-25-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts` and
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`.
+  `packages/browser/test/core/scenario.test.ts` and
+  `packages/slate-react/src/editable/selection-reconciler.ts`.
 
 Decision:
 Keep as `cluster-synced` but low confidence. Use #3148 for exact future proof,
@@ -2621,11 +2621,11 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-27-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate/src/core/apply.ts`,
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts`, and
-  `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`.
+  `packages/slate/src/core/apply.ts`,
+  `packages/slate/src/core/public-state.ts`, and
+  `packages/slate/test/state-tx-public-api-contract.ts`.
 - focused proof:
-  `.tmp/slate-v2/packages/slate-history/test/history-contract.ts` covers a
+  `packages/slate-history/test/history-contract.ts` covers a
   multi-block expanded selection, `insertBreak`, undo, and exact selection
   restoration.
 
@@ -2655,11 +2655,11 @@ Evidence:
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and
   `.tmp/gitcrawl/2026-05-04T145301Z-cluster-27-detail.json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate/src/core/apply.ts`,
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts`, and
-  `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`.
+  `packages/slate/src/core/apply.ts`,
+  `packages/slate/src/core/public-state.ts`, and
+  `packages/slate/test/state-tx-public-api-contract.ts`.
 - focused proof:
-  `.tmp/slate-v2/packages/slate-history/test/history-contract.ts` covers
+  `packages/slate-history/test/history-contract.ts` covers
   `moveNodes`, undo, and exact original tree plus selection restoration.
 
 Decision:
@@ -2688,7 +2688,7 @@ Evidence:
   family.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`,
+  `packages/slate/test/state-tx-public-api-contract.ts`,
   `docs/plans/2026-04-02-slate-dom-v2-bridge-proof-ralph.md`, and
   `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
 
@@ -2745,8 +2745,8 @@ Evidence:
   failure.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`,
-  `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`,
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`,
+  `packages/slate-dom/test/bridge.ts`,
   `docs/plans/2026-05-06-slate-v2-dom-selection-boundary-proof-ralplan.md`,
   and `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
 - focused proof command:
@@ -2857,7 +2857,7 @@ Evidence:
   containment is the distinguishing owner.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts`,
+  `apps/www/tests/slate-browser/donor/examples/editable-voids.test.ts`,
   `docs/plans/2026-05-06-slate-v2-dom-selection-boundary-proof-ralplan.md`,
   and `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
 - focused proof command:
@@ -2892,7 +2892,7 @@ Evidence:
   inline boundary selection policy.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`.
 - focused proof command:
   `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/inlines.test.ts --project=chromium --grep "types inside an editable inline at its end|keeps the start of following text distinct from the end of an inline|places the caret outside a padded inline before typing"`.
 
@@ -2951,7 +2951,7 @@ Evidence:
   geometry expression of inline boundary behavior.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`.
 - focused proof command:
   `PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/inlines.test.ts --project=chromium --grep "types inside an editable inline at its end|keeps the start of following text distinct from the end of an inline|places the caret outside a padded inline before typing"`.
 
@@ -2983,11 +2983,11 @@ Evidence:
   selection operation failure family.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate/test/operations-contract.ts`,
-  `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`, and
-  `.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts`.
+  `packages/slate/test/operations-contract.ts`,
+  `packages/slate-history/test/history-contract.ts`, and
+  `packages/slate-history/test/integrity-contract.ts`.
 - focused proof:
-  `.tmp/slate-v2/packages/slate-history/test/history-contract.ts` covers history
+  `packages/slate-history/test/history-contract.ts` covers history
   undo after a partial `set_selection` patch and a cleared selection.
 
 Decision:
@@ -3016,9 +3016,9 @@ Evidence:
   owner.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`,
-  `.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts`, and
-  `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`.
+  `packages/slate-history/test/history-contract.ts`,
+  `packages/slate-history/test/integrity-contract.ts`, and
+  `packages/slate/test/collab-history-runtime-contract.ts`.
 - current related plan:
   `docs/plans/2026-05-07-slate-v2-marked-enter-undo-caret-ralplan.md`.
 
@@ -3048,11 +3048,11 @@ Evidence:
   selection operation owner.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate/test/operations-contract.ts`,
-  `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`, and
-  `.tmp/slate-v2/packages/slate-history/test/integrity-contract.ts`.
+  `packages/slate/test/operations-contract.ts`,
+  `packages/slate-history/test/history-contract.ts`, and
+  `packages/slate-history/test/integrity-contract.ts`.
 - focused proof:
-  `.tmp/slate-v2/packages/slate-history/test/history-contract.ts` covers the
+  `packages/slate-history/test/history-contract.ts` covers the
   cleared-selection model failure that makes partial selection replay risky.
 
 Decision:
@@ -3082,9 +3082,9 @@ Evidence:
   selection runtime owner.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`, and
-  `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`.
+  `packages/slate-react/src/components/slate.tsx`,
+  `packages/slate-react/src/editable/selection-reconciler.ts`, and
+  `packages/slate-react/test/provider-hooks-contract.tsx`.
 
 Decision:
 Classify as `cluster-synced`. The issue belongs to focus/selection ownership
@@ -3113,9 +3113,9 @@ Evidence:
   the distinguishing condition.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`, and
-  `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`.
+  `packages/slate-react/src/components/slate.tsx`,
+  `packages/slate-react/src/editable/selection-reconciler.ts`, and
+  `packages/slate-react/test/provider-hooks-contract.tsx`.
 
 Decision:
 Classify as `cluster-synced`. It strengthens the multi-editor focus owner but
@@ -3173,9 +3173,9 @@ Evidence:
   programmatic document mutation family.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`, and
-  `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`.
+  `packages/slate-react/src/components/slate.tsx`,
+  `packages/slate-react/src/editable/selection-reconciler.ts`, and
+  `packages/slate-react/test/provider-hooks-contract.tsx`.
 
 Decision:
 Classify as `cluster-synced`. It belongs to React focus and selection repair
@@ -3208,8 +3208,8 @@ Evidence:
   #3478.
 - live GitHub checked: yes; issue remains open.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts`;
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`;
+  `packages/slate-react/src/editable/root-selector-sources.ts`;
+  `packages/slate-react/src/editable/runtime-before-input-events.ts`;
   composition tests.
 
 Decision:
@@ -3242,8 +3242,8 @@ Evidence:
   behavior here.
 - live GitHub checked: yes; issue remains open and was bumped in 2024.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`;
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`;
+  `packages/slate-react/src/components/slate.tsx`;
+  `packages/slate-react/src/editable/selection-reconciler.ts`;
   provider hook tests.
 
 Decision:
@@ -3267,7 +3267,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-placeholder-composition.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`.
+- current v2 proof owner: `packages/slate-react/src/editable/runtime-before-input-events.ts`; `packages/slate-react/src/editable/runtime-composition-events.ts`; `packages/slate-react/src/editable/runtime-android-engine.ts`.
 
 Decision:
 Android Hangul placeholder composition belongs to first-character composition and placeholder input ownership. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3289,7 +3289,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-samsung-firefox-android.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`.
+- current v2 proof owner: `packages/slate-react/src/editable/runtime-before-input-events.ts`; `packages/slate-react/src/editable/runtime-composition-events.ts`; `packages/slate-react/src/editable/runtime-android-engine.ts`.
 
 Decision:
 Android Chinese IME backspace belongs to Android IME deletion/input ownership. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3313,8 +3313,8 @@ Evidence:
 - old dossier evidence:
   `docs/slate-issues/open-issues-dossiers/5994-5918.md`.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`;
-  `.tmp/slate-v2/packages/slate-react/src/editable/native-input-strategy.ts`.
+  `packages/slate-react/src/editable/runtime-before-input-events.ts`;
+  `packages/slate-react/src/editable/native-input-strategy.ts`.
 
 Decision:
 Windows suggestion acceptance belongs to input/composition replacement-range
@@ -3340,8 +3340,8 @@ Evidence:
 - old dossier evidence:
   `docs/slate-issues/open-issues-dossiers/5912-5771.md`.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`;
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`.
+  `packages/slate-react/src/editable/runtime-composition-events.ts`;
+  `packages/slate-react/src/editable/selection-reconciler.ts`.
 
 Decision:
 Blur during Japanese/Korean composition belongs to composition and focus
@@ -3410,7 +3410,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-node-dom-node.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`; `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+- current v2 proof owner: `packages/slate-dom/test/bridge.ts`; `packages/slate-react/src/editable/selection-reconciler.ts`; `packages/browser/src/playwright/index.ts`.
 
 Decision:
 Shadow DOM drag/drop DOM point import belongs to the shadow DOM bridge family. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3432,7 +3432,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-samsung-firefox-android.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`.
+- current v2 proof owner: `packages/slate-react/src/editable/runtime-before-input-events.ts`; `packages/slate-react/src/editable/runtime-composition-events.ts`; `packages/slate-react/src/editable/runtime-android-engine.ts`.
 
 Decision:
 Android autocomplete leftovers belong to mobile input and composition cleanup. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3454,7 +3454,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`; `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`; `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`.
+- current v2 proof owner: `packages/slate-react/src/components/slate.tsx`; `packages/slate-react/src/decoration-source.ts`; `packages/slate-react/test/app-owned-customization.tsx`.
 
 Decision:
 MobX observer pressure belongs to external reactive rendering and React runtime ownership. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3505,7 +3505,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`; `docs/plans/2026-05-04-slate-v2-react-editor-initialization-value-ralplan.md`.
+- current v2 proof owner: `packages/slate/test/state-tx-public-api-contract.ts`; `docs/plans/2026-05-04-slate-v2-react-editor-initialization-value-ralplan.md`.
 
 Decision:
 Controlled React value remains outside the v2 public contract; external replacement uses explicit editor APIs. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3527,7 +3527,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-placeholder-composition.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`.
+- current v2 proof owner: `packages/slate-react/src/editable/runtime-before-input-events.ts`; `packages/slate-react/src/editable/runtime-composition-events.ts`; `packages/slate-react/src/editable/runtime-android-engine.ts`.
 
 Decision:
 Firefox Android predictive typing belongs to mobile input runtime proof. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3549,7 +3549,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-point-dom-point.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`; `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+- current v2 proof owner: `packages/slate-dom/test/bridge.ts`; `packages/slate-react/src/editable/selection-reconciler.ts`; `packages/browser/src/playwright/index.ts`.
 
 Decision:
 Shadow DOM findEventRange belongs to event-to-range DOM bridge ownership. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3571,7 +3571,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-inline-void-selection-keyboard.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`; `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+- current v2 proof owner: `packages/slate-dom/test/bridge.ts`; `packages/slate-react/src/editable/selection-reconciler.ts`; `packages/browser/src/playwright/index.ts`.
 
 Decision:
 Visible inline void spacer belongs to inline void selection/rendering boundary policy. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3593,7 +3593,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-android-composition-beforeinput.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`.
+- current v2 proof owner: `packages/slate-react/src/editable/runtime-before-input-events.ts`; `packages/slate-react/src/editable/runtime-composition-events.ts`; `packages/slate-react/src/editable/runtime-android-engine.ts`.
 
 Decision:
 Text insertion accept/reject belongs to beforeinput/input command policy, not a separate uncontrolled hook. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3615,7 +3615,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`.
+- current v2 proof owner: `packages/slate-react/src/editable/runtime-before-input-events.ts`; `packages/slate-react/src/editable/runtime-composition-events.ts`; `packages/slate-react/src/editable/runtime-android-engine.ts`.
 
 Decision:
 Firefox CJK duplication/crash belongs to IME/composition runtime proof. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3659,7 +3659,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-node-dom-node.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`; `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+- current v2 proof owner: `packages/slate-dom/test/bridge.ts`; `packages/slate-react/src/editable/selection-reconciler.ts`; `packages/browser/src/playwright/index.ts`.
 
 Decision:
 Nested editor toSlatePoint offset belongs to nested editor DOM containment. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3681,7 +3681,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-node-dom-node.json`, `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-point-dom-point.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`; `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+- current v2 proof owner: `packages/slate-dom/test/bridge.ts`; `packages/slate-react/src/editable/selection-reconciler.ts`; `packages/browser/src/playwright/index.ts`.
 
 Decision:
 Custom table text outside table belongs to table boundary and invalid DOM import policy. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3703,7 +3703,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-point-dom-point.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`; `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+- current v2 proof owner: `packages/slate-dom/test/bridge.ts`; `packages/slate-react/src/editable/selection-reconciler.ts`; `packages/browser/src/playwright/index.ts`.
 
 Decision:
 Invalid selection throwing belongs to fail-closed DOM selection repair. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3725,7 +3725,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-node-dom-node.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`; `docs/plans/2026-05-04-slate-v2-react-editor-initialization-value-ralplan.md`.
+- current v2 proof owner: `packages/slate/test/state-tx-public-api-contract.ts`; `docs/plans/2026-05-04-slate-v2-react-editor-initialization-value-ralplan.md`.
 
 Decision:
 External state updates route through explicit editor initialization/replacement APIs rather than controlled value. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3747,7 +3747,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-node-dom-node.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`; `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+- current v2 proof owner: `packages/slate-dom/test/bridge.ts`; `packages/slate-react/src/editable/selection-reconciler.ts`; `packages/browser/src/playwright/index.ts`.
 
 Decision:
 Firefox void/decorated deletion then insert belongs to void/decorated DOM selection repair. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3769,8 +3769,8 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-history-set-selection-undo.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate/src/core/apply.ts`; `.tmp/slate-v2/packages/slate/src/core/public-state.ts`; `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts`.
-- focused proof: `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`
+- current v2 proof owner: `packages/slate/src/core/apply.ts`; `packages/slate/src/core/public-state.ts`; `packages/slate/test/state-tx-public-api-contract.ts`.
+- focused proof: `packages/slate-history/test/history-contract.ts`
   deletes a selected text fragment, undoes, and reselects the restored fragment.
 
 Decision:
@@ -3794,7 +3794,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-samsung-firefox-android.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`.
+- current v2 proof owner: `packages/slate-react/src/editable/runtime-before-input-events.ts`; `packages/slate-react/src/editable/runtime-composition-events.ts`; `packages/slate-react/src/editable/runtime-android-engine.ts`.
 
 Decision:
 Android backspace behavior belongs to mobile delete/input runtime proof. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3816,7 +3816,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`; `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+- current v2 proof owner: `packages/slate-dom/test/bridge.ts`; `packages/slate-react/src/editable/selection-reconciler.ts`; `packages/browser/src/playwright/index.ts`.
 
 Decision:
 Shadow DOM image drag/drop belongs to shadow DOM and media/void DOM bridge ownership. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3838,7 +3838,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-android-composition-beforeinput.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`.
+- current v2 proof owner: `packages/slate-react/src/editable/runtime-before-input-events.ts`; `packages/slate-react/src/editable/runtime-composition-events.ts`; `packages/slate-react/src/editable/runtime-android-engine.ts`.
 
 Decision:
 Alternate Android hook design is product/API direction evidence, not an issue closure. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3860,7 +3860,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-point-dom-point.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`; `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+- current v2 proof owner: `packages/slate-dom/test/bridge.ts`; `packages/slate-react/src/editable/selection-reconciler.ts`; `packages/browser/src/playwright/index.ts`.
 
 Decision:
 Mention range DOM point failure belongs to mention/inline DOM range bridge ownership. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3882,7 +3882,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-placeholder-composition.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`.
+- current v2 proof owner: `packages/slate-react/src/editable/runtime-before-input-events.ts`; `packages/slate-react/src/editable/runtime-composition-events.ts`; `packages/slate-react/src/editable/runtime-android-engine.ts`.
 
 Decision:
 Composition after select-all belongs to composition/input event runtime ownership. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -3904,13 +3904,13 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-large-document-paste-cut-performance.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`; `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`; `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`.
+- current v2 proof owner: `benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs`; `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`; `packages/slate/src/transforms-text/insert-fragment.ts`.
 
 Decision:
 Current v2 improves the populated-editor large paste/copy workload with a dedicated issue-size benchmark. Exact `Fixes #...` closure is still not justified without the historical full-book/browser repro.
 
 Slice 6 benchmark, refreshed 2026-05-23:
-`.tmp/slate-v2/tmp/slate-clipboard-large-payload-benchmark.json` records a
+`tmp/slate-clipboard-large-payload-benchmark.json` records a
 populated-editor benchmark lane. The latest issue-size run reports
 `49.35ms` for copying 10,000 populated blocks and `235.22ms` for pasting
 10,000 plaintext lines into a 10,000-block populated editor, with one
@@ -3942,7 +3942,7 @@ Evidence:
   benchmark proof; exact browser repro closure remains open.
 - current v2 proof owner:
   `docs/plans/2026-05-04-slate-v2-clawsweeper-v2-clipboard-serialization-ralplan.md`;
-  source owner `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`.
+  source owner `benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs`.
 
 Decision:
 This is the primary Slice 6 benchmark target. Current v2 now improves the
@@ -3990,11 +3990,11 @@ Evidence:
 - current issue-size run:
   `SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun ./scripts/benchmarks/slate/5945-large-plaintext-paste.mjs`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate/src/interfaces/node.ts` and
-  `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`.
+  `packages/slate/src/interfaces/node.ts` and
+  `packages/slate/test/clipboard-contract.ts`.
 - current v2 proof owner:
   `docs/plans/2026-05-06-slate-v2-range-delete-replace-children-ralplan.md`;
-  source owner `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`.
+  source owner `benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs`.
 
 Decision:
 Keep this as `improves-claimed`, not `fixes-claimed`. The issue-size benchmark
@@ -4039,8 +4039,8 @@ Evidence:
 - live GitHub checked: yes, via
   `gitcrawl --json threads ianstormtaylor/slate --numbers 5328 --include-closed`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` owns
-  fragment import; `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
+  `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` owns
+  fragment import; `packages/slate-dom/test/clipboard-boundary.ts`
   owns the focused DOM clipboard contract.
 
 Decision:
@@ -4071,8 +4071,8 @@ Evidence:
 - live GitHub checked: yes, via
   `gitcrawl --json threads ianstormtaylor/slate --numbers 4857 --include-closed`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` and
-  `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`.
+  `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` and
+  `packages/slate-dom/test/clipboard-boundary.ts`.
 
 Decision:
 Keep as `improves-claimed`. The fail-closed internal fragment import family is
@@ -4101,11 +4101,11 @@ Evidence:
 - live GitHub checked: yes, via
   `gitcrawl --json threads ianstormtaylor/slate --numbers 5233 --include-closed`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts` and
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts` accept
-  `{ clipboardFormatKey }`; `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
+  `packages/slate-react/src/plugin/with-react.ts` and
+  `packages/slate-dom/src/plugin/with-dom.ts` accept
+  `{ clipboardFormatKey }`; `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
   writes keyed MIME payloads and keyed embedded HTML fallback fragments; and
-  `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts` proves custom-key
+  `packages/slate-dom/test/clipboard-boundary.ts` proves custom-key
   editors accept matching embedded HTML while default-key editors reject
   custom-key embedded HTML and fall back to plain text.
 
@@ -4138,11 +4138,11 @@ Evidence:
 - live GitHub checked: yes, via
   `gitcrawl --json threads ianstormtaylor/slate --numbers 3486 --include-closed`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts` and
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts` expose
-  `{ clipboardFormatKey }`; `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
+  `packages/slate-react/src/plugin/with-react.ts` and
+  `packages/slate-dom/src/plugin/with-dom.ts` expose
+  `{ clipboardFormatKey }`; `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
   writes and reads the configured internal key; and
-  `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts` proves matching
+  `packages/slate-dom/test/clipboard-boundary.ts` proves matching
   custom-key HTML import plus default-key rejection of custom-key embedded HTML.
 
 Decision:
@@ -4170,9 +4170,9 @@ Evidence:
   `gitcrawl threads ianstormtaylor/slate --numbers 1024 --include-closed --json`.
 - current v2 proof:
   custom MIME support and keyed embedded HTML fallback exist in
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`, with
+  `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`, with
   focused acceptance/rejection proof in
-  `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`.
+  `packages/slate-dom/test/clipboard-boundary.ts`.
 
 Decision:
 Move to `improves-claimed`. Fragment identity is stronger, but no full document
@@ -4197,9 +4197,9 @@ Evidence:
 - live GitHub checked: yes, via
   `gitcrawl threads ianstormtaylor/slate --numbers 4613 --include-closed --json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` runs
+  `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` runs
   `dom.clipboard.insertData` capability handlers before default fragment/text
-  fallback, `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts` exports
+  fallback, `packages/slate-dom/src/plugin/dom-editor.ts` exports
   `DOMClipboardInsertDataHandler`, and the images, paste-html, and
   rendering-strategy-runtime examples use the public handler type.
 
@@ -4226,10 +4226,10 @@ Evidence:
 - live GitHub checked: yes, via
   `gitcrawl threads ianstormtaylor/slate --numbers 4569 --include-closed --json`.
 - current v2 docs:
-  `.tmp/slate-v2/docs/libraries/slate-react/react-editor.md` documents
+  `content/docs/slate/libraries/slate-react/react-editor.md` documents
   `editor.dom.clipboard.insertData`, capability order, handler return
   semantics, internal fragment fallback, and extension-owned rich HTML policy.
-  `.tmp/slate-v2/docs/libraries/slate-react/with-react.md` documents
+  `content/docs/slate/libraries/slate-react/with-react.md` documents
   `clipboardFormatKey`.
 
 Decision:
@@ -4313,8 +4313,8 @@ Evidence:
 - live GitHub checked: yes, via
   `gitcrawl --json threads ianstormtaylor/slate --numbers 4542 --include-closed`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts` and
-  `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`.
+  `packages/slate/test/clipboard-contract.ts` and
+  `packages/slate-dom/test/clipboard-boundary.ts`.
 
 Decision:
 Keep as `cluster-synced`. The fixed `#5089` proof covers middle-paragraph
@@ -4347,7 +4347,7 @@ Evidence:
 - active plan:
   `docs/plans/2026-05-07-slate-v2-multiblock-fragment-middle-insert-ralplan.md`.
 - current v2 owner:
-  `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`.
+  `packages/slate/src/transforms-text/insert-fragment.ts`.
 
 Decision:
 Keep as `related`, not `fixes-claimed`. The fixed `#5089` proof targets one
@@ -4377,10 +4377,10 @@ Evidence:
 - live GitHub checked: yes, via
   `gitcrawl --json threads ianstormtaylor/slate --numbers 5151 --include-closed`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts` preserves
+  `packages/slate/src/transforms-text/insert-fragment.ts` preserves
   the target text-block wrapper when a single text-block fragment replaces
-  selected target text; `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`
-  proves the core transaction path; `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
+  selected target text; `packages/slate/test/clipboard-contract.ts`
+  proves the core transaction path; `packages/slate-dom/test/clipboard-boundary.ts`
   proves the rich clipboard round-trip path.
 
 Decision:
@@ -4406,7 +4406,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-point-dom-point.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`; `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+- current v2 proof owner: `packages/slate-dom/test/bridge.ts`; `packages/slate-react/src/editable/selection-reconciler.ts`; `packages/browser/src/playwright/index.ts`.
 
 Decision:
 Page-refresh delete/insert DOM point crash belongs to DOM selection import/export repair. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -4428,7 +4428,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-node-dom-node.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`; `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+- current v2 proof owner: `packages/slate-dom/test/bridge.ts`; `packages/slate-react/src/editable/selection-reconciler.ts`; `packages/browser/src/playwright/index.ts`.
 
 Decision:
 Selection failure error strictness belongs to fail-closed DOM bridge policy. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -4450,7 +4450,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-node-dom-node.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`.
+- current v2 proof owner: `packages/slate-react/src/editable/runtime-before-input-events.ts`; `packages/slate-react/src/editable/runtime-composition-events.ts`; `packages/slate-react/src/editable/runtime-android-engine.ts`.
 
 Decision:
 addMark during onDOMBeforeInput belongs to input command and selection synchronization. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -4472,7 +4472,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-android-composition-beforeinput.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts`; `.tmp/slate-v2/packages/slate-react/src/editable/runtime-android-engine.ts`.
+- current v2 proof owner: `packages/slate-react/src/editable/runtime-before-input-events.ts`; `packages/slate-react/src/editable/runtime-composition-events.ts`; `packages/slate-react/src/editable/runtime-android-engine.ts`.
 
 Decision:
 Android text selection/cursor movement belongs to mobile selection/input runtime proof. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -4494,7 +4494,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-slate-point-dom-point.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`; `.tmp/slate-v2/packages/slate-react/src/decoration-source.ts`; `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`.
+- current v2 proof owner: `packages/slate-react/src/components/slate.tsx`; `packages/slate-react/src/decoration-source.ts`; `packages/slate-react/test/app-owned-customization.tsx`.
 
 Decision:
 Decorated text selection belongs to projection/decoration DOM stability. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -4516,7 +4516,7 @@ Evidence:
 - ledger row: live gitcrawl singleton search candidate from Batch 3.
 - raw search evidence: `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-android-composition-beforeinput.json`, `.tmp/gitcrawl/2026-05-04T145301Z-search-singleton-history-set-selection-undo.json`.
 - live GitHub checked: yes, via Batch 0 gitcrawl refresh and `.tmp/gitcrawl/2026-05-04T145301Z-threads-batch3-singletons.json`.
-- current v2 proof owner: `.tmp/slate-v2/scripts/benchmarks`; `docs/plans/2026-05-03-slate-v2-dom-present-large-doc-phase-6-plan.md`.
+- current v2 proof owner: `benchmarks/slate-v2/donor`; `docs/plans/2026-05-03-slate-v2-dom-present-large-doc-phase-6-plan.md`.
 
 Decision:
 Leaf rerender pressure is represented by v2 render/runtime performance gates. No exact `Fixes #...` claim is justified without a focused repro matching this issue.
@@ -4541,9 +4541,9 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`;
-  `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts`;
-  `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`.
+  `packages/slate-react/src/editable/selection-reconciler.ts`;
+  `packages/slate-react/test/selection-controller-contract.ts`;
+  `packages/slate-react/test/projections-and-selection-contract.tsx`.
 
 Decision:
 Keep as `cluster-synced`. The owner is React selection import/reconciliation
@@ -4572,9 +4572,9 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`;
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts`;
-  `.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts`.
+  `packages/slate-react/src/editable/selection-reconciler.ts`;
+  `packages/slate-react/src/editable/runtime-keyboard-events.ts`;
+  `packages/slate-react/test/selection-controller-contract.ts`.
 
 Decision:
 Keep as `cluster-synced`. This needs a Windows/Chrome inline-boundary browser
@@ -4600,9 +4600,9 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts`;
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`;
-  `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`.
+  `packages/slate-react/src/editable/runtime-selection-engine.ts`;
+  `packages/slate-react/src/editable/selection-reconciler.ts`;
+  `packages/browser/src/playwright/index.ts`.
 
 Decision:
 Keep as `cluster-synced`. This is a browser gesture-selection proof target, not
@@ -4629,9 +4629,9 @@ Evidence:
   `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor.tsx`;
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-editor.ts`;
-  `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`.
+  `packages/slate-react/src/hooks/use-editor.tsx`;
+  `packages/slate-react/src/hooks/use-slate-editor.ts`;
+  `packages/slate-react/test/provider-hooks-contract.tsx`.
 
 Decision:
 Keep as `cluster-synced`. V2 hook naming and typing are cleaner, but the legacy
@@ -4658,8 +4658,8 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`;
-  `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`.
+  `packages/slate-react/test/projections-and-selection-contract.tsx`;
+  `packages/slate-react/src/projection-store.ts`.
 
 Decision:
 Keep as `cluster-synced`. V2 projection slices can carry overlapping payloads,
@@ -4688,9 +4688,9 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`;
-  `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx`;
-  `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`.
+  `packages/slate-react/src/editable/selection-reconciler.ts`;
+  `packages/slate-react/test/rendering-strategy-and-scroll.tsx`;
+  `packages/slate-react/test/app-owned-customization.tsx`.
 
 Decision:
 Keep as `cluster-synced`. The React runtime owns the scroll/selection callback
@@ -4717,8 +4717,8 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`;
-  `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx`.
+  `packages/slate-react/src/editable/selection-reconciler.ts`;
+  `packages/slate-react/test/rendering-strategy-and-scroll.tsx`.
 
 Decision:
 Keep as `cluster-synced`. This is valid API pressure, but no public scroll
@@ -4744,9 +4744,9 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`;
-  `.tmp/slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx`;
-  `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`.
+  `packages/slate-react/src/components/slate.tsx`;
+  `packages/slate-react/test/generic-react-editor-contract.tsx`;
+  `packages/slate-react/test/provider-hooks-contract.tsx`.
 
 Decision:
 Keep as `cluster-synced`. V2 generic React editor contracts address the
@@ -4772,8 +4772,8 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/components/slate-placeholder.tsx`;
-  `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`.
+  `packages/slate-react/src/components/slate-placeholder.tsx`;
+  `packages/slate-react/test/rendered-dom-shape-contract.tsx`.
 
 Decision:
 Keep as `cluster-synced`, not a closure claim. Placeholder API shape still
@@ -4799,9 +4799,9 @@ Evidence:
   `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`;
-  `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`;
-  `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`.
+  `packages/slate-react/src/components/editable.tsx`;
+  `packages/slate-react/test/rendered-dom-shape-contract.tsx`;
+  `packages/slate-react/test/render-profiler-contract.test.tsx`.
 
 Decision:
 Keep as `cluster-synced`. Readonly/static rendering is a valid React runtime
@@ -4828,8 +4828,8 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`;
-  `.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts`.
+  `packages/slate-react/src/editable/selection-reconciler.ts`;
+  `packages/slate-react/test/selection-runtime-contract.test.ts`.
 
 Decision:
 Keep as `cluster-synced`. This needs Firefox mark-query browser proof before
@@ -4855,8 +4855,8 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx`;
-  `.tmp/slate-v2/packages/slate-react/test/provider-hooks-contract.tsx`.
+  `packages/slate-react/src/hooks/use-editor-selector.tsx`;
+  `packages/slate-react/test/provider-hooks-contract.tsx`.
 
 Decision:
 Keep as `cluster-synced`. V2 selectors can expose editor state, but no special
@@ -4882,9 +4882,9 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/components/slate-placeholder.tsx`;
-  `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx`;
-  `.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts`.
+  `packages/slate-react/src/components/slate-placeholder.tsx`;
+  `packages/slate-react/test/rendering-strategy-and-scroll.tsx`;
+  `apps/www/tests/slate-browser/donor/examples/placeholder.test.ts`.
 
 Decision:
 Keep as `cluster-synced`. Placeholder selection rendering needs exact Firefox
@@ -4910,9 +4910,9 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`;
-  `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`;
-  `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`.
+  `packages/slate-react/src/components/editable.tsx`;
+  `packages/slate-react/test/rendered-dom-shape-contract.tsx`;
+  `packages/slate-react/test/render-profiler-contract.test.tsx`.
 
 Decision:
 Keep as `cluster-synced`. Static rendering is valid architecture pressure, but
@@ -4939,9 +4939,9 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`;
-  `.tmp/slate-v2/packages/slate-react/src/editable/runtime-focus-mouse-events.ts`;
-  `.tmp/slate-v2/packages/slate-react/test/editable-behavior.tsx`.
+  `packages/slate-react/src/components/editable.tsx`;
+  `packages/slate-react/src/editable/runtime-focus-mouse-events.ts`;
+  `packages/slate-react/test/editable-behavior.tsx`.
 
 Decision:
 Keep as `cluster-synced`. Readonly focus/click semantics need their own browser
@@ -4968,8 +4968,8 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`;
-  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy`.
+  `packages/slate-react/src/components/editable.tsx`;
+  `packages/slate-react/src/rendering-strategy`.
 
 Decision:
 Do not claim this as fixed. Slate v2 can expose clearer rendering strategy and
@@ -4996,9 +4996,9 @@ Evidence:
   `v2-react-runtime`, `cluster-synced`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof owner:
-  `.tmp/slate-v2/packages/slate-react/src/components/slate-placeholder.tsx`;
-  `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`;
-  `.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts`.
+  `packages/slate-react/src/components/slate-placeholder.tsx`;
+  `packages/slate-react/test/rendered-dom-shape-contract.tsx`;
+  `apps/www/tests/slate-browser/donor/examples/placeholder.test.ts`.
 
 Decision:
 Keep as `cluster-synced`. Placeholder layout has a clear owner, but centered
@@ -5025,8 +5025,8 @@ Evidence:
   already-accounted, `improves-claimed`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof:
-  `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`;
-  `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`.
+  `benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx`;
+  `packages/slate-react/test/projections-and-selection-contract.tsx`.
 
 Decision:
 Keep as `improves-claimed`. V2 projection stores and local subscriptions reduce
@@ -5053,8 +5053,8 @@ Evidence:
   already-accounted, `improves-claimed`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`;
-  `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx`.
+  `packages/slate-react/test/annotation-store-contract.tsx`;
+  `packages/slate-react/test/widget-layer-contract.tsx`.
 
 Decision:
 Keep as `improves-claimed`. Annotation and widget lanes cover the substrate for
@@ -5081,7 +5081,7 @@ Evidence:
   already-accounted, `improves-claimed`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`.
+  `packages/slate-react/test/projections-and-selection-contract.tsx`.
 
 Decision:
 Keep as `improves-claimed`. Runtime range projection represents cross-node
@@ -5108,7 +5108,7 @@ Evidence:
   already-accounted, `improves-claimed`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`.
+  `packages/slate-react/test/projections-and-selection-contract.tsx`.
 
 Decision:
 Keep as `improves-claimed`. Projection slices are keyed by runtime text ranges;
@@ -5134,7 +5134,7 @@ Evidence:
   already-accounted, `improves-claimed`.
 - live GitHub checked: yes, via gitcrawl thread batch on 2026-05-04.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`.
+  `packages/slate-react/test/projections-and-selection-contract.tsx`.
 
 Decision:
 Keep as `improves-claimed`. Cross-node projection is represented by
@@ -5163,11 +5163,11 @@ Evidence:
   `docs/plans/2026-05-06-slate-v2-range-delete-replace-children-ralplan.md`.
 - current v2 source lowers exact whole top-level child ranges to one
   `replace_children` operation in
-  `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`.
+  `packages/slate/src/transforms-text/delete-text.ts`.
 - operation proof covers apply/inverse, path refs, point refs, history undo, and
   collaboration replay in
-  `.tmp/slate-v2/packages/slate/test/operations-contract.ts` and
-  `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`.
+  `packages/slate/test/operations-contract.ts` and
+  `packages/slate/test/collab-history-runtime-contract.ts`.
 
 Decision:
 Keep as `improves-claimed`, not `fixes-claimed`. `replace_children` is exactly
@@ -5222,7 +5222,7 @@ Evidence:
   `docs/plans/2026-05-06-slate-v2-core-history-selection-undo-ralplan.md`.
 - current v2 collaboration proof keeps runtime ids local and tests remote
   move/remove rebase behavior in
-  `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`.
+  `packages/slate/test/collab-history-runtime-contract.ts`.
 
 Decision:
 Keep as `related`. The next history slice should test `move_node` undo state,
@@ -5253,9 +5253,9 @@ Evidence:
 - performance candidate map keeps memory/retention issues separate from
   correctness-only undo tests.
 - current v2 retained-memory benchmark:
-  `.tmp/slate-v2/scripts/benchmarks/core/current/history-retained-memory.mjs`.
+  `benchmarks/slate-v2/donor/core/current/history-retained-memory.mjs`.
 - benchmark artifact:
-  `.tmp/slate-v2/tmp/slate-history-retained-memory.json`.
+  `tmp/slate-history-retained-memory.json`.
 
 Decision:
 Keep as `improves-claimed`, not `fixes-claimed`. Slate v2 now has a
@@ -5286,7 +5286,7 @@ Evidence:
 - current range-delete plan:
   `docs/plans/2026-05-06-slate-v2-range-delete-replace-children-ralplan.md`.
 - focused core proof:
-  `.tmp/slate-v2/packages/slate/test/delete-contract.ts`.
+  `packages/slate/test/delete-contract.ts`.
 - execution checkpoint:
   `.tmp/completion-checks/slate-v2-core-structural-delete-normalization-execution.md`.
 
@@ -5421,9 +5421,9 @@ Evidence:
 - active plan:
   `docs/plans/2026-05-07-slate-v2-multiblock-fragment-middle-insert-ralplan.md`.
 - current v2 owner:
-  `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`;
-  `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`;
-  `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`.
+  `packages/slate/src/transforms-text/insert-fragment.ts`;
+  `packages/slate/test/clipboard-contract.ts`;
+  `packages/slate-dom/test/clipboard-boundary.ts`.
 - execution checkpoint:
   `.tmp/completion-checks/slate-v2-multiblock-fragment-middle-insert-execution.md`.
 
@@ -5457,12 +5457,12 @@ Evidence:
 - selected next plan:
   `docs/plans/2026-05-07-slate-v2-insert-fragment-at-location-ralplan.md`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`.
+  `packages/slate/test/clipboard-contract.ts`.
 - checkpoint:
   `.tmp/completion-checks/slate-v2-insert-fragment-at-location-execution.md`.
 - implementation owner:
-  `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`;
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts`.
+  `packages/slate/src/transforms-text/insert-fragment.ts`;
+  `packages/slate/src/core/public-state.ts`.
 
 Decision:
 Claim `Fixes #5412`. Package proof shows `insertFragment(..., { at })` writes
@@ -5491,11 +5491,11 @@ Evidence:
 - selected next plan:
   `docs/plans/2026-05-07-slate-v2-insert-fragment-at-location-ralplan.md`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`.
+  `packages/slate/test/clipboard-contract.ts`.
 - checkpoint:
   `.tmp/completion-checks/slate-v2-insert-fragment-at-location-execution.md`.
 - implementation owner:
-  `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`.
+  `packages/slate/src/transforms-text/insert-fragment.ts`.
 
 Decision:
 Claim `Fixes #5429`. Package proof shows `insertFragment` into an empty text
@@ -5549,7 +5549,7 @@ Evidence:
 - next plan:
   `docs/plans/2026-05-07-slate-v2-core-structural-delete-normalization-ralplan.md`.
 - focused core proof:
-  `.tmp/slate-v2/packages/slate/test/delete-contract.ts`.
+  `packages/slate/test/delete-contract.ts`.
 - execution checkpoint:
   `.tmp/completion-checks/slate-v2-core-structural-delete-normalization-execution.md`.
 
@@ -5577,11 +5577,11 @@ Evidence:
 - live gitcrawl checked:
   `gitcrawl threads --numbers 3965 --include-closed --json ianstormtaylor/slate`.
 - live v2 source already has adjacent text merge helpers in
-  `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`.
+  `packages/slate/src/transforms-text/delete-text.ts`.
 - next plan:
   `docs/plans/2026-05-07-slate-v2-core-structural-delete-normalization-ralplan.md`.
 - focused core proof:
-  `.tmp/slate-v2/packages/slate/test/delete-contract.ts`.
+  `packages/slate/test/delete-contract.ts`.
 - execution checkpoint:
   `.tmp/completion-checks/slate-v2-core-structural-delete-normalization-execution.md`.
 
@@ -5611,11 +5611,11 @@ Evidence:
 - neighbor sweep connects #5811 to #3950 and normalization rerun pressure:
   `gitcrawl neighbors --number 5811 --limit 20 --json ianstormtaylor/slate`.
 - live v2 normalization owns dirty passes and loop detection in
-  `.tmp/slate-v2/packages/slate/src/editor/normalize.ts`.
+  `packages/slate/src/editor/normalize.ts`.
 - next plan:
   `docs/plans/2026-05-07-slate-v2-core-structural-delete-normalization-ralplan.md`.
 - focused core proof:
-  `.tmp/slate-v2/packages/slate/test/normalization-contract.ts`.
+  `packages/slate/test/normalization-contract.ts`.
 - execution checkpoint:
   `.tmp/completion-checks/slate-v2-core-structural-delete-normalization-execution.md`.
 
@@ -5643,11 +5643,11 @@ Evidence:
 - live gitcrawl checked:
   `gitcrawl threads --numbers 3950 --include-closed --json ianstormtaylor/slate`.
 - live v2 normalization tracks mutation versions during passes in
-  `.tmp/slate-v2/packages/slate/src/editor/normalize.ts`.
+  `packages/slate/src/editor/normalize.ts`.
 - next plan:
   `docs/plans/2026-05-07-slate-v2-core-structural-delete-normalization-ralplan.md`.
 - focused core proof:
-  `.tmp/slate-v2/packages/slate/test/normalization-contract.ts`.
+  `packages/slate/test/normalization-contract.ts`.
 - execution checkpoint:
   `.tmp/completion-checks/slate-v2-core-structural-delete-normalization-execution.md`.
 
@@ -5675,15 +5675,15 @@ Evidence:
 - live gitcrawl checked:
   `gitcrawl threads --numbers 1654 --include-closed --json ianstormtaylor/slate`.
 - live v2 merge currently delegates a standalone merge-removal policy from
-  `.tmp/slate-v2/packages/slate/src/transforms-node/merge-nodes.ts`.
+  `packages/slate/src/transforms-node/merge-nodes.ts`.
 - next plan:
   `docs/plans/2026-05-07-slate-v2-core-structural-delete-normalization-ralplan.md`.
 - focused core proof:
-  `.tmp/slate-v2/packages/slate/test/delete-contract.ts` and
-  `.tmp/slate-v2/packages/slate/test/transforms-contract.ts`.
+  `packages/slate/test/delete-contract.ts` and
+  `packages/slate/test/transforms-contract.ts`.
 - implementation:
-  `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts` and
-  `.tmp/slate-v2/packages/slate/src/transforms-node/merge-nodes.ts`.
+  `packages/slate/src/transforms-text/delete-text.ts` and
+  `packages/slate/src/transforms-node/merge-nodes.ts`.
 - execution checkpoint:
   `.tmp/completion-checks/slate-v2-core-structural-delete-normalization-execution.md`.
 
@@ -5738,11 +5738,11 @@ Evidence:
 - execution plan:
   `docs/plans/2026-05-07-slate-v2-inline-delete-boundary-repro-ralplan.md`.
 - implementation:
-  `.tmp/slate-v2/packages/slate/src/transforms-text/delete-text.ts`.
+  `packages/slate/src/transforms-text/delete-text.ts`.
 - core proof:
-  `.tmp/slate-v2/packages/slate/test/delete-contract.ts`.
+  `packages/slate/test/delete-contract.ts`.
 - browser proof:
-  `.tmp/slate-v2/playwright/integration/examples/inlines.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/inlines.test.ts`.
 
 Decision:
 Claim `Fixes #5972`. The red browser row reproduced the issue: after clearing
@@ -5773,19 +5773,19 @@ Evidence:
 - active plan:
   `docs/plans/2026-05-07-slate-v2-operation-extensibility-validation-ralplan.md`.
 - live source:
-  `.tmp/slate-v2/packages/slate/src/editor/is-editor.ts` now checks internal
+  `packages/slate/src/editor/is-editor.ts` now checks internal
   editor state rather than operation-list validity.
 - implementation:
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts` rejects unknown replay
+  `packages/slate/src/core/public-state.ts` rejects unknown replay
   operation types before they enter the operation log.
 - core proof:
-  `.tmp/slate-v2/packages/slate/test/interfaces-contract.ts` proves
+  `packages/slate/test/interfaces-contract.ts` proves
   `Editor.isEditor` and core path/string reads keep working when user code
   attaches a custom `operations` property, and
-  `.tmp/slate-v2/packages/slate/test/operations-contract.ts` proves unknown
+  `packages/slate/test/operations-contract.ts` proves unknown
   operation replay fails closed.
 - DOM proof:
-  `.tmp/slate-v2/packages/slate-dom/test/bridge.ts` proves `DOMEditor.findPath`
+  `packages/slate-dom/test/bridge.ts` proves `DOMEditor.findPath`
   still resolves a Slate node when user code attaches a custom `operations`
   property to the editor.
 
@@ -5816,11 +5816,11 @@ Evidence:
 - live gitcrawl checked:
   `gitcrawl threads --numbers 5558 --include-closed --json ianstormtaylor/slate`.
 - implementation:
-  `.tmp/slate-v2/packages/slate/src/interfaces/operation.ts`.
+  `packages/slate/src/interfaces/operation.ts`.
 - runtime proof:
-  `.tmp/slate-v2/packages/slate/test/interfaces-contract.ts`.
+  `packages/slate/test/interfaces-contract.ts`.
 - TypeScript proof:
-  `.tmp/slate-v2/packages/slate/test/generic-operation-contract.ts`.
+  `packages/slate/test/generic-operation-contract.ts`.
 
 Decision:
 Claim `Improves #5558`. v2 adds concrete built-in operation subtype guards for
@@ -5849,13 +5849,13 @@ Evidence:
 - selected next plan:
   `docs/plans/2026-05-07-slate-v2-core-caret-movement-word-insert-break-ralplan.md`.
 - package proof:
-  `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts` adds
+  `packages/slate/test/snapshot-contract.ts` adds
   `insertBreak after marked text moves selection into the new block`.
 - ready-now test candidate:
   `docs/slate-issues/test-candidate-map/4067-3949.md`.
 - current owner:
-  `.tmp/slate-v2/packages/slate/src/editor/insert-break.ts`;
-  `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`.
+  `packages/slate/src/editor/insert-break.ts`;
+  `packages/slate/test/snapshot-contract.ts`.
 
 Decision:
 Claim `Fixes #3964`. The package proof splits at the end of marked text and
@@ -5882,14 +5882,14 @@ Evidence:
 - selected next plan:
   `docs/plans/2026-05-07-slate-v2-core-caret-movement-word-insert-break-ralplan.md`.
 - package proof:
-  `.tmp/slate-v2/packages/slate/test/transaction-contract.ts` adds
+  `packages/slate/test/transaction-contract.ts` adds
   `moves word selection across initial sibling text leaves`.
 - ready-now test candidate:
   `docs/slate-issues/test-candidate-map/4067-3949.md`.
 - current owner:
-  `.tmp/slate-v2/packages/slate/src/editor/positions.ts`;
-  `.tmp/slate-v2/packages/slate/src/transforms-selection/move.ts`;
-  `.tmp/slate-v2/packages/slate/test/transforms/move/both/unit-word.tsx`.
+  `packages/slate/src/editor/positions.ts`;
+  `packages/slate/src/transforms-selection/move.ts`;
+  `packages/slate/test/transforms/move/both/unit-word.tsx`.
 
 Decision:
 Claim `Fixes #3973`. The package proof moves by word across sibling text leaves
@@ -5925,9 +5925,9 @@ Evidence:
 - completion checkpoint:
   `.tmp/completion-checks/slate-v2-marked-enter-undo-caret-ralplan.md`.
 - package proof owner:
-  `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`;
-  `.tmp/slate-v2/packages/slate/src/transforms-node/split-nodes.ts`;
-  `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`.
+  `packages/slate-history/test/history-contract.ts`;
+  `packages/slate/src/transforms-node/split-nodes.ts`;
+  `packages/slate/test/snapshot-contract.ts`.
 - verification:
   `bun test ./packages/slate-history/test/history-contract.ts -t "marked Enter undo"`;
   `bun test ./packages/slate-history/test/history-contract.ts`;
@@ -5964,7 +5964,7 @@ Evidence:
 - selected caret plan:
   `docs/plans/2026-05-07-slate-v2-core-caret-movement-word-insert-break-ralplan.md`.
 - package proof:
-  `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts` adds
+  `packages/slate/test/snapshot-contract.ts` adds
   `insertBreak after marked text moves selection into the new block`.
 
 Decision:
@@ -6019,7 +6019,7 @@ Evidence:
 - test candidate:
   `docs/slate-issues/test-candidate-map/3878-3798.md`.
 - browser word movement proof currently skips Firefox:
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`.
 
 Decision:
 Keep related. Package movement proof can improve the model path, but a
@@ -6127,9 +6127,9 @@ Evidence:
 - gitcrawl thread checked:
   `gitcrawl threads ianstormtaylor/slate --numbers 5080 --include-closed --json`.
 - current v2 source:
-  `.tmp/slate-v2/packages/slate/src/editor/nodes.ts`;
-  `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`;
-  `.tmp/slate-v2/packages/slate/src/core/public-state.ts`.
+  `packages/slate/src/editor/nodes.ts`;
+  `packages/slate/src/interfaces/node.ts`;
+  `packages/slate/src/core/public-state.ts`.
 - live v2 probe in the active plan:
   `docs/plans/2026-05-07-slate-v2-editor-nodes-reverse-order-ralplan.md`.
 
@@ -6189,9 +6189,9 @@ Evidence:
   `docs/slate-issues/open-issues-dossiers/5064-4971.md`;
   `docs/slate-issues/test-candidate-map/5064-4971.md`.
 - current v2 source already exposes `pass` on traversal options:
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`;
-  `.tmp/slate-v2/packages/slate/src/interfaces/node.ts`;
-  `.tmp/slate-v2/packages/slate/src/editor/nodes.ts`.
+  `packages/slate/src/interfaces/editor.ts`;
+  `packages/slate/src/interfaces/node.ts`;
+  `packages/slate/src/editor/nodes.ts`.
 
 Decision:
 Keep related. The current v2 shape already carries the `pass` predicate, but
@@ -6319,7 +6319,7 @@ pressure until a matching browser, keyboard-layout, or IME reproduction lands.
 projection and browser-selection slices.
 
 The next legal execution move is PM-10 composition proof in current
-`.tmp/slate-v2` source. Exact Android, Firefox Android, Samsung Keyboard, voice
+`Plate repo root` source. Exact Android, Firefox Android, Samsung Keyboard, voice
 input, Windows suggestion, Hangul, Chinese, Vietnamese, or Japanese/Korean IME
 closure still needs matching browser or raw-device artifacts.
 
@@ -6376,8 +6376,8 @@ Evidence:
 - live GitHub checked: yes, live-gitcrawl-only via
   `gitcrawl threads ianstormtaylor/slate --numbers 5947 --include-closed --json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-dom/test/bridge.ts`,
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`, and
+  `packages/slate-dom/test/bridge.ts`,
+  `packages/slate-dom/src/plugin/dom-editor.ts`, and
   `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
 
 Decision:
@@ -6410,9 +6410,9 @@ Evidence:
 - live GitHub checked: yes, live-gitcrawl-only via
   `gitcrawl threads ianstormtaylor/slate --numbers 5867 --include-closed --json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`,
-  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`, and
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts`.
+  `packages/slate-dom/src/plugin/dom-editor.ts`,
+  `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`, and
+  `packages/slate-react/src/editable/selection-controller.ts`.
 
 Decision:
 Keep as `cluster-synced`. It is a DOM focus/selection bridge issue with a clear
@@ -6442,9 +6442,9 @@ Evidence:
 - live GitHub checked: yes, live-gitcrawl-only via
   `gitcrawl threads ianstormtaylor/slate --numbers 5538 --include-closed --json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`,
-  `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`, and
-  `.tmp/slate-v2/packages/slate-react/test/app-owned-customization.tsx`.
+  `packages/slate-dom/src/plugin/dom-editor.ts`,
+  `packages/slate-react/src/editable/selection-reconciler.ts`, and
+  `packages/slate-react/test/app-owned-customization.tsx`.
 
 Decision:
 Keep as `cluster-synced`. Focus/scroll behavior is the right runtime owner, but
@@ -6474,7 +6474,7 @@ Evidence:
 - live GitHub checked: yes, live-gitcrawl-only via
   `gitcrawl threads ianstormtaylor/slate --numbers 5568 --include-closed --json`.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/test/react-editor-contract.tsx` and
+  `packages/slate-react/test/react-editor-contract.tsx` and
   `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
 
 Decision:
@@ -6506,7 +6506,7 @@ Evidence:
 - live GitHub checked: yes, live-gitcrawl-only via
   `gitcrawl threads ianstormtaylor/slate --numbers 2558 --include-closed --json`.
 - current v2 proof:
-  `.tmp/slate-v2/playwright/integration/examples/tables.test.ts` and
+  `apps/www/tests/slate-browser/donor/examples/tables.test.ts` and
   `docs/editor-test-harvester/lexical/report.md`.
 
 Decision:
@@ -6668,7 +6668,7 @@ Evidence:
 - ProseMirror harvest row:
   `docs/editor-test-harvester/prosemirror/report.md`, PM-08.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts` now
+  `packages/slate/test/collab-history-runtime-contract.ts` now
   includes three-peer replay convergence for text, mark, range-delete, and move
   commits, with remote collaboration metadata skipping local undo history.
 - verification:
@@ -6716,7 +6716,7 @@ Evidence:
 - active planning owner:
   `docs/plans/2026-05-16-slate-v2-unified-extension-composition-ralplan.md`.
 - future proof owner:
-  `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`.
+  `packages/slate/test/public-surface-contract.ts`.
 
 Decision:
 Keep as `Related`, not fixed or improved. The unified extension composition
@@ -6747,15 +6747,15 @@ Touched surface:
 
 Evidence:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/editable-renderers.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `.tmp/slate-v2/docs/libraries/slate-react/editable.md`
-- `.tmp/slate-v2/docs/concepts/09-rendering.md`
-- `.tmp/slate-v2/site/examples/ts/check-lists.tsx`
-- `.tmp/slate-v2/site/examples/ts/images.tsx`
-- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
-- `.tmp/slate-v2/site/examples/ts/inlines.tsx`
+- `packages/slate-react/src/editable/editable-renderers.ts`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/test/surface-contract.tsx`
+- `content/docs/slate/libraries/slate-react/editable.md`
+- `content/docs/slate/concepts/09-rendering.md`
+- `apps/www/src/app/(app)/examples/slate/_examples/check-lists.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/images.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/embeds.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx`
 
 | Issue   | Status after pass          | Decision                                                                                                                                                         |
 | ------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -6782,12 +6782,12 @@ Touched surface:
 
 Evidence:
 
-- `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/test/editable-behavior.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`
-- `.tmp/slate-v2/docs/libraries/slate-react/editable.md`
+- `packages/slate-react/test/editing-kernel-contract.ts`
+- `packages/slate-react/test/editable-behavior.tsx`
+- `packages/slate-react/test/input-router-contract.test.tsx`
+- `packages/slate-react/test/surface-contract.tsx`
+- `apps/www/tests/slate-browser/donor/examples/hovering-toolbar.test.ts`
+- `content/docs/slate/libraries/slate-react/editable.md`
 - `bun --filter slate-react typecheck`
 - `bun --filter slate-react test`
 - `bun check`
@@ -6820,18 +6820,18 @@ Touched surface:
 
 Evidence:
 
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.test.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts`
-- `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.test.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.test.tsx`
-- `.tmp/slate-v2/docs/libraries/slate-react/editable.md`
-- `.tmp/slate-v2/docs/concepts/09-rendering.md`
-- `.tmp/slate-v2/site/examples/ts/code-highlighting.tsx`
-- `.tmp/slate-v2/site/examples/ts/iframe.tsx`
-- `.tmp/slate-v2/site/examples/ts/images.tsx`
-- `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
-- `.tmp/slate-v2/site/examples/ts/richtext.tsx`
-- `.tmp/slate-v2/site/examples/ts/tables.tsx`
+- `packages/slate-react/test/surface-contract.test.tsx`
+- `packages/slate-react/test/keyboard-input-strategy-contract.test.ts`
+- `packages/slate-react/test/annotation-store-contract.test.tsx`
+- `packages/slate-react/test/widget-layer-contract.test.tsx`
+- `content/docs/slate/libraries/slate-react/editable.md`
+- `content/docs/slate/concepts/09-rendering.md`
+- `apps/www/src/app/(app)/examples/slate/_examples/code-highlighting.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/iframe.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/images.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/tables.tsx`
 
 | Issue   | Status after pass               | Decision                                                                                                                                                                   |
 | ------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -6879,10 +6879,10 @@ maintainer accepts broader #9 claim wording.
 
 Proof:
 
-- `.tmp/slate-v2/packages/slate-history/test/history-contract.ts` mixed
+- `packages/slate-history/test/history-contract.ts` mixed
   `set_selection` plus `insert_text` red/green: `26 pass`.
-- `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts` plus
-  `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`:
+- `packages/slate/test/commit-metadata-contract.ts` plus
+  `packages/slate/test/collab-history-runtime-contract.ts`:
   `14 pass`.
 - `bun --filter slate-history typecheck`, `bun --filter slate typecheck`, and
   `bun --filter slate-react typecheck`: all exited `0`.
@@ -6911,7 +6911,7 @@ Evidence:
 - live GitHub CLI source:
   `gh issue view 6 -R udecode/slate --json number,title,body,url,comments`
 - browser proof:
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`
 - verification:
   `cd /Users/zbeyens/git/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun playwright test playwright/integration/examples/rendering-strategy-runtime.test.ts --project=chromium --grep "keeps canceled IME caret anchored for the next typed character"`;
   `cd /Users/zbeyens/git/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun playwright test playwright/integration/examples/rendering-strategy-runtime.test.ts --project=chromium --grep "does not push canceled IME composition onto history|keeps text stable after type-delete-cancel IME composition|keeps canceled IME caret anchored for the next typed character"`;
@@ -6950,13 +6950,13 @@ Evidence:
   selected image copy from `https://www.slatejs.org/examples/images` produced
   `text/html` containing `<img>`.
 - code owner:
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
+  `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
 - package proof:
-  `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
+  `packages/slate-dom/test/clipboard-boundary.ts`
 - browser proof:
-  `.tmp/slate-v2/playwright/integration/examples/images.test.ts`;
-  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`;
-  `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`
+  `apps/www/tests/slate-browser/donor/examples/images.test.ts`;
+  `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`;
+  `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
 - verification:
   `cd /Users/zbeyens/git/slate-v2 && bun test ./packages/slate-dom/test/clipboard-boundary.ts`;
   `cd /Users/zbeyens/git/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun playwright test playwright/integration/examples/images.test.ts playwright/integration/examples/mentions.test.ts playwright/integration/examples/paste-html.test.ts --project=chromium --grep "copies selected image with visible external HTML payload|copies and pastes a selected mention without crashing|cuts a selected mention without crashing|pastes copied rendered Slate content as an internal fragment before HTML import"`;
@@ -6993,13 +6993,13 @@ Evidence:
   `gh issue view 12 -R udecode/slate --json number,title,body,url`,
   `gh issue view 14 -R udecode/slate --json number,title,body,url`.
 - current v2 source changes:
-  `.tmp/slate-v2/packages/slate/src/transforms-text/insert-text.ts`.
+  `packages/slate/src/transforms-text/insert-text.ts`.
 - package proof:
-  `.tmp/slate-v2/packages/slate-history/test/history-contract.ts`.
+  `packages/slate-history/test/history-contract.ts`.
 - browser proof:
-  `.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts`,
-  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`,
-  `.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts`.
+  `apps/www/tests/slate-browser/donor/examples/plaintext.test.ts`,
+  `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`,
+  `apps/www/tests/slate-browser/donor/examples/hovering-toolbar.test.ts`.
 - verification:
   `cd /Users/zbeyens/git/slate-v2 && bun --filter slate typecheck`;
   `cd /Users/zbeyens/git/slate-v2 && bun --filter slate-history typecheck`;
@@ -7026,26 +7026,26 @@ None; no PR-facing claim count changes.
 
 This audits `docs/plans/2026-05-10-slate-v2-prosemirror-runtime-proof-slices-ralplan.md`.
 It revalidates PM-08, PM-09, PM-10, PM-12, and PM-13 against current
-`.tmp/slate-v2` owner tests and keeps all existing issue claim statuses unchanged.
+`Plate repo root` owner tests and keeps all existing issue claim statuses unchanged.
 
 Evidence:
 
 - `gitcrawl doctor --json` reports gitcrawl `0.2.1`, local archive data, no
   GitHub token, and last sync at `2026-05-04T14:58:11.123944Z`.
 - PM-10/PM-09 input and DOM-change proof exists in
-  `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`,
-  `.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts`,
-  `.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts`,
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`, and
-  `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`.
+  `packages/slate-react/test/model-input-strategy-contract.test.ts`,
+  `packages/slate-react/test/editing-kernel-contract.ts`,
+  `packages/slate-react/test/selection-reconciler-contract.ts`,
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`, and
+  `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`.
 - PM-08 raw convergence proof exists in
-  `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts`.
+  `packages/slate/test/collab-history-runtime-contract.ts`.
 - PM-12 projection/widget proof exists in
-  `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`,
-  `.tmp/slate-v2/packages/slate-react/test/annotation-store-contract.tsx`, and
-  `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx`.
+  `packages/slate-react/test/projections-and-selection-contract.tsx`,
+  `packages/slate-react/test/annotation-store-contract.tsx`, and
+  `packages/slate-react/test/widget-layer-contract.tsx`.
 - PM-13 geometry/RTL proof exists in
-  `.tmp/slate-v2/packages/slate-browser/test/browser/selection.browser.test.ts`.
+  `packages/browser/test/browser/selection.browser.test.ts`.
 
 Fresh verification:
 
@@ -7084,7 +7084,7 @@ Evidence:
   `docs/editor-test-harvester/prosemirror/test-index.md`, `webtest-selection`
   RTL coordinate and wrapped-line coordinate rows.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-browser/test/browser/selection.browser.test.ts`
+  `packages/browser/test/browser/selection.browser.test.ts`
   now includes browser rows for RTL DOM selection offset mapping, RTL visual
   geometry direction, and wrapped-line selection rectangles.
 - verification:
@@ -7117,10 +7117,10 @@ Evidence:
 - ProseMirror harvest row:
   `docs/editor-test-harvester/prosemirror/report.md`, PM-12.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+  `packages/slate-react/test/projections-and-selection-contract.tsx`
   now includes nested moved-node projection runtime-bucket mapping.
 - current v2 proof:
-  `.tmp/slate-v2/packages/slate-react/test/widget-layer-contract.tsx` now
+  `packages/slate-react/test/widget-layer-contract.tsx` now
   includes runtime-id node-widget move/remove mapping.
 - verification:
   `cd /Users/zbeyens/git/slate-v2/packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`.
@@ -7199,8 +7199,8 @@ import bare helper values that shadow DOM globals.
 
 Proof:
 
-- `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/interfaces-contract.ts`
+- `packages/slate/test/public-surface-contract.ts`
+- `packages/slate/test/interfaces-contract.ts`
 - `docs/plans/2026-05-13-slate-v2-api-helper-namespace-rename-ralplan.md`
 - `docs/slate-issues/open-issues-dossiers/5402-5250.md`
 
@@ -7228,14 +7228,14 @@ Touched surface:
 
 Evidence:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-- `.tmp/slate-v2/packages/slate/src/core/extension-registry.ts`
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/editable-key-commands.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/editable-renderers.ts`
-- `.tmp/slate-v2/site/examples/ts/iframe.tsx`
-- `.tmp/slate-v2/site/examples/ts/richtext.tsx`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/core/editor-extension.ts`
+- `packages/slate/src/core/extension-registry.ts`
+- `packages/slate/src/create-editor.ts`
+- `packages/slate-react/src/editable/editable-key-commands.ts`
+- `packages/slate-react/src/editable/editable-renderers.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/iframe.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx`
 - `docs/research/sources/editor-architecture/node-text-mark-render-dx-corpus-ledger.md`
 
 | Issue   | Status after pass          | Decision                                                                                                                                                                                                                             |
@@ -7361,10 +7361,10 @@ Reviewed surface:
 
 - TanStack blog `https://tanstack.com/blog/tanstack-virtual-perf-and-ios`
 - TanStack Virtual latest API docs
-- `.tmp/slate-v2/packages/slate-react/package.json`
-- `.tmp/slate-v2/bun.lock`
-- `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`
-- `.tmp/slate-v2/docs/libraries/slate-react/experimental-virtualized-rendering.md`
+- `packages/slate-react/package.json`
+- `Plate repo root/bun.lock`
+- `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`
+- `content/docs/slate/libraries/slate-react/experimental-virtualized-rendering.md`
 - `docs/research/sources/editor-architecture/tanstack-virtual-and-github-large-surface-virtualization.md`
 
 Decision:
@@ -7397,11 +7397,11 @@ Planning source:
 
 Reviewed surface:
 
-- `.tmp/slate-v2/site/examples/ts/tables.tsx`
-- `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
-- `.tmp/slate-v2/site/examples/ts/richtext.tsx`
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/tables.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/richtext.tsx`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/create-editor.ts`
 - `docs/slate-v2/references/pr-description.md`
 
 Decision:
@@ -7446,11 +7446,11 @@ Planning source:
 
 Reviewed surface:
 
-- `.tmp/slate-v2/site/examples/ts/markdown-shortcuts.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts`
-- `.tmp/slate-v2/packages/slate/src/core/transform-middleware.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/markdown-shortcuts.tsx`
+- `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
+- `packages/slate-react/src/editable/runtime-before-input-events.ts`
+- `packages/slate/src/core/transform-middleware.ts`
+- `packages/slate-dom/src/plugin/dom-editor.ts`
 
 Decision:
 
@@ -7485,12 +7485,12 @@ Planning source:
 
 Reviewed surface:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate-history/src/history-extension.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts`
-- `.tmp/slate-v2/packages/slate-react/src/plugin/with-react.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/core/editor-extension.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate-history/src/history-extension.ts`
+- `packages/slate-dom/src/plugin/with-dom.ts`
+- `packages/slate-react/src/plugin/with-react.ts`
 
 Decision:
 
@@ -7524,12 +7524,12 @@ Planning source:
 
 Reviewed surface:
 
-- `.tmp/slate-v2/packages/slate-layout/src/index.ts`
-- `.tmp/slate-v2/packages/slate-layout/src/react.tsx`
-- `.tmp/slate-v2/packages/slate-layout-pretext/src/index.ts`
-- `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
-- `.tmp/slate-v2/packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts`
+- `packages/slate-layout/src/index.ts`
+- `packages/slate-layout/src/react.tsx`
+- `packages/slate-layout-pretext/src/index.ts`
+- `packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
+- `packages/slate-react/src/dom-strategy/use-virtualized-root-plan.ts`
+- `packages/slate-dom/src/plugin/dom-coverage.ts`
 - `docs/slate-issues/gitcrawl-v2-sync-ledger.md`
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md`
 - `docs/slate-v2/references/pr-description.md`

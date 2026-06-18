@@ -27,8 +27,8 @@ in unopinionated Slate.
 
 ## Verification
 
-- `bun typecheck:packages` in `.tmp/slate-v2`: pass.
-- `bun typecheck:root` in `.tmp/slate-v2`: pass.
-- `bun lint:fix` in `.tmp/slate-v2`: pass, no fixes applied.
-- `bun test:bun` in `.tmp/slate-v2`: pass, 1157 pass, 95 skip.
+- `bun typecheck:packages` in `Plate repo root`: pass.
+- `bun typecheck:root` in `Plate repo root`: pass.
+- `bun lint:fix` in `Plate repo root`: pass, no fixes applied.
+- `bun test:bun` in `Plate repo root`: pass, 1157 pass, 95 skip.
 - `pnpm lint:fix` in `plate-2`: pass, no fixes applied.

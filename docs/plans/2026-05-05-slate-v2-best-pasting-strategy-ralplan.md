@@ -160,10 +160,10 @@ Follow-ups:
 
 | Dimension                              | Score | Evidence                                                                                                                                                                                                                                                     |
 | -------------------------------------- | ----: | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| React 19.2 runtime performance         |  0.91 | React does not own the bottleneck; current path is in Slate DOM/core insertion. Browser contract already names paste-normalize-undo in `.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:178`.                                 |
+| React 19.2 runtime performance         |  0.91 | React does not own the bottleneck; current path is in Slate DOM/core insertion. Browser contract already names paste-normalize-undo in `packages/browser/src/core/first-party-browser-contracts.ts:178`.                                 |
 | Slate-close unopinionated DX           |  0.93 | Keeps raw Slate free of product HTML policy and keeps low-level clipboard under `editor.dom.clipboard`, matching `docs/slate-v2/references/pr-description.md:231`.                                                                                           |
 | Plate and slate-yjs migration backbone |  0.89 | One logical paste maps better to collaboration/history than N fake typing actions. Replay through the collaboration import path is proven; transport-specific CRDT lowering stays adapter-owned.                                                             |
-| Regression-proof testing strategy      |  0.94 | Existing unit/browser owners exist: `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:18` and browser paste-normalize-undo at `.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:178`; new benchmark gates are explicit. |
+| Regression-proof testing strategy      |  0.94 | Existing unit/browser owners exist: `packages/slate/test/clipboard-contract.ts:18` and browser paste-normalize-undo at `packages/browser/src/core/first-party-browser-contracts.ts:178`; new benchmark gates are explicit. |
 | Research evidence completeness         |  0.95 | Live source read across Slate v2, Lexical, ProseMirror, Tiptap, and VS Code; mechanisms are synthesized below instead of name-dropped.                                                                                                                       |
 | shadcn-style composability/minimalism  |  0.90 | Public surface stays small; richer provider API is delayed until proof, not shoved into core now.                                                                                                                                                            |
 
@@ -176,67 +176,67 @@ lands.
 
 Current paste dispatch:
 
-- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:141`
+- `packages/slate-react/src/editable/clipboard-input-strategy.ts:141`
   materializes DOM coverage boundaries with `selectionPolicy === 'materialize'`
   before paste.
-- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:485`
+- `packages/slate-react/src/editable/clipboard-input-strategy.ts:485`
   owns `applyEditablePaste`.
 - The shell-backed full-document plain-text special case already exists in the
   React clipboard strategy.
 
 Current DOM clipboard import:
 
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:228`
+- `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:228`
   runs `dom.clipboard.insertData` handlers first.
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:247`
+- `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:247`
   imports trusted Slate fragments.
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:269`
+- `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:269`
   is the current plain-text fallback.
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:276`
+- `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:276`
   splits text by newline.
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:280`
+- `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts:280`
   loops every line, splitting nodes and inserting text.
 
 Current core fragment insert:
 
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:160`
+- `packages/slate/src/transforms-text/insert-fragment.ts:160`
   fits a single empty text-block target without inserting the fragment wrapper.
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:208`
+- `packages/slate/src/transforms-text/insert-fragment.ts:208`
   fits exact whole-top-level-block selections by replacing the root child slice
   while keeping structural fragments as sibling units.
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:261`
+- `packages/slate/src/transforms-text/insert-fragment.ts:261`
   fits compatible single text-block targets, including marked text and inline
   children, by replacing the target block children.
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:411`
+- `packages/slate/src/transforms-text/insert-fragment.ts:411`
   handles full-document fragment replacement through one `replace_fragment`
   operation instead of a snapshot shortcut.
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:473`
+- `packages/slate/src/transforms-text/insert-fragment.ts:473`
   applies single text-block fitting through one `replace_fragment` at the target
   block path.
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:491`
+- `packages/slate/src/transforms-text/insert-fragment.ts:491`
   applies exact whole-top-level-block structural fitting through one
   `replace_fragment` at the root path.
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:562`
+- `packages/slate/src/transforms-text/insert-fragment.ts:562`
   walks fragment nodes into `starts`, `middles`, and `ends`.
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts:640`,
+- `packages/slate/src/transforms-text/insert-fragment.ts:640`,
   `:653`, and `:661` insert those groups with `insertNodes` for shapes that
   still fall back to structural insertion.
 
 Current insertion and normalization pressure:
 
-- `.tmp/slate-v2/packages/slate/src/transforms-node/insert-nodes.ts:121` batches
+- `packages/slate/src/transforms-node/insert-nodes.ts:121` batches
   dirty-path collection, but it still applies one `insert_node` operation per
   child at `:128`.
-- `.tmp/slate-v2/packages/slate/src/editor/normalize.ts:42` skips default text
+- `packages/slate/src/editor/normalize.ts:42` skips default text
   normalization only for `insert_text` and `remove_text`; multiline paste creates
   split/insert chains that miss this cheap path.
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-text.ts:89` still
+- `packages/slate/src/transforms-text/insert-text.ts:89` still
   uses `replaceSnapshot` for full-document expanded text replacement; this is
   outside the current paste fragment path.
 
 Current benchmark:
 
-- `.tmp/slate-v2/tmp/slate-clipboard-large-payload-benchmark.json` says 2,000
+- `tmp/slate-clipboard-large-payload-benchmark.json` says 2,000
   pasted lines average:
   - `plainTextSplitMs`: `0.05ms`
   - `fullSelectionCopyMs`: `5.25ms`
@@ -947,9 +947,9 @@ Status: complete for this plan.
 
 Live Slate v2 source:
 
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts` exposes
+- `packages/slate-dom/src/plugin/dom-editor.ts` exposes
   `DOMClipboardInsertDataHandler<V> = (editor, data) => boolean | void`.
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` runs
+- `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts` runs
   `dom.clipboard.insertData` handlers before internal Slate fragment and
   plain-text fallback.
 - Extension capabilities already provide ordered, synchronous app interception

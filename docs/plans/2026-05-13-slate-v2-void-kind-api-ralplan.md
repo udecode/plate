@@ -22,10 +22,10 @@ export type EditorElementVoidKind =
 
 Source owner:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:386`
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:413`
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts:151`
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts:209`
+- `packages/slate/src/interfaces/editor.ts:386`
+- `packages/slate/src/interfaces/editor.ts:413`
+- `packages/slate/src/create-editor.ts:151`
+- `packages/slate/src/create-editor.ts:209`
 
 Recommended target:
 
@@ -109,30 +109,30 @@ Consequences:
 ## Current Source Evidence
 
 - `EditorElementSpec.void` is public and typed from
-  `EditorElementVoidKind` at `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:424`.
+  `EditorElementVoidKind` at `packages/slate/src/interfaces/editor.ts:424`.
 - `isInlineVoidKind` treats only `'inline'` and `'markable-inline'` as inline
-  at `.tmp/slate-v2/packages/slate/src/create-editor.ts:151`.
+  at `packages/slate/src/create-editor.ts:151`.
 - `isVoidKind` currently accepts every truthy value at
-  `.tmp/slate-v2/packages/slate/src/create-editor.ts:154`.
+  `packages/slate/src/create-editor.ts:154`.
 - `editable-island` intentionally makes the element void but not atom, proven
-  by `.tmp/slate-v2/packages/slate/test/schema-contract.ts:177` and
-  `.tmp/slate-v2/packages/slate/test/schema-contract.ts:204`.
+  by `packages/slate/test/schema-contract.ts:177` and
+  `packages/slate/test/schema-contract.ts:204`.
 - docs already teach strings, not boolean, in
-  `.tmp/slate-v2/docs/concepts/08-plugins.md:217` and
-  `.tmp/slate-v2/docs/libraries/slate-react/editable.md:255`.
+  `content/docs/slate/concepts/08-plugins.md:217` and
+  `content/docs/slate/libraries/slate-react/editable.md:255`.
 - real examples use strings for first-party surfaces:
-  `.tmp/slate-v2/site/examples/ts/images.tsx:67`,
-  `.tmp/slate-v2/site/examples/ts/mentions.tsx:187`,
-  and `.tmp/slate-v2/site/examples/ts/editable-voids.tsx:45`.
+  `apps/www/src/app/(app)/examples/slate/_examples/images.tsx:67`,
+  `apps/www/src/app/(app)/examples/slate/_examples/mentions.tsx:187`,
+  and `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx:45`.
 - tests still use `void: true` in compatibility-like rows, e.g.
-  `.tmp/slate-v2/packages/slate/test/transforms-contract.ts:537` and
-  `.tmp/slate-v2/packages/slate/test/query-contract.ts:126`.
-- live re-check found no `void: true` in `.tmp/slate-v2/packages/slate/src`,
-  `.tmp/slate-v2/docs`, or `.tmp/slate-v2/site/examples`; remaining hits are in
+  `packages/slate/test/transforms-contract.ts:537` and
+  `packages/slate/test/query-contract.ts:126`.
+- live re-check found no `void: true` in `packages/slate/src`,
+  `content/docs/slate`, or `apps/www/examples`; remaining hits are in
   package tests and are mostly document-fixture markers consumed by explicit
   `match` specs such as `defineVoidFlag` and `defineInlineVoidFlag` in
-  `.tmp/slate-v2/packages/slate/test/query-contract.ts:24`.
-- `.tmp/slate-v2/README.md:42` says Slate is beta and some APIs are not finalized;
+  `packages/slate/test/query-contract.ts:24`.
+- `Plate repo root/README.md:42` says Slate is beta and some APIs are not finalized;
   package versions are still `0.x` (`slate@0.124.1`,
   `slate-react@0.124.0`). This is exactly when to remove the public boolean.
 
@@ -237,12 +237,12 @@ Touched issue families to cite, not auto-close:
 
 | Issue | Cluster                                    | Claim   | Why                                                                                                 | Proof route                                                       | V2 sync ledger        | PR line   |
 | ----- | ------------------------------------------ | ------- | --------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | --------------------- | --------- |
-| #3991 | inline-void-and-void-selection             | Related | Explicit `block` kind preserves block void delete semantics; no new fix claim.                      | `.tmp/slate-v2/playwright/integration/examples/images.test.ts`    | existing fixed row    | unchanged |
-| #4301 | inline-void-and-void-selection             | Related | Explicit `block` kind preserves selected block void Enter semantics; no new fix claim.              | `.tmp/slate-v2/playwright/integration/examples/images.test.ts`    | existing fixed row    | unchanged |
-| #4802 | clipboard-html-fragment-serialization      | Related | Explicit inline kind helps clipboard policy stay clear; no exact inter-editor proof.                | `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`     | existing improves row | unchanged |
-| #4806 | clipboard-html-fragment-serialization      | Related | Same inline-void clipboard family; no new closure.                                                  | `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`     | existing improves row | unchanged |
-| #5183 | android-inline-void-keyboard               | Related | `inline` and `markable-inline` must keep mobile proof family; no Android device proof in this pass. | `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts` | existing related row  | unchanged |
-| #5391 | android-inline-void-keyboard               | Related | iOS inline void selection remains device-proof owner.                                               | `.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts` | existing related row  | unchanged |
+| #3991 | inline-void-and-void-selection             | Related | Explicit `block` kind preserves block void delete semantics; no new fix claim.                      | `apps/www/tests/slate-browser/donor/examples/images.test.ts`    | existing fixed row    | unchanged |
+| #4301 | inline-void-and-void-selection             | Related | Explicit `block` kind preserves selected block void Enter semantics; no new fix claim.              | `apps/www/tests/slate-browser/donor/examples/images.test.ts`    | existing fixed row    | unchanged |
+| #4802 | clipboard-html-fragment-serialization      | Related | Explicit inline kind helps clipboard policy stay clear; no exact inter-editor proof.                | `packages/slate-dom/test/clipboard-boundary.ts`     | existing improves row | unchanged |
+| #4806 | clipboard-html-fragment-serialization      | Related | Same inline-void clipboard family; no new closure.                                                  | `packages/slate-dom/test/clipboard-boundary.ts`     | existing improves row | unchanged |
+| #5183 | android-inline-void-keyboard               | Related | `inline` and `markable-inline` must keep mobile proof family; no Android device proof in this pass. | `packages/browser/test/core/scenario.test.ts` | existing related row  | unchanged |
+| #5391 | android-inline-void-keyboard               | Related | iOS inline void selection remains device-proof owner.                                               | `packages/browser/test/core/scenario.test.ts` | existing related row  | unchanged |
 | #3482 | void-element-contract-and-data-model-shape | Related | API removes boolean ambiguity but does not remove required empty children.                          | data-model/schema proof                                           | existing roadmap row  | unchanged |
 
 PR reference: updated by the `ralph` implementation pass. No fixed issue count
@@ -254,13 +254,13 @@ Required before implementation closure:
 
 | Contract                                                                          | Command owner                                                                                        |
 | --------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| schema rejects/does not expose public boolean void kind                           | `.tmp/slate-v2/packages/slate/type-tests` or package typecheck                                       |
-| `void: 'block'` preserves `isVoid=true`, `isInline=false`, `atom=true`            | `.tmp/slate-v2/packages/slate/test/schema-contract.ts`                                               |
-| `void: 'inline'` preserves inline void behavior                                   | `.tmp/slate-v2/packages/slate/test/query-contract.ts`                                                |
-| `void: 'markable-inline'` preserves add/remove mark behavior                      | `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`                                             |
-| `void: 'editable-island'` preserves non-atom editable child policy                | `.tmp/slate-v2/packages/slate/test/schema-contract.ts` plus editable-void browser row                |
-| public source/docs/examples do not use `void: true`                               | `rg "void:\\s*true" .tmp/slate-v2/packages/slate/src .tmp/slate-v2/docs .tmp/slate-v2/site/examples` |
-| package tests use `void: true` only as fixture data, not `EditorElementSpec.void` | review `.tmp/slate-v2/packages/slate/test/query-contract.ts:24` and matching rows                    |
+| schema rejects/does not expose public boolean void kind                           | `packages/slate/type-tests` or package typecheck                                       |
+| `void: 'block'` preserves `isVoid=true`, `isInline=false`, `atom=true`            | `packages/slate/test/schema-contract.ts`                                               |
+| `void: 'inline'` preserves inline void behavior                                   | `packages/slate/test/query-contract.ts`                                                |
+| `void: 'markable-inline'` preserves add/remove mark behavior                      | `packages/slate/test/snapshot-contract.ts`                                             |
+| `void: 'editable-island'` preserves non-atom editable child policy                | `packages/slate/test/schema-contract.ts` plus editable-void browser row                |
+| public source/docs/examples do not use `void: true`                               | `rg "void:\\s*true" packages/slate/src content/docs/slate apps/www/examples` |
+| package tests use `void: true` only as fixture data, not `EditorElementSpec.void` | review `packages/slate/test/query-contract.ts:24` and matching rows                    |
 
 ## Applicable Implementation-Skill Review Matrix
 
@@ -330,9 +330,9 @@ Verdict: keep. The target is ready for execution only with a hard cut.
 - closed the hard-cut vs hidden-shim decision: hard cut, no runtime shim.
 - narrowed the implementation grep gate so legacy-oracle document fixture
   markers are reviewed, not blindly deleted.
-- implemented the hard cut in `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-  and `.tmp/slate-v2/packages/slate/src/create-editor.ts`.
-- wired `.tmp/slate-v2/packages/slate/test/public-element-void-kind-contract.ts`
+- implemented the hard cut in `packages/slate/src/interfaces/editor.ts`
+  and `packages/slate/src/create-editor.ts`.
+- wired `packages/slate/test/public-element-void-kind-contract.ts`
   into the `slate` package typecheck gate.
 - added a schema contract proving `spec.void === true` is not normalized as a
   void kind.
@@ -341,7 +341,7 @@ Verdict: keep. The target is ready for execution only with a hard cut.
 
 ## Ralph Implementation Result
 
-Changed in `.tmp/slate-v2`:
+Changed in `Plate repo root`:
 
 - `EditorElementVoidKind` is now string-only.
 - Runtime `isVoidKind` recognizes only `block`, `editable-island`, `inline`,
@@ -389,7 +389,7 @@ shim.
 
 ## Fast Driver Gates
 
-From `.tmp/slate-v2`:
+From `Plate repo root`:
 
 ```bash
 bun --filter slate typecheck
@@ -443,4 +443,4 @@ Weighted score: `0.93`.
 - Docs/examples: keep teaching string kinds only.
 - Issue accounting: no new `Fixes` claims; existing void/inline-void issue rows
   remain the proof family.
-- Next owner: `ralph` implementation in `.tmp/slate-v2`.
+- Next owner: `ralph` implementation in `Plate repo root`.

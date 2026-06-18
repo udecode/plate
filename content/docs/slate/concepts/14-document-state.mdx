@@ -1,0 +1,195 @@
+---
+title: "Document State"
+---
+
+# Document State
+
+Slate persists a document as primary children, optional extra roots, and
+optional state fields. Use roots for editable content outside the primary
+document and state fields for document metadata, settings, and other small model
+state that should share the editor runtime.
+
+Use external stores for comment bodies, permissions, and audit events; Slate can
+render their anchors through annotations.
+
+## Value Shape
+
+The full persisted value is `EditorDocumentValue`.
+
+```ts
+type EditorDocumentValue = {
+  children: Descendant[]
+  roots?: Record<string, Descendant[]>
+  state?: Record<string, unknown>
+}
+```
+
+`children` is the primary editable body. Extra roots store headers, footers,
+content roots, synced blocks, captions, and other editable regions owned by the
+same editor.
+
+`state` stores persistent state fields. Slate includes a field in
+`state.value.get()` unless the field descriptor sets `persist: false`.
+
+## Save The Document
+
+Read the full document value from `state.value.get()`.
+
+```tsx
+const documentValue = editor.read((state) => state.value.get())
+
+await saveDocument(JSON.stringify(documentValue))
+```
+
+The first argument passed to `<Slate onChange>` is the provider root's block
+array. That is enough for a simple single-root editor, but it drops extra roots
+and persistent state fields.
+Use `editor.subscribe(...)` for full document persistence so state-field-only
+commits and edits in other roots are observed.
+
+```tsx
+useEffect(() => {
+  return editor.subscribe((_snapshot, change) => {
+    if (!change) return
+
+    if (!change.childrenChanged && change.dirtyStateKeys.length === 0) {
+      return
+    }
+
+    const documentValue = editor.read((state) => state.value.get())
+
+    localStorage.setItem('slate.document', JSON.stringify(documentValue))
+  })
+}, [editor])
+```
+
+## Load The Document
+
+Pass the saved document value back as `initialValue` when the editor is created.
+
+```tsx
+const saved = localStorage.getItem('slate.document')
+const initialValue = saved
+  ? JSON.parse(saved)
+  : {
+      children: [{ type: 'paragraph', children: [{ text: 'Body' }] }],
+    }
+
+const editor = useSlateEditor({
+  extensions: [documentTitle],
+  initialValue,
+})
+```
+
+`initialValue` seeds the editor once. Replace document content later with
+`editor.update`, not by changing `initialValue` props.
+
+## State Fields
+
+Use `defineStateField` for document metadata and settings that belong to the
+editor model.
+
+```tsx
+import { defineStateField } from '@platejs/slate'
+
+const documentTitle = defineStateField({
+  key: 'document.title',
+  collab: 'shared',
+  history: 'push',
+  initial: () => 'Untitled',
+  persist: true,
+})
+```
+
+Read and write state fields through the editor.
+
+```tsx
+const title = editor.read((state) => state.getField(documentTitle))
+
+editor.update((tx) => {
+  tx.setField(documentTitle, 'Q3 Launch Brief')
+})
+```
+
+In React, use `useStateFieldValue` and `useSetStateField` for UI controls.
+
+```tsx
+import { useSetStateField, useStateFieldValue } from '@platejs/slate-react'
+
+const title = useStateFieldValue(documentTitle)
+const setTitle = useSetStateField(documentTitle)
+
+return <input value={title} onChange={(event) => setTitle(event.target.value)} />
+```
+
+Use state fields for title, layout settings, spellcheck, page settings, or
+document-level mode flags. Do not store ephemeral UI state there unless it
+should persist with the document.
+
+## Persistent And Local Fields
+
+Set `persist: false` for local runtime fields. Slate keeps the value available
+through `state.getField(field)` but omits it from `state.value.get()`.
+
+```tsx
+const sidePanel = defineStateField({
+  key: 'ui.side-panel',
+  history: 'skip',
+  initial: () => 'closed',
+  persist: false,
+})
+```
+
+Use this for view-only UI state, temporary panels, local drafts, or caches.
+
+## Collaboration
+
+State-field writes produce `commit.statePatches` and list their keys in
+`commit.dirtyStateKeys`. Collaboration adapters should export only the state
+patch keys their adapter schema marks as shared, so local-only state fields stay
+local.
+
+```tsx
+editor.update((tx) => {
+  tx.setField(documentTitle, 'Remote Q2 Brief')
+})
+
+const commit = editor.read((state) => state.value.lastCommit())
+```
+
+Replay remote state changes through `tx.statePatches.replay(...)`.
+
+```tsx
+const sharedStateKeys = new Set([documentTitle.key])
+const statePatches = (message.statePatches ?? []).filter((patch) =>
+  sharedStateKeys.has(patch.key)
+)
+
+editor.update(
+  (tx) => {
+    tx.statePatches.replay(statePatches)
+  },
+  {
+    metadata: {
+      collab: { origin: 'remote', saveToHistory: false },
+      history: { mode: 'skip' },
+      selection: { dom: 'preserve' },
+    },
+    tag: ['collaboration', 'remote-state'],
+  }
+)
+```
+
+Keep large shared state compact by defining `diff`, `applyPatch`, and
+`invertPatch`. Without patch hooks, large history-tracked state fields are a bad
+fit because every edit would need to store whole previous and next values.
+
+## Comments
+
+Comment bodies, permissions, resolved state, and audit events belong to the app
+or collaboration service. Store a lightweight comment, thread, or annotation id
+only when the product needs the reference to copy, paste, serialize, or travel
+with content.
+
+Use [Annotations](../libraries/slate-react/annotations) to render external
+comment anchors in the editor.

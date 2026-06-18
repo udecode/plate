@@ -27,7 +27,7 @@ Constraints:
 - No commit, PR, or tracker sync.
 
 Boundaries:
-- Implementation and tests in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`.
+- Implementation and tests in `/Users/zbeyens/git/plate-2/Plate repo root`.
 - Goal plan in `/Users/zbeyens/git/plate-2/docs/plans`.
 - Browser surface: `/examples/pagination`, DOM strategy `virtualized`.
 

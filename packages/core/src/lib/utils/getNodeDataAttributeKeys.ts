@@ -1,4 +1,4 @@
-import { type TElement, type TText, TextApi } from '@platejs/slate';
+import { type TElement, type TText, TextApi } from '@platejs/slate-legacy';
 import kebabCase from 'lodash/kebabCase.js';
 
 export const getNodeDataAttributeKeys = (node: TElement | TText) =>

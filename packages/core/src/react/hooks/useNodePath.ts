@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { TNode } from '@platejs/slate';
+import type { TNode } from '@platejs/slate-legacy';
 
 import { useEditorRef } from '../stores';
 

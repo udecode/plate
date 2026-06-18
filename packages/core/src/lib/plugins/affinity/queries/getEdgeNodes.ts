@@ -4,7 +4,7 @@ import {
   ElementApi,
   NodeApi,
   PathApi,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 import { type NodeEntry, Path } from 'slate';
 
 import type { SlateEditor } from '../../../editor';

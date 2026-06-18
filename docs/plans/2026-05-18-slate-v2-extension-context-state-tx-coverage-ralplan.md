@@ -37,36 +37,36 @@ Define the context object for every Slate v2 extension callback so users stop gu
 
 ## Current Source Evidence
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:466` defines `EditorCoreStateView` read groups.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:484` defines `EditorCoreUpdateTransaction` as read groups plus write groups.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:505` exposes `editor.api`, `editor.getApi`, `editor.read`, `editor.update`, `editor.extend`.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:789` has transform middleware context as `{ editor, next, ...args }`.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:928` has query middleware context as `{ editor, next, ...args }`.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1210` already gives normalizers a restricted `tx`.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1252` has extension `state`, `tx`, and `editor` group factories.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1304` has clipboard context as `{ editor, next }`.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1325` has register context as `{ editor, name, options, runtimeState, signal }`.
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1338` lists extension slots: `api`, `clipboard`, `commitListeners`, `editor`, `elements`, `normalizers`, `operationMiddlewares`, `queries`, `state`, `transforms`, `tx`.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts:971` builds the read `state` view and routes read methods through query middleware.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts:1384` builds `tx` by spreading `state` and adding write methods.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts:1500` builds the restricted normalizer transaction.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts:1531` implements `editor.read((state) => ...)`.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts:1553` rejects `editor.update` inside query middleware.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts:1757` routes operations through operation middleware with `{ editor, operation }`.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts:2594` notifies commit listeners with commit and snapshot.
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:156` rejects legacy `methods` and `commands` extension slots.
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:373` registers transform middleware and passes only `{ editor, next, ...args }`.
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:423` registers clipboard insertData and passes only `{ editor, next }`.
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts:451` passes normalizer contexts through with `tx`.
-- `.tmp/slate-v2/packages/slate/src/core/query-middleware.ts:121` executes query middleware and passes only `{ editor, next, ...args }`.
-- `.tmp/slate-v2/packages/slate/src/core/command-registry.ts:69` only creates an implicit update when called with `implicitUpdate`.
-- `.tmp/slate-v2/packages/slate/src/core/transform-middleware.ts:136` calls `executeCommand` without `implicitUpdate`.
-- `.tmp/slate-v2/site/examples/ts/check-lists.tsx:89` shows current transform middleware repeatedly calling `editor.read` and then `editor.update`.
-- `.tmp/slate-v2/site/examples/ts/tables.tsx:115` shows the same repeated read pattern in delete middleware.
-- `.tmp/slate-v2/site/examples/ts/images.tsx:96` shows clipboard `insertData(data, { editor, next })` with async `FileReader`.
-- `.tmp/slate-v2/packages/slate/test/query-extension-contract.ts:527` proves query middleware cannot mutate through `editor.update`.
-- `.tmp/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts:254` already has negative type tests for invalid transform and normalizer surfaces.
-- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts:742` covers same-name/latest extension and `enabled: false` tombstones.
+- `packages/slate/src/interfaces/editor.ts:466` defines `EditorCoreStateView` read groups.
+- `packages/slate/src/interfaces/editor.ts:484` defines `EditorCoreUpdateTransaction` as read groups plus write groups.
+- `packages/slate/src/interfaces/editor.ts:505` exposes `editor.api`, `editor.getApi`, `editor.read`, `editor.update`, `editor.extend`.
+- `packages/slate/src/interfaces/editor.ts:789` has transform middleware context as `{ editor, next, ...args }`.
+- `packages/slate/src/interfaces/editor.ts:928` has query middleware context as `{ editor, next, ...args }`.
+- `packages/slate/src/interfaces/editor.ts:1210` already gives normalizers a restricted `tx`.
+- `packages/slate/src/interfaces/editor.ts:1252` has extension `state`, `tx`, and `editor` group factories.
+- `packages/slate/src/interfaces/editor.ts:1304` has clipboard context as `{ editor, next }`.
+- `packages/slate/src/interfaces/editor.ts:1325` has register context as `{ editor, name, options, runtimeState, signal }`.
+- `packages/slate/src/interfaces/editor.ts:1338` lists extension slots: `api`, `clipboard`, `commitListeners`, `editor`, `elements`, `normalizers`, `operationMiddlewares`, `queries`, `state`, `transforms`, `tx`.
+- `packages/slate/src/core/public-state.ts:971` builds the read `state` view and routes read methods through query middleware.
+- `packages/slate/src/core/public-state.ts:1384` builds `tx` by spreading `state` and adding write methods.
+- `packages/slate/src/core/public-state.ts:1500` builds the restricted normalizer transaction.
+- `packages/slate/src/core/public-state.ts:1531` implements `editor.read((state) => ...)`.
+- `packages/slate/src/core/public-state.ts:1553` rejects `editor.update` inside query middleware.
+- `packages/slate/src/core/public-state.ts:1757` routes operations through operation middleware with `{ editor, operation }`.
+- `packages/slate/src/core/public-state.ts:2594` notifies commit listeners with commit and snapshot.
+- `packages/slate/src/core/editor-extension.ts:156` rejects legacy `methods` and `commands` extension slots.
+- `packages/slate/src/core/editor-extension.ts:373` registers transform middleware and passes only `{ editor, next, ...args }`.
+- `packages/slate/src/core/editor-extension.ts:423` registers clipboard insertData and passes only `{ editor, next }`.
+- `packages/slate/src/core/editor-extension.ts:451` passes normalizer contexts through with `tx`.
+- `packages/slate/src/core/query-middleware.ts:121` executes query middleware and passes only `{ editor, next, ...args }`.
+- `packages/slate/src/core/command-registry.ts:69` only creates an implicit update when called with `implicitUpdate`.
+- `packages/slate/src/core/transform-middleware.ts:136` calls `executeCommand` without `implicitUpdate`.
+- `apps/www/src/app/(app)/examples/slate/_examples/check-lists.tsx:89` shows current transform middleware repeatedly calling `editor.read` and then `editor.update`.
+- `apps/www/src/app/(app)/examples/slate/_examples/tables.tsx:115` shows the same repeated read pattern in delete middleware.
+- `apps/www/src/app/(app)/examples/slate/_examples/images.tsx:96` shows clipboard `insertData(data, { editor, next })` with async `FileReader`.
+- `packages/slate/test/query-extension-contract.ts:527` proves query middleware cannot mutate through `editor.update`.
+- `packages/slate/test/generic-extension-namespace-contract.ts:254` already has negative type tests for invalid transform and normalizer surfaces.
+- `packages/slate/test/extension-methods-contract.ts:742` covers same-name/latest extension and `enabled: false` tombstones.
 
 ## Lifecycle Coverage Map
 
@@ -339,12 +339,12 @@ Add or revise negative type tests in the execution plan:
 
 Exact files:
 
-- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`: transform middleware `tx` context, transaction routing, no double `next`, same-name/latest and `enabled: false`.
-- `.tmp/slate-v2/packages/slate/test/query-extension-contract.ts`: query middleware `state` context, recursion policy, mutation rejection, generator cleanup rejection.
-- `.tmp/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts`: declaration merging, disabled extension type erasure, `getApi(extension)` typing, negative context assertions.
-- `.tmp/slate-v2/packages/slate/test/generic-extension-install-contract.ts`: installed extension inference and tombstone behavior.
-- `.tmp/slate-v2/packages/slate/test/normalization-contract.ts`: restricted normalizer `tx` stays restricted.
-- `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts` and `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`: clipboard `state` read plus fresh update writes, no async `tx`.
+- `packages/slate/test/extension-methods-contract.ts`: transform middleware `tx` context, transaction routing, no double `next`, same-name/latest and `enabled: false`.
+- `packages/slate/test/query-extension-contract.ts`: query middleware `state` context, recursion policy, mutation rejection, generator cleanup rejection.
+- `packages/slate/test/generic-extension-namespace-contract.ts`: declaration merging, disabled extension type erasure, `getApi(extension)` typing, negative context assertions.
+- `packages/slate/test/generic-extension-install-contract.ts`: installed extension inference and tombstone behavior.
+- `packages/slate/test/normalization-contract.ts`: restricted normalizer `tx` stays restricted.
+- `packages/slate-dom/test/clipboard-boundary.ts` and `packages/slate/test/clipboard-contract.ts`: clipboard `state` read plus fresh update writes, no async `tx`.
 
 ## Example Update Requirements
 
@@ -417,10 +417,10 @@ node tooling/scripts/completion-check.mjs
 Implementation gates for a later `ralph` run:
 
 ```txt
-cd .tmp/slate-v2 && bun test ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/query-extension-contract.ts ./packages/slate/test/generic-extension-namespace-contract.ts ./packages/slate/test/generic-extension-install-contract.ts ./packages/slate/test/normalization-contract.ts
-cd .tmp/slate-v2 && bun test ./packages/slate/test/clipboard-contract.ts ./packages/slate-dom/test/clipboard-boundary.ts
-cd .tmp/slate-v2 && bun --filter slate typecheck
-cd .tmp/slate-v2 && bun --filter slate-dom typecheck
+cd Plate repo root && bun test ./packages/slate/test/extension-methods-contract.ts ./packages/slate/test/query-extension-contract.ts ./packages/slate/test/generic-extension-namespace-contract.ts ./packages/slate/test/generic-extension-install-contract.ts ./packages/slate/test/normalization-contract.ts
+cd Plate repo root && bun test ./packages/slate/test/clipboard-contract.ts ./packages/slate-dom/test/clipboard-boundary.ts
+cd Plate repo root && bun --filter slate typecheck
+cd Plate repo root && bun --filter slate-dom typecheck
 ```
 
 ## Pass State Ledger
@@ -428,7 +428,7 @@ cd .tmp/slate-v2 && bun --filter slate-dom typecheck
 | Pass                            | Status   | Evidence                                                                                                                                         | Next |
 | ------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ---- |
 | Activation reset                | complete | `active goal state` rewritten to this plan                                                           | none |
-| Current-state read              | complete | live `.tmp/slate-v2` source, examples, tests, compiled research                                                                                  | none |
+| Current-state read              | complete | live `Plate repo root` source, examples, tests, compiled research                                                                                  | none |
 | Related issue discovery         | complete | live, sync, coverage, and dossier rows read for #3222, #4089, #4181, #3177, #4721, #5233, #4569, #1024, #2405, #2288, #1770, #3874, #5080, #5684 | none |
 | Issue ledger sync               | complete | no global ledger edit required; all rows are related, not claimed, or already claimed elsewhere                                                  | none |
 | Decision brief pressure pass    | complete | lifecycle-specific context accepted; universal `state`, universal `tx`, root `editor.state`, and editor-only contexts rejected                   | none |
@@ -470,7 +470,7 @@ Ready for `ralph` execution when the user asks to build.
 
 ## Ralph Execution Grounding
 
-Task statement: implement the accepted extension lifecycle context API in `.tmp/slate-v2`.
+Task statement: implement the accepted extension lifecycle context API in `Plate repo root`.
 
 Desired outcome:
 
@@ -483,8 +483,8 @@ Desired outcome:
 
 Known facts:
 
-- `tx` is built from `state` plus write groups in `.tmp/slate-v2/packages/slate/src/core/public-state.ts`.
-- Current transform middleware is registered in `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts` and dispatched through `.tmp/slate-v2/packages/slate/src/core/transform-middleware.ts`.
+- `tx` is built from `state` plus write groups in `packages/slate/src/core/public-state.ts`.
+- Current transform middleware is registered in `packages/slate/src/core/editor-extension.ts` and dispatched through `packages/slate/src/core/transform-middleware.ts`.
 - Current command execution only starts an implicit update when `executeCommand(..., { implicitUpdate: true })` is used.
 - Current query middleware already rejects `editor.update` from query execution.
 - Current clipboard examples may cross async `FileReader` boundaries.
@@ -499,17 +499,17 @@ Constraints:
 
 Likely touchpoints:
 
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/editor-extension.ts`
-- `.tmp/slate-v2/packages/slate/src/core/transform-middleware.ts`
-- `.tmp/slate-v2/packages/slate/src/core/query-middleware.ts`
-- `.tmp/slate-v2/packages/slate/src/core/command-registry.ts`
-- `.tmp/slate-v2/packages/slate/test/extension-methods-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/query-extension-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/generic-extension-namespace-contract.ts`
-- `.tmp/slate-v2/site/examples/ts/check-lists.tsx`
-- `.tmp/slate-v2/site/examples/ts/tables.tsx`
-- `.tmp/slate-v2/site/examples/ts/images.tsx`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/core/editor-extension.ts`
+- `packages/slate/src/core/transform-middleware.ts`
+- `packages/slate/src/core/query-middleware.ts`
+- `packages/slate/src/core/command-registry.ts`
+- `packages/slate/test/extension-methods-contract.ts`
+- `packages/slate/test/query-extension-contract.ts`
+- `packages/slate/test/generic-extension-namespace-contract.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/check-lists.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/tables.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/images.tsx`
 
 ## Ralph Execution Ledger
 

@@ -178,8 +178,8 @@ export const examples: Registry['items'] = [
     type: 'registry:example',
   },
   {
-    dependencies: ['@platejs/yjs', 'nanoid'],
-    description: 'Real-time collaboration with cursors and selections.',
+    dependencies: [],
+    description: 'Editor shell for app-owned collaboration wiring.',
     files: [
       {
         path: 'examples/collaboration-demo.tsx',

@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/slate-legacy';
 
 import { act, render, renderHook } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';

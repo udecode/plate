@@ -118,8 +118,8 @@ blocker. These waves now belong to the stronger post-closeout perf claim.
 Perf truth note:
 
 - benchmark command names referenced later in this roadmap are still target
-  owners unless they exist in `.tmp/slate-v2/package.json` and
-  `.tmp/slate-v2/scripts/benchmarks/**`
+  owners unless they exist in `Plate repo root/package.json` and
+  `benchmarks/slate-v2/donor/**`
 - do not read those names as current proof ownership
 - current repo truth now has the kept overlay/example benchmark owners for
   tranche-5 / tranche-6 closure:

@@ -36,10 +36,10 @@ Major lane:
 - output type: code implementation plus browser trace evidence
 - implementation expected: yes
 - affected packages / surfaces:
-  `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-layout`,
-  `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react`,
-  `/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/pagination.tsx`,
-  `/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/pagination.test.ts`,
+  `/Users/zbeyens/git/plate-2/packages/slate-layout`,
+  `/Users/zbeyens/git/plate-2/packages/slate-react`,
+  `/Users/zbeyens/git/plate-2/apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx`,
+  `/Users/zbeyens/git/plate-2/apps/www/tests/slate-browser/donor/examples/pagination.test.ts`,
   this plan.
 - dominant risk: hiding DOM to win a benchmark while breaking native editing,
   selection materialization, or split table semantics.
@@ -67,7 +67,7 @@ Verification surface:
 - Browser trace scripts against `http://localhost:3100/examples/pagination`.
 - Focused Playwright tests for page-surface virtualization and table row
   bounded mounting.
-- Commands from `/Users/zbeyens/git/plate-2/.tmp/slate-v2`:
+- Commands from `/Users/zbeyens/git/plate-2/Plate repo root`:
   `bun --filter slate-layout test`, `bun --filter slate-react test:vitest`
   or focused equivalent, `bun typecheck:site`, focused pagination Playwright,
   and `bun check` when the slice is stable.
@@ -136,15 +136,15 @@ Start Gates:
 | Helper stack selected | yes | `autogoal`, `major-task`, `task`, prior `debug`/`performance` trace. |
 | External research decision recorded | yes | N/A: local repo evidence is sufficient for this runtime bottleneck. |
 | Implementation expectation recorded | yes | Implementation is in scope. |
-| Workspace authority selected | yes | Code and proof live under `/Users/zbeyens/git/plate-2/.tmp/slate-v2`; plan lives in `/Users/zbeyens/git/plate-2`. |
+| Workspace authority selected | yes | Code and proof live under `/Users/zbeyens/git/plate-2/Plate repo root`; plan lives in `/Users/zbeyens/git/plate-2`. |
 | Branch / PR expectation decided | yes | No commit or PR requested. |
 | Browser pack selected | yes | Browser proof is required because the bottleneck is route/runtime behavior. |
 | Browser route / app surface identified | yes | `http://localhost:3100/examples/pagination`. |
 | Browser tool decision recorded | yes | Browser plugin tool is unavailable in callable tools; use Playwright against the live local route as fallback. |
 | Console/network caveat policy recorded | yes | Browser proof must capture page errors/console failures when running final traces. |
-| Package/API pack selected | yes | Runtime packages under `.tmp/slate-v2/packages/*` are touched. |
+| Package/API pack selected | yes | Runtime packages under `packages/*` are touched. |
 | Public surface or package boundary identified | yes | Internal runtime/layout behavior; avoid public API unless needed. |
-| Release artifact path selected | yes | Added `.changeset/paged-editable-page-window.md` and `.changeset/virtualized-paginated-editing.md` in `.tmp/slate-v2`. |
+| Release artifact path selected | yes | Added `.changeset/paged-editable-page-window.md` and `.changeset/virtualized-paginated-editing.md` in `Plate repo root`. |
 | `changeset` skill loaded when `.changeset` is required | yes | Read `.agents/skills/changeset/SKILL.md`; used one package per file, patch bumps. |
 | Barrel/export impact decision recorded | yes | No package barrel/export layout changed; `pnpm brl` N/A. |
 
@@ -196,7 +196,7 @@ Completion Gates:
 | External-source audit | complete | Cite official/local clone/external sources when used, or record N/A | N/A: no external sources used; local source and browser traces settled the issue. |
 | Implementation gates | complete | If code changed, close primary-template and touched-surface gates; otherwise N/A | Package, browser, changeset, lint, and typecheck gates closed. |
 | Final handoff contract | complete | Record recommendation, evidence, caveats, residual risk, and next owner | See Final handoff contract. |
-| Final lint | complete | Run `pnpm lint:fix` or scoped equivalent when files changed | `pnpm lint:fix` from `.tmp/slate-v2`: no fixes on final run. |
+| Final lint | complete | Run `pnpm lint:fix` or scoped equivalent when files changed | `pnpm lint:fix` from `Plate repo root`: no fixes on final run. |
 | Goal plan complete | yes | Run `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-slate-v2-pagination-virtualization-perf.md` | Ready to run after this update. |
 | Browser interaction proof | complete | Exercise the target route/interaction with the approved browser tool or record blocker | Playwright against `http://localhost:3100/examples/pagination`, 14 Chromium tests passed. |
 | Browser console/network check | complete | Record console/network state or why it is not applicable | Console observed during trace; only React DevTools/HMR and NO_COLOR warnings, no route runtime errors. |
@@ -272,8 +272,8 @@ Implementation notes:
   a 1000-row / ~1000-page split table, bounded mounted rows/cells/page surfaces,
   and repeated typing in row 500.
 - Added package changesets:
-  `.tmp/slate-v2/.changeset/paged-editable-page-window.md` and
-  `.tmp/slate-v2/.changeset/virtualized-paginated-editing.md`.
+  `Plate repo root/.changeset/paged-editable-page-window.md` and
+  `Plate repo root/.changeset/virtualized-paginated-editing.md`.
 
 Review fixes:
 - Repeated row-500 typing initially inserted the first char correctly, then
@@ -297,7 +297,7 @@ Verification evidence:
   - `/examples/pagination` virtualized top-of-doc still mounted 148 page
     surfaces.
 - Browser trace after implementation from
-  `/Users/zbeyens/git/plate-2/.tmp/slate-v2`,
+  `/Users/zbeyens/git/plate-2/Plate repo root`,
   `PLAYWRIGHT_BASE_URL=http://localhost:3100`, route `/examples/pagination`:
   - 1000 rows x 120px: pages 148, 6 page surfaces, 42 rows, 126 cells,
     767 DOM elements. Row window 473-514. Typing row 500 `x/y/z`:
@@ -305,7 +305,7 @@ Verification evidence:
   - 1000 rows x 900px: pages 1006, 6 page surfaces, 6 rows, 18 cells,
     299 DOM elements. Row window 497-502. Typing row 500 `x/y/z`:
     85.5ms / 70.8ms / 78.0ms. Selection stayed `[47,499,1,0]`.
-- Commands from `/Users/zbeyens/git/plate-2/.tmp/slate-v2`:
+- Commands from `/Users/zbeyens/git/plate-2/Plate repo root`:
   - `bun --filter slate-react test:vitest -- test/dom-strategy-page-virtualization.test.tsx test/slate-element-node-ref.test.tsx`: pass, 2 files / 6 tests.
   - `bun --filter slate-layout test`: pass, 35 tests.
   - `pnpm turbo typecheck --filter=./packages/slate-layout --filter=./packages/slate-react`: pass, 2 packages.

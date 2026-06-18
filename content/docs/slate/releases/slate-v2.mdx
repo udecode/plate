@@ -1,0 +1,675 @@
+---
+title: "Slate v2"
+---
+
+# Slate v2
+
+Slate v2 is a hard reset of Slate's editor runtime. It keeps Slate's JSON
+document model and operation stream, but replaces the old mutable-editor
+authoring model with a read/update lifecycle, transaction groups, React 19.2
+runtime locality, first-class overlays, multi-root documents, and browser proof
+infrastructure built for real contenteditable behavior.
+
+This is the release story for the first public Slate v2 lane. The beta claim is
+the core editor runtime, React editor path, package surface, desktop browser
+proof, Yjs adapter, and public test infrastructure. Raw mobile-device proof and
+production pagination stay outside this beta claim.
+
+For a published beta package set, install the React editor with:
+
+```text
+npm install slate slate-dom slate-react react react-dom
+```
+
+Use the equivalent command for pnpm, Yarn, or Bun when your app uses another
+package manager.
+
+## On This Page
+
+- [Should You Try This Yet?](#should-you-try-this-yet)
+- [Highlights](#highlights)
+- [Important Changes](#important-changes)
+- [Migrating](#migrating)
+- [Package Guide](#package-guide)
+- [Proof And Quality](#proof-and-quality)
+- [Complete Change Map](#complete-change-map)
+
+## Should You Try This Yet?
+
+Try Slate v2 when you want a cleaner editor runtime more than a drop-in Slate
+0.x upgrade. The bet is not "same API, nicer internals." The bet is that serious
+React editors need explicit reads, explicit writes, root-scoped rendering,
+first-class overlays, and browser proof that catches bugs a model test will miss.
+
+| Try it now if                                                                   | Wait if                                                                         |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| You own the editor integration and can port one surface at a time.              | You need a drop-in `withHistory(withReact(createEditor()))` upgrade.            |
+| You want transaction groups instead of app-level transform wrappers.            | You need old Slate 0.x helper surfaces to stay public during migration.         |
+| You need extra editable regions, persistent document state, or overlay stores.  | You only need a simple Slate 0.x editor and do not want an API hard cut.        |
+| You care about browser-visible selection, paste, undo, huge-document proof, or Yjs adapter proof. | You need raw mobile-device proof or production pagination today. |
+
+The migration guide is mandatory reading. If your app cannot keep the old editor
+working while one v2 surface reaches behavior parity, wait.
+
+---
+
+## Highlights
+
+### Read/Update Runtime
+
+Slate v2 moves the public editor lifecycle to two explicit boundaries:
+
+```tsx
+const value = editor.read(state => state.value.get())
+
+editor.update(tx => {
+  tx.text.insert('Hello')
+})
+```
+
+Reads happen through `editor.read(...)`. Writes happen through
+`editor.update(...)`. Inside an update, the transaction owns the document,
+selection, marks, roots, state fields, operations, and extension namespaces.
+
+This replaces the old habit of reading and mutating public editor fields
+directly. The editor still produces Slate operations, but local runtime truth is
+captured as an `EditorCommit` so history, React, DOM repair, benchmarks, and
+proof tooling can all observe the same edit.
+
+---
+
+### Transaction Groups
+
+The normal write API is grouped by intent:
+
+```tsx
+editor.update(tx => {
+  tx.nodes.unwrap({ match: isList })
+  tx.nodes.set({ type: 'list-item' })
+  tx.nodes.wrap({ type: 'bulleted-list', children: [] })
+  tx.selection.set({
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 5 },
+  })
+})
+```
+
+The built-in groups include:
+
+| Group           | Owns                                                       |
+| --------------- | ---------------------------------------------------------- |
+| `tx.text`       | text insertion and deletion                                |
+| `tx.nodes`      | node insert, set, remove, wrap, unwrap, split, merge, move |
+| `tx.fragment`   | fragment insertion and clipboard-shaped inserts            |
+| `tx.selection`  | model selection updates                                    |
+| `tx.marks`      | active mark changes                                        |
+| `tx.roots`      | extra root creation, replacement, and deletion             |
+| `tx.history`    | undo/redo when `@platejs/slate-history` is installed                |
+| `tx.operations` | lower-level operation work                                 |
+
+The lower-level `Editor.*` helpers remain public for runtime bridges, tests,
+and advanced package code. They are escape hatches, not the app-authoring path
+this release teaches. New app commands should use transaction groups.
+
+---
+
+### Extension Groups
+
+Extensions add editor behavior through named `state` and `tx` groups.
+They do not need to replace the operation application pipeline, monkey-patch
+change handling, or attach random methods to the editor object.
+
+```tsx
+import { defineEditorExtension } from '@platejs/slate'
+
+const todo = defineEditorExtension({
+  name: 'todo',
+  tx: {
+    todo(tx) {
+      return {
+        toggle() {
+          tx.nodes.set({ type: 'todo', checked: true })
+        },
+      }
+    },
+  },
+})
+```
+
+This is the primary extension-authoring story for v2: method-first ergonomics, but
+registered through the runtime instead of patched onto an object.
+
+---
+
+### React Editor Setup
+
+React editors start with `useSlateEditor`, `Slate`, and `Editable`.
+
+```tsx
+import { Editable, Slate, useSlateEditor } from '@platejs/slate-react'
+
+const Editor = () => {
+  const editor = useSlateEditor({
+    initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
+  })
+
+  return (
+    <Slate editor={editor}>
+      <Editable placeholder="Start typing..." />
+    </Slate>
+  )
+}
+```
+
+`useSlateEditor` installs the React, DOM, clipboard, and history extensions for
+the normal React path. `createReactEditor` is available when the editor must be
+created outside component ownership.
+
+---
+
+### Full Document Values
+
+The short editor value is still an array of block elements:
+
+```tsx
+const initialValue = [{ type: 'paragraph', children: [{ text: 'Body' }] }]
+```
+
+Slate treats that as the primary document. For documents with headers, footers,
+synced blocks, editable cards, captions, side panels, or metadata, pass a full
+document value:
+
+```tsx
+const initialValue = {
+  children: [{ type: 'paragraph', children: [{ text: 'Body' }] }],
+  roots: {
+    header: [{ type: 'paragraph', children: [{ text: 'Draft' }] }],
+    footer: [{ type: 'paragraph', children: [{ text: 'Internal' }] }],
+  },
+  state: {
+    'document.title': 'Launch brief',
+  },
+}
+```
+
+`children` is the primary editable body. `roots` stores extra editable regions.
+`state` stores persistent document metadata and small shared model state.
+
+Omit `root` for the primary editable. Rootless operations target the current
+editor or view root. Pass a root key only for extra document regions.
+
+---
+
+### State Fields
+
+State fields let document metadata live with the editor runtime instead of in a
+parallel app store.
+
+```tsx
+import { defineStateField } from '@platejs/slate'
+
+const documentTitle = defineStateField({
+  key: 'document.title',
+  collab: 'shared',
+  history: 'push',
+  initial: () => 'Untitled',
+  persist: true,
+})
+
+const title = editor.read(state => state.getField(documentTitle))
+
+editor.update(tx => {
+  tx.setField(documentTitle, 'Q3 Launch Brief')
+})
+```
+
+In React, use `useStateFieldValue` and `useSetStateField` for controls that
+read and write state fields. Use external stores for comment bodies,
+permissions, audit logs, and other product data that should not be serialized
+as editor state.
+
+---
+
+### Multi-Root Editing
+
+One editor can now own multiple editable roots that share state, history,
+schema, commands, and collaboration metadata.
+
+```tsx
+<Slate editor={editor}>
+  <Editable aria-label="Header" root="header" />
+  <Editable aria-label="Body" />
+  <Editable aria-label="Footer" root="footer" />
+</Slate>
+```
+
+Use roots when the content belongs to one document but renders in separate
+places. Use separate editors when the documents should be fully independent.
+
+The React surface includes root-aware hooks for chrome and commands:
+
+| Hook                                          | Use                                                           |
+| --------------------------------------------- | ------------------------------------------------------------- |
+| `useSlateRootState(root, selector)`           | read one root without subscribing to the whole editor         |
+| `useSlateRootEditor(root)`                    | run commands against a specific root                          |
+| `useSlateRootEffect(effect, { root })`        | run root-scoped effects                                       |
+| `useSlateCommandCallback(callback, { root })` | build root-aware command callbacks                            |
+| `useSlateRootChrome(root)`                    | make non-editable wrappers participate in focus and selection |
+
+Content roots attach an editable child root to an element, which makes synced
+blocks and editable cards first-class without creating separate editors.
+
+---
+
+### Overlay Architecture
+
+Slate v2 separates overlays into three lanes:
+
+| Lane        | Purpose                                                                          |
+| ----------- | -------------------------------------------------------------------------------- |
+| Decorations | transient ranges such as search hits, syntax, diagnostics, and active matches    |
+| Annotations | durable, id-bearing anchors such as comments, review threads, and remote markers |
+| Widgets     | anchored UI such as labels, buttons, balloons, and diagnostics popovers          |
+
+These lanes can share projection infrastructure, but they do not share ownership
+semantics. A comment is not just a decoration with more props. A widget is not a
+text leaf hack.
+
+`@platejs/slate-react` exposes decoration-source and annotation-store hooks such as
+`useSlateDecorationSource`, `useSlateRangeDecorationSource`, and
+`useSlateAnnotationStore`. The `<Editable decorate={...} />` prop remains useful
+for simple editor-local ranges, but projection stores are the public architecture
+for shared, external, frequent, or source-scoped overlays.
+
+---
+
+### React Runtime Locality
+
+The React runtime is built around selector-first reads, dirty commit metadata,
+semantic islands, projection sources, and explicit DOM strategy boundaries.
+
+That gives Slate v2 a cleaner answer for large documents:
+
+- keep the active editing corridor urgent;
+- avoid child-count chunking as the product API;
+- preserve browser selection and DOM repair ownership;
+- let projections, annotations, widgets, hidden blocks, and large-document
+  surfaces subscribe to the narrow state they actually need.
+
+The current product gate for huge documents is the 5000-block strict benchmark:
+
+```text
+HUGE_DOC_FULL_STRICT_BUDGET=1 bun run bench:react:huge-document:full:local
+```
+
+The broader Slate 0.x comparison remains a diagnostic, not a blanket
+superiority claim.
+
+---
+
+### Browser-Proof Harness
+
+`@platejs/browser` is Slate's first-party browser proof harness for editor
+behavior. It is public test infrastructure, not the product editing API.
+
+It includes Playwright helpers for:
+
+- opening maintained examples through the editor-ready contract;
+- typing through real keyboard paths;
+- asserting model text, block text, DOM selection, visible selection, focus,
+  screenshots, and no double-selection highlight;
+- real clipboard write/read and browser paste helpers;
+- native event traces for `selectionchange`, `beforeinput`, `input`,
+  composition, target ranges, DOM deltas, and anomaly labels;
+- generated stress scenarios with replay and reduction artifacts;
+- proof-scope classifiers for mobile/device transport claims.
+
+The important shift is methodological: model-only tests do not prove caret
+behavior, and DOM-only tests do not prove Slate correctness. Browser editing
+claims need model, DOM, native selection where observable, focus, commit
+metadata, trace legality, replayability, and follow-up typing.
+
+---
+
+### DOM Coverage Boundaries
+
+`@platejs/slate-dom` models hidden, staged, and virtualized same-root content through
+explicit DOM coverage metadata. Selection, copy, find, and Slate-to-DOM
+conversion no longer assume every document node is mounted.
+
+This is what makes inactive tabs, closed accordions, hidden blocks, staged
+surfaces, and large-document shells possible without pretending the DOM is the
+document.
+
+---
+
+### Package Split
+
+Slate v2 keeps package ownership explicit:
+
+| Package             | Purpose                                                                                                                 |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `@platejs/slate`             | editor runtime, document model, operations, transactions, state fields, schema, pure helper APIs                        |
+| `@platejs/slate-dom`         | DOM bridge, clipboard bridge, selection conversion, hotkeys, DOM coverage helpers                                       |
+| `@platejs/slate-react`       | React editor factory, `<Slate>`, `<Editable>`, render primitives, hooks, overlays, annotations, widgets, DOM strategies |
+| `@platejs/slate-history`     | undo/redo extension exposed through `state.history`, `tx.history`, and `editor.api.history`                             |
+| `@platejs/slate-hyperscript` | JSX-style test and fixture helpers                                                                                      |
+| `@platejs/yjs`        | Yjs collaboration adapter, awareness, provider lifecycle bridge, remote cursor hooks, and Yjs-aware undo/redo             |
+| `@platejs/slate-layout`      | experimental page layout and page rendering helpers                                                                     |
+| `@platejs/browser`     | browser proof harness, Playwright helpers, feature contracts, screenshots, traces, and generated editing-test replay     |
+
+Apps should import from root package exports. The `/internal` subpaths are for
+sibling Slate packages in this repo.
+
+---
+
+### History Extension
+
+`@platejs/slate-history` is a runtime extension instead of a wrapper function.
+
+```tsx
+import { createEditor } from '@platejs/slate'
+import { History, history } from '@platejs/slate-history'
+
+const editor = createEditor({
+  extensions: [history()],
+  initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
+})
+
+editor.update(tx => {
+  tx.history.undo()
+})
+
+const stacks = editor.read(state => state.history.get())
+History.isHistory(stacks)
+```
+
+React editors created with `useSlateEditor` install history by default.
+
+---
+
+### Hyperscript Fixtures
+
+`@platejs/slate-hyperscript` remains the fixture-friendly package for tests:
+
+```tsx
+/** @jsx jsx */
+import { jsx } from '@platejs/slate-hyperscript'
+
+const editor = (
+  <editor>
+    <element type="paragraph">
+      alpha
+      <cursor />
+    </element>
+  </editor>
+)
+```
+
+Use it when JSX makes test fixtures easier to read. Runtime editor code should
+use normal Slate node values.
+
+---
+
+**Experimental**
+
+### Page Layout Helpers
+
+`@platejs/slate-layout` adds experimental layout readers and React page surfaces:
+
+```tsx
+import { createSlateLayout } from '@platejs/slate-layout'
+
+const layout = createSlateLayout(editor, () => ({
+  page: {
+    margins: 72,
+    preset: 'letter',
+  },
+}))
+```
+
+React page surfaces can use `PagedEditable` from `slate-layout/react`.
+
+Keep this behind product proof. It is useful for pagination experiments,
+print-like surfaces, page virtualization, previews, tests, and export planning;
+it is not a mature claim for every browser geometry, table, image,
+collaboration, export, and selection case.
+
+---
+
+## Important Changes
+
+### Breaking Changes
+
+| Change                                                                                  | What to do                                                                                                                                                  |
+| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Slate 0.x transform helpers are not the primary mutation API                            | Move commands into `editor.update((tx) => ...)` and use `tx.nodes`, `tx.text`, `tx.fragment`, `tx.selection`, `tx.marks`, `tx.roots`, and extension groups. |
+| Mutable editor fields are not primary read paths                                        | Read through `editor.read((state) => ...)`, `state.value`, `state.selection`, `state.marks`, and focused helper APIs.                                       |
+| `withReact` and `withHistory` are not the normal setup path                             | Use `useSlateEditor(...)` for React, `createReactEditor(...)` outside component ownership, or `createEditor({ extensions: [...] })` for manual setup.       |
+| Direct operation application and direct change-handler replacement are not extension points | Use extension groups, operation middleware, commit listeners, and provider callbacks.                                                                    |
+| Child-count chunking is not a product runtime primitive                                 | Use semantic islands, DOM coverage boundaries, active corridor behavior, and explicit layout/runtime strategies.                                            |
+| Public React renderer defaults changed                                                  | Use `Editable`, `SlateElement`, `SlateText`, `SlateLeaf`, and `SlatePlaceholder` as the current public primitives.                                          |
+| Primary document uses rootless APIs                                                     | Use rootless operations for the primary document and named roots only for extra editable regions.                                                           |
+
+### Behavior Changes
+
+| Change                                              | What it means                                                                                                                    |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `initialValue` seeds the editor                     | Replace content later through `editor.update(...)`; do not treat `initialValue` as a controlled value prop.                      |
+| `<Slate onChange>` receives the provider root value | Persist the full document with `editor.subscribe(...)` and `state.value.get()` when using extra roots or state fields.           |
+| Browser editing proof is stricter                   | A green model assertion is not enough for cursor, caret, selection, paste, or contenteditable claims.                            |
+| DOM coverage is explicit                            | Hidden, staged, and virtualized content must declare coverage policy instead of relying on mounted DOM assumptions.              |
+| Mobile proof is scoped                              | Playwright mobile viewport and semantic handles are not raw Android/iOS keyboard, clipboard, glide typing, or voice input proof. |
+
+### Current Limits
+
+| Area                                | Status                                                                                                                                     |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Raw mobile device proof             | Deferred until a real Appium/device lane writes proof artifacts.                                                                           |
+| Collaboration adapters              | `@platejs/yjs` owns the Yjs adapter. App code owns transport packages, auth, persistence, room naming, and server scaling.                   |
+| Universal huge-document superiority | The product gate is green when the owned benchmark passes; broad cross-editor superiority stays diagnostic and scoped.                     |
+| Pagination/page layout              | `@platejs/slate-layout` is experimental until product proof covers browser geometry, export, tables, images, collaboration, and selection behavior. |
+| Table-fragment merge policy         | Core fragment insertion is structural. Table-grid positional paste belongs in a table extension clipboard or fragment policy.              |
+
+---
+
+## Migrating
+
+Most migrations should start with one working editor, not every reusable
+feature.
+
+1. Create the v2 editor with `useSlateEditor({ initialValue })`.
+2. Render it through `<Slate editor={editor}>` and `<Editable />`.
+3. Move reads to `editor.read(...)`.
+4. Move writes to `editor.update(...)`.
+5. Replace Slate 0.x transform helper calls with transaction groups.
+6. Replace React hooks with the v2 hook names.
+7. Persist the full document with `state.value.get()` if you use roots or state
+   fields.
+8. Add browser proof for typing, selection, paste, undo/redo, and save/load
+   before deleting the old editor.
+
+Start here:
+
+- [Migrating to Slate v2](../migration/slate-v2)
+- [Installing Slate](../walkthroughs/01-installing-slate)
+- [React Editor Setup](../libraries/slate-react/react-editor-setup)
+- [Roots](../concepts/13-roots)
+- [Document State](../concepts/14-document-state)
+
+---
+
+## Package Guide
+
+### `@platejs/slate`
+
+Use `@platejs/slate` for the data model, editor runtime, operations, transactions, helper
+APIs, schema, extensions, roots, and state fields.
+
+```tsx
+import {
+  createEditor,
+  defineEditorExtension,
+  defineStateField,
+  ElementApi,
+  NodeApi,
+  RangeApi,
+} from '@platejs/slate'
+```
+
+### `@platejs/slate-react`
+
+Use `@platejs/slate-react` for the React editor, provider, editable surface, render
+primitives, hooks, overlays, annotations, widgets, root chrome, and DOM
+strategies.
+
+```tsx
+import {
+  Editable,
+  Slate,
+  useEditor,
+  useEditorState,
+  useSlateEditor,
+  useSlateRootState,
+} from '@platejs/slate-react'
+```
+
+### `@platejs/slate-dom`
+
+Use `@platejs/slate-dom` directly when framework code needs DOM bridge helpers without
+React.
+
+```tsx
+import { DOMCoverage, Hotkeys, isDOMNode } from '@platejs/slate-dom'
+```
+
+### `@platejs/slate-history`
+
+Use `@platejs/slate-history` when building an editor manually or when test code needs
+direct access to history stacks.
+
+```tsx
+import { History, history } from '@platejs/slate-history'
+```
+
+### `@platejs/slate-hyperscript`
+
+Use `@platejs/slate-hyperscript` for JSX fixtures.
+
+```tsx
+import { createHyperscript, jsx } from '@platejs/slate-hyperscript'
+```
+
+### `@platejs/yjs`
+
+Use `@platejs/yjs` when a Slate editor should synchronize through a Yjs document.
+Provider packages stay in application code.
+
+```tsx
+import { createYjsExtension } from '@platejs/yjs'
+import { useYjsRemoteCursors } from '@platejs/yjs/react'
+```
+
+### `@platejs/slate-layout`
+
+Use `@platejs/slate-layout` for experimental pagination and page-view research.
+
+```tsx
+import { createSlateLayout } from '@platejs/slate-layout'
+import { PagedEditable, useSlateLayout } from '@platejs/slate-layout/react'
+```
+
+### Slate Browser
+
+Use `@platejs/browser` for browser proof, not product code. It installs as a dev
+dependency and stays subpath-only.
+
+```tsx
+import { openExample } from '@platejs/browser/playwright'
+```
+
+The root module is intentionally unavailable. Use `@platejs/browser/playwright`
+for Playwright editor tests, `@platejs/browser/core` for pure proof contracts,
+`@platejs/browser/browser` for DOM snapshots, and `@platejs/browser/transports` for
+proof-scope descriptors.
+
+---
+
+## Proof And Quality
+
+Slate v2 adds proof infrastructure as a product feature of the codebase:
+
+- package-local Bun tests;
+- public import smoke tests;
+- generated browser editing gauntlets;
+- browser proof helpers that assert model, DOM, native selection, focus, trace,
+  screenshots, and follow-up typing;
+- core benchmark owners for transactions, normalization, query/ref observation,
+  node transforms, text selection, editor store, refs/projection, and huge
+  documents;
+- React benchmark owners for rerender breadth, huge-document overlays, strict
+  huge-document product gates, and Slate 0.x comparison diagnostics.
+
+Fast local gate:
+
+```text
+bun check
+```
+
+Full browser proof gate:
+
+```text
+bun check:full
+```
+
+Focused browser proof:
+
+```text
+bun run playwright playwright/integration/examples/richtext.test.ts --project=chromium
+```
+
+The release rule is blunt: a cursor, caret, paste, undo, hidden-DOM, or
+large-document claim is not real until the right proof lane owns it.
+
+---
+
+## Complete Change Map
+
+| Area               | Included in this release story                                                                                                                                                                        |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Core lifecycle     | `editor.read`, `editor.update`, transaction groups, `EditorCommit`, state groups, tx groups                                                                                                           |
+| Core data model    | JSON-like nodes, paths, points, ranges, operations, bookmarks, runtime ids, refs, snapshots                                                                                                           |
+| Public helper APIs | `ElementApi`, `LocationApi`, `NodeApi`, `OperationApi`, `PathApi`, `PointApi`, `RangeApi`, `SpanApi`, `TextApi`, ref APIs                                                                             |
+| Extensions         | `defineEditorExtension`, schema elements, state fields, operation/query middleware, commit listeners, namespaced editor/state/tx groups                                                               |
+| Document values    | primary `children`, optional extra `roots`, optional persistent `state`                                                                                                                               |
+| Roots              | rootless primary document, named extra roots, content roots, root-aware React hooks and chrome                                                                                                        |
+| State fields       | persistent and local fields, history policy, collaboration patch shape, React state-field hooks                                                                                                       |
+| React setup        | `useSlateEditor`, `createReactEditor`, `Slate`, `Editable`, v2 render primitives                                                                                                                      |
+| React hooks        | editor state hooks, element hooks, root hooks, state-field hooks, decoration/annotation/widget hooks                                                                                                  |
+| Browser editing    | conformance kernel, DOM repair, native selection sync, beforeinput/input/paste/cut/drop authority, generated gauntlets                                                                                |
+| DOM bridge         | DOM point/range conversion, clipboard bridge, hotkeys, DOM coverage boundaries, browser environment helpers                                                                                           |
+| Overlays           | decorations, annotations, widgets, projection stores, source-scoped invalidation                                                                                                                      |
+| Large documents    | semantic islands, active corridor, occlusion, DOM-present strategy, strict huge-document gates                                                                                                        |
+| History            | `history()` extension, `state.history`, `tx.history`, `editor.api.history`, history stack validation                                                                                                  |
+| Hyperscript        | JSX fixture factory, custom fixture tags, low-level fixture creators                                                                                                                                  |
+| Layout             | experimental `createSlateLayout`, `PagedEditable`, page mount plans, fragment hooks                                                                                                                   |
+| Browser proof      | public `@platejs/browser/core`, `@platejs/browser/browser`, `@platejs/browser/playwright`, `@platejs/browser/transports`, feature contracts, transport classifiers, stress replay/reduction                      |
+| Docs               | migration guide, package docs, roots/state docs, React setup docs, DOM coverage docs, layout docs                                                                                                     |
+| Examples           | plaintext, richtext, checklists, forced layout, markdown preview/shortcuts, inlines, mentions, images, embeds, tables, paste HTML, custom placeholder, read-only, iframes, shadow DOM, styling, linting, document state, hidden content blocks, huge document, multi-root document, synced blocks, comment mode, search/code highlighting, Yjs collaboration, Yjs Hocuspocus, plus hidden proof routes for async decorations, DOM coverage boundaries, and persistent annotation anchors; pagination remains alpha |
+| Hard cuts          | rootless primary document APIs, no primary mutable editor fields, no primary Slate 0.x transform helper story, no direct operation-application/change-handler extension story, no product child-count chunking |
+
+---
+
+## What To Read Next
+
+- [Migrating to Slate v2](../migration/slate-v2)
+- [Slate](../libraries/slate)
+- [Slate React](../libraries/slate-react)
+- [Slate Yjs](../libraries/slate-yjs)
+- [DOM Coverage Boundaries](../libraries/slate-react/dom-coverage-boundaries)
+- [Experimental Virtualized Rendering](../libraries/slate-react/experimental-virtualized-rendering)
+- [Slate Layout](../libraries/slate-layout)
+
+Slate keeps the model that made it useful and rebuilds the runtime around
+explicit reads, explicit writes, React locality, and proof that catches the
+browser bugs users actually feel.

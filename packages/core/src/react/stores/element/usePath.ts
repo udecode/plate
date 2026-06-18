@@ -1,4 +1,4 @@
-import type { Path } from '@platejs/slate';
+import type { Path } from '@platejs/slate-legacy';
 
 import { useEditorRef } from '../plate';
 import { useElementContext } from './useElementStore';

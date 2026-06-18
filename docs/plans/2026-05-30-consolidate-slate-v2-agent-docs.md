@@ -61,7 +61,7 @@ Boundaries:
   goal plan.
 - Browser surface: N/A, no UI/runtime route behavior changed.
 - Tracker sync: N/A, no issue/Linear/PR requested.
-- Non-goals: do not touch `.tmp/slate-v2` implementation; do not split giant
+- Non-goals: do not touch `Plate repo root` implementation; do not split giant
   ledgers physically unless references require it; do not rewrite
   `slate-patch`.
 
@@ -100,7 +100,7 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | used `autogoal`; reviewed pasted `slate-plan`/`slate-patch` context and loaded `agent-native-reviewer` for agent-facing changes |
 | Active goal checked or created | yes | `get_goal` returned no active goal; `create_goal` created this lane |
-| Source of truth read before edits | yes | read `docs/slate-v2/overview.md`, `master-roadmap.md`, `ledgers/README.md`, `absolute-architecture-release-claim.md`, `.agents/rules/slate-plan.mdc`, `.agents/rules/slate-patch.mdc`, package scripts, and live `.tmp/slate-v2` public API/test snippets |
+| Source of truth read before edits | yes | read `docs/slate-v2/overview.md`, `master-roadmap.md`, `ledgers/README.md`, `absolute-architecture-release-claim.md`, `.agents/rules/slate-plan.mdc`, `.agents/rules/slate-patch.mdc`, package scripts, and live `Plate repo root` public API/test snippets |
 | Tracker comments and attachments read | yes | user provided pasted orchestration-tax text and explicit acceptance criteria |
 | Video transcript evidence required | no | N/A: no video/browser repro in this task |
 | `docs/solutions` checked for non-trivial existing-code work | no | N/A: docs/agent workflow cleanup, no product code implementation |
@@ -115,7 +115,7 @@ Start Gates:
 | Docs lane selected | yes | internal Slate v2 agent docs consolidation |
 | Target docs and nearest sibling docs read | yes | read Slate v2 overview, roadmap, ledgers README, release claim, architecture contract snippets |
 | Docs style doctrine read | yes | AGENTS docs current-state rule read in prompt |
-| Documented source owner identified | yes | current API owner is `.tmp/slate-v2/packages/slate/test/public-surface-contract.ts` plus live docs/examples |
+| Documented source owner identified | yes | current API owner is `packages/slate/test/public-surface-contract.ts` plus live docs/examples |
 | Agent-native pack selected | yes | agent-native pack applied to this plan |
 | Agent-facing action surface identified | yes | `.agents/rules/slate-plan.mdc`, generated `.agents/skills/slate-plan/SKILL.md`, `docs/slate-v2/agent-start.md` |
 | Source rule versus generated mirror boundary identified | yes | edit `.agents/rules/*.mdc`, then run `pnpm install`; do not hand-edit generated skills |
@@ -168,7 +168,7 @@ Completion Gates:
 | Package exports or file layout changed | no | Run `pnpm brl` before final verification and keep generated barrel updates | N/A: no package exports or barrels changed |
 | Package manifests, lockfile, or install graph changed | yes | Run `pnpm install` and relevant package checks | `pnpm install` passed and regenerated skills through skiller |
 | Agent rules or skills changed | yes | Run `pnpm install` and verify generated skill sync | `pnpm install` passed; `rg` verified mode text in generated `.agents/skills/slate-plan/SKILL.md` |
-| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | docs/rules checks ran in `plate-2`; current API evidence read from `.tmp/slate-v2` public-surface contract/source |
+| Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | docs/rules checks ran in `plate-2`; current API evidence read from `Plate repo root` public-surface contract/source |
 | Browser surface changed | no | Capture Browser Use proof or record explicit waiver/blocker | N/A: no browser or UI runtime changed |
 | Browser final proof | no | Attach screenshot or exact browser verification caveat when browser proof applies | N/A: no browser surface changed |
 | CI-controlled template output changed | no | Restore generated template output or record why it is intentionally kept | N/A: no templates output changed |
@@ -196,7 +196,7 @@ Completion Gates:
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Intake and source read | complete | read user text, Slate v2 docs, current `.tmp/slate-v2` public API surface, slate-plan/slate-patch rules | implementation |
+| Intake and source read | complete | read user text, Slate v2 docs, current `Plate repo root` public API surface, slate-plan/slate-patch rules | implementation |
 | Implementation | complete | added agent-start, issue-dossier index, doc audit script, package script, stale API doc cleanup, slate-plan mode split | verification |
 | Verification | complete | audit, install/sync, lint, source audits, script syntax check | closeout |
 | PR / tracker sync | complete | N/A: no PR or tracker requested | final response |
@@ -208,7 +208,7 @@ Findings:
   7,864 lines.
 - `absolute-architecture-release-claim.md` and `architecture-contract.md`
   still taught stale `editor.getSelection()` / `editor.getChildren()` and
-  direct editor write snippets while live `.tmp/slate-v2` public examples and
+  direct editor write snippets while live `Plate repo root` public examples and
   contracts teach `editor.read((state) => ...)` and `editor.update((tx) => ...)`.
 - `slate-patch` already has the right shape for bug work: one-pass repro,
   behavior test, owner fix, pressure review, focused verification, autoreview.

@@ -122,19 +122,19 @@ This plan is complete only when:
 
 Allowed code work:
 
-- `.tmp/slate-v2/packages/slate/**`
-- `.tmp/slate-v2/packages/slate-dom/**`
-- `.tmp/slate-v2/packages/slate-browser/**`
-- `.tmp/slate-v2/packages/slate-react/**`
-- `.tmp/slate-v2/site/examples/ts/**`
-- `.tmp/slate-v2/playwright/integration/examples/**`
-- `.tmp/slate-v2/scripts/benchmarks/**`
-- `.tmp/slate-v2/package.json`
+- `packages/slate/**`
+- `packages/slate-dom/**`
+- `packages/browser/**`
+- `packages/slate-react/**`
+- `apps/www/src/app/(app)/examples/slate/_examples/**`
+- `apps/www/tests/slate-browser/donor/examples/**`
+- `benchmarks/slate-v2/donor/**`
+- `Plate repo root/package.json`
 
 Avoid unless focused proof proves ownership:
 
-- `.tmp/slate-v2/packages/slate-history/**`
-- `.tmp/slate-v2/packages/slate-hyperscript/**`
+- `packages/slate-history/**`
+- `packages/slate-hyperscript/**`
 
 Allowed docs:
 
@@ -352,7 +352,7 @@ Actions:
 
 Files changed:
 
-- `.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/huge-document.test.ts`
 
 Commands:
 
@@ -452,11 +452,11 @@ Work:
 
 Likely files:
 
-- `.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts`
-- `.tmp/slate-v2/playwright.config.ts`
-- `.tmp/slate-v2/package.json`
-- `.tmp/slate-v2/scripts/serve-playwright.mjs`
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
+- `apps/www/tests/slate-browser/donor/examples/huge-document.test.ts`
+- `Plate repo root/playwright.config.ts`
+- `Plate repo root/package.json`
+- `tooling/slate-v2/donor/serve-playwright.mjs`
+- `packages/browser/src/playwright/index.ts`
 
 Gates:
 
@@ -510,13 +510,13 @@ Work:
 
 Likely files:
 
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts`
-- `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/**`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/**`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/shadow-dom.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/large-document-runtime.test.ts`
+- `packages/browser/src/playwright/index.ts`
+- `packages/slate-dom/src/**`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/hooks/android-input-manager/**`
 
 Gates:
 
@@ -661,14 +661,14 @@ Work:
 
 Likely files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/text.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/leaf.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/element.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/**`
-- `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
+- `packages/slate-react/src/components/editable-text.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/components/text.tsx`
+- `packages/slate-react/src/components/leaf.tsx`
+- `packages/slate-react/src/components/element.tsx`
+- `packages/slate-react/src/components/slate.tsx`
+- `packages/slate-react/src/hooks/android-input-manager/**`
+- `apps/www/tests/slate-browser/donor/examples/large-document-runtime.test.ts`
 
 Gates:
 
@@ -705,10 +705,10 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/large-document-runtime.test.ts`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
+- `packages/slate-react/src/hooks/use-slate-node-ref.tsx`
+- `apps/www/tests/slate-browser/donor/examples/large-document-runtime.test.ts`
 
 Root cause:
 
@@ -855,9 +855,9 @@ Work:
 
 Likely files:
 
-- `.tmp/slate-v2/packages/slate/src/core/apply.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/core/transaction.ts`
+- `packages/slate/src/core/apply.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/core/transaction.ts`
 
 Gates:
 
@@ -879,10 +879,10 @@ Work:
 
 Likely files:
 
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/utils/runtime-ids.ts`
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
-- `.tmp/slate-v2/packages/slate-react/src/widget-store.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/utils/runtime-ids.ts`
+- `packages/slate-react/src/projection-store.ts`
+- `packages/slate-react/src/widget-store.ts`
 
 Gates:
 
@@ -903,9 +903,9 @@ Work:
 
 Likely files:
 
-- `.tmp/slate-v2/packages/slate/src/utils/runtime-ids.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/utils/runtime-ids.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/interfaces/editor.ts`
 
 Gates:
 
@@ -929,10 +929,10 @@ Work:
 
 Likely files:
 
-- `.tmp/slate-v2/packages/slate/src/create-editor.ts`
-- `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
+- `packages/slate/src/create-editor.ts`
+- `packages/slate/src/interfaces/editor.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate-react/src/components/slate.tsx`
 
 Gates:
 
@@ -956,9 +956,9 @@ Work:
 
 Likely files:
 
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts`
-- `.tmp/slate-v2/packages/slate/src/core/snapshot.ts`
-- `.tmp/slate-v2/packages/slate/src/utils/runtime-ids.ts`
+- `packages/slate/src/core/public-state.ts`
+- `packages/slate/src/core/snapshot.ts`
+- `packages/slate/src/utils/runtime-ids.ts`
 
 Gates:
 
@@ -1002,8 +1002,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate/src/core/apply.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/normalize.ts`
+- `packages/slate/src/core/apply.ts`
+- `packages/slate/src/editor/normalize.ts`
 
 Root cause:
 
@@ -1137,11 +1137,11 @@ Work:
 
 Likely files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-decorations.ts`
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/packages/slate-react/test/decorations.test.tsx`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/hooks/use-decorations.ts`
+- `packages/slate-react/src/projection-store.ts`
+- `packages/slate-react/src/index.ts`
+- `packages/slate-react/test/decorations.test.tsx`
 - docs under `docs/slate-v2/**`
 
 Gates:
@@ -1171,11 +1171,11 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`
-- `.tmp/slate-v2/packages/slate-react/src/hooks/use-decorations.ts`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
-- `.tmp/slate-v2/.changeset/decorate-compat-source-name.md`
+- `packages/slate-react/src/projection-store.ts`
+- `packages/slate-react/src/hooks/use-decorations.ts`
+- `packages/slate-react/src/index.ts`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
+- `Plate repo root/.changeset/decorate-compat-source-name.md`
 
 Rejected tactics:
 
@@ -1273,10 +1273,10 @@ Work:
 
 Likely files:
 
-- `.tmp/slate-v2/packages/slate/src/**`
-- `.tmp/slate-v2/packages/slate-dom/src/**`
-- `.tmp/slate-v2/packages/slate-react/src/**`
-- `.tmp/slate-v2/site/examples/ts/**`
+- `packages/slate/src/**`
+- `packages/slate-dom/src/**`
+- `packages/slate-react/src/**`
+- `apps/www/src/app/(app)/examples/slate/_examples/**`
 
 Gates:
 
@@ -1394,7 +1394,7 @@ Actions:
 
 Changed file:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/slate.tsx`
+- `packages/slate-react/src/components/slate.tsx`
 
 Commands:
 
@@ -1478,7 +1478,7 @@ Actions:
 
 Changed file:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -1559,7 +1559,7 @@ Actions:
 
 Changed file:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/editable.tsx`
 
 Commands:
 
@@ -1643,7 +1643,7 @@ Actions:
 
 Changed file:
 
-- `.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
+- `packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts`
 
 Commands:
 
@@ -1725,7 +1725,7 @@ Actions:
 
 Changed file:
 
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts`
+- `packages/slate-dom/src/plugin/dom-editor.ts`
 
 Commands:
 
@@ -1812,8 +1812,8 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/site/examples/ts/huge-document.tsx`
-- `.tmp/slate-v2/packages/slate/src/interfaces/transforms/general.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/huge-document.tsx`
+- `packages/slate/src/interfaces/transforms/general.ts`
 
 Commands:
 
@@ -1916,7 +1916,7 @@ Actions:
 - started docs/public-surface inventory for stale final-shape language
 - confirmed the inventory must be split by repo:
   - control docs live under `../plate-2/docs/**`
-  - package docs/source examples live under `.tmp/slate-v2/**`
+  - package docs/source examples live under `Plate repo root/**`
 
 Commands:
 
@@ -1931,7 +1931,7 @@ rg -n "decorate|renderChunk|getChunkSize|editor\\.children|editor\\.selection|ed
 Evidence:
 
 - first command failed on missing `docs/slate-v2` because it was run in
-  `.tmp/slate-v2` instead of control repo; this is a repo-layout mistake, not a
+  `Plate repo root` instead of control repo; this is a repo-layout mistake, not a
   product failure
 - second command found stale and historical language in:
   - `docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md`
@@ -2090,15 +2090,15 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- deleted `.tmp/slate-v2/packages/slate-react/src/components/element.tsx`
-- deleted `.tmp/slate-v2/packages/slate-react/src/components/leaf.tsx`
-- deleted `.tmp/slate-v2/packages/slate-react/src/components/text.tsx`
-- deleted `.tmp/slate-v2/packages/slate-react/src/components/string.tsx`
-- deleted `.tmp/slate-v2/packages/slate-react/src/hooks/use-children.tsx`
-- deleted `.tmp/slate-v2/packages/slate-react/src/hooks/use-decorations.ts`
-- `.tmp/slate-v2/docs/libraries/slate-react/editable.md`
-- `.tmp/slate-v2/.changeset/remove-legacy-react-renderer-exports.md`
+- `packages/slate-react/src/index.ts`
+- deleted `packages/slate-react/src/components/element.tsx`
+- deleted `packages/slate-react/src/components/leaf.tsx`
+- deleted `packages/slate-react/src/components/text.tsx`
+- deleted `packages/slate-react/src/components/string.tsx`
+- deleted `packages/slate-react/src/hooks/use-children.tsx`
+- deleted `packages/slate-react/src/hooks/use-decorations.ts`
+- `content/docs/slate/libraries/slate-react/editable.md`
+- `Plate repo root/.changeset/remove-legacy-react-renderer-exports.md`
 
 Commands:
 
@@ -2180,14 +2180,14 @@ Actions:
 
 Final changed areas in this lane:
 
-- `.tmp/slate-v2/packages/slate/**`
-- `.tmp/slate-v2/packages/slate-dom/**`
-- `.tmp/slate-v2/packages/slate-react/**`
-- `.tmp/slate-v2/packages/slate-browser/**` build/typecheck only
-- `.tmp/slate-v2/site/examples/ts/**`
-- `.tmp/slate-v2/playwright/integration/examples/**`
-- `.tmp/slate-v2/docs/libraries/slate-react/editable.md`
-- `.tmp/slate-v2/.changeset/**`
+- `packages/slate/**`
+- `packages/slate-dom/**`
+- `packages/slate-react/**`
+- `packages/browser/**` build/typecheck only
+- `apps/www/src/app/(app)/examples/slate/_examples/**`
+- `apps/www/tests/slate-browser/donor/examples/**`
+- `content/docs/slate/libraries/slate-react/editable.md`
+- `Plate repo root/.changeset/**`
 - `docs/plans/2026-04-22-slate-v2-core-api-runtime-perfection-plan.md`
 - `docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md`
 - `docs/slate-v2/ledgers/slate-editor-api.md`
@@ -2298,7 +2298,7 @@ Work:
 
 Known current example:
 
-- `.tmp/slate-v2/site/examples/ts/huge-document.tsx` monkeypatches
+- `apps/www/src/app/(app)/examples/slate/_examples/huge-document.tsx` monkeypatches
   `editor.apply`.
 
 Gates:
@@ -2321,9 +2321,9 @@ Work:
 
 Known current surface:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/decorations.test.tsx`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/test/decorations.test.tsx`
 
 Gates:
 
@@ -2353,11 +2353,11 @@ Actions:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/primitives-contract.tsx`
-- deleted `.tmp/slate-v2/packages/slate-react/test/decorations.test.tsx`
+- `packages/slate-react/src/components/editable.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
+- `packages/slate-react/test/primitives-contract.tsx`
+- deleted `packages/slate-react/test/decorations.test.tsx`
 
 Commands:
 

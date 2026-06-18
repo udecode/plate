@@ -806,7 +806,7 @@ This spec is constrained by:
 - [roadmap-from-issues.md](/Users/zbeyens/git/plate-2/docs/slate-issues/roadmap-from-issues.md)
 - [test-candidate-map.md](/Users/zbeyens/git/plate-2/docs/slate-issues/test-candidate-map.md)
 - [benchmark-candidate-map.md](/Users/zbeyens/git/plate-2/docs/slate-issues/benchmark-candidate-map.md)
-- current Slate package layout in `.tmp/slate-v2/packages/*`
+- current Slate package layout in `packages/*`
 
 ## Locked Constraints
 

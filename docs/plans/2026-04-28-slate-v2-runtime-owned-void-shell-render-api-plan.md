@@ -309,23 +309,23 @@ Acceptance:
 
 Likely Slate v2 files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/void-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/inline-void-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-spacer.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/primitives-contract.tsx`
-- `.tmp/slate-v2/playwright/stress/generated-editing.test.ts`
-- `.tmp/slate-v2/packages/slate-browser/src/**`
-- `.tmp/slate-v2/site/examples/ts/images.tsx`
-- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
-- `.tmp/slate-v2/site/examples/ts/mentions.tsx`
-- `.tmp/slate-v2/site/examples/ts/editable-voids.tsx`
-- `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
-- `.tmp/slate-v2/site/examples/ts/large-document-runtime.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/components/void-element.tsx`
+- `packages/slate-react/src/components/inline-void-element.tsx`
+- `packages/slate-react/src/components/slate-element.tsx`
+- `packages/slate-react/src/components/slate-spacer.tsx`
+- `packages/slate-react/src/index.ts`
+- `packages/slate-react/test/surface-contract.tsx`
+- `packages/slate-react/test/rendered-dom-shape-contract.tsx`
+- `packages/slate-react/test/primitives-contract.tsx`
+- `apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts`
+- `packages/browser/src/**`
+- `apps/www/src/app/(app)/examples/slate/_examples/images.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/embeds.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/mentions.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/paste-html.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/large-document-runtime.tsx`
 
 ## Static Guards
 
@@ -443,23 +443,23 @@ Evidence:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-void-shell.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/void-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/inline-void-element.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/context.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- `.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/primitives-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.test.tsx`
-- `.tmp/slate-v2/site/examples/ts/custom-types.d.ts`
-- `.tmp/slate-v2/site/examples/ts/images.tsx`
-- `.tmp/slate-v2/site/examples/ts/embeds.tsx`
-- `.tmp/slate-v2/site/examples/ts/mentions.tsx`
-- `.tmp/slate-v2/site/examples/ts/paste-html.tsx`
-- `.tmp/slate-v2/site/examples/ts/editable-voids.tsx`
-- `.tmp/slate-v2/site/examples/ts/large-document-runtime.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/components/slate-void-shell.tsx`
+- `packages/slate-react/src/components/void-element.tsx`
+- `packages/slate-react/src/components/inline-void-element.tsx`
+- `packages/slate-react/src/context.tsx`
+- `packages/slate-react/src/index.ts`
+- `packages/slate-react/test/surface-contract.tsx`
+- `packages/slate-react/test/primitives-contract.tsx`
+- `packages/slate-react/test/render-profiler-contract.test.tsx`
+- `packages/slate-react/test/rendered-dom-shape-contract.test.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/custom-types.d.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/images.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/embeds.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/mentions.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/paste-html.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/editable-voids.tsx`
+- `apps/www/src/app/(app)/examples/slate/_examples/large-document-runtime.tsx`
 
 Decision:
 
@@ -524,18 +524,18 @@ Evidence:
 
 Changed files:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/slate-void-shell.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-focus-mouse-events.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts`
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts`
-- `.tmp/slate-v2/playwright/stress/generated-editing.test.ts`
-- `.tmp/slate-v2/playwright/stress/replay.test.ts`
-- `.tmp/slate-v2/playwright/stress/stress-utils.ts`
-- `.tmp/slate-v2/playwright/integration/examples/embeds.test.ts`
-- `.tmp/slate-v2/site/examples/ts/large-document-runtime.tsx`
+- `packages/slate-react/src/components/slate-void-shell.tsx`
+- `packages/slate-react/src/components/editable-text-blocks.tsx`
+- `packages/slate-react/src/editable/input-controller.ts`
+- `packages/slate-react/src/editable/runtime-focus-mouse-events.ts`
+- `packages/slate-react/src/editable/runtime-event-engine.ts`
+- `packages/slate-react/src/editable/selection-reconciler.ts`
+- `packages/browser/src/playwright/index.ts`
+- `apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts`
+- `apps/www/tests/slate-browser/donor/stress/replay.test.ts`
+- `apps/www/tests/slate-browser/donor/stress/stress-utils.ts`
+- `apps/www/tests/slate-browser/donor/examples/embeds.test.ts`
+- `apps/www/src/app/(app)/examples/slate/_examples/large-document-runtime.tsx`
 - `active goal state`
 - `docs/plans/2026-04-28-slate-v2-runtime-owned-void-shell-render-api-plan.md`
 

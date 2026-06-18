@@ -15,8 +15,8 @@ Verification surface:
 - Target setup: `pnpm bench:targets:check`,
   `pnpm bench:targets:dry-run -- history-compare`, and target report refresh.
 - Benchmark: `HISTORY_BENCH_LEGACY_REPO=../../../slate bun run
-  bench:history:compare:local` in `.tmp/slate-v2`.
-- Correctness: `.tmp/slate-v2` `bun check` for evidence used to close the lane.
+  bench:history:compare:local` in `Plate repo root`.
+- Correctness: `Plate repo root` `bun check` for evidence used to close the lane.
 
 Constraints:
 - Keep scope to the history compare target, benchmark script, target registry,
@@ -27,13 +27,13 @@ Constraints:
 
 Boundaries:
 - Source of truth: `benchmarks/targets/slate-v2.json` target `history-compare`
-  and `.tmp/slate-v2/scripts/benchmarks/core/compare/history.mjs`.
+  and `benchmarks/slate-v2/donor/core/compare/history.mjs`.
 - Browser surface: none; this is a Bun/jsdom-free history benchmark.
 - Release artifact: `slate-history` patch changeset because runtime history
   replay behavior changed.
 
 Blocked condition:
-- Block only if the legacy repo cannot run, `.tmp/slate-v2` correctness fails
+- Block only if the legacy repo cannot run, `Plate repo root` correctness fails
   from an unrelated owner that cannot be isolated, or further improvement needs
   a public history API/runtime architecture decision.
 
@@ -74,7 +74,7 @@ Decisions and tradeoffs:
 - Browser proof is N/A: this is a core/history benchmark and Bun test surface.
 
 Verification evidence:
-- `node --check .tmp/slate-v2/scripts/benchmarks/core/compare/history.mjs`
+- `node --check benchmarks/slate-v2/donor/core/compare/history.mjs`
   passed.
 - `pnpm bench:targets:check` passed.
 - `pnpm bench:targets:dry-run -- history-compare` passed with
@@ -92,7 +92,7 @@ Verification evidence:
 - AR run 12 measured `history_compare_worst_p95_ratio=0.38`,
   `history_compare_worst_mean_ratio=0.37`; benchmark exited 0 and
   `bun check` passed.
-- Final `bash ./autoresearch.checks.sh` passed in `.tmp/slate-v2`: lint had one
+- Final `bash ./autoresearch.checks.sh` passed in `Plate repo root`: lint had one
   non-blocking React Hook warning in `site/examples/ts/pagination.tsx`, typecheck
   passed, Bun tests `1172 pass`, `95 skip`, `0 fail`, slate-layout `41 pass`,
   slate-react Vitest `56 files`, `590 tests passed`.

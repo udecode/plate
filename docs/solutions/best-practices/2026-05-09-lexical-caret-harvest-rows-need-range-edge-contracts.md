@@ -53,7 +53,7 @@ Split caret harvest files by behavior family before writing Slate tests:
   separate explicit owner.
 
 For the LexicalCaret pass, the useful Slate proof landed in
-`.tmp/slate-v2/packages/slate/test/delete-contract.ts`:
+`packages/slate/test/delete-contract.ts`:
 
 - expanded range deletion trims both sibling text-leaf edges;
 - expanded range deletion trims cross-block edges into the anchor block;

@@ -79,7 +79,7 @@ document content.
 
 - `../premirror`
 - `../pretext`
-- `.tmp/slate-v2`
+- `Plate repo root`
 - `docs/analysis/editor-architecture-candidates.md`
 - prior Slate v2 architecture and virtualization plans/research under
   `docs/research/**` and `docs/plans/**`
@@ -349,19 +349,19 @@ grounded in deep reads of `../pretext`, `../premirror`, and live Slate v2.
 Live current owners:
 
 - State fields exist in
-  `.tmp/slate-v2/packages/slate/src/core/state-field.ts` and expose
+  `packages/slate/src/core/state-field.ts` and expose
   `getField` / `setField` from
-  `.tmp/slate-v2/packages/slate/src/interfaces/editor.ts`.
+  `packages/slate/src/interfaces/editor.ts`.
 - Runtime/root views exist in
-  `.tmp/slate-v2/packages/slate/src/editor-runtime-view.ts` and
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-runtime.tsx`.
+  `packages/slate/src/editor-runtime-view.ts` and
+  `packages/slate-react/src/hooks/use-slate-runtime.tsx`.
 - `renderingStrategy` is currently DOM materialization policy in
-  `.tmp/slate-v2/packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
-  and `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx`.
+  `packages/slate-react/src/rendering-strategy/create-segment-plan.ts`
+  and `packages/slate-react/src/components/editable-text-blocks.tsx`.
 - DOM coverage already models missing DOM policy in
-  `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-coverage.ts`.
+  `packages/slate-dom/src/plugin/dom-coverage.ts`.
 - Projection stores project ranges, not page geometry, in
-  `.tmp/slate-v2/packages/slate-react/src/projection-store.ts`.
+  `packages/slate-react/src/projection-store.ts`.
 
 External source read:
 
@@ -633,7 +633,7 @@ Required behavior disclaimers in docs/example:
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Pretext | `../pretext/src/layout.ts`, `../pretext/src/measurement.ts`, `../pretext/src/rich-inline.ts`, `../pretext/STATUS.md` | prepare once, layout cheaply, cache measurement by font/text/browser profile, stream range geometry, and support rich inline runs | DOM reflow, resize-time measurement, eager line-string allocation, and userland rich-inline hacks | prepare/measure/cache outside render, named-font test fixtures, hot layout path, `layoutNextLineRange()`, `prepareRichInline()` | treating it as editor/runtime core | optional `slate-layout-pretext` engine with plain-text and rich-inline paths | agree |
 | Premirror | `../premirror/docs/design-proposal.md`, `../premirror/packages/*/src` | extract snapshot, measure snapshot, compose deterministic layout, render page viewport, map positions | document/layout ownership collapse | measured snapshot boundary, layout output model, mapping index, timing metrics | ProseMirror-specific positions/plugins/schema assumptions | `slate-layout` derived store over Slate snapshots/runtime ids | agree |
-| Slate v2 | live `.tmp/slate-v2` state/runtime/rendering/DOM coverage source | state fields, roots/views, runtime ids, DOM coverage, rendering strategy | forcing page layout into nodes or decorations | state field for settings, runtime-id keyed extraction, DOM coverage policy | adding pagination to raw `Editable` core | optional `PagedEditable` over core substrate | agree |
+| Slate v2 | live `Plate repo root` state/runtime/rendering/DOM coverage source | state fields, roots/views, runtime ids, DOM coverage, rendering strategy | forcing page layout into nodes or decorations | state field for settings, runtime-id keyed extraction, DOM coverage policy | adding pagination to raw `Editable` core | optional `PagedEditable` over core substrate | agree |
 
 ### Issue Accounting
 
@@ -653,14 +653,14 @@ implementation slice.
 
 | Proof | Cwd | Command / route | Required result |
 | --- | --- | --- | --- |
-| State field contract | `.tmp/slate-v2` | focused `slate` state-field tests | page settings persist, patch, history, and collab as configured |
-| Layout deterministic unit | `.tmp/slate-v2` | `slate-layout` package tests | same snapshot/input yields identical layout output and mappings |
-| Pretext engine unit | `.tmp/slate-v2` | `slate-layout-pretext` package tests | prepare cache, named font policy, `letterSpacing`, line-range mapping, and rich-inline flow stay deterministic |
-| React component contract | `.tmp/slate-v2` | `slate-layout/react` tests | `PagedEditable` renders page chrome and preserves editor input ownership |
-| Browser page-boundary proof | `.tmp/slate-v2` | focused Playwright route for pagination example | type at page boundary without oscillating page breaks |
-| Selection/copy proof | `.tmp/slate-v2` | browser route crossing page fragments | model-backed selection and copy across fragments |
-| IME/mobile gate | `.tmp/slate-v2` | device/browser lane when available | no production claim until green |
-| Performance stress | `.tmp/slate-v2` | 50-page and 500-paragraph layout benchmark | extraction/measurement/compose timings separated; local edit p50/p95 recorded |
+| State field contract | `Plate repo root` | focused `slate` state-field tests | page settings persist, patch, history, and collab as configured |
+| Layout deterministic unit | `Plate repo root` | `slate-layout` package tests | same snapshot/input yields identical layout output and mappings |
+| Pretext engine unit | `Plate repo root` | `slate-layout-pretext` package tests | prepare cache, named font policy, `letterSpacing`, line-range mapping, and rich-inline flow stay deterministic |
+| React component contract | `Plate repo root` | `slate-layout/react` tests | `PagedEditable` renders page chrome and preserves editor input ownership |
+| Browser page-boundary proof | `Plate repo root` | focused Playwright route for pagination example | type at page boundary without oscillating page breaks |
+| Selection/copy proof | `Plate repo root` | browser route crossing page fragments | model-backed selection and copy across fragments |
+| IME/mobile gate | `Plate repo root` | device/browser lane when available | no production claim until green |
+| Performance stress | `Plate repo root` | 50-page and 500-paragraph layout benchmark | extraction/measurement/compose timings separated; local edit p50/p95 recorded |
 
 ### Scorecard
 
@@ -669,14 +669,14 @@ implementation slice.
 | React 19.2 runtime performance | 0.92 | Layout service/store keeps prepare/measure/compose outside React render; `PagedEditable` consumes a store; existing `renderingStrategy` remains DOM policy. |
 | Slate-close unopinionated DX | 0.94 | API uses state fields, editor/runtime, optional package, and render props; raw `Editable` stays unopinionated and does not learn page-specific props. |
 | Plate and slate-yjs migration backbone | 0.90 | Page settings can be shared/patched state fields; layout output stays local derived data; no current adapter claim. |
-| Regression-proof testing strategy | 0.90 | Proof matrix names unit, browser, selection/copy, IME/mobile, and performance gates with `.tmp/slate-v2` ownership. |
+| Regression-proof testing strategy | 0.90 | Proof matrix names unit, browser, selection/copy, IME/mobile, and performance gates with `Plate repo root` ownership. |
 | Research evidence completeness | 0.95 | Deep local source reads from Pretext and Premirror plus live Slate v2 source, with ecosystem synthesis tied to specific mechanisms. |
 | shadcn-style composability/minimalism | 0.92 | `PagedEditable`, `renderPage`, and state-field controls keep the call site small while avoiding hidden monolith props. |
 
 Total: `0.92`.
 
 This passes the API/DX planning threshold. It does not claim production
-pagination readiness; executable `.tmp/slate-v2` package and browser proof is
+pagination readiness; executable `Plate repo root` package and browser proof is
 the next `ralph` implementation lane.
 
 ### Deep Pass Decision
@@ -700,7 +700,7 @@ the store. The best API says what the thing is: page layout.
 `0.92`.
 
 High confidence on the API direction. Production readiness still depends on the
-proof matrix under `.tmp/slate-v2`.
+proof matrix under `Plate repo root`.
 
 ## Pass-State Ledger
 
@@ -711,8 +711,8 @@ proof matrix under `.tmp/slate-v2`.
 | Pretext architecture read | complete | local repo source/docs | measurement needs prepare/hot-layout split |
 | Slate v2 substrate read | complete | runtime/view/state/rendering files/tests | current core is mostly minor-safe |
 | verdict and gap list | complete | comparison matrix | one missing boundary: derived layout service |
-| pagination/layout API pressure pass | complete | live `.tmp/slate-v2` rendering strategy source/docs plus compiled Premirror/Pretext research | start an experimental pagination example now; keep layout separate from `renderingStrategy`; `slate-layout` can stay additive |
-| deep pagination API/DX pass | complete | deep local `../pretext` and `../premirror` source/docs plus live `.tmp/slate-v2` state/runtime/rendering/DOM coverage source | replace `layoutStrategy` target with `PageSettingsField` + `useSlatePageLayout` + `SlatePageLayout` store + `PagedEditable` |
+| pagination/layout API pressure pass | complete | live `Plate repo root` rendering strategy source/docs plus compiled Premirror/Pretext research | start an experimental pagination example now; keep layout separate from `renderingStrategy`; `slate-layout` can stay additive |
+| deep pagination API/DX pass | complete | deep local `../pretext` and `../premirror` source/docs plus live `Plate repo root` state/runtime/rendering/DOM coverage source | replace `layoutStrategy` target with `PageSettingsField` + `useSlatePageLayout` + `SlatePageLayout` store + `PagedEditable` |
 | closure and final gates | complete | scorecard at `0.92`, no implementation claim, no PR issue claim, completion gates below | close the Ralplan planning lane; next owner is `ralph` implementation, not more API review |
 
 ## Plan Deltas
@@ -733,8 +733,8 @@ proof matrix under `.tmp/slate-v2`.
 | --- | --- | --- |
 | Plan artifact state | `plate-2` | complete in this file |
 | Completion hook | `plate-2` | `node tooling/scripts/completion-check.mjs` passed |
-| Slate v2 behavior proof | `.tmp/slate-v2` | initial Ralph implementation slice complete |
-| Future implementation proof | `.tmp/slate-v2` | deeper selection/copy, IME/mobile, and stress gates remain future production-readiness work |
+| Slate v2 behavior proof | `Plate repo root` | initial Ralph implementation slice complete |
+| Future implementation proof | `Plate repo root` | deeper selection/copy, IME/mobile, and stress gates remain future production-readiness work |
 
 ## Ralph Execution Log
 
@@ -743,7 +743,7 @@ proof matrix under `.tmp/slate-v2`.
 Status: complete for the first experimental API/example slice. This is not a
 production pagination claim.
 
-Implemented in `.tmp/slate-v2`:
+Implemented in `Plate repo root`:
 
 - `packages/slate-layout`: page settings types, page preset/margin normalization,
   page layout store, shared block paginator, estimated engine, React hook, and
@@ -776,7 +776,7 @@ Important implementation decisions:
 - `native-input-strategy-contract.test.ts` fake editor state was updated with
   `view.root()` after the broad check exposed a stale test mock.
 
-Verification from `.tmp/slate-v2`:
+Verification from `Plate repo root`:
 
 - `bun --filter slate-layout test`: passed, 2 tests.
 - `bun --filter slate-layout-pretext test`: passed, 1 test.

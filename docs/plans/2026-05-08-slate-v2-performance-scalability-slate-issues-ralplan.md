@@ -19,7 +19,7 @@ Status: `done`.
 
 Scope: shared percentile artifacts only.
 
-Files changed in `.tmp/slate-v2`:
+Files changed in `Plate repo root`:
 
 - `scripts/benchmarks/shared/stats.mjs`
 - `scripts/benchmarks/shared/react-benchmark.tsx`
@@ -33,7 +33,7 @@ Result:
   writes percentile fields to `.tmp/slate-editor-store-benchmark.json`.
 - `bench:react:huge-document-overlays:local` writes percentile fields to
   `packages/slate-react/tmp/slate-react-huge-document-overlays-benchmark.json`.
-- `bun check` passes in `.tmp/slate-v2`.
+- `bun check` passes in `Plate repo root`.
 - No editor behavior, browser behavior, release threshold, or issue claim
   changed.
 
@@ -71,7 +71,7 @@ The execution plan should tell the next agent:
 
 - which issue families are in scope;
 - which issue claims are already `Improves`, `Related`, or `Not claimed`;
-- which live `.tmp/slate-v2` benchmark/test owner proves each claim;
+- which live `Plate repo root` benchmark/test owner proves each claim;
 - which missing rows block any `Fixes #...` promotion;
 - which benchmark families should be extended instead of duplicated;
 - which bounded `ralph` slice should run first;
@@ -85,14 +85,14 @@ In scope:
 
 - `docs/slate-issues` performance and scalability issues;
 - current `docs/slate-v2/ledgers/issue-coverage-matrix.md` performance rows;
-- live `.tmp/slate-v2` benchmark commands and browser/package tests;
+- live `Plate repo root` benchmark commands and browser/package tests;
 - performance docs and research that already corrected false large-document
   claims;
 - pass-gated planning only.
 
 Out of scope for this skill:
 
-- patching `.tmp/slate-v2` implementation;
+- patching `Plate repo root` implementation;
 - promoting issue claims without fresh proof;
 - treating `plate-2` checks as Slate v2 source verification;
 - current Plate or slate-yjs public API compatibility;
@@ -165,29 +165,29 @@ Out of scope for this skill:
 
 ### Live Slate v2 Owners
 
-- `.tmp/slate-v2/package.json:11-27` exposes stable benchmark commands for core,
+- `Plate repo root/package.json:11-27` exposes stable benchmark commands for core,
   React, `#6038`, and `#5945`.
-- `.tmp/slate-v2/package.json:29-31` keeps `bun check` separate from
+- `Plate repo root/package.json:29-31` keeps `bun check` separate from
   `bun check:full`.
-- `.tmp/slate-v2/scripts/benchmarks/README.md:23-57` defines benchmark family
+- `benchmarks/slate-v2/donor/README.md:23-57` defines benchmark family
   ownership: browser React locality, core current measurements, and current-vs-
   legacy compare lanes.
-- `.tmp/slate-v2/scripts/benchmarks/README.md:130-157` lists the current run
+- `benchmarks/slate-v2/donor/README.md:130-157` lists the current run
   commands and the issue-size `#5945/#5992` gate.
-- `.tmp/slate-v2/scripts/benchmarks/README.md:159-165` says not to widen
+- `benchmarks/slate-v2/donor/README.md:159-165` says not to widen
   benchmarks unless they change a decision.
-- `.tmp/slate-v2/docs/walkthroughs/09-performance.md:3-11` defines the public
+- `content/docs/slate/walkthroughs/09-performance.md:3-11` defines the public
   performance frame around large documents and typing INP.
-- `.tmp/slate-v2/docs/walkthroughs/09-performance.md:48-54` documents narrow
+- `content/docs/slate/walkthroughs/09-performance.md:48-54` documents narrow
   hooks for hot editor UI.
-- `.tmp/slate-v2/docs/walkthroughs/09-performance.md:73-97` documents staged,
+- `content/docs/slate/walkthroughs/09-performance.md:73-97` documents staged,
   shell, virtualized, and projection-store performance guidance.
-- `.tmp/slate-v2/docs/walkthroughs/09-performance.md:98-104` keeps DOM painting
+- `content/docs/slate/walkthroughs/09-performance.md:98-104` keeps DOM painting
   and content visibility separate from editor runtime work.
-- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx`
+- `packages/slate-react/test/rendering-strategy-and-scroll.tsx`
   contains package proof for shell, staged, virtualized, select-all,
   shell-backed paste, fragment preservation, and composition guard behavior.
-- `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts`
+- `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`
   contains browser proof for DOM-present typing, bounded virtualized DOM,
   shell-backed paste/copy, remote rebase, native drag selection, keyboard shell
   activation, and composition interactions.
@@ -551,8 +551,8 @@ Evidence:
   clipboard/large-payload performance claims for `#5945`, `#4056`, and `#5992`.
 - `docs/slate-issues/gitcrawl-live-open-ledger.md` intentionally contains live
   gitcrawl fields only, so this pass does not add classification columns there.
-- Live Slate v2 command owners were re-read from `.tmp/slate-v2/package.json` and
-  `.tmp/slate-v2/scripts/benchmarks/README.md`.
+- Live Slate v2 command owners were re-read from `Plate repo root/package.json` and
+  `benchmarks/slate-v2/donor/README.md`.
 
 ### Claim Accounting By Family
 
@@ -607,7 +607,7 @@ Evidence used:
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md` claim vocabulary;
 - `docs/slate-v2/references/pr-description.md` exact `Improves` language for
   large clipboard payloads;
-- `.tmp/slate-v2/docs/walkthroughs/09-performance.md` rendering strategy docs.
+- `content/docs/slate/walkthroughs/09-performance.md` rendering strategy docs.
 
 ### Intent Boundary Record
 
@@ -760,25 +760,25 @@ Status: complete.
 
 Evidence used:
 
-- `.tmp/slate-v2/package.json:11-27` owns the current benchmark command surface.
-- `.tmp/slate-v2/scripts/benchmarks/README.md:23-57` owns current benchmark
+- `Plate repo root/package.json:11-27` owns the current benchmark command surface.
+- `benchmarks/slate-v2/donor/README.md:23-57` owns current benchmark
   family placement.
-- `.tmp/slate-v2/scripts/benchmarks/README.md:130-165` says benchmark coverage
+- `benchmarks/slate-v2/donor/README.md:130-165` says benchmark coverage
   should widen only when it changes a decision.
-- `.tmp/slate-v2/scripts/benchmarks/shared/stats.mjs:7-23` currently summarizes
+- `benchmarks/slate-v2/donor/shared/stats.mjs:7-23` currently summarizes
   generic benchmark samples with mean, median, min, and max only.
-- `.tmp/slate-v2/scripts/benchmarks/shared/react-benchmark.tsx:15-40` currently
+- `benchmarks/slate-v2/donor/shared/react-benchmark.tsx:15-40` currently
   summarizes React benchmark metrics with mean, median, min, max, and samples.
-- `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs:143-231`
+- `benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs:143-231`
   already records p50, p95, and heap deltas for large clipboard payload lanes.
-- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:386-427`
+- `packages/slate-react/test/rendering-strategy-and-scroll.tsx:386-427`
   proves staged metrics include cohort, document size, mounted/pending counts,
   DOM coverage boundary counts, DOM node count, and editable descendant count.
-- `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:639-691`
+- `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:639-691`
   proves DOM-present staged input can use browser-native typing.
-- `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:694-730`
+- `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:694-730`
   proves the virtualized example has bounded DOM and delayed far content.
-- `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs:2160-2184`
+- `benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs:2160-2184`
   currently computes mean deltas against legacy chunking baselines.
 
 ### Architecture Verdict
@@ -928,40 +928,40 @@ Evidence used:
 - `.agents/skills/tdd/SKILL.md` behavior-through-public-interfaces rule.
 - `docs/slate-issues/benchmark-candidate-map.md:25-542` for benchmark-ready
   issue families and issue-specific workload notes.
-- `.tmp/slate-v2/package.json:11-27` for current benchmark commands.
-- `.tmp/slate-v2/scripts/benchmarks/README.md:23-67` for benchmark family owners.
-- `.tmp/slate-v2/scripts/benchmarks/README.md:83-103` for stable command and
+- `Plate repo root/package.json:11-27` for current benchmark commands.
+- `benchmarks/slate-v2/donor/README.md:23-67` for benchmark family owners.
+- `benchmarks/slate-v2/donor/README.md:83-103` for stable command and
   shared-helper policy.
-- `.tmp/slate-v2/scripts/benchmarks/README.md:105-165` for artifact names,
+- `benchmarks/slate-v2/donor/README.md:105-165` for artifact names,
   commands, issue-size clipboard gate, and the "decision-changing only" rule.
-- `.tmp/slate-v2/scripts/benchmarks/shared/stats.mjs:7-23` and
-  `.tmp/slate-v2/scripts/benchmarks/shared/react-benchmark.tsx:15-40` for the
+- `benchmarks/slate-v2/donor/shared/stats.mjs:7-23` and
+  `benchmarks/slate-v2/donor/shared/react-benchmark.tsx:15-40` for the
   current mean/median-only summaries.
-- `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs:143-231`
+- `benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs:143-231`
   for existing p50/p95/heap coverage.
-- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:386-427`
+- `packages/slate-react/test/rendering-strategy-and-scroll.tsx:386-427`
   for rendering-strategy metric assertions.
-- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:1368-1631`
+- `packages/slate-react/test/rendering-strategy-and-scroll.tsx:1368-1631`
   for shell-backed select-all, render-plan, paste, and fragment package proof.
-- `.tmp/slate-v2/packages/slate-react/test/render-profiler-contract.test.tsx:41-85`
+- `packages/slate-react/test/render-profiler-contract.test.tsx:41-85`
   for current render-count instrumentation.
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx:105-220`
+- `packages/slate-react/test/projections-and-selection-contract.tsx:105-220`
   for public projection/decorations behavior.
-- `.tmp/slate-v2/packages/slate-react/test/dom-coverage-boundary-contract.tsx:69-124`
+- `packages/slate-react/test/dom-coverage-boundary-contract.tsx:69-124`
   for DOM coverage boundary behavior.
-- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:29-112`
-  and `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:114-198`
+- `packages/slate/test/collab-history-runtime-contract.ts:29-112`
+  and `packages/slate/test/collab-history-runtime-contract.ts:114-198`
   for commit metadata, dirty runtime ids, history, and remote replay behavior.
-- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts:20-213` for headless
+- `packages/slate/test/clipboard-contract.ts:20-213` for headless
   fragment and delete behavior.
-- `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:639-730`
+- `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:639-730`
   for browser-native staged typing and bounded virtualized DOM proof.
-- `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:766-907`
-  and `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:1035-1180`
+- `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:766-907`
+  and `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:1035-1180`
   for IME/browser behavior proof.
-- `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:1410-1610`
+- `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:1410-1610`
   for model changes during active composition.
-- `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:2058-2315`
+- `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:2058-2315`
   for shell-backed paste, copy, selection bookmark rebase, and rich HTML paste
   browser proof.
 
@@ -1086,7 +1086,7 @@ Principles:
 Decision drivers:
 
 - issue-ledger truth;
-- current `.tmp/slate-v2` benchmark command contract;
+- current `Plate repo root` benchmark command contract;
 - corrected research on legacy chunking and shell behavior;
 - local Lexical dirty reconciliation and update-phase evidence;
 - local ProseMirror dirty view tree, persistent decoration, and composition
@@ -1140,25 +1140,25 @@ Skills applied:
 
 Evidence used:
 
-- `.tmp/slate-v2/package.json:11-30` exposes current benchmark commands and keeps
+- `Plate repo root/package.json:11-30` exposes current benchmark commands and keeps
   `bun check` separate from `bun check:full`.
-- `.tmp/slate-v2/scripts/benchmarks/README.md:23-67` defines live benchmark family
+- `benchmarks/slate-v2/donor/README.md:23-67` defines live benchmark family
   ownership and keeps issue wrappers under `scripts/benchmarks/slate/`.
-- `.tmp/slate-v2/scripts/benchmarks/README.md:130-165` lists run commands and
+- `benchmarks/slate-v2/donor/README.md:130-165` lists run commands and
   bans benchmark files that do not change a decision.
-- `.tmp/slate-v2/scripts/benchmarks/shared/stats.mjs:7-23` and
-  `.tmp/slate-v2/scripts/benchmarks/shared/react-benchmark.tsx:15-40` still expose
+- `benchmarks/slate-v2/donor/shared/stats.mjs:7-23` and
+  `benchmarks/slate-v2/donor/shared/react-benchmark.tsx:15-40` still expose
   mean/median/min/max summaries, so percentile gates are not already done.
-- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:386-427`
+- `packages/slate-react/test/rendering-strategy-and-scroll.tsx:386-427`
   proves rendering-strategy metrics already carry document size, cohort,
   mounted/pending counts, DOM boundary counts, DOM node count, and editable
   descendant count.
-- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:1368-1412`
+- `packages/slate-react/test/rendering-strategy-and-scroll.tsx:1368-1412`
   proves shell-backed broad selection is explicit instead of silently native.
-- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:29-112`
+- `packages/slate/test/collab-history-runtime-contract.ts:29-112`
   proves commit metadata, operation batching, dirty ids, and history share one
   commit truth, but not retained-memory closure.
-- `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:639-730`
+- `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:639-730`
   proves DOM-present staged typing and bounded virtualized DOM in browser rows.
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md:81-89` keeps the key
   performance issues as `Improves`, `Related`, or `Not claimed`; it does not
@@ -1193,33 +1193,33 @@ Skills applied:
 
 Evidence used:
 
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:86-96` exposes
+- `packages/slate-react/src/components/editable.tsx:86-96` exposes
   `renderingStrategy`, `renderingStrategyMetrics`, and
   `onRenderingStrategyMetrics` as public React props.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:117-145`
+- `packages/slate-react/src/components/editable.tsx:117-145`
   defines the current public rendering-strategy metrics payload.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:248-278`
+- `packages/slate-react/src/components/editable.tsx:248-278`
   emits metrics from a layout effect via a queued microtask.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1384-1449`
+- `packages/slate-react/src/components/editable-text-blocks.tsx:1384-1449`
   owns shell and virtualized option normalization.
-- `.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1674-1754`
+- `packages/slate-react/src/components/editable-text-blocks.tsx:1674-1754`
   computes cohort, mounted/pending counts, effective strategy, and
   `nativeSurfaceComplete`.
-- `.tmp/slate-v2/docs/walkthroughs/09-performance.md:73-104` documents staged as
+- `content/docs/slate/walkthroughs/09-performance.md:73-104` documents staged as
   the safe large-document default, shell as aggressive mounting control, and
   virtualized rendering as experimental.
-- `.tmp/slate-v2/packages/slate-react/test/rendering-strategy-and-scroll.tsx:1204-1238`
+- `packages/slate-react/test/rendering-strategy-and-scroll.tsx:1204-1238`
   proves shell interaction does not promote during composition.
-- `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:2058-2157`
+- `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:2058-2157`
   proves shell-backed paste and copy user paths in the browser.
-- `.tmp/slate-v2/playwright/integration/examples/rendering-strategy-runtime.test.ts:2159-2238`
+- `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts:2159-2238`
   proves shell-backed selection bookmarks rebase through remote text
   operations.
-- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:114-198`
+- `packages/slate/test/collab-history-runtime-contract.ts:114-198`
   proves remote replay metadata and history skip behavior.
-- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:200-298`
+- `packages/slate/test/collab-history-runtime-contract.ts:200-298`
   proves `replace_children` paste replay and range-delete history batching.
-- `.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts:300-390`
+- `packages/slate/test/collab-history-runtime-contract.ts:300-390`
   proves bookmarks and runtime ids rebase or null through remote operations.
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md:81-89` keeps the relevant
   performance rows below `Fixes`.
@@ -1385,7 +1385,7 @@ Slate v2 verification decision:
 
 - Not run in this closure pass.
 - Reason: this skill changed planning, matrix, dossier, and completion-state
-  artifacts only. It did not patch `.tmp/slate-v2` source and does not promote any
+  artifacts only. It did not patch `Plate repo root` source and does not promote any
   issue to `Fixes`.
 - Later `ralph` implementation must run the focused `/Users/zbeyens/git/slate-v2`
   commands named in the verification policy for the touched owner.

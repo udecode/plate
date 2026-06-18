@@ -6,13 +6,13 @@ status: active
 
 # Goal
 
-Sync `docs/slate-v2/**` with the actual `.tmp/slate-v2` state after the Bun hard
+Sync `docs/slate-v2/**` with the actual `Plate repo root` state after the Bun hard
 cut and the TypeScript 6 upgrade.
 
 # Facts
 
 - Live roadmap docs still describe the April 16 `pnpm` snapshot.
-- `.tmp/slate-v2` now runs on Bun, ships `bun.lock`, and no longer has `.npmrc`,
+- `Plate repo root` now runs on Bun, ships `bun.lock`, and no longer has `.npmrc`,
   `pnpm-workspace.yaml`, or `pnpm-lock.yaml`.
 - Root `package.json` now pins `packageManager: bun@1.3.12` and
   `typescript: 6.0.3`.

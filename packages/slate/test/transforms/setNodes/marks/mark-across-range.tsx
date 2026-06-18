@@ -1,0 +1,51 @@
+/** @jsx jsx */
+
+import { jsx } from '../../..';
+
+jsx;
+
+// Apply a mark across a range containing text with other marks and a void
+
+export const run = (editor) => {
+  editor.marks.add('bold', true);
+};
+export const input = (
+  <editor>
+    <block>
+      <text>
+        <anchor />
+        word{' '}
+      </text>
+      <text italic>italic words </text>
+      <inline void>
+        <text />
+      </inline>
+      <text underline>
+        {' '}
+        underlined words
+        <focus />
+      </text>
+    </block>
+  </editor>
+);
+export const output = (
+  <editor>
+    <block>
+      <text bold>
+        <anchor />
+        word{' '}
+      </text>
+      <text bold italic>
+        italic words{' '}
+      </text>
+      <inline void>
+        <text />
+      </inline>
+      <text bold underline>
+        {' '}
+        underlined words
+        <focus />
+      </text>
+    </block>
+  </editor>
+);

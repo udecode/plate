@@ -515,7 +515,7 @@ Commands:
 
 ```bash
 rg -n "deleteWordBackward|selectionchange|beforeinput|restore|composition|Chrome|Safari|Firefox" ../slate/packages/slate-react/src
-rg -n "deleteWordBackward|selectionchange|beforeinput|restore|composition|Chrome|Safari|Firefox" .tmp/slate-v2/packages/slate-react/src
+rg -n "deleteWordBackward|selectionchange|beforeinput|restore|composition|Chrome|Safari|Firefox" packages/slate-react/src
 ```
 
 ## Batch 7: Cross-Browser And Raw Device Proof

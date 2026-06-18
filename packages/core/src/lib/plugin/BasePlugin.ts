@@ -3,7 +3,7 @@ import type {
   EditorTransforms,
   TElement,
   TText,
-} from '@platejs/slate';
+} from '@platejs/slate-legacy';
 import type { AnyObject, Nullable } from '@udecode/utils';
 import type { Draft } from 'mutative';
 import type { TStateApi } from 'zustand-x';

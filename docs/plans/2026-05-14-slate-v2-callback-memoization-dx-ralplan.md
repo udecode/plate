@@ -4,7 +4,7 @@ Date: 2026-05-14
 Status: executed
 Score: 1.00
 Owner: Slate Ralplan planning only
-Execution owner: ralph in `.tmp/slate-v2`
+Execution owner: ralph in `Plate repo root`
 
 ## Verdict
 
@@ -369,12 +369,12 @@ Revise:
   `active goal state`.
 - Active continuation prompt:
   `active goal state`.
-- Current owner: `.tmp/slate-v2/packages/slate-react`.
+- Current owner: `packages/slate-react`.
 - Current next pass: completion verification.
 - Execution result: semantic `onCommand`, raw `onDOMBeforeInput`
   context, stable native input handler reads, hovering-toolbar cleanup, docs,
   changeset, unit/package/browser proof, and `bun check` landed in
-  `.tmp/slate-v2`.
+  `Plate repo root`.
 
 ### Phase 1: Contract Tests First
 
@@ -421,7 +421,7 @@ Revise:
 
 ### Phase 5: Verification
 
-Run from `.tmp/slate-v2`:
+Run from `Plate repo root`:
 
 - focused red/green type test for new handler types
 - focused `slate-react` editing-kernel/runtime tests

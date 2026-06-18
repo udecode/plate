@@ -99,5 +99,5 @@ method yet.
 
 ## Related Issues
 
-- [true-slate-rc-proof-ledger.md](../.tmp/slate-v2/true-slate-rc-proof-ledger.md)
+- [true-slate-rc-proof-ledger.md](../Plate repo root/true-slate-rc-proof-ledger.md)
 - [2026-04-08-slate-v2-normalization-policy-recovery.md](../../plans/2026-04-08-slate-v2-normalization-policy-recovery.md)

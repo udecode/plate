@@ -47,16 +47,16 @@ Desired outcome:
 
 In scope:
 
-- `.tmp/slate-v2/packages/slate/src/editor/insert-break.ts`
-- `.tmp/slate-v2/packages/slate/src/transforms-selection/move.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/positions.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/after.ts`
-- `.tmp/slate-v2/packages/slate/src/editor/before.ts`
-- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/query-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/transforms/move/both/unit-word*.tsx`
-- `.tmp/slate-v2/packages/slate-react/src/editable/caret-engine.ts`
-- `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts`
+- `packages/slate/src/editor/insert-break.ts`
+- `packages/slate/src/transforms-selection/move.ts`
+- `packages/slate/src/editor/positions.ts`
+- `packages/slate/src/editor/after.ts`
+- `packages/slate/src/editor/before.ts`
+- `packages/slate/test/snapshot-contract.ts`
+- `packages/slate/test/query-contract.ts`
+- `packages/slate/test/transforms/move/both/unit-word*.tsx`
+- `packages/slate-react/src/editable/caret-engine.ts`
+- `apps/www/tests/slate-browser/donor/examples/richtext.test.ts`
 
 Non-goals:
 
@@ -71,7 +71,7 @@ Non-goals:
 
 Decision boundaries:
 
-- Ralph may patch `.tmp/slate-v2` code and tests.
+- Ralph may patch `Plate repo root` code and tests.
 - Ralph may claim `Fixes #3964` only after a package test proves Enter at the
   end of marked text creates the new block and moves selection there.
 - Ralph may claim `Fixes #3973` only after a package test proves
@@ -103,11 +103,11 @@ Top drivers:
 - `#3973`: `Transforms.move(..., { unit: 'word' })` fails when a document starts
   with multiple text leaves and no leading spaces.
 - Current `Editor.insertBreak` delegates to `splitNodes({ always: true })` at
-  `.tmp/slate-v2/packages/slate/src/editor/insert-break.ts:9`.
+  `packages/slate/src/editor/insert-break.ts:9`.
 - Current `selection.move` lowers to `Editor.before` / `Editor.after` at
-  `.tmp/slate-v2/packages/slate/src/transforms-selection/move.ts:34`.
+  `packages/slate/src/transforms-selection/move.ts:34`.
 - Current word positions concatenate block segments and map logical offsets back
-  to points at `.tmp/slate-v2/packages/slate/src/editor/positions.ts:581`.
+  to points at `packages/slate/src/editor/positions.ts:581`.
 
 Viable options:
 
@@ -170,28 +170,28 @@ Total: `0.92`.
 Current Slate v2 owner map:
 
 - `Editor.insertBreak` is a thin command wrapper around `splitNodes({ always:
-true })` at `.tmp/slate-v2/packages/slate/src/editor/insert-break.ts:9`.
+true })` at `packages/slate/src/editor/insert-break.ts:9`.
 - `selection.move` resolves target points through `Editor.before` /
   `Editor.after` at
-  `.tmp/slate-v2/packages/slate/src/transforms-selection/move.ts:34`.
+  `packages/slate/src/transforms-selection/move.ts:34`.
 - `Editor.after` and `Editor.before` iterate `Editor.positions` and skip
-  non-selectable elements at `.tmp/slate-v2/packages/slate/src/editor/after.ts:14`
-  and `.tmp/slate-v2/packages/slate/src/editor/before.ts:14`.
+  non-selectable elements at `packages/slate/src/editor/after.ts:14`
+  and `packages/slate/src/editor/before.ts:14`.
 - Word positions group text by block, concatenate segment text, and map logical
   offsets back to points at
-  `.tmp/slate-v2/packages/slate/src/editor/positions.ts:577`.
+  `packages/slate/src/editor/positions.ts:577`.
 - Existing package proof covers simple `insertBreak` selection at
-  `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts:1151`.
+  `packages/slate/test/snapshot-contract.ts:1151`.
 - Existing word-position proof covers inline fragmentation, not sibling text
   leaves at the start of a word, at
-  `.tmp/slate-v2/packages/slate/test/interfaces/Editor/positions/all/unit-word-inline-fragmentation.tsx:8`.
+  `packages/slate/test/interfaces/Editor/positions/all/unit-word-inline-fragmentation.tsx:8`.
 - Existing transform fixture covers normal word movement, not the `#3973`
   initial multi-leaf repro, at
-  `.tmp/slate-v2/packages/slate/test/transforms/move/both/unit-word.tsx:7`.
+  `packages/slate/test/transforms/move/both/unit-word.tsx:7`.
 - React word movement routes to `tx.selection.move({ unit: 'word' })` at
-  `.tmp/slate-v2/packages/slate-react/src/editable/caret-engine.ts:138`.
+  `packages/slate-react/src/editable/caret-engine.ts:138`.
 - Browser proof for word movement currently skips Firefox/mobile at
-  `.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2861`.
+  `apps/www/tests/slate-browser/donor/examples/richtext.test.ts:2861`.
 
 Gap:
 
@@ -304,7 +304,7 @@ Phase 5: ledgers and PR reference.
 Focused package proof:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun test ./packages/slate/test/snapshot-contract.ts ./packages/slate/test/query-contract.ts ./packages/slate/test/transforms/move/both/unit-word.tsx ./packages/slate/test/transforms/move/both/unit-word-reverse.tsx
 bun --filter slate typecheck
 ```
@@ -312,7 +312,7 @@ bun --filter slate typecheck
 If React/DOM changed:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun --filter slate-react test:vitest -- caret-engine editing-kernel
 bunx playwright test ./playwright/integration/examples/richtext.test.ts --project=chromium --project=webkit --grep "word movement|insertBreak|selection synchronized" --workers=2 --retries=0
 ```
@@ -320,7 +320,7 @@ bunx playwright test ./playwright/integration/examples/richtext.test.ts --projec
 Closeout:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun lint:fix
 cd ../plate-2
 bun run completion-check
@@ -372,9 +372,9 @@ PR auto-close count increases by 3.
 
 Execution proof:
 
-- `.tmp/slate-v2/packages/slate/test/snapshot-contract.ts`: `insertBreak after
+- `packages/slate/test/snapshot-contract.ts`: `insertBreak after
 marked text moves selection into the new block`.
-- `.tmp/slate-v2/packages/slate/test/transaction-contract.ts`: `moves word
+- `packages/slate/test/transaction-contract.ts`: `moves word
 selection across initial sibling text leaves`.
 - `bun test ./packages/slate/test/snapshot-contract.ts ./packages/slate/test/transaction-contract.ts`
   passed with 222 tests.

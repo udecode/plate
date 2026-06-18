@@ -1,4 +1,7 @@
-import { createEditor as makeEditor, type TElement } from '@platejs/slate';
+import {
+  createEditor as makeEditor,
+  type TElement,
+} from '@platejs/slate-legacy';
 
 import {
   createAnchor,

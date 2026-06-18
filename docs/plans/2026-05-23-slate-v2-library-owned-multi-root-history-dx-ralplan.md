@@ -3,7 +3,7 @@
 Status: done - Ralph execution complete
 Runtime id: `019e46be-4ec4-7d11-bc6e-9fcf033a8803`
 Skill: `slate-ralplan`
-Scope: `.tmp/slate-v2` multi-root history, shortcut, and root chrome focus DX
+Scope: `Plate repo root` multi-root history, shortcut, and root chrome focus DX
 
 ## Intent
 
@@ -321,7 +321,7 @@ Expected result: no matches for library-owned behavior.
 
 ### Verification Commands
 
-Ralph execution should run from `.tmp/slate-v2`:
+Ralph execution should run from `Plate repo root`:
 
 ```sh
 bun --filter ./packages/slate-react test:vitest use-slate-history
@@ -446,7 +446,7 @@ Final score: 0.93. No dimension is below 0.85.
 ## Next Action
 
 Run Ralph execution. Implement `useSlateHistory`, `useSlateRootChrome`, clean the
-canonical example, and prove the behavior from `.tmp/slate-v2`.
+canonical example, and prove the behavior from `Plate repo root`.
 
 ## Ralph Execution Ledger
 
@@ -454,7 +454,7 @@ canonical example, and prove the behavior from `.tmp/slate-v2`.
 
 - `ralph` reset the runtime completion state to `pending`.
 - Current pass: `tdd-pass`.
-- Current owner: `.tmp/slate-v2/packages/slate-react`.
+- Current owner: `packages/slate-react`.
 - Current behavior slice: first public `useSlateHistory` hook contract.
 - Continuation prompt: `active goal state`.
 - Reference docs: no change yet; issue pass remains complete with zero new fixed/improved claims.

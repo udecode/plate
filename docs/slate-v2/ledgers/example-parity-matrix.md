@@ -167,11 +167,11 @@ Exact paired same-path source stats from the 2026-04-15 rebaseline:
 
 ## Current-Only TS Example Surfaces
 
-All currently live current-only TS example surfaces in `.tmp/slate-v2` are
+All currently live current-only TS example surfaces in `Plate repo root` are
 classified here.
 
 Broader draft-only names that do not currently map to live files in
-`.tmp/slate-v2/site/examples/ts/**` stay in the draft docs until they exist in
+`apps/www/src/app/(app)/examples/slate/_examples/**` stay in the draft docs until they exist in
 the repo.
 
 - already classified current-only v2 north-star rows:

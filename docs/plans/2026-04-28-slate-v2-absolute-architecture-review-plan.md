@@ -2708,14 +2708,14 @@ Reason:
 
 Scope:
 
-- Implementation code lives in `.tmp/slate-v2`.
+- Implementation code lives in `Plate repo root`.
 - Control files live here: `active goal state`, `active goal state`, and
   this plan ledger.
 - No current Plate or slate-yjs adapter support.
 
 Next owner:
 
-- Add or tighten the release-discipline/public-surface guard in `.tmp/slate-v2`
+- Add or tighten the release-discipline/public-surface guard in `Plate repo root`
   so it fails on unclassified first-party primitive `editor.*` write teaching.
 - Migrate normal authoring docs/examples/API pages to `tx.*`.
 - Classify any remaining primitive `editor.*` write usage as

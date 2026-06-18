@@ -1,6 +1,6 @@
 import { getContainerTypes } from '@platejs/core';
 import { useEditorSelector } from '@platejs/core/react';
-import type { EditorPropOptions, TElement } from '@platejs/slate';
+import type { EditorPropOptions, TElement } from '@platejs/slate-legacy';
 
 export const useSelectionFragment = () =>
   useEditorSelector(

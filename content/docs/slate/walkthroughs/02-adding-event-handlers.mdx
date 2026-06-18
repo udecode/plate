@@ -1,0 +1,84 @@
+---
+title: "Adding Event Handlers"
+---
+
+# Adding Event Handlers
+
+`Editable` accepts React event handlers. Use them for UI-local shortcuts and
+small input policies that belong to one editor surface.
+
+This is the editor from the install walkthrough:
+
+```tsx
+import { Editable, Slate, useSlateEditor } from '@platejs/slate-react'
+
+const initialValue = [
+  {
+    type: 'paragraph',
+    children: [{ text: 'A line of text in a paragraph.' }],
+  },
+]
+
+const App = () => {
+  const editor = useSlateEditor({ initialValue })
+
+  return (
+    <Slate editor={editor}>
+      <Editable />
+    </Slate>
+  )
+}
+```
+
+## Read The Native Event
+
+Pass `onKeyDown` when you only need to observe the browser event.
+
+```tsx
+const App = () => {
+  const editor = useSlateEditor({ initialValue })
+
+  return (
+    <Slate editor={editor}>
+      <Editable
+        onKeyDown={(event) => {
+          console.log(event.key)
+        }}
+      />
+    </Slate>
+  )
+}
+```
+
+## Write Through The Editor
+
+Prevent the browser default when Slate should own the edit, then write inside
+`editor.update(...)`.
+
+```tsx
+const App = () => {
+  const editor = useSlateEditor({ initialValue })
+
+  return (
+    <Slate editor={editor}>
+      <Editable
+        onKeyDown={(event) => {
+          if (event.key !== '&') return
+
+          event.preventDefault()
+
+          editor.update((tx) => {
+            tx.text.insert('and')
+          })
+        }}
+      />
+    </Slate>
+  )
+}
+```
+
+Typing `&` now inserts `and` instead.
+
+Keep reusable behavior in commands or extensions once it is shared by keyboard
+shortcuts, toolbar buttons, menus, tests, or programmatic calls. See
+[Executing Commands](05-executing-commands).

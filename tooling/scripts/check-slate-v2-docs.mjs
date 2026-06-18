@@ -2,10 +2,10 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 
 const repoRoot = resolve(import.meta.dirname, '../..');
-const docsRoot = join(repoRoot, 'docs/slate-v2');
+const docsRoot = join(repoRoot, 'content/docs/slate');
 const contractPath = join(
   repoRoot,
-  '.tmp/slate-v2/packages/slate/test/public-surface-contract.ts'
+  'packages/slate/test/public-surface-contract.ts'
 );
 
 const contract = readFileSync(contractPath, 'utf8');
@@ -69,7 +69,7 @@ const collectMarkdown = (dir) =>
         return collectMarkdown(path);
       }
 
-      return path.endsWith('.md') ? [path] : [];
+      return path.endsWith('.md') || path.endsWith('.mdx') ? [path] : [];
     })
     .sort();
 

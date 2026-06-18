@@ -44,7 +44,7 @@ Read first:
 - `docs/slate-v2/references/pr-description.md`
 - `docs/slate-issues/gitcrawl-live-open-ledger.md`
 - `docs/slate-issues/gitcrawl-clusters.md`
-- live files under `.tmp/slate-v2`
+- live files under `Plate repo root`
 
 Current completion state:
 
@@ -71,7 +71,7 @@ The slice is infrastructure repair, not behavior work.
 
 ### Known Drift Owners
 
-Stale patterns found in `.tmp/slate-v2`:
+Stale patterns found in `Plate repo root`:
 
 - `Editor.withTransaction(...)`
 - `editor.insertText(...)`
@@ -81,16 +81,16 @@ Stale patterns found in `.tmp/slate-v2`:
 
 Primary files:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/text-selection.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/normalization.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/refs-projection.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/query-ref-observation.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/node-transforms.mjs`
+- `benchmarks/slate-v2/donor/core/current/transaction-execution.mjs`
+- `benchmarks/slate-v2/donor/core/current/text-selection.mjs`
+- `benchmarks/slate-v2/donor/core/current/normalization.mjs`
+- `benchmarks/slate-v2/donor/core/current/refs-projection.mjs`
+- `benchmarks/slate-v2/donor/core/current/query-ref-observation.mjs`
+- `benchmarks/slate-v2/donor/core/current/node-transforms.mjs`
 
 Reference pattern:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/editor-store.mjs`
+- `benchmarks/slate-v2/donor/core/current/editor-store.mjs`
 
 Use current transaction calls:
 
@@ -114,7 +114,7 @@ Editor.getSnapshot(editor);
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`
+- `benchmarks/slate-v2/donor/core/current/transaction-execution.mjs`
 
 Work:
 
@@ -141,7 +141,7 @@ Claim rule:
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/text-selection.mjs`
+- `benchmarks/slate-v2/donor/core/current/text-selection.mjs`
 
 Work:
 
@@ -165,8 +165,8 @@ Claim rule:
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/refs-projection.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/query-ref-observation.mjs`
+- `benchmarks/slate-v2/donor/core/current/refs-projection.mjs`
+- `benchmarks/slate-v2/donor/core/current/query-ref-observation.mjs`
 
 Work:
 
@@ -186,7 +186,7 @@ bun run bench:core:query-ref-observation:local
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/normalization.mjs`
+- `benchmarks/slate-v2/donor/core/current/normalization.mjs`
 
 Work:
 
@@ -206,7 +206,7 @@ bun run bench:core:normalization:local
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/node-transforms.mjs`
+- `benchmarks/slate-v2/donor/core/current/node-transforms.mjs`
 
 Work:
 
@@ -523,7 +523,7 @@ pnpm lint:fix
 bun run completion-check
 ```
 
-For any slice touching `.tmp/slate-v2`:
+For any slice touching `Plate repo root`:
 
 ```bash
 cd /Users/zbeyens/git/slate-v2
@@ -611,8 +611,8 @@ Plan:
 
 Candidate owners:
 
-- `.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts`
-- `.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts`
+- `packages/slate-react/test/model-input-strategy-contract.test.ts`
+- `packages/slate-react/test/selection-reconciler-contract.ts`
 - a new focused React integration test only if existing package tests cannot
   observe the required lifecycle
 
@@ -686,7 +686,7 @@ This umbrella plan is complete when:
   reference;
 - Mobile/IME exact-closure leftovers are bucketed by proof owner and no desktop
   proof is mislabeled as raw-device closure;
-- `.tmp/slate-v2 bun check` passes after any source/test/docs change there;
+- `Plate repo root bun check` passes after any source/test/docs change there;
 - `plate-2 pnpm lint:fix` and `bun run completion-check` pass after plan,
   ledger, or completion-state edits here.
 
@@ -709,7 +709,7 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`
+- `benchmarks/slate-v2/donor/core/current/transaction-execution.mjs`
 
 Work completed:
 
@@ -724,12 +724,12 @@ Work completed:
 
 Evidence:
 
-- From `.tmp/slate-v2`, `bun run bench:core:transaction:local` passed.
-- From `.tmp/slate-v2`, `bun run bench:slate:6038:local` passed.
-- Artifact `.tmp/slate-v2/tmp/bench-slate-6038.json` includes `p75`, `p95`, and
+- From `Plate repo root`, `bun run bench:core:transaction:local` passed.
+- From `Plate repo root`, `bun run bench:slate:6038:local` passed.
+- Artifact `tmp/bench-slate-6038.json` includes `p75`, `p95`, and
   `p99` for `separateUpdateMs` and `updateReplayMs`.
-- From `.tmp/slate-v2`, `bun lint:fix` passed.
-- From `.tmp/slate-v2`, `bun check` passed.
+- From `Plate repo root`, `bun lint:fix` passed.
+- From `Plate repo root`, `bun check` passed.
 
 Issue claims:
 
@@ -742,7 +742,7 @@ Reference docs:
 
 Next owner:
 
-- Slice 1B: `.tmp/slate-v2/scripts/benchmarks/core/current/text-selection.mjs`.
+- Slice 1B: `benchmarks/slate-v2/donor/core/current/text-selection.mjs`.
 
 ### Slice 1B - Text/Selection Benchmark API Drift - 2026-05-08
 
@@ -750,7 +750,7 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/text-selection.mjs`
+- `benchmarks/slate-v2/donor/core/current/text-selection.mjs`
 
 Work completed:
 
@@ -762,8 +762,8 @@ Work completed:
 
 Evidence:
 
-- From `.tmp/slate-v2`, `bun run bench:core:text-selection:local` passed.
-- Artifact `.tmp/slate-v2/tmp/slate-text-selection-benchmark.json` includes
+- From `Plate repo root`, `bun run bench:core:text-selection:local` passed.
+- Artifact `tmp/slate-text-selection-benchmark.json` includes
   `p75`, `p95`, and `p99` in each lane through the shared summary helper.
 
 Issue claims:
@@ -777,8 +777,8 @@ Reference docs:
 Next owner:
 
 - Slice 1C:
-  `.tmp/slate-v2/scripts/benchmarks/core/current/refs-projection.mjs` and
-  `.tmp/slate-v2/scripts/benchmarks/core/current/query-ref-observation.mjs`.
+  `benchmarks/slate-v2/donor/core/current/refs-projection.mjs` and
+  `benchmarks/slate-v2/donor/core/current/query-ref-observation.mjs`.
 
 ### Slice 1C - Ref And Observation Benchmark API Drift - 2026-05-08
 
@@ -786,8 +786,8 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/refs-projection.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/current/query-ref-observation.mjs`
+- `benchmarks/slate-v2/donor/core/current/refs-projection.mjs`
+- `benchmarks/slate-v2/donor/core/current/query-ref-observation.mjs`
 
 Work completed:
 
@@ -800,10 +800,10 @@ Work completed:
 
 Evidence:
 
-- From `.tmp/slate-v2`, `bun run bench:core:refs-projection:local` passed.
-- From `.tmp/slate-v2`, `bun run bench:core:query-ref-observation:local` passed.
-- Artifacts `.tmp/slate-v2/tmp/slate-refs-projection-benchmark.json` and
-  `.tmp/slate-v2/tmp/slate-query-ref-observation-benchmark.json` include
+- From `Plate repo root`, `bun run bench:core:refs-projection:local` passed.
+- From `Plate repo root`, `bun run bench:core:query-ref-observation:local` passed.
+- Artifacts `tmp/slate-refs-projection-benchmark.json` and
+  `tmp/slate-query-ref-observation-benchmark.json` include
   percentile lane fields through the shared summary helper.
 
 Issue claims:
@@ -816,7 +816,7 @@ Reference docs:
 
 Next owner:
 
-- Slice 1D: `.tmp/slate-v2/scripts/benchmarks/core/current/normalization.mjs`.
+- Slice 1D: `benchmarks/slate-v2/donor/core/current/normalization.mjs`.
 
 ### Slice 1D - Normalization Benchmark API Drift - 2026-05-08
 
@@ -824,7 +824,7 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/normalization.mjs`
+- `benchmarks/slate-v2/donor/core/current/normalization.mjs`
 
 Work completed:
 
@@ -838,8 +838,8 @@ Work completed:
 
 Evidence:
 
-- From `.tmp/slate-v2`, `bun run bench:core:normalization:local` passed.
-- Artifact `.tmp/slate-v2/tmp/slate-normalization-benchmark.json` includes
+- From `Plate repo root`, `bun run bench:core:normalization:local` passed.
+- Artifact `tmp/slate-normalization-benchmark.json` includes
   percentile lane fields through the shared summary helper.
 
 Issue claims:
@@ -852,7 +852,7 @@ Reference docs:
 
 Next owner:
 
-- Slice 1E: `.tmp/slate-v2/scripts/benchmarks/core/current/node-transforms.mjs`.
+- Slice 1E: `benchmarks/slate-v2/donor/core/current/node-transforms.mjs`.
 
 ### Slice 1E - Node Transforms Benchmark API Drift - 2026-05-08
 
@@ -860,7 +860,7 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/node-transforms.mjs`
+- `benchmarks/slate-v2/donor/core/current/node-transforms.mjs`
 
 Work completed:
 
@@ -871,8 +871,8 @@ Work completed:
 
 Evidence:
 
-- From `.tmp/slate-v2`, `bun run bench:core:node-transforms:local` passed.
-- Artifact `.tmp/slate-v2/tmp/slate-node-transform-benchmark.json` includes
+- From `Plate repo root`, `bun run bench:core:node-transforms:local` passed.
+- Artifact `tmp/slate-node-transform-benchmark.json` includes
   percentile lane fields through the shared summary helper.
 
 Issue claims:
@@ -899,7 +899,7 @@ Work completed:
 
 Evidence:
 
-- From `.tmp/slate-v2`, these passed:
+- From `Plate repo root`, these passed:
   - `bun run bench:core:transaction:local`
   - `bun run bench:core:text-selection:local`
   - `bun run bench:core:refs-projection:local`
@@ -928,7 +928,7 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/transaction-execution.mjs`
+- `benchmarks/slate-v2/donor/core/current/transaction-execution.mjs`
 
 Work completed:
 
@@ -943,9 +943,9 @@ Work completed:
 
 Evidence:
 
-- From `.tmp/slate-v2`, `bun run bench:core:transaction:local` passed.
-- From `.tmp/slate-v2`, `bun run bench:slate:6038:local` passed.
-- Artifact `.tmp/slate-v2/tmp/bench-slate-6038.json` has
+- From `Plate repo root`, `bun run bench:core:transaction:local` passed.
+- From `Plate repo root`, `bun run bench:slate:6038:local` passed.
+- Artifact `tmp/bench-slate-6038.json` has
   `opFamilyLanes.*.separateUpdateMs.p95/p99` and
   `opFamilyLanes.*.updateReplayMs.p95/p99`.
 
@@ -970,7 +970,7 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx`
+- `benchmarks/slate-v2/donor/browser/react/rerender-breadth.tsx`
 
 Work completed:
 
@@ -981,12 +981,12 @@ Work completed:
 
 Evidence:
 
-- From `.tmp/slate-v2`, `bun run bench:react:rerender-breadth:local` passed.
-- From `.tmp/slate-v2`,
+- From `Plate repo root`, `bun run bench:react:rerender-breadth:local` passed.
+- From `Plate repo root`,
   `bun test ./packages/slate-react/test/provider-hooks-contract.tsx ./packages/slate-react/test/projections-and-selection-contract.tsx`
   passed.
 - Artifact
-  `.tmp/slate-v2/packages/slate-react/tmp/slate-react-rerender-breadth-benchmark.json`
+  `packages/slate-react/tmp/slate-react-rerender-breadth-benchmark.json`
   has percentile rows for sibling leaf breadth, deep ancestor breadth, broad
   selection renders, and source-scoped invalidation.
 
@@ -1012,8 +1012,8 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
+- `benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
 
 Work completed:
 
@@ -1025,13 +1025,13 @@ Work completed:
 
 Evidence:
 
-- From `.tmp/slate-v2`, `bun run bench:react:huge-document-overlays:local`
+- From `Plate repo root`, `bun run bench:react:huge-document-overlays:local`
   passed.
-- From `.tmp/slate-v2`,
+- From `Plate repo root`,
   `bun test ./packages/slate-react/test/projections-and-selection-contract.tsx -t source`
   passed.
 - Artifact
-  `.tmp/slate-v2/packages/slate-react/tmp/slate-react-huge-document-overlays-benchmark.json`
+  `packages/slate-react/tmp/slate-react-huge-document-overlays-benchmark.json`
   has percentile rows and the expected projection recompute counts:
   `activeEditAfterOverlay.projectionRecomputeCount.mean = 0`,
   `overlayToggle.projectionRecomputeCount.mean = 1`, and
@@ -1058,8 +1058,8 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-overlays.tsx`
-- `.tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts`
+- `benchmarks/slate-v2/donor/browser/react/huge-document-overlays.tsx`
+- `apps/www/tests/slate-browser/donor/examples/dom-coverage-boundaries.test.ts`
 
 Work completed:
 
@@ -1071,12 +1071,12 @@ Work completed:
 
 Evidence:
 
-- From `.tmp/slate-v2`, `bun run bench:react:huge-document-overlays:local`
+- From `Plate repo root`, `bun run bench:react:huge-document-overlays:local`
   passed.
-- From `.tmp/slate-v2`,
+- From `Plate repo root`,
   `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/dom-coverage-boundaries.test.ts --project=chromium`
   passed with 7 Chromium rows and 1 mobile-touch row skipped.
-- From `.tmp/slate-v2`, `bun check` passed.
+- From `Plate repo root`, `bun check` passed.
 
 Issue claims:
 
@@ -1102,9 +1102,9 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`
-- `.tmp/slate-v2/playwright/stress/generated-editing.test.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts`
+- `benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs`
+- `apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts`
+- `packages/slate-react/src/editable/mutation-controller.ts`
 
 Work completed:
 
@@ -1118,20 +1118,20 @@ Work completed:
 
 Evidence:
 
-- From `.tmp/slate-v2`,
+- From `Plate repo root`,
   `bun ./scripts/benchmarks/core/current/clipboard-large-payload.mjs` passed.
-- From `.tmp/slate-v2`, `bun run bench:slate:5945:issue` passed with issue
+- From `Plate repo root`, `bun run bench:slate:5945:issue` passed with issue
   thresholds green: `cutTwoBlocksEditMsP50 = 2.02ms`, `cutTwoBlocksMsP50 =
 2.17ms`, and `operationCount = 1`.
-- From `.tmp/slate-v2`,
+- From `Plate repo root`,
   `STRESS_FAMILIES=huge-document-cut PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/stress/generated-editing.test.ts --project=chromium`
   passed.
-- From `.tmp/slate-v2`,
+- From `Plate repo root`,
   `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/stress/generated-editing.test.ts --project=chromium`
   passed with 24 Chromium rows.
-- From `.tmp/slate-v2`, `bun check` passed.
+- From `Plate repo root`, `bun check` passed.
 - Benchmark artifact:
-  `.tmp/slate-v2/tmp/slate-clipboard-large-payload-benchmark.json`.
+  `tmp/slate-clipboard-large-payload-benchmark.json`.
 
 Issue claims:
 
@@ -1159,7 +1159,7 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/playwright/stress/generated-editing.test.ts`
+- `apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts`
 
 Work completed:
 
@@ -1173,10 +1173,10 @@ Work completed:
 
 Evidence:
 
-- From `.tmp/slate-v2`,
+- From `Plate repo root`,
   `STRESS_FAMILIES=webkit-backward-selection PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/stress/generated-editing.test.ts --project=webkit`
   passed.
-- From `.tmp/slate-v2`, `bun check` passed.
+- From `Plate repo root`, `bun check` passed.
 
 Issue claims:
 
@@ -1199,9 +1199,9 @@ Status: complete.
 
 Owner:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/current/history-retained-memory.mjs`
-- `.tmp/slate-v2/package.json`
-- `.tmp/slate-v2/scripts/benchmarks/README.md`
+- `benchmarks/slate-v2/donor/core/current/history-retained-memory.mjs`
+- `Plate repo root/package.json`
+- `benchmarks/slate-v2/donor/README.md`
 - `docs/slate-v2/ledgers/issue-coverage-matrix.md`
 - `docs/slate-v2/ledgers/fork-issue-dossier.md`
 
@@ -1219,16 +1219,16 @@ Work completed:
 
 Evidence:
 
-- From `.tmp/slate-v2`, `bun run bench:core:history-retained-memory:local`
+- From `Plate repo root`, `bun run bench:core:history-retained-memory:local`
   passed.
-- Artifact: `.tmp/slate-v2/tmp/slate-history-retained-memory.json`.
+- Artifact: `tmp/slate-history-retained-memory.json`.
 - `fullDocumentReplaceChildren`: one history entry, one retained
   `replace_children` operation, `historyJsonBytes = 1585394`.
 - `rangeDeleteReplaceChildren`: one history entry, one retained
   `replace_children` operation, `historyJsonBytes = 775230`.
 - Heap samples were captured from `process.memoryUsage().heapUsed`; local GC was
   unavailable, so heap samples remain calibration evidence, not thresholds.
-- From `.tmp/slate-v2`, `bun check` passed after `bun lint:fix` formatted the new
+- From `Plate repo root`, `bun check` passed after `bun lint:fix` formatted the new
   benchmark file.
 
 Issue claims:
@@ -1261,8 +1261,8 @@ Action:
 
 Files changed:
 
-- `.tmp/slate-v2/scripts/benchmarks/core/compare/normalization.mjs`
-- `.tmp/slate-v2/scripts/benchmarks/core/compare/huge-document.mjs`
+- `benchmarks/slate-v2/donor/core/compare/normalization.mjs`
+- `benchmarks/slate-v2/donor/core/compare/huge-document.mjs`
 
 Commands:
 
@@ -1273,8 +1273,8 @@ Commands:
 
 Artifacts:
 
-- `.tmp/slate-v2/tmp/slate-normalization-compare-benchmark.json`
-- `.tmp/slate-v2/tmp/slate-core-huge-document-benchmark.json`
+- `tmp/slate-normalization-compare-benchmark.json`
+- `tmp/slate-core-huge-document-benchmark.json`
 
 Compare evidence:
 

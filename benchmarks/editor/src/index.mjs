@@ -6,7 +6,7 @@ export const editorTargets = Object.freeze([
     id: 'slate-v2',
     label: 'Slate v2',
     role: 'engine-and-react-runtime',
-    sourcePath: '../../.tmp/slate-v2',
+    sourcePath: '../..',
     evidenceOwner: 'scripts/benchmarks plus packages/slate*',
   },
   {

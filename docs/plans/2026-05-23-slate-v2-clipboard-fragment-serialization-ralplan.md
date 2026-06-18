@@ -48,11 +48,11 @@ Intent:
 
 In scope:
 
-- `.tmp/slate-v2/packages/slate/src/transforms-text/insert-fragment.ts`
-- `.tmp/slate-v2/packages/slate/test/clipboard-contract.ts`
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
-- `.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts`
-- `.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts`
+- `packages/slate/src/transforms-text/insert-fragment.ts`
+- `packages/slate/test/clipboard-contract.ts`
+- `packages/slate-dom/src/plugin/dom-clipboard-runtime.ts`
+- `packages/slate-dom/test/clipboard-boundary.ts`
+- `packages/slate-react/src/editable/clipboard-input-strategy.ts`
 - focused React/Vitest DOM coverage tests when DOM strategy affects copy/paste
 - focused Playwright/browser proof only for browser-visible clipboard claims
 - issue ledgers and PR claim text only when proof changes
@@ -90,13 +90,13 @@ Source-backed facts:
 Fresh verification from this pass:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun test ./packages/slate/test/clipboard-contract.ts \
   ./packages/slate-dom/test/clipboard-boundary.ts \
   ./packages/slate-react/test/dom-coverage-native-bridge-contract.test.ts
 # 56 pass, 0 fail
 
-cd .tmp/slate-v2/packages/slate-react
+cd packages/slate-react
 bun test:vitest test/dom-strategy-and-scroll.test.tsx \
   test/dom-coverage-native-bridge-contract.test.ts
 # 2 files passed, 47 tests passed
@@ -105,7 +105,7 @@ bun test:vitest test/dom-strategy-and-scroll.test.tsx \
 Fresh Ralph execution proof:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun run bench:core:clipboard-large-payload:local
 # passed with issueTargetsEnabled: false
 
@@ -188,10 +188,10 @@ architecture.
 
 Completed:
 
-- repaired `.tmp/slate-v2/scripts/benchmarks/core/current/clipboard-large-payload.mjs`
+- repaired `benchmarks/slate-v2/donor/core/current/clipboard-large-payload.mjs`
   to use current `dom()` extension installation;
 - added Chromium browser proof in
-  `.tmp/slate-v2/playwright/integration/examples/mentions.test.ts`;
+  `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`;
 - verified selected inline void native clipboard `text/html`, `text/plain`, and
   embedded Slate fragment;
 - verified no FEFF or neighboring text leakage;

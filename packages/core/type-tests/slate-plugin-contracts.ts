@@ -1,4 +1,4 @@
-import { createEditor } from '@platejs/slate';
+import { createEditor } from '@platejs/slate-legacy';
 
 import {
   type PluginConfig,

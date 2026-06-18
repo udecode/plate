@@ -37,31 +37,31 @@ implementation files were edited by this Slate Ralplan pass.
 
 ## Live Source Evidence
 
-- Current public export: `.tmp/slate-v2/packages/slate-react/src/index.ts:91`
+- Current public export: `packages/slate-react/src/index.ts:91`
   exports `useElement` and `useElementIf` from `./hooks/use-element`.
 - Current implementation:
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-element.ts:10` throws outside
+  `packages/slate-react/src/hooks/use-element.ts:10` throws outside
   render-element context, while `:25` returns `useContext(ElementContext)` and
   may be `null`.
 - Current only source call site:
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts:8` imports
+  `packages/slate-react/src/hooks/use-element-selected.ts:8` imports
   `useElementIf`; `:10-15` uses it only to support either context element or an
   explicit path.
 - Current examples use the real public hook, not `useElementIf`:
-  `.tmp/slate-v2/site/examples/ts/huge-document.tsx:220`,
-  `.tmp/slate-v2/site/examples/ts/inlines.tsx:280`,
-  `.tmp/slate-v2/site/examples/ts/paste-html.tsx:193`, and
-  `.tmp/slate-v2/site/examples/ts/mentions.tsx:254` use
+  `apps/www/src/app/(app)/examples/slate/_examples/huge-document.tsx:220`,
+  `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx:280`,
+  `apps/www/src/app/(app)/examples/slate/_examples/paste-html.tsx:193`, and
+  `apps/www/src/app/(app)/examples/slate/_examples/mentions.tsx:254` use
   `useElementSelected`.
 - Current selector backbone:
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-node-selector.tsx:110-116`
+  `packages/slate-react/src/hooks/use-node-selector.tsx:110-116`
   exposes selector-first `useNodeSelector`, and `:129-144` exposes
   `useTextSelector`.
 - Current state selector:
-  `.tmp/slate-v2/packages/slate-react/src/hooks/use-editor-selector.tsx:153-187`
+  `packages/slate-react/src/hooks/use-editor-selector.tsx:153-187`
   exposes `useEditorState(selector, options)`.
 - Current proof for the adjacent issue lane:
-  `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx:30-230`
+  `packages/slate-react/test/use-element-selected.test.tsx:30-230`
   proves `useElementSelected` behavior and selected self-removal safety.
 - Current issue accounting:
   `docs/slate-v2/ledgers/issue-coverage-matrix.md:73` and `:200` already claim
@@ -164,7 +164,7 @@ No fixed issue claim changes.
 
 | Issue | Cluster                 | Claim                 | Why                                                                                                                             | Proof route                                                                                                                             | V2 sync ledger                                                                       | PR line                                                                       |
 | ----- | ----------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
-| #6053 | singleton-react-runtime | Preserved fixed claim | `useElementSelected()` self-removal proof is the issue-facing hook behavior; `useElementIf` is only an internal support detail. | `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`; `docs/slate-v2/ledgers/issue-coverage-matrix.md:73` and `:200` | unchanged: `docs/slate-issues/gitcrawl-v2-sync-ledger.md:18` remains `fixes-claimed` | unchanged: `Fixes #6053` stays about `useElementSelected`, not `useElementIf` |
+| #6053 | singleton-react-runtime | Preserved fixed claim | `useElementSelected()` self-removal proof is the issue-facing hook behavior; `useElementIf` is only an internal support detail. | `packages/slate-react/test/use-element-selected.test.tsx`; `docs/slate-v2/ledgers/issue-coverage-matrix.md:73` and `:200` | unchanged: `docs/slate-issues/gitcrawl-v2-sync-ledger.md:18` remains `fixes-claimed` | unchanged: `Fixes #6053` stays about `useElementSelected`, not `useElementIf` |
 
 ClawSweeper status: skipped. Existing ledgers already cover the only touched
 issue-facing surface, `useElementSelected` / `#6053`; this plan makes no new
@@ -199,10 +199,10 @@ already names `useElementSelected(path?)` and does not mention `useElementIf`.
 
 Blast radius:
 
-- package export: `.tmp/slate-v2/packages/slate-react/src/index.ts`
-- hook file: `.tmp/slate-v2/packages/slate-react/src/hooks/use-element.ts`
-- internal user: `.tmp/slate-v2/packages/slate-react/src/hooks/use-element-selected.ts`
-- proof: `.tmp/slate-v2/packages/slate-react/test/use-element-selected.test.tsx`
+- package export: `packages/slate-react/src/index.ts`
+- hook file: `packages/slate-react/src/hooks/use-element.ts`
+- internal user: `packages/slate-react/src/hooks/use-element-selected.ts`
+- proof: `packages/slate-react/test/use-element-selected.test.tsx`
 - docs/examples: only if a search finds public docs/examples mentioning
   `useElementIf`
 
@@ -215,7 +215,7 @@ Blast radius:
 ## Implementation Phases For Ralph
 
 1. Remove `useElementIf` from
-   `.tmp/slate-v2/packages/slate-react/src/index.ts`.
+   `packages/slate-react/src/index.ts`.
 2. Keep optional element context internal:
    - either inline `useContext(ElementContext)` in `useElementSelected`, or
    - rename the non-exported helper to `useOptionalElementContext`.

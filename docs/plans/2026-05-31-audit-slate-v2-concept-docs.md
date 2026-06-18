@@ -24,7 +24,7 @@ Applied packs:
 
 Docs source:
 - type: local Slate v2 docs/source audit
-- id / link: .tmp/slate-v2
+- id / link: Plate repo root
 - title: Roots, DOM coverage boundaries, hidden content, slate-layout, and
   document state docs
 - acceptance criteria: per-file docs decision matrix, current-state docs voice,
@@ -33,8 +33,8 @@ Docs source:
 
 Docs lane:
 - lane: concept + API reference + library reference + walkthrough
-- target docs: all `.tmp/slate-v2/docs/**/*.md`
-- documented source owner: `.tmp/slate-v2` packages `slate`, `slate-react`,
+- target docs: all `content/docs/slate/**/*.md`
+- documented source owner: `Plate repo root` packages `slate`, `slate-react`,
   `slate-layout`, and site examples
 - nearest sibling docs: `docs/api/nodes/editor.md`,
   `docs/libraries/slate-react/slate.md`, `docs/libraries/slate-react/hooks.md`,
@@ -43,7 +43,7 @@ Docs lane:
 - plugin page: N/A: no Plate plugin page changed
 
 Completion threshold:
-- Every docs file in `.tmp/slate-v2/docs/**/*.md` is classified in the Docs File
+- Every docs file in `content/docs/slate/**/*.md` is classified in the Docs File
   Matrix.
 - New concepts are documented in durable homes instead of buried in examples:
   roots and document state in Concepts, DOM coverage in Slate React, pagination
@@ -62,14 +62,14 @@ Completion threshold:
   passes from `/Users/zbeyens/git/plate-2`.
 
 Verification surface:
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: markdown link audit over
+- `/Users/zbeyens/git/plate-2/Plate repo root`: markdown link audit over
   `docs/**/*.md`.
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: stale term/API audit with `rg`
+- `/Users/zbeyens/git/plate-2/Plate repo root`: stale term/API audit with `rg`
   for removed policy names, wrong layout/content-root examples, stale
   document-value examples, raw state patch export, and public docs callback
   names banned by the contract.
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: `bun check`.
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: docs-focused `autoreview`.
+- `/Users/zbeyens/git/plate-2/Plate repo root`: `bun check`.
+- `/Users/zbeyens/git/plate-2/Plate repo root`: docs-focused `autoreview`.
 - `/Users/zbeyens/git/plate-2`: autogoal `check-complete`.
 
 Constraints:
@@ -81,15 +81,15 @@ Constraints:
   rendered route changes behavior.
 
 Boundaries:
-- Source of truth: `.tmp/slate-v2` source packages, examples, and docs tree.
-- Allowed edit scope: docs in `.tmp/slate-v2` plus this root goal plan.
+- Source of truth: `Plate repo root` source packages, examples, and docs tree.
+- Allowed edit scope: docs in `Plate repo root` plus this root goal plan.
 - Browser surface: N/A: docs-only markdown edits; existing dev route unchanged.
 - Tracker sync: N/A: no issue tracker update requested.
 - Non-goals: do not change hidden-content runtime behavior, policy semantics,
   document-state runtime behavior, or public example controls in this docs pass.
 
 Blocked condition:
-Block only if a documented public API cannot be verified in `.tmp/slate-v2`
+Block only if a documented public API cannot be verified in `Plate repo root`
 source or the required verification command fails for a docs-caused reason.
 
 Docs state:
@@ -113,7 +113,7 @@ Start Gates:
 | `docs-creator` loaded | yes | Read `.agents/skills/docs-creator/SKILL.md`; applied current-state docs voice. |
 | Active goal checked or created | yes | Active autogoal objective covers per-file docs decisions, source checks, and autoreview. |
 | Docs lane selected | yes | Concept, API reference, library reference, and walkthrough lanes selected. |
-| Target docs read | yes | Audited all `.tmp/slate-v2/docs/**/*.md` files through the file matrix. |
+| Target docs read | yes | Audited all `content/docs/slate/**/*.md` files through the file matrix. |
 | Nearest sibling docs read | yes | Used existing Editor, Slate React, hooks, roots, saving, and collaboration docs as siblings. |
 | Docs style doctrine read | yes | Followed docs-creator style: fast path first, exact APIs, no changelog language. |
 | Documented source code read | yes | Verified public surface in `slate`, `slate-react`, `slate-layout`, and examples. |
@@ -228,14 +228,14 @@ Completion Gates:
 | Docs lane shape satisfied | yes | Check concept, API, library, and walkthrough docs against docs-creator. | New docs split concept, package reference, API reference, and walkthrough guidance instead of dumping everything into one page. |
 | Source-backed claim audit | yes | Verify every named API, option, component, import, route, and package specifier against source. | Source audit covered `root`, roots state, `tx.roots`, content roots, content boundaries, policies, layout hooks, and state fields. |
 | Ownership map verified | yes | Confirm package and layer ownership claims against source. | Core roots and document state in `slate`, DOM/content roots in `slate-react`, pagination layout in `slate-layout`. |
-| MDX/content parser | no | Markdown-only docs; no MDX contentlayer route build required for `.tmp/slate-v2`. | N/A: docs are plain markdown, link audit covers local refs. |
+| MDX/content parser | no | Markdown-only docs; no MDX contentlayer route build required for `Plate repo root`. | N/A: docs are plain markdown, link audit covers local refs. |
 | Links/routes/previews verified | yes | Check leaf links and anchors. | Markdown link audit checked 62 markdown files and passed. |
 | Plugin page specifics | no | No plugin page changed. | N/A: no plugin docs page changed. |
 | Browser/render surface changed | no | Record explicit waiver. | N/A: no runtime/browser surface changed. |
 | Package/API behavior changed | no | Record changeset decision. | N/A: docs-only change; formatter touched one code line without behavior change. |
 | Agent rules or skills changed | no | Record sync decision. | N/A: no skill/rule source changed. |
 | Autoreview for non-trivial docs changes | yes | Run `.agents/skills/autoreview` local mode. | Final Codex autoreview clean: no accepted/actionable findings. |
-| Final lint | yes | Run fast repo gate. | `bun check` passed in `.tmp/slate-v2`. |
+| Final lint | yes | Run fast repo gate. | `bun check` passed in `Plate repo root`. |
 | Goal plan complete | yes | Run autogoal `check-complete`. | This plan is ready for the final mechanical check. |
 
 Phase / pass table:
@@ -312,22 +312,22 @@ Error attempts:
 | Autoreview found banned public `Slate` callback names | 1 | Remove specialized callbacks from public docs instead of broadening the public surface | Resolved and clean autoreview reran. |
 
 Verification evidence:
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: markdown link audit checked 62
+- `/Users/zbeyens/git/plate-2/Plate repo root`: markdown link audit checked 62
   markdown files and passed.
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: stale-term audit for
+- `/Users/zbeyens/git/plate-2/Plate repo root`: stale-term audit for
   `include-model`, `summary-only`, `model-backed`,
   `not-native-until-mounted`, old boundary names, stale `state.value.get()` as
   array examples, raw `commit.statePatches` export,
   `Editor.getCollabStatePatches`, and public `onValueChange` /
   `onSelectionChange` docs returned no matches.
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: `bun check` passed: lint,
+- `/Users/zbeyens/git/plate-2/Plate repo root`: `bun check` passed: lint,
   package/site/root typecheck, Bun unit tests with 1172 pass and 95 skip,
   slate-layout with 37 pass, and slate-react Vitest with 55 files and 566
   tests passed.
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: docs-focused Codex autoreview
+- `/Users/zbeyens/git/plate-2/Plate repo root`: docs-focused Codex autoreview
   first pass found one accepted issue in `docs/libraries/slate-react/slate.md`;
   the public callback docs were removed.
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2`: final docs-focused Codex
+- `/Users/zbeyens/git/plate-2/Plate repo root`: final docs-focused Codex
   autoreview reported no accepted/actionable findings and marked the patch
   correct with confidence 0.78.
 
@@ -339,7 +339,7 @@ Final handoff contract:
 - Docs lane: concept + API reference + library reference + walkthrough.
 - Source-backed claims: roots, content roots, DOM coverage policies, layout
   APIs, full document persistence, state fields, comments ownership, and
-  collaboration state patches verified against `.tmp/slate-v2`.
+  collaboration state patches verified against `Plate repo root`.
 - Content build / parser: N/A for markdown-only docs; link audit and
   `bun check` cover this repo shape.
 - Links / demos / previews: markdown links checked across 62 docs files.

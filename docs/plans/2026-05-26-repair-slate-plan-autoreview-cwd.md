@@ -3,7 +3,7 @@
 Objective:
 Repair Slate Plan execution closeout so autoreview always runs from the git
 checkout that owns the implementation patch. For Slate v2 execution work under
-`.tmp/slate-v2`, the review helper must run with cwd `.tmp/slate-v2`, not the
+`Plate repo root`, the review helper must run with cwd `Plate repo root`, not the
 `plate-2` root, while still allowing the helper binary to live in `plate-2`.
 
 Goal plan:
@@ -23,7 +23,7 @@ Expectation:
   autoreview from the wrong repo root.
 - observed miss: autoreview was first run from `plate-2`, producing a 2.99M
   character bundle of unrelated root skill/docs changes instead of the
-  `.tmp/slate-v2` implementation diff.
+  `Plate repo root` implementation diff.
 - owning skill/template/helper: `.agents/rules/slate-plan.mdc` and
   `docs/plans/templates/slate-plan.md`.
 - repair classification: derived skill rule plus template gate repair.
@@ -35,7 +35,7 @@ Completion threshold:
   non-repairs are recorded, and
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-26-repair-slate-plan-autoreview-cwd.md` passes.
 - The repaired Slate Plan rule must require autoreview target selection from the
-  owning git checkout and explicitly name `.tmp/slate-v2` as the cwd for Slate
+  owning git checkout and explicitly name `Plate repo root` as the cwd for Slate
   v2 implementation patches.
 - The Slate Plan template must include an autoreview workspace gate so future
   plans record reviewed patch owner, cwd, command, result, and notes.
@@ -94,7 +94,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Expectation restated | yes | Restated above: Slate Plan dirty-local autoreview must run from the owning checkout, `.tmp/slate-v2` for Slate v2 patches. |
+| Expectation restated | yes | Restated above: Slate Plan dirty-local autoreview must run from the owning checkout, `Plate repo root` for Slate v2 patches. |
 | Active goal checked | yes | `get_goal` showed paused hidden-content execution goal; no second goal was created. |
 | Named plan or skill read | yes | User pasted `autogoal` and `slate-plan`; source reads covered `.agents/rules/slate-plan.mdc`, `docs/plans/templates/slate-plan.md`, and `docs/plans/templates/goal-repair.md`. |
 | Owning source selected | yes | Primary owner selected as `.agents/rules/slate-plan.mdc`; template owner selected as `docs/plans/templates/slate-plan.md`. |
@@ -114,7 +114,7 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Source owner patched | yes | Patch the selected source owner or record runtime-plan-only repair | `.agents/rules/slate-plan.mdc` now has `Autoreview Workspace Gate` and cwd rules for `.tmp/slate-v2`. |
+| Source owner patched | yes | Patch the selected source owner or record runtime-plan-only repair | `.agents/rules/slate-plan.mdc` now has `Autoreview Workspace Gate` and cwd rules for `Plate repo root`. |
 | Generated skill sync | yes | If `.agents/rules/**` changed, run `pnpm install` and verify generated `SKILL.md` sync | `pnpm install` passed and `rg` found repaired wording in `.agents/skills/slate-plan/SKILL.md`. |
 | Template smoke | yes | Instantiate the repaired template or inspect it directly when a smoke plan would create noise | Direct template inspection found `Autoreview workspace gate` with `Reviewed patch owner`, `Cwd`, `Command`, `Result`, and `Notes`. |
 | Incomplete-plan guard | yes | Verify an unfinished generated plan still fails `check-complete.mjs`, or record N/A with reason | Pre-fill check exited 1 as expected before the repair plan was filled. |
@@ -135,10 +135,10 @@ Phase / pass table:
 
 Findings:
 - Slate Plan already required Slate v2 verification commands to run in
-  `.tmp/slate-v2`, but its autoreview wording only said dirty-local
+  `Plate repo root`, but its autoreview wording only said dirty-local
   `--mode local` and did not bind the review cwd to the implementation checkout.
 - Running dirty-local autoreview from `plate-2` can review unrelated root
-  skill/docs changes and miss or drown out the `.tmp/slate-v2` implementation
+  skill/docs changes and miss or drown out the `Plate repo root` implementation
   patch.
 
 Decisions and tradeoffs:
@@ -175,7 +175,7 @@ Verification evidence:
 - `ps -axo pid,ppid,command | rg 'autoreview|codex exec'` confirmed no stale
   autoreview/codex review process remained after cleanup.
 - `pnpm install` in `plate-2` passed and ran `bun x skiller@latest apply`.
-- `rg -n "Autoreview Workspace Gate|git checkout that owns|\\.tmp/slate-v2.*autoreview|wrong bundle|Reviewed patch owner" .agents/rules/slate-plan.mdc .agents/skills/slate-plan/SKILL.md docs/plans/templates/slate-plan.md`
+- `rg -n "Autoreview Workspace Gate|git checkout that owns|\\Plate repo root.*autoreview|wrong bundle|Reviewed patch owner" .agents/rules/slate-plan.mdc .agents/skills/slate-plan/SKILL.md docs/plans/templates/slate-plan.md`
   passed and found repaired wording in source rule, generated skill, and
   template.
 - Pre-fill `check-complete` on this repair plan failed as expected, proving
@@ -215,4 +215,4 @@ Reboot status:
 
 Open risks:
 - None for the repair. The paused implementation goal still needs its own
-  autoreview rerun later from `.tmp/slate-v2`.
+  autoreview rerun later from `Plate repo root`.

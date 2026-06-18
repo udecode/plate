@@ -27,10 +27,10 @@ Completion threshold:
   `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-slate-v2-async-integration-dev-flow.md` passes.
 
 Verification surface:
-- Planning proof: source-grounded reads of `.tmp/slate-v2/package.json`,
-  `.tmp/slate-v2/scripts/integration-local-async.mjs`,
-  `.tmp/slate-v2/scripts/integration-local-async.spec.ts`, and
-  `.tmp/slate-v2/docs/general/contributing.md`.
+- Planning proof: source-grounded reads of `Plate repo root/package.json`,
+  `tooling/slate-v2/donor/integration-local-async.mjs`,
+  `tooling/slate-v2/donor/integration-local-async.spec.ts`, and
+  `content/docs/slate/general/contributing.md`.
 - Existing workflow evidence:
   `docs/solutions/test-failures/2026-04-24-slate-v2-integration-local-should-cap-local-playwright-workers-before-debugging-editor-failures.md`,
   `docs/solutions/test-failures/2026-05-20-slate-v2-integration-local-editor-stacking-and-project-scope-failures.md`,
@@ -38,7 +38,7 @@ Verification surface:
   `docs/solutions/workflow-issues/2026-05-08-slate-v2-playwright-webserver-checks-should-run-sequentially.md`.
 - Closure proof after later passes: `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-slate-v2-async-integration-dev-flow.md`.
 - Planning-only checks run in `plate-2`; any Slate v2 source/runtime/browser/API
-  claim must cite and verify the live `.tmp/slate-v2` workspace command.
+  claim must cite and verify the live `Plate repo root` workspace command.
 
 Constraints:
 - Do not add `bun test:integration-local` or async status checks to `bun check`.
@@ -54,8 +54,8 @@ Constraints:
 
 Boundaries:
 - This activation is planning mode only: edit `docs/plans/**`; inspect live
-  `.tmp/slate-v2` source as evidence.
-- Execution mode may later edit `.tmp/slate-v2` docs/scripts/package workflow
+  `Plate repo root` source as evidence.
+- Execution mode may later edit `Plate repo root` docs/scripts/package workflow
   surfaces and agent-rule documentation if the accepted plan calls for it.
 - Allowed edit scope: `docs/plans/**`, `docs/research/**`,
   `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`,
@@ -87,7 +87,7 @@ Current verdict:
 - keep / cut / revise call: keep focused gates synchronous; add async
   integration pickup at session/batch boundaries; keep `check:full`/CI as
   release-quality proof.
-- reason: current `.tmp/slate-v2` scripts already separate fast `check` from
+- reason: current `Plate repo root` scripts already separate fast `check` from
   broad `check:full`, and existing Playwright solution notes show broad
   integration is valuable but noisy enough to need worker caps, fresh servers,
   and sequential site-backed execution.
@@ -106,9 +106,9 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | user invoked `slate-plan`; planning mode used |
 | Active goal checked or created | yes | no active goal; created Slate Plan goal for dev-flow review |
-| Source of truth read before edits | yes | `.tmp/slate-v2` package scripts, async runner, runner tests, contributing docs |
+| Source of truth read before edits | yes | `Plate repo root` package scripts, async runner, runner tests, contributing docs |
 | `docs/solutions` checked for non-trivial existing-code work | yes | read worker-cap, stale-server, full-matrix failure, and sequential-build notes |
-| Live `.tmp/slate-v2` grounding needed for current-state claims | yes | source reads recorded in verification gate |
+| Live `Plate repo root` grounding needed for current-state claims | yes | source reads recorded in verification gate |
 
 Work Checklist:
 - [x] Objective includes lane outcome, full pass schedule, one-pass-per-
@@ -137,8 +137,8 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | yes | Source audit and closeout artifact check for this planning-only stop | complete: live `.tmp/slate-v2` source/docs anchors and prior runner proof are recorded |
-| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | yes | Record live `.tmp/slate-v2` source proof or mark as planning-only | complete: planning-only workflow claim with live source/docs reads; no Slate v2 implementation patch |
+| Named verification threshold | yes | Source audit and closeout artifact check for this planning-only stop | complete: live `Plate repo root` source/docs anchors and prior runner proof are recorded |
+| Slate v2 source, runtime, browser, package, public API, or issue-fix claim | yes | Record live `Plate repo root` source proof or mark as planning-only | complete: planning-only workflow claim with live source/docs reads; no Slate v2 implementation patch |
 | Issue ledger or PR reference changed | no | Record why no sync applies | N/A: no issue claim, API shape, proof status, release gate, or PR narrative edit |
 | Autoreview for uncommitted implementation changes | no | Record N/A for planning-only/no local implementation patch | N/A: no implementation diff was made in this planning closeout |
 | Final user-review handoff | yes | Emit final handoff | complete: handoff recorded below and summarized in final response |
@@ -150,7 +150,7 @@ Phase / pass table:
 | Current-state read and initial score | complete | live scripts/docs plus solution notes read; dev-flow policy recorded | related issue discovery |
 | Related issue discovery | complete | `docs/slate-issues/gitcrawl-live-open-ledger.md`, `docs/slate-issues/gitcrawl-v2-sync-ledger.md`, `docs/slate-v2/ledgers/issue-coverage-matrix.md`, and `docs/slate-v2/references/pr-description.md` read for workflow/release/test-infrastructure overlap; no upstream editor-behavior fix claim applies | issue-ledger pass |
 | Issue-ledger pass | skipped | N/A with evidence: no Slate issue fix/improvement/related claim changes, no issue ledger write, and no PR reference sync; existing PR reference still lists full `bun test:integration-local` as an unclaimed release gate | intent/boundary pass |
-| Intent/boundary and decision brief | complete | ownership split, failure policy, hard non-wiring boundaries, accepted execution scope, and decision brief hardened from live `.tmp/slate-v2` source anchors | research refresh |
+| Intent/boundary and decision brief | complete | ownership split, failure policy, hard non-wiring boundaries, accepted execution scope, and decision brief hardened from live `Plate repo root` source anchors | research refresh |
 | Research, ecosystem strategy, live-source refresh | skipped | N/A: this is a workflow-only policy grounded in live Slate v2 scripts/docs and local Playwright workflow notes; no external editor architecture mechanism is used as design evidence | pressure passes |
 | Performance/DX/migration/regression/simplicity pressure passes | complete | pressure rows are represented by the scorecard, hard cuts, implementation-skill matrix, failure policy, and release-gate boundary | objection ledger |
 | Slate maintainer objection ledger | complete | two maintainer objections recorded and answered: background failures can be ignored; fast check can miss browser regressions | high-risk pass |
@@ -180,10 +180,10 @@ Source-backed architecture north star:
      boundaries or before context switches;
   4. release closure: use foreground `check:full`/CI or a clean broad sweep plus
      focused proof before release-quality claims.
-- source evidence: `.tmp/slate-v2/package.json` exposes `check`, `check:full`,
+- source evidence: `Plate repo root/package.json` exposes `check`, `check:full`,
   `test:integration-local`, and async/status/failures/pickup scripts;
-  `.tmp/slate-v2/scripts/integration-local-async.mjs` writes durable run
-  artifacts and pickup guidance; `.tmp/slate-v2/docs/general/contributing.md`
+  `tooling/slate-v2/donor/integration-local-async.mjs` writes durable run
+  artifacts and pickup guidance; `content/docs/slate/general/contributing.md`
   documents async usage.
 - rejected drift: no pre-commit/pre-prompt full integration gate; no hidden
   agent hook that silently runs browser tests; no replacing focused proof with
@@ -194,18 +194,18 @@ Source-backed architecture north star:
 Public API target:
 | Surface | Proposed shape | User-facing DX | Compatibility / migration | Evidence | Verdict |
 |---------|----------------|----------------|---------------------------|----------|---------|
-| package scripts | keep `bun check` fast; add async integration commands as explicit opt-in | predictable command names | no breaking package API | `.tmp/slate-v2/package.json` | keep |
-| docs/dev flow | document when to use pickup/async/full | contributors can run broad sweep without blocking terminal | additive docs | `.tmp/slate-v2/docs/general/contributing.md` | revise later |
+| package scripts | keep `bun check` fast; add async integration commands as explicit opt-in | predictable command names | no breaking package API | `Plate repo root/package.json` | keep |
+| docs/dev flow | document when to use pickup/async/full | contributors can run broad sweep without blocking terminal | additive docs | `content/docs/slate/general/contributing.md` | revise later |
 | agent habit | start Slate v2 work by checking pickup only when a previous run exists or broad proof matters | agents do not forget background failures | requires rule/template sync after acceptance | current async runner | add |
 
 Internal runtime target:
 | Layer | Current owner | Target mechanism | Avoids | Evidence | Verdict |
 |-------|---------------|------------------|--------|----------|---------|
-| fast gate | `.tmp/slate-v2/package.json` `check` | foreground lint/typecheck/unit/package tests only | long browser matrix tax on every prompt | package script read | keep |
-| broad gate | `.tmp/slate-v2/package.json` `check:full` and `test:integration-local` | foreground only for release-quality closure | hiding integration failures at release time | package script read | keep |
-| async runner | `.tmp/slate-v2/scripts/integration-local-async.mjs` | detached sweep, status/failure/pickup artifacts | forgotten regressions, stale server, build-lock races | runner source + solution notes | make dev-flow lane |
-| async runner idempotence | `.tmp/slate-v2/scripts/integration-local-async.mjs` | shared singleton, latest-run pickup, same-command dedupe, and source-stamp cache | multiple agents spawning duplicate full Playwright matrices or ignoring an already-running result | implemented with lock/latest metadata, command keys, and source stamps | complete |
-| pickup artifact | `.tmp/slate-v2/.tmp/integration-runs/<id>/pickup.md` | one resume file/command for agents | giant logs pasted into chat, lost failure context | runner source | make session habit |
+| fast gate | `Plate repo root/package.json` `check` | foreground lint/typecheck/unit/package tests only | long browser matrix tax on every prompt | package script read | keep |
+| broad gate | `Plate repo root/package.json` `check:full` and `test:integration-local` | foreground only for release-quality closure | hiding integration failures at release time | package script read | keep |
+| async runner | `tooling/slate-v2/donor/integration-local-async.mjs` | detached sweep, status/failure/pickup artifacts | forgotten regressions, stale server, build-lock races | runner source + solution notes | make dev-flow lane |
+| async runner idempotence | `tooling/slate-v2/donor/integration-local-async.mjs` | shared singleton, latest-run pickup, same-command dedupe, and source-stamp cache | multiple agents spawning duplicate full Playwright matrices or ignoring an already-running result | implemented with lock/latest metadata, command keys, and source stamps | complete |
+| pickup artifact | `Plate repo root/.tmp/integration-runs/<id>/pickup.md` | one resume file/command for agents | giant logs pasted into chat, lost failure context | runner source | make session habit |
 
 Hook / component / render DX target:
 | Surface | Call-site shape | Composition rule | Performance rule | Evidence | Verdict |
@@ -228,12 +228,12 @@ Intent / boundary record:
 - outcome: async integration sweep becomes a normal background habit and pickup
   queue; focused proof remains the default local proof; release-quality claims
   remain stricter than async convenience.
-- belongs as repo convention: keep `.tmp/slate-v2/package.json` split exactly
+- belongs as repo convention: keep `Plate repo root/package.json` split exactly
   as live source shows it: `check` is lint/typecheck/unit/package tests,
   `check:full` owns release-style local breadth, and
   `test:integration-local:async` / `pickup` / `status` / `failures` stay
   explicit commands.
-- belongs as docs convention: `.tmp/slate-v2/docs/general/contributing.md`
+- belongs as docs convention: `content/docs/slate/general/contributing.md`
   should continue teaching async runs as a broad local sweep that does not block
   the current terminal, with pickup/status/failures as the resume surface.
 - belongs as agent convention: on Slate v2 browser/runtime work, check
@@ -319,8 +319,8 @@ Issue-ledger sync status:
 Ecosystem strategy synthesis:
 | System | Source | Mechanism | Avoids | Steal | Reject | Slate target | Verdict |
 |--------|--------|-----------|--------|-------|--------|--------------|---------|
-| Playwright/local workflow | `.tmp/slate-v2/playwright.config.ts` and solution notes | managed webserver can build/serve integration routes; explicit `PLAYWRIGHT_BASE_URL` bypasses managed server | stale output and Next build-lock races | explicit async runner with fresh server and pickup artifact | hidden parallel Playwright commands | dev-flow background lane | agree |
-| Slate v2 repo scripts | `.tmp/slate-v2/package.json` | fast `check`, broad `check:full`, explicit integration commands | conflating local iteration with release gate | preserve tiered script taxonomy | putting broad integration into `check` | four-lane proof policy | agree |
+| Playwright/local workflow | `Plate repo root/playwright.config.ts` and solution notes | managed webserver can build/serve integration routes; explicit `PLAYWRIGHT_BASE_URL` bypasses managed server | stale output and Next build-lock races | explicit async runner with fresh server and pickup artifact | hidden parallel Playwright commands | dev-flow background lane | agree |
+| Slate v2 repo scripts | `Plate repo root/package.json` | fast `check`, broad `check:full`, explicit integration commands | conflating local iteration with release gate | preserve tiered script taxonomy | putting broad integration into `check` | four-lane proof policy | agree |
 
 Legacy regression proof matrix:
 | Regression class | Legacy behavior | Slate v2 target | Proof route | Owner | Status |
@@ -340,11 +340,11 @@ Browser stress / parity strategy:
 Verification workspace gate:
 | Claim | Workspace | Command | Result | Owner |
 |-------|-----------|---------|--------|-------|
-| `check` remains fast, `check:full` owns broad local closure | `.tmp/slate-v2` | read `.tmp/slate-v2/package.json` | scripts are separate | current pass |
-| async/status/failures/pickup commands exist | `.tmp/slate-v2` | read `.tmp/slate-v2/package.json` and runner | commands exist and runner prints pickup | current pass |
-| async runner writes durable pickup artifacts | `.tmp/slate-v2` | read `.tmp/slate-v2/scripts/integration-local-async.mjs` | `pickup.md`, `status.json`, `failures.md`, `raw.log` paths exist in runner | current pass |
-| async runner many-agent cache gap | `.tmp/slate-v2` | read `.tmp/slate-v2/scripts/integration-local-async.mjs` | implemented: compatible running runs are reused, completed matching runs print cached pickup, incompatible active runs fail clearly | complete |
-| docs explain async use | `.tmp/slate-v2` | read `.tmp/slate-v2/docs/general/contributing.md` | docs include async, focused async, pickup/status/failures | current pass |
+| `check` remains fast, `check:full` owns broad local closure | `Plate repo root` | read `Plate repo root/package.json` | scripts are separate | current pass |
+| async/status/failures/pickup commands exist | `Plate repo root` | read `Plate repo root/package.json` and runner | commands exist and runner prints pickup | current pass |
+| async runner writes durable pickup artifacts | `Plate repo root` | read `tooling/slate-v2/donor/integration-local-async.mjs` | `pickup.md`, `status.json`, `failures.md`, `raw.log` paths exist in runner | current pass |
+| async runner many-agent cache gap | `Plate repo root` | read `tooling/slate-v2/donor/integration-local-async.mjs` | implemented: compatible running runs are reused, completed matching runs print cached pickup, incompatible active runs fail clearly | complete |
+| docs explain async use | `Plate repo root` | read `content/docs/slate/general/contributing.md` | docs include async, focused async, pickup/status/failures | current pass |
 | workflow hazards are known | `plate-2` | read four `docs/solutions` Playwright notes | worker cap, stale server, project scope, and sequential build risks recorded | current pass |
 
 Autoreview workspace gate:
@@ -403,7 +403,7 @@ Plan deltas from review:
 - Added many-agent runner requirement: async start should be shared/idempotent,
   dedupe same command/source-stamp runs, and return existing pickup instead of
   spawning duplicate Playwright matrices.
-- Implemented many-agent runner requirement in `.tmp/slate-v2`: async start now
+- Implemented many-agent runner requirement in `Plate repo root`: async start now
   uses command keys plus source stamps, reuses compatible running/completed runs,
   and rejects incompatible active runs clearly.
 
@@ -419,16 +419,16 @@ Implementation phases with owners:
 | Phase | Owner | Scope | Entry criteria | Exit criteria | Verification |
 |-------|-------|-------|----------------|---------------|--------------|
 | dev-flow rule sync | slate-plan execution mode | `.agents`/skill/template docs if accepted | user accepts plan | agents know when to read pickup/start async sweep | source diff + targeted checks |
-| contributor doc polish | slate-plan execution mode | `.tmp/slate-v2/docs/general/contributing.md` if accepted | user accepts plan | docs split focused/async/release gates clearly | docs lint/source read |
-| runner idempotence/cache | complete | `.tmp/slate-v2/scripts/integration-local-async.mjs`, runner tests, contributing docs | user accepted with "ok go" | same command/source-stamp reuses running or completed run; different command refuses clearly unless explicit queue support exists | `bun test ./scripts/integration-local-async.spec.ts`; `bunx biome check scripts/integration-local-async.mjs scripts/integration-local-async.spec.ts docs/general/contributing.md`; `bunx eslint scripts/integration-local-async.mjs scripts/integration-local-async.spec.ts` |
+| contributor doc polish | slate-plan execution mode | `content/docs/slate/general/contributing.md` if accepted | user accepts plan | docs split focused/async/release gates clearly | docs lint/source read |
+| runner idempotence/cache | complete | `tooling/slate-v2/donor/integration-local-async.mjs`, runner tests, contributing docs | user accepted with "ok go" | same command/source-stamp reuses running or completed run; different command refuses clearly unless explicit queue support exists | `bun test ./scripts/integration-local-async.spec.ts`; `bunx biome check scripts/integration-local-async.mjs scripts/integration-local-async.spec.ts docs/general/contributing.md`; `bunx eslint scripts/integration-local-async.mjs scripts/integration-local-async.spec.ts` |
 | optional CI artifact | future task | CI/playwright reporting | user asks | CI stores pickup-like artifact | CI proof |
 
 Fast driver gates:
 | Gate | Cwd | Command / artifact | Proves | Status |
 |------|-----|--------------------|--------|--------|
-| current source grounding | plate-2 + `.tmp/slate-v2` | source reads listed in verification gate | plan does not invent current state | complete |
+| current source grounding | plate-2 + `Plate repo root` | source reads listed in verification gate | plan does not invent current state | complete |
 | planning artifact check | plate-2 | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-slate-v2-async-integration-dev-flow.md` | final closure integrity | complete |
-| accepted execution proof | `.tmp/slate-v2` | focused docs/script tests after accepted edits | runtime/workflow behavior | N/A until user accepts execution |
+| accepted execution proof | `Plate repo root` | focused docs/script tests after accepted edits | runtime/workflow behavior | N/A until user accepts execution |
 
 Final user-review handoff outline:
 - accepted plan items: four-lane dev-flow policy; async pickup as agent habit;
@@ -440,12 +440,12 @@ Final user-review handoff outline:
   hook, no async-as-release-proof shortcut.
 - issue claims and non-claims: no fixed, improved, related, or PR claim changes;
   issue/reference sync is N/A.
-- proof gates: live `.tmp/slate-v2` package/docs/runner reads plus planning
+- proof gates: live `Plate repo root` package/docs/runner reads plus planning
   check-complete; no implementation proof because no implementation changed.
 - accepted-plan execution handoff: if later accepted, execute docs/rule sync and
   contributor doc polish as a separate execution lane; include runner
   idempotence/cache if many-agent sharing is in scope. Runner
-  idempotence/cache is now implemented and verified in `.tmp/slate-v2`.
+  idempotence/cache is now implemented and verified in `Plate repo root`.
 
 Final completion gates:
 | Gate | Required evidence | Status |
@@ -455,12 +455,12 @@ Final completion gates:
 | issue/reference sync closed | issue-ledger sync status closed | complete |
 | live source grounding complete | source-backed rows cite current owners | complete |
 | workspace verification recorded | verification workspace gate closed | complete |
-| autoreview clean or N/A | `.agents/skills/autoreview/SKILL.md` loaded and clean from the git checkout that owns non-trivial uncommitted implementation changes (`.tmp/slate-v2` for Slate v2 patches), or N/A with reason | N/A: planning-only closeout |
+| autoreview clean or N/A | `.agents/skills/autoreview/SKILL.md` loaded and clean from the git checkout that owns non-trivial uncommitted implementation changes (`Plate repo root` for Slate v2 patches), or N/A with reason | N/A: planning-only closeout |
 | final handoff emitted or lane remains pending | final response / next pass recorded | complete |
 | `check-complete` passes | `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-slate-v2-async-integration-dev-flow.md` | complete |
 
 Findings:
-- Current `.tmp/slate-v2/package.json` keeps fast `check` separate from broad
+- Current `Plate repo root/package.json` keeps fast `check` separate from broad
   `check:full` and `test:integration-local`.
 - Async runner commands already exist in live source:
   `test:integration-local:async`, `status`, `failures`, and `pickup`.
@@ -494,27 +494,27 @@ Timeline:
 - 2026-05-27T08:08:47.732Z Slate Plan goal plan created.
 
 Verification evidence:
-- Source read: `.tmp/slate-v2/package.json`,
-  `.tmp/slate-v2/scripts/integration-local-async.mjs`,
-  `.tmp/slate-v2/scripts/integration-local-async.spec.ts`,
-  `.tmp/slate-v2/docs/general/contributing.md`.
-- Line-anchored refresh: `.tmp/slate-v2/package.json:33-66`,
-  `.tmp/slate-v2/scripts/integration-local-async.mjs:561-612`,
-  `.tmp/slate-v2/scripts/integration-local-async.mjs:654-674`,
-  `.tmp/slate-v2/docs/general/contributing.md:139-175`,
-  `.tmp/slate-v2/scripts/integration-local-async.spec.ts:88-145`.
+- Source read: `Plate repo root/package.json`,
+  `tooling/slate-v2/donor/integration-local-async.mjs`,
+  `tooling/slate-v2/donor/integration-local-async.spec.ts`,
+  `content/docs/slate/general/contributing.md`.
+- Line-anchored refresh: `Plate repo root/package.json:33-66`,
+  `tooling/slate-v2/donor/integration-local-async.mjs:561-612`,
+  `tooling/slate-v2/donor/integration-local-async.mjs:654-674`,
+  `content/docs/slate/general/contributing.md:139-175`,
+  `tooling/slate-v2/donor/integration-local-async.spec.ts:88-145`.
 - Solution notes read: worker cap, stale server, integration-local project
   scope, sequential webserver build.
 - Closeout check: `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-slate-v2-async-integration-dev-flow.md`
   passed in `plate-2`.
 - Execution proof: `bun test ./scripts/integration-local-async.spec.ts` passed
-  in `.tmp/slate-v2`.
+  in `Plate repo root`.
 - Formatting proof:
   `bunx biome check scripts/integration-local-async.mjs scripts/integration-local-async.spec.ts docs/general/contributing.md`
-  passed in `.tmp/slate-v2`.
+  passed in `Plate repo root`.
 - Lint proof:
   `bunx eslint scripts/integration-local-async.mjs scripts/integration-local-async.spec.ts`
-  passed in `.tmp/slate-v2` with one existing ignored-spec warning and zero
+  passed in `Plate repo root` with one existing ignored-spec warning and zero
   errors.
 
 Reboot status:
@@ -529,4 +529,4 @@ Reboot status:
 Open risks:
 - None for this planning closeout.
 - Execution risk remains separate: syncing `.agents`/template rules or
-  `.tmp/slate-v2` docs still needs explicit acceptance and a new execution lane.
+  `Plate repo root` docs still needs explicit acceptance and a new execution lane.

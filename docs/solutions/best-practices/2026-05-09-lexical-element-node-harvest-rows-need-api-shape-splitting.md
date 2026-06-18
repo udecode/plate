@@ -54,7 +54,7 @@ Split Lexical element-node rows by the API the Slate caller actually observes:
 - Lexical JSON/node lifecycle -> reject as framework API shape.
 
 For this pass, the useful proof landed in
-`.tmp/slate-v2/packages/slate/test/query-contract.ts`:
+`packages/slate/test/query-contract.ts`:
 
 - nested text leaves are emitted in document order;
 - first and last text leaves resolve from a nested element;

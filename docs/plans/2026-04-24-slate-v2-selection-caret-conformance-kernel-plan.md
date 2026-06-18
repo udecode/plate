@@ -478,11 +478,11 @@ Purpose:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate/test/read-update-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/primitive-method-runtime-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/transaction-target-runtime-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/commit-metadata-contract.ts`
-- `.tmp/slate-v2/packages/slate/test/bookmark-contract.ts`
+- `packages/slate/test/read-update-contract.ts`
+- `packages/slate/test/primitive-method-runtime-contract.ts`
+- `packages/slate/test/transaction-target-runtime-contract.ts`
+- `packages/slate/test/commit-metadata-contract.ts`
+- `packages/slate/test/bookmark-contract.ts`
 
 ### Layer 2: React Runtime Contracts
 
@@ -496,12 +496,12 @@ Purpose:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate-react/test/selection-conformance-kernel-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/test/caret-repair-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/test/target-runtime-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/dom-text-sync-contract.ts`
-- `.tmp/slate-v2/packages/slate-react/test/projections-and-selection-contract.tsx`
-- `.tmp/slate-v2/packages/slate-react/test/large-doc-and-scroll.tsx`
+- `packages/slate-react/test/selection-conformance-kernel-contract.ts`
+- `packages/slate-react/test/caret-repair-contract.ts`
+- `packages/slate-react/test/target-runtime-contract.tsx`
+- `packages/slate-react/test/dom-text-sync-contract.ts`
+- `packages/slate-react/test/projections-and-selection-contract.tsx`
+- `packages/slate-react/test/large-doc-and-scroll.tsx`
 
 ### Layer 3: Browser Gauntlets
 
@@ -513,8 +513,8 @@ Purpose:
 
 Files:
 
-- `.tmp/slate-v2/packages/slate-browser/src/playwright/**`
-- `.tmp/slate-v2/playwright/integration/examples/**`
+- `packages/browser/src/playwright/**`
+- `apps/www/tests/slate-browser/donor/examples/**`
 
 Every row asserts:
 
