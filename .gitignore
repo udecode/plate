@@ -1,4 +1,5 @@
 # See https://help.github.com/ignore-files/ for more about ignoring files.
+**/test-results
 
 # Allow claude to read these files
 apps/www/src/app/api/ai
@@ -30,8 +31,7 @@ jspm_packages/
 
 # compiled output
 /dist
-/tmp
-/tmp*
+**/tmp*
 /out-tsc
 **/build
 
@@ -121,7 +121,7 @@ connect.lock
 storybook-static/
 
 # Local
-.tmp/
+**/.tmp/
 packages/plate/docs/
 # Local Netlify folder
 .netlify

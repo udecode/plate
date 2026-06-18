@@ -156,7 +156,7 @@ Completion Gates:
 | MDX/content parser | pending | Run `pnpm --filter www build:contentlayer` for MDX/content changes, or record N/A | pending |
 | Links/routes/previews verified | pending | Check leaf links, routes, anchors, and `<ComponentPreview>` names or record N/A | pending |
 | Plugin page specifics | pending | If plugin page, apply `docs-creator` kit/manual/API rules or record N/A | pending |
-| Browser/render surface changed | pending | Capture Browser Use proof or record explicit waiver/blocker | pending |
+| Browser/render surface changed | pending | Capture Browser proof for normal rendered surfaces, or Chrome/Computer proof for native browser/OS surfaces | pending |
 | Package/API behavior changed | pending | Add changeset or record N/A | pending |
 | Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
 | Autoreview for non-trivial docs changes | pending | Load `.agents/skills/autoreview/SKILL.md` and run the right target, or record N/A for tiny/no-local-patch work | pending |

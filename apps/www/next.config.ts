@@ -38,6 +38,8 @@ const WORKSPACE_ALIAS_SUBPATHS = [
   'transports',
 ];
 
+const isSlateMode = process.env.PLATE_WWW_SLATE === '1';
+
 const addAliasEntries = (
   aliases: Record<string, string>,
   importPath: string,
@@ -131,6 +133,7 @@ const withMDX = createMDX({});
 const nextConfig = async (_phase: string) => {
   const isDev = _phase === PHASE_DEVELOPMENT_SERVER;
   const config: NextConfig = {
+    distDir: isSlateMode ? '.next-slate' : '.next',
     typescript: {
       ignoreBuildErrors: true,
     },

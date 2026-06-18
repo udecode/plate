@@ -1,38 +1,29 @@
 {
   "version": 1,
   "skills": {
+    "agent-native-reviewer": {
+      "source": "udecode/dotai",
+      "sourceType": "github",
+      "skillPath": "skills/agent-native-reviewer/SKILL.md",
+      "computedHash": "8af79e111888515e0bf101c10ffcb0505a4d4bc37e9f37196cabbab87e4bae61"
+    },
     "autogoal": {
       "source": "udecode/dotai",
       "sourceType": "github",
       "skillPath": "skills/autogoal/SKILL.md",
-      "computedHash": "b39af211b4e83be092b60f376eac2b58aad58089d904a73058d33f36610ad93a"
+      "computedHash": "4a9e75ae168c8bef7d9b6555551356b281b729c35dfd75faf1d54d3b22eac347"
     },
     "autoreview": {
       "source": "openclaw/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/autoreview/SKILL.md",
-      "computedHash": "c01ad85b2dc7e1e3bdcb91f3e8e21eb5fcfda0ddf7924fe47a62b37f00928b33"
+      "computedHash": "d4504560d06faeb839c45dce60958d61fff9f18a7530e5e4b343775457799345"
     },
-    "debug": {
-      "source": "udecode/dotai",
+    "diagnosing-bugs": {
+      "source": "mattpocock/skills",
       "sourceType": "github",
-      "skillPath": "skills/debug/SKILL.md",
-      "computedHash": "0c74e2022d4b01170526cc5aabd386dd76f9a65e8b23df92a947bb52504e26b1"
-    },
-    "frontend-design": {
-      "source": "EveryInc/compound-engineering-plugin",
-      "sourceType": "github",
-      "computedHash": "74cd07a31632a72d763b96257a8c86b5c80384770ef67e600f73ffa75b69a1e2"
-    },
-    "git-commit": {
-      "source": "EveryInc/compound-engineering-plugin",
-      "sourceType": "github",
-      "computedHash": "1c76aaf68b93a16306be4d43d06ca77443c2555eff78a8d85125cc9ba4b067a1"
-    },
-    "git-commit-push-pr": {
-      "source": "EveryInc/compound-engineering-plugin",
-      "sourceType": "github",
-      "computedHash": "20c90be5091df67d3f889a781473a6426d471405cead3dbe61d33d0c9a4ad0e9"
+      "skillPath": "skills/engineering/diagnosing-bugs/SKILL.md",
+      "computedHash": "1a993ce9b2aaa653ee441c8d7efb7f27de03493c722be6dfb8137bcb8db1bc72"
     },
     "grill-with-docs": {
       "source": "mattpocock/skills",
@@ -42,6 +33,7 @@
     "orchestrator": {
       "source": "udecode/dotai",
       "sourceType": "github",
+      "skillPath": "skills/orchestrator/SKILL.md",
       "computedHash": "02a6d9c3931f0af4b6d0a04344082c90dd7d9cb9dbe1e4962bd98471591f02d8"
     },
     "prototype": {
@@ -54,15 +46,11 @@
       "sourceType": "github",
       "computedHash": "8c24990b50f431a570f3ad1f60632dee154431861547103047f6ce80092ca734"
     },
-    "reproduce-bug": {
-      "source": "EveryInc/compound-engineering-plugin",
-      "sourceType": "github",
-      "computedHash": "4ab5b5b526782ec8800515d2cd5bcc2294b3c16043122b49048ae688f39776d5"
-    },
     "resolve-pr-feedback": {
-      "source": "EveryInc/compound-engineering-plugin",
+      "source": "udecode/dotai",
       "sourceType": "github",
-      "computedHash": "4294136549ac279a00eb4a9eb731ea0d3b4e478433ade99ea81b8b04fbc36678"
+      "skillPath": "skills/resolve-pr-feedback/SKILL.md",
+      "computedHash": "442e0972e713cf42b08be2caebf18a00c267211bd19d71953a3572326853c782"
     },
     "shadcn": {
       "source": "shadcn/ui",

@@ -75,16 +75,16 @@ Blocked condition:
 Task state:
 - task_type: transplant deletion-readiness verification and tooling repair
 - task_complexity: normal
-- current_phase: intake
+- current_phase: verification
 - current_phase_status: in_progress
-- next_phase: implementation
+- next_phase: browser-gate closure
 - goal_status: active
 
 Current verdict:
-- verdict: in_progress
-- confidence: medium until deletion simulation and `check:slate` pass
+- verdict: deletion accounting green; Slate browser proof mode hardened; full closure still needs an uninterrupted `pnpm check:slate`
+- confidence: high for lossless donor accounting, higher for browser-proof reliability after isolated proof cache and source-mode guard; full deletion readiness still not complete until the full gate finishes
 - next owner: task
-- reason: prior audit found an ignored raw-research archive footgun; one more closure pass is required before deletion.
+- reason: `.tmp/slate-v2` is absent and source-switch parity accounts for every donor row; focused browser proof now runs against a dedicated source-mode Slate proof server, but the complete 2752-row browser gate was not allowed to finish in this packet.
 
 Pre-solution issue challenge:
 - reporter claim: N/A: not a bug report
@@ -242,13 +242,27 @@ Phase / pass table:
 | Closeout | pending | | final response |
 
 Findings:
-- None yet.
+- `.tmp/slate-v2` is physically absent.
+- `pnpm slate:source:check` passes without the donor checkout. Stored artifacts are self-contained and source-switch parity accounts for `2157/2157` donor rows.
+- Donor category accounting includes `446` package-source rows, `1280` package-test rows, `37` Playwright integration rows, `35` benchmark-script rows, `134` docs rows, `43` site-example rows, and `21` raw research-artifact rows.
+- Active exact reference audit for `.tmp/slate-v2` is clean across active Slate docs, rules/skills, package/app/tests/benchmarks/content paths, excluding historical research/archive folders.
+- `git ls-files --others --exclude-standard docs/transplant/slate-v2` returned `0`; spot `git check-ignore` checks for donor manifest, source-switch ledger, and archived research/docs returned no ignore hits.
+- Full `pnpm check:slate` reached the browser gate and failed before completion. Earlier gates in that command passed: source check, package typecheck/build/test, browser package tests, docs audit, benchmark target check, docs check, and www typecheck.
+- Browser failures are not donor-path failures. Most failing Firefox rows surface Next dev `ChunkLoadError` while loading dynamic Slate example chunks; the huge-document Firefox downward-drag autoscroll row also fails with `scrollTop` staying `0`.
 
 Decisions and tradeoffs:
-- None yet.
+- Keep `.tmp/slate-v2` deleted/absent for this verification pass; do not restore the donor checkout just to make checks pass.
+- Treat source-switch parity as the authority for deletion/new-file accounting.
+- Do not weaken runtime-error assertions to hide Next dev chunk errors.
+- Force Slate browser Playwright to use source aliases (`PLATE_WWW_DEV_SOURCE=1`) so the prior `slate:packages:build` step cannot silently change browser behavior proof from source to dist.
+- Rejected the Turbopack FS-cache disable experiment because focused reruns still produced chunk-load failures.
+- Rejected switching the Slate browser lane to `next dev --webpack` in this pass because it was slower and still produced app route failures/timeouts.
 
 Implementation notes:
-- None yet.
+- Rewrote active `docs/slate-v2/**` references away from `.tmp/slate-v2` to their transplanted Plate-root paths. Historical research/archive paths remain excluded from active-reference proof.
+- Updated `apps/www/playwright.slate.config.ts` so the Slate browser web server starts with `PLATE_WWW_DEV_SOURCE=1`, and the Playwright process also defaults that env var.
+- Added `apps/www` `dev:slate`, a minimal Slate shell, `/api/slate/ready`, and Playwright global setup so Slate browser proof fails fast unless `PLATE_WWW_SLATE=1` and `PLATE_WWW_DEV_SOURCE=1` are active.
+- Isolated Slate mode into `apps/www/.next-slate` so normal docs dev chunks cannot poison source-mode Slate browser proof.
 
 Review fixes:
 - None yet.
@@ -256,10 +270,21 @@ Review fixes:
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| None yet | 0 | | |
+| Full `pnpm check:slate` browser gate failed/interrupted after 894 passed, 18 failed, 24 skipped, 1815 not run | 1 | Focus failed Firefox rows and separate dev-server chunk churn from real behavior failures | Source aliases fixed many dist-chunk errors, but not the whole browser gate |
+| `PLATE_WWW_TURBOPACK_FS_CACHE=0` experiment | 1 | Remove ineffective env/config change | Reverted; failures still moved across chunk-load rows |
+| `next dev --webpack` experiment | 1 | Do not switch the lane wholesale | Stopped; slower and still produced route errors/timeouts |
+| Proof-mode benchmark initially left a normal Next dev child server alive | 1 | Kill the spawned process group and isolate proof mode cache | Stale dev lock explained the failed smoke attempt; rerun passed after cleanup |
 
 Verification evidence:
-- Pending.
+- `pnpm --filter www typecheck` from `/Users/zbeyens/git/plate-2` passed after proof-mode and Next config edits.
+- Focused proof command passed: `rm -rf apps/www/test-results/slate-browser && /usr/bin/time -p pnpm --filter www exec playwright test --config playwright.slate.config.ts --project=chromium tests/slate-browser/donor/examples/inlines.test.ts -g "copies and pastes only selected inline link text"` -> `1 passed (5.9s)`, wall `7.05s`.
+- Wrong-server guard proof passed before the naming cleanup: normal docs dev returned a payload with both mode flags false and Playwright exited `1` before running the test with the expected mode error. The renamed guard now uses `/api/slate/ready` and `PLATE_WWW_SLATE=1`.
+- Firefox proof smoke passed after isolated cache: `rm -rf apps/www/.next-slate apps/www/test-results/slate-browser && /usr/bin/time -p pnpm --filter www exec playwright test --config playwright.slate.config.ts --project=firefox tests/slate-browser/donor/examples/images.test.ts -g "keeps rapid image clicks selecting the latest void node|selects the lower adjacent image after dragging"` -> `2 passed (18.3s)`, wall `19.25s`.
+- Source-chunk audit passed before rename: the isolated Slate cache returned no `packages_slate_dist*` chunk matches; renamed cache target is now `apps/www/.next-slate`.
+- Readiness measurement before rename: normal docs dev without Slate mode returned ready payload in `3.80s`; the isolated Slate mode returned source/proof payload in `2.29s`; prestarted focused-test runtime was roughly unchanged because the test body dominates once the server is already warm. The mode is now named `dev:slate`.
+- Naming cleanup proof passed: `rg -n 'slate-proof|SlateProof|PLATE_WWW_SLATE_PROOF|\\.next-slate-proof|dev:slate-proof|/api/slate-proof|slateProof|data-slate-proof' apps/www package.json docs/plans/2026-06-18-slate-v2-deletion-readiness.md .agents/rules .agents/skills -g '!**/node_modules/**'` returned no matches.
+- Renamed Slate mode proof passed: `rm -rf apps/www/.next-slate apps/www/test-results/slate-browser && /usr/bin/time -p pnpm --filter www exec playwright test --config playwright.slate.config.ts --project=chromium tests/slate-browser/donor/examples/inlines.test.ts -g "copies and pastes only selected inline link text"` -> `1 passed (5.9s)`, wall `6.51s`.
+- Renamed cache audit passed: `rg -n 'packages_slate_dist|packages_slate-react_dist|packages_slate-dom_dist|packages_slate-history_dist' apps/www/.next-slate` returned no matches; `packages_slate_src*` chunks were present.
 
 Final handoff contract:
 - PR line: pending
@@ -306,15 +331,18 @@ Final handoff / sync:
 
 Timeline:
 - 2026-06-18T08:46:25.361Z Task goal plan created.
+- 2026-06-18 Browser proof hardening packet added dedicated Slate proof mode, mode guard, isolated Next cache, and focused benchmark evidence.
+- 2026-06-18 Renamed Slate mode from proof-specific names to `dev:slate`, `/api/slate/ready`, `PLATE_WWW_SLATE`, and `.next-slate`.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
 | Where am I? | Intake and source read |
-| Where am I going? | Implementation, verification, PR/tracker sync, closeout |
-| What is the goal? | TODO: Fill from Objective |
-| What have I learned? | See Findings |
-| What have I done? | See Timeline |
+| Where am I going? | Full `pnpm check:slate` rerun after browser proof hardening |
+| What is the goal? | Delete `.tmp/slate-v2` only after lossless self-contained transplant proof and Slate gates are green |
+| What have I learned? | Deletion accounting is green; remaining risk is proof-host reliability, not missing donor files |
+| What have I done? | Added proof-mode isolation, source-mode guard, and focused browser/typecheck evidence |
 
 Open risks:
-- Pending.
+- Full `pnpm check:slate` has not completed uninterrupted after the proof-mode isolation change.
+- `apps/www` Slate mode improves reliability more than per-test runtime; a separate `apps/slate` app is only justified if the isolated mode still leaks docs-app failures.

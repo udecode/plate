@@ -12,9 +12,9 @@ context.
 ## Workspace
 
 - Control/docs repo: `/Users/zbeyens/git/plate-2`
-- Code repo: `/Users/zbeyens/git/plate-2/.tmp/slate-v2`
+- Code repo: `/Users/zbeyens/git/plate-2`
 - Active private-alpha checkout for current `plate-2` loops:
-  `/Users/zbeyens/git/plate-2/.tmp/slate-v2`
+  `/Users/zbeyens/git/plate-2`
 - Legacy comparison repo: `/Users/zbeyens/git/slate`
 - Draft evidence:
   - `/Users/zbeyens/git/slate-v2-draft`
@@ -30,31 +30,31 @@ Planning/docs writes are allowed in:
 
 Code reads are allowed across:
 
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/**`
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-dom/**`
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/**`
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-browser/**`
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/site/examples/ts/**`
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/playwright/integration/examples/**`
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/**`
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/package.json`
+- `/Users/zbeyens/git/plate-2/packages/slate/**`
+- `/Users/zbeyens/git/plate-2/packages/slate-dom/**`
+- `/Users/zbeyens/git/plate-2/packages/slate-react/**`
+- `/Users/zbeyens/git/plate-2/packages/browser/**`
+- `/Users/zbeyens/git/plate-2/apps/www/src/app/(app)/examples/slate/_examples/**`
+- `/Users/zbeyens/git/plate-2/apps/www/tests/slate-browser/donor/examples/**`
+- `/Users/zbeyens/git/plate-2/benchmarks/slate-v2/donor/**`
+- `/Users/zbeyens/git/plate-2/package.json`
 - `/Users/zbeyens/git/slate/**`
 
 Code edits are allowed when measurement proves ownership:
 
 - benchmark/package command work:
-  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/scripts/benchmarks/**`
-  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/package.json`
+  - `/Users/zbeyens/git/plate-2/benchmarks/slate-v2/donor/**`
+  - `/Users/zbeyens/git/plate-2/package.json`
 - React runtime work:
-  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/**`
+  - `/Users/zbeyens/git/plate-2/packages/slate-react/**`
 - core work:
-  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/**` only when measured evidence
+  - `/Users/zbeyens/git/plate-2/packages/slate/**` only when measured evidence
     proves core ownership
 
 Do not work on:
 
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-history`
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-hyperscript`
+- `/Users/zbeyens/git/plate-2/packages/slate-history`
+- `/Users/zbeyens/git/plate-2/packages/slate-hyperscript`
 
 ## Source Docs
 
@@ -150,8 +150,8 @@ Read these before deciding or claiming closure:
 ## Current Driver Gates
 
 Run from the active private-alpha checkout, normally
-`/Users/zbeyens/git/plate-2/.tmp/slate-v2`. Use
-`/Users/zbeyens/git/plate-2/.tmp/slate-v2` only when that checkout is intentionally the
+`/Users/zbeyens/git/plate-2`. Use
+`/Users/zbeyens/git/plate-2` only when that checkout is intentionally the
 active code repo for the loop.
 
 ```sh
@@ -199,11 +199,11 @@ REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPAR
     `Editor.getSnapshot()`, descendant/text selector fanout, child
     subscriptions, or missing live path/runtime-id reads.
 - Current implementation should start in:
-  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/**` for node/text read
+  - `/Users/zbeyens/git/plate-2/packages/slate-react/**` for node/text read
     model changes
-  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/**` when
+  - `/Users/zbeyens/git/plate-2/packages/slate-react/**` when
     the active loop is running from the `plate-2` private-alpha checkout
-  - `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/**` only if a focused probe
+  - `/Users/zbeyens/git/plate-2/packages/slate/**` only if a focused probe
     proves the blocker is core read/index ownership
 - Current closure:
   - `auto` remains bounded partial-DOM, not a hidden alias for `staged`

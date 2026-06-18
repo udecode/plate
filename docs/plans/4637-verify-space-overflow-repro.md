@@ -52,7 +52,7 @@ Determine whether GitHub issue `#4637` is reproducible on the current Plate site
 
 ## Progress Log
 
-- Loaded `task`, `learnings-researcher`, `goal workflow`, and `reproduce-bug`.
+- Loaded `task`, `learnings-researcher`, and `goal workflow`.
 - Deleted the prior `#4535` investigation plan artifact at the user's request.
 - Fetched the full GitHub issue with comments.
 - Loaded `browser-use` once the issue was confirmed to be browser-facing.

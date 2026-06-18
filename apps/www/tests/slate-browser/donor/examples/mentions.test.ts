@@ -167,6 +167,7 @@ test.describe('mentions example', () => {
     });
     await installSlateReactRenderProfiler(page);
     await page.goto('/examples/slate/mentions');
+    await expect(page.getByRole('textbox')).toBeVisible();
   });
 
   test('renders mention element', async ({ page }) => {

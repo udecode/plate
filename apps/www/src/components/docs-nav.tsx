@@ -1,25 +1,38 @@
-'use client';
+"use client";
 
-import type { SidebarNavItem } from '@/types/nav';
+import type { SidebarNavItem } from "@/types/nav";
 
-import castArray from 'lodash/castArray.js';
-import { ChevronRightIcon } from 'lucide-react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import * as React from 'react';
+import castArray from "lodash/castArray.js";
+import { CheckIcon, ChevronRightIcon, ChevronsUpDownIcon } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import * as React from "react";
 
-import { useLocale } from '@/hooks/useLocale';
+import { SlateExamplesSidebarNav } from "@/app/(app)/examples/slate/slate-examples-shell";
+import { useLocale } from "@/hooks/useLocale";
 import {
   getLocalizedNavTitle,
   normalizeDocsHref,
-} from '@/lib/docs-nav-metadata';
-import { cn } from '@/lib/utils';
-import { hrefWithLocale } from '@/lib/withLocale';
+} from "@/lib/docs-nav-metadata";
+import {
+  docsRoots,
+  getDocsRootFromPathname,
+  getSidebarNavForDocsRoot,
+  type DocsRootId,
+} from "@/lib/docs-root-nav";
+import { cn } from "@/lib/utils";
+import { hrefWithLocale } from "@/lib/withLocale";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+} from "@/components/ui/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -29,21 +42,21 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from '@/components/ui/sidebar';
+} from "@/components/ui/sidebar";
 
-function getLabelValues(label: SidebarNavItem['label']) {
+function getLabelValues(label: SidebarNavItem["label"]) {
   return castArray(label).filter(Boolean);
 }
 
-function getStatusLabel(label: SidebarNavItem['label']) {
+function getStatusLabel(label: SidebarNavItem["label"]) {
   return getLabelValues(label).find(
-    (value) => value === 'New' || value === 'Updated'
+    (value) => value === "New" || value === "Updated"
   );
 }
 
-function getTextLabels(label: SidebarNavItem['label']) {
+function getTextLabels(label: SidebarNavItem["label"]) {
   return getLabelValues(label).filter(
-    (value) => value !== 'New' && value !== 'Updated'
+    (value) => value !== "New" && value !== "Updated"
   );
 }
 
@@ -52,7 +65,7 @@ function isNavItemActive(item: SidebarNavItem, pathname: string): boolean {
     const href = normalizeDocsHref(item.href);
 
     if (href === pathname) return true;
-    if (href !== '/docs' && pathname.startsWith(`${href}/`)) return true;
+    if (href !== "/docs" && pathname.startsWith(`${href}/`)) return true;
   }
 
   return item.items?.some((child) => isNavItemActive(child, pathname)) ?? false;
@@ -63,15 +76,15 @@ function getSectionTitle(
   index: number,
   locale: string
 ) {
-  if (index === 0 && section.title === 'Get Started') {
-    return locale === 'cn' ? '概览' : 'Overview';
+  if (index === 0 && section.title === "Get Started") {
+    return locale === "cn" ? "概览" : "Overview";
   }
 
   return getLocalizedNavTitle(section, locale);
 }
 
 const docsNavItemButtonClassName =
-  'relative h-[30px] w-fit border border-transparent text-[0.8rem] font-medium data-[active=true]:border-accent data-[active=true]:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48';
+  "relative h-[30px] w-fit border border-transparent text-[0.8rem] font-medium data-[active=true]:border-accent data-[active=true]:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48";
 
 function getNavItemKey(item: SidebarNavItem, index: number, depth: number) {
   return item.href ?? `${depth}:${index}:${String(item.title)}`;
@@ -151,10 +164,16 @@ function getActiveSectionKey(sections: SidebarNavItem[], pathname: string) {
 export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
   const locale = useLocale();
   const pathname = usePathname();
-  const normalizedPathname = normalizeDocsHref(pathname ?? '');
+  const normalizedPathname = normalizeDocsHref(pathname ?? "");
+  const docsRoot = getDocsRootFromPathname(normalizedPathname);
+  const isSlateExamplesIndex = normalizedPathname === "/docs/slate/examples";
+  const rootSidebarNav = React.useMemo(
+    () => getSidebarNavForDocsRoot(sidebarNav, docsRoot),
+    [docsRoot, sidebarNav]
+  );
   const navSections = React.useMemo(
-    () => foldMatchingSectionsIntoItems(sidebarNav),
-    [sidebarNav]
+    () => foldMatchingSectionsIntoItems(rootSidebarNav),
+    [rootSidebarNav]
   );
   const activeSectionKey = React.useMemo(
     () => getActiveSectionKey(navSections, normalizedPathname),
@@ -174,32 +193,156 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
 
   return navSections.length > 0 ? (
     <Sidebar
-      aria-label={locale === 'cn' ? '文档导航' : 'Docs navigation'}
+      aria-label={locale === "cn" ? "文档导航" : "Docs navigation"}
       className="sticky top-[var(--header-height)] z-30 hidden h-[calc(100svh-var(--header-height))] overscroll-none bg-transparent [--sidebar-menu-width:--spacing(56)] lg:flex"
       collapsible="none"
     >
-      <SidebarContent className="no-scrollbar h-full w-(--sidebar-menu-width) gap-1 overflow-hidden px-2.5 py-6">
-        {navSections.map((section, index) => {
-          const sectionKey = getSectionKey(section, index);
+      <SidebarContent
+        className={cn(
+          "no-scrollbar h-full w-(--sidebar-menu-width) gap-1 px-2.5 py-6",
+          docsRoot === "slate"
+            ? "overflow-y-auto overflow-x-hidden"
+            : "overflow-hidden"
+        )}
+      >
+        {isSlateExamplesIndex ? (
+          <SlateExamplesSidebarNav
+            backHref="/docs/slate"
+            backLabel="Back to Slate docs"
+            indexActive
+            indexHref="/docs/slate/examples"
+          />
+        ) : (
+          <>
+            <DocsRootSwitcher root={docsRoot} />
 
-          return (
-            <DocsNavGroup
-              key={sectionKey}
-              index={index}
-              open={openSectionKey === sectionKey}
-              pathname={normalizedPathname}
-              section={section}
-              onOpenChange={(open) => {
-                setOpenSection({
-                  key: open ? sectionKey : undefined,
-                  pathname: normalizedPathname,
-                });
-              }}
-            />
-          );
-        })}
+            {docsRoot === "slate"
+              ? navSections.map((section, index) => (
+                  <DocsNavStaticGroup
+                    key={getSectionKey(section, index)}
+                    index={index}
+                    pathname={normalizedPathname}
+                    section={section}
+                  />
+                ))
+              : navSections.map((section, index) => {
+                  const sectionKey = getSectionKey(section, index);
+
+                  return (
+                    <DocsNavGroup
+                      key={sectionKey}
+                      index={index}
+                      open={openSectionKey === sectionKey}
+                      pathname={normalizedPathname}
+                      section={section}
+                      onOpenChange={(open) => {
+                        setOpenSection({
+                          key: open ? sectionKey : undefined,
+                          pathname: normalizedPathname,
+                        });
+                      }}
+                    />
+                  );
+                })}
+          </>
+        )}
       </SidebarContent>
     </Sidebar>
+  ) : null;
+}
+
+function DocsRootSwitcher({ root }: { root: DocsRootId }) {
+  const locale = useLocale();
+  const activeRoot = docsRoots.find((item) => item.id === root) ?? docsRoots[0];
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="mb-3 flex h-10 w-full items-center justify-between rounded-lg border bg-muted/40 px-3 text-left text-sm shadow-xs outline-none transition-colors hover:bg-accent focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        >
+          <span className="flex min-w-0 items-center gap-2">
+            <span
+              className={cn(
+                "size-4 shrink-0 rounded-[4px] border",
+                root === "slate"
+                  ? "border-blue-500/40 bg-blue-500/20"
+                  : "border-yellow-500/40 bg-yellow-500/20"
+              )}
+            />
+            <span className="truncate font-medium">{activeRoot.title}</span>
+          </span>
+          <ChevronsUpDownIcon className="size-3.5 shrink-0 text-muted-foreground" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        className="w-(--sidebar-menu-width)"
+        sideOffset={6}
+      >
+        {docsRoots.map((item) => {
+          const active = item.id === root;
+
+          return (
+            <DropdownMenuItem key={item.id} asChild>
+              <Link
+                className="flex items-start gap-2.5 py-2"
+                href={hrefWithLocale(item.href, locale)}
+              >
+                <span
+                  className={cn(
+                    "mt-0.5 size-4 shrink-0 rounded-[4px] border",
+                    item.id === "slate"
+                      ? "border-blue-500/40 bg-blue-500/20"
+                      : "border-yellow-500/40 bg-yellow-500/20"
+                  )}
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="block font-medium">{item.title}</span>
+                  <span className="block text-muted-foreground text-xs leading-snug">
+                    {item.description}
+                  </span>
+                </span>
+                {active ? <CheckIcon className="mt-0.5 size-4" /> : null}
+              </Link>
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function DocsNavStaticGroup({
+  index,
+  pathname,
+  section,
+}: {
+  index: number;
+  pathname: string;
+  section: SidebarNavItem;
+}) {
+  const locale = useLocale();
+  const sectionTitle = getSectionTitle(section, index, locale);
+  const standalone =
+    section.items?.length === 1 && section.items[0]?.title === section.title;
+
+  return section.items?.length ? (
+    <SidebarGroup className="shrink-0 p-0">
+      {standalone ? null : (
+        <SidebarGroupLabel className="font-medium text-muted-foreground">
+          {sectionTitle}
+        </SidebarGroupLabel>
+      )}
+      <SidebarGroupContent className="pr-1">
+        <DocsNavItems
+          dense={!standalone && index > 0}
+          items={section.items}
+          pathname={pathname}
+        />
+      </SidebarGroupContent>
+    </SidebarGroup>
   ) : null;
 }
 
@@ -222,12 +365,12 @@ function DocsNavGroup({
 
   return (
     <SidebarGroup
-      className={cn('min-h-0 p-0', open && scrollable ? 'flex-1' : 'shrink-0')}
+      className={cn("min-h-0 p-0", open && scrollable ? "flex-1" : "shrink-0")}
     >
       {section.items?.length ? (
         <Collapsible
           open={open}
-          className={cn('min-h-0', scrollable && 'flex flex-col')}
+          className={cn("min-h-0", scrollable && "flex flex-col")}
           onOpenChange={onOpenChange}
         >
           <CollapsibleTrigger asChild>
@@ -244,8 +387,8 @@ function DocsNavGroup({
                 <span>{sectionTitle}</span>
                 <ChevronRightIcon
                   className={cn(
-                    'size-3.5 transition-transform',
-                    open && 'rotate-90'
+                    "size-3.5 transition-transform",
+                    open && "rotate-90"
                   )}
                 />
               </button>
@@ -255,15 +398,15 @@ function DocsNavGroup({
           <CollapsibleContent
             className={cn(
               scrollable &&
-                'min-h-0 overflow-hidden data-[state=open]:flex data-[state=open]:flex-1 data-[state=open]:flex-col'
+                "min-h-0 overflow-hidden data-[state=open]:flex data-[state=open]:flex-1 data-[state=open]:flex-col"
             )}
           >
             <SidebarGroupContent
               className={cn(
-                'pr-1',
+                "pr-1",
                 scrollable
-                  ? 'no-scrollbar min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain'
-                  : 'overflow-visible'
+                  ? "no-scrollbar min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain"
+                  : "overflow-visible"
               )}
             >
               <DocsNavItems
@@ -293,8 +436,8 @@ function DocsNavItems({
   return items.length ? (
     <SidebarMenu
       className={cn(
-        dense && 'gap-0.5',
-        depth > 0 && 'mt-1 ml-3 border-border/70 border-l pl-2'
+        dense && "gap-0.5",
+        depth > 0 && "mt-1 ml-3 border-border/70 border-l pl-2"
       )}
     >
       {items.map((item, index) => {
@@ -354,10 +497,10 @@ function DocsNavItem({
       isActive={active}
     >
       <Link
-        aria-current={current ? 'page' : undefined}
+        aria-current={current ? "page" : undefined}
         href={hrefWithLocale(item.href, locale)}
-        rel={item.external ? 'noreferrer' : undefined}
-        target={item.external ? '_blank' : undefined}
+        rel={item.external ? "noreferrer" : undefined}
+        target={item.external ? "_blank" : undefined}
       >
         <DocsNavItemContent
           statusLabel={statusLabel}

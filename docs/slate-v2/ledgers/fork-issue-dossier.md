@@ -6672,10 +6672,10 @@ Evidence:
   includes three-peer replay convergence for text, mark, range-delete, and move
   commits, with remote collaboration metadata skipping local undo history.
 - verification:
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts`.
+  `cd /Users/zbeyens/git/plate-2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts`.
 - type/lint proof:
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun turbo typecheck --filter=./packages/slate`;
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bunx biome check packages/slate/test/collab-history-runtime-contract.ts --fix`.
+  `cd /Users/zbeyens/git/plate-2 && bun turbo typecheck --filter=./packages/slate`;
+  `cd /Users/zbeyens/git/plate-2 && bunx biome check packages/slate/test/collab-history-runtime-contract.ts --fix`.
 
 | Issue | Status after PM-08  | Decision                                                                                                                                                                                                |
 | ----- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -6916,10 +6916,10 @@ Evidence:
 - browser proof:
   `apps/www/tests/slate-browser/donor/examples/rendering-strategy-runtime.test.ts`
 - verification:
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun run playwright playwright/integration/examples/rendering-strategy-runtime.test.ts --project=chromium --grep "keeps canceled IME caret anchored for the next typed character"`;
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun run playwright playwright/integration/examples/rendering-strategy-runtime.test.ts --project=chromium --grep "does not push canceled IME composition onto history|keeps text stable after type-delete-cancel IME composition|keeps canceled IME caret anchored for the next typed character"`;
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun lint:fix`;
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun check`.
+  `cd /Users/zbeyens/git/plate-2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun run playwright playwright/integration/examples/rendering-strategy-runtime.test.ts --project=chromium --grep "keeps canceled IME caret anchored for the next typed character"`;
+  `cd /Users/zbeyens/git/plate-2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun run playwright playwright/integration/examples/rendering-strategy-runtime.test.ts --project=chromium --grep "does not push canceled IME composition onto history|keeps text stable after type-delete-cancel IME composition|keeps canceled IME caret anchored for the next typed character"`;
+  `cd /Users/zbeyens/git/plate-2 && bun lint:fix`;
+  `cd /Users/zbeyens/git/plate-2 && bun check`.
 
 | Issue             | Status after Phase 3 | Decision                                                                                                                                                                                                                                           |
 | ----------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -6961,11 +6961,11 @@ Evidence:
   `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`;
   `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`
 - verification:
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate-dom/test/clipboard-boundary.ts`;
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun run playwright playwright/integration/examples/images.test.ts playwright/integration/examples/mentions.test.ts playwright/integration/examples/paste-html.test.ts --project=chromium --grep "copies selected image with visible external HTML payload|copies and pastes a selected mention without crashing|cuts a selected mention without crashing|pastes copied rendered Slate content as an internal fragment before HTML import"`;
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-dom typecheck`;
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-browser typecheck`;
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun lint:fix`
+  `cd /Users/zbeyens/git/plate-2 && bun test ./packages/slate-dom/test/clipboard-boundary.ts`;
+  `cd /Users/zbeyens/git/plate-2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun run playwright playwright/integration/examples/images.test.ts playwright/integration/examples/mentions.test.ts playwright/integration/examples/paste-html.test.ts --project=chromium --grep "copies selected image with visible external HTML payload|copies and pastes a selected mention without crashing|cuts a selected mention without crashing|pastes copied rendered Slate content as an internal fragment before HTML import"`;
+  `cd /Users/zbeyens/git/plate-2 && bun --filter slate-dom typecheck`;
+  `cd /Users/zbeyens/git/plate-2 && bun --filter slate-browser typecheck`;
+  `cd /Users/zbeyens/git/plate-2 && bun lint:fix`
 
 | Issue              | Status after Phase 2 | Decision                                                                                                                                                                                                                    |
 | ------------------ | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -7004,11 +7004,11 @@ Evidence:
   `apps/www/tests/slate-browser/donor/examples/mentions.test.ts`,
   `apps/www/tests/slate-browser/donor/examples/hovering-toolbar.test.ts`.
 - verification:
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate typecheck`;
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-history typecheck`;
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun lint:fix`;
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate-history/test/history-contract.ts`;
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun run playwright playwright/integration/examples/plaintext.test.ts playwright/integration/examples/mentions.test.ts playwright/integration/examples/hovering-toolbar.test.ts --project=chromium --grep "keyboard undo restores caret after middle-line typing|keyboard undo restores partial selected text replacement|keyboard undo restores select-all replacement content|typing English over selected formatted text does not crash"`.
+  `cd /Users/zbeyens/git/plate-2 && bun --filter slate typecheck`;
+  `cd /Users/zbeyens/git/plate-2 && bun --filter slate-history typecheck`;
+  `cd /Users/zbeyens/git/plate-2 && bun lint:fix`;
+  `cd /Users/zbeyens/git/plate-2 && bun test ./packages/slate-history/test/history-contract.ts`;
+  `cd /Users/zbeyens/git/plate-2 && PLAYWRIGHT_BASE_URL=http://localhost:3100 bun run playwright playwright/integration/examples/plaintext.test.ts playwright/integration/examples/mentions.test.ts playwright/integration/examples/hovering-toolbar.test.ts --project=chromium --grep "keyboard undo restores caret after middle-line typing|keyboard undo restores partial selected text replacement|keyboard undo restores select-all replacement content|typing English over selected formatted text does not crash"`.
 
 | Issue              | Phase 1 status     | Decision                                                                                                                                                                                                                                                             |
 | ------------------ | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -7052,13 +7052,13 @@ Evidence:
 
 Fresh verification:
 
-- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/selection-reconciler-contract.ts ./packages/slate-react/test/editing-kernel-contract.ts`
+- `cd /Users/zbeyens/git/plate-2 && bun test ./packages/slate-react/test/model-input-strategy-contract.test.ts ./packages/slate-react/test/selection-reconciler-contract.ts ./packages/slate-react/test/editing-kernel-contract.ts`
   passed: 20 tests.
-- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts`
+- `cd /Users/zbeyens/git/plate-2 && bun test ./packages/slate/test/collab-history-runtime-contract.ts`
   passed: 9 tests.
-- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`
+- `cd /Users/zbeyens/git/plate-2/packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`
   passed: 3 files, 28 tests.
-- `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-browser test:selection`
+- `cd /Users/zbeyens/git/plate-2 && bun --filter slate-browser test:selection`
   passed: 1 file, 4 tests.
 
 | Row                     | Revalidation decision                                                                    | Issue policy                                                                                                 |
@@ -7091,10 +7091,10 @@ Evidence:
   now includes browser rows for RTL DOM selection offset mapping, RTL visual
   geometry direction, and wrapped-line selection rectangles.
 - verification:
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun --filter slate-browser test:selection`.
+  `cd /Users/zbeyens/git/plate-2 && bun --filter slate-browser test:selection`.
 - type/lint proof:
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun turbo typecheck --filter=./packages/slate-browser`;
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bunx biome check packages/slate-browser/test/browser/selection.browser.test.ts --fix`.
+  `cd /Users/zbeyens/git/plate-2 && bun turbo typecheck --filter=./packages/slate-browser`;
+  `cd /Users/zbeyens/git/plate-2 && bunx biome check packages/slate-browser/test/browser/selection.browser.test.ts --fix`.
 
 | Issue | Status after PM-13 | Decision                                                                                                                                                                   |
 | ----- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -7126,10 +7126,10 @@ Evidence:
   `packages/slate-react/test/widget-layer-contract.tsx` now
   includes runtime-id node-widget move/remove mapping.
 - verification:
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`.
+  `cd /Users/zbeyens/git/plate-2/packages/slate-react && bun test:vitest -- projections-and-selection-contract annotation-store-contract widget-layer-contract`.
 - type/lint proof:
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun turbo typecheck --filter=./packages/slate-react`;
-  `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bunx biome check packages/slate-react/test/projections-and-selection-contract.tsx packages/slate-react/test/widget-layer-contract.tsx --fix`.
+  `cd /Users/zbeyens/git/plate-2 && bun turbo typecheck --filter=./packages/slate-react`;
+  `cd /Users/zbeyens/git/plate-2 && bunx biome check packages/slate-react/test/projections-and-selection-contract.tsx packages/slate-react/test/widget-layer-contract.tsx --fix`.
 
 | Issue | Status after PM-12  | Decision                                                                                                                                              |
 | ----- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -7163,7 +7163,7 @@ Evidence:
 1000 --json number,title,body,labels,url,updatedAt,createdAt,author`
 - current count: `11` open issues
 - current local examples target from issue bodies:
-  `http://localhost:3100`, served by `cd /Users/zbeyens/git/plate-2/.tmp/slate-v2 && bun
+  `http://localhost:3100`, served by `cd /Users/zbeyens/git/plate-2 && bun
 serve`
 - current plan:
   `docs/plans/2026-05-10-slate-v2-udecode-open-issues-reproduction-ralplan.md`

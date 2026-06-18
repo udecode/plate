@@ -54,7 +54,7 @@ a prompt explicitly asks for that lane:
 | Claim | Current status | Proof owner | Do not claim until |
 |-------|----------------|-------------|--------------------|
 | Raw Android/iOS device input | unclaimed | `bun test:mobile-device-proof:raw` and `test-results/release-proof/mobile-device-proof.json` | a real Appium/device lane writes the raw proof artifact |
-| Table-fragment merge semantics | deferred policy debt | `.tmp/slate-v2/packages/slate/test/transforms/insertFragment/of-tables/**` plus `slate-plan` | a table-fragment spec decides source-cell, target-cell, and merge preservation rules |
+| Table-fragment merge semantics | deferred policy debt | `packages/slate/test/transforms/insertFragment/of-tables/**` plus `slate-plan` | a table-fragment spec decides source-cell, target-cell, and merge preservation rules |
 | Universal huge-document superiority | scoped diagnostic, not product blocker | `bench:react:huge-document:legacy-compare:local` | browser/native/editor behavior proof supports widening beyond the current product gate |
 | Residual huge-document micro-lanes | tracked follow-up | staged keyboard, browser trace, and cross-editor huge-document benchmarks | a fresh benchmark or browser oracle proves a real owner beyond measured frame/projection variance |
 | Release, publish, PR, changeset readiness | out of scope | explicit ship/release/PR prompt | the user asks for that lane and the same-turn ship gate passes |

@@ -35,6 +35,11 @@ Completion threshold:
 
 Verification surface:
 - TODO: Name tests, typecheck, lint, browser proof, source audit, tracker/PR sync, or other artifact proving the threshold.
+- Browser strategy: TODO. Use Browser for normal app QA; use Chrome directly
+  for native downloads, print/print-preview, file picker/uploads, clipboard,
+  browser dialogs/permissions, extension/profile state, or exact Chrome
+  rendering; use Computer Use only for native Chrome/OS UI that needs visual
+  confirmation.
 
 Constraints:
 - Preserve behavior outside scope.
@@ -91,6 +96,7 @@ Start Gates:
 | Suggested fix reviewed against durable boundary | pending | pending |
 | TDD decision before behavior change or bug fix | pending | pending |
 | Browser proof decision for browser surface | pending | pending |
+| Chrome/Computer decision for native browser surface | pending | pending |
 
 Work Checklist:
 - [ ] First checkpoint complete: every explicit prompt requirement, scope
@@ -140,7 +146,7 @@ Completion Gates:
 | Targeted behavior verification | pending | Run focused test/proof for changed behavior or record N/A | pending |
 | TypeScript or typed config changed | pending | Run relevant typecheck | pending |
 | Build-sensitive behavior changed | pending | Run relevant build/check | pending |
-| Browser surface changed | pending | Capture browser proof | pending |
+| Browser surface changed | pending | Capture Browser proof for normal app surfaces, or Chrome/Computer proof for native browser/OS surfaces | pending |
 | Final lint/format | pending | Run relevant lint/format command or record N/A | pending |
 | Autoreview | pending | Review final diff/output against objective, acceptance criteria, constraints, and newest user request | pending |
 | Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |

@@ -53,6 +53,11 @@ Boundaries:
 - Source of truth: TODO.
 - Allowed edit scope: TODO.
 - Browser surface: TODO.
+- Browser strategy: TODO. Use Browser for normal app QA; use Chrome directly
+  for native downloads, print/print-preview, file picker/uploads, clipboard,
+  browser dialogs/permissions, extension/profile state, or exact Chrome
+  rendering; use Computer Use only for native Chrome/OS UI that needs visual
+  inspection after Chrome automation cannot read it.
 - Tracker sync: TODO.
 - Non-goals: TODO.
 
@@ -156,8 +161,8 @@ Completion Gates:
 | Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks | pending |
 | Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
 | Workspace authority proof | pending | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | pending |
-| Browser surface changed | pending | Capture Browser Use proof or record explicit waiver/blocker | pending |
-| Browser final proof | pending | Attach screenshot or exact browser verification caveat when browser proof applies | pending |
+| Browser surface changed | pending | Capture Browser proof for normal app surfaces, or Chrome/Computer proof for native browser/OS surfaces | pending |
+| Browser final proof | pending | Attach Browser/Chrome/Computer proof or exact caveat when browser proof applies | pending |
 | CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
 | Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
 | Registry-only component work changed | pending | Update `docs/components/changelog.mdx` or record N/A | pending |

@@ -217,7 +217,6 @@ Applicable implementation-skill review matrix:
 | Lens | Applies | Status | Findings | Plan delta |
 |------|---------|--------|----------|------------|
 | vercel-react-best-practices | pending | pending | | |
-| performance-oracle | pending | pending | | |
 | performance | pending | pending | | |
 | tdd | pending | pending | | |
 | shadcn | pending | pending | | |

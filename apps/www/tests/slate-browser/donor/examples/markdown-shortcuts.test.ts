@@ -5,9 +5,10 @@ import {
 } from '@platejs/browser/playwright';
 
 test.describe('On markdown-shortcuts example', () => {
-  test.beforeEach(
-    async ({ page }) => await page.goto('/examples/slate/markdown-shortcuts')
-  );
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/examples/slate/markdown-shortcuts');
+    await expect(page.getByRole('textbox')).toBeVisible();
+  });
 
   type MarkdownEditor = Awaited<ReturnType<typeof openExample>>;
 

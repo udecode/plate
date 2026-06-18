@@ -84,6 +84,7 @@ const normalizeInlineSelectionText = (text: string) =>
 test.describe('Inlines example', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/examples/slate/inlines');
+    await expect(page.getByRole('textbox')).toBeVisible();
   });
 
   test('contains link', async ({ page }) => {

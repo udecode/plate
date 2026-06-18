@@ -1,12 +1,24 @@
 ---
-description: Fallback browser automation with persistent Chrome state. Use only when Browser Use is unavailable or blocked.
+description: Legacy persistent Chrome helper. Use only when the user explicitly asks for dev-browser; normal browser proof must use Browser, Chrome, then Computer Use.
 ---
 
 # Dev Browser
 
-Use this only as the fallback browser path when `[@browser-use](plugin://browser-use@openai-bundled)` is unavailable or blocked.
+Use this only when the user explicitly asks for `dev-browser`.
 
-Do not substitute Puppeteer, standalone Playwright, or raw Chrome DevTools for this fallback path.
+Normal browser proof must follow the repo Browser/Chrome/Computer ladder:
+
+- `[@Browser](plugin://browser@openai-bundled)` for ordinary app QA.
+- `[@Chrome](plugin://chrome@openai-bundled)` directly for native
+  browser/profile/OS behavior: downloads, print or print preview, file
+  picker/uploads, clipboard, browser permissions/dialogs, extension/profile
+  state, or exact Chrome rendering.
+- `[@Computer](plugin://computer-use@openai-bundled)` only when native
+  Chrome/OS UI must be visually inspected or interacted with and Chrome
+  automation cannot read it.
+
+Do not substitute `dev-browser`, Puppeteer, standalone Playwright, or raw
+Chrome DevTools for Browser/Chrome usage.
 
 ## Installation
 

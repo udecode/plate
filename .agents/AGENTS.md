@@ -117,6 +117,9 @@ non-matching findings instead of patching around reviewer hallucinations.
 - `openclaw-sync` for comparing latest local OpenClaw agent setup against this repo. It may update existing skills/rules or create a new skill only after the source row is read, the reusable invariant is named, no current owner fits, and product-specific OpenClaw plumbing is rejected.
 - `autoclosure` for post-merge/current-tree closure loops: already-applied teammate, external PR, branch, dirty tree, or ready-to-commit work. It loops like `autoreview` until no accepted actionable findings remain, patching safe issues and rerunning proof/review. It is not the public queue brain and not the broad internal quality supervisor.
 - `maintainer` for the repo-local Plate/Slate public maintainer control plane: GitHub issue/PR/security heartbeat scans, VISION fit, duplicate/claim guard, owner routing, proof gates, authority boundaries, and decision-ready handoffs
+- `resolve-pr-feedback` for already-open PR review feedback: fetch unresolved
+  threads/comments, use an autogoal feedback ledger, patch valid findings, end
+  with `autoreview`, then reply/resolve only with current-checkout authority
 - Broad `maintainer heartbeat` / queue work should refresh
   `docs/maintainer/queue.md` with
   `.agents/rules/maintainer/scripts/queue-snapshot.mjs`, treat it as ranking
@@ -162,8 +165,11 @@ Goal plans:
 Browser usage:
 
 - When updating `content/**`, `apps/www/**`, or `packages/**`, start the relevant dev server and verify the affected route, UI, or package-facing behavior with `[@Browser](plugin://browser@openai-bundled)` before handoff. If the surface has no runnable browser path or the server/browser is blocked, say that explicitly.
-- Always try `[@browser-use](plugin://browser-use@openai-bundled)` first for browser usage.
-- Do not substitute Puppeteer, standalone Playwright, or raw Chrome DevTools for browser usage.
+- Use `[@Browser](plugin://browser@openai-bundled)` first for ordinary app QA. It is the fast path for route navigation, DOM checks, forms, screenshots, responsive checks, and browser-rendered UI proof.
+- Use `[@Chrome](plugin://chrome@openai-bundled)` directly when the ticket involves native browser/profile/OS behavior: downloads, print or print preview, file picker/uploads, clipboard, browser permissions/dialogs, extension/profile state, or exact Chrome rendering. Do not stop at Browser proof for these.
+- Use `[@Computer](plugin://computer-use@openai-bundled)` only when native Chrome/OS UI must be visually inspected or interacted with and Chrome automation cannot read it, such as print preview, save/open dialogs, or permission sheets.
+- If Browser hits a known limitation and native proof matters, switch to Chrome/Computer instead of lowering confidence or asking for user confirmation.
+- Do not substitute Puppeteer, standalone Playwright, or raw Chrome DevTools for Browser/Chrome usage.
 - For Plate registry/browser proof, prefer `/blocks/[id]-demo` over docs wrappers when that standalone demo route exists.
 
 ## Commands

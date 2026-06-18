@@ -329,8 +329,8 @@ Split long work into checkpoints that fit one high-quality prompt:
 - **Research-discovery checkpoint:** when local evidence is thin, the problem
   smells under-researched, the next owner is unclear, or a timed run needs
   discovery instead of blind local soak, invoke `slate-research` for Slate/editor
-  substrate problems and `best-practices-researcher` or
-  `repo-research-analyst` for Plate/framework/package problems. The
+  substrate problems and `research-wiki`, `docs-creator`, or the package owner
+  for Plate/framework/package problems. The
   checkpoint is done only after the research artifact records ledgers, dedupe,
   evidence grade, scored leads, rejected leads, promoted packets, and next
   owner. If a promoted research packet is executed later, close the loop in the
@@ -456,8 +456,8 @@ patch the owning rule instead of asking the user to route the next loop.
 Use research when automation needs external prior art, better testing strategy,
 OSS/GitHub discovery, scalable repo scans, or a research system before
 patching. Slate/editor substrate research goes through `slate-research`. Plate,
-framework, package, docs, and product-DX research goes through
-`best-practices-researcher`, `repo-research-analyst`, or the package owner.
+framework, package, docs, and product-DX research goes through `research-wiki`,
+`docs-creator`, direct source/docs audit, or the package owner.
 
 `auto` owns the checkpoint decision, timebox, final handoff, and promotion back
 into patch/perf/plan/docs work. The delegated research owner owns the research

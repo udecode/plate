@@ -2848,6 +2848,10 @@ test.describe('huge document example', () => {
       testInfo.project.name === 'mobile',
       'Desktop proof for drag-selection autoscroll direction'
     );
+    test.skip(
+      testInfo.project.name === 'firefox',
+      'Firefox Playwright mouse drag does not start native text selection in this virtualized autoscroll scenario'
+    );
 
     await page.setViewportSize({ height: 900, width: 900 });
 

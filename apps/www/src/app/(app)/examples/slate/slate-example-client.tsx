@@ -1,7 +1,5 @@
 'use client';
 
-import Link from 'next/link';
-
 import {
   slateExampleComponents,
   type SlateExampleId,
@@ -21,23 +19,17 @@ export function SlateExampleClient({
   const title = exampleLabels.get(exampleId) ?? exampleId;
 
   return (
-    <main
-      className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-8"
+    <div
+      className="flex min-w-0 flex-col gap-6"
       data-slate-example={exampleId}
-      data-slate-proof-scope="donor-route"
+      data-slate-scope="donor-route"
     >
       <div className="flex flex-col gap-2">
-        <Link
-          className="text-sm text-muted-foreground hover:text-foreground"
-          href="/examples/slate"
-        >
-          Slate examples
-        </Link>
         <h1 className="example-page-title text-3xl font-semibold tracking-tight">
           {title}
         </h1>
       </div>
       <Example />
-    </main>
+    </div>
   );
 }

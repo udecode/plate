@@ -1,7 +1,13 @@
 import type { ReactNode } from 'react';
 
-import { AppShell } from '@/components/app-shell';
+export default async function AppLayout({ children }: { children: ReactNode }) {
+  if (process.env.PLATE_WWW_SLATE === '1') {
+    const { SlateShell } = await import('@/components/slate-shell');
 
-export default function AppLayout({ children }: { children: ReactNode }) {
+    return <SlateShell>{children}</SlateShell>;
+  }
+
+  const { AppShell } = await import('@/components/app-shell');
+
   return <AppShell>{children}</AppShell>;
 }

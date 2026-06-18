@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { SlateExampleClient } from '../slate-example-client';
 import type { SlateExampleId } from '../slate-example-loaders';
 import { EXAMPLE_NAMES_AND_PATHS } from '../slate-example-registry';
+import { SlateExamplesShell } from '../slate-examples-shell';
 
 const exampleLabels = new Map(
   EXAMPLE_NAMES_AND_PATHS.map(([name, slug]) => [slug, name])
@@ -35,5 +36,9 @@ export default async function SlateExamplePage({
     notFound();
   }
 
-  return <SlateExampleClient exampleId={example as SlateExampleId} />;
+  return (
+    <SlateExamplesShell activeExample={example}>
+      <SlateExampleClient exampleId={example as SlateExampleId} />
+    </SlateExamplesShell>
+  );
 }

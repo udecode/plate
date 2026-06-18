@@ -192,7 +192,7 @@ as the execution goal. The user-review boundary is real.
   used as evidence. This is not a citations list; it must state the mechanism
   Slate should steal, reject, or deliberately diverge from.
 - Applicable implementation-skill review notes in the active plan: Vercel
-  React, performance-oracle, and tdd, plus shadcn/react-useeffect when relevant,
+  React, performance, and tdd, plus shadcn/react-useeffect when relevant,
   each marked `applied` or `skipped` with a concrete reason.
 - Allowed edit scope in planning mode: `docs/plans/**`, `docs/research/**`,
   `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`, and
@@ -289,13 +289,11 @@ Read when relevant:
 - [vercel-react-best-practices](.agents/skills/vercel-react-best-practices/SKILL.md)
   when React rendering, subscriptions, external stores, bundle shape, browser
   event listeners, or runtime performance are in scope.
-- [performance-oracle](.agents/skills/performance-oracle/SKILL.md) when hot
-  paths, algorithms, memory, browser/editor runtime, scalability, or measured
-  performance risk is in scope.
 - [performance](.agents/skills/performance/SKILL.md)
-  when a performance lane needs GitHub-scale cohorting, repeated-unit budgets,
+  when hot paths, algorithms, memory, browser/editor runtime, scalability,
+  measured performance risk, GitHub-scale cohorting, repeated-unit budgets,
   interaction-level INP/p95/p99 rows, memory tagging, degradation policy, or
-  production dashboard/RUM proof beyond generic React and algorithmic advice.
+  production dashboard/RUM proof are in scope.
 - [tdd](.agents/skills/tdd/SKILL.md) when the plan changes behavior, fixes a
   regression class, or needs test-first acceptance criteria.
 
@@ -492,7 +490,7 @@ completed pass <name/date>`
 - every major decision has principles, top drivers, viable options, rejected
   alternatives, consequences, and follow-ups
 - high-risk deliberate mode is complete when triggered
-- every applicable Vercel React, performance-oracle, tdd, shadcn, and
+- every applicable Vercel React, performance, tdd, shadcn, and
   react-useeffect review is applied or explicitly skipped with a reason
 - every major breaking/paradigm change has an accepted objection-ledger row
 - extension/plugin/collaboration/data-model changes have migration-backbone
@@ -843,8 +841,7 @@ Use this matrix:
 | Lens                          | Applies when                                                                                                                                                                         | Must answer                                                                                                                                                                                   |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `vercel-react-best-practices` | React rendering, external-store subscriptions, event listeners, bundle shape, browser runtime, or React 19.2 performance are in scope                                                | Are subscriptions narrow, global listeners deduped, transient values kept out of render, expensive work deferred, and React used as projection rather than engine?                            |
-| `performance-oracle`          | Hot paths, algorithms, large documents, memory lifetime, browser/editor runtime loops, operation replay, or scalability are in scope                                                 | Is complexity bounded? Are allocations, dirty-id sets, DOM repair, selection import/export, and replay paths controlled at 10x, 100x, and 1000x scale?                                        |
-| `performance`                 | Large repeated editor surfaces, interaction latency, production perf claims, virtualization/shell/staging choices, p95/p99 risk, or memory/DOM/component-count pressure are in scope | Are cohorts segmented, repeated-unit budgets named, interaction-level INP/p95/p99 rows tracked, memory tags defined, degradation contracts explicit, and Datadog/RUM dashboard gaps recorded? |
+| `performance`                 | Hot paths, algorithms, large documents, memory lifetime, browser/editor runtime loops, operation replay, scalability, repeated editor surfaces, interaction latency, production perf claims, virtualization/shell/staging choices, p95/p99 risk, or memory/DOM/component-count pressure are in scope | Are complexity, allocations, dirty-id sets, DOM repair, selection import/export, replay paths, cohorts, repeated-unit budgets, interaction-level INP/p95/p99 rows, memory tags, degradation contracts, and Datadog/RUM dashboard gaps controlled? |
 | `tdd`                         | Behavior changes, bug fixes, public interface changes, regression classes, or executable acceptance criteria are in scope                                                            | Is there a public-interface red-green-refactor slice or generated browser contract that proves behavior rather than implementation details?                                                   |
 | `build-web-apps:shadcn`       | UI/editor chrome, examples, menus, popovers, command palettes, inputs, forms, overlays, styling, or component composition are in scope                                               | Are UI surfaces composable, minimal-prop, accessible, and not product-opinion leakage into Slate core?                                                                                        |
 | `react-useeffect`             | Effects, derived state, reset-on-prop, subscriptions, browser APIs, external systems, or parent notifications are in scope                                                           | Is the effect external synchronization? Can it be render calculation, event handler, keyed reset, `useMemo`, or `useSyncExternalStore` instead?                                               |
@@ -1095,9 +1092,8 @@ in the plan:
   alternatives, consequences, and follow-ups are recorded.
 - Performance pass: prove the shape avoids global editor subscriptions on hot
   paths. Use `vercel-react-best-practices` for React/runtime projection
-  decisions and `performance-oracle` for hot-path, algorithmic, memory, browser
-  runtime, or scalability claims when applicable. Use
-  `performance` when the plan needs cohort segmentation,
+  decisions and `performance` for hot-path, algorithmic, memory, browser
+  runtime, scalability claims, cohort segmentation,
   repeated-unit budgets, interaction-level INP/p95/p99 rows, memory tagging,
   degradation contracts, or Datadog/RUM dashboard proof.
 - DX pass: prove the shape is close enough to Slate terminology without copying
@@ -1178,7 +1174,7 @@ Group bullets by surface when useful:
 - public API
 - intent / decision brief
 - React/runtime
-- applicable Vercel React / performance-oracle / tdd review
+- applicable Vercel React / performance / tdd review
 - hooks and render contracts
 - events and callbacks
 - schema/predicate behavior

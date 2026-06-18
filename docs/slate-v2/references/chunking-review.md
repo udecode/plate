@@ -49,9 +49,9 @@ The deleted chunking tree in legacy `slate-react` used to:
 
 References:
 
-- [09-performance.md](/Users/zbeyens/git/plate-2/.tmp/slate-v2/docs/walkthroughs/09-performance.md)
+- [09-performance.md](/Users/zbeyens/git/plate-2/docs/walkthroughs/09-performance.md)
 - [2026-04-09-slate-v2-slate-react-source-deleted-family-closure.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-09-slate-v2-slate-react-source-deleted-family-closure.md)
-- [react-editor.ts](/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate-react/src/plugin/react-editor.ts)
+- [react-editor.ts](/Users/zbeyens/git/plate-2/packages/slate-react/src/plugin/react-editor.ts)
 
 So chunking is doing two different jobs today:
 

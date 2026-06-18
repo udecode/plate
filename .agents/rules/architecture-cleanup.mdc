@@ -103,6 +103,28 @@ Do not split because a file is large. Split only when the new owner has:
 If a split creates more hops without clearer ownership, merge it back, inline
 it, or reject the packet. File count is not architecture quality.
 
+## Module Design Law
+
+Prefer deep modules: small public interface, meaningful behavior behind it,
+clear owner, and natural tests through that interface. A module earns its keep
+when callers gain leverage and maintainers gain locality.
+
+Use these checks when a cleanup candidate changes module shape:
+
+- Interface test: every method, option, invariant, ordering constraint, error
+  mode, config rule, and perf expectation is part of what callers must learn.
+  Smaller learned surface wins when behavior stays honest.
+- Depth test: a large implementation is fine when the caller-facing interface
+  is small and stable. A shallow wrapper with nearly the same interface as its
+  implementation should be deleted, merged, or inlined.
+- Adapter test: one adapter is usually hypothetical structure; two real
+  adapters can justify an interface boundary.
+- Test-surface test: if useful tests must punch through the public interface,
+  the module shape is probably wrong.
+- Side-effect test: prefer accepting dependencies and returning results over
+  hidden construction and ambient mutation when that makes behavior easier to
+  test.
+
 ## Candidate Method
 
 Use the repo's vocabulary. For Slate work, speak in terms of model,
@@ -111,14 +133,16 @@ benchmarks, and public API. For Plate work, speak in terms of plugins,
 wrappers, components, kits, registry, app-facing docs, and product UX.
 
 Inspect at least five candidate areas unless the prompt names a smaller
-surface. Every candidate gets three tests:
+surface. Every candidate gets four tests:
 
 1. **Deletion test:** if deleting the module makes complexity disappear, it is
    probably shallow; if deletion spreads complexity across callers, it may be
    earning its keep.
 2. **Agent-navigation test:** count how many files/owners/proof commands an
    agent must touch to understand or fix one behavior.
-3. **VISION fit test:** if the cleanup does not fit `VISION.md` or reusable
+3. **Interface-depth test:** prefer the shape where callers learn less while
+   real behavior and proof become more local.
+4. **VISION fit test:** if the cleanup does not fit `VISION.md` or reusable
    taste is missing, route to `vision` / `sync-vision` before patching code.
 
 Prefer source facts over vibes. A candidate needs concrete friction:

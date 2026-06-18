@@ -80,7 +80,7 @@ Use this when the failure mode is "we keep finding more Plate planning gaps late
   intuition: `build-web-apps:shadcn` for UI/editor chrome,
   `vercel-react-best-practices` for React/Next/runtime performance, and
   `react-useeffect` for effects, derived state, subscriptions, and external
-  synchronization. Use `performance-oracle` for hot paths, algorithms, memory,
+  synchronization. Use `performance` for hot paths, algorithms, memory,
   network, query, bundle, and scalability concerns. Use `tdd` for behavior
   additions, bug fixes, and regression classes that need test-first proof. If a
   lens is skipped, record why.
@@ -100,7 +100,7 @@ Use this when the failure mode is "we keep finding more Plate planning gaps late
 - Decision brief in the active plan: principles, decision drivers, viable
   options, invalidated alternatives, consequences, and follow-ups.
 - Applicable implementation-skill review notes in the active plan: shadcn,
-  Vercel React, react-useeffect, performance-oracle, and tdd, each marked
+  Vercel React, react-useeffect, performance, and tdd, each marked
   `applied` or `skipped` with a concrete reason.
 
 ## Goal Setup
@@ -191,7 +191,7 @@ Read when relevant:
 - [react-useeffect](.agents/skills/react-useeffect/SKILL.md) when effects,
   derived state, reset-on-prop, subscriptions, browser APIs, data fetching, or
   state synchronization are in scope.
-- [performance-oracle](.agents/skills/performance-oracle/SKILL.md) when hot
+- [performance](.agents/skills/performance/SKILL.md) when hot
   paths, algorithms, memory, network, query, bundle, browser/editor runtime, or
   scalability concerns are in scope.
 - [tdd](.agents/skills/tdd/SKILL.md) when behavior changes, bug fixes, public
@@ -325,7 +325,7 @@ Score evidence rules:
 - Permanent-home coherence cannot score above `0.85` if package ownership,
   performance cost, DX, and future consumer impact are not answered.
 - Implementation-review discipline cannot score above `0.80` when an applicable
-  shadcn, Vercel React, react-useeffect, performance-oracle, or tdd lens is
+  shadcn, Vercel React, react-useeffect, performance, or tdd lens is
   missing.
 - Implementation-review discipline cannot score above `0.85` when a lens is
   marked `applied` or `skipped` without findings, plan deltas, or a concrete
@@ -354,7 +354,7 @@ All rows are conjunctive. Passing score is necessary but never sufficient.
 - every major behavior/paradigm change has an accepted objection-ledger row
 - extension/plugin/package/data-model changes have ecosystem answers when
   applicable
-- every applicable shadcn, Vercel React, react-useeffect, performance-oracle,
+- every applicable shadcn, Vercel React, react-useeffect, performance,
   and tdd review is applied or explicitly skipped with a reason
 - no objection-ledger row is `unresolved`, `revise`, or `drop` without a
   corresponding plan response
@@ -382,7 +382,7 @@ The plan must include:
 10. Permanent-home target.
 11. Standards/spec/protocol/parity/audit/roadmap change map.
 12. Applicable implementation-skill review matrix: shadcn, Vercel React,
-    react-useeffect, performance-oracle, and tdd.
+    react-useeffect, performance, and tdd.
 13. Browser stress / parity / regression strategy.
 14. High-risk deliberate-mode pre-mortem and proof plan when triggered.
 15. Hard cuts and rejected alternatives.
@@ -404,7 +404,7 @@ Run the review as passes, not one giant essay:
    when it is not already explicit.
 3. Research and live-source refresh.
 4. Authority, node-model, affinity, permanent-home, protocol, parity, roadmap,
-   shadcn, React performance, useEffect, performance-oracle, tdd, and
+   shadcn, React performance, useEffect, performance, tdd, and
    regression pressure passes.
 5. Plate maintainer objection ledger with steelman pressure for major decisions.
 6. High-risk deliberate-mode pass when triggered.
@@ -736,7 +736,7 @@ Use this matrix:
 | `build-web-apps:shadcn` | UI/editor chrome, components, registry components, menus, popovers, command palettes, inputs, forms, overlays, styling, or component composition are in scope | Are existing components used first? Are variants, semantic tokens, `gap-*`, `size-*`, `truncate`, `cn()`, accessible titles, grouped menu/select items, full Card composition, Button loading, and icon `data-icon` rules respected? |
 | `vercel-react-best-practices` | React/Next components, rendering, external-store subscriptions, data fetching, server/client boundaries, bundle size, or runtime performance are in scope | Are waterfalls avoided, bundles split sanely, server/client serialization minimized, global listeners deduped, subscriptions derived and narrow, expensive renders deferred, transient values kept in refs, and inline components avoided? |
 | `react-useeffect` | `useEffect`, `useState` for derived values, reset-on-prop, state synchronization, subscriptions, browser APIs, external systems, data fetching, or parent notifications are in scope | Is the effect actually synchronizing with an external system? Can the behavior be render calculation, `useMemo`, keyed reset, event handler, framework fetch, or `useSyncExternalStore` instead? |
-| `performance-oracle` | Hot paths, algorithms, large collections, memory lifetime, network/database I/O, bundle cost, editor runtime loops, browser event paths, or scalability are in scope | Is complexity bounded? Are allocations, subscriptions, listeners, network calls, and cache lifetimes controlled? What happens at 10x, 100x, and 1000x scale? |
+| `performance` | Hot paths, algorithms, large collections, memory lifetime, network/database I/O, bundle cost, editor runtime loops, browser event paths, or scalability are in scope | Is complexity bounded? Are allocations, subscriptions, listeners, network calls, and cache lifetimes controlled? What happens at 10x, 100x, and 1000x scale? |
 | `tdd` | Behavior additions, bug fixes, public interface changes, regression classes, or executable acceptance criteria are in scope | Is there a red-green-refactor slice through a public interface? Does the test verify behavior rather than implementation details? |
 
 For each applicable lens, record:
@@ -945,7 +945,7 @@ Group bullets by surface when useful:
 - UI/editor chrome and applicable shadcn review
 - React runtime/performance and applicable Vercel React review
 - effects/external synchronization and applicable react-useeffect review
-- hot-path/scalability and applicable performance-oracle review
+- hot-path/scalability and applicable performance review
 - behavior/regression proof and applicable tdd review
 - high-risk deliberate-mode pre-mortem when triggered
 - regression proof

@@ -398,7 +398,7 @@ Notes:
 
 | Pass                             | Status   | Evidence                                                                                                                                                                    |
 | -------------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Skill reload                     | complete | Reloaded `slate-ralplan`, `ce-review`, `learnings-researcher`, and `goal workflow` after compaction.                                                                  |
+| Skill reload                     | complete | Reloaded `slate-ralplan`, `learnings-researcher`, and `goal workflow` after compaction.                                                                  |
 | Completion reset                 | complete | Reset `active goal state` to pending for this activation.                                                                       |
 | Live source review               | complete | Read the live example plus `use-slate-decoration-source.ts` and `decoration-source.ts` from `Plate repo root`.                                                                |
 | Institutional knowledge          | complete | Read the relevant projection/range and stable-reference solution notes.                                                                                                     |

@@ -1433,7 +1433,7 @@ The target is:
 
 Current repo baseline:
 
-- `/Users/zbeyens/git/plate-2/.tmp/slate-v2` already runs this package surface on
+- `/Users/zbeyens/git/plate-2` already runs this package surface on
   React `19.2` and Next `16.2.4`
 
 ## Inputs

@@ -202,7 +202,7 @@ the repo.
     visibility
 - deleted draft-only rows:
   - `highlighted-text`, `external-decoration-sources`, and `review-comments`
-    were deleted from `.tmp/slate-v2` and are not current file/proof owners.
+    were deleted from Plate repo root and are not current file/proof owners.
     Keep historical claims in draft history only; do not cite them as live
     runnable rows.
 - broader browser/input parity rows that do not currently map to live example

@@ -147,7 +147,7 @@ Current tranche-3 doctrine:
   - [2026-04-19-slate-absolute-api-replan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-19-slate-absolute-api-replan.md)
 - explicit-cut family now exists for legacy ordinary-op adjacent-text/spacer
   canonicalization rows:
-  - owner: `/Users/zbeyens/git/plate-2/.tmp/slate-v2/packages/slate/test/fixture-claim-overrides.ts`
+  - owner: `/Users/zbeyens/git/plate-2/packages/slate/test/fixture-claim-overrides.ts`
 - the perfect redesign is now the live direction, not a deferred later lane
 - the `slate` core API direction is the live claim
 - remaining work is final gate closure and claim-width sync, not a new public

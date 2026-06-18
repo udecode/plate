@@ -13,6 +13,7 @@
     "check:docs": "pnpm build:source && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts",
     "dev": "PLATE_WWW_DYNAMIC_DOCS=1 pnpm build:source:dev && PLATE_WWW_DYNAMIC_DOCS=1 next dev",
     "dev:highlight": "PLATE_WWW_DYNAMIC_DOCS=1 PLATE_WWW_CODE_HIGHLIGHT=1 pnpm build:source:dev && PLATE_WWW_DYNAMIC_DOCS=1 PLATE_WWW_CODE_HIGHLIGHT=1 next dev",
+    "dev:slate": "PLATE_WWW_SLATE=1 PLATE_WWW_DEV_SOURCE=1 next dev",
     "lint": "npx eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:debug": "TIMING=1 DEBUG=eslint:cli-engine pnpm lint:fix",
     "lint:fix": "pnpm lint --fix",

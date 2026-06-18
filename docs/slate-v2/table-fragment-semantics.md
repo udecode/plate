@@ -26,14 +26,14 @@ The target contract is rectangle algebra, not generic nested-block merging:
 
 The current Slate v2 checkout has three explicit skipped fixture owners:
 
-- `.tmp/slate-v2/packages/slate/test/transforms/insertFragment/of-tables/merge-into-full-cells.tsx`
-- `.tmp/slate-v2/packages/slate/test/transforms/insertFragment/of-tables/merge-into-empty-cells.tsx`
-- `.tmp/slate-v2/packages/slate/test/transforms/insertFragment/of-tables/merge-cells-with-nested-blocks.tsx`
+- `packages/slate/test/transforms/insertFragment/of-tables/merge-into-full-cells.tsx`
+- `packages/slate/test/transforms/insertFragment/of-tables/merge-into-empty-cells.tsx`
+- `packages/slate/test/transforms/insertFragment/of-tables/merge-cells-with-nested-blocks.tsx`
 
 Focused current proof:
 
 ```sh
-cd .tmp/slate-v2
+cd /Users/zbeyens/git/plate-2
 SLATE_FIXTURE_FILTER='transforms/insertFragment/of-tables' bun test ./packages/slate/test/index.spec.ts
 ```
 
@@ -52,10 +52,10 @@ Source recheck on 2026-06-13:
 Adjacent browser coverage is real but not equivalent:
 
 - table-cell keyboard containment and paste containment live in
-  `.tmp/slate-v2/playwright/integration/examples/tables.test.ts`;
+  `apps/www/tests/slate-browser/donor/examples/tables.test.ts`;
 - rich table HTML import from Google Docs, Quip, Word, Google Sheets, and
   ProseMirror row slices lives in
-  `.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts`;
+  `apps/www/tests/slate-browser/donor/examples/paste-html.test.ts`;
 - these rows prove external table import and cell editing stability, not Slate
   table-fragment merge law.
 
@@ -86,14 +86,14 @@ semantics from shape, which is how dirty fixture fixes happen.
 Core proof:
 
 ```sh
-cd .tmp/slate-v2
+cd /Users/zbeyens/git/plate-2
 SLATE_FIXTURE_FILTER='transforms/insertFragment/of-tables' bun test ./packages/slate/test/index.spec.ts
 ```
 
 Browser proof after browser rows exist:
 
 ```sh
-cd .tmp/slate-v2
+cd /Users/zbeyens/git/plate-2
 PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/tables.test.ts playwright/integration/examples/paste-html.test.ts --project=chromium --grep "table"
 ```
 

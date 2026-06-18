@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils';
 
 import '@/app/globals.css';
 
+const isSlateMode = process.env.PLATE_WWW_SLATE === '1';
+
 export const metadata: Metadata = {
   authors: [
     {
@@ -121,11 +123,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
           </Providers>
         </NuqsAdapter>
 
-        {process.env.NODE_ENV === 'development' && <Agentation />}
-        <TailwindIndicator />
+        {process.env.NODE_ENV === 'development' && !isSlateMode && (
+          <Agentation />
+        )}
+        {!isSlateMode && <TailwindIndicator />}
 
-        <GA />
-        <Toaster />
+        {!isSlateMode && <GA />}
+        {!isSlateMode && <Toaster />}
       </body>
     </html>
   );
