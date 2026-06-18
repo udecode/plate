@@ -3,7 +3,7 @@
 import type { SidebarNavItem } from "@/types/nav";
 
 import castArray from "lodash/castArray.js";
-import { CheckIcon, ChevronRightIcon, ChevronsUpDownIcon } from "lucide-react";
+import { ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
@@ -15,10 +15,8 @@ import {
   normalizeDocsHref,
 } from "@/lib/docs-nav-metadata";
 import {
-  docsRoots,
   getDocsRootFromPathname,
   getSidebarNavForDocsRoot,
-  type DocsRootId,
 } from "@/lib/docs-root-nav";
 import { cn } from "@/lib/utils";
 import { hrefWithLocale } from "@/lib/withLocale";
@@ -27,12 +25,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -65,7 +57,13 @@ function isNavItemActive(item: SidebarNavItem, pathname: string): boolean {
     const href = normalizeDocsHref(item.href);
 
     if (href === pathname) return true;
-    if (href !== "/docs" && pathname.startsWith(`${href}/`)) return true;
+    if (
+      href !== "/docs" &&
+      href !== "/docs/slate" &&
+      pathname.startsWith(`${href}/`)
+    ) {
+      return true;
+    }
   }
 
   return item.items?.some((child) => isNavItemActive(child, pathname)) ?? false;
@@ -84,7 +82,7 @@ function getSectionTitle(
 }
 
 const docsNavItemButtonClassName =
-  "relative h-[30px] w-fit border border-transparent text-[0.8rem] font-medium data-[active=true]:border-accent data-[active=true]:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48";
+  "relative h-[30px] w-fit max-w-full overflow-hidden border border-transparent text-[0.8rem] font-medium whitespace-nowrap data-[active=true]:border-accent data-[active=true]:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48";
 
 function getNavItemKey(item: SidebarNavItem, index: number, depth: number) {
   return item.href ?? `${depth}:${index}:${String(item.title)}`;
@@ -194,28 +192,21 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
   return navSections.length > 0 ? (
     <Sidebar
       aria-label={locale === "cn" ? "文档导航" : "Docs navigation"}
-      className="sticky top-[var(--header-height)] z-30 hidden h-[calc(100svh-var(--header-height))] overscroll-none bg-transparent [--sidebar-menu-width:--spacing(56)] lg:flex"
+      className="sticky top-[calc(var(--header-height)+0.6rem)] z-30 hidden h-[calc(100svh-10rem)] overscroll-none bg-transparent [--sidebar-menu-width:--spacing(56)] lg:flex"
       collapsible="none"
     >
-      <SidebarContent
-        className={cn(
-          "no-scrollbar h-full w-(--sidebar-menu-width) gap-1 px-2.5 py-6",
-          docsRoot === "slate"
-            ? "overflow-y-auto overflow-x-hidden"
-            : "overflow-hidden"
-        )}
-      >
+      <div className="h-9" />
+      <SidebarContent className="no-scrollbar w-(--sidebar-menu-width) overflow-x-hidden px-2.5">
         {isSlateExamplesIndex ? (
           <SlateExamplesSidebarNav
             backHref="/docs/slate"
             backLabel="Back to Slate docs"
             indexActive
             indexHref="/docs/slate/examples"
+            showIndex
           />
         ) : (
           <>
-            <DocsRootSwitcher root={docsRoot} />
-
             {docsRoot === "slate"
               ? navSections.map((section, index) => (
                   <DocsNavStaticGroup
@@ -246,72 +237,10 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
                 })}
           </>
         )}
+        <div className="sticky -bottom-1 z-10 h-16 shrink-0 bg-linear-to-t from-background via-background/80 to-background/50 blur-xs" />
       </SidebarContent>
     </Sidebar>
   ) : null;
-}
-
-function DocsRootSwitcher({ root }: { root: DocsRootId }) {
-  const locale = useLocale();
-  const activeRoot = docsRoots.find((item) => item.id === root) ?? docsRoots[0];
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          type="button"
-          className="mb-3 flex h-10 w-full items-center justify-between rounded-lg border bg-muted/40 px-3 text-left text-sm shadow-xs outline-none transition-colors hover:bg-accent focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50"
-        >
-          <span className="flex min-w-0 items-center gap-2">
-            <span
-              className={cn(
-                "size-4 shrink-0 rounded-[4px] border",
-                root === "slate"
-                  ? "border-blue-500/40 bg-blue-500/20"
-                  : "border-yellow-500/40 bg-yellow-500/20"
-              )}
-            />
-            <span className="truncate font-medium">{activeRoot.title}</span>
-          </span>
-          <ChevronsUpDownIcon className="size-3.5 shrink-0 text-muted-foreground" />
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        className="w-(--sidebar-menu-width)"
-        sideOffset={6}
-      >
-        {docsRoots.map((item) => {
-          const active = item.id === root;
-
-          return (
-            <DropdownMenuItem key={item.id} asChild>
-              <Link
-                className="flex items-start gap-2.5 py-2"
-                href={hrefWithLocale(item.href, locale)}
-              >
-                <span
-                  className={cn(
-                    "mt-0.5 size-4 shrink-0 rounded-[4px] border",
-                    item.id === "slate"
-                      ? "border-blue-500/40 bg-blue-500/20"
-                      : "border-yellow-500/40 bg-yellow-500/20"
-                  )}
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="block font-medium">{item.title}</span>
-                  <span className="block text-muted-foreground text-xs leading-snug">
-                    {item.description}
-                  </span>
-                </span>
-                {active ? <CheckIcon className="mt-0.5 size-4" /> : null}
-              </Link>
-            </DropdownMenuItem>
-          );
-        })}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
 }
 
 function DocsNavStaticGroup({
@@ -329,13 +258,15 @@ function DocsNavStaticGroup({
     section.items?.length === 1 && section.items[0]?.title === section.title;
 
   return section.items?.length ? (
-    <SidebarGroup className="shrink-0 p-0">
-      {standalone ? null : (
+    <SidebarGroup
+      className={cn("shrink-0", index === 0 && sectionTitle && "pt-6")}
+    >
+      {standalone || !sectionTitle ? null : (
         <SidebarGroupLabel className="font-medium text-muted-foreground">
           {sectionTitle}
         </SidebarGroupLabel>
       )}
-      <SidebarGroupContent className="pr-1">
+      <SidebarGroupContent>
         <DocsNavItems
           dense={!standalone && index > 0}
           items={section.items}
@@ -365,7 +296,11 @@ function DocsNavGroup({
 
   return (
     <SidebarGroup
-      className={cn("min-h-0 p-0", open && scrollable ? "flex-1" : "shrink-0")}
+      className={cn(
+        "min-h-0",
+        index === 0 && "pt-6",
+        open && scrollable ? "flex-1" : "shrink-0"
+      )}
     >
       {section.items?.length ? (
         <Collapsible
@@ -403,7 +338,6 @@ function DocsNavGroup({
           >
             <SidebarGroupContent
               className={cn(
-                "pr-1",
                 scrollable
                   ? "no-scrollbar min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain"
                   : "overflow-visible"
@@ -524,7 +458,7 @@ function DocsNavItemContent({
   return (
     <>
       <span className="absolute inset-0 flex bg-transparent" />
-      {title}
+      <span className="min-w-0 truncate">{title}</span>
 
       {statusLabel ? (
         <span

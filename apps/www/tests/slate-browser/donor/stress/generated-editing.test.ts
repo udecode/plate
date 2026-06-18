@@ -509,7 +509,7 @@ const staleTargetRemoteRebase = (): StressCase =>
             path: [1],
             node: {
               type: "image",
-              url: "https://picsum.photos/id/1015/320/180.jpg",
+              url: "https://picsum.photos/id/1015/160/90.jpg",
               children: [{ text: "" }],
             },
           },

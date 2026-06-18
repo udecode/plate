@@ -2,11 +2,11 @@ import Link from "next/link";
 
 import { ArrowLeftIcon, ChevronDownIcon } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 import {
   getExampleDefinition,
+  isNewSlateExamplePath,
   NON_HIDDEN_EXAMPLES,
 } from "./slate-example-registry";
 
@@ -22,6 +22,7 @@ type SlateExamplesNavLinksProps = {
   indexActive?: boolean;
   indexHref?: string;
   indexLabel?: string;
+  showIndex?: boolean;
 };
 
 export function SlateExamplesShell({
@@ -47,6 +48,7 @@ export function SlateExamplesSidebarNav({
   indexActive,
   indexHref,
   indexLabel,
+  showIndex,
 }: SlateExamplesNavLinksProps) {
   return (
     <nav
@@ -61,6 +63,7 @@ export function SlateExamplesSidebarNav({
         indexActive={indexActive}
         indexHref={indexHref}
         indexLabel={indexLabel}
+        showIndex={showIndex}
       />
     </nav>
   );
@@ -108,6 +111,7 @@ function SlateExamplesNavLinks({
   indexActive,
   indexHref = "/examples/slate",
   indexLabel = "Examples",
+  showIndex = false,
 }: SlateExamplesNavLinksProps) {
   const isIndexActive = indexActive ?? activeExample === undefined;
 
@@ -122,24 +126,27 @@ function SlateExamplesNavLinks({
           <ArrowLeftIcon className="size-4" />
           {backLabel}
         </Link>
-        <Link
-          className={cn(
-            "flex h-8 items-center rounded-md px-2 font-medium text-sm hover:bg-muted",
-            isIndexActive
-              ? "bg-muted text-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-          data-active={isIndexActive}
-          data-slate-example-index
-          href={indexHref}
-        >
-          {indexLabel}
-        </Link>
+        {showIndex ? (
+          <Link
+            className={cn(
+              "flex h-8 items-center rounded-md px-2 font-medium text-sm hover:bg-muted",
+              isIndexActive
+                ? "bg-muted text-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+            data-active={isIndexActive}
+            data-slate-example-index
+            href={indexHref}
+          >
+            {indexLabel}
+          </Link>
+        ) : null}
       </div>
 
       <div className="flex min-w-0 flex-col gap-1">
-        {NON_HIDDEN_EXAMPLES.map(([name, slug, metadata]) => {
+        {NON_HIDDEN_EXAMPLES.map(([name, slug]) => {
           const isActive = activeExample === slug;
+          const isNewExample = isNewSlateExamplePath(slug);
 
           return (
             <Link
@@ -155,10 +162,12 @@ function SlateExamplesNavLinks({
               key={slug}
             >
               <span className="min-w-0 flex-1 truncate">{name}</span>
-              {metadata?.badge ? (
-                <Badge className="h-5 px-1.5 text-[10px]" variant="secondary">
-                  {metadata.badge}
-                </Badge>
+              {isNewExample ? (
+                <span
+                  className="flex size-2 shrink-0 rounded-full bg-blue-500"
+                  data-slate-example-new-dot={slug}
+                  title="New"
+                />
               ) : null}
             </Link>
           );

@@ -1,42 +1,22 @@
-import type { SidebarNavItem } from '@/types/nav';
+import type { SidebarNavItem } from "@/types/nav";
 
-import slateMeta from '../../../../content/docs/slate/meta.json';
+import slateMeta from "../../../../content/docs/slate/meta.json";
 
 const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
-const SLATE_DOCS_PREFIX = '/docs/slate';
+const SLATE_DOCS_PREFIX = "/docs/slate";
 const META_LINK_REGEX = /^\[([^\]]+)\]\(([^)]+)\)$/;
 const META_SEPARATOR_REGEX = /^---(.+)---$/;
 
-export type DocsRootId = 'plate' | 'slate';
-
-export const docsRoots: Array<{
-  description: string;
-  href: string;
-  id: DocsRootId;
-  title: string;
-}> = [
-  {
-    description: 'Framework docs and editor kits',
-    href: '/docs',
-    id: 'plate',
-    title: 'Plate',
-  },
-  {
-    description: 'Editor substrate and low-level APIs',
-    href: '/docs/slate',
-    id: 'slate',
-    title: 'Slate',
-  },
-];
+export type DocsRootId = "plate" | "slate";
 
 function normalizeDocsPath(pathname: string) {
-  return pathname.replace(CN_DOCS_PREFIX_REGEX, '');
+  return pathname.replace(CN_DOCS_PREFIX_REGEX, "");
 }
 
 export function getDocsRootFromPathname(pathname: string): DocsRootId {
   return normalizeDocsPath(pathname).startsWith(SLATE_DOCS_PREFIX)
-    ? 'slate'
-    : 'plate';
+    ? "slate"
+    : "plate";
 }
 
 function isSlateHref(href: string) {
@@ -74,11 +54,11 @@ function getSlateSidebarNav() {
   let currentSection: SidebarNavItem | undefined;
   let hasSeenSeparator = false;
 
-  const ensureSection = (title = 'Overview') => {
+  const ensureSection = (title?: string) => {
     if (!currentSection) {
       currentSection = {
         items: [],
-        title,
+        ...(title ? { title } : null),
       };
       sections.push(currentSection);
     }
@@ -104,13 +84,8 @@ function getSlateSidebarNav() {
     if (!linkMatch) continue;
 
     if (!hasSeenSeparator) {
-      sections.push({
-        items: [
-          {
-            href: linkMatch[2],
-            title: linkMatch[1],
-          },
-        ],
+      ensureSection().items?.push({
+        href: linkMatch[2],
         title: linkMatch[1],
       });
       continue;
@@ -129,5 +104,7 @@ export function getSidebarNavForDocsRoot(
   sidebarNav: SidebarNavItem[],
   root: DocsRootId
 ) {
-  return root === 'slate' ? getSlateSidebarNav() : getPlateSidebarNav(sidebarNav);
+  return root === "slate"
+    ? getSlateSidebarNav()
+    : getPlateSidebarNav(sidebarNav);
 }

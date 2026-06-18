@@ -1,9 +1,8 @@
 {
   "pages": [
     "[Overview](/docs/slate)",
+    "[Why This Fork](/docs/slate/releases/slate-v2)",
     "[Examples](/docs/slate/examples)",
-    "---Releases---",
-    "[Slate v2](/docs/slate/releases/slate-v2)",
     "---Migration---",
     "[Migrating to Slate v2](/docs/slate/migration/slate-v2)",
     "---Walkthroughs---",
@@ -65,7 +64,7 @@
     "[DOM Coverage Boundaries](/docs/slate/libraries/slate-react/dom-coverage-boundaries)",
     "[Editable Component](/docs/slate/libraries/slate-react/editable)",
     "[Slate React Event Handling](/docs/slate/libraries/slate-react/event-handling)",
-    "[Experimental Virtualized Rendering](/docs/slate/libraries/slate-react/experimental-virtualized-rendering)",
+    "[Virtualized Rendering](/docs/slate/libraries/slate-react/experimental-virtualized-rendering)",
     "[Slate React Hooks](/docs/slate/libraries/slate-react/hooks)",
     "[React Editor Setup](/docs/slate/libraries/slate-react/react-editor-setup)",
     "[React Editor](/docs/slate/libraries/slate-react/react-editor)",

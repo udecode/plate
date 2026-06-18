@@ -1,12 +1,30 @@
-export type ExampleBadge = "alpha";
+export type ExampleDefinition = readonly [name: string, path: string];
 
-export type ExampleDefinition = readonly [
-  name: string,
-  path: string,
-  metadata?: {
-    badge?: ExampleBadge;
-  }
-];
+export const UPSTREAM_SLATE_EXAMPLE_PATHS = [
+  "android-tests",
+  "check-lists",
+  "code-highlighting",
+  "custom-placeholder",
+  "editable-voids",
+  "embeds",
+  "forced-layout",
+  "hovering-toolbar",
+  "huge-document",
+  "images",
+  "inlines",
+  "markdown-preview",
+  "markdown-shortcuts",
+  "mentions",
+  "paste-html",
+  "plaintext",
+  "read-only",
+  "iframe",
+  "richtext",
+  "search-highlighting",
+  "shadow-dom",
+  "styling",
+  "tables",
+] as const;
 
 export const EXAMPLE_NAMES_AND_PATHS = [
   ["Android Tests", "android-tests"],
@@ -31,7 +49,7 @@ export const EXAMPLE_NAMES_AND_PATHS = [
   ["Mentions", "mentions"],
   ["Multi-root Document", "multi-root-document"],
   ["Persistent Annotation Anchors", "persistent-annotation-anchors"],
-  ["Pagination", "pagination", { badge: "alpha" }],
+  ["Pagination", "pagination"],
   ["Paste HTML", "paste-html"],
   ["Plain Text", "plaintext"],
   ["Read-only", "read-only"],
@@ -54,6 +72,11 @@ export const HIDDEN_EXAMPLES = [
 ] as const;
 
 const hiddenExamplePaths: readonly string[] = HIDDEN_EXAMPLES;
+const upstreamSlateExamplePaths: readonly string[] =
+  UPSTREAM_SLATE_EXAMPLE_PATHS;
+
+export const isNewSlateExamplePath = (path: string): boolean =>
+  !upstreamSlateExamplePaths.includes(path);
 
 export const NON_HIDDEN_EXAMPLES = EXAMPLE_NAMES_AND_PATHS.filter(
   ([, path]) => !hiddenExamplePaths.includes(path)

@@ -16,14 +16,14 @@ measurement engine and derives layout from the current editor snapshot and your
 page settings.
 
 ```tsx
-import { createSlateLayout } from '@platejs/slate-layout'
+import { createSlateLayout } from "@platejs/slate-layout";
 
 const layout = createSlateLayout(editor, () => ({
   page: {
     margins: 72,
-    preset: 'letter',
+    preset: "letter",
   },
-}))
+}));
 ```
 
 The layout output is derived state. Store document content in Slate roots and
@@ -36,23 +36,23 @@ Use `PagedEditable` from `slate-layout/react` when the editor surface should
 render pages.
 
 ```tsx
-import { Slate, useSlateEditor } from '@platejs/slate-react'
-import { PagedEditable, useSlateLayout } from '@platejs/slate-layout/react'
+import { Slate, useSlateEditor } from "@platejs/slate-react";
+import { PagedEditable, useSlateLayout } from "@platejs/slate-layout/react";
 
 const DocumentEditor = () => {
   const editor = useSlateEditor({
     initialValue,
-  })
+  });
   const layout = useSlateLayout(editor, {
-    page: { margins: 72, preset: 'letter' },
-  })
+    page: { margins: 72, preset: "letter" },
+  });
 
   return (
     <Slate editor={editor}>
       <PagedEditable layout={layout} />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 `PagedEditable` wraps `Editable`, so normal `Editable` props still apply:
@@ -99,5 +99,5 @@ break source or a shared measurement profile.
 ## Related Docs
 
 - [Improving Performance](../../walkthroughs/09-performance)
-- [Experimental Virtualized Rendering](../slate-react/experimental-virtualized-rendering)
+- [Virtualized Rendering](../slate-react/experimental-virtualized-rendering)
 - [DOM Coverage Boundaries](../slate-react/dom-coverage-boundaries)

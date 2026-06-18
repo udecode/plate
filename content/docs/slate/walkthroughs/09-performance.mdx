@@ -62,17 +62,17 @@ If your components depend on custom React contexts containing non-primitive valu
 
 ```tsx
 // Provider
-const myDataRef = useRef(myData)
-myDataRef.current = myData
-return <MyContext.Provider value={myDataRef}>{children}</MyContext.Provider>
+const myDataRef = useRef(myData);
+myDataRef.current = myData;
+return <MyContext.Provider value={myDataRef}>{children}</MyContext.Provider>;
 
 // Consumer
 // Does not re-render when `myData` changes
-const myDataRef = useContext(MyContext)
+const myDataRef = useContext(MyContext);
 
 const onClick = () => {
-  console.log(myDataRef.current)
-}
+  console.log(myDataRef.current);
+};
 ```
 
 ### DOM Strategy
@@ -87,7 +87,7 @@ product needs eventual native DOM coverage for the whole document, or
 
 Experimental virtualized rendering is a separate viewport-mounted stress path
 for pathological documents. Read
-[Experimental Virtualized Rendering](../libraries/slate-react/experimental-virtualized-rendering)
+[Virtualized Rendering](../libraries/slate-react/experimental-virtualized-rendering)
 when you need that research lane.
 
 For paginated documents, keep virtualization at the page boundary. See

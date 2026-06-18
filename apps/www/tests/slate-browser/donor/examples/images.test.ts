@@ -16,9 +16,9 @@ type ElementBoxSnapshot = {
   y: number;
 };
 
-const firstExampleImageUrl = "https://picsum.photos/id/1015/320/180.jpg";
-const secondExampleImageUrl = "https://picsum.photos/id/1025/320/180.jpg";
-const thirdExampleImageUrl = "https://picsum.photos/id/1069/320/180.jpg";
+const firstExampleImageUrl = "https://picsum.photos/id/1015/160/90.jpg";
+const secondExampleImageUrl = "https://picsum.photos/id/1025/160/90.jpg";
+const thirdExampleImageUrl = "https://picsum.photos/id/1069/160/90.jpg";
 
 const dispatchImageDragOver = async (
   image: Locator,
