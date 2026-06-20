@@ -6,10 +6,7 @@ const explicitBaseURL = process.env.PLAYWRIGHT_BASE_URL;
 const baseURL = explicitBaseURL ?? 'http://localhost:3102';
 process.env.PLAYWRIGHT_BASE_URL = baseURL;
 const availableParallelism = os.availableParallelism?.() ?? os.cpus().length;
-const localWorkerCount = Math.min(
-  10,
-  Math.max(2, availableParallelism - 2)
-);
+const localWorkerCount = Math.min(10, Math.max(2, availableParallelism - 2));
 const workerCount = process.env.PLAYWRIGHT_WORKERS
   ? Number(process.env.PLAYWRIGHT_WORKERS)
   : process.env.CI

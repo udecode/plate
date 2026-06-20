@@ -14,7 +14,7 @@ regression should become a test or harness improvement, and the project can
 hard-cut APIs when that makes the system easier to verify. That is a different
 bet from upstream Slate's smaller, compatibility-conscious core.
 
-This is the release story for the private Slate v2 beta lane. The beta claim is
+This is the release story for the unpublished Slate v2 beta lane. The beta claim is
 the core editor runtime, React editor path, package surface, desktop browser
 proof, Yjs adapter, and first-party proof infrastructure. Raw mobile-device proof and
 production pagination stay outside this beta claim.
@@ -30,7 +30,7 @@ npm install @platejs/slate @platejs/slate-dom @platejs/slate-react react react-d
 - [Should You Try This Yet?](#should-you-try-this-yet)
 - [Highlights](#highlights)
 - [Important Changes](#important-changes)
-- [Migrating](#migrating)
+- [Migration](#migration)
 - [Package Guide](#package-guide)
 - [Proof And Quality](#proof-and-quality)
 - [Complete Change Map](#complete-change-map)
@@ -356,7 +356,7 @@ Slate v2 keeps package ownership explicit:
 | `@platejs/slate-history`     | undo/redo extension exposed through `state.history`, `tx.history`, and `editor.api.history`                             |
 | `@platejs/slate-hyperscript` | JSX-style test and fixture helpers                                                                                      |
 | `@platejs/yjs`               | Yjs collaboration adapter, awareness, provider lifecycle bridge, remote cursor hooks, and Yjs-aware undo/redo           |
-| `@platejs/slate-layout`      | experimental page layout and page rendering helpers                                                                     |
+| `@platejs/slate-layout`      | page layout and page rendering helpers for beta proof lanes                                                              |
 | `@platejs/browser`           | browser proof harness, Playwright helpers, feature contracts, screenshots, traces, and generated editing-test replay    |
 
 Apps should import from root package exports. The `/internal` subpaths are for
@@ -412,11 +412,9 @@ use normal Slate node values.
 
 ---
 
-**Experimental**
-
 ### Page Layout Helpers
 
-`@platejs/slate-layout` adds experimental layout readers and React page surfaces:
+`@platejs/slate-layout` adds layout readers and React page surfaces:
 
 ```tsx
 import { createSlateLayout } from "@platejs/slate-layout";
@@ -431,10 +429,10 @@ const layout = createSlateLayout(editor, () => ({
 
 React page surfaces can use `PagedEditable` from `@platejs/slate-layout/react`.
 
-Keep this behind product proof. It is useful for pagination experiments,
-print-like surfaces, page virtualization, previews, tests, and export planning;
-it is not a mature claim for every browser geometry, table, image,
-collaboration, export, and selection case.
+Keep this behind product proof. It is useful for pagination lanes, print-like
+surfaces, page virtualization, previews, tests, and export planning; it is not
+a mature claim for every browser geometry, table, image, collaboration, export,
+and selection case.
 
 ---
 
@@ -469,12 +467,12 @@ collaboration, export, and selection case.
 | Raw mobile device proof             | Deferred until a real Appium/device lane writes proof artifacts.                                                                                    |
 | Collaboration adapters              | `@platejs/yjs` owns the Yjs adapter. App code owns transport packages, auth, persistence, room naming, and server scaling.                          |
 | Universal huge-document superiority | The product gate is green when the owned benchmark passes; broad cross-editor superiority stays diagnostic and scoped.                              |
-| Pagination/page layout              | `@platejs/slate-layout` is experimental until product proof covers browser geometry, export, tables, images, collaboration, and selection behavior. |
+| Pagination/page layout              | `@platejs/slate-layout` is beta-scoped until product proof covers browser geometry, export, tables, images, collaboration, and selection behavior. |
 | Table-fragment merge policy         | Core fragment insertion is structural. Table-grid positional paste belongs in a table extension clipboard or fragment policy.                       |
 
 ---
 
-## Migrating
+## Migration
 
 Most migrations should start with one working editor, not every reusable
 feature.
@@ -573,7 +571,7 @@ import { useYjsRemoteCursors } from "@platejs/yjs/react";
 
 ### `@platejs/slate-layout`
 
-Use `@platejs/slate-layout` for experimental pagination and page-view research.
+Use `@platejs/slate-layout` for pagination and page-view proof work.
 
 ```tsx
 import { createSlateLayout } from "@platejs/slate-layout";
@@ -653,7 +651,7 @@ large-document claim is not real until the right proof lane owns it.
 | Large documents    | semantic islands, active corridor, occlusion, DOM-present strategy, strict huge-document gates                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | History            | `history()` extension, `state.history`, `tx.history`, `editor.api.history`, history stack validation                                                                                                                                                                                                                                                                                                                                                                                                               |
 | Hyperscript        | JSX fixture factory, custom fixture tags, low-level fixture creators                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| Layout             | experimental `createSlateLayout`, `PagedEditable`, page mount plans, fragment hooks                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Layout             | beta-scoped `createSlateLayout`, `PagedEditable`, page mount plans, fragment hooks                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Browser proof      | public `@platejs/browser/core`, `@platejs/browser/browser`, `@platejs/browser/playwright`, `@platejs/browser/transports`, feature contracts, transport classifiers, stress replay/reduction                                                                                                                                                                                                                                                                                                                        |
 | Docs               | migration guide, package docs, roots/state docs, React setup docs, DOM coverage docs, layout docs                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | Examples           | plaintext, richtext, checklists, forced layout, markdown preview/shortcuts, inlines, mentions, images, embeds, tables, paste HTML, custom placeholder, read-only, iframes, shadow DOM, styling, linting, document state, hidden content blocks, huge document, multi-root document, synced blocks, comment mode, search/code highlighting, Yjs collaboration, Yjs Hocuspocus, plus hidden proof routes for async decorations, DOM coverage boundaries, and persistent annotation anchors; pagination remains alpha |

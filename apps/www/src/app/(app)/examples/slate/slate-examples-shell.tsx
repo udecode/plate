@@ -1,10 +1,14 @@
-import { type CSSProperties } from 'react';
+import type { CSSProperties } from 'react';
 
 import Link from 'next/link';
 
 import { ArrowLeftIcon, ChevronDownIcon } from 'lucide-react';
 
-import { Sidebar, SidebarContent, SidebarProvider } from '@/components/ui/sidebar';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarProvider,
+} from '@/components/ui/sidebar';
 import { cn } from '@/lib/utils';
 
 import {

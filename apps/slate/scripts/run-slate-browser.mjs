@@ -4,11 +4,19 @@ import { spawn, spawnSync } from 'node:child_process';
 
 const mode = process.argv[2] ?? 'matrix';
 const passthroughArgs = process.argv.slice(3);
-const paginationFile = '../www/tests/slate-browser/donor/examples/pagination.test.ts';
+const paginationFile =
+  '../www/tests/slate-browser/donor/examples/pagination.test.ts';
 const syncedBlocksFile =
   '../www/tests/slate-browser/donor/examples/synced-blocks.test.ts';
-const checkListsFile = '../www/tests/slate-browser/donor/examples/check-lists.test.ts';
-const baseArgs = ['exec', 'playwright', 'test', '--config', 'playwright.config.ts'];
+const checkListsFile =
+  '../www/tests/slate-browser/donor/examples/check-lists.test.ts';
+const baseArgs = [
+  'exec',
+  'playwright',
+  'test',
+  '--config',
+  'playwright.config.ts',
+];
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:3102';
 let serverProcess;
 
@@ -22,7 +30,7 @@ const childEnv = (extra = {}) => {
   };
 
   if ('NO_COLOR' in env) {
-    delete env.NO_COLOR;
+    env.NO_COLOR = undefined;
   }
 
   return env;
@@ -65,10 +73,14 @@ const runSetup = () => {
     return 0;
   }
 
-  const buildResult = spawnSync(process.execPath, ['scripts/build-app-if-stale.mjs'], {
-    env: childEnv(),
-    stdio: 'inherit',
-  });
+  const buildResult = spawnSync(
+    process.execPath,
+    ['scripts/build-app-if-stale.mjs'],
+    {
+      env: childEnv(),
+      stdio: 'inherit',
+    }
+  );
 
   if (buildResult.error) {
     throw buildResult.error;

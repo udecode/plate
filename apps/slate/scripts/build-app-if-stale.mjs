@@ -33,7 +33,10 @@ const sourceEntries = [
   ...slatePackageNames.flatMap((packageName) => {
     const packageRoot = path.join(repoRoot, 'packages', packageName);
 
-    return [path.join(packageRoot, 'src'), path.join(packageRoot, 'package.json')];
+    return [
+      path.join(packageRoot, 'src'),
+      path.join(packageRoot, 'package.json'),
+    ];
   }),
 ].filter((entryPath) => fs.existsSync(entryPath));
 

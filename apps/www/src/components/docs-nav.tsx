@@ -195,36 +195,34 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
     >
       <div className="h-9" />
       <SidebarContent className="no-scrollbar w-(--sidebar-menu-width) overflow-x-hidden px-2.5">
-        {docsRoot === 'slate' ? (
-          navSections.map((section, index) => (
-            <DocsNavStaticGroup
-              key={getSectionKey(section, index)}
-              index={index}
-              pathname={normalizedPathname}
-              section={section}
-            />
-          ))
-        ) : (
-          navSections.map((section, index) => {
-            const sectionKey = getSectionKey(section, index);
-
-            return (
-              <DocsNavGroup
-                key={sectionKey}
+        {docsRoot === 'slate'
+          ? navSections.map((section, index) => (
+              <DocsNavStaticGroup
+                key={getSectionKey(section, index)}
                 index={index}
-                open={openSectionKey === sectionKey}
                 pathname={normalizedPathname}
                 section={section}
-                onOpenChange={(open) => {
-                  setOpenSection({
-                    key: open ? sectionKey : undefined,
-                    pathname: normalizedPathname,
-                  });
-                }}
               />
-            );
-          })
-        )}
+            ))
+          : navSections.map((section, index) => {
+              const sectionKey = getSectionKey(section, index);
+
+              return (
+                <DocsNavGroup
+                  key={sectionKey}
+                  index={index}
+                  open={openSectionKey === sectionKey}
+                  pathname={normalizedPathname}
+                  section={section}
+                  onOpenChange={(open) => {
+                    setOpenSection({
+                      key: open ? sectionKey : undefined,
+                      pathname: normalizedPathname,
+                    });
+                  }}
+                />
+              );
+            })}
         <div className="sticky -bottom-1 z-10 h-16 shrink-0 bg-linear-to-t from-background via-background/80 to-background/50 blur-xs" />
       </SidebarContent>
     </Sidebar>

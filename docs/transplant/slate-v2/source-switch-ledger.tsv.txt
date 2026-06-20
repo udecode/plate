@@ -146,7 +146,7 @@ active-fumadocs-doc	docs	docs/libraries/slate-react/README.md	content/docs/slate
 active-fumadocs-doc	docs	docs/libraries/slate-react/slate.md	content/docs/slate/libraries/slate-react/slate.mdx	donor doc copied to Fumadocs Slate section
 active-fumadocs-doc	docs	docs/libraries/slate-yjs.md	content/docs/slate/libraries/slate-yjs.mdx	donor doc copied to Fumadocs Slate section
 active-fumadocs-doc	docs	docs/libraries/slate.md	content/docs/slate/libraries/slate.mdx	donor doc copied to Fumadocs Slate section
-active-fumadocs-doc	docs	docs/migration/slate-v2.md	content/docs/slate/migration/slate-v2.mdx	donor doc copied to Fumadocs Slate section
+active-fumadocs-doc	docs	docs/migration/slate-v2.md	content/docs/slate/migration.mdx	donor doc copied to Fumadocs Slate section with current route topology
 archived-exact	docs	docs/plans/2026-04-26-embeds-void-arrow-navigation-regression.md	docs/transplant/slate-v2/archive/docs/plans/2026-04-26-embeds-void-arrow-navigation-regression.md	not an active Plate source surface
 archived-exact	docs	docs/plans/2026-05-25-yjs-demo-four-editors-marks.md	docs/transplant/slate-v2/archive/docs/plans/2026-05-25-yjs-demo-four-editors-marks.md	not an active Plate source surface
 archived-exact	docs	docs/plans/2026-05-25-yjs-offline-mixed-edits-reconnect.md	docs/transplant/slate-v2/archive/docs/plans/2026-05-25-yjs-offline-mixed-edits-reconnect.md	not an active Plate source surface
@@ -175,7 +175,7 @@ archived-exact	docs	docs/plans/2026-06-10-yjs-hocuspocus-known-issues-fix.md	doc
 archived-exact	docs	docs/plans/2026-06-10-yjs-production-network-soak.md	docs/transplant/slate-v2/archive/docs/plans/2026-06-10-yjs-production-network-soak.md	not an active Plate source surface
 archived-exact	docs	docs/plans/2026-06-11-yjs-hocuspocus-persistent-room-soak.md	docs/transplant/slate-v2/archive/docs/plans/2026-06-11-yjs-hocuspocus-persistent-room-soak.md	not an active Plate source surface
 archived-exact	docs	docs/plans/2026-06-13-yjs-awareness-reconnect-cursor.md	docs/transplant/slate-v2/archive/docs/plans/2026-06-13-yjs-awareness-reconnect-cursor.md	not an active Plate source surface
-active-fumadocs-doc	docs	docs/releases/slate-v2.md	content/docs/slate/releases/slate-v2.mdx	donor doc copied to Fumadocs Slate section
+active-fumadocs-doc	docs	docs/releases/slate-v2.md	content/docs/slate/why-this-fork.mdx	donor doc copied to Fumadocs Slate section with current route topology
 archived-exact	docs	docs/solutions/developer-experience/yjs-awareness-react-hooks-2026-05-29.md	docs/transplant/slate-v2/archive/docs/solutions/developer-experience/yjs-awareness-react-hooks-2026-05-29.md	not an active Plate source surface
 archived-exact	docs	docs/solutions/logic-errors/yjs-backspace-merge-normalization-reconnect-2026-05-25.md	docs/transplant/slate-v2/archive/docs/solutions/logic-errors/yjs-backspace-merge-normalization-reconnect-2026-05-25.md	not an active Plate source surface
 archived-exact	docs	docs/solutions/logic-errors/yjs-forward-move-history-fallback-2026-05-26.md	docs/transplant/slate-v2/archive/docs/solutions/logic-errors/yjs-forward-move-history-fallback-2026-05-26.md	not an active Plate source surface
