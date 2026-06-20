@@ -7,10 +7,30 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '../../../..');
-const donorRepo = path.join(repoRoot, '.tmp/slate-v2');
 const transplantDir = path.join(repoRoot, 'docs/transplant/slate-v2');
 const manifestPath = path.join(transplantDir, 'donor-manifest.jsonl');
 const donorCommit = 'f0e5ad1ae7caa14027dc57bc38bd457909bd4b97';
+
+function readOption(name) {
+  const index = process.argv.indexOf(name);
+  if (index === -1) return undefined;
+
+  const value = process.argv[index + 1];
+  if (!value || value.startsWith('--')) {
+    throw new Error(`${name} requires a value`);
+  }
+
+  return value;
+}
+
+const donorRepoInput = readOption('--donor') ?? process.env.SLATE_V2_DONOR_DIR;
+if (!donorRepoInput) {
+  throw new Error(
+    'Missing donor checkout path. Pass --donor <path> or set SLATE_V2_DONOR_DIR.'
+  );
+}
+
+const donorRepo = path.resolve(repoRoot, donorRepoInput);
 
 const packageDestinations = new Map([
   ['slate', 'slate'],

@@ -8,19 +8,22 @@ authoring model with a read/update lifecycle, transaction groups, React 19.2
 runtime locality, first-class overlays, multi-root documents, and browser proof
 infrastructure built for real contenteditable behavior.
 
-This is the release story for the first public Slate v2 lane. The beta claim is
+The first reason for this fork is maintenance philosophy. Slate v2 is built to
+be maintained by agents first: every runtime claim needs executable proof, every
+regression should become a test or harness improvement, and the project can
+hard-cut APIs when that makes the system easier to verify. That is a different
+bet from upstream Slate's smaller, compatibility-conscious core.
+
+This is the release story for the private Slate v2 beta lane. The beta claim is
 the core editor runtime, React editor path, package surface, desktop browser
-proof, Yjs adapter, and public test infrastructure. Raw mobile-device proof and
+proof, Yjs adapter, and first-party proof infrastructure. Raw mobile-device proof and
 production pagination stay outside this beta claim.
 
-For a published beta package set, install the React editor with:
+For the beta package set, install the React editor with:
 
 ```text
-npm install slate slate-dom slate-react react react-dom
+npm install @platejs/slate @platejs/slate-dom @platejs/slate-react react react-dom
 ```
-
-Use the equivalent command for pnpm, Yarn, or Bun when your app uses another
-package manager.
 
 ## On This Page
 
@@ -308,7 +311,7 @@ superiority claim.
 ### Browser-Proof Harness
 
 `@platejs/browser` is Slate's first-party browser proof harness for editor
-behavior. It is public test infrastructure, not the product editing API.
+behavior. It is proof infrastructure, not the product editing API.
 
 It includes Playwright helpers for:
 
@@ -426,7 +429,7 @@ const layout = createSlateLayout(editor, () => ({
 }));
 ```
 
-React page surfaces can use `PagedEditable` from `slate-layout/react`.
+React page surfaces can use `PagedEditable` from `@platejs/slate-layout/react`.
 
 Keep this behind product proof. It is useful for pagination experiments,
 print-like surfaces, page virtualization, previews, tests, and export planning;
@@ -489,7 +492,7 @@ feature.
 
 Start here:
 
-- [Migrating to Slate v2](../migration/slate-v2)
+- [Migration](./migration)
 - [Installing Slate](../walkthroughs/01-installing-slate)
 - [React Editor Setup](../libraries/slate-react/react-editor-setup)
 - [Roots](../concepts/13-roots)
@@ -660,7 +663,7 @@ large-document claim is not real until the right proof lane owns it.
 
 ## What To Read Next
 
-- [Migrating to Slate v2](../migration/slate-v2)
+- [Migration](./migration)
 - [Slate](../libraries/slate)
 - [Slate React](../libraries/slate-react)
 - [Slate Yjs](../libraries/slate-yjs)

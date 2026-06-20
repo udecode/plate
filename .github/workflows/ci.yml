@@ -7,6 +7,14 @@ on:
       - next
     paths:
       - 'packages/**'
+      - '!packages/browser/**'
+      - '!packages/slate/**'
+      - '!packages/slate-dom/**'
+      - '!packages/slate-history/**'
+      - '!packages/slate-hyperscript/**'
+      - '!packages/slate-layout/**'
+      - '!packages/slate-react/**'
+      - '!packages/yjs/**'
       - 'tooling/**'
       - 'package.json'
       - '.github/actions/**'
@@ -28,6 +36,14 @@ on:
       - reopened
     paths:
       - 'packages/**'
+      - '!packages/browser/**'
+      - '!packages/slate/**'
+      - '!packages/slate-dom/**'
+      - '!packages/slate-history/**'
+      - '!packages/slate-hyperscript/**'
+      - '!packages/slate-layout/**'
+      - '!packages/slate-react/**'
+      - '!packages/yjs/**'
       - 'tooling/**'
       - 'package.json'
       - '.github/actions/**'

@@ -4,8 +4,28 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const repoRoot = process.cwd();
-const donorRepo = path.join(repoRoot, '.tmp/slate-v2');
 const donorCommit = 'f0e5ad1ae7caa14027dc57bc38bd457909bd4b97';
+
+function readOption(name) {
+  const index = process.argv.indexOf(name);
+  if (index === -1) return undefined;
+
+  const value = process.argv[index + 1];
+  if (!value || value.startsWith('--')) {
+    throw new Error(`${name} requires a value`);
+  }
+
+  return value;
+}
+
+const donorRepoInput = readOption('--donor') ?? process.env.SLATE_V2_DONOR_DIR;
+if (!donorRepoInput) {
+  throw new Error(
+    'Missing donor checkout path. Pass --donor <path> or set SLATE_V2_DONOR_DIR.'
+  );
+}
+
+const donorRepo = path.resolve(repoRoot, donorRepoInput);
 
 const packageVersion = '54.0.0-beta.0';
 

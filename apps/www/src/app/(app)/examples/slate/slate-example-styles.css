@@ -321,10 +321,6 @@ details > summary {
   z-index: 3; /* To appear above the underlay */
 }
 
-.example-page-title {
-  margin-left: 1em;
-}
-
 .example-content {
   max-width: 42em;
   margin: 20px auto;
@@ -1000,6 +996,7 @@ details > summary {
 }
 
 .slate-persistent-annotation-anchors-panel {
+  min-width: 0;
   max-width: 760px;
   margin: 40px auto;
   padding: 0 24px 48px;
@@ -1010,6 +1007,32 @@ details > summary {
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 16px;
+}
+
+.slate-persistent-annotation-anchors-controls .slate-example-button {
+  white-space: normal;
+}
+
+@media (max-width: 640px) {
+  .slate-persistent-annotation-anchors-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .slate-persistent-annotation-anchors-code {
+    min-width: 0;
+    max-width: 100%;
+    border-radius: 12px;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .slate-persistent-annotation-anchors-panel {
+    padding: 0 16px 40px;
+  }
+
+  .slate-persistent-annotation-anchors-controls .slate-example-button {
+    flex: 1 1 min(100%, 11rem);
+  }
 }
 
 .slate-synced-blocks-synced-block {

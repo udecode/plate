@@ -773,9 +773,7 @@ test.describe('plaintext example', () => {
   }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'Desktop Enter key proof');
 
-    const runtimeErrors = recordSlateBrowserRuntimeErrors(page, {
-      patterns: [''],
-    });
+    const runtimeErrors = recordSlateBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'slate/plaintext', {
@@ -1494,9 +1492,7 @@ test.describe('plaintext example', () => {
       'Desktop WebKit hard-line-delete proof'
     );
 
-    const runtimeErrors = recordSlateBrowserRuntimeErrors(page, {
-      patterns: [''],
-    });
+    const runtimeErrors = recordSlateBrowserRuntimeErrors(page);
 
     try {
       const editor = await openExample(page, 'slate/plaintext', {

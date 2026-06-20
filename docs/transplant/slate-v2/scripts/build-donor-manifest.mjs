@@ -7,7 +7,6 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '../../../..');
-const donorRoot = path.join(repoRoot, '.tmp/slate-v2');
 const outDir = path.join(repoRoot, 'docs/transplant/slate-v2');
 
 const manifestPath = path.join(outDir, 'donor-manifest.tsv.txt');
@@ -17,6 +16,23 @@ const metaPath = path.join(outDir, 'donor-manifest-meta.json');
 const summaryPath = path.join(outDir, 'donor-manifest-summary.md');
 
 const checkMode = process.argv.includes('--check');
+
+function readOption(name) {
+  const index = process.argv.indexOf(name);
+  if (index === -1) return undefined;
+
+  const value = process.argv[index + 1];
+  if (!value || value.startsWith('--')) {
+    throw new Error(`${name} requires a value`);
+  }
+
+  return value;
+}
+
+const donorRootInput = readOption('--donor') ?? process.env.SLATE_V2_DONOR_DIR;
+const donorRoot = donorRootInput
+  ? path.resolve(repoRoot, donorRootInput)
+  : undefined;
 
 const TREE_ENTRY_RE = /^(\d+) (\S+) ([0-9a-f]+)\t(.+)$/;
 const LOG_OUTPUT_RE = /\.(log|trace|har)$/;
@@ -32,6 +48,12 @@ const generatedFiles = [
 ];
 
 function git(args, options = {}) {
+  if (!donorRoot) {
+    throw new Error(
+      'Missing donor checkout path. Pass --donor <path> or set SLATE_V2_DONOR_DIR.'
+    );
+  }
+
   return execFileSync('git', ['-C', donorRoot, ...args], {
     encoding: options.encoding ?? 'utf8',
     maxBuffer: options.maxBuffer ?? 1024 * 1024 * 128,
@@ -40,7 +62,9 @@ function git(args, options = {}) {
 
 function requireDonor() {
   if (!existsSync(donorRoot)) {
-    throw new Error(`Missing donor checkout: ${donorRoot}`);
+    throw new Error(
+      `Missing donor checkout: ${donorRoot}. Pass --donor <path> or set SLATE_V2_DONOR_DIR.`
+    );
   }
   const inside = git(['rev-parse', '--is-inside-work-tree']).trim();
   if (inside !== 'true') {
@@ -234,7 +258,7 @@ function makeArtifacts() {
   const meta = {
     schemaVersion: 1,
     donor: {
-      path: '.tmp/slate-v2',
+      path: path.relative(repoRoot, donorRoot) || '.',
       branch,
       commit,
       commitTime,
@@ -576,7 +600,7 @@ function checkArtifacts(artifacts) {
   }
 }
 
-if (checkMode && !existsSync(donorRoot)) {
+if (checkMode && (!donorRoot || !existsSync(donorRoot))) {
   checkStoredArtifacts();
   console.log('donor manifest stored artifact check passed');
   for (const file of generatedFiles) {

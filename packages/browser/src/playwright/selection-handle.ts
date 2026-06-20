@@ -23,26 +23,28 @@ export const waitForSelectionHandle = async (root: Locator, timeout = 2000) => {
   }
 };
 
-export const waitForHandleFocus = async (root: Locator) => {
+export const waitForHandleFocus = async (root: Locator, timeout = 2000) => {
   await expect
-    .poll(() =>
-      root.evaluate(
-        (element: HTMLElement, { key }: { key: string }) => {
-          const handle = (element as Record<string, any>)[key];
-          const rootNode = element.getRootNode() as Document | ShadowRoot;
-          const activeElement =
-            'activeElement' in rootNode
-              ? rootNode.activeElement
-              : element.ownerDocument.activeElement;
+    .poll(
+      () =>
+        root.evaluate(
+          (element: HTMLElement, { key }: { key: string }) => {
+            const handle = (element as Record<string, any>)[key];
+            const rootNode = element.getRootNode() as Document | ShadowRoot;
+            const activeElement =
+              'activeElement' in rootNode
+                ? rootNode.activeElement
+                : element.ownerDocument.activeElement;
 
-          const hasFocus =
-            activeElement === element ||
-            (!!activeElement && element.contains(activeElement));
+            const hasFocus =
+              activeElement === element ||
+              (!!activeElement && element.contains(activeElement));
 
-          return hasFocus && !!handle?.getSelection?.();
-        },
-        { key: SLATE_BROWSER_HANDLE_KEY }
-      )
+            return hasFocus && !!handle?.getSelection?.();
+          },
+          { key: SLATE_BROWSER_HANDLE_KEY }
+        ),
+      { timeout }
     )
     .toBe(true);
 };

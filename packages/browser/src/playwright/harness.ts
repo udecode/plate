@@ -431,23 +431,27 @@ export const createEditorHarness = (
           { key: SLATE_BROWSER_HANDLE_KEY }
         );
 
+      const selectionBeforeFocus = await readHandleSelection();
       const focusedWithHandle =
         (await waitForSelectionHandle(root)) && (await focusWithHandle(root));
 
       if (focusedWithHandle) {
-        await waitForHandleFocus(root);
+        const handleFocusSucceeded = await waitForHandleFocus(root).then(
+          () => true,
+          () => false
+        );
 
-        if (await hasDOMSelectionInRoot(root)) {
-          await waitForSelectionSync(root);
+        if (handleFocusSucceeded) {
+          if (await hasDOMSelectionInRoot(root)) {
+            await waitForSelectionSync(root);
+          }
+
+          return;
         }
-
-        return;
       }
 
-      const selectionBeforeFocus = await readHandleSelection();
-
       await root.evaluate((element: HTMLElement) => {
-        element.focus();
+        element.focus({ preventScroll: true });
       });
       await root.page().waitForTimeout(50);
       const selection = (await readHandleSelection()) ?? selectionBeforeFocus;
@@ -461,6 +465,18 @@ export const createEditorHarness = (
     },
     click: async () => {
       await root.click();
+      await page.waitForTimeout(0);
+
+      if (!(await hasUsableKeyboardFocus(root))) {
+        await harness.focus();
+        return;
+      }
+
+      if (await hasDOMSelectionInRoot(root)) {
+        await waitForSelectionSync(root).catch(async () => {
+          await harness.focus();
+        });
+      }
     },
     type: async (text: string) => {
       if (

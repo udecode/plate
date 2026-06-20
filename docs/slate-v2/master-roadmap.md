@@ -1,15 +1,15 @@
 ---
 date: 2026-04-18
 topic: slate-v2-master-roadmap
-status: active
+status: superseded
 ---
 
 # Slate v2 Master Roadmap
 
 ## Purpose
 
-Canonical tranche order for porting `.tmp/slate-v2-draft` into the fresh
-`Plate repo root` clone.
+Historical tranche order for porting the draft Slate v2 work into the Plate
+repo. Current deletion/readiness proof lives in `docs/transplant/slate-v2/**`.
 
 ## Execution Doctrine
 

@@ -1,21 +1,21 @@
 ---
 date: 2026-04-18
 topic: slate-v2-fresh-branch-migration-plan
-status: active
+status: superseded
 ---
 
 # Slate v2 Fresh-Branch Migration Plan
 
 ## Purpose
 
-Canonical execution plan for migrating the draft `slate-v2` rewrite into the
-fresh `Plate repo root` clone without reopening broad accidental drift.
+Historical execution plan for migrating the draft `slate-v2` rewrite into the
+Plate repo without reopening broad accidental drift.
 
 This plan treats:
 
-- `Plate repo root` as the live target
-- `.tmp/slate-v2-draft` as the evidence/value bank
-- `docs/slate-v2/**` as the final-state spec stack
+- `Plate repo root` as the live source of truth
+- `docs/transplant/slate-v2/**` as the donor manifest and deletion-readiness ledger
+- `docs/slate-v2/**` as historical design evidence
 - `docs/slate-v2-draft/**` as the archive lane
 
 ## Authority
@@ -115,7 +115,7 @@ Rationale:
 
 For each package:
 
-1. diff the package file set between `Plate repo root` and `.tmp/slate-v2-draft`
+1. diff the package file set between Plate root and the recorded donor manifest
 2. merge legacy exact rows, draft contract rows, and current proof into one
    package corpus
 3. import or preserve kept characterization/contract rows first
@@ -279,7 +279,7 @@ Primary package surfaces:
 Optional early-adopt lane:
 
 - `packages/browser/**/*`
-  from `.tmp/slate-v2-draft/packages/slate-browser/**/*`
+  from the archived Slate browser donor package corpus
 
 Forced spillover only if needed by compatibility:
 
@@ -495,9 +495,9 @@ already exist.
 
 ### Scope
 
-- `.tmp/slate-v2-draft/site/examples/**/*`
-- `.tmp/slate-v2-draft/site/components/**/*`
-- `.tmp/slate-v2-draft/site/pages/examples/**/*`
+- archived donor site examples
+- archived donor site components
+- archived donor example pages
 - benchmark surfaces under the draft site and package tests
 - any remaining `slate-browser` proof/test files not already landed
 

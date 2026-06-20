@@ -1,14 +1,17 @@
-import Link from "next/link";
+import { type CSSProperties } from 'react';
 
-import { ArrowLeftIcon, ChevronDownIcon } from "lucide-react";
+import Link from 'next/link';
 
-import { cn } from "@/lib/utils";
+import { ArrowLeftIcon, ChevronDownIcon } from 'lucide-react';
+
+import { Sidebar, SidebarContent, SidebarProvider } from '@/components/ui/sidebar';
+import { cn } from '@/lib/utils';
 
 import {
   getExampleDefinition,
   isNewSlateExamplePath,
   NON_HIDDEN_EXAMPLES,
-} from "./slate-example-registry";
+} from './slate-example-registry';
 
 type SlateExamplesShellProps = {
   activeExample?: string;
@@ -30,14 +33,21 @@ export function SlateExamplesShell({
   children,
 }: SlateExamplesShellProps) {
   return (
-    <main
-      className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-8 px-4 py-8 lg:grid-cols-[17rem_minmax(0,1fr)]"
-      data-slate-examples-shell
-    >
-      <SlateExamplesMobileNav activeExample={activeExample} />
-      <SlateExamplesSidebar activeExample={activeExample} />
-      <div className="min-w-0">{children}</div>
-    </main>
+    <div className="container-wrapper flex flex-1 flex-col px-2">
+      <SidebarProvider
+        className="3xl:fixed:container min-h-min flex-1 items-start 3xl:fixed:px-3 px-0 [--top-spacing:0] lg:grid lg:grid-cols-[var(--sidebar-width)_minmax(0,1fr)] lg:[--top-spacing:calc(var(--spacing)*4)]"
+        style={
+          {
+            '--sidebar-width': 'calc(var(--spacing) * 72)',
+          } as CSSProperties
+        }
+        data-slate-examples-shell
+      >
+        <SlateExamplesMobileNav activeExample={activeExample} />
+        <SlateExamplesSidebar activeExample={activeExample} />
+        <main className="h-full w-full min-w-0 py-12 pr-4">{children}</main>
+      </SidebarProvider>
+    </div>
   );
 }
 
@@ -71,16 +81,24 @@ export function SlateExamplesSidebarNav({
 
 function SlateExamplesSidebar({ activeExample }: { activeExample?: string }) {
   return (
-    <aside className="hidden min-w-0 lg:sticky lg:top-20 lg:block lg:max-h-[calc(100svh-6rem)] lg:overflow-y-auto">
-      <SlateExamplesSidebarNav activeExample={activeExample} />
-    </aside>
+    <Sidebar
+      aria-label="Slate examples navigation"
+      className="sticky top-[calc(var(--header-height)+0.6rem)] z-30 hidden h-[calc(100svh-10rem)] overscroll-none bg-transparent [--sidebar-menu-width:--spacing(56)] lg:mt-2.5 lg:flex"
+      collapsible="none"
+    >
+      <div className="h-9" />
+      <SidebarContent className="no-scrollbar w-(--sidebar-menu-width) overflow-x-hidden px-2.5">
+        <SlateExamplesSidebarNav activeExample={activeExample} />
+        <div className="sticky -bottom-1 z-10 h-16 shrink-0 bg-linear-to-t from-background via-background/80 to-background/50 blur-xs" />
+      </SidebarContent>
+    </Sidebar>
   );
 }
 
 function SlateExamplesMobileNav({ activeExample }: { activeExample?: string }) {
   const currentLabel =
     getExampleLabel(activeExample) ??
-    (activeExample ? activeExample : "Examples");
+    (activeExample ? activeExample : 'Examples');
 
   return (
     <details
@@ -106,11 +124,11 @@ function SlateExamplesMobileNav({ activeExample }: { activeExample?: string }) {
 
 function SlateExamplesNavLinks({
   activeExample,
-  backHref = "/docs/slate/examples",
-  backLabel = "Back to docs",
+  backHref = '/docs/slate',
+  backLabel = 'Back to docs',
   indexActive,
-  indexHref = "/examples/slate",
-  indexLabel = "Examples",
+  indexHref = '/examples/slate',
+  indexLabel = 'Examples',
   showIndex = false,
 }: SlateExamplesNavLinksProps) {
   const isIndexActive = indexActive ?? activeExample === undefined;
@@ -129,10 +147,10 @@ function SlateExamplesNavLinks({
         {showIndex ? (
           <Link
             className={cn(
-              "flex h-8 items-center rounded-md px-2 font-medium text-sm hover:bg-muted",
+              'flex h-8 items-center rounded-md px-2 font-medium text-sm hover:bg-muted',
               isIndexActive
-                ? "bg-muted text-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                ? 'bg-muted text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
             )}
             data-active={isIndexActive}
             data-slate-example-index
@@ -151,10 +169,10 @@ function SlateExamplesNavLinks({
           return (
             <Link
               className={cn(
-                "flex min-h-8 min-w-0 items-center gap-2 rounded-md px-2 py-1.5 text-sm leading-tight hover:bg-muted",
+                'flex min-h-8 min-w-0 items-center gap-2 rounded-md px-2 py-1.5 text-sm leading-tight hover:bg-muted',
                 isActive
-                  ? "bg-muted font-medium text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? 'bg-muted font-medium text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
               data-active={isActive}
               data-slate-example-nav-link={slug}
@@ -179,7 +197,7 @@ function SlateExamplesNavLinks({
 
 function getExampleLabel(examplePath: string | undefined) {
   if (!examplePath) {
-    return undefined;
+    return;
   }
 
   return getExampleDefinition(examplePath)?.[0];

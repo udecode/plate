@@ -239,6 +239,24 @@ const getProjectedNativeAffordanceMatrix = (
     return handle?.getProjectedNativeAffordanceMatrix?.() ?? null;
   });
 
+const skipMobileDesktopVerticalKeyboardProof = (testInfo: {
+  project: { name: string };
+}) => {
+  test.skip(
+    testInfo.project.name === 'mobile',
+    'Desktop vertical keyboard selection proof'
+  );
+};
+
+const skipMobileDesktopProjectedSelectionProof = (testInfo: {
+  project: { name: string };
+}) => {
+  test.skip(
+    testInfo.project.name === 'mobile',
+    'Desktop projected selection proof'
+  );
+};
+
 test.describe('synced blocks example', () => {
   test.beforeEach(async ({ page }, testInfo) => {
     if (testInfo.project.name !== 'mobile') {
@@ -709,7 +727,9 @@ test.describe('synced blocks example', () => {
 
   test('extends Shift+Arrow through synced blocks like sibling blocks', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipMobileDesktopProjectedSelectionProof(testInfo);
+
     await openExample(page, 'slate/synced-blocks', {
       ready: { editor: 'visible' },
     });
@@ -834,7 +854,9 @@ test.describe('synced blocks example', () => {
 
   test('extends keyboard selection from a synced content root into the next owner block', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipMobileDesktopVerticalKeyboardProof(testInfo);
+
     await openExample(page, 'slate/synced-blocks', {
       ready: { editor: 'visible' },
     });
@@ -1057,7 +1079,9 @@ test.describe('synced blocks example', () => {
 
   test('extends vertical keyboard selection from a content-root line into visible owner text', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipMobileDesktopVerticalKeyboardProof(testInfo);
+
     await openExample(page, 'slate/synced-blocks', {
       ready: { editor: 'visible' },
     });
@@ -1132,7 +1156,9 @@ test.describe('synced blocks example', () => {
 
   test('continues vertical keyboard selection across multiple content roots', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipMobileDesktopVerticalKeyboardProof(testInfo);
+
     await openExample(page, 'slate/synced-blocks', {
       ready: { editor: 'visible' },
     });
@@ -1213,7 +1239,9 @@ test.describe('synced blocks example', () => {
 
   test('extends projected vertical selection to the document-bottom line end before no-op', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipMobileDesktopVerticalKeyboardProof(testInfo);
+
     await openExample(page, 'slate/synced-blocks', {
       ready: { editor: 'visible' },
     });
@@ -1621,7 +1649,9 @@ test.describe('synced blocks example', () => {
 
   test('mouse drag through synced block chrome does not project owner text nodes', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipMobileDesktopProjectedSelectionProof(testInfo);
+
     const runtimeErrors = recordSlateBrowserRuntimeErrors(page, {
       patterns: ['Cannot resolve projected point'],
     });
@@ -2273,7 +2303,9 @@ test.describe('synced blocks example', () => {
 
   test('Backspace over a projected selection from a synced body into the owner document deletes without crashing', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipMobileDesktopProjectedSelectionProof(testInfo);
+
     const runtimeErrors = recordSlateBrowserRuntimeErrors(page, {
       patterns: ['Cannot find a descendant', 'Could not set focus'],
     });
@@ -2364,7 +2396,9 @@ test.describe('synced blocks example', () => {
 
   test('Enter over a projected selection from a synced body into the owner document inserts a paragraph break without crashing', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipMobileDesktopProjectedSelectionProof(testInfo);
+
     const runtimeErrors = recordSlateBrowserRuntimeErrors(page, {
       patterns: ['Cannot find a descendant', 'Could not set focus'],
     });
@@ -2925,7 +2959,9 @@ test.describe('synced blocks example', () => {
 
   test('keeps model-owned select-all highlight clear when Shift+ArrowUp creates projected selection', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    skipMobileDesktopProjectedSelectionProof(testInfo);
+
     await openExample(page, 'slate/synced-blocks', {
       ready: { editor: 'visible' },
     });

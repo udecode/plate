@@ -47,7 +47,7 @@ test.describe('code highlighting', () => {
     await editor.deleteFragment();
     await page.getByTestId('code-block-button').click();
     await page.getByTestId('language-select').first().selectOption('css');
-    await editor.type('body { color: red; }');
+    await editor.insertText('body { color: red; }');
 
     const codeBlock = editor.root.locator('.slate-code-highlighting-block');
 

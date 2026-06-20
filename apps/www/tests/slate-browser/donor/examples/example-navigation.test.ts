@@ -21,11 +21,18 @@ test.describe("example navigation metadata", () => {
 
   test("marks only examples that are new versus upstream Slate", async ({
     page,
-  }) => {
+  }, testInfo) => {
     const runtimeErrors = recordSlateBrowserRuntimeErrors(page);
 
     try {
       await page.goto("/examples/slate/richtext");
+      if (testInfo.project.name === "mobile") {
+        await page
+          .locator("[data-slate-example-mobile-nav]")
+          .evaluate((element: HTMLDetailsElement) => {
+            element.open = true;
+          });
+      }
 
       const navigation = page.locator("[data-slate-example-nav-link]:visible");
 

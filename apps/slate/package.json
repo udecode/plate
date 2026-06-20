@@ -1,0 +1,27 @@
+{
+  "name": "slate",
+  "version": "0.0.0-private",
+  "private": true,
+  "scripts": {
+    "build": "next build --webpack",
+    "pretest:slate-browser": "node scripts/build-browser-if-stale.mjs",
+    "pretest:slate-browser:chromium": "node scripts/build-browser-if-stale.mjs",
+    "pretest:slate-browser:chromium-smoke": "node scripts/build-browser-if-stale.mjs",
+    "serve": "node scripts/serve.mjs",
+    "test:slate-browser": "node scripts/run-slate-browser.mjs matrix",
+    "test:slate-browser:chromium": "node scripts/run-slate-browser.mjs chromium",
+    "test:slate-browser:chromium-smoke": "node scripts/run-slate-browser.mjs direct --project=chromium ../www/tests/slate-browser/slate-examples.spec.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@playwright/test": "1.53.0",
+    "next": "16.2.6",
+    "nuqs": "2.4.3",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "serve-handler": "6.1.6"
+  },
+  "devDependencies": {
+    "@types/serve-handler": "6.1.4"
+  }
+}

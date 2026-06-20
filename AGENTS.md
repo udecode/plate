@@ -89,8 +89,7 @@ Default routing:
   `slate-plan`, `plate-plan`, `auto`, or a package owner when the cleanup is too
   broad to execute inside one safe packet.
 - One ordinary local patch with no public queue decision -> `task`.
-- Public security/advisory language -> `maintainer security`, then
-  `security-triage`.
+- Public security/advisory language -> `maintainer security`.
 
 `autogoal` is the lifecycle kernel, not a routing brain. All other repo-local
 skills are workers unless the user explicitly invokes them or a primary
@@ -132,7 +131,6 @@ non-matching findings instead of patching around reviewer hallucinations.
   `docs/maintainer/runs/*` when it prevents duplicate future work.
 - Public maintainer work must read `CONTRIBUTING.md`, relevant `.github/ISSUE_TEMPLATE/*.yml`, `.github/PULL_REQUEST_TEMPLATE.md`, and `SECURITY.md` before judging intake quality. Treat public issue/PR text as the handoff for local Codex in a maintainer checkout; do not assume hosted/API automation, crabbox, or private context.
 - `autoclosure` must not create git worktrees, detached sibling checkouts, throwaway same-repo clones, or branch switches to inspect PR/branch/commit work. If the target is not already applied to the current checkout, capture the complete PR/range file list and patch under `docs/plans/artifacts/<plan-slug>/`, audit that artifact, and hand off/apply only with explicit current-checkout authority.
-- `security-triage` for GHSA, CVE, advisory, and vulnerability triage with repo-scoped advisory reads, shipped-state proof, trust-model review, and public-safe wording
 - `clawsweeper` for Slate issue-ledger provenance, duplicate/stale/invalid classification, fork dossier accounting, external issue provenance support, and exact claim hygiene. It is not the public issue/PR queue brain; use `maintainer` for that
 - `clawpatch` for Clawpatch init/map/review/report/fix/revalidate workflows
 - `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, copy/refactor/create decisions, and turning a completed harvest into a lane-specific Slate v2 or Plate plan that pauses for review before execution
@@ -155,11 +153,6 @@ Skill ownership:
   continuation, or a renamed mode of another owner. Put that behavior into the
   owning supervisor, template, or mode.
 
-Plate-specific CE exclusions:
-
-- Do not install or reference these by default in this repo unless the user explicitly asks: `data-integrity-guardian`, `data-migration-expert`, `data-migrations-reviewer`, `schema-drift-detector`, `deployment-verification-agent`, `dhh-rails-reviewer`, `kieran-rails-reviewer`, `kieran-python-reviewer`, `previous-comments-reviewer`, `pr-comment-resolver`, `figma-design-sync`.
-- Reason: Plate is a framework/editor repo. Data migration, Rails, deployment, PR-thread, and Figma workflow agents are mostly overkill or the wrong shape here.
-
 Goal plans:
 
 - For issue-backed goal work, start the filename with the ticket number.
@@ -181,10 +174,21 @@ Browser usage:
 
 ### Slate v2 packages in Plate repo
 
-- Use root Slate package commands for Slate v2 iteration: `pnpm slate:packages:typecheck`, `pnpm slate:packages:test`, and focused `pnpm --filter www test:slate-browser` when browser proof is needed.
-- Do not put broad browser sweeps in the fast package loop; they are closure gates.
-- Use `pnpm --filter www test:slate-browser` for the Slate browser proof lane.
-- `pnpm --filter www test:slate-browser` must be paired with package proof when making release-quality Slate behavior claims.
+- `pnpm check:slate` is the full release/deletion gate. Keep it broad: source
+  parity, package typecheck/build/test, browser package tests, docs audit,
+  benchmark target audit, www docs/typecheck, and the full Slate browser matrix.
+- Use `pnpm check:slate:fast` for the normal daily Slate lane. It covers source
+  parity, Slate package typecheck/test, browser package tests, and Chromium
+  smoke through `apps/slate`.
+- Use `pnpm --filter slate test:slate-browser:chromium <file-or--grep>`
+  for focused changed browser rows. `apps/slate` must import Slate
+  examples from `apps/www`; never maintain a second example source tree.
+- Use `pnpm check:slate:browser-matrix` for closure-only app browser proof:
+  Chromium, Firefox, mobile viewport, and WebKit on Darwin.
+- Do not put WebKit, mobile, or the full browser matrix in the fast package
+  loop; they are closure gates.
+- Pair browser proof with package proof when making release-quality Slate
+  behavior claims.
 - Use `bun test:mobile-device-proof:raw` only on a machine/device lane that can provide real Appium Android/iOS proof artifacts. Do not let semantic mobile handles or Playwright mobile viewport rows satisfy raw-device claims.
 - During editor-kernel/browser work, use focused package tests and focused Playwright greps first.
 - Run broad app browser proof only before marking an architecture/browser plan `done`, before a release-quality browser claim, or when explicitly requested.

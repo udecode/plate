@@ -112,7 +112,6 @@ Execution owners still do the work:
 - `clawsweeper`: Slate issue-ledger provenance, duplicate/stale/invalid
   classification, issue harvest discipline, and fork-local issue accounting.
 - `issue-harvester`: exhaustive external issue-by-issue closure ledgers.
-- `security-triage`: GHSA/CVE/advisory/security reports.
 - `autoreview` / `resolve-pr-feedback`: PR review and review-comment closure.
 - `autoclosure`: post-merge/current-tree until-clean closure for already
   applied work.
@@ -234,9 +233,9 @@ explicitly asks.
 
 ### `security`
 
-Route to `security-triage` immediately. Security-shaped reports do not belong
-in normal issue harvest or duplicate-close flow until the trust boundary is
-classified.
+Keep security-shaped reports in the `maintainer security` lane until the trust
+boundary is classified. They do not belong in normal issue harvest or
+duplicate-close flow before that.
 
 ### `<issue-url|pr-url>`
 
@@ -250,7 +249,7 @@ Read the exact item first. Then classify route:
 | Plate/Slate internal quality/perf/browser gap | `auto` |
 | Cross-package architecture/testability/refactor/deslop candidate | `architecture-cleanup`, then `major-task`, `slate-plan`, or `plate-plan` |
 | Plate framework/plugin/component/docs | `plate-plan`, `plate-plugin-creator`, `plate-ui`, `docs-creator`, or `task` |
-| Security/advisory | `security-triage` |
+| Security/advisory | `maintainer security` |
 | PR review | `autoreview` |
 | PR review feedback | `resolve-pr-feedback` |
 | External corpus/issue ledger | `issue-harvester` or `clawsweeper` |

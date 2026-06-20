@@ -1,4 +1,4 @@
-import { unlinkSync, writeFileSync } from 'node:fs';
+import { statSync, unlinkSync, writeFileSync } from 'node:fs';
 
 import type { Locator } from '@playwright/test';
 
@@ -7,6 +7,10 @@ import type { SurfaceTarget } from './surface';
 import type { ClipboardPayloadSnapshot } from './types';
 
 const CLIPBOARD_LOCK_PATH = `${process.cwd()}/.slate-browser-clipboard.lock`;
+const CLIPBOARD_LOCK_RETRY_MS = 50;
+const CLIPBOARD_LOCK_TIMEOUT_MS = Number(
+  process.env.SLATE_BROWSER_CLIPBOARD_LOCK_TIMEOUT_MS ?? 30_000
+);
 
 const sleep = (ms: number) =>
   new Promise<void>((resolve) => {
@@ -18,8 +22,9 @@ export const withExclusiveClipboardAccess = async <T>(
   work: () => Promise<T> | T
 ) => {
   let acquired = false;
+  const startedAt = Date.now();
 
-  for (let attempt = 0; attempt < 50; attempt += 1) {
+  while (Date.now() - startedAt < CLIPBOARD_LOCK_TIMEOUT_MS) {
     try {
       writeFileSync(CLIPBOARD_LOCK_PATH, String(process.pid), {
         flag: 'wx',
@@ -31,12 +36,26 @@ export const withExclusiveClipboardAccess = async <T>(
         throw error;
       }
 
-      await sleep(50);
+      try {
+        const ageMs = Date.now() - statSync(CLIPBOARD_LOCK_PATH).mtimeMs;
+
+        if (ageMs > CLIPBOARD_LOCK_TIMEOUT_MS) {
+          unlinkSync(CLIPBOARD_LOCK_PATH);
+        }
+      } catch (lockError) {
+        if ((lockError as NodeJS.ErrnoException).code !== 'ENOENT') {
+          throw lockError;
+        }
+      }
+
+      await sleep(CLIPBOARD_LOCK_RETRY_MS);
     }
   }
 
   if (!acquired) {
-    throw new Error('Timed out waiting for exclusive clipboard access');
+    throw new Error(
+      `Timed out waiting for exclusive clipboard access after ${CLIPBOARD_LOCK_TIMEOUT_MS}ms`
+    );
   }
 
   try {

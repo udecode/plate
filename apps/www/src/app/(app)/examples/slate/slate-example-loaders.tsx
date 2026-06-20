@@ -1,142 +1,98 @@
 'use client';
 
+import type { ComponentType } from 'react';
 import dynamic from 'next/dynamic';
 
-const loading = () => (
-  <div className="rounded-md border bg-background px-5 py-4 text-sm text-muted-foreground">
-    Loading Slate example...
-  </div>
-);
+const createSlateExampleLoader = (
+  loader: () => Promise<{ default: ComponentType }>
+) =>
+  dynamic(loader, {
+    loading: () => null,
+    ssr: false,
+  }) as ComponentType;
 
 export const slateExampleComponents = {
-  'android-tests': dynamic(() => import('./_examples/android-tests'), {
-    loading,
-    ssr: false,
-  }),
-  'check-lists': dynamic(() => import('./_examples/check-lists'), {
-    loading,
-    ssr: false,
-  }),
-  'code-highlighting': dynamic(() => import('./_examples/code-highlighting'), {
-    loading,
-    ssr: false,
-  }),
-  'comment-mode': dynamic(() => import('./_examples/comment-mode'), {
-    loading,
-    ssr: false,
-  }),
-  'custom-placeholder': dynamic(
-    () => import('./_examples/custom-placeholder'),
-    { loading, ssr: false }
+  'android-tests': createSlateExampleLoader(
+    () => import('./_examples/android-tests')
   ),
-  'decorations-async': dynamic(() => import('./_examples/decorations-async'), {
-    loading,
-    ssr: false,
-  }),
-  'document-state': dynamic(() => import('./_examples/document-state'), {
-    loading,
-    ssr: false,
-  }),
-  'dom-coverage-boundaries': dynamic(
-    () => import('./_examples/dom-coverage-boundaries'),
-    { loading, ssr: false }
+  'check-lists': createSlateExampleLoader(
+    () => import('./_examples/check-lists')
   ),
-  'editable-voids': dynamic(() => import('./_examples/editable-voids'), {
-    loading,
-    ssr: false,
-  }),
-  embeds: dynamic(() => import('./_examples/embeds'), { loading, ssr: false }),
-  'forced-layout': dynamic(() => import('./_examples/forced-layout'), {
-    loading,
-    ssr: false,
-  }),
-  'hidden-content-blocks': dynamic(
-    () => import('./_examples/hidden-content-blocks'),
-    { loading, ssr: false }
+  'code-highlighting': createSlateExampleLoader(
+    () => import('./_examples/code-highlighting')
   ),
-  'hovering-toolbar': dynamic(() => import('./_examples/hovering-toolbar'), {
-    loading,
-    ssr: false,
-  }),
-  'huge-document': dynamic(() => import('./_examples/huge-document'), {
-    loading,
-    ssr: false,
-  }),
-  iframe: dynamic(() => import('./_examples/iframe'), { loading, ssr: false }),
-  images: dynamic(() => import('./_examples/images'), { loading, ssr: false }),
-  inlines: dynamic(() => import('./_examples/inlines'), {
-    loading,
-    ssr: false,
-  }),
-  linting: dynamic(() => import('./_examples/linting'), {
-    loading,
-    ssr: false,
-  }),
-  'markdown-preview': dynamic(() => import('./_examples/markdown-preview'), {
-    loading,
-    ssr: false,
-  }),
-  'markdown-shortcuts': dynamic(
-    () => import('./_examples/markdown-shortcuts'),
-    { loading, ssr: false }
+  'comment-mode': createSlateExampleLoader(
+    () => import('./_examples/comment-mode')
   ),
-  mentions: dynamic(() => import('./_examples/mentions'), {
-    loading,
-    ssr: false,
-  }),
-  'multi-root-document': dynamic(
-    () => import('./_examples/multi-root-document'),
-    { loading, ssr: false }
+  'custom-placeholder': createSlateExampleLoader(
+    () => import('./_examples/custom-placeholder')
   ),
-  pagination: dynamic(() => import('./_examples/pagination'), {
-    loading,
-    ssr: false,
-  }),
-  'paste-html': dynamic(() => import('./_examples/paste-html'), {
-    loading,
-    ssr: false,
-  }),
-  'persistent-annotation-anchors': dynamic(
-    () => import('./_examples/persistent-annotation-anchors'),
-    { loading, ssr: false }
+  'decorations-async': createSlateExampleLoader(
+    () => import('./_examples/decorations-async')
   ),
-  plaintext: dynamic(() => import('./_examples/plaintext'), {
-    loading,
-    ssr: false,
-  }),
-  'read-only': dynamic(() => import('./_examples/read-only'), {
-    loading,
-    ssr: false,
-  }),
-  richtext: dynamic(() => import('./_examples/richtext'), {
-    loading,
-    ssr: false,
-  }),
-  'search-highlighting': dynamic(
-    () => import('./_examples/search-highlighting'),
-    { loading, ssr: false }
+  'document-state': createSlateExampleLoader(
+    () => import('./_examples/document-state')
   ),
-  'shadow-dom': dynamic(() => import('./_examples/shadow-dom'), {
-    loading,
-    ssr: false,
-  }),
-  styling: dynamic(() => import('./_examples/styling'), {
-    loading,
-    ssr: false,
-  }),
-  'synced-blocks': dynamic(() => import('./_examples/synced-blocks'), {
-    loading,
-    ssr: false,
-  }),
-  tables: dynamic(() => import('./_examples/tables'), { loading, ssr: false }),
-  'yjs-collaboration': dynamic(() => import('./_examples/yjs-collaboration'), {
-    loading,
-    ssr: false,
-  }),
-  'yjs-hocuspocus': dynamic(() => import('./_examples/yjs-hocuspocus'), {
-    loading,
-    ssr: false,
-  }),
-} as const;
+  'dom-coverage-boundaries': createSlateExampleLoader(
+    () => import('./_examples/dom-coverage-boundaries')
+  ),
+  'editable-voids': createSlateExampleLoader(
+    () => import('./_examples/editable-voids')
+  ),
+  embeds: createSlateExampleLoader(() => import('./_examples/embeds')),
+  'forced-layout': createSlateExampleLoader(
+    () => import('./_examples/forced-layout')
+  ),
+  'hidden-content-blocks': createSlateExampleLoader(
+    () => import('./_examples/hidden-content-blocks')
+  ),
+  'hovering-toolbar': createSlateExampleLoader(
+    () => import('./_examples/hovering-toolbar')
+  ),
+  'huge-document': createSlateExampleLoader(
+    () => import('./_examples/huge-document')
+  ),
+  iframe: createSlateExampleLoader(() => import('./_examples/iframe')),
+  images: createSlateExampleLoader(() => import('./_examples/images')),
+  inlines: createSlateExampleLoader(() => import('./_examples/inlines')),
+  linting: createSlateExampleLoader(() => import('./_examples/linting')),
+  'markdown-preview': createSlateExampleLoader(
+    () => import('./_examples/markdown-preview')
+  ),
+  'markdown-shortcuts': createSlateExampleLoader(
+    () => import('./_examples/markdown-shortcuts')
+  ),
+  mentions: createSlateExampleLoader(() => import('./_examples/mentions')),
+  'multi-root-document': createSlateExampleLoader(
+    () => import('./_examples/multi-root-document')
+  ),
+  pagination: createSlateExampleLoader(() => import('./_examples/pagination')),
+  'paste-html': createSlateExampleLoader(
+    () => import('./_examples/paste-html')
+  ),
+  'persistent-annotation-anchors': createSlateExampleLoader(
+    () => import('./_examples/persistent-annotation-anchors')
+  ),
+  plaintext: createSlateExampleLoader(() => import('./_examples/plaintext')),
+  'read-only': createSlateExampleLoader(() => import('./_examples/read-only')),
+  richtext: createSlateExampleLoader(() => import('./_examples/richtext')),
+  'search-highlighting': createSlateExampleLoader(
+    () => import('./_examples/search-highlighting')
+  ),
+  'shadow-dom': createSlateExampleLoader(
+    () => import('./_examples/shadow-dom')
+  ),
+  styling: createSlateExampleLoader(() => import('./_examples/styling')),
+  'synced-blocks': createSlateExampleLoader(
+    () => import('./_examples/synced-blocks')
+  ),
+  tables: createSlateExampleLoader(() => import('./_examples/tables')),
+  'yjs-collaboration': createSlateExampleLoader(
+    () => import('./_examples/yjs-collaboration')
+  ),
+  'yjs-hocuspocus': createSlateExampleLoader(
+    () => import('./_examples/yjs-hocuspocus')
+  ),
+} satisfies Record<string, ComponentType>;
 
 export type SlateExampleId = keyof typeof slateExampleComponents;

@@ -441,6 +441,10 @@ test.describe("images example", () => {
       testInfo.project.name === "mobile",
       "Desktop dragover visual proof"
     );
+    test.skip(
+      testInfo.project.name === "firefox",
+      "Firefox synthetic DragEvent drop-cursor proof is not stable"
+    );
 
     const runtimeErrors = recordSlateBrowserRuntimeErrors(page);
 
@@ -497,6 +501,10 @@ test.describe("images example", () => {
     test.skip(
       testInfo.project.name === "mobile",
       "Desktop CSS transform drop-cursor proof"
+    );
+    test.skip(
+      testInfo.project.name === "firefox",
+      "Firefox synthetic DragEvent drop-cursor proof is not stable"
     );
 
     const runtimeErrors = recordSlateBrowserRuntimeErrors(page);
@@ -560,6 +568,10 @@ test.describe("images example", () => {
     test.skip(
       testInfo.project.name === "mobile",
       "Desktop internal image drag/drop proof"
+    );
+    test.skip(
+      testInfo.project.name === "firefox",
+      "Firefox synthetic DragEvent reorder proof is not stable"
     );
 
     const runtimeErrors = recordSlateBrowserRuntimeErrors(page);

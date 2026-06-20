@@ -853,7 +853,12 @@ test.describe('multi-root document example', () => {
 
   test('dragging from blank header editor space does not start a projected selection', async ({
     page,
-  }) => {
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === 'mobile',
+      'Desktop pointer/native selection proof'
+    );
+
     const pageErrors: Error[] = [];
     page.on('pageerror', (error) => pageErrors.push(error));
 

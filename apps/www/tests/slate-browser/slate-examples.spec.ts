@@ -168,7 +168,7 @@ test.describe('Slate app example routes', () => {
 
   test('custom placeholder shows for empty content and hides after typing', async ({
     page,
-  }) => {
+  }, testInfo) => {
     const runtimeErrors = recordSlateBrowserRuntimeErrors(page);
 
     try {
@@ -179,8 +179,16 @@ test.describe('Slate app example routes', () => {
         },
       });
 
-      await editor.click();
-      await page.keyboard.type('placeholder proof');
+      if (testInfo.project.name === 'mobile') {
+        await editor.selection.select({
+          anchor: { path: [0, 0], offset: 0 },
+          focus: { path: [0, 0], offset: 0 },
+        });
+        await editor.insertText('placeholder proof');
+      } else {
+        await editor.click();
+        await page.keyboard.type('placeholder proof');
+      }
 
       await editor.assert.placeholderVisible(false);
       await expect.poll(() => editor.get.modelText()).toBe('placeholder proof');

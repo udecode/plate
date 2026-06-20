@@ -128,6 +128,14 @@ const buildWorkspaceDevAliases = () => {
   };
 };
 
+const buildWorkspaceDevWebpackAliases = () =>
+  Object.fromEntries(
+    Object.entries(buildWorkspaceDevAliases()).map(([key, value]) => [
+      key,
+      path.resolve(APP_ROOT, value),
+    ])
+  );
+
 const withMDX = createMDX({});
 
 const nextConfig = async (_phase: string) => {
@@ -200,6 +208,21 @@ const nextConfig = async (_phase: string) => {
           destination: '/cn/docs/releases',
           permanent: true,
           source: '/cn/docs/migration',
+        },
+        {
+          destination: '/examples/slate/richtext',
+          permanent: true,
+          source: '/docs/slate/examples',
+        },
+        {
+          destination: '/docs/slate/migration',
+          permanent: true,
+          source: '/docs/slate/migration/slate-v2',
+        },
+        {
+          destination: '/docs/slate/why-this-fork',
+          permanent: true,
+          source: '/docs/slate/releases/slate-v2',
         },
         {
           destination: '/docs/installation/plate-ui#sync-copied-files',
@@ -288,33 +311,16 @@ const nextConfig = async (_phase: string) => {
       ];
     },
 
-    // webpack: (config, { buildId, dev, isServer, webpack }) => {
-    //   config.externals.push({
-    //     shiki: 'shiki',
-    //     typescript: 'typescript',
-    //   });
+    webpack: (config) => {
+      if (isDev) {
+        config.resolve.alias = {
+          ...config.resolve.alias,
+          ...buildWorkspaceDevWebpackAliases(),
+        };
+      }
 
-    //   if (!isServer) {
-    //     config.resolve.fallback = {
-    //       ...config.resolve.fallback,
-    //       crypto: require.resolve('crypto-browserify'),
-    //       stream: require.resolve('stream-browserify'),
-    //     };
-
-    //     config.plugins.push(
-    //       new webpack.ProvidePlugin({
-    //         process: 'process/browser',
-    //       }),
-    //       new webpack.NormalModuleReplacementPlugin(
-    //         /node:crypto/,
-    //         (resource: any) => {
-    //           resource.request = resource.request.replace(/^node:/, '');
-    //         }
-    //       )
-    //     );
-    //   }
-    //   return config;
-    // },
+      return config;
+    },
   };
 
   return withMDX(config);

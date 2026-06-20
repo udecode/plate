@@ -1,23 +1,25 @@
 ---
 date: 2026-04-18
 topic: slate-v2-overview
-status: active
+status: superseded
 ---
 
 # Slate v2 Overview
 
 ## Purpose
 
-Front door to the live `slate-v2` private-alpha program.
+Front door to the historical `slate-v2` private-alpha program.
 
-This stack now describes the final-state program for the fresh `Plate repo root`
-clone. It is not the old rewrite archive.
+The package source, tests, examples, docs, benchmarks, and browser proof now
+live in the Plate repo. Use the transplant ledger for deletion/readiness proof.
+This stack is retained as historical design evidence only.
 
 ## Current Read
 
-- `Plate repo root` is the live target
-- `.tmp/slate-v2-draft` is the evidence/value bank
-- `docs/slate-v2/**` is the final-state spec lane
+- `Plate repo root` is the live source of truth
+- `docs/transplant/slate-v2/**` is the donor manifest and deletion-readiness ledger
+- `content/docs/slate/**`, `apps/www`, and `packages/**` are the current public surfaces
+- `docs/slate-v2/**` is historical design evidence
 - `docs/slate-v2-draft/**` is the archived prior doc lane
 - tranche 1 is complete:
   - Bun root/tooling graph

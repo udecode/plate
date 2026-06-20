@@ -10,7 +10,9 @@ process.env.PLATE_WWW_SLATE ??= '1';
 process.env.PLAYWRIGHT_BASE_URL = baseURL;
 const workerCount = process.env.PLAYWRIGHT_WORKERS
   ? Number(process.env.PLAYWRIGHT_WORKERS)
-  : 1;
+  : process.env.CI
+    ? undefined
+    : 2;
 const retryCount = process.env.PLAYWRIGHT_RETRIES
   ? Number(process.env.PLAYWRIGHT_RETRIES)
   : process.env.CI
@@ -56,7 +58,7 @@ const config: PlaywrightTestConfig = {
   expect: {
     timeout: 8000,
   },
-  fullyParallel: false,
+  fullyParallel: !process.env.CI,
   forbidOnly: !!process.env.CI,
   globalSetup: './tests/slate-browser/global-setup.ts',
   outputDir: './test-results/slate-browser',
@@ -84,7 +86,10 @@ const config: PlaywrightTestConfig = {
         timeout: 300_000,
         url: `${baseURL}/api/slate/ready`,
       },
-  workers: Number.isFinite(workerCount) && workerCount > 0 ? workerCount : 1,
+  workers:
+    typeof workerCount === 'number' && Number.isFinite(workerCount)
+      ? workerCount
+      : undefined,
 };
 
 export default config;

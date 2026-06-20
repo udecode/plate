@@ -18,7 +18,7 @@ export default async function globalSetup(config: FullConfig) {
 
   if (!response.ok) {
     throw new Error(
-      `Slate proof server is not ready: ${response.status} ${response.statusText}`
+      `Slate browser server is not ready: ${response.status} ${response.statusText}`
     );
   }
 
@@ -29,7 +29,7 @@ export default async function globalSetup(config: FullConfig) {
 
   if (!payload.slate || !payload.devSource) {
     throw new Error(
-      `Slate browser proof requires PLATE_WWW_SLATE=1 and PLATE_WWW_DEV_SOURCE=1; got ${JSON.stringify(payload)}`
+      `Slate browser tests require PLATE_WWW_SLATE=1 and PLATE_WWW_DEV_SOURCE=1; got ${JSON.stringify(payload)}`
     );
   }
 }

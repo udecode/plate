@@ -1,22 +1,22 @@
-import type { SidebarNavItem } from "@/types/nav";
+import type { SidebarNavItem } from '@/types/nav';
 
-import slateMeta from "../../../../content/docs/slate/meta.json";
+import slateMeta from '../../../../content/docs/slate/meta.json';
 
 const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
-const SLATE_DOCS_PREFIX = "/docs/slate";
+const SLATE_DOCS_PREFIX = '/docs/slate';
 const META_LINK_REGEX = /^\[([^\]]+)\]\(([^)]+)\)$/;
 const META_SEPARATOR_REGEX = /^---(.+)---$/;
 
-export type DocsRootId = "plate" | "slate";
+export type DocsRootId = 'plate' | 'slate';
 
 function normalizeDocsPath(pathname: string) {
-  return pathname.replace(CN_DOCS_PREFIX_REGEX, "");
+  return pathname.replace(CN_DOCS_PREFIX_REGEX, '');
 }
 
 export function getDocsRootFromPathname(pathname: string): DocsRootId {
   return normalizeDocsPath(pathname).startsWith(SLATE_DOCS_PREFIX)
-    ? "slate"
-    : "plate";
+    ? 'slate'
+    : 'plate';
 }
 
 function isSlateHref(href: string) {
@@ -104,7 +104,7 @@ export function getSidebarNavForDocsRoot(
   sidebarNav: SidebarNavItem[],
   root: DocsRootId
 ) {
-  return root === "slate"
+  return root === 'slate'
     ? getSlateSidebarNav()
     : getPlateSidebarNav(sidebarNav);
 }

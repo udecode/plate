@@ -1,10 +1,10 @@
 {
   "pages": [
+    "---UNPUBLISHED---",
     "[Overview](/docs/slate)",
-    "[Why This Fork](/docs/slate/releases/slate-v2)",
-    "[Examples](/docs/slate/examples)",
-    "---Migration---",
-    "[Migrating to Slate v2](/docs/slate/migration/slate-v2)",
+    "[Why This Fork](/docs/slate/why-this-fork)",
+    "[Migration](/docs/slate/migration)",
+    "[Examples](/examples/slate/richtext)",
     "---Walkthroughs---",
     "[Installing Slate](/docs/slate/walkthroughs/01-installing-slate)",
     "[Adding Event Handlers](/docs/slate/walkthroughs/02-adding-event-handlers)",

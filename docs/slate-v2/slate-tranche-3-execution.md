@@ -12,7 +12,7 @@ Do an honest tranche-3 review for `packages/slate` against:
 
 - live `plate-2` tranche/ledger docs
 - current `packages/slate/**`
-- missing draft-backed proof owners under `.tmp/slate-v2-draft/packages/slate/**`
+- missing draft-backed proof owners from the archived draft package corpus
 - missing perf gate ownership
 
 This file is prior context only now.

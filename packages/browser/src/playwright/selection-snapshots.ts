@@ -775,8 +775,13 @@ export const waitForSelectionSync = async (
               (modelBackedSelection ||
                 selectionsEqual(nativeSelection, expectedSelection))
             : selectionsEqual(nativeSelection, expectedSelection)
-          : nativeSelectionInRoot ||
-            (modelBackedSelection && !!handleSelection);
+          : handle?.getSelection
+            ? modelBackedSelection
+              ? !!handleSelection
+              : nativeSelection
+                ? selectionsEqual(handleSelection, nativeSelection)
+                : nativeSelectionInRoot
+            : nativeSelectionInRoot;
 
         return {
           expectedSelection,

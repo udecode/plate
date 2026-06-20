@@ -5,7 +5,7 @@ import { openExample } from '@platejs/browser/playwright';
 test.describe('linting', () => {
   test('refreshes app-owned lint diagnostics through an external decoration source', async ({
     page,
-  }) => {
+  }, testInfo) => {
     const editor = await openExample(page, 'slate/linting', {
       ready: {
         editor: 'visible',
@@ -34,7 +34,11 @@ test.describe('linting', () => {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
-    await page.keyboard.type('Prefix ');
+    if (testInfo.project.name === 'mobile') {
+      await editor.insertText('Prefix ');
+    } else {
+      await page.keyboard.type('Prefix ');
+    }
 
     await expect(
       page.locator('[data-lint-rule="style-filler-word"]')

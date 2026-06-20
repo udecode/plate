@@ -1,30 +1,29 @@
-"use client";
+'use client';
 
-import type { SidebarNavItem } from "@/types/nav";
+import type { SidebarNavItem } from '@/types/nav';
 
-import castArray from "lodash/castArray.js";
-import { ChevronRightIcon } from "lucide-react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import * as React from "react";
+import castArray from 'lodash/castArray.js';
+import { ChevronRightIcon } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import * as React from 'react';
 
-import { SlateExamplesSidebarNav } from "@/app/(app)/examples/slate/slate-examples-shell";
-import { useLocale } from "@/hooks/useLocale";
+import { useLocale } from '@/hooks/useLocale';
 import {
   getLocalizedNavTitle,
   normalizeDocsHref,
-} from "@/lib/docs-nav-metadata";
+} from '@/lib/docs-nav-metadata';
 import {
   getDocsRootFromPathname,
   getSidebarNavForDocsRoot,
-} from "@/lib/docs-root-nav";
-import { cn } from "@/lib/utils";
-import { hrefWithLocale } from "@/lib/withLocale";
+} from '@/lib/docs-root-nav';
+import { cn } from '@/lib/utils';
+import { hrefWithLocale } from '@/lib/withLocale';
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+} from '@/components/ui/collapsible';
 import {
   Sidebar,
   SidebarContent,
@@ -34,21 +33,21 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
+} from '@/components/ui/sidebar';
 
-function getLabelValues(label: SidebarNavItem["label"]) {
+function getLabelValues(label: SidebarNavItem['label']) {
   return castArray(label).filter(Boolean);
 }
 
-function getStatusLabel(label: SidebarNavItem["label"]) {
+function getStatusLabel(label: SidebarNavItem['label']) {
   return getLabelValues(label).find(
-    (value) => value === "New" || value === "Updated"
+    (value) => value === 'New' || value === 'Updated'
   );
 }
 
-function getTextLabels(label: SidebarNavItem["label"]) {
+function getTextLabels(label: SidebarNavItem['label']) {
   return getLabelValues(label).filter(
-    (value) => value !== "New" && value !== "Updated"
+    (value) => value !== 'New' && value !== 'Updated'
   );
 }
 
@@ -58,8 +57,8 @@ function isNavItemActive(item: SidebarNavItem, pathname: string): boolean {
 
     if (href === pathname) return true;
     if (
-      href !== "/docs" &&
-      href !== "/docs/slate" &&
+      href !== '/docs' &&
+      href !== '/docs/slate' &&
       pathname.startsWith(`${href}/`)
     ) {
       return true;
@@ -74,15 +73,15 @@ function getSectionTitle(
   index: number,
   locale: string
 ) {
-  if (index === 0 && section.title === "Get Started") {
-    return locale === "cn" ? "概览" : "Overview";
+  if (index === 0 && section.title === 'Get Started') {
+    return locale === 'cn' ? '概览' : 'Overview';
   }
 
   return getLocalizedNavTitle(section, locale);
 }
 
 const docsNavItemButtonClassName =
-  "relative h-[30px] w-fit max-w-full overflow-hidden border border-transparent text-[0.8rem] font-medium whitespace-nowrap data-[active=true]:border-accent data-[active=true]:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48";
+  'relative h-[30px] w-fit max-w-full overflow-hidden border border-transparent text-[0.8rem] font-medium whitespace-nowrap data-[active=true]:border-accent data-[active=true]:bg-accent 3xl:fixed:w-full 3xl:fixed:max-w-48';
 
 function getNavItemKey(item: SidebarNavItem, index: number, depth: number) {
   return item.href ?? `${depth}:${index}:${String(item.title)}`;
@@ -162,9 +161,8 @@ function getActiveSectionKey(sections: SidebarNavItem[], pathname: string) {
 export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
   const locale = useLocale();
   const pathname = usePathname();
-  const normalizedPathname = normalizeDocsHref(pathname ?? "");
+  const normalizedPathname = normalizeDocsHref(pathname ?? '');
   const docsRoot = getDocsRootFromPathname(normalizedPathname);
-  const isSlateExamplesIndex = normalizedPathname === "/docs/slate/examples";
   const rootSidebarNav = React.useMemo(
     () => getSidebarNavForDocsRoot(sidebarNav, docsRoot),
     [docsRoot, sidebarNav]
@@ -191,51 +189,41 @@ export function DocsNav({ sidebarNav }: { sidebarNav: SidebarNavItem[] }) {
 
   return navSections.length > 0 ? (
     <Sidebar
-      aria-label={locale === "cn" ? "文档导航" : "Docs navigation"}
+      aria-label={locale === 'cn' ? '文档导航' : 'Docs navigation'}
       className="sticky top-[calc(var(--header-height)+0.6rem)] z-30 hidden h-[calc(100svh-10rem)] overscroll-none bg-transparent [--sidebar-menu-width:--spacing(56)] lg:flex"
       collapsible="none"
     >
       <div className="h-9" />
       <SidebarContent className="no-scrollbar w-(--sidebar-menu-width) overflow-x-hidden px-2.5">
-        {isSlateExamplesIndex ? (
-          <SlateExamplesSidebarNav
-            backHref="/docs/slate"
-            backLabel="Back to Slate docs"
-            indexActive
-            indexHref="/docs/slate/examples"
-            showIndex
-          />
+        {docsRoot === 'slate' ? (
+          navSections.map((section, index) => (
+            <DocsNavStaticGroup
+              key={getSectionKey(section, index)}
+              index={index}
+              pathname={normalizedPathname}
+              section={section}
+            />
+          ))
         ) : (
-          <>
-            {docsRoot === "slate"
-              ? navSections.map((section, index) => (
-                  <DocsNavStaticGroup
-                    key={getSectionKey(section, index)}
-                    index={index}
-                    pathname={normalizedPathname}
-                    section={section}
-                  />
-                ))
-              : navSections.map((section, index) => {
-                  const sectionKey = getSectionKey(section, index);
+          navSections.map((section, index) => {
+            const sectionKey = getSectionKey(section, index);
 
-                  return (
-                    <DocsNavGroup
-                      key={sectionKey}
-                      index={index}
-                      open={openSectionKey === sectionKey}
-                      pathname={normalizedPathname}
-                      section={section}
-                      onOpenChange={(open) => {
-                        setOpenSection({
-                          key: open ? sectionKey : undefined,
-                          pathname: normalizedPathname,
-                        });
-                      }}
-                    />
-                  );
-                })}
-          </>
+            return (
+              <DocsNavGroup
+                key={sectionKey}
+                index={index}
+                open={openSectionKey === sectionKey}
+                pathname={normalizedPathname}
+                section={section}
+                onOpenChange={(open) => {
+                  setOpenSection({
+                    key: open ? sectionKey : undefined,
+                    pathname: normalizedPathname,
+                  });
+                }}
+              />
+            );
+          })
         )}
         <div className="sticky -bottom-1 z-10 h-16 shrink-0 bg-linear-to-t from-background via-background/80 to-background/50 blur-xs" />
       </SidebarContent>
@@ -259,7 +247,7 @@ function DocsNavStaticGroup({
 
   return section.items?.length ? (
     <SidebarGroup
-      className={cn("shrink-0", index === 0 && sectionTitle && "pt-6")}
+      className={cn('shrink-0', index === 0 && sectionTitle && 'pt-6')}
     >
       {standalone || !sectionTitle ? null : (
         <SidebarGroupLabel className="font-medium text-muted-foreground">
@@ -297,15 +285,15 @@ function DocsNavGroup({
   return (
     <SidebarGroup
       className={cn(
-        "min-h-0",
-        index === 0 && "pt-6",
-        open && scrollable ? "flex-1" : "shrink-0"
+        'min-h-0',
+        index === 0 && 'pt-6',
+        open && scrollable ? 'flex-1' : 'shrink-0'
       )}
     >
       {section.items?.length ? (
         <Collapsible
           open={open}
-          className={cn("min-h-0", scrollable && "flex flex-col")}
+          className={cn('min-h-0', scrollable && 'flex flex-col')}
           onOpenChange={onOpenChange}
         >
           <CollapsibleTrigger asChild>
@@ -322,8 +310,8 @@ function DocsNavGroup({
                 <span>{sectionTitle}</span>
                 <ChevronRightIcon
                   className={cn(
-                    "size-3.5 transition-transform",
-                    open && "rotate-90"
+                    'size-3.5 transition-transform',
+                    open && 'rotate-90'
                   )}
                 />
               </button>
@@ -333,14 +321,14 @@ function DocsNavGroup({
           <CollapsibleContent
             className={cn(
               scrollable &&
-                "min-h-0 overflow-hidden data-[state=open]:flex data-[state=open]:flex-1 data-[state=open]:flex-col"
+                'min-h-0 overflow-hidden data-[state=open]:flex data-[state=open]:flex-1 data-[state=open]:flex-col'
             )}
           >
             <SidebarGroupContent
               className={cn(
                 scrollable
-                  ? "no-scrollbar min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain"
-                  : "overflow-visible"
+                  ? 'no-scrollbar min-h-0 overflow-y-auto overflow-x-hidden overscroll-contain'
+                  : 'overflow-visible'
               )}
             >
               <DocsNavItems
@@ -370,8 +358,8 @@ function DocsNavItems({
   return items.length ? (
     <SidebarMenu
       className={cn(
-        dense && "gap-0.5",
-        depth > 0 && "mt-1 ml-3 border-border/70 border-l pl-2"
+        dense && 'gap-0.5',
+        depth > 0 && 'mt-1 ml-3 border-border/70 border-l pl-2'
       )}
     >
       {items.map((item, index) => {
@@ -431,10 +419,10 @@ function DocsNavItem({
       isActive={active}
     >
       <Link
-        aria-current={current ? "page" : undefined}
+        aria-current={current ? 'page' : undefined}
         href={hrefWithLocale(item.href, locale)}
-        rel={item.external ? "noreferrer" : undefined}
-        target={item.external ? "_blank" : undefined}
+        rel={item.external ? 'noreferrer' : undefined}
+        target={item.external ? '_blank' : undefined}
       >
         <DocsNavItemContent
           statusLabel={statusLabel}

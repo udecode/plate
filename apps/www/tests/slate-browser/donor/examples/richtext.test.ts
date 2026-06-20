@@ -782,8 +782,7 @@ test.describe('On richtext example', () => {
       },
     });
 
-    await editor.click();
-    await page.keyboard.press('ControlOrMeta+A');
+    await editor.selection.selectAll();
     await expect
       .poll(() => editor.get.selectedText())
       .toContain('This is editable rich text');

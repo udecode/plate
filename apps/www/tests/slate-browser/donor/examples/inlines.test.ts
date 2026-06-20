@@ -1385,14 +1385,15 @@ test.describe('Inlines example', () => {
       isCollapsed: true,
     });
 
-    const caretRect = await editor.selection.rect();
-    const buttonLeft = await editor.root
-      .locator('[data-slate-path="0,3"]')
-      .first()
-      .evaluate((element) => element.getBoundingClientRect().left);
-
-    expect(caretRect).not.toBeNull();
-    expect(caretRect!.x).toBeLessThanOrEqual(buttonLeft + 1);
+    await page.keyboard.type('plain ');
+    await editor.assert.modelBlockText(
+      0,
+      'In addition to block nodes, you can create inline nodes. Here is a hyperlink, and here is a more unusual inline: an plain editable button! Here is a read-only inline: .'
+    );
+    await editor.assert.selection({
+      anchor: { path: [0, 2], offset: beforeButtonText.length + 6 },
+      focus: { path: [0, 2], offset: beforeButtonText.length + 6 },
+    });
   });
 
   test('removes an empty editable inline with Backspace without deleting preceding text', async ({
