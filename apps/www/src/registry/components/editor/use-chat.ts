@@ -14,8 +14,9 @@ import {
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
 import { deserializeMd } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
+import { type Node, NodeApi, TextApi } from '@platejs/slate';
 import { type UIMessage, DefaultChatTransport } from 'ai';
-import { type TNode, KEYS, nanoid, NodeApi, TextApi } from 'platejs';
+import { KEYS, nanoid } from 'platejs';
 import { type PlateEditor, useEditorRef, usePluginOption } from 'platejs/react';
 
 import { aiChatPlugin } from '@/registry/components/editor/plugins/ai-kit';
@@ -214,7 +215,7 @@ export const useChat = () => {
         const commentData = data.data as TComment;
 
         if (commentData.status === 'finished') {
-          editor.getApi(BlockSelectionPlugin).blockSelection.deselect();
+          editor.getPluginApi(BlockSelectionPlugin).blockSelection.deselect();
 
           return;
         }
@@ -246,7 +247,7 @@ export const useChat = () => {
           comments: [newComment],
           createdAt: new Date(),
           documentContent: deserializeMd(editor, aiComment.content)
-            .map((node: TNode) => NodeApi.string(node))
+            .map((node: Node) => NodeApi.string(node))
             .join('\n'),
           isResolved: false,
           userId: editor.getOption(discussionPlugin, 'currentUserId'),
@@ -1556,7 +1557,7 @@ const mdxChunks = [
 ];
 
 const createCommentChunks = (editor: PlateEditor) => {
-  const selectedBlocksApi = editor.getApi(BlockSelectionPlugin).blockSelection;
+  const selectedBlocksApi = editor.getPluginApi(BlockSelectionPlugin).blockSelection;
 
   const selectedBlocks = selectedBlocksApi
     .getNodes({

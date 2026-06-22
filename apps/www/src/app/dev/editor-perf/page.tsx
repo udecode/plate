@@ -25,13 +25,13 @@ import {
   SuperscriptPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
+import type { Element as SlateElement } from '@platejs/slate';
 import {
   ChunkingPlugin,
   normalizeNodeId,
   type Descendant,
   type Path,
   type RenderElementProps,
-  type TElement,
   type Value,
 } from 'platejs';
 import {
@@ -70,9 +70,9 @@ import {
   usePlateStore,
   usePluginOption,
   useReadOnly,
-  withReact,
 } from 'platejs/react';
 import { createEditor, Editor, Transforms } from 'slate';
+import { withReact } from 'slate-react';
 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -492,8 +492,8 @@ type BenchmarkEditorHandle = {
 };
 
 type BenchElementStoreState = {
-  element: TElement | null;
-  entry: [TElement, Path] | null;
+  element: SlateElement | null;
+  entry: [SlateElement, Path] | null;
   path: Path | null;
 };
 
@@ -504,8 +504,8 @@ const CHUNK_SIZE_OPTIONS = Array.from(
 const FANOUT_SUBSCRIBER_OPTIONS = [0, 25, 100, 250, 500, 1000];
 const BenchElementContext = React.createContext<any>(null);
 const BenchZustandContext = React.createContext<any>(null);
-const benchJotaiElementAtom = createJotaiAtom<TElement | null>(null);
-const benchJotaiEntryAtom = createJotaiAtom<[TElement, Path] | null>(null);
+const benchJotaiElementAtom = createJotaiAtom<SlateElement | null>(null);
+const benchJotaiEntryAtom = createJotaiAtom<[SlateElement, Path] | null>(null);
 const benchJotaiPathAtom = createJotaiAtom<Path | null>(null);
 const benchJotaiAtoms = {
   element: benchJotaiElementAtom,
@@ -726,8 +726,8 @@ function BenchElementProviderPropEffect({
   path,
   scope,
 }: React.PropsWithChildren<{
-  element: TElement;
-  entry: [TElement, Path];
+  element: SlateElement;
+  entry: [SlateElement, Path];
   path: Path;
   scope?: string;
 }>) {
@@ -933,7 +933,7 @@ function BenchRenderNodeHookElementFromProvider({
   attributes: Record<string, unknown>;
   children: React.ReactNode;
 }) {
-  const element = useElement<TElement>();
+  const element = useElement<SlateElement>();
   const path = usePath();
   const pathDepth = path.length;
 
@@ -1589,14 +1589,14 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
 ];
 
 function buildElementPathMap(value: Value) {
-  const pathMap = new WeakMap<TElement, number[]>();
+  const pathMap = new WeakMap<SlateElement, number[]>();
 
   const visit = (nodes: Descendant[], parentPath: number[] = []) => {
     nodes.forEach((node, index) => {
       if (!('type' in node)) return;
 
       const path = [...parentPath, index];
-      const element = node as TElement;
+      const element = node as SlateElement;
 
       pathMap.set(element, path);
       visit(element.children as Descendant[], path);
@@ -2016,7 +2016,7 @@ function BenchmarkElement({
     contentVisibility: elementContentVisibility ? ('auto' as const) : undefined,
   };
 
-  switch ((element as TElement).type) {
+  switch ((element as SlateElement).type) {
     case 'h1':
       return (
         <h1
@@ -2046,7 +2046,7 @@ function BenchmarkPlateElement({
   attributes: Record<string, unknown>;
   children: React.ReactNode;
   editor: any;
-  element: TElement;
+  element: SlateElement;
   includeBlockId?: boolean;
 }) {
   const blockId =
@@ -2081,7 +2081,7 @@ function BenchmarkPlateElementNodeAttributes({
   attributes: Record<string, unknown>;
   children: React.ReactNode;
   editor: any;
-  element: TElement;
+  element: SlateElement;
 }) {
   const attributes = useNodeAttributes({
     attributes: rawAttributes,
@@ -2917,7 +2917,7 @@ function BenchmarkEditableMount({
     if (!elementBenchmarkMode) return;
 
     return (props: RenderElementProps) => {
-      const element = props.element as TElement;
+      const element = props.element as SlateElement;
       const path =
         pathMap.get(element) ?? ((editor as any).api.findPath(element) as any);
       const elementType = element.type as string | undefined;
@@ -3860,7 +3860,7 @@ function BenchmarkEditableMount({
     );
 
     return (props: RenderElementProps) => {
-      const element = props.element as TElement;
+      const element = props.element as SlateElement;
 
       if (element.type !== paragraphPlugin.node.type) {
         return renderElement(props);

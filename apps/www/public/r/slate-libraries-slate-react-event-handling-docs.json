@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "slate-libraries-slate-react-event-handling-docs",
+  "title": "Slate React Event Handling",
+  "description": "Documentation for Slate React Event Handling",
+  "files": [
+    {
+      "path": "../../content/docs/slate/libraries/slate-react/event-handling.mdx",
+      "content": "---\ntitle: \"Slate React Event Handling\"\n---\n\n`Editable` owns the default browser event handlers for rich-text editing,\nincluding copy, paste, drop, keyboard, native input, selection, focus, and drag\nevents.\n\nPass event handlers to `Editable` when app UI needs to run before Slate's\ndefault behavior.\n\nHandler return values control whether Slate continues with its own handling:\n\n- Return `true` to mark the event handled and skip Slate's default handler.\n- Return `false` to force Slate's default handler to run.\n- Return nothing to let Slate continue unless the event is default-prevented or\n  propagation-stopped.\n\n```tsx\nimport type { DragEvent, MouseEvent } from 'react'\nimport { Editable } from '@platejs/slate-react'\n\nconst MyEditor = () => {\n  const onClick = (event: MouseEvent<HTMLDivElement>) => {\n    trackEditorClick(event)\n\n    // Slate runs its click handler unless this handler prevents default,\n    // stops propagation, or returns true.\n  }\n\n  const onDrop = (event: DragEvent<HTMLDivElement>) => {\n    if (!isAppOwnedDrop(event)) return false\n\n    insertAppOwnedDrop(event)\n\n    return true\n  }\n\n  const onDragStart = (event: DragEvent<HTMLDivElement>) => {\n    annotateDragPayload(event)\n\n    return false\n  }\n\n  return (\n    <Editable\n      onClick={onClick}\n      onDrop={onDrop}\n      onDragStart={onDragStart}\n    />\n  )\n}\n```\n\nUse `onKeyDown` and `onDOMBeforeInput` when a handler needs editor context:\n\n```tsx\n<Editable\n  onDOMBeforeInput={(event, { editor, inputType }) => {\n    if (inputType !== 'formatBold') return false\n\n    editor.update((tx) => {\n      tx.marks.toggle('bold')\n    })\n\n    return true\n  }}\n  onKeyDown={(event, { editor }) => {\n    if (!(event.metaKey && event.key === 'k')) return false\n\n    editor.update((tx) => {\n      tx.text.insert('link')\n    })\n\n    return true\n  }}\n/>\n```\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/slate/libraries/slate-react/event-handling.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

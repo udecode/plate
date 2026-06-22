@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "slate-libraries-slate-react-index-docs",
+  "title": "Slate React",
+  "description": "Documentation for Slate React",
+  "files": [
+    {
+      "path": "../../content/docs/slate/libraries/slate-react/index.mdx",
+      "content": "---\ntitle: \"Slate React\"\n---\n\n`@platejs/slate-react` owns the React editor runtime: editor creation, the `Slate`\nprovider, the `Editable` surface, browser event handling, native selection\nsync, void shells, hidden DOM coverage, decoration sources, annotations,\nwidgets, and large-document DOM strategies.\n\nStart with `useSlateEditor`, `Slate`, and `Editable`.\n\n```tsx\nimport { Slate, Editable, useSlateEditor } from \"@platejs/slate-react\";\n\nconst Editor = () => {\n  const editor = useSlateEditor({\n    initialValue: [{ type: \"paragraph\", children: [{ text: \"\" }] }],\n  });\n\n  return (\n    <Slate editor={editor}>\n      <Editable placeholder=\"Start typing...\" />\n    </Slate>\n  );\n};\n```\n\n## Stable Runtime Path\n\n- [React Editor Setup](./react-editor-setup): create an editor and install\n  the React, DOM, clipboard, and history extensions.\n- [Slate Component](./slate): provide the editor, value changes, decoration\n  sources, annotation stores, and widget stores.\n- [Editable Component](./editable): render content, marks, voids,\n  placeholders, DOM strategies, and editor event handlers.\n- [Event Handling](./event-handling): customize copy, paste, drop, keyboard,\n  input, selection, focus, and drag behavior without replacing Slate's runtime.\n- [Hooks](./hooks): subscribe to editor state, runtime state, roots,\n  mounted nodes, decorations, annotations, widgets, focus, read-only state, and\n  selection.\n\n## Runtime Boundaries\n\n- [React Editor](./react-editor): DOM, focus, selection, clipboard, and\n  React-specific editor APIs.\n- Rendering primitives `SlateElement`, `SlateText`, `SlateLeaf`, and\n  `SlatePlaceholder` carry Slate's DOM attributes when custom renderers need to\n  keep the native editing contract intact.\n- [DOM Coverage Boundaries](./dom-coverage-boundaries): represent hidden or\n  summarized DOM regions for selection, copy, find, and materialization.\n- [Annotations](./annotations): durable anchored ranges for comments,\n  suggestions, diagnostics, and review markers.\n- [Hooks](./hooks): runtime/root hooks and widget hooks for external chrome\n  and overlay UI anchored to roots, nodes, selections, and annotations. Advanced\n  hooks include `useSlateNodeRef`, `useDOMStrategyVirtualOffset`, and\n  `useSlateRangeDecorationSource`.\n\n## Advanced Lanes\n\n- [Virtualized Rendering](./experimental-virtualized-rendering):\n  large-document stress and DOM-budget work. Keep production use behind explicit\n  product proof.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/slate/libraries/slate-react/index.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

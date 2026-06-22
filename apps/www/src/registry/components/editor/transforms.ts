@@ -1,6 +1,7 @@
 'use client';
 
 import type { PlateEditor } from 'platejs/react';
+import type { Element, NodeEntry, Path } from '@platejs/slate';
 
 import { insertCallout } from '@platejs/callout';
 import { insertCodeBlock, toggleCodeBlock } from '@platejs/code-block';
@@ -20,13 +21,7 @@ import {
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { TablePlugin } from '@platejs/table/react';
 import { insertToc } from '@platejs/toc';
-import {
-  type NodeEntry,
-  type Path,
-  type TElement,
-  KEYS,
-  PathApi,
-} from 'platejs';
+import { KEYS, PathApi } from 'platejs';
 
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 const ACTION_FOOTNOTE = 'action_footnote';
@@ -130,7 +125,7 @@ export const insertBlock = (
       editor.tf.insertNodes(createBlockquote(editor), { at: insertPath });
 
       if (!isSameBlockType && isCurrentBlockEmpty) {
-        editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(() => {
+        editor.getPluginApi(SuggestionPlugin).suggestion.withoutSuggestions(() => {
           editor.tf.removeNodes({ at: path });
         });
       }
@@ -152,7 +147,7 @@ export const insertBlock = (
     }
 
     if (!isSameBlockType) {
-      editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(() => {
+      editor.getPluginApi(SuggestionPlugin).suggestion.withoutSuggestions(() => {
         editor.tf.removeNodes({ previousEmptyBlock: true });
       });
     }
@@ -168,7 +163,7 @@ export const insertInlineElement = (editor: PlateEditor, type: string) => {
 const setList = (
   editor: PlateEditor,
   type: string,
-  entry: NodeEntry<TElement>
+  entry: NodeEntry<Element>
 ) => {
   editor.tf.setNodes(
     editor.api.create.block({
@@ -183,7 +178,7 @@ const setList = (
 
 const setBlockMap: Record<
   string,
-  (editor: PlateEditor, type: string, entry: NodeEntry<TElement>) => void
+  (editor: PlateEditor, type: string, entry: NodeEntry<Element>) => void
 > = {
   [KEYS.listTodo]: setList,
   [KEYS.ol]: setList,
@@ -213,7 +208,7 @@ export const setBlockType = (
       return;
     }
 
-    const setEntry = (entry: NodeEntry<TElement>) => {
+    const setEntry = (entry: NodeEntry<Element>) => {
       const [node, path] = entry;
 
       if (node[KEYS.listType]) {
@@ -228,7 +223,7 @@ export const setBlockType = (
     };
 
     if (at) {
-      const entry = editor.api.node<TElement>(at);
+      const entry = editor.api.node<Element>(at);
 
       if (entry) {
         setEntry(entry);
@@ -245,7 +240,7 @@ export const setBlockType = (
   });
 };
 
-export const getBlockType = (block: TElement) => {
+export const getBlockType = (block: Element) => {
   if (block[KEYS.listType]) {
     if (block[KEYS.listType] === KEYS.ol) {
       return KEYS.ol;

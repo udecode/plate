@@ -796,7 +796,7 @@ export const Index: Record<string, any> = {
   },
   "remote-cursor-overlay": {
     name: "remote-cursor-overlay",
-    description: "A cursor overlay to display multiplayer cursors in the yjs plugin.",
+    description: "A cursor overlay slot for app-owned collaboration wiring.",
     type: "registry:ui",
     registryDependencies: [],
     files: [{
@@ -3455,7 +3455,7 @@ export const Index: Record<string, any> = {
   },
   "collaboration-demo": {
     name: "collaboration-demo",
-    description: "Real-time collaboration with cursors and selections.",
+    description: "Editor shell for app-owned collaboration wiring.",
     type: "registry:example",
     registryDependencies: ["https://platejs.org/r/use-mounted.json","https://platejs.org/r/remote-cursor-overlay.json","button","input"],
     files: [{

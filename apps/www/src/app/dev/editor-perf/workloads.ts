@@ -1,9 +1,9 @@
 import {
   normalizeNodeId,
   type Descendant,
-  type TElement,
   type Value,
 } from 'platejs';
+import type { Element } from '@platejs/slate';
 
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
 
@@ -479,7 +479,7 @@ function buildFallbackParagraphValue(blocks: number): Value {
   }
 
   const value = buildMixedBlockValue(blocks).map((node) => {
-    const nextNode = structuredClone(node) as TElement;
+    const nextNode = structuredClone(node) as Element;
 
     if (nextNode.type === 'p') {
       nextNode.type = 'quote';

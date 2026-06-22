@@ -36,7 +36,7 @@ describe('BaseSuggestionKit', () => {
     const transformProps = (BaseSuggestionKit[0] as any).inject.nodeProps
       .transformProps;
     const editor = {
-      getApi: () => ({
+      getPluginApi: () => ({
         suggestion: {
           dataList: (node: any) =>
             Object.keys(node)

@@ -235,10 +235,10 @@ describe('slate cross-package contracts', () => {
       const childIndex = selectionPath[0];
 
       const siblings = Array.from(
-        NodeApi.children(editor as any, blockPath, {
-          from: childIndex + 1,
-        })
-      ).map(([node]) => node);
+        NodeApi.children(editor as any, blockPath)
+      )
+        .slice(childIndex + 1)
+        .map(([node]) => node);
 
       expect(siblings).toEqual([{ text: '' }, { text: 'last' }]);
     });

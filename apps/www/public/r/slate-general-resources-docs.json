@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "slate-general-resources-docs",
+  "title": "Resources",
+  "description": "Documentation for Resources",
+  "files": [
+    {
+      "path": "../../content/docs/slate/general/resources.mdx",
+      "content": "---\ntitle: \"Resources\"\n---\n\nUse these links as starting points. The Slate v2 docs and package READMEs are\nthe source of truth for current APIs.\n\n## First-Party References\n\n- [Why This Fork](../why-this-fork) explains the public package set,\n  browser proof posture, and beta scope.\n- [Migration guide](../migration) gives an ordered path for moving an\n  existing editor to Slate v2.\n- [Docs proof map](docs-proof-map) links public claims to tests and proof\n  commands.\n- [Slate Browser](../libraries/slate-browser) documents Slate's first-party\n  browser proof harness.\n\n## Ecosystem Starting Points\n\nCheck Slate v2 support before installing an ecosystem package. Some packages are\nstill useful as design references even when their released builds target older\nSlate APIs.\n\n- [Plate](https://github.com/udecode/plate) is the product-level rich text\n  framework built on Slate.\n- [`slate-yjs`](https://github.com/BitPhinix/@platejs/yjs/) provides Yjs-oriented\n  collaboration utilities for Slate.\n- [`slate-angular`](https://github.com/worktile/slate-angular) and\n  [`slate-vue3`](https://github.com/Guan-Erjia/slate-vue3) explore non-React\n  view layers around Slate.\n\n## Adjacent Editor References\n\nThese editors are useful for comparing behavior, test strategy, and document\nmodel tradeoffs. Treat their APIs as research material, not Slate guidance.\n\n- [ProseMirror](https://prosemirror.net/)\n- [Lexical](https://lexical.dev/)\n- [CodeMirror](https://codemirror.net/)\n- [Tiptap](https://tiptap.dev/)\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/slate/general/resources.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

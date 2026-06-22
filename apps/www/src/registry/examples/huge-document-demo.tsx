@@ -23,9 +23,9 @@ import {
   PlateContent,
   Slate,
   useSelected,
-  withReact,
 } from 'platejs/react';
 import { createEditor as slateCreateEditor } from 'slate';
+import { withReact } from 'slate-react';
 
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
 import { Button } from '@/components/ui/button';

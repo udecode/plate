@@ -7,6 +7,7 @@ const baseURL = explicitBaseURL ?? 'http://localhost:3100';
 
 process.env.PLATE_WWW_DEV_SOURCE ??= '1';
 process.env.PLATE_WWW_SLATE ??= '1';
+process.env.NEXT_PUBLIC_PLATE_BROWSER_PROOF ??= '1';
 process.env.PLAYWRIGHT_BASE_URL = baseURL;
 const workerCount = process.env.PLAYWRIGHT_WORKERS
   ? Number(process.env.PLAYWRIGHT_WORKERS)

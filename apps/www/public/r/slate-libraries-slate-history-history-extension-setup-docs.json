@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "slate-libraries-slate-history-history-extension-setup-docs",
+  "title": "History Extension Setup",
+  "description": "Documentation for History Extension Setup",
+  "files": [
+    {
+      "path": "../../content/docs/slate/libraries/slate-history/history-extension-setup.mdx",
+      "content": "---\ntitle: \"History Extension Setup\"\n---\n\nInstall history with the `history()` extension.\n\n```typescript\nimport { createEditor } from '@platejs/slate'\nimport { history } from '@platejs/slate-history'\n\nconst editor = createEditor({\n  extensions: [history()],\n  initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],\n})\n```\n\n`useSlateEditor` installs history by default. Disable it explicitly when a\nReact-owned editor should not expose history state or transaction helpers.\n\n```typescript\nimport { history } from '@platejs/slate-history'\nimport { useSlateEditor } from '@platejs/slate-react'\n\nconst editor = useSlateEditor({\n  extensions: [history({ enabled: false })],\n  initialValue,\n})\n```\n\nRead history through `state.history`, write through `tx.history`, and control\nbatching through `editor.api.history`.\n\n```typescript\nconst undoCount = editor.read((state) => state.history.undos().length)\n\neditor.update((tx) => {\n  tx.history.undo()\n})\n\neditor.api.history.withoutSaving(() => {\n  editor.update((tx) => {\n    tx.text.insert('draft')\n  })\n})\n```\n\nSee [History Editor API](./history-editor) for the full API surface.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/slate/libraries/slate-history/history-extension-setup.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

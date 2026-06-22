@@ -4,19 +4,17 @@ import * as React from 'react';
 
 import type { TResolvedSuggestion } from '@platejs/suggestion';
 import type { PlateEditor } from 'platejs/react';
+import type { Element, NodeEntry, Path } from '@platejs/slate';
 
 import { CommentPlugin } from '@platejs/comment/react';
 import { getSuggestionKey, keyId2SuggestionId } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import {
-  type NodeEntry,
-  NodeApi,
-  type Path,
   type TCommentText,
-  type TElement,
   type TSuggestionText,
   ElementApi,
   KEYS,
+  NodeApi,
   PathApi,
   TextApi,
 } from 'platejs';
@@ -36,9 +34,9 @@ export interface ResolvedSuggestion extends TResolvedSuggestion {
 export const BLOCK_SUGGESTION_TOKEN = '__block__';
 
 type BlockDiscussionEntry = NodeEntry<
-  TCommentText | TElement | TSuggestionText
+  TCommentText | Element | TSuggestionText
 >;
-type SuggestionEntry = NodeEntry<TElement | TSuggestionText>;
+type SuggestionEntry = NodeEntry<Element | TSuggestionText>;
 
 type BlockDiscussionIndex = {
   discussionsByBlock: Map<string, TDiscussion[]>;
@@ -49,7 +47,7 @@ type BuildBlockDiscussionIndexOptions = {
   entries: BlockDiscussionEntry[];
   discussions: TDiscussion[];
   getCommentId: (node: TCommentText) => string | undefined;
-  getSuggestionData: (node: TElement | TSuggestionText) =>
+  getSuggestionData: (node: Element | TSuggestionText) =>
     | {
         createdAt: Date | number | string;
         id: string;
@@ -66,8 +64,8 @@ type BuildBlockDiscussionIndexOptions = {
     properties?: Record<string, unknown>;
     type: 'insert' | 'remove' | 'update';
   }>;
-  getSuggestionId: (node: TElement | TSuggestionText) => string | undefined;
-  isBlockSuggestion: (node: TElement | TSuggestionText) => boolean;
+  getSuggestionId: (node: Element | TSuggestionText) => string | undefined;
+  isBlockSuggestion: (node: Element | TSuggestionText) => boolean;
 };
 
 const discussionIndexCache = new WeakMap<
@@ -79,7 +77,7 @@ const discussionIndexCache = new WeakMap<
   }
 >();
 
-const TYPE_TEXT_MAP: Record<string, (node?: TElement) => string> = {
+const TYPE_TEXT_MAP: Record<string, (node?: Element) => string> = {
   [KEYS.audio]: () => 'Audio',
   [KEYS.blockquote]: () => 'Blockquote',
   [KEYS.callout]: () => 'Callout',
@@ -126,7 +124,7 @@ const getTopLevelPath = (path: Path): Path | null =>
   path.length > 0 ? path.slice(0, 1) : null;
 
 const getSuggestionIds = (
-  node: TCommentText | TElement | TSuggestionText,
+  node: TCommentText | Element | TSuggestionText,
   getSuggestionDataList: BuildBlockDiscussionIndexOptions['getSuggestionDataList'],
   getSuggestionId: BuildBlockDiscussionIndexOptions['getSuggestionId']
 ) => {
@@ -152,7 +150,7 @@ const getSuggestionIds = (
   return [];
 };
 
-const suggestionTypeText = (node: TElement) =>
+const suggestionTypeText = (node: Element) =>
   (TYPE_TEXT_MAP[node.type] ?? (() => node.type))(node);
 
 const formatSuggestionDateText = (date: string) => {
@@ -183,7 +181,7 @@ const formatSuggestionDateText = (date: string) => {
   });
 };
 
-const getInlineSuggestionElementText = (node: TElement) => {
+const getInlineSuggestionElementText = (node: Element) => {
   if (typeof node.value === 'string' && node.value.length > 0) {
     return node.value;
   }
@@ -194,11 +192,11 @@ const getInlineSuggestionElementText = (node: TElement) => {
 
   if (
     node.type === KEYS.inlineEquation &&
-    typeof (node as TElement & { texExpression?: unknown }).texExpression ===
+    typeof (node as Element & { texExpression?: unknown }).texExpression ===
       'string' &&
-    (node as TElement & { texExpression: string }).texExpression.length > 0
+    (node as Element & { texExpression: string }).texExpression.length > 0
   ) {
-    return (node as TElement & { texExpression: string }).texExpression;
+    return (node as Element & { texExpression: string }).texExpression;
   }
 
   const nodeText = NodeApi.string(node);
@@ -402,7 +400,7 @@ export const buildBlockDiscussionIndex = ({
         }
 
         appendByKey(suggestionEntriesById, suggestionId, [
-          node as TElement | TSuggestionText,
+          node as Element | TSuggestionText,
           path,
         ]);
       }
@@ -466,8 +464,8 @@ const getDiscussionIndex = (
     return cached.index;
   }
 
-  const commentApi = editor.getApi(CommentPlugin).comment;
-  const suggestionApi = editor.getApi(SuggestionPlugin).suggestion;
+  const commentApi = editor.getPluginApi(CommentPlugin).comment;
+  const suggestionApi = editor.getPluginApi(SuggestionPlugin).suggestion;
 
   const index = buildBlockDiscussionIndex({
     discussions,

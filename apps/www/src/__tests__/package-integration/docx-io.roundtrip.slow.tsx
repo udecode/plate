@@ -3,11 +3,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import type { Node as SlateNode } from '@platejs/slate';
+
 import { cleanDocx } from '@platejs/docx';
 import { htmlToDocxBlob, preprocessMammothHtml } from '@platejs/docx-io';
 import { jsx } from '@platejs/test-utils';
 import mammoth from 'mammoth';
-import type { SlatePlugin, TNode, Value } from 'platejs';
+import type { SlatePlugin, Value } from 'platejs';
 import { createSlateEditor } from 'platejs';
 import { serializeHtml } from 'platejs/static';
 
@@ -33,7 +35,7 @@ const readDocxFixture = (filename: string): Buffer => {
 const importDocxBuffer = async (
   editor: ReturnType<typeof createTestEditor>,
   buffer: Buffer
-): Promise<TNode[]> => {
+): Promise<SlateNode[]> => {
   const mammothResult = await mammoth.convertToHtml(
     { buffer },
     { styleMap: ['comment-reference => sup'] }
@@ -42,10 +44,10 @@ const importDocxBuffer = async (
   const cleanedHtml = cleanDocx(preprocessedHtml, '');
   const doc = new DOMParser().parseFromString(cleanedHtml, 'text/html');
 
-  return editor.api.html.deserialize({ element: doc.body }) as TNode[];
+  return editor.api.html.deserialize({ element: doc.body }) as SlateNode[];
 };
 
-const exportNodesToDocx = async (nodes: TNode[]): Promise<Buffer> => {
+const exportNodesToDocx = async (nodes: SlateNode[]): Promise<Buffer> => {
   const html = await serializeHtml(createTestEditor(nodes as Value));
   const blob = await htmlToDocxBlob(html);
 
@@ -79,7 +81,7 @@ describe('docx roundtrip', () => {
       await exportNodesToDocx(importedNodes)
     );
 
-    const normalizeUrls = (nodes: TNode[]) =>
+    const normalizeUrls = (nodes: SlateNode[]) =>
       JSON.parse(
         JSON.stringify(nodes).replaceAll(
           /"url":"(https?:\/\/[^"/]+)"/g,

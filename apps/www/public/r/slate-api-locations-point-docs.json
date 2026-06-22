@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "slate-api-locations-point-docs",
+  "title": "Point API",
+  "description": "Documentation for Point API",
+  "files": [
+    {
+      "path": "../../content/docs/slate/api/locations/point.mdx",
+      "content": "---\ntitle: \"Point API\"\n---\n\n`Point` objects refer to a specific location in a text node in a Slate document. Its `path` refers to the location of the node in the tree, and its `offset` refers to distance into the node's string of text. Points may only refer to `Text` nodes.\n\n```typescript\ninterface Point {\n  path: Path\n  offset: number\n  root?: string\n}\n```\n\nWhen `root` is omitted, Slate resolves the point against the current editor or\nview root. The base editor and pure helpers fall back to the primary document;\nroot-bound views fall back to their own root. Points in header, footer,\ncontent-root, or other extra roots carry that root key.\n\n- [Static methods](point#static-methods)\n  - [Retrieval methods](point#retrieval-methods)\n  - [Check methods](point#check-methods)\n  - [Transform methods](point#transform-methods)\n\n## Static methods\n\n### Retrieval methods\n\n#### `PointApi.compare(point: Point, another: Point) => -1 | 0 | 1`\n\nCompare a `point` to `another`, returning an integer indicating whether the point was before, at or after the other.\n\n### Check methods\n\n#### `PointApi.isAfter(point: Point, another: Point) => boolean`\n\nCheck if a `point` is after `another`.\n\n#### `PointApi.isBefore(point: Point, another: Point) => boolean`\n\nCheck if a `point` is before `another`.\n\n#### `PointApi.equals(point: Point, another: Point) => boolean`\n\nCheck if a `point` is exactly equal to `another`.\n\n#### `PointApi.isPoint(value: unknown) => value is Point`\n\nCheck if a `value` implements the `Point` interface.\n\n### Transform methods\n\n#### `PointApi.transform(point: Point, op: Operation, options?) => Point | null`\n\nTransform a `point` by an `op`.\n\nOptions: `{affinity?: 'forward' | 'backward' | null}`\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/slate/api/locations/point.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

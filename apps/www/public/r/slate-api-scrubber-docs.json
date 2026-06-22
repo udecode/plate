@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "slate-api-scrubber-docs",
+  "title": "Debug Value Scrubbing",
+  "description": "Documentation for Debug Value Scrubbing",
+  "files": [
+    {
+      "path": "../../content/docs/slate/api/scrubber.mdx",
+      "content": "---\ntitle: \"Debug Value Scrubbing\"\n---\n\nSlate formats some thrown error details with document values and nodes. Text\nfields are redacted by default. Apps that need stricter diagnostics can install\na scrubber for additional fields.\n\n```typescript\nimport { setDebugValueScrubber } from '@platejs/slate'\n\nsetDebugValueScrubber((key, value) => {\n  if (key === 'text' || key === 'src') return '[redacted]'\n  return value\n})\n```\n\nPass `null` or `undefined` to restore the default scrubber.\n\n```typescript\nsetDebugValueScrubber(null)\n```\n\n## API\n\n#### `setDebugValueScrubber(scrubber?: DebugValueScrubber | null): void`\n\nSet the function used before Slate formats debug values.\n\n```typescript\ntype DebugValueScrubber = (key: string, value: unknown) => unknown\n```\n\nThe custom scrubber runs before Slate's default text redaction. Return the\noriginal value to let the default scrubber handle it.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/slate/api/scrubber.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

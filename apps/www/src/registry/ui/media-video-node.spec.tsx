@@ -66,7 +66,7 @@ mock.module('./resize-handle', () => ({
 
 describe('VideoElement', () => {
   const editor = {
-    getApi: () => ({
+    getPluginApi: () => ({
       suggestion: {
         suggestionData: () => null,
       },

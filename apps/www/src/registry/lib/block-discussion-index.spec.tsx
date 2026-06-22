@@ -66,13 +66,13 @@ const getResolvedSuggestions = (editor: any) =>
     entries: collectEntries(editor),
     getCommentId: () => {},
     getSuggestionData: (node: any) =>
-      editor.getApi(BaseSuggestionPlugin).suggestion.suggestionData(node),
+      editor.getPluginApi(BaseSuggestionPlugin).suggestion.suggestionData(node),
     getSuggestionDataList: (node: any) =>
-      editor.getApi(BaseSuggestionPlugin).suggestion.dataList(node),
+      editor.getPluginApi(BaseSuggestionPlugin).suggestion.dataList(node),
     getSuggestionId: (node: any) =>
-      editor.getApi(BaseSuggestionPlugin).suggestion.nodeId(node),
+      editor.getPluginApi(BaseSuggestionPlugin).suggestion.nodeId(node),
     isBlockSuggestion: (node: any) =>
-      editor.getApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(node),
+      editor.getPluginApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(node),
   }).suggestionsByBlock.get('0') ?? [];
 
 describe('buildBlockDiscussionIndex', () => {

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "slate-api-locations-path-ref-docs",
+  "title": "PathRef API",
+  "description": "Documentation for PathRef API",
+  "files": [
+    {
+      "path": "../../content/docs/slate/api/locations/path-ref.mdx",
+      "content": "---\ntitle: \"PathRef API\"\n---\n\n`PathRef` objects keep a specific path synced over time as operations are\napplied. They are low-level location values used by Slate internals and\nadvanced runtime code. Read `current` for the up-to-date `Path` value. Call\n`unref()` when you no longer need to track the path. `affinity` controls which\nside the path follows when content is inserted at the current position.\n\n```typescript\ninterface PathRef {\n  current: Path | null\n  affinity: 'forward' | 'backward' | null\n  unref(): Path | null\n}\n```\n\n- [Instance methods](path-ref#instance-methods)\n- [Static methods](path-ref#static-methods)\n  - [Transform methods](path-ref#transform-methods)\n\n## Instance methods\n\n#### `unref() => Path | null`\n\nStop tracking this path and return the final path value, or `null` when the\npath is already invalid.\n\n## Static methods\n\n### Transform methods\n\n#### `PathRefApi.transform(ref: PathRef, op: Operation)`\n\nTransform the path ref's current value by an `op`.\nThe editor calls this as needed, so normally you won't need to.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/slate/api/locations/path-ref.mdx"
+    }
+  ],
+  "type": "registry:file"
+}
