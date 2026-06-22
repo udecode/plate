@@ -36,7 +36,7 @@ describe('withToggle', () => {
       value: input.children,
     });
 
-    editor.getApi(BaseTogglePlugin).toggle.toggleIds(['t1'], true);
+    editor.getPluginApi(BaseTogglePlugin).toggle.toggleIds(['t1'], true);
     editor.tf.insertBreak();
 
     expect(editor.children).toMatchObject([

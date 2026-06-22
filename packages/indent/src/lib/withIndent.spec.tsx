@@ -5,7 +5,6 @@ import {
   BaseParagraphPlugin,
   createSlateEditor,
   createSlatePlugin,
-  NodeApi,
 } from 'platejs';
 import { BaseBlockquotePlugin } from '@platejs/basic-nodes';
 
@@ -43,7 +42,7 @@ describe('withIndent', () => {
     });
 
     const path = [0];
-    const node = NodeApi.get(editor, path);
+    const node = editor.api.node(path)?.[0];
 
     editor.tf.normalizeNode([node!, path]);
 
@@ -63,7 +62,7 @@ describe('withIndent', () => {
     });
 
     const path = [0];
-    const node = NodeApi.get(editor, path);
+    const node = editor.api.node(path)?.[0];
 
     editor.tf.normalizeNode([node!, path]);
 

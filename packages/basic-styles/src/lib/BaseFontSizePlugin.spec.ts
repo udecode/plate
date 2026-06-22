@@ -2,6 +2,21 @@ import { KEYS, createSlateEditor } from 'platejs';
 
 import { BaseFontSizePlugin } from './BaseFontSizePlugin';
 
+const runAddMarkTx = (value: string) => {
+  const add = mock();
+  const extension = (BaseFontSizePlugin as any).__txExtensions[0];
+  const groups = extension({
+    plugin: BaseFontSizePlugin,
+    type: KEYS.fontSize,
+  });
+
+  groups[BaseFontSizePlugin.key]({
+    marks: { add },
+  }).set(value);
+
+  return add;
+};
+
 describe('BaseFontSizePlugin', () => {
   it('parses html font-size styles into leaf marks', () => {
     const editor = createSlateEditor({
@@ -25,17 +40,7 @@ describe('BaseFontSizePlugin', () => {
     });
   });
 
-  it('forwards addMark through the editor mark transform', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseFontSizePlugin],
-    } as any);
-    const addMarks = mock();
-
-    (editor as any).tf.addMarks = addMarks;
-    (editor as any).tf.fontSize.addMark('24px');
-
-    expect(addMarks).toHaveBeenCalledWith({
-      [KEYS.fontSize]: '24px',
-    });
+  it('registers set as a transaction mark add', () => {
+    expect(runAddMarkTx('24px')).toHaveBeenCalledWith(KEYS.fontSize, '24px');
   });
 });

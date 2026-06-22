@@ -1,15 +1,17 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createEditor, createSlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { isCodeBlockEmpty } from './isCodeBlockEmpty';
 
 jsxt;
 
 describe('isCodeBlockEmpty', () => {
-  const run = (input: any) =>
-    isCodeBlockEmpty(createSlateEditor({ editor: createEditor(input) }));
+  const run = (input: SlateEditor) =>
+    isCodeBlockEmpty(
+      createSlateEditor({ selection: input.selection, value: input.children })
+    );
 
   it.each([
     {
@@ -26,7 +28,7 @@ describe('isCodeBlockEmpty', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ),
+      ) as any as SlateEditor,
       title: 'returns false outside a code block',
     },
     {
@@ -43,7 +45,7 @@ describe('isCodeBlockEmpty', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ),
+      ) as any as SlateEditor,
       title: 'returns false for a multi-line code block',
     },
     {
@@ -57,7 +59,7 @@ describe('isCodeBlockEmpty', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ),
+      ) as any as SlateEditor,
       title: 'returns false for a non-empty code line',
     },
     {
@@ -71,7 +73,7 @@ describe('isCodeBlockEmpty', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ),
+      ) as any as SlateEditor,
       title: 'returns true for a single empty code line',
     },
   ])('$title', ({ input, expected }) => {

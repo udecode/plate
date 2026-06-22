@@ -1,11 +1,12 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type Descendant, type SlateEditor, createSlateEditor } from 'platejs';
+import type { Descendant } from '@platejs/slate';
+import { type SlateEditor, createSlateEditor } from '@platejs/core';
 
 import { BaseListPlugin } from './BaseListPlugin';
 import { withInsertFragmentList } from './withInsertFragmentList';
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 jsxt;
 

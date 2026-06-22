@@ -1,5 +1,6 @@
 /** @jsx jsxt */
 
+import { ElementApi, type Element } from '@platejs/slate';
 import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
@@ -21,6 +22,19 @@ describe('setCellBackground', () => {
       selection: input.selection,
       value: input.children,
     });
+  const getFirstRowCells = (
+    editor: ReturnType<typeof createEditorInstance>
+  ): Element[] => {
+    const table = editor.children[0];
+    if (!ElementApi.isElement(table)) return [];
+
+    const row = table.children[0];
+    if (!ElementApi.isElement(row)) return [];
+
+    return row.children.filter((node): node is Element =>
+      ElementApi.isElement(node)
+    );
+  };
 
   describe('when background color is not set', () => {
     it('set background color for current cell', () => {
@@ -97,10 +111,7 @@ describe('setCellBackground', () => {
       const editorInstance = createEditorInstance(input);
       setCellBackground(editorInstance, {
         color: 'red',
-        selectedCells: [
-          editorInstance.children[0].children[0].children[0],
-          editorInstance.children[0].children[0].children[1],
-        ],
+        selectedCells: getFirstRowCells(editorInstance),
       });
 
       expect(editorInstance.children).toMatchObject(output.children);
@@ -182,10 +193,7 @@ describe('setCellBackground', () => {
       const editorInstance = createEditorInstance(input);
       setCellBackground(editorInstance, {
         color: null,
-        selectedCells: [
-          editorInstance.children[0].children[0].children[0],
-          editorInstance.children[0].children[0].children[1],
-        ],
+        selectedCells: getFirstRowCells(editorInstance),
       });
 
       expect(editorInstance.children).toMatchObject(output.children);

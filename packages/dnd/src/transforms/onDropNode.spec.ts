@@ -1,4 +1,4 @@
-import type { TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import { createSlateEditor } from 'platejs';
@@ -14,8 +14,8 @@ describe('onDropNode', () => {
 
   const monitor = { canDrop: () => true } as DropTargetMonitor;
   const nodeRef = {};
-  const dragElement = { id: 'drag' } as unknown as TElement;
-  const hoverElement = { id: 'hover' } as unknown as TElement;
+  const dragElement = { id: 'drag' } as unknown as Element;
+  const hoverElement = { id: 'hover' } as unknown as Element;
 
   let getHoverDirectionSpy: ReturnType<typeof spyOn>;
   let getHoverDirectionMock: ReturnType<typeof mock>;

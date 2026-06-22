@@ -233,9 +233,6 @@ importers:
       rimraf:
         specifier: 6.0.1
         version: 6.0.1
-      slate-test-utils:
-        specifier: 1.3.2
-        version: 1.3.2(@testing-library/jest-dom@6.6.3)(@testing-library/react@16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(slate-react@0.124.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(slate-dom@0.124.1(slate@0.124.1))(slate@0.124.1))(slate@0.124.1)
       tailwind-merge:
         specifier: 3.3.1
         version: 3.3.1
@@ -450,9 +447,6 @@ importers:
       '@platejs/slate-layout':
         specifier: workspace:^
         version: link:../../packages/slate-layout
-      '@platejs/slate-legacy':
-        specifier: workspace:^
-        version: link:../../packages/slate-legacy
       '@platejs/slate-react':
         specifier: workspace:^
         version: link:../../packages/slate-react
@@ -732,6 +726,9 @@ importers:
       slate:
         specifier: 0.124.1
         version: 0.124.1
+      slate-react:
+        specifier: 0.124.2
+        version: 0.124.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(slate-dom@0.124.1(slate@0.124.1))(slate@0.124.1)
       sonner:
         specifier: 2.0.5
         version: 2.0.5(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -865,6 +862,9 @@ importers:
       '@platejs/selection':
         specifier: workspace:^
         version: link:../selection
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       '@platejs/suggestion':
         specifier: workspace:^
         version: link:../suggestion
@@ -905,6 +905,9 @@ importers:
 
   packages/basic-nodes:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -918,6 +921,9 @@ importers:
 
   packages/basic-styles:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -955,6 +961,9 @@ importers:
 
   packages/callout:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -968,6 +977,9 @@ importers:
 
   packages/caption:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -984,6 +996,9 @@ importers:
 
   packages/code-block:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1006,6 +1021,9 @@ importers:
       '@codemirror/theme-one-dark':
         specifier: 6.1.3
         version: 6.1.3
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       '@uiw/react-codemirror':
         specifier: 4.25.4
         version: 4.25.4(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.39.16)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1046,6 +1064,9 @@ importers:
 
   packages/combobox:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1059,6 +1080,9 @@ importers:
 
   packages/comment:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -1075,9 +1099,21 @@ importers:
 
   packages/core:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
+      '@platejs/slate-dom':
+        specifier: workspace:^
+        version: link:../slate-dom
+      '@platejs/slate-hyperscript':
+        specifier: workspace:^
+        version: link:../slate-hyperscript
       '@platejs/slate-legacy':
         specifier: workspace:*
         version: link:../slate-legacy
+      '@platejs/slate-react':
+        specifier: workspace:^
+        version: link:../slate-react
       '@udecode/react-hotkeys':
         specifier: workspace:*
         version: link:../udecode/react-hotkeys
@@ -1117,15 +1153,15 @@ importers:
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
+      scroll-into-view-if-needed:
+        specifier: ^3.1.0
+        version: 3.1.0
       slate:
         specifier: 0.124.1
         version: 0.124.1
       slate-dom:
         specifier: 0.124.1
         version: 0.124.1(slate@0.124.1)
-      slate-hyperscript:
-        specifier: 0.125.0
-        version: 0.125.0(slate@0.124.1)
       slate-react:
         specifier: 0.124.2
         version: 0.124.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(slate-dom@0.124.1(slate@0.124.1))(slate@0.124.1)
@@ -1170,6 +1206,9 @@ importers:
 
   packages/cursor:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1183,6 +1222,9 @@ importers:
 
   packages/date:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1196,6 +1238,9 @@ importers:
 
   packages/diff:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       diff-match-patch-ts:
         specifier: ^0.6.0
         version: 0.6.0
@@ -1215,6 +1260,9 @@ importers:
 
   packages/dnd:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -1321,6 +1369,9 @@ importers:
       '@excalidraw/excalidraw':
         specifier: 0.18.0
         version: 0.18.0(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(immer@10.2.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -1340,6 +1391,9 @@ importers:
 
   packages/find-replace:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1359,6 +1413,9 @@ importers:
       '@floating-ui/react':
         specifier: ^0.26.23
         version: 0.26.28(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1375,6 +1432,9 @@ importers:
       '@platejs/combobox':
         specifier: workspace:^
         version: link:../combobox
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1433,6 +1493,9 @@ importers:
       '@platejs/floating':
         specifier: workspace:^
         version: link:../floating
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1462,12 +1525,27 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       platejs:
         specifier: workspace:^
         version: link:../plate
 
   packages/list-classic:
     dependencies:
+      '@platejs/core':
+        specifier: workspace:^
+        version: link:../core
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
+      '@platejs/utils':
+        specifier: workspace:^
+        version: link:../utils
+      '@udecode/utils':
+        specifier: workspace:^
+        version: link:../udecode/utils
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -1487,6 +1565,9 @@ importers:
       '@platejs/date':
         specifier: workspace:*
         version: link:../date
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       lodash:
         specifier: ^4.17.23
         version: 4.17.23
@@ -1551,6 +1632,9 @@ importers:
 
   packages/math:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       katex:
         specifier: 0.16.22
         version: 0.16.22
@@ -1570,6 +1654,9 @@ importers:
 
   packages/media:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1586,6 +1673,9 @@ importers:
       '@platejs/combobox':
         specifier: workspace:*
         version: link:../combobox
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1602,9 +1692,9 @@ importers:
       '@platejs/core':
         specifier: workspace:^
         version: link:../core
-      '@platejs/slate-legacy':
+      '@platejs/slate':
         specifier: workspace:^
-        version: link:../slate-legacy
+        version: link:../slate
       '@platejs/utils':
         specifier: workspace:^
         version: link:../utils
@@ -1629,6 +1719,9 @@ importers:
 
   packages/playwright:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1655,6 +1748,9 @@ importers:
 
   packages/selection:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       copy-to-clipboard:
         specifier: ^3.3.3
         version: 3.3.3
@@ -1858,6 +1954,9 @@ importers:
       '@platejs/diff':
         specifier: workspace:^
         version: link:../diff
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -1893,6 +1992,9 @@ importers:
       '@platejs/resizable':
         specifier: workspace:^
         version: link:../resizable
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -1912,6 +2014,9 @@ importers:
 
   packages/tag:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1925,15 +2030,9 @@ importers:
 
   packages/test-utils:
     dependencies:
-      '@platejs/slate-legacy':
-        specifier: workspace:*
-        version: link:../slate-legacy
-      slate:
-        specifier: 0.124.1
-        version: 0.124.1
-      slate-hyperscript:
-        specifier: 0.125.0
-        version: 0.125.0(slate@0.124.1)
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
     devDependencies:
       '@plate/scripts':
         specifier: workspace:*
@@ -1941,6 +2040,9 @@ importers:
 
   packages/toc:
     dependencies:
+      '@platejs/slate':
+        specifier: workspace:^
+        version: link:../slate
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -2080,9 +2182,9 @@ importers:
       '@platejs/core':
         specifier: workspace:^
         version: link:../core
-      '@platejs/slate-legacy':
+      '@platejs/slate':
         specifier: workspace:^
-        version: link:../slate-legacy
+        version: link:../slate
       '@udecode/react-utils':
         specifier: workspace:^
         version: link:../udecode/react-utils
@@ -8929,9 +9031,6 @@ packages:
     resolution: {integrity: sha512-GBEV4GRADeP+qtB2+6u61stea8mGcOT4mCtrYISZwfu9/ISHFJ/5zOMXYbpBE9RsS5+Gb63DW4FgmnKJ79Kf6w==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
 
-  jest-useragent-mock@0.1.1:
-    resolution: {integrity: sha512-QmgydWl2ITj0xuWQfxj+TmXN0GT2XXxfNhsPzfhNVecjX7VnqLmCKXtr+J5QjT01DDp4+oWIGACdywO6XJlkRg==}
-
   jest-util@29.7.0:
     resolution: {integrity: sha512-z6EbKajIpqGKU56y5KBUgy1dt1ihhQJgWzUlZHArA/+X2ad7Cb5iF+AK1EWVL/Bo7Rz9uurpqw6SiBCefUbCGA==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
@@ -9228,9 +9327,6 @@ packages:
 
   lodash-es@4.17.23:
     resolution: {integrity: sha512-kVI48u3PZr38HdYz98UmfPnXl2DXrpdctLrFLCd3kOx1xUkOmpFPx7gCWWM5MPkL/fD8zb+Ph0QzjGFs4+hHWg==}
-
-  lodash.clonedeep@4.5.0:
-    resolution: {integrity: sha512-H5ZhCF25riFd9uB5UCkVKo61m3S/xZk1x4wA6yp/L3RFP6Z/eHH1ymQcGLo7J3GMPfm0V/7m1tryHuGVxpqEBQ==}
 
   lodash.debounce@4.0.8:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
@@ -11053,11 +11149,6 @@ packages:
     peerDependencies:
       slate: '>=0.121.0'
 
-  slate-hyperscript@0.125.0:
-    resolution: {integrity: sha512-tH6AYvTrTnSdUo+L5cUvqcHRzQ3muEkcSEN7APM9NtEdWk9L7lqEbmpyeKfv7oyzCUW2WbR/lPhlnOSu8/jUcA==}
-    peerDependencies:
-      slate: '>=0.114.3'
-
   slate-react@0.124.2:
     resolution: {integrity: sha512-2B6ZZX5qKYeISNaQ9cDuvvp0tWydnHUPuGxyVJZfjD+W00X34dGaAF/5ZyVMZt/O//sf0Glbgd7+NBHRWjiA7Q==}
     peerDependencies:
@@ -11065,17 +11156,6 @@ packages:
       react-dom: '>=18.2.0'
       slate: '>=0.121.0'
       slate-dom: '>=0.119.1'
-
-  slate-test-utils@1.3.2:
-    resolution: {integrity: sha512-3K/ZXPqlpzLoin71oErp7MUF+sLJMaFl2u5gnxqJvgIaQH4sFrZmLSAWvC27Bd/hCRSeTlVKUymv45tTIOymcA==}
-    peerDependencies:
-      '@testing-library/jest-dom': ^5.15.0
-      '@testing-library/react': ^12.1.2
-      react: '>=16.8.0'
-      react-dom: '>=16.8.0'
-      slate: '>=0.70.0'
-      slate-history: '>=0.66.0'
-      slate-react: '>=0.70.0'
 
   slate@0.124.1:
     resolution: {integrity: sha512-ii7DwezgvbLAyKtHBIunjTR1kzbNfYLCUKLMzJELlbTZkvHzX4DzN7HKIwcakf6dPxO6AoeT/P7kHOcyTym/hA==}
@@ -19409,8 +19489,6 @@ snapshots:
       slash: 3.0.0
       stack-utils: 2.0.6
 
-  jest-useragent-mock@0.1.1: {}
-
   jest-util@29.7.0:
     dependencies:
       '@jest/types': 29.6.3
@@ -19682,8 +19760,6 @@ snapshots:
       p-locate: 5.0.0
 
   lodash-es@4.17.23: {}
-
-  lodash.clonedeep@4.5.0: {}
 
   lodash.debounce@4.0.8: {}
 
@@ -22264,10 +22340,6 @@ snapshots:
       slate: 0.124.1
       tiny-invariant: 1.3.1
 
-  slate-hyperscript@0.125.0(slate@0.124.1):
-    dependencies:
-      slate: 0.124.1
-
   slate-react@0.124.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(slate-dom@0.124.1(slate@0.124.1))(slate@0.124.1):
     dependencies:
       '@juggle/resize-observer': 3.4.0
@@ -22280,18 +22352,6 @@ snapshots:
       slate: 0.124.1
       slate-dom: 0.124.1(slate@0.124.1)
       tiny-invariant: 1.3.1
-
-  slate-test-utils@1.3.2(@testing-library/jest-dom@6.6.3)(@testing-library/react@16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(slate-react@0.124.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(slate-dom@0.124.1(slate@0.124.1))(slate@0.124.1))(slate@0.124.1):
-    dependencies:
-      '@testing-library/jest-dom': 6.6.3
-      '@testing-library/react': 16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      is-hotkey: 0.2.0
-      jest-useragent-mock: 0.1.1
-      lodash.clonedeep: 4.5.0
-      react: 19.2.4
-      react-dom: 19.2.4(react@19.2.4)
-      slate: 0.124.1
-      slate-react: 0.124.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(slate-dom@0.124.1(slate@0.124.1))(slate@0.124.1)
 
   slate@0.124.1: {}
 

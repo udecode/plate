@@ -54,6 +54,8 @@ detail file for durable direction.
   DOM/input, selection, history, browser proof, and unopinionated APIs.
 - Plate packages are the product/editor framework layer: plugins, React
   wrappers, components, kits, opinionated UX, examples, and app-facing docs.
+- When Plate API names or runtime habits conflict with Slate v2, Slate v2 wins.
+  Break Plate instead of bending Slate or hiding the conflict behind aliases.
 - Do not fix a Plate product concern by polluting Slate core.
 - Do not hide a Slate primitive gap in Plate glue.
 - Cross-boundary work must name both owners and prove the handoff.
@@ -179,6 +181,9 @@ on top of Slate-first primitives.
   or app-owned components, not core.
 - Plate can re-export Slate surface where it improves DX, but bugs that
   reproduce in plain Slate belong to Slate.
+- If a Plate public API collides with Slate v2 runtime names such as `api`,
+  `getApi`, `state`, or `tx`, cut or rename the Plate API. Do not compromise
+  Slate substrate names for Plate compatibility.
 - Security is about explicit trust boundaries and sane defaults. Do not hide
   trust decisions behind convenience abstractions.
 - AI support stays optional, composable, and plugin-first.

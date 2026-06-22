@@ -148,7 +148,7 @@ describe('applyAISuggestions utils', () => {
       api: {
         nodes: () => replaceNodeEntries,
       },
-      getApi: ({ key }: any) => {
+      getPluginApi: ({ key }: any) => {
         if (key === KEYS.cursorOverlay) {
           return {
             cursorOverlay: { removeCursor: mock() },
@@ -207,7 +207,7 @@ describe('applyAISuggestions utils', () => {
         nodes: () => [transientEntry],
         nodesRange,
       },
-      getApi: ({ key }: any) => {
+      getPluginApi: ({ key }: any) => {
         if (key === KEYS.cursorOverlay) {
           return {
             cursorOverlay: { removeCursor: mock() },

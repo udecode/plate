@@ -1,21 +1,19 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createEditor, createSlateEditor } from 'platejs';
+import { createSlateEditor } from 'platejs';
 
 import { SingleLinePlugin } from './SingleLinePlugin';
 
 jsxt;
 
-const input = createEditor(
-  (
-    <editor>
-      <hp>first block</hp>
-      <hp>second block</hp>
-      <hp>third block</hp>
-    </editor>
-  ) as any
-);
+const input = (
+  <editor>
+    <hp>first block</hp>
+    <hp>second block</hp>
+    <hp>third block</hp>
+  </editor>
+) as any;
 
 const output = (
   <editor>
@@ -25,12 +23,7 @@ const output = (
 
 describe('SingleLinePlugin', () => {
   it('disables the trailing block plugin while enabled', () => {
-    const editor = createSlateEditor({
-      plugins: [SingleLinePlugin],
-      value: [{ type: 'p', children: [{ text: 'test' }] }] as any,
-    });
-
-    expect(editor.getPlugin(SingleLinePlugin).override.enabled).toEqual({
+    expect(SingleLinePlugin.override.enabled).toEqual({
       trailingBlock: false,
     });
   });
@@ -47,16 +40,14 @@ describe('SingleLinePlugin', () => {
   });
 
   it('filter out line break characters from text', () => {
-    const inputWithLineBreaks = createEditor(
-      (
-        <editor>
-          <hp>
-            text{'\n'}with{'\r'}line{'\r\n'}breaks{'\u2028'}and{'\u2029'}
-            separators
-          </hp>
-        </editor>
-      ) as any
-    );
+    const inputWithLineBreaks = (
+      <editor>
+        <hp>
+          text{'\n'}with{'\r'}line{'\r\n'}breaks{'\u2028'}and{'\u2029'}
+          separators
+        </hp>
+      </editor>
+    ) as any;
 
     const expectedOutput = (
       <editor>
@@ -123,15 +114,13 @@ describe('SingleLinePlugin', () => {
   });
 
   it('handle empty blocks correctly', () => {
-    const emptyBlocksInput = createEditor(
-      (
-        <editor>
-          <hp>content</hp>
-          <hp />
-          <hp>more content</hp>
-        </editor>
-      ) as any
-    );
+    const emptyBlocksInput = (
+      <editor>
+        <hp>content</hp>
+        <hp />
+        <hp>more content</hp>
+      </editor>
+    ) as any;
 
     const expectedOutput = (
       <editor>

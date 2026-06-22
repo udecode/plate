@@ -4,7 +4,6 @@ import { jsxt } from '@platejs/test-utils';
 import {
   type ElementEntry,
   type SlateEditor,
-  createEditor,
   createSlateEditor,
 } from 'platejs';
 
@@ -16,19 +15,17 @@ jsxt;
 describe('indent code line', () => {
   describe('when the selection is expanded', () => {
     it('indent', () => {
-      const input = createEditor(
-        (
-          <editor>
-            <hcodeblock>
-              <hcodeline>
-                {'  '}before <anchor />
-                selection
-                <focus /> after
-              </hcodeline>
-            </hcodeblock>
-          </editor>
-        ) as any
-      );
+      const input = (
+        <editor>
+          <hcodeblock>
+            <hcodeline>
+              {'  '}before <anchor />
+              selection
+              <focus /> after
+            </hcodeline>
+          </hcodeblock>
+        </editor>
+      ) as any as SlateEditor;
 
       const output = (
         <editor>

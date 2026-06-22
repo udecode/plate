@@ -8,11 +8,11 @@ describe('BasePlaceholderPlugin', () => {
     ['filePlaceholder', KEYS.file],
     ['imagePlaceholder', KEYS.img],
     ['videoPlaceholder', KEYS.video],
-  ])('configures %s and inserts %s placeholders', (transform, mediaType) => {
+  ] as const)('configures %s and inserts %s placeholders', (transform, mediaType) => {
     const editor = createSlateEditor({
       plugins: [BasePlaceholderPlugin],
       value: [{ children: [{ text: 'one' }], type: 'p' }],
-    } as any);
+    });
     const plugin = editor.getPlugin(BasePlaceholderPlugin);
 
     expect(plugin.node).toMatchObject({
@@ -20,10 +20,24 @@ describe('BasePlaceholderPlugin', () => {
       isVoid: true,
     });
 
-    (editor.tf as any).insert[transform]({ at: [1] });
+    editor.tf.insert[transform]({ at: [1] });
 
     expect(editor.children[1]).toMatchObject({
       mediaType,
+      type: KEYS.placeholder,
+    });
+  });
+
+  it('exposes an inferred placeholder transaction group', () => {
+    const editor = createSlateEditor({
+      plugins: [BasePlaceholderPlugin],
+      value: [{ children: [{ text: 'one' }], type: 'p' }],
+    });
+
+    editor.update((tx) => tx.placeholder.insert(KEYS.img, { at: [1] }));
+
+    expect(editor.children[1]).toMatchObject({
+      mediaType: KEYS.img,
       type: KEYS.placeholder,
     });
   });

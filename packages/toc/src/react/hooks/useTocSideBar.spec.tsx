@@ -47,7 +47,7 @@ describe('useTocSideBar', () => {
     const toDOMNode = mock(() => document.createElement('h2'));
 
     useEditorRefMock.mockReturnValue({
-      api: { toDOMNode },
+      api: { node: () => [{ id: 'node' }, [0]], toDOMNode },
     });
     useEditorSelectorMock.mockReturnValue([{ id: 'h1', path: [0] }]);
     useScrollRefMock.mockReturnValue({

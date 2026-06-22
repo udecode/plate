@@ -1,4 +1,5 @@
 import { createSlateEditor } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 import { MarkdownPlugin } from './MarkdownPlugin';
 
@@ -32,15 +33,32 @@ describe('MarkdownPlugin', () => {
     expect(typeof editor.api.markdown.deserialize).toBe('function');
     expect(typeof editor.api.markdown.deserializeInline).toBe('function');
     expect(typeof editor.api.markdown.serialize).toBe('function');
-    expect(typeof editor.getApi(MarkdownPlugin).markdown.deserialize).toBe(
-      'function'
-    );
+    expect(
+      typeof editor.getPluginApi(MarkdownPlugin).markdown.deserialize
+    ).toBe('function');
     expect(plugin.parser.format).toBe('text/plain');
     expect(
       plugin.parser.deserialize?.({
         data: '**bold**',
       } as any)
     ).toEqual(editor.api.markdown.deserialize('**bold**'));
+  });
+
+  it('exposes the markdown api on the Slate v2 runtime route', () => {
+    const editor = createPlateEditor({
+      plugins: [MarkdownPlugin],
+      runtime: 'slate-v2',
+    });
+    const api = editor.getPluginApi<{
+      markdown: {
+        deserialize: (data: string) => unknown;
+      };
+    }>(MarkdownPlugin);
+
+    expect(typeof api.markdown.deserialize).toBe('function');
+    expect(api.markdown.deserialize('plain text')).toEqual([
+      { children: [{ text: 'plain text' }], type: 'p' },
+    ]);
   });
 
   it('skips plain-text parsing when html is present', () => {

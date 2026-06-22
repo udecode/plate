@@ -1,7 +1,6 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createEditor } from 'platejs';
 import { createSlateEditor } from 'platejs';
 
 import { BaseImagePlugin } from './BaseImagePlugin';
@@ -9,13 +8,11 @@ import { BaseImagePlugin } from './BaseImagePlugin';
 jsxt;
 
 describe('withImageEmbed', () => {
-  const input = createEditor(
-    (
-      <editor>
-        <hp>test</hp>
-      </editor>
-    ) as any
-  );
+  const input = (
+    <editor>
+      <hp>test</hp>
+    </editor>
+  ) as any;
 
   const output = (
     <editor>
@@ -28,8 +25,9 @@ describe('withImageEmbed', () => {
 
   it('insert image from the text', () => {
     const editor = createSlateEditor({
-      editor: input,
       plugins: [BaseImagePlugin],
+      selection: input.selection,
+      value: input.children,
     });
 
     const data = {

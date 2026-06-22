@@ -1,9 +1,11 @@
-import type { LegacyEditorMethods } from '@platejs/slate-legacy';
-
 import type { PlateEditor } from '../../editor/PlateEditor';
 
 import { createPlateEditor } from '../../../react/editor/withPlate';
 import { createPlatePlugin } from '../../plugin/createPlatePlugin';
+
+type CurrentRuntimeInsertDataEditor = PlateEditor & {
+  insertData: PlateEditor['tf']['insertData'];
+};
 
 describe('ReactPlugin', () => {
   let editor: PlateEditor;
@@ -26,7 +28,7 @@ describe('ReactPlugin', () => {
         createPlatePlugin({
           key: 'reactText',
           extendEditor: ({ editor }) => {
-            const e = editor as typeof editor & LegacyEditorMethods;
+            const e = editor as CurrentRuntimeInsertDataEditor;
             const { insertData } = e;
 
             e.insertData = (data: any) => {
@@ -51,9 +53,7 @@ describe('ReactPlugin', () => {
       getData: (format: string) => (format === 'text/plain' ? 'test' : ''),
     } as DataTransfer;
 
-    (editor as typeof editor & LegacyEditorMethods).insertData(
-      mockDataTransfer
-    );
+    (editor as CurrentRuntimeInsertDataEditor).insertData(mockDataTransfer);
     editor.tf.insertData(mockDataTransfer);
 
     expect(fn).toHaveBeenCalledTimes(2);

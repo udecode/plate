@@ -1,4 +1,4 @@
-import type { TElement } from '@platejs/slate-legacy';
+import type { Element } from '@platejs/slate';
 
 import { getTableColumnCount } from './getTableColumnCount';
 
@@ -6,7 +6,7 @@ describe('getTableColumnCount', () => {
   it('returns 0 if tableNode has no children', () => {
     const tableNode = {
       children: [],
-    } as unknown as TElement;
+    } as unknown as Element;
 
     const result = getTableColumnCount(tableNode);
     expect(result).toBe(0);
@@ -19,7 +19,7 @@ describe('getTableColumnCount', () => {
           children: [{ colSpan: 2 }, { colSpan: 3 }, { colSpan: 1 }],
         },
       ],
-    } as unknown as TElement;
+    } as unknown as Element;
 
     const result = getTableColumnCount(tableNode);
     expect(result).toBe(6);
@@ -36,7 +36,7 @@ describe('getTableColumnCount', () => {
           ],
         },
       ],
-    } as TElement;
+    } as Element;
 
     const result = getTableColumnCount(tableNode);
     expect(result).toBe(6);
@@ -49,7 +49,7 @@ describe('getTableColumnCount', () => {
           children: [{}, {}, {}],
         },
       ],
-    } as TElement;
+    } as Element;
 
     const result = getTableColumnCount(tableNode);
     expect(result).toBe(3);

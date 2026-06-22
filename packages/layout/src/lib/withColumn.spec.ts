@@ -1,4 +1,4 @@
-import { BaseParagraphPlugin, NodeApi, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from './BaseColumnPlugin';
 import { withColumn } from './withColumn';
@@ -25,7 +25,7 @@ describe('withColumn', () => {
     ]);
 
     const path = [0];
-    const node = NodeApi.get(editor, path);
+    const node = editor.api.node(path)?.[0];
 
     editor.tf.normalizeNode([node!, path]);
 
@@ -42,7 +42,7 @@ describe('withColumn', () => {
     ]);
 
     const path = [0];
-    const node = NodeApi.get(editor, path);
+    const node = editor.api.node(path)?.[0];
 
     editor.tf.normalizeNode([node!, path]);
 
@@ -72,7 +72,7 @@ describe('withColumn', () => {
     ]);
 
     const path = [0];
-    const node = NodeApi.get(editor, path);
+    const node = editor.api.node(path)?.[0];
 
     editor.tf.normalizeNode([node!, path]);
 
@@ -100,7 +100,7 @@ describe('withColumn', () => {
     ]);
 
     const path = [0, 1];
-    const node = NodeApi.get(editor, path);
+    const node = editor.api.node(path)?.[0];
 
     editor.tf.normalizeNode([node!, path]);
 
@@ -120,7 +120,7 @@ describe('withColumn', () => {
     ]);
 
     const path = [0];
-    const node = NodeApi.get(editor, path);
+    const node = editor.api.node(path)?.[0];
 
     editor.tf.normalizeNode([node!, path]);
 

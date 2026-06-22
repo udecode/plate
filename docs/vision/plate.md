@@ -117,6 +117,11 @@ re-export Slate surface where it improves DX. But Plate is not a dumping ground
 for bugs that reproduce in plain Slate. If the same issue happens in plain
 Slate without Plate-specific code, it belongs there.
 
+When Plate API names or runtime habits conflict with Slate v2, Slate v2 wins.
+Break Plate instead of bending Slate or hiding the conflict behind aliases.
+If a Plate public API collides with Slate v2 runtime names such as `api`,
+`getApi`, `state`, or `tx`, cut or rename the Plate API.
+
 ## Security
 
 Security in Plate is about explicit trust boundaries and sane defaults. Plate

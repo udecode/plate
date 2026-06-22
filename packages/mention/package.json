@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@platejs/combobox": "workspace:*",
+    "@platejs/slate": "workspace:^",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {

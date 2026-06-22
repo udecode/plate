@@ -83,7 +83,7 @@ describe('addMarkSuggestion', () => {
     editor.tf.addMark('italic', true);
 
     const dataList = editor
-      .getApi(BaseSuggestionPlugin)
+      .getPluginApi(BaseSuggestionPlugin)
       .suggestion.dataList(
         editor.children[0].children[1] as any
       ) as TUpdateSuggestionData[];
@@ -129,7 +129,7 @@ describe('addMarkSuggestion', () => {
 
     expect(node.bold).toBeUndefined();
     expect(
-      editor.getApi(BaseSuggestionPlugin).suggestion.dataList(node)
+      editor.getPluginApi(BaseSuggestionPlugin).suggestion.dataList(node)
     ).toEqual([existingData] as any);
   });
 });

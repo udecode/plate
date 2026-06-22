@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@platejs/date": "workspace:*",
+    "@platejs/slate": "workspace:^",
     "lodash": "^4.17.23",
     "marked": "^15.0.12",
     "mdast-util-math": "3.0.0",

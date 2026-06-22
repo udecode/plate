@@ -141,6 +141,39 @@ describe('getEdgeNodes', () => {
       ]);
     });
 
+    it('returns [null, linkEntry] when cursor is at start of first link element', async () => {
+      const input = (
+        <editor>
+          <hp>
+            <ha target="_blank" url="https://example.com">
+              <cursor />
+              link text
+            </ha>
+            <htext>after</htext>
+          </hp>
+        </editor>
+      ) as any as PlateEditor;
+
+      const [editor] = await createPlateTestEditor({
+        plugins: [BaseLinkPlugin],
+        selection: input.selection,
+        value: input.children,
+      });
+
+      const [before, after] = getEdgeNodes(editor)!;
+
+      expect(before).toEqual(null);
+      expect(after).toEqual([
+        {
+          children: [{ text: 'link text' }],
+          target: '_blank',
+          type: 'a',
+          url: 'https://example.com',
+        },
+        [0, 0],
+      ]);
+    });
+
     it('handle cursor at end of link element', async () => {
       const input = (
         <editor>

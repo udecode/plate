@@ -3,17 +3,21 @@
 import type { JSX } from 'react';
 
 import { jsxt } from '@platejs/test-utils';
-import { createEditor, createSlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { isPointNextToNode } from './isPointNextToNode';
 
 jsxt;
 
 describe('isPointNextToNode', () => {
-  const createTestEditor = (input: JSX.Element) =>
-    createSlateEditor({
-      editor: createEditor(input as any),
-    } as any);
+  const createTestEditor = (input: JSX.Element) => {
+    const fixture = input as unknown as SlateEditor;
+
+    return createSlateEditor({
+      selection: fixture.selection,
+      value: fixture.children,
+    });
+  };
 
   describe('when point is next to a node of specified type', () => {
     it('returns true', () => {
@@ -140,7 +144,7 @@ describe('isPointNextToNode', () => {
             type: 'p',
           },
         ],
-      } as any);
+      });
 
       expect(() => isPointNextToNode(editor, { nodeType: 'date' })).toThrow(
         'No valid selection point found'

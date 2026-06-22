@@ -1,4 +1,5 @@
 import { createSlateEditor, KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 import { BaseMentionInputPlugin, BaseMentionPlugin } from './BaseMentionPlugin';
 
@@ -11,7 +12,7 @@ describe('BaseMentionPlugin', () => {
         focus: { offset: 2, path: [0, 0] },
       },
       value: [{ children: [{ text: 'hello' }], type: 'p' }],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseMentionPlugin);
     const inputPlugin = editor.getPlugin(BaseMentionInputPlugin);
 
@@ -33,9 +34,9 @@ describe('BaseMentionPlugin', () => {
       isVoid: true,
     });
 
-    (editor.tf as any).insert.mention({ key: 'u1', value: 'Ada' } as any);
+    editor.tf.insert.mention({ key: 'u1', value: 'Ada' });
 
-    const children = (editor.children[0] as any).children;
+    const children = editor.children[0].children;
 
     expect(children[0]).toEqual({ text: 'he' });
     expect(children[1]).toMatchObject({
@@ -45,6 +46,36 @@ describe('BaseMentionPlugin', () => {
       value: 'Ada',
     });
     expect(children[2]).toEqual({ text: 'llo' });
+  });
+
+  it('routes the mention trigger through the Slate v2 runtime combobox path', () => {
+    const editor = createPlateEditor({
+      plugins: [BaseMentionPlugin],
+      runtime: 'slate-v2',
+      selection: {
+        anchor: { offset: 6, path: [0, 0] },
+        focus: { offset: 6, path: [0, 0] },
+      },
+      userId: 'user-1',
+      value: [{ children: [{ text: 'hello ' }], type: 'p' }],
+    });
+
+    expect(editor.tf.insertText('@')).toBe(true);
+    expect(editor.read((state) => state.value.root()) as unknown).toEqual([
+      {
+        children: [
+          { text: 'hello ' },
+          {
+            children: [{ text: '' }],
+            trigger: '@',
+            type: KEYS.mentionInput,
+            userId: 'user-1',
+          },
+          { text: '' },
+        ],
+        type: 'p',
+      },
+    ]);
   });
 
   it('deleteBackward removes the adjacent mention atom', () => {
@@ -69,7 +100,7 @@ describe('BaseMentionPlugin', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
     editor.tf.deleteBackward('character');
 
@@ -107,7 +138,7 @@ describe('BaseMentionPlugin', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
     editor.tf.deleteForward('character');
 
@@ -145,7 +176,7 @@ describe('BaseMentionPlugin', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
     editor.tf.move({ distance: 1, unit: 'character' });
 
@@ -177,13 +208,36 @@ describe('BaseMentionPlugin', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
     editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
 
     expect(editor.selection).toEqual({
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
+    });
+  });
+
+  it('exposes an inferred mention transaction group', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseMentionPlugin],
+      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+    });
+
+    editor.update((tx) => tx.mention.insert({ key: 'u2', value: 'Grace' }));
+
+    expect(editor.children[0]).toMatchObject({
+      children: [
+        { text: 'hello' },
+        {
+          children: [{ text: '' }],
+          key: 'u2',
+          type: KEYS.mention,
+          value: 'Grace',
+        },
+        { text: '' },
+      ],
+      type: 'p',
     });
   });
 });

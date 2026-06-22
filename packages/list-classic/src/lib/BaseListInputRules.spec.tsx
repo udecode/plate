@@ -1,8 +1,9 @@
 /** @jsx jsxt */
 
-import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor, KEYS } from 'platejs';
+import { createSlateEditor } from '@platejs/core';
+import { createSlatePlugin } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { BaseListPlugin } from './BaseListPlugin';
 import { BulletedListRules } from './BulletedListRules';
@@ -10,6 +11,11 @@ import { OrderedListRules } from './OrderedListRules';
 import { TaskListRules } from './TaskListRules';
 
 jsxt;
+
+const BaseCodeBlockPlugin = createSlatePlugin({
+  key: KEYS.codeBlock,
+  node: { isElement: true },
+});
 
 describe('BaseListPlugin input rules', () => {
   it('stays literal until markdown groups are explicitly enabled', () => {

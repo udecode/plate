@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createSlateEditor } from '@platejs/core';
 
 import { getHighestEmptyList } from './getHighestEmptyList';
 

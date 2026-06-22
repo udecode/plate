@@ -1,8 +1,9 @@
 /** @jsx jsxt */
-import { type Value, createEditor } from '@platejs/slate-legacy';
+import type { Value } from '@platejs/slate';
 import { jsxt } from '@platejs/test-utils';
 
 import { createSlatePlugin, DOMPlugin } from '../../lib';
+import { createSlateEditor } from '../../lib/editor';
 import { ViewPlugin } from '../plugins/ViewPlugin';
 import { createStaticEditor } from './withStatic';
 
@@ -170,7 +171,7 @@ describe('withStatic', () => {
 
   describe('when using an existing editor', () => {
     it('enhance existing editor with static plugins', () => {
-      const existingEditor = createEditor();
+      const existingEditor = createSlateEditor();
       existingEditor.id = 'existing';
 
       const editor = createStaticEditor({
@@ -182,7 +183,7 @@ describe('withStatic', () => {
     });
 
     it('override existing editor id when new id is provided', () => {
-      const existingEditor = createEditor();
+      const existingEditor = createSlateEditor();
       existingEditor.id = 'old';
 
       const editor = createStaticEditor({

@@ -45,7 +45,7 @@ describe('deleteRowWhenExpanded', () => {
       (path: any) => path.at(-2) ?? null
     );
     spyOn(
-      editor.getApi(tableLib.BaseTablePlugin).table,
+      editor.getPluginApi(tableLib.BaseTablePlugin).table,
       'getRowSpan'
     ).mockImplementation((cell: any) => cell.rowSpan ?? 1);
 

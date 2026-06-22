@@ -1,7 +1,8 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
+import type { Element } from '@platejs/slate';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { getSiblingListStyleType } from './getSiblingListStyleType';
 
@@ -31,7 +32,7 @@ describe('getSiblingListStyleType', () => {
       selection: input.selection,
       value: input.children,
     });
-    const entry = editor.api.block<TElement>();
+    const entry = editor.api.block<Element>();
 
     expect(
       getSiblingListStyleType(editor, {
@@ -61,7 +62,7 @@ describe('getSiblingListStyleType', () => {
       selection: input.selection,
       value: input.children,
     });
-    const entry = editor.api.block<TElement>();
+    const entry = editor.api.block<Element>();
 
     expect(
       getSiblingListStyleType(editor, {

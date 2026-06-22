@@ -40,6 +40,7 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
+    "@platejs/slate": "workspace:^",
     "katex": "0.16.22",
     "react-compiler-runtime": "^1.0.0"
   },

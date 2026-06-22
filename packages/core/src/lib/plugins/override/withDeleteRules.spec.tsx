@@ -2,7 +2,6 @@
 
 import { jsxt } from '@platejs/test-utils';
 import { BaseBlockquotePlugin, BaseH1Plugin } from '@platejs/basic-nodes';
-import { BaseCalloutPlugin } from '@platejs/callout';
 import { BaseIndentPlugin } from '@platejs/indent';
 import { BaseListPlugin } from '@platejs/list';
 
@@ -37,6 +36,13 @@ const createElementPlugin = ({
         }
       : {}),
   });
+
+const BaseCalloutPlugin = createElementPlugin({
+  deleteRules: {
+    start: 'reset',
+  },
+  key: 'callout',
+});
 
 const getEditorAfterAction = ({
   action,

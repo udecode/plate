@@ -1,12 +1,7 @@
 import type { DropTargetMonitor } from 'react-dnd';
+import type { Element } from '@platejs/slate';
 
-import {
-  NodeApi,
-  PathApi,
-  type TElement,
-  RangeApi,
-  createSlateEditor,
-} from 'platejs';
+import { PathApi, RangeApi, createSlateEditor } from 'platejs';
 
 import type { DragItemNode } from '../types';
 
@@ -20,8 +15,8 @@ describe('onHoverNode', () => {
 
   const monitor = {} as DropTargetMonitor;
   const nodeRef = {};
-  const dragElement = { id: 'drag' } as unknown as TElement;
-  const hoverElement = { id: 'hover' } as unknown as TElement;
+  const dragElement = { id: 'drag' } as unknown as Element;
+  const hoverElement = { id: 'hover' } as unknown as Element;
 
   let isExpandedSpy: ReturnType<typeof spyOn>;
   let isExpandedMock: ReturnType<typeof mock>;
@@ -29,8 +24,7 @@ describe('onHoverNode', () => {
   let getDropPathMock: ReturnType<typeof mock>;
   let previousPathSpy: ReturnType<typeof spyOn>;
   let previousPathMock: ReturnType<typeof mock>;
-  let getNodeSpy: ReturnType<typeof spyOn>;
-  let getNodeMock: ReturnType<typeof mock>;
+  let nodeMock: ReturnType<typeof mock>;
 
   beforeEach(() => {
     editor = createSlateEditor();
@@ -40,6 +34,8 @@ describe('onHoverNode', () => {
     editor.tf.collapse = mock();
     editor.tf.focus = mock();
     editor.api.findPath = mock(() => [1]) as any;
+    nodeMock = mock();
+    editor.api.node = nodeMock as any;
 
     dragItem = {
       id: 'drag',
@@ -66,18 +62,12 @@ describe('onHoverNode', () => {
     previousPathSpy = spyOn(PathApi, 'previous').mockImplementation(
       previousPathMock as unknown as typeof PathApi.previous
     );
-
-    getNodeMock = mock();
-    getNodeSpy = spyOn(NodeApi, 'get').mockImplementation(
-      getNodeMock as unknown as typeof NodeApi.get
-    );
   });
 
   afterEach(() => {
     isExpandedSpy?.mockRestore();
     getDropPathSpy?.mockRestore();
     previousPathSpy?.mockRestore();
-    getNodeSpy?.mockRestore();
   });
 
   it('update plugin options when direction changes', () => {
@@ -177,7 +167,7 @@ describe('onHoverNode', () => {
       to: [1],
     });
     previousPathMock.mockReturnValueOnce([0]);
-    getNodeMock.mockReturnValueOnce({ id: 'previous' });
+    nodeMock.mockReturnValueOnce([{ id: 'previous' }, [0]]);
 
     onHoverNode(editor, {
       dragItem,

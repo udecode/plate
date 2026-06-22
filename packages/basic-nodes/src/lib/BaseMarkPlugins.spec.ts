@@ -3,8 +3,12 @@ import { KEYS, createSlateEditor } from 'platejs';
 import {
   BaseBoldPlugin,
   BaseCodePlugin,
+  BaseHighlightPlugin,
   BaseItalicPlugin,
+  BaseKbdPlugin,
   BaseStrikethroughPlugin,
+  BaseSubscriptPlugin,
+  BaseSuperscriptPlugin,
   BaseUnderlinePlugin,
 } from './index';
 
@@ -12,6 +16,19 @@ const getDeserializerQuery = (plugin: any) =>
   createSlateEditor({
     plugins: [plugin],
   } as any).getPlugin(plugin).parsers.html.deserializer.query;
+
+const runMarkToggleTx = (plugin: any, type: string) => {
+  const remove = mock(() => {});
+  const toggle = mock(() => {});
+  const [extension] = plugin.__txExtensions;
+  const txGroups = extension({ plugin, type } as any);
+  const group = txGroups[plugin.key];
+  const commands = group({ marks: { remove, toggle } });
+
+  commands.toggle();
+
+  return { remove, toggle };
+};
 
 describe('BaseMarkPlugins', () => {
   afterEach(() => {
@@ -43,20 +60,12 @@ describe('BaseMarkPlugins', () => {
       KEYS.strikethrough,
       '<s><span style="text-decoration: none">text</span></s>',
     ],
-  ])('vetoes %s parsing when a descendant resets the style and toggles the mark', (_label, plugin, key, html) => {
+  ])('vetoes %s parsing when a descendant resets the style', (_label, plugin, _key, html) => {
     const element = new DOMParser().parseFromString(html, 'text/html').body
       .firstElementChild!;
     const query = getDeserializerQuery(plugin);
-    const editor = createSlateEditor({
-      plugins: [plugin],
-    } as any);
-    const toggleMarkSpy = spyOn(editor.tf, 'toggleMark');
 
     expect(query({ element })).toBe(false);
-
-    (editor.getTransforms(plugin as any) as any)[key].toggle();
-
-    expect(toggleMarkSpy).toHaveBeenCalledWith(editor.getType(key as any));
   });
 
   it('skips inline code parsing inside pre blocks and paragraphs styled as code', () => {
@@ -75,14 +84,28 @@ describe('BaseMarkPlugins', () => {
     expect(query({ element: paragraphCode })).toBe(false);
   });
 
-  it('toggles the code mark', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseCodePlugin],
-    } as any);
-    const toggleMarkSpy = spyOn(editor.tf, 'toggleMark');
+  it.each([
+    ['bold', BaseBoldPlugin, KEYS.bold],
+    ['code', BaseCodePlugin, KEYS.code],
+    ['highlight', BaseHighlightPlugin, KEYS.highlight],
+    ['italic', BaseItalicPlugin, KEYS.italic],
+    ['kbd', BaseKbdPlugin, KEYS.kbd],
+    ['strikethrough', BaseStrikethroughPlugin, KEYS.strikethrough],
+    ['underline', BaseUnderlinePlugin, KEYS.underline],
+  ])('registers %s as a transaction mark toggle', (_label, plugin, key) => {
+    const { remove, toggle } = runMarkToggleTx(plugin, key);
 
-    (editor.getTransforms(BaseCodePlugin as any) as any).code.toggle();
+    expect(toggle).toHaveBeenCalledWith(key);
+    expect(remove).not.toHaveBeenCalled();
+  });
 
-    expect(toggleMarkSpy).toHaveBeenCalledWith(editor.getType(KEYS.code));
+  it('registers subscript and superscript as exclusive mark toggles', () => {
+    const sub = runMarkToggleTx(BaseSubscriptPlugin, KEYS.sub);
+    const sup = runMarkToggleTx(BaseSuperscriptPlugin, KEYS.sup);
+
+    expect(sub.remove).toHaveBeenCalledWith(KEYS.sup);
+    expect(sub.toggle).toHaveBeenCalledWith(KEYS.sub);
+    expect(sup.remove).toHaveBeenCalledWith(KEYS.sub);
+    expect(sup.toggle).toHaveBeenCalledWith(KEYS.sup);
   });
 });

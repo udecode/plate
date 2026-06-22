@@ -1,5 +1,5 @@
-import { BoldPlugin } from '@platejs/basic-nodes/react';
-import { type Value, createEditor } from '@platejs/slate-legacy';
+import type { EditorUpdateTransaction, Value } from '@platejs/slate';
+import { createEditor } from '@platejs/slate-legacy';
 
 import { ParagraphPlugin, ReactPlugin } from '../../react';
 import { withPlate } from '../../react/editor/withPlate';
@@ -7,6 +7,7 @@ import { createPlatePlugin } from '../../react/plugin/createPlatePlugin';
 import { getPlugin } from '../../react/plugin/getPlugin';
 import { EventEditorPlugin } from '../../react/plugins/event-editor/EventEditorPlugin';
 import { InputRulesPlugin } from '../plugins/input-rules/internal/InputRulesPlugin';
+import type { PluginTx } from '../plugin/SlatePlugin';
 import {
   type SlatePlugin,
   AffinityPlugin,
@@ -44,6 +45,24 @@ const coreKeys = [
   EventEditorPlugin.key,
 ];
 
+type TxPluginTransaction = EditorUpdateTransaction & {
+  txPlugin: {
+    bold: () => void;
+  };
+};
+
+const TestBoldPlugin = createSlatePlugin({
+  key: 'bold',
+  node: { isLeaf: true },
+  parsers: {
+    html: {
+      deserializer: {
+        rules: [{ validNodeName: ['STRONG', 'B'] }],
+      },
+    },
+  },
+});
+
 describe('withPlate', () => {
   describe('when default plugins', () => {
     it('have core plugins', () => {
@@ -67,6 +86,61 @@ describe('withPlate', () => {
 
       expect(editor.tf.toggleBlock).toBeDefined();
       expect(editor.dom.prevSelection).toBeNull();
+    });
+
+    it('executes tx-backed plugin transform facades on the current editor runtime', () => {
+      const TxPlugin = createSlatePlugin({
+        key: 'txPlugin',
+      })
+        .extendTx(({ plugin }) => ({
+          [plugin.key]: (tx: EditorUpdateTransaction) => ({
+            bold: () => tx.marks.add('bold', true),
+          }),
+        }))
+        .extendTransforms(({ editor }) => ({
+          bold: () =>
+            editor.update<
+              PluginTx<'txPlugin', TxPluginTransaction['txPlugin']>
+            >((tx) => tx.txPlugin.bold()),
+        }));
+      const editor = withPlate(createEditor(), {
+        plugins: [TxPlugin],
+        selection: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 4, path: [0, 0] },
+        },
+        value: [{ children: [{ text: 'text' }], type: 'p' }],
+      });
+
+      editor.tf.txPlugin.bold();
+
+      expect(editor.children[0].children[0]).toMatchObject({
+        bold: true,
+        text: 'text',
+      });
+    });
+
+    it('runs v2-style update callbacks through the current legacy runtime bridge', () => {
+      const editor = withPlate(createEditor(), {
+        selection: {
+          anchor: { offset: 0, path: [0, 0] },
+          focus: { offset: 4, path: [0, 0] },
+        },
+        value: [{ children: [{ text: 'text' }], type: 'p' }],
+      });
+
+      editor.update((tx, context) => {
+        tx.marks.add('italic', true);
+
+        expect(() => context.afterCommit(() => {})).toThrow(
+          'editor.update context.afterCommit is not supported by the temporary Plate legacy runtime bridge.'
+        );
+      });
+
+      expect(editor.children[0].children[0]).toMatchObject({
+        italic: true,
+        text: 'text',
+      });
     });
   });
 
@@ -469,7 +543,7 @@ describe('withPlate', () => {
 
       const editor = withSlate(createEditor(), {
         id: '1',
-        plugins: [BoldPlugin],
+        plugins: [TestBoldPlugin],
         value: htmlString,
       });
 

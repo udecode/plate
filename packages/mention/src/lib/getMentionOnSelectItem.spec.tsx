@@ -15,11 +15,11 @@ describe('getMentionOnSelectItem', () => {
         focus: { offset: 2, path: [0, 0] },
       },
       value: [{ children: [{ text: 'hi' }], type: 'p' }],
-    } as any);
+    });
 
-    getMentionOnSelectItem()(editor, { key: 'u1', text: 'Ada' } as any, 'ad');
+    getMentionOnSelectItem()(editor, { key: 'u1', text: 'Ada' }, 'ad');
 
-    const children = (editor.children[0] as any).children;
+    const children = editor.children[0].children;
 
     expect(children[1]).toMatchObject({
       children: [{ text: '' }],
@@ -45,11 +45,11 @@ describe('getMentionOnSelectItem', () => {
         focus: { offset: 2, path: [0, 0] },
       },
       value: [{ children: [{ text: 'hello' }], type: 'p' }],
-    } as any);
+    });
 
-    getMentionOnSelectItem()(editor, { key: 'u1', text: 'Ada' } as any, 'ad');
+    getMentionOnSelectItem()(editor, { key: 'u1', text: 'Ada' }, 'ad');
 
-    const children = (editor.children[0] as any).children;
+    const children = editor.children[0].children;
 
     expect(children[0]).toEqual({ text: 'he' });
     expect(children[1]).toMatchObject({

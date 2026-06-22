@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from 'platejs';
+import { createSlateEditor } from '@platejs/core';
 
 import { jsxt } from '@platejs/test-utils';
 

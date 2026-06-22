@@ -85,7 +85,7 @@ describe('removeMarkSuggestion', () => {
     editor.tf.removeMark('bold');
 
     const dataList = editor
-      .getApi(BaseSuggestionPlugin)
+      .getPluginApi(BaseSuggestionPlugin)
       .suggestion.dataList(
         editor.children[0].children[0] as any
       ) as TUpdateSuggestionData[];
@@ -131,7 +131,7 @@ describe('removeMarkSuggestion', () => {
 
     expect(node.bold).toBe(true);
     expect(
-      editor.getApi(BaseSuggestionPlugin).suggestion.dataList(node)
+      editor.getPluginApi(BaseSuggestionPlugin).suggestion.dataList(node)
     ).toEqual([existingData] as any);
   });
 });

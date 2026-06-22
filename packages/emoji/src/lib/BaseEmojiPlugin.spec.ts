@@ -1,4 +1,7 @@
+import type { Emoji } from '@emoji-mart/data';
+
 import { createSlateEditor, KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 import { BaseEmojiInputPlugin, BaseEmojiPlugin } from './BaseEmojiPlugin';
 import { DEFAULT_EMOJI_LIBRARY } from './constants';
@@ -7,7 +10,7 @@ describe('BaseEmojiPlugin', () => {
   it('configures the emoji input plugin as an inline void edit-only node', () => {
     const editor = createSlateEditor({
       plugins: [BaseEmojiPlugin],
-    } as any);
+    });
 
     const inputPlugin = editor.getPlugin(BaseEmojiInputPlugin);
 
@@ -20,7 +23,7 @@ describe('BaseEmojiPlugin', () => {
   it('ships the default trigger, library, and node builders', () => {
     const editor = createSlateEditor({
       plugins: [BaseEmojiPlugin],
-    } as any);
+    });
 
     const plugin = editor.getPlugin(BaseEmojiPlugin);
     const triggerPreviousCharPattern =
@@ -46,7 +49,7 @@ describe('BaseEmojiPlugin', () => {
       children: [{ text: '' }],
       type: KEYS.emojiInput,
     });
-    expect(createEmojiNode({ skins: [{ native: '🔥' }] } as any)).toEqual({
+    expect(createEmojiNode({ skins: [{ native: '🔥' }] } as Emoji)).toEqual({
       text: '🔥',
     });
   });
@@ -54,12 +57,37 @@ describe('BaseEmojiPlugin', () => {
   it('includes the nested emoji input plugin', () => {
     const editor = createSlateEditor({
       plugins: [BaseEmojiPlugin],
-    } as any);
+    });
 
-    const plugin = editor.getPlugin(BaseEmojiPlugin);
+    expect(editor.getPlugin(BaseEmojiInputPlugin).key).toBe(KEYS.emojiInput);
+  });
 
-    expect(
-      plugin.plugins.some((child: any) => child.key === KEYS.emojiInput)
-    ).toBe(true);
+  it('routes the emoji trigger through the Slate v2 runtime combobox path', () => {
+    const editor = createPlateEditor({
+      plugins: [BaseEmojiPlugin],
+      runtime: 'slate-v2',
+      selection: {
+        anchor: { offset: 6, path: [0, 0] },
+        focus: { offset: 6, path: [0, 0] },
+      },
+      userId: 'user-1',
+      value: [{ children: [{ text: 'hello ' }], type: 'p' }],
+    });
+
+    expect(editor.tf.insertText(':')).toBe(true);
+    expect(editor.read((state) => state.value.root()) as unknown).toEqual([
+      {
+        children: [
+          { text: 'hello ' },
+          {
+            children: [{ text: '' }],
+            type: KEYS.emojiInput,
+            userId: 'user-1',
+          },
+          { text: '' },
+        ],
+        type: 'p',
+      },
+    ]);
   });
 });

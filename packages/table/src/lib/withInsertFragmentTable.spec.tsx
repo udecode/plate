@@ -1,7 +1,9 @@
 /** @jsx jsxt */
 
+import type { Element } from '@platejs/slate';
+
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { getTestTablePlugins } from './__tests__/getTestTablePlugins';
 
@@ -57,7 +59,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as TElement[];
+      ) as any as Element[];
 
       const output = (
         <editor>
@@ -140,7 +142,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as TElement[];
+      ) as any as Element[];
 
       const output = (
         <editor>
@@ -228,7 +230,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as TElement[];
+      ) as any as Element[];
 
       const output = (
         <editor>
@@ -315,7 +317,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as TElement[];
+      ) as any as Element[];
 
       const output = (
         <editor>
@@ -425,7 +427,7 @@ describe('withInsertFragmentTable', () => {
               </htr>
             </htable>
           </fragment>
-        ) as any as TElement[];
+        ) as any as Element[];
 
         const output = (
           <editor>
@@ -553,7 +555,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as TElement[];
+      ) as any as Element[];
 
       const output = (
         <editor>
@@ -635,7 +637,7 @@ describe('withInsertFragmentTable', () => {
             </htr>
           </htable>
         </fragment>
-      ) as any as TElement[];
+      ) as any as Element[];
 
       const output = (
         <editor>
@@ -700,7 +702,7 @@ describe('withInsertFragmentTable', () => {
           <hp>o11a</hp>
           <hp>o11b</hp>
         </fragment>
-      ) as any as TElement[];
+      ) as any as Element[];
 
       const output = (
         <editor>

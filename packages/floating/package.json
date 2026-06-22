@@ -41,6 +41,7 @@
   "dependencies": {
     "@floating-ui/core": "^1.6.7",
     "@floating-ui/react": "^0.26.23",
+    "@platejs/slate": "workspace:^",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {

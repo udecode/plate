@@ -18,8 +18,6 @@ on:
       - 'apps/www/src/app/(app)/examples/slate/**'
       - 'apps/www/tests/slate-browser/**'
       - 'content/docs/slate/**'
-      - 'docs/transplant/slate-v2/**'
-      - 'tooling/scripts/check-slate-v2-docs.mjs'
       - 'tooling/scripts/bench-targets.mjs'
       - 'package.json'
       - 'pnpm-lock.yaml'
@@ -45,8 +43,6 @@ on:
       - 'apps/www/src/app/(app)/examples/slate/**'
       - 'apps/www/tests/slate-browser/**'
       - 'content/docs/slate/**'
-      - 'docs/transplant/slate-v2/**'
-      - 'tooling/scripts/check-slate-v2-docs.mjs'
       - 'tooling/scripts/bench-targets.mjs'
       - 'package.json'
       - 'pnpm-lock.yaml'
@@ -80,9 +76,6 @@ jobs:
 
       - name: Monorepo install
         uses: ./.github/actions/pnpm-install
-
-      - name: Check source parity
-        run: pnpm slate:source:check
 
       - name: Typecheck packages
         run: pnpm slate:packages:typecheck

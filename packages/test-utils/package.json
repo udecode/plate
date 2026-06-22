@@ -41,9 +41,7 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/slate-legacy": "workspace:*",
-    "slate": "0.124.1",
-    "slate-hyperscript": "0.125.0"
+    "@platejs/slate": "workspace:^"
   },
   "publishConfig": {
     "access": "public"

@@ -1,4 +1,4 @@
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 import { BaseTodoListPlugin } from '../BaseTodoListPlugin';
 import { insertTodoListItem } from './insertTodoListItem';

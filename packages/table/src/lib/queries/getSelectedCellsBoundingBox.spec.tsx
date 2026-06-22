@@ -1,6 +1,8 @@
 /** @jsx jsx */
 
-import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
+import type { Element } from '@platejs/slate';
+
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { jsx } from '@platejs/test-utils';
 
@@ -108,7 +110,7 @@ describe('getSelectedCellsBoundingBox', () => {
   });
 
   it('returns correct bounding box for single cell', () => {
-    const c22 = (editor as any).children[0].children[1].children[1] as TElement;
+    const c22 = (editor as any).children[0].children[1].children[1] as Element;
 
     const boundingBox = getSelectedCellsBoundingBox(editor, [c22]);
 
@@ -121,9 +123,9 @@ describe('getSelectedCellsBoundingBox', () => {
   });
 
   it('returns correct bounding box for adjacent cells in middle row', () => {
-    const c21 = (editor as any).children[0].children[1].children[0] as TElement;
-    const c22 = (editor as any).children[0].children[1].children[1] as TElement;
-    const c23 = (editor as any).children[0].children[1].children[2] as TElement;
+    const c21 = (editor as any).children[0].children[1].children[0] as Element;
+    const c22 = (editor as any).children[0].children[1].children[1] as Element;
+    const c23 = (editor as any).children[0].children[1].children[2] as Element;
 
     const boundingBox = getSelectedCellsBoundingBox(editor, [c21, c22, c23]);
 
@@ -136,9 +138,9 @@ describe('getSelectedCellsBoundingBox', () => {
   });
 
   it('returns correct bounding box for cells in middle column', () => {
-    const c12 = (editor as any).children[0].children[0].children[1] as TElement;
-    const c22 = (editor as any).children[0].children[1].children[1] as TElement;
-    const c32 = (editor as any).children[0].children[2].children[1] as TElement;
+    const c12 = (editor as any).children[0].children[0].children[1] as Element;
+    const c22 = (editor as any).children[0].children[1].children[1] as Element;
+    const c32 = (editor as any).children[0].children[2].children[1] as Element;
 
     const boundingBox = getSelectedCellsBoundingBox(editor, [c12, c22, c32]);
 
@@ -151,9 +153,9 @@ describe('getSelectedCellsBoundingBox', () => {
   });
 
   it('returns correct bounding box for L-shaped selection', () => {
-    const c11 = (editor as any).children[0].children[0].children[0] as TElement;
-    const c21 = (editor as any).children[0].children[1].children[0] as TElement;
-    const c22 = (editor as any).children[0].children[1].children[1] as TElement;
+    const c11 = (editor as any).children[0].children[0].children[0] as Element;
+    const c21 = (editor as any).children[0].children[1].children[0] as Element;
+    const c22 = (editor as any).children[0].children[1].children[1] as Element;
 
     const boundingBox = getSelectedCellsBoundingBox(editor, [c11, c21, c22]);
 
@@ -166,8 +168,8 @@ describe('getSelectedCellsBoundingBox', () => {
   });
 
   it('returns correct bounding box for diagonal cells (corners)', () => {
-    const c11 = (editor as any).children[0].children[0].children[0] as TElement;
-    const c33 = (editor as any).children[0].children[2].children[2] as TElement;
+    const c11 = (editor as any).children[0].children[0].children[0] as Element;
+    const c33 = (editor as any).children[0].children[2].children[2] as Element;
 
     const boundingBox = getSelectedCellsBoundingBox(editor, [c11, c33]);
 
@@ -180,7 +182,7 @@ describe('getSelectedCellsBoundingBox', () => {
   });
 
   it('handle cells with colspan and rowspan in middle', () => {
-    const c22 = (editor as any).children[0].children[1].children[1] as TElement;
+    const c22 = (editor as any).children[0].children[1].children[1] as Element;
 
     // Mock a cell with colspan=2 and rowspan=2
     getColSpanMock.mockReturnValueOnce(2);

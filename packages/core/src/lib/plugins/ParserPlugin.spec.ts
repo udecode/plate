@@ -1,5 +1,3 @@
-import { createEditor as createBaseEditor } from '@platejs/slate-legacy';
-
 import { createSlateEditor } from '../editor';
 import { createSlatePlugin } from '../plugin';
 
@@ -44,7 +42,7 @@ describe('ParserPlugin', () => {
 
   it('falls back to the previous insertData transform when no parser inserts', () => {
     const fallbackInsertData = mock();
-    const baseEditor = createBaseEditor();
+    const baseEditor = createSlateEditor();
 
     baseEditor.insertData = fallbackInsertData as any;
     baseEditor.tf.insertData = fallbackInsertData as any;

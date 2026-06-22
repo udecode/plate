@@ -20,13 +20,13 @@ describe('extendEditorApi method', () => {
         key: 'testPlugin',
       })
         .extendEditorApi(({ editor, plugin }) => {
-          api1 = editor.getApi({} as any);
+          api1 = editor.api;
           pluginApi1 = plugin.api;
 
           return { method1: () => 1 };
         })
         .extendEditorApi(({ editor, plugin: { api } }) => {
-          expect(api1).toBe(editor.getApi({} as any));
+          expect(api1).toBe(editor.api);
           expect(pluginApi1).toBe(api);
 
           return { method2: () => 2 };
@@ -157,7 +157,7 @@ describe('extendEditorApi method', () => {
         key: 'another',
       }).extendEditorApi(({ editor }) => ({
         method4: () => {
-          const api = editor.getApi(testPlugin);
+          const api = editor.getPluginApi(testPlugin);
 
           return api.method3();
         },
@@ -181,7 +181,7 @@ describe('extendEditorApi method', () => {
     const editor = createPluginEditor([
       testPlugin,
       createSlatePlugin({ key: 'another' }).extendEditorApi(({ editor }) => {
-        const api = editor.getApi(testPlugin);
+        const api = editor.getPluginApi(testPlugin);
 
         return {
           method4: () => api.method3(),
@@ -202,7 +202,7 @@ describe('extendEditorApi method', () => {
     const overridePlugin = createSlatePlugin({
       key: 'overridePlugin',
     }).extendEditorApi(({ editor }) => {
-      const { method } = editor.getApi(basePlugin);
+      const { method } = editor.getPluginApi(basePlugin);
 
       return {
         method: () => `override ${method()}`,
@@ -303,7 +303,7 @@ describe('extendEditorApi method', () => {
     const overridePlugin = createSlatePlugin({
       key: 'overridePlugin',
     }).extendEditorApi(({ editor }) => {
-      const baseApi = editor.getApi(basePlugin);
+      const baseApi = editor.getPluginApi(basePlugin);
 
       return {
         override: () => `overridden: ${baseApi.standalone()}`,
@@ -441,7 +441,7 @@ describe('extendApi method', () => {
     const overridePlugin = createSlatePlugin({
       key: 'overridePlugin',
     }).extendApi(({ editor }) => {
-      const baseApi = editor.getApi(basePlugin);
+      const baseApi = editor.getPluginApi(basePlugin);
 
       return {
         method: () => `override ${baseApi.basePlugin.method()}`,

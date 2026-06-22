@@ -1,4 +1,5 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { createSlateEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { getTodoListItemEntry } from './getTodoListItemEntry';
 

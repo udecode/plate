@@ -1,12 +1,18 @@
 /** @jsx jsxt */
 
 import { ParagraphPlugin } from '@platejs/core/react';
+import type { Selection, Value } from '@platejs/slate';
 import { jsxt } from '@platejs/test-utils';
 
 import { normalizeRoot } from '../__tests__/normalizeRoot';
 import { NormalizeTypesPlugin } from './NormalizeTypesPlugin';
 
 jsxt;
+
+type JsxEditor = {
+  children: Value;
+  selection?: Selection;
+};
 
 describe('NormalizeTypesPlugin', () => {
   it.each([
@@ -15,7 +21,7 @@ describe('NormalizeTypesPlugin', () => {
         <editor>
           <element />
         </editor>
-      ) as any,
+      ) as JsxEditor,
       output: (
         <editor>
           <element>
@@ -27,7 +33,7 @@ describe('NormalizeTypesPlugin', () => {
             </hp>
           </element>
         </editor>
-      ) as any,
+      ) as JsxEditor,
       rules: [
         { path: [0, 0], strictType: 'h1' },
         { path: [0, 1], type: ParagraphPlugin.key },
@@ -39,7 +45,7 @@ describe('NormalizeTypesPlugin', () => {
         <editor>
           <hh1>test</hh1>
         </editor>
-      ) as any,
+      ) as JsxEditor,
       output: (
         <editor>
           <hh1>test</hh1>
@@ -47,7 +53,7 @@ describe('NormalizeTypesPlugin', () => {
             <htext />
           </hh2>
         </editor>
-      ) as any,
+      ) as JsxEditor,
       rules: [{ path: [1], type: 'h2' }],
       title: 'inserts a missing node for a type rule',
     },
@@ -58,14 +64,14 @@ describe('NormalizeTypesPlugin', () => {
           <hh2>test</hh2>
           <hh2>test</hh2>
         </editor>
-      ) as any,
+      ) as JsxEditor,
       output: (
         <editor>
           <hh2>test</hh2>
           <hh2>test</hh2>
           <hh2>test</hh2>
         </editor>
-      ) as any,
+      ) as JsxEditor,
       rules: [{ path: [0], type: 'h1' }],
       title: 'does not rewrite an existing node for a type rule',
     },
@@ -74,7 +80,7 @@ describe('NormalizeTypesPlugin', () => {
         <editor>
           <hh1>test</hh1>
         </editor>
-      ) as any,
+      ) as JsxEditor,
       output: (
         <editor>
           <hh1>test</hh1>
@@ -82,7 +88,7 @@ describe('NormalizeTypesPlugin', () => {
             <htext />
           </hh2>
         </editor>
-      ) as any,
+      ) as JsxEditor,
       rules: [{ path: [1], strictType: 'h2' }],
       title: 'inserts a missing node for a strictType rule',
     },
@@ -93,14 +99,14 @@ describe('NormalizeTypesPlugin', () => {
           <hh2>test</hh2>
           <hh2>test</hh2>
         </editor>
-      ) as any,
+      ) as JsxEditor,
       output: (
         <editor>
           <hh1>test</hh1>
           <hh2>test</hh2>
           <hh2>test</hh2>
         </editor>
-      ) as any,
+      ) as JsxEditor,
       rules: [{ path: [0], strictType: 'h1' }],
       title: 'rewrites an existing node for a strictType rule',
     },

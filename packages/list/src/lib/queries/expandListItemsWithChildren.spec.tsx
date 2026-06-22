@@ -1,11 +1,21 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type Descendant, type SlateEditor, createEditor } from 'platejs';
+import type { Descendant } from '@platejs/slate';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { expandListItemsWithChildren } from './expandListItemsWithChildren';
 
 jsxt;
+
+const createListEditor = (input: Descendant[]) => {
+  const editor = (<editor>{input}</editor>) as any as SlateEditor;
+
+  return createSlateEditor({
+    selection: editor.selection,
+    value: editor.children,
+  });
+};
 
 describe('expandListItemsWithChildren', () => {
   describe('when input contains no list items', () => {
@@ -20,9 +30,7 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
       const entries = [
         [input[0], [0]],
@@ -52,9 +60,7 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
       const entries = [
         [input[0], [0]],
@@ -88,9 +94,7 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
       // Only pass the parent item
       const entries = [[input[0], [0]]] as any;
@@ -125,9 +129,7 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
       // Pass both parent items
       const entries = [
@@ -161,9 +163,7 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
       // Pass parent and one child (child 1)
       const entries = [
@@ -198,9 +198,7 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
       const entries = [
         [input[0], [0]], // paragraph
@@ -221,7 +219,7 @@ describe('expandListItemsWithChildren', () => {
 
   describe('edge cases', () => {
     it('handle empty input', () => {
-      const editor = createEditor((<editor />) as any as SlateEditor);
+      const editor = createListEditor([]);
 
       const result = expandListItemsWithChildren(editor, []);
 
@@ -241,9 +239,7 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
       const entries = [[input[0], [0]]] as any;
 
@@ -276,9 +272,7 @@ describe('expandListItemsWithChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
       const entries = [[input[0], [0]]] as any;
 

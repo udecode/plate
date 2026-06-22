@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, createSlateEditor, NodeApi } from 'platejs';
+import { type SlateEditor, createSlateEditor } from '@platejs/core';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 
@@ -40,7 +40,7 @@ describe('clean up list items', () => {
     });
 
     const path = [0, 0];
-    const node = NodeApi.get(editor, path);
+    const node = editor.api.node(path)?.[0];
 
     editor.tf.normalizeNode([node!, path]);
 

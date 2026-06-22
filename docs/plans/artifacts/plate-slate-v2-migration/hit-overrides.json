@@ -1,0 +1,200 @@
+[
+  {
+    "decision": "quarantine",
+    "file": "apps/www/src/app/dev/editor-perf/page.tsx",
+    "kind": "bare-slate-import",
+    "reason": "intentional upstream Slate comparison harness; do not rewrite to the fork or the perf baseline loses meaning",
+    "textIncludes": "from 'slate'"
+  },
+  {
+    "decision": "quarantine",
+    "file": "apps/www/src/app/dev/editor-perf/page.tsx",
+    "kind": "bare-slate-import",
+    "reason": "intentional upstream Slate React comparison harness; import directly from upstream instead of re-exporting through Plate",
+    "textIncludes": "from 'slate-react'"
+  },
+  {
+    "decision": "quarantine",
+    "file": "apps/www/src/registry/examples/huge-document-demo.tsx",
+    "kind": "bare-slate-import",
+    "reason": "intentional upstream Slate comparison pane in the huge-document benchmark; not product runtime",
+    "textIncludes": "from 'slate'"
+  },
+  {
+    "decision": "quarantine",
+    "file": "apps/www/src/registry/examples/huge-document-demo.tsx",
+    "kind": "bare-slate-import",
+    "reason": "intentional upstream Slate React comparison pane in the huge-document benchmark; import directly from upstream instead of re-exporting through Plate",
+    "textIncludes": "from 'slate-react'"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/diff/package.json",
+    "kind": "legacy-dependency",
+    "reason": "diff currently needs the legacy mutable editor runtime for operation replay/change tracking; dependency is explicit and package proof is green",
+    "textIncludes": "@platejs/slate-legacy"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/diff/package.json",
+    "kind": "legacy-import",
+    "reason": "diff currently needs the legacy mutable editor runtime for operation replay/change tracking; dependency is explicit and package proof is green",
+    "textIncludes": "@platejs/slate-legacy"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/diff/src/internal/transforms/transformDiffTexts.ts",
+    "kind": "legacy-import",
+    "reason": "transformDiffTexts intentionally creates a legacy mutable editor until the diff algorithm is rewritten around Slate v2 transactions",
+    "textIncludes": "@platejs/slate-legacy"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/diff/src/internal/utils/with-change-tracking.spec.ts",
+    "kind": "legacy-import",
+    "reason": "spec proves the explicit legacy change-tracking bridge used by the current diff algorithm",
+    "textIncludes": "@platejs/slate-legacy"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/diff/src/internal/utils/with-change-tracking.ts",
+    "kind": "legacy-import",
+    "reason": "change tracking wraps the current legacy mutable editor apply/tf/ref contract until the algorithm is ported to Slate v2 transactions",
+    "textIncludes": "@platejs/slate-legacy"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/diff/src/lib/computeDiff.ts",
+    "kind": "legacy-import",
+    "reason": "ComputeDiffOptions still mirrors the current legacy editor isInline callback while the diff operation-replay algorithm remains legacy-backed",
+    "textIncludes": "@platejs/slate-legacy"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/diff/src/lib/computeDiff.ts",
+    "kind": "legacy-t-type-import",
+    "reason": "ComputeDiffOptions still mirrors the current legacy editor isInline callback while the diff operation-replay algorithm remains legacy-backed"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/package.json",
+    "kind": "legacy-dependency",
+    "reason": "core still owns the current Plate legacy runtime/editor contract until the Plate runtime adapter packet replaces withSlate/withPlate/static editor construction",
+    "textIncludes": "@platejs/slate-legacy"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/package.json",
+    "kind": "legacy-import",
+    "reason": "core still owns the current Plate legacy runtime/editor contract until the Plate runtime adapter packet replaces withSlate/withPlate/static editor construction",
+    "textIncludes": "@platejs/slate-legacy"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/internal/plugin/resolvePlugins.ts",
+    "kind": "legacy-import",
+    "reason": "plugin resolution currently installs/syncs legacy api and transform methods; replacing this requires the Plate runtime adapter packet"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/lib/editor/SlateEditor.ts",
+    "kind": "legacy-import",
+    "reason": "SlateEditor still exposes the current Plate legacy editor base/api/transform contract until the runtime adapter lands"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/lib/editor/SlateEditor.ts",
+    "kind": "legacy-t-type-import",
+    "reason": "SlateEditor api/transform generics are the current Plate runtime contract, not helper cleanup"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/lib/editor/withSlate.spec.ts",
+    "kind": "legacy-import",
+    "reason": "spec intentionally proves the temporary legacy editor receives the v2 update bridge"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/lib/editor/withSlate.ts",
+    "kind": "legacy-import",
+    "reason": "withSlate is the current non-React legacy editor constructor until the Plate runtime adapter replaces it"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/lib/plugin/BasePlugin.ts",
+    "kind": "legacy-import",
+    "reason": "base plugin context still targets current legacy editor api/transforms until plugin command contracts move to the v2 runtime"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/lib/plugin/BasePlugin.ts",
+    "kind": "legacy-t-type-import",
+    "reason": "base plugin context still targets current legacy editor api/transforms until plugin command contracts move to the v2 runtime"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/lib/plugin/SlatePlugin.ts",
+    "kind": "legacy-import",
+    "reason": "Slate plugin extend/override contracts still target current legacy editor api/transforms until the runtime adapter packet"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/lib/plugin/SlatePlugin.ts",
+    "kind": "legacy-t-type-import",
+    "reason": "Slate plugin extend/override contracts still target current legacy editor api/transforms until the runtime adapter packet"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/lib/plugins/HistoryPlugin.ts",
+    "kind": "legacy-import",
+    "reason": "history still wraps the current legacy runtime; replacing it needs a real @platejs/slate-history extension packet"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/react/editor/PlateEditor.ts",
+    "kind": "legacy-import",
+    "reason": "PlateEditor still exposes the current React Plate legacy editor api/transform/operation contract until the runtime adapter lands"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/react/editor/PlateEditor.ts",
+    "kind": "legacy-t-type-import",
+    "reason": "PlateEditor api/transform/operation types are current runtime contract, not helper cleanup"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/react/editor/withPlate.ts",
+    "kind": "legacy-import",
+    "reason": "withPlate is the current React legacy editor constructor until the Plate runtime adapter replaces it"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/react/plugin/PlatePlugin.ts",
+    "kind": "legacy-import",
+    "reason": "React plugin extend/override contracts still target current legacy editor api/transforms until the runtime adapter packet"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/react/plugin/PlatePlugin.ts",
+    "kind": "legacy-t-type-import",
+    "reason": "React plugin extend/override contracts still target current legacy editor api/transforms until the runtime adapter packet"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/react/slate-react.ts",
+    "kind": "bare-slate-import",
+    "reason": "current Plate React adapter re-exports old slate-react until Plate runtime is actually backed by @platejs/slate-react"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/react/plugins/react/withPlateReact.ts",
+    "kind": "bare-slate-import",
+    "reason": "current Plate React enhancer still installs upstream slate-react behavior inside the legacy runtime bridge; public Plate React no longer re-exports withReact"
+  },
+  {
+    "decision": "quarantine",
+    "file": "packages/core/src/static/editor/withStatic.tsx",
+    "kind": "legacy-import",
+    "reason": "withStatic constructs the current legacy static editor until the static runtime adapter packet replaces it"
+  }
+]

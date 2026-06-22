@@ -57,7 +57,7 @@ describe('BaseSuggestionPlugin', () => {
 
   it('finds inline and block suggestion nodes by id', () => {
     const editor = createEditor();
-    const api = editor.getApi(BaseSuggestionPlugin).suggestion;
+    const api = editor.getPluginApi(BaseSuggestionPlugin).suggestion;
 
     expect(api.node({ at: [], id: 'inline', isText: true })?.[1]).toEqual([
       0, 0,
@@ -67,7 +67,7 @@ describe('BaseSuggestionPlugin', () => {
 
   it('returns suggestion ids for inline and block nodes', () => {
     const editor = createEditor();
-    const api = editor.getApi(BaseSuggestionPlugin).suggestion;
+    const api = editor.getPluginApi(BaseSuggestionPlugin).suggestion;
 
     expect(api.nodeId(editor.children[0].children[0] as any)).toBe('inline');
     expect(api.nodeId(editor.children[1] as any)).toBe('block');
@@ -75,7 +75,7 @@ describe('BaseSuggestionPlugin', () => {
 
   it('filters transient suggestion nodes when requested', () => {
     const editor = createEditor();
-    const api = editor.getApi(BaseSuggestionPlugin).suggestion;
+    const api = editor.getPluginApi(BaseSuggestionPlugin).suggestion;
 
     expect(api.nodes({ transient: true }).map(([, path]) => path)).toEqual([
       [2, 0],
@@ -84,7 +84,7 @@ describe('BaseSuggestionPlugin', () => {
 
   it('returns suggestion data and restores isSuggesting after withoutSuggestions', () => {
     const editor = createEditor();
-    const api = editor.getApi(BaseSuggestionPlugin).suggestion;
+    const api = editor.getPluginApi(BaseSuggestionPlugin).suggestion;
 
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 

@@ -1,16 +1,22 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import {
-  type Descendant,
-  type SlateEditor,
-  type TElement,
-  createEditor,
-} from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { Descendant } from '@platejs/slate';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { getListSiblings } from './getListSiblings';
 
 jsxt;
+
+const createListEditor = (input: Descendant[]) => {
+  const editor = (<editor>{input}</editor>) as any as SlateEditor;
+
+  return createSlateEditor({
+    selection: editor.selection,
+    value: editor.children,
+  });
+};
 
 describe('getListSiblings', () => {
   describe('listStyleType is not defined', () => {
@@ -29,11 +35,9 @@ describe('getListSiblings', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.api.block<Element>();
 
       const siblings = getListSiblings(editor, entry!);
 
@@ -91,11 +95,9 @@ describe('getListSiblings', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.api.block<Element>();
 
       const siblings = getListSiblings(editor, entry!);
 
@@ -103,7 +105,7 @@ describe('getListSiblings', () => {
         [output[0], [2]],
         [output[1], [3]],
         [output[2], [5]],
-      ]);
+      ] as any);
     });
   });
 });

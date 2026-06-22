@@ -1,11 +1,8 @@
 /** @jsx jsxt */
 
-import {
-  type Editor,
-  type SlateEditor,
-  type TElement,
-  createSlateEditor,
-} from 'platejs';
+import type { Element } from '@platejs/slate';
+
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -45,7 +42,7 @@ const makeTableWithCols = ({
         ))}
       </htable>
     </editor>
-  ) as unknown as Editor;
+  ) as unknown as SlateEditor;
 
 describe('insertTableColumn', () => {
   describe('without initialTableWidth', () => {
@@ -482,8 +479,8 @@ describe('insertTableColumn', () => {
       insertTableColumn(editor);
 
       // Count cells in each row
-      const table = editor.children[0] as TElement;
-      const rows = table.children as TElement[];
+      const table = editor.children[0] as Element;
+      const rows = table.children as Element[];
 
       // Should have 3 rows with 3 cells each
       expect(rows).toHaveLength(3);

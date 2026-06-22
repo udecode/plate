@@ -53,6 +53,7 @@
   "type": "module",
   "module": "./dist/index.js",
   "dependencies": {
+    "@platejs/slate": "workspace:^",
     "react-compiler-runtime": "^1.0.0"
   }
 }

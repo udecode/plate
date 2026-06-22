@@ -2,6 +2,21 @@ import { KEYS, createSlateEditor } from 'platejs';
 
 import { BaseFontColorPlugin } from './BaseFontColorPlugin';
 
+const runAddMarkTx = (value: string) => {
+  const add = mock();
+  const extension = (BaseFontColorPlugin as any).__txExtensions[0];
+  const groups = extension({
+    plugin: BaseFontColorPlugin,
+    type: KEYS.color,
+  });
+
+  groups[BaseFontColorPlugin.key]({
+    marks: { add },
+  }).set(value);
+
+  return add;
+};
+
 describe('BaseFontColorPlugin', () => {
   it('parses html color styles into leaf marks', () => {
     const editor = createSlateEditor({
@@ -26,17 +41,7 @@ describe('BaseFontColorPlugin', () => {
     });
   });
 
-  it('forwards addMark through the editor mark transform', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseFontColorPlugin],
-    } as any);
-    const addMarks = mock();
-
-    (editor as any).tf.addMarks = addMarks;
-    (editor as any).tf.color.addMark('red');
-
-    expect(addMarks).toHaveBeenCalledWith({
-      [KEYS.color]: 'red',
-    });
+  it('registers set as a transaction mark add', () => {
+    expect(runAddMarkTx('red')).toHaveBeenCalledWith(KEYS.color, 'red');
   });
 });

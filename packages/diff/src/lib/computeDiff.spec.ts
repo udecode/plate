@@ -3,7 +3,9 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import { type TElement, type Value, NodeApi } from 'platejs';
+import type { Element } from '@platejs/slate';
+
+import { type Value, NodeApi } from 'platejs';
 
 import { type ComputeDiffOptions, computeDiff } from './computeDiff';
 
@@ -560,7 +562,7 @@ const fixtures: Record<string, ComputeDiffFixture> = {
       },
     ],
     elementsAreRelated: (element, nextElement) => {
-      const getId = (e: TElement) => NodeApi.string(e).split('/')[0];
+      const getId = (e: Element) => NodeApi.string(e).split('/')[0];
 
       return getId(element) === getId(nextElement);
     },

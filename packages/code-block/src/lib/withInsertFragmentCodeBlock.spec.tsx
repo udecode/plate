@@ -1,9 +1,13 @@
 /** @jsx jsxt */
 
-import type { Descendant } from 'platejs';
+import type { Descendant } from '@platejs/slate';
 
 import { jsxt } from '@platejs/test-utils';
-import { BaseParagraphPlugin, createEditor, createSlateEditor } from 'platejs';
+import {
+  type SlateEditor,
+  BaseParagraphPlugin,
+  createSlateEditor,
+} from 'platejs';
 
 import { CodeBlockPlugin } from '../react/CodeBlockPlugin';
 
@@ -24,20 +28,18 @@ const editorTest = (input: any, fragment: any, expected: any) => {
 describe('pasting a code block', () => {
   describe('when selection outside of code block', () => {
     it('paste the code block', () => {
-      const input = createEditor(
-        (
-          <editor>
-            <hcodeblock>
-              <hcodeline>
-                <htext />
-              </hcodeline>
-            </hcodeblock>
-            <hp>
-              <cursor />
-            </hp>
-          </editor>
-        ) as any
-      );
+      const input = (
+        <editor>
+          <hcodeblock>
+            <hcodeline>
+              <htext />
+            </hcodeline>
+          </hcodeblock>
+          <hp>
+            <cursor />
+          </hp>
+        </editor>
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -70,21 +72,19 @@ describe('pasting a code block', () => {
 
   describe('when selection inside of code block', () => {
     it('insert code lines as a fragment', () => {
-      const input = createEditor(
-        (
-          <editor>
-            <hcodeblock>
-              <hcodeline>
-                <htext />
-              </hcodeline>
-              <hcodeline>
-                hello
-                <cursor />
-              </hcodeline>
-            </hcodeblock>
-          </editor>
-        ) as any
-      );
+      const input = (
+        <editor>
+          <hcodeblock>
+            <hcodeline>
+              <htext />
+            </hcodeline>
+            <hcodeline>
+              hello
+              <cursor />
+            </hcodeline>
+          </hcodeblock>
+        </editor>
+      ) as any as SlateEditor;
 
       const fragment = (
         <fragment>
@@ -114,21 +114,19 @@ describe('pasting a code block', () => {
 
 describe('pasting non-code block elements', () => {
   it('extract text and insert as code lines', () => {
-    const input = createEditor(
-      (
-        <editor>
-          <hcodeblock>
-            <hcodeline>
-              <htext />
-            </hcodeline>
-            <hcodeline>
-              hello
-              <cursor />
-            </hcodeline>
-          </hcodeblock>
-        </editor>
-      ) as any
-    );
+    const input = (
+      <editor>
+        <hcodeblock>
+          <hcodeline>
+            <htext />
+          </hcodeline>
+          <hcodeline>
+            hello
+            <cursor />
+          </hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as any as SlateEditor;
 
     const fragment = (
       <fragment>

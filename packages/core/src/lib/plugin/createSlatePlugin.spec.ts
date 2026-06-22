@@ -173,6 +173,25 @@ describe('createSlatePlugin', () => {
       expect(editor.getPlugin({ key: 'aa' }).node.type).toBe('aa1');
       expect(editor.getPlugin({ key: 'bb' }).node.type).toBe('bb1');
     });
+
+    it('infers tx groups in later plugin extension contexts', () => {
+      createSlatePlugin({ key: 'txPlugin' })
+        .extendTx(({ plugin }) => ({
+          [plugin.key]: () => ({
+            replace: (text: string) => text.length,
+          }),
+        }))
+        .extendTransforms(({ editor, plugin }) => ({
+          replace: (text: string) =>
+            editor.update((tx) => {
+              const length = tx[plugin.key].replace(text);
+
+              return length satisfies number;
+            }),
+        }));
+
+      expect(1).toBe(1);
+    });
   });
 
   describe('configure', () => {

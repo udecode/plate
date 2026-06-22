@@ -17,7 +17,7 @@ describe('AIChatPlugin', () => {
     editor.setOption(AIChatPlugin, '_blockPath', [0]);
     editor.setOption(AIChatPlugin, '_mdxName', 'foo');
 
-    editor.getApi(AIChatPlugin).aiChat.stop();
+    editor.getPluginApi(AIChatPlugin).aiChat.stop();
 
     expect(editor.getOption(AIChatPlugin, 'streaming')).toBe(false);
     expect(editor.getOption(AIChatPlugin, '_blockChunks')).toBe('');

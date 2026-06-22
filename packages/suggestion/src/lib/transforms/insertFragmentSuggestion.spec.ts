@@ -22,7 +22,7 @@ describe('insertFragmentSuggestion', () => {
     const insertFragment = mock();
     const withoutSuggestions = mock((fn: () => void) => fn());
     const editor = {
-      getApi: () => ({
+      getPluginApi: () => ({
         suggestion: {
           withoutSuggestions,
         },

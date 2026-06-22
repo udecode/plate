@@ -43,6 +43,7 @@ describe('useContentObserver', () => {
     useEditorSelectorMock.mockReturnValue([{ id: 'h1', path: [0] }]);
     useEditorRefMock.mockReturnValue({
       api: {
+        node: () => [{ id: 'node' }, [0]],
         toDOMNode: () => headingEl,
       },
     });

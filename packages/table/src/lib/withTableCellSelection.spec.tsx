@@ -1,6 +1,8 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
+import type { Element } from '@platejs/slate';
+
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -506,12 +508,12 @@ describe('withTableCellSelection', () => {
       expect(
         editor
           .getOption(BaseTablePlugin, 'selectedCells')
-          ?.map((cell: TElement) => cell.id)
+          ?.map((cell: Element) => cell.id)
       ).toStrictEqual(['c11', 'c12', 'c21', 'c22']);
       expect(
         editor
           .getOption(BaseTablePlugin, 'selectedTables')
-          ?.map((table: TElement) => table.type)
+          ?.map((table: Element) => table.type)
       ).toStrictEqual(['table']);
       expect(editor.getOption(BaseTablePlugin, 'isSelectingCell')).toBe(true);
       expect(editor.getOption(BaseTablePlugin, 'isCellSelected', 'c12')).toBe(
@@ -597,7 +599,7 @@ describe('withTableCellSelection', () => {
       expect(
         editor
           .getOption(BaseTablePlugin, 'selectedCells')
-          ?.map((cell: TElement) => cell.id)
+          ?.map((cell: Element) => cell.id)
       ).toStrictEqual(['c11', 'c12']);
     });
 

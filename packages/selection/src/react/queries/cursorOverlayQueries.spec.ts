@@ -1,5 +1,7 @@
-import { type TRange, KEYS } from 'platejs';
-import { createSlateEditor } from 'platejs';
+import type { Range } from '@platejs/slate';
+
+import { KEYS } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 import { FROZEN_EMPTY_ARRAY } from '../hooks/useCursorOverlay';
 import { getCaretPosition } from './getCaretPosition';
@@ -12,7 +14,7 @@ describe('selection cursor overlay queries', () => {
   });
 
   describe('getCaretPosition', () => {
-    const forwardRange: TRange = {
+    const forwardRange: Range = {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     };
@@ -38,11 +40,11 @@ describe('selection cursor overlay queries', () => {
     });
 
     it('uses the first rect for backward ranges and collapsed ranges', () => {
-      const backwardRange: TRange = {
+      const backwardRange: Range = {
         anchor: { offset: 3, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       };
-      const collapsedRange: TRange = {
+      const collapsedRange: Range = {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 1, path: [0, 0] },
       };
@@ -82,7 +84,7 @@ describe('selection cursor overlay queries', () => {
     });
 
     it('uses frozen empty rects when a cursor has no cached rects', () => {
-      const range: TRange = {
+      const range: Range = {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       };
@@ -111,7 +113,7 @@ describe('selection cursor overlay queries', () => {
     });
 
     it('computes caret positions from the matching rect bucket', () => {
-      const range: TRange = {
+      const range: Range = {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       };
@@ -143,7 +145,7 @@ describe('selection cursor overlay queries', () => {
 
   describe('getSelectionRects', () => {
     it('returns an empty array when the DOM range is missing', () => {
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         value: [{ children: [{ text: 'one' }], type: KEYS.p }],
       });
 
@@ -162,7 +164,7 @@ describe('selection cursor overlay queries', () => {
     });
 
     it('returns an empty array when a selected text node has no parent element', () => {
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         value: [{ children: [{ text: 'one' }], type: KEYS.p }],
       });
 
@@ -193,7 +195,7 @@ describe('selection cursor overlay queries', () => {
     });
 
     it('uses partial DOM ranges for start and end nodes and raw client rects for middle nodes', () => {
-      const editor = createSlateEditor({
+      const editor = createPlateEditor({
         value: [
           {
             children: [{ text: 'one' }, { text: 'two' }, { text: 'three' }],
@@ -202,7 +204,7 @@ describe('selection cursor overlay queries', () => {
         ],
       });
 
-      const range: TRange = {
+      const range: Range = {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 2, path: [0, 2] },
       };

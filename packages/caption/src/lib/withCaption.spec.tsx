@@ -1,3 +1,6 @@
+import type { Operation, Selection, Value } from '@platejs/slate';
+import type { KeyboardEventLike } from 'is-hotkey';
+
 import { createSlateEditor, createSlatePlugin } from 'platejs';
 
 import { BaseCaptionPlugin } from './BaseCaptionPlugin';
@@ -7,7 +10,7 @@ const MediaPlugin = createSlatePlugin({
   node: { isElement: true },
 });
 
-const createCaptionEditor = (value: any, selection: any = null) =>
+const createCaptionEditor = (value: Value, selection: Selection = null) =>
   createSlateEditor({
     plugins: [
       MediaPlugin,
@@ -23,12 +26,31 @@ const createCaptionEditor = (value: any, selection: any = null) =>
 
 describe('withCaption', () => {
   const originalSetTimeout = globalThis.setTimeout;
+  const arrowUpEvent: KeyboardEventLike = {
+    altKey: false,
+    ctrlKey: false,
+    key: 'ArrowUp',
+    metaKey: false,
+    shiftKey: false,
+    which: 38,
+  };
+  const selectMediaOperation: Operation = {
+    newProperties: {
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    },
+    properties: null,
+    type: 'set_selection',
+  };
 
   beforeEach(() => {
     globalThis.setTimeout = ((fn: () => void) => {
       fn();
 
-      return 0 as any;
+      const timeoutId = originalSetTimeout(() => {}, 0);
+      clearTimeout(timeoutId);
+
+      return timeoutId;
     }) as typeof setTimeout;
   });
 
@@ -45,15 +67,8 @@ describe('withCaption', () => {
       },
     ]);
 
-    editor.dom.currentKeyboardEvent = { key: 'ArrowUp', which: 38 } as any;
-    (editor as any).apply({
-      newProperties: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-      properties: null,
-      type: 'set_selection',
-    } as any);
+    editor.dom.currentKeyboardEvent = arrowUpEvent;
+    editor.tf.apply(selectMediaOperation);
 
     expect(editor.getOption(BaseCaptionPlugin, 'focusEndPath')).toEqual([0]);
   });
@@ -67,15 +82,8 @@ describe('withCaption', () => {
       },
     ]);
 
-    editor.dom.currentKeyboardEvent = { key: 'ArrowUp', which: 38 } as any;
-    (editor as any).apply({
-      newProperties: {
-        anchor: { offset: 0, path: [0, 0] },
-        focus: { offset: 0, path: [0, 0] },
-      },
-      properties: null,
-      type: 'set_selection',
-    } as any);
+    editor.dom.currentKeyboardEvent = arrowUpEvent;
+    editor.tf.apply(selectMediaOperation);
 
     expect(editor.getOption(BaseCaptionPlugin, 'focusEndPath')).toBeNull();
   });
@@ -138,7 +146,7 @@ describe('withCaption', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
     expect(editor.tf.moveLine({ reverse: false })).toBe(false);
     expect(editor.getOption(BaseCaptionPlugin, 'focusEndPath')).toBeNull();

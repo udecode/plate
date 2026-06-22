@@ -1,7 +1,7 @@
 import { createSlatePlugin } from '../plugin';
 import { createSlateEditor } from './withSlate';
 
-describe('getApi method', () => {
+describe('getPluginApi method', () => {
   it('returns correctly typed plugin API', () => {
     const TestPlugin = createSlatePlugin({
       key: 'test',
@@ -14,13 +14,31 @@ describe('getApi method', () => {
       plugins: [TestPlugin],
     });
 
-    const testApi = editor.getApi(TestPlugin);
+    const testApi = editor.getPluginApi(TestPlugin);
 
     // Type checking
     expect(testApi.testMethod).toBeDefined();
     expect(testApi.testNumber).toBeDefined();
 
     // Functionality checking
+    expect(testApi.testMethod()).toBe('test');
+    expect(testApi.testNumber()).toBe(42);
+  });
+
+  it('returns the same typed plugin API through getPluginApi', () => {
+    const TestPlugin = createSlatePlugin({
+      key: 'test',
+    }).extendEditorApi(() => ({
+      testMethod: () => 'test',
+      testNumber: () => 42,
+    }));
+
+    const editor = createSlateEditor({
+      plugins: [TestPlugin],
+    });
+
+    const testApi = editor.getPluginApi(TestPlugin);
+
     expect(testApi.testMethod()).toBe('test');
     expect(testApi.testNumber()).toBe(42);
   });
@@ -36,7 +54,7 @@ describe('getApi method', () => {
       plugins: [Plugin1],
     });
 
-    const api1 = editor.getApi<typeof Plugin1>();
+    const api1 = editor.getPluginApi(Plugin1);
 
     expect(api1.method1()).toBe('plugin1');
   });

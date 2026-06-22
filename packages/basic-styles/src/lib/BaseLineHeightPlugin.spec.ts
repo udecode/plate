@@ -2,13 +2,34 @@ import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
 
 import { BaseLineHeightPlugin } from './BaseLineHeightPlugin';
 
+const runLineHeightTx = (value: number, options?: unknown) => {
+  const set = mock();
+  const unset = mock();
+  const editor = createSlateEditor({
+    plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
+  } as any);
+  const extension = (BaseLineHeightPlugin as any).__txExtensions[0];
+  const groups = extension({
+    plugin: BaseLineHeightPlugin,
+    type: KEYS.lineHeight,
+  });
+
+  groups[BaseLineHeightPlugin.key](
+    {
+      nodes: { set, unset },
+    },
+    editor
+  ).set(value, options);
+
+  return { set, unset };
+};
+
 describe('BaseLineHeightPlugin', () => {
-  it('exposes the injected block contract and bound setNodes transform', () => {
+  it('exposes the injected block contract and tx extension', () => {
     const editor = createSlateEditor({
       plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseLineHeightPlugin);
-    const transforms = editor.getTransforms(BaseLineHeightPlugin) as any;
 
     expect(plugin.inject.isBlock).toBe(true);
     expect(plugin.inject.targetPlugins).toEqual([KEYS.p]);
@@ -16,8 +37,7 @@ describe('BaseLineHeightPlugin', () => {
       defaultNodeValue: 1.5,
       nodeKey: 'lineHeight',
     });
-    expect(typeof (editor as any).tf.lineHeight?.setNodes).toBe('function');
-    expect(typeof transforms.lineHeight.setNodes).toBe('function');
+    expect((BaseLineHeightPlugin as any).__txExtensions).toHaveLength(1);
   });
 
   it('parses line-height styles through the injected target plugin deserializer', () => {
@@ -42,21 +62,32 @@ describe('BaseLineHeightPlugin', () => {
     });
   });
 
-  it('applies and clears line height through the shared transform', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
-      value: [
-        {
-          children: [{ text: 'One' }],
-          type: 'p',
-        },
-      ],
-    } as any);
+  it('sets and clears line height through node transaction commands', () => {
+    const setResult = runLineHeightTx(2, { at: [] });
 
-    (editor as any).tf.lineHeight.setNodes(2, { at: [] });
-    expect((editor.children[0] as any).lineHeight).toBe(2);
+    expect(setResult.set).toHaveBeenCalledWith(
+      { lineHeight: 2 },
+      expect.objectContaining({ at: [] })
+    );
+    expect(typeof setResult.set.mock.calls[0][1].match).toBe('function');
+    expect(
+      setResult.set.mock.calls[0][1].match(
+        { children: [{ text: 'One' }], type: 'p' },
+        [0]
+      )
+    ).toBe(true);
+    expect(
+      setResult.set.mock.calls[0][1].match(
+        { children: [{ text: 'One' }], type: 'h1' },
+        [0]
+      )
+    ).toBe(false);
 
-    (editor as any).tf.lineHeight.setNodes(1.5, { at: [] });
-    expect((editor.children[0] as any).lineHeight).toBeUndefined();
+    const unsetResult = runLineHeightTx(1.5, { at: [] });
+
+    expect(unsetResult.unset).toHaveBeenCalledWith(
+      'lineHeight',
+      expect.objectContaining({ at: [] })
+    );
   });
 });

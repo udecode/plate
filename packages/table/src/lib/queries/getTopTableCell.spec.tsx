@@ -1,7 +1,9 @@
 /** @jsx jsxt */
 
+import type { Element } from '@platejs/slate';
+
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, type TElement, createSlateEditor } from 'platejs';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import { getTopTableCell } from './getTopTableCell';
@@ -46,7 +48,7 @@ describe('getTopTableCell', () => {
   it('returns the cell above the current cell', () => {
     const editor = createEditorInstance(input);
     const cellAbove = getTopTableCell(editor);
-    expect((cellAbove?.[0].children as TElement[])[0].children[0].text).toBe(
+    expect((cellAbove?.[0].children as Element[])[0].children[0].text).toBe(
       '12'
     );
   });

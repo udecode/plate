@@ -10,7 +10,7 @@ describe('BaseCalloutPlugin', () => {
     const editor = createSlateEditor({
       plugins: [BaseCalloutPlugin],
       value: [{ children: [{ text: '' }], type: 'p' }],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseCalloutPlugin);
 
     expect(plugin.rules).toMatchObject({
@@ -24,13 +24,31 @@ describe('BaseCalloutPlugin', () => {
       },
     });
 
-    (editor.tf.insert as any).callout({ variant: 'info' });
+    editor.tf.insert.callout({ variant: 'info' });
 
     expect(editor.children.at(-1)).toMatchObject({
       children: [{ text: '' }],
       icon: '🔥',
       type: editor.getType('callout'),
       variant: 'info',
+    });
+  });
+
+  it('exposes an inferred callout transaction group', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseCalloutPlugin],
+      value: [{ children: [{ text: '' }], type: 'p' }],
+    });
+
+    editor.update((tx) =>
+      tx.callout.insert({ at: [1], icon: '📌', variant: 'warning' })
+    );
+
+    expect(editor.children.at(-1)).toMatchObject({
+      children: [{ text: '' }],
+      icon: '📌',
+      type: editor.getType('callout'),
+      variant: 'warning',
     });
   });
 });

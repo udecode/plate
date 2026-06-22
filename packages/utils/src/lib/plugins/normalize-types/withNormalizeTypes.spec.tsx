@@ -1,11 +1,14 @@
 import { createSlateEditor } from 'platejs';
+import type { Value } from '@platejs/slate';
 
 import { withNormalizeTypes } from './withNormalizeTypes';
+
+type NormalizeTypesContext = Parameters<typeof withNormalizeTypes>[0];
 
 describe('withNormalizeTypes', () => {
   it('rewrites a mismatched strictType while preserving children', () => {
     const editor = createSlateEditor({
-      value: [{ type: 'h2', children: [{ text: 'test' }] }] as any,
+      value: [{ type: 'h2', children: [{ text: 'test' }] }] satisfies Value,
     });
     const normalizeNode = mock();
 
@@ -15,7 +18,7 @@ describe('withNormalizeTypes', () => {
         rules: [{ path: [0], strictType: 'h1' }],
       }),
       tf: { normalizeNode },
-    } as any);
+    } as unknown as NormalizeTypesContext);
     const normalize = override.transforms!.normalizeNode!;
 
     normalize([editor, []]);
@@ -29,7 +32,7 @@ describe('withNormalizeTypes', () => {
 
   it('calls onError and falls through to the base normalizeNode when insertion fails', () => {
     const editor = createSlateEditor({
-      value: [{ type: 'p', children: [{ text: 'x' }] }] as any,
+      value: [{ type: 'p', children: [{ text: 'x' }] }] satisfies Value,
     });
     const normalizeNode = mock();
     const onError = mock();
@@ -41,7 +44,7 @@ describe('withNormalizeTypes', () => {
         rules: [{ path: [3], type: 'h1' }],
       }),
       tf: { normalizeNode },
-    } as any);
+    } as unknown as NormalizeTypesContext);
     const normalize = override.transforms!.normalizeNode!;
 
     normalize([editor, []]);

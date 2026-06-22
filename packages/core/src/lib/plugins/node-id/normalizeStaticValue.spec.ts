@@ -1,4 +1,4 @@
-import type { Value } from '@platejs/slate-legacy';
+import type { Value } from '@platejs/slate';
 
 import {
   STATIC_VALUE_CREATED_AT,

@@ -1,8 +1,10 @@
-import { type TElement, KEYS } from 'platejs';
+import type { Element } from '@platejs/slate';
+
+import { KEYS } from 'platejs';
 
 import { getSiblingList } from './getSiblingList';
 
-type Entry = [TElement, number[]];
+type Entry = [Element, number[]];
 
 const createEntries = (): Entry[] => [
   [
@@ -11,7 +13,7 @@ const createEntries = (): Entry[] => [
       [KEYS.indent]: 1,
       [KEYS.listType]: 'disc',
       type: KEYS.p,
-    } as TElement,
+    } as Element,
     [0],
   ],
   [
@@ -20,7 +22,7 @@ const createEntries = (): Entry[] => [
       [KEYS.indent]: 1,
       [KEYS.listType]: 'disc',
       type: KEYS.p,
-    } as TElement,
+    } as Element,
     [1],
   ],
   [
@@ -29,7 +31,7 @@ const createEntries = (): Entry[] => [
       [KEYS.indent]: 1,
       [KEYS.listType]: 'disc',
       type: KEYS.p,
-    } as TElement,
+    } as Element,
     [2],
   ],
 ];

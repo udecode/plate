@@ -1,36 +1,35 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createEditor, createSlateEditor } from 'platejs';
+import type { SlateEditor } from '@platejs/core';
+import { createSlateEditor } from '@platejs/core';
 
 import { moveListItemsToList } from './moveListItemsToList';
 
 jsxt;
 
-const input = createEditor(
-  (
-    <editor>
-      <hul id="1">
-        <hli>
-          <hp>1</hp>
-        </hli>
-      </hul>
-      <hul>
-        <hli id="2">
-          <hp>2</hp>
-          <hul>
-            <hli>
-              <hp>21</hp>
-            </hli>
-            <hli>
-              <hp>22</hp>
-            </hli>
-          </hul>
-        </hli>
-      </hul>
-    </editor>
-  ) as any
-);
+const input = (
+  <editor>
+    <hul id="1">
+      <hli>
+        <hp>1</hp>
+      </hli>
+    </hul>
+    <hul>
+      <hli id="2">
+        <hp>2</hp>
+        <hul>
+          <hli>
+            <hp>21</hp>
+          </hli>
+          <hli>
+            <hp>22</hp>
+          </hli>
+        </hul>
+      </hli>
+    </hul>
+  </editor>
+) as any as SlateEditor;
 
 const output = (
   <editor>

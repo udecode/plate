@@ -77,14 +77,14 @@ const withTest = (editor: any) => {
     move: { value: (...args: any[]) => transforms().move(...args) },
     redo: {
       value: () =>
-        editor.update((tx: any) => {
+        editor.update((tx) => {
           tx.history.redo();
         }),
     },
     select: { value: (...args: any[]) => transforms().select(...args) },
     undo: {
       value: () =>
-        editor.update((tx: any) => {
+        editor.update((tx) => {
           tx.history.undo();
         }),
     },
@@ -124,7 +124,7 @@ describe('@platejs/slate-history', () => {
     };
 
     run(editor);
-    editor.update((tx: any) => {
+    editor.update((tx) => {
       tx.history.undo();
     });
 

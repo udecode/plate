@@ -1,4 +1,4 @@
-import type { TSelection } from '@platejs/slate-legacy';
+import type { Selection } from '@platejs/slate';
 
 import { createSlateEditor } from '../../../editor';
 import { createSlatePlugin } from '../../../plugin/createSlatePlugin';
@@ -183,7 +183,7 @@ describe('init', () => {
     });
 
     it('set explicit selection when provided', () => {
-      const selection: TSelection = {
+      const selection: Selection = {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },
       };
@@ -228,7 +228,7 @@ describe('init', () => {
     });
 
     it('prioritize explicit selection over autoSelect', () => {
-      const selection: TSelection = {
+      const selection: Selection = {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       };
@@ -283,7 +283,7 @@ describe('init', () => {
     it('handle all options correctly after async resolution', async () => {
       const asyncValue = [{ children: [{ text: 'async content' }], type: 'p' }];
       const asyncFunction = mock().mockResolvedValue(asyncValue);
-      const selection: TSelection = {
+      const selection: Selection = {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 3, path: [0, 0] },
       };

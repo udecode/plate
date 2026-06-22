@@ -48,7 +48,7 @@ describe('deleteSuggestion', () => {
         string: () => 'x',
         unhangRange: (range: unknown) => range,
       },
-      getApi: () => ({
+      getPluginApi: () => ({
         suggestion: {
           node: () => [suggestionNode, [0, 0]],
         },
@@ -106,7 +106,7 @@ describe('deleteSuggestion', () => {
         string: () => 'x',
         unhangRange: (range: unknown) => range,
       },
-      getApi: (plugin: unknown) => {
+      getPluginApi: (plugin: unknown) => {
         expect(plugin).toBe(BaseSuggestionPlugin);
 
         return {
@@ -169,7 +169,7 @@ describe('deleteSuggestion', () => {
         string: () => '\n',
         unhangRange: (range: unknown) => range,
       },
-      getApi: () => ({
+      getPluginApi: () => ({
         suggestion: {
           node: () => {},
         },

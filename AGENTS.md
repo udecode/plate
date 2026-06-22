@@ -174,19 +174,17 @@ Browser usage:
 
 ### Slate v2 packages in Plate repo
 
-- `pnpm check:slate` is the full release/deletion gate. Keep it broad: source
-  parity, package typecheck/build/test, browser package tests, docs audit,
-  benchmark target audit, www docs/typecheck, and the full Slate browser matrix.
-- Use `pnpm check:slate:fast` for the normal daily Slate lane. It covers source
-  parity, Slate package typecheck/test, browser package tests, and Chromium
-  smoke through `apps/slate`.
+- `pnpm check:slate` is the normal daily Slate lane. It covers Slate package
+  typecheck/tests, browser package tests, and the Chromium examples proof
+  through `apps/slate`.
 - Use `pnpm --filter slate test:slate-browser:chromium <file-or--grep>`
   for focused changed browser rows. `apps/slate` must import Slate
   examples from `apps/www`; never maintain a second example source tree.
 - Use `pnpm check:slate:browser-matrix` for closure-only app browser proof:
   Chromium, Firefox, mobile viewport, and WebKit on Darwin.
-- Do not put WebKit, mobile, or the full browser matrix in the fast package
-  loop; they are closure gates.
+- Do not put WebKit, mobile, transplant parity, docs-v2 audits, benchmark
+  target audits, www typecheck, or the full browser matrix in the daily Slate
+  loop; they are explicit closure or release gates.
 - Pair browser proof with package proof when making release-quality Slate
   behavior claims.
 - Use `bun test:mobile-device-proof:raw` only on a machine/device lane that can provide real Appium Android/iOS proof artifacts. Do not let semantic mobile handles or Playwright mobile viewport rows satisfy raw-device claims.

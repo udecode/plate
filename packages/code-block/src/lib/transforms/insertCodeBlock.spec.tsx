@@ -2,8 +2,8 @@
 
 import { jsxt } from '@platejs/test-utils';
 import {
+  type SlateEditor,
   BaseParagraphPlugin,
-  createEditor,
   createSlateEditor,
   KEYS,
 } from 'platejs';
@@ -17,18 +17,16 @@ jsxt;
 describe('insert code block', () => {
   describe('when selection is at start of block', () => {
     it('turn line to code block', () => {
-      const input = createEditor(
-        (
-          <editor>
-            <hp>line 1</hp>
-            <hp>
-              <cursor />
-              line 2
-            </hp>
-            <hp>line 3</hp>
-          </editor>
-        ) as any
-      );
+      const input = (
+        <editor>
+          <hp>line 1</hp>
+          <hp>
+            <cursor />
+            line 2
+          </hp>
+          <hp>line 3</hp>
+        </editor>
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -57,18 +55,16 @@ describe('insert code block', () => {
 
   describe('when selection is not at start of block', () => {
     it('split line at selection and turn latter line to code block', () => {
-      const input = createEditor(
-        (
-          <editor>
-            <hp>line 1</hp>
-            <hp>
-              before <cursor />
-              after
-            </hp>
-            <hp>line 3</hp>
-          </editor>
-        ) as any
-      );
+      const input = (
+        <editor>
+          <hp>line 1</hp>
+          <hp>
+            before <cursor />
+            after
+          </hp>
+          <hp>line 3</hp>
+        </editor>
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -98,20 +94,18 @@ describe('insert code block', () => {
 
   describe('when selection is expanded', () => {
     it('keeps the editor unchanged for expanded selections', () => {
-      const input = createEditor(
-        (
-          <editor>
-            <hp>line 1</hp>
-            <hp>
-              before <anchor />
-              selection
-              <focus />
-              after
-            </hp>
-            <hp>line 3</hp>
-          </editor>
-        ) as any
-      );
+      const input = (
+        <editor>
+          <hp>line 1</hp>
+          <hp>
+            before <anchor />
+            selection
+            <focus />
+            after
+          </hp>
+          <hp>line 3</hp>
+        </editor>
+      ) as any as SlateEditor;
 
       const output = (
         <editor>
@@ -158,18 +152,16 @@ describe('insert code block', () => {
   });
 
   it('does nothing when the selection is already in a code block', () => {
-    const input = createEditor(
-      (
-        <editor>
-          <hcodeblock>
-            <hcodeline>
-              before <cursor />
-              after
-            </hcodeline>
-          </hcodeblock>
-        </editor>
-      ) as any
-    );
+    const input = (
+      <editor>
+        <hcodeblock>
+          <hcodeline>
+            before <cursor />
+            after
+          </hcodeline>
+        </hcodeblock>
+      </editor>
+    ) as any as SlateEditor;
     const editor = createSlateEditor({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       selection: input.selection,

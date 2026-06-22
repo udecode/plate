@@ -639,7 +639,7 @@ changes in the final handoff.
 In `Plate repo root`, prefer these focused forms:
 
 ```bash
-pnpm check:slate:fast
+pnpm check:slate
 pnpm --filter slate test:slate-browser:chromium <file-or--grep>
 pnpm check:slate:browser-matrix
 PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter www exec playwright test --config playwright.slate.config.ts --project=<chromium|firefox|webkit> tests/slate-browser/donor/examples/<suite>.test.ts -g "<pattern>"
@@ -649,12 +649,11 @@ cd packages/<package> && bun test ./test/<file>.test.ts --test-name-pattern "<pa
 
 Rules:
 
-- `pnpm check:slate` is the full release/deletion gate. Do not use it as the
-  normal daily loop unless the checkpoint is release, deletion, or final
-  closure.
-- `pnpm check:slate:fast` is the default daily Slate lane: source parity,
-  package typecheck/test, browser package tests, and Chromium smoke through
-  `apps/slate`.
+- `pnpm check:slate` is the default daily Slate lane: package typecheck/tests,
+  browser package tests, and Chromium examples proof through `apps/slate`.
+- Transplant parity, docs-v2 audits, benchmark target audits, www typecheck,
+  WebKit, mobile viewport, and the full Playwright app matrix are not part of
+  the daily Slate loop.
 - `pnpm --filter slate test:slate-browser:chromium <file-or--grep>` is
   the focused changed-row browser lane. `apps/slate` must reuse
   `apps/www` Slate example modules instead of owning duplicate examples.

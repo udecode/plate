@@ -7,7 +7,7 @@ describe('BaseInlineEquationPlugin', () => {
   it('configures inlineEquation as an inline void element and exposes insert.inlineEquation', () => {
     const editor = createSlateEditor({
       plugins: [BaseInlineEquationPlugin],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseInlineEquationPlugin);
 
     expect(plugin.node).toMatchObject({
@@ -15,7 +15,7 @@ describe('BaseInlineEquationPlugin', () => {
       isInline: true,
       isVoid: true,
     });
-    expect(typeof (editor as any).tf.insert.inlineEquation).toBe('function');
+    expect(typeof editor.tf.insert.inlineEquation).toBe('function');
   });
 
   it('moves into the inline equation from the left boundary', () => {
@@ -39,7 +39,7 @@ describe('BaseInlineEquationPlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
     editor.tf.move({ distance: 1, unit: 'character' });
 
@@ -70,13 +70,37 @@ describe('BaseInlineEquationPlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
     editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
 
     expect(editor.selection).toEqual({
       anchor: { offset: 0, path: [0, 1, 0] },
       focus: { offset: 0, path: [0, 1, 0] },
+    });
+  });
+
+  it('exposes an inferred inline equation transaction group', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseInlineEquationPlugin],
+      value: [
+        { children: [{ text: 'before' }, { text: 'after' }], type: KEYS.p },
+      ],
+    });
+
+    editor.update((tx) => tx.inlineEquation.insert('a^2+b^2', { at: [0, 1] }));
+
+    expect(editor.children[0]).toMatchObject({
+      children: [
+        { text: 'before' },
+        {
+          children: [{ text: '' }],
+          texExpression: 'a^2+b^2',
+          type: KEYS.inlineEquation,
+        },
+        { text: 'after' },
+      ],
+      type: KEYS.p,
     });
   });
 });

@@ -11,9 +11,9 @@ describe('BaseDatePlugin', () => {
   it('configure date as void inline element', () => {
     const editor = createSlateEditor({
       plugins: [BaseDatePlugin],
-    } as any);
+    });
 
-    const plugin = editor.getPlugin({ key: KEYS.date });
+    const plugin = editor.getPlugin(BaseDatePlugin);
 
     expect(plugin.node.isVoid).toBe(true);
     expect(plugin.node.isInline).toBe(true);
@@ -23,9 +23,9 @@ describe('BaseDatePlugin', () => {
   it('does not force date elements to opt out of keyboard entry', () => {
     const editor = createSlateEditor({
       plugins: [BaseDatePlugin],
-    } as any);
+    });
 
-    const plugin = editor.getPlugin({ key: KEYS.date });
+    const plugin = editor.getPlugin(BaseDatePlugin);
 
     expect(plugin.node.isSelectable).toBeUndefined();
   });
@@ -33,10 +33,38 @@ describe('BaseDatePlugin', () => {
   it('provide insert.date transform', () => {
     const editor = createSlateEditor({
       plugins: [BaseDatePlugin],
-    } as any);
+    });
 
-    expect((editor.tf as any).insert.date).toBeDefined();
-    expect(typeof (editor.tf as any).insert.date).toBe('function');
+    expect(editor.tf.insert.date).toBeDefined();
+    expect(typeof editor.tf.insert.date).toBe('function');
+  });
+
+  it('exposes an inferred date transaction group', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseDatePlugin],
+      value: [
+        {
+          children: [{ text: 'x' }],
+          type: KEYS.p,
+        },
+      ],
+    });
+
+    editor.update((tx) =>
+      tx.date.insert({ at: [0, 1], date: 'Mon Mar 23 2026' })
+    );
+
+    expect(editor.children[0]).toMatchObject({
+      children: [
+        { text: 'x' },
+        {
+          date: '2026-03-23',
+          type: KEYS.date,
+        },
+        { text: ' ' },
+      ],
+      type: KEYS.p,
+    });
   });
 
   it('deleteBackward removes the adjacent date atom', () => {
@@ -60,7 +88,7 @@ describe('BaseDatePlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
     editor.tf.deleteBackward('character');
 
@@ -97,7 +125,7 @@ describe('BaseDatePlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
     editor.tf.deleteForward('character');
 
@@ -134,7 +162,7 @@ describe('BaseDatePlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
     editor.tf.move({ distance: 1, unit: 'character' });
 
@@ -165,7 +193,7 @@ describe('BaseDatePlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
     editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
 

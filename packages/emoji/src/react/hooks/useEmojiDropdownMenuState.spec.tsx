@@ -1,24 +1,19 @@
 import { renderHook } from '@testing-library/react';
+import * as actualPlatejsReact from 'platejs/react';
+
+import { EmojiSettings } from '../../lib/constants';
+import { EmojiFloatingIndexSearch } from '../../lib/utils/IndexSearch/EmojiFloatingIndexSearch';
 
 const usePluginOptionMock = mock();
 const useEmojiPickerMock = mock();
 const getFloatingLibraryInstanceMock = mock();
-const getFloatingIndexSearchInstanceMock = mock();
 const FrequentEmojiStorageMock = mock(function (this: any, options: any) {
   this.options = options;
 });
 
 mock.module('platejs/react', () => ({
+  ...actualPlatejsReact,
   usePluginOption: usePluginOptionMock,
-}));
-
-mock.module('../../lib', () => ({
-  EmojiFloatingIndexSearch: {
-    getInstance: getFloatingIndexSearchInstanceMock,
-  },
-  EmojiSettings: {
-    showFrequent: { limit: 5 },
-  },
 }));
 
 mock.module('../EmojiPlugin', () => ({
@@ -29,7 +24,7 @@ mock.module('../storage', () => ({
   FrequentEmojiStorage: FrequentEmojiStorageMock,
 }));
 
-mock.module('../utils', () => ({
+mock.module('../utils/EmojiLibrary/EmojiFloatingLibrary', () => ({
   EmojiFloatingLibrary: {
     getInstance: getFloatingLibraryInstanceMock,
   },
@@ -44,13 +39,25 @@ describe('useEmojiDropdownMenuState', () => {
     usePluginOptionMock.mockReset();
     useEmojiPickerMock.mockReset();
     getFloatingLibraryInstanceMock.mockReset();
-    getFloatingIndexSearchInstanceMock.mockReset();
     FrequentEmojiStorageMock.mockClear();
+    resetFloatingIndexSearch();
+  });
+
+  afterEach(() => {
+    resetFloatingIndexSearch();
   });
 
   afterAll(() => {
     mock.restore();
   });
+
+  const resetFloatingIndexSearch = () => {
+    (
+      EmojiFloatingIndexSearch as unknown as {
+        instance?: EmojiFloatingIndexSearch;
+      }
+    ).instance = undefined;
+  };
 
   it('creates storage + library singletons and returns picker state with open controls', async () => {
     const { useEmojiDropdownMenuState } = await import(
@@ -59,7 +66,6 @@ describe('useEmojiDropdownMenuState', () => {
 
     usePluginOptionMock.mockReturnValue({ categories: [], emojis: [] });
     getFloatingLibraryInstanceMock.mockReturnValue({ id: 'library' });
-    getFloatingIndexSearchInstanceMock.mockReturnValue({ id: 'index' });
     useEmojiPickerMock.mockReturnValue({
       emoji: undefined,
       isOpen: true,
@@ -68,11 +74,13 @@ describe('useEmojiDropdownMenuState', () => {
 
     const { result } = renderHook(() => useEmojiDropdownMenuState());
 
-    expect(FrequentEmojiStorageMock).toHaveBeenCalledWith({ limit: 5 });
-    expect(getFloatingLibraryInstanceMock).toHaveBeenCalled();
-    expect(getFloatingIndexSearchInstanceMock).toHaveBeenCalledWith({
-      id: 'library',
+    expect(FrequentEmojiStorageMock).toHaveBeenCalledWith({
+      limit: EmojiSettings.showFrequent.limit,
     });
+    expect(getFloatingLibraryInstanceMock).toHaveBeenCalled();
+    expect(useEmojiPickerMock.mock.calls[0]?.[0].indexSearch).toBeInstanceOf(
+      EmojiFloatingIndexSearch
+    );
     expect(result.current.isOpen).toBe(true);
     expect(result.current.emojiPickerState.emoji).toBeUndefined();
   });

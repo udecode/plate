@@ -5,7 +5,6 @@ import {
   BaseH1Plugin,
   BaseH6Plugin,
 } from '@platejs/basic-nodes';
-import { BaseCalloutPlugin } from '@platejs/callout';
 import { BaseIndentPlugin } from '@platejs/indent';
 import { BaseListPlugin } from '@platejs/list';
 import { jsxt } from '@platejs/test-utils';
@@ -41,6 +40,15 @@ const createElementPlugin = ({
         }
       : {}),
   });
+
+const BaseCalloutPlugin = createElementPlugin({
+  breakRules: {
+    default: 'lineBreak',
+    empty: 'reset',
+    emptyLineEnd: 'deleteExit',
+  },
+  key: 'callout',
+});
 
 const getInsertBreakEditor = ({
   input,

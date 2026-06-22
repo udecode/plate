@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@platejs/diff": "workspace:^",
+    "@platejs/slate": "workspace:^",
     "lodash": "^4.17.21",
     "react-compiler-runtime": "^1.0.0"
   },

@@ -1,4 +1,5 @@
 import { createSlateEditor } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 import { deserializeCsv } from './deserializer/utils/deserializeCsv';
 import { CsvPlugin } from './CsvPlugin';
@@ -23,10 +24,63 @@ describe('CsvPlugin', () => {
       },
     });
     expect(typeof editor.api.csv.deserialize).toBe('function');
-    expect(typeof editor.getApi(CsvPlugin).csv.deserialize).toBe('function');
+    expect(typeof editor.getPluginApi(CsvPlugin).csv.deserialize).toBe(
+      'function'
+    );
     expect(plugin.parser?.format).toBe('text/plain');
     expect(plugin.parser?.deserialize?.(parserOptions as any)).toEqual(
       deserializeCsv(editor, { data })
     );
+  });
+
+  it('exposes the csv api on the Slate v2 runtime route', () => {
+    const editor = createPlateEditor({
+      plugins: [CsvPlugin],
+      runtime: 'slate-v2',
+    });
+    const api = editor.getPluginApi<{
+      csv: {
+        deserialize: (
+          options: Parameters<typeof deserializeCsv>[1]
+        ) => ReturnType<typeof deserializeCsv>;
+      };
+    }>(CsvPlugin);
+
+    expect(typeof api.csv.deserialize).toBe('function');
+    expect(api.csv.deserialize({ data: 'name,age\nAda,36' })).toEqual([
+      { children: [{ text: '' }], type: 'p' },
+      {
+        children: [
+          {
+            children: [
+              {
+                children: [{ children: [{ text: 'name' }], type: 'p' }],
+                type: 'th',
+              },
+              {
+                children: [{ children: [{ text: 'age' }], type: 'p' }],
+                type: 'th',
+              },
+            ],
+            type: 'tr',
+          },
+          {
+            children: [
+              {
+                children: [{ children: [{ text: 'Ada' }], type: 'p' }],
+                type: 'td',
+              },
+              {
+                children: [{ children: [{ text: '36' }], type: 'p' }],
+                type: 'td',
+              },
+            ],
+            type: 'tr',
+          },
+        ],
+        type: 'table',
+      },
+      { children: [{ text: '' }], type: 'p' },
+    ]);
   });
 });

@@ -43,10 +43,12 @@ Completion threshold:
 Verification surface:
 - TODO: Name the focused package tests, Playwright routes/greps, in-app Browser proof, source audits, benchmark metrics, mobile/raw-device proof, helper API checks, docs audit, skill sync, and final plan check that prove this run.
 - Slate package proof uses `pnpm slate:packages:test` and `pnpm slate:packages:typecheck`.
-- Slate daily proof uses `pnpm check:slate:fast`.
+- Slate daily proof uses `pnpm check:slate`.
 - Slate focused browser proof uses `pnpm --filter slate test:slate-browser:chromium <file-or--grep>`.
 - `apps/slate` reuses `apps/www` Slate examples; never maintain a second example source tree.
-- Slate release/deletion proof uses `pnpm check:slate`, with `pnpm check:slate:browser-matrix` available when only the full app browser matrix needs rerun.
+- Slate release/deletion proof adds explicit closure gates such as package
+  build, docs checks, benchmark target audit, and
+  `pnpm check:slate:browser-matrix` when those claims are in scope.
 
 Constraints:
 - Resolve lane first: Slate, Plate, or shared editor. Use `autoclosure` for post-merge/current-tree until-clean closure.

@@ -2,13 +2,34 @@ import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
 
 import { BaseTextAlignPlugin } from './BaseTextAlignPlugin';
 
+const runTextAlignTx = (value: string, options?: unknown) => {
+  const set = mock();
+  const unset = mock();
+  const editor = createSlateEditor({
+    plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
+  } as any);
+  const extension = (BaseTextAlignPlugin as any).__txExtensions[0];
+  const groups = extension({
+    plugin: BaseTextAlignPlugin,
+    type: editor.getType(KEYS.textAlign),
+  });
+
+  groups[BaseTextAlignPlugin.key](
+    {
+      nodes: { set, unset },
+    },
+    editor
+  ).set(value, options);
+
+  return { set, unset };
+};
+
 describe('BaseTextAlignPlugin', () => {
-  it('exposes the injected block contract and bound setNodes transform', () => {
+  it('exposes the injected block contract and tx extension', () => {
     const editor = createSlateEditor({
       plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseTextAlignPlugin);
-    const transforms = editor.getTransforms(BaseTextAlignPlugin) as any;
 
     expect(plugin.inject.isBlock).toBe(true);
     expect(plugin.inject.targetPlugins).toEqual([KEYS.p]);
@@ -17,8 +38,7 @@ describe('BaseTextAlignPlugin', () => {
       styleKey: 'textAlign',
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     });
-    expect(typeof (editor as any).tf.textAlign?.setNodes).toBe('function');
-    expect(typeof transforms.textAlign.setNodes).toBe('function');
+    expect((BaseTextAlignPlugin as any).__txExtensions).toHaveLength(1);
   });
 
   it('parses text-align styles through the injected target plugin deserializer', () => {
@@ -45,22 +65,32 @@ describe('BaseTextAlignPlugin', () => {
     });
   });
 
-  it('applies and clears text alignment through the shared transform', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
-      value: [
-        {
-          children: [{ text: 'One' }],
-          type: 'p',
-        },
-      ],
-    } as any);
-    const nodeKey = editor.getType(KEYS.textAlign);
+  it('sets and clears text alignment through node transaction commands', () => {
+    const setResult = runTextAlignTx('center', { at: [] });
 
-    (editor as any).tf.textAlign.setNodes('center', { at: [] });
-    expect((editor.children[0] as any)[nodeKey]).toBe('center');
+    expect(setResult.set).toHaveBeenCalledWith(
+      { align: 'center' },
+      expect.objectContaining({ at: [] })
+    );
+    expect(typeof setResult.set.mock.calls[0][1].match).toBe('function');
+    expect(
+      setResult.set.mock.calls[0][1].match(
+        { children: [{ text: 'One' }], type: 'p' },
+        [0]
+      )
+    ).toBe(true);
+    expect(
+      setResult.set.mock.calls[0][1].match(
+        { children: [{ text: 'One' }], type: 'h1' },
+        [0]
+      )
+    ).toBe(false);
 
-    (editor as any).tf.textAlign.setNodes('start', { at: [] });
-    expect((editor.children[0] as any)[nodeKey]).toBeUndefined();
+    const unsetResult = runTextAlignTx('start', { at: [] });
+
+    expect(unsetResult.unset).toHaveBeenCalledWith(
+      'align',
+      expect.objectContaining({ at: [] })
+    );
   });
 });

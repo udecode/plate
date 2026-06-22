@@ -24,11 +24,11 @@ describe('isEqualTags', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
 
-    expect(
-      isEqualTags(editor, [{ value: 'beta' }, { value: 'alpha' }] as any)
-    ).toBe(true);
+    expect(isEqualTags(editor, [{ value: 'beta' }, { value: 'alpha' }])).toBe(
+      true
+    );
   });
 
   it('returns false for different tag sets and true for empty ones', () => {
@@ -46,12 +46,12 @@ describe('isEqualTags', () => {
           type: 'p',
         },
       ],
-    } as any);
+    });
     const emptyEditor = createSlateEditor({
       value: [{ children: [{ text: '' }], type: 'p' }],
-    } as any);
+    });
 
-    expect(isEqualTags(editor, [{ value: 'beta' }] as any)).toBe(false);
+    expect(isEqualTags(editor, [{ value: 'beta' }])).toBe(false);
     expect(isEqualTags(emptyEditor)).toBe(true);
   });
 });

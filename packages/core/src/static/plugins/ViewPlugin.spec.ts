@@ -1,4 +1,5 @@
 import { createDataTransfer } from '@platejs/test-utils';
+import type { Descendant } from '@platejs/slate';
 
 import { createStaticEditor } from '../editor/withStatic';
 import * as getSelectedDomFragmentModule from '../utils/getSelectedDomFragment';
@@ -84,13 +85,15 @@ describe('ViewPlugin', () => {
     });
 
     it('proxies getFragment through getSelectedDomFragment', () => {
-      const fragment = [{ children: [{ text: 'First paragraph' }], type: 'p' }];
+      const fragment = [
+        { children: [{ text: 'First paragraph' }], type: 'p' },
+      ] satisfies Descendant[];
       const editor = createStaticEditor();
 
       getSelectedDomFragmentSpy = spyOn(
         getSelectedDomFragmentModule,
         'getSelectedDomFragment'
-      ).mockReturnValue(fragment as any);
+      ).mockReturnValue(fragment);
 
       expect(editor.api.getFragment()).toEqual(fragment);
     });
@@ -106,14 +109,9 @@ describe('ViewPlugin', () => {
       originalBtoa = global.window.btoa;
       originalEncodeURIComponent = global.encodeURIComponent;
 
-      // Mock DataTransfer with spy
       const dataMap = new Map();
-      mockData = {
-        getData: mock((type: string) => dataMap.get(type) ?? ''),
-        setData: mock((type: string, value: string) =>
-          dataMap.set(type, value)
-        ),
-      } as any;
+      mockData = createDataTransfer(dataMap);
+      spyOn(mockData, 'setData');
 
       // Mock window.btoa
       global.window.btoa = mock((str) => `base64-${str}`);
@@ -190,7 +188,9 @@ describe('ViewPlugin', () => {
       suppressSetFragmentDataOverrideWarning();
 
       const editor = createStaticEditor();
-      const fragment = [{ children: [{ text: 'Alpha' }], type: 'p' }];
+      const fragment = [
+        { children: [{ text: 'Alpha' }], type: 'p' },
+      ] satisfies Descendant[];
       const html = document.createElement('div');
 
       html.innerHTML = '<p>Alpha</p>';
@@ -198,7 +198,7 @@ describe('ViewPlugin', () => {
       getSelectedDomFragmentSpy = spyOn(
         getSelectedDomFragmentModule,
         'getSelectedDomFragment'
-      ).mockReturnValue(fragment as any);
+      ).mockReturnValue(fragment);
       getSelectedDomNodeSpy = spyOn(
         getSelectedDomNodeModule,
         'getSelectedDomNode'

@@ -81,7 +81,7 @@ describe('copySelectedBlocks', () => {
       editor.tf.setFragmentData = mockSetFragmentData;
 
       // Mock the blockSelection.getNodes to return the selected entries
-      editor.getApi = mock().mockReturnValue({
+      editor.getPluginApi = mock().mockReturnValue({
         blockSelection: {
           getNodes: mock().mockReturnValue([
             [
@@ -178,7 +178,7 @@ describe('copySelectedBlocks', () => {
       const mockSetFragmentData = mock();
       editor.tf.setFragmentData = mockSetFragmentData;
 
-      editor.getApi = mock().mockReturnValue({
+      editor.getPluginApi = mock().mockReturnValue({
         blockSelection: {
           getNodes: mock().mockReturnValue([
             [
@@ -238,7 +238,7 @@ describe('copySelectedBlocks', () => {
       const mockSetFragmentData = mock();
       editor.tf.setFragmentData = mockSetFragmentData;
 
-      editor.getApi = mock().mockReturnValue({
+      editor.getPluginApi = mock().mockReturnValue({
         blockSelection: {
           getNodes: mock().mockReturnValue([
             [

@@ -185,7 +185,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
     editor.tf.deleteBackward('character');
 
     const lineBreakData = editor
-      .getApi(BaseSuggestionPlugin)
+      .getPluginApi(BaseSuggestionPlugin)
       .suggestion.isBlockSuggestion(editor.children[0] as any)
       ? (editor.children[0].suggestion as TSuggestionElement)
       : undefined;

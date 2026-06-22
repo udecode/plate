@@ -6,14 +6,14 @@ describe('BaseEquationPlugin', () => {
   it('configures equation as a void element and exposes insert.equation', () => {
     const editor = createSlateEditor({
       plugins: [BaseEquationPlugin],
-    } as any);
+    });
     const plugin = editor.getPlugin(BaseEquationPlugin);
 
     expect(plugin.node).toMatchObject({
       isElement: true,
       isVoid: true,
     });
-    expect(typeof (editor as any).tf.insert.equation).toBe('function');
+    expect(typeof editor.tf.insert.equation).toBe('function');
   });
 
   it('deleteBackward from the next block selects the equation instead of deleting through it', () => {
@@ -34,7 +34,7 @@ describe('BaseEquationPlugin', () => {
           type: KEYS.p,
         },
       ],
-    } as any);
+    });
 
     editor.tf.deleteBackward('character');
 
@@ -42,6 +42,21 @@ describe('BaseEquationPlugin', () => {
     expect(editor.selection).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
+    });
+  });
+
+  it('exposes an inferred equation transaction group', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseEquationPlugin],
+      value: [{ children: [{ text: '' }], type: KEYS.p }],
+    });
+
+    editor.update((tx) => tx.equation.insert({ at: [1] }));
+
+    expect(editor.children[1]).toMatchObject({
+      children: [{ text: '' }],
+      texExpression: '',
+      type: KEYS.equation,
     });
   });
 });

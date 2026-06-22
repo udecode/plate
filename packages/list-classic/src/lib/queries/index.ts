@@ -6,6 +6,7 @@ export * from './getHighestEmptyList';
 export * from './getListItemEntry';
 export * from './getListRoot';
 export * from './getListTypes';
+export * from './getPreviousSiblingPath';
 export * from './getTaskListProps';
 export * from './getTodoListItemEntry';
 export * from './hasListChild';

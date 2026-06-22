@@ -1,16 +1,22 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import {
-  type Descendant,
-  type SlateEditor,
-  type TElement,
-  createEditor,
-} from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { Descendant } from '@platejs/slate';
+import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import { getListChildren } from './getListChildren';
 
 jsxt;
+
+const createListEditor = (input: Descendant[]) => {
+  const editor = (<editor>{input}</editor>) as any as SlateEditor;
+
+  return createSlateEditor({
+    selection: editor.selection,
+    value: editor.children,
+  });
+};
 
 describe('getListChildren', () => {
   describe('when node is not a list item', () => {
@@ -27,11 +33,9 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.api.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([]);
@@ -50,11 +54,9 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.api.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([]);
@@ -92,11 +94,9 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.api.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -141,11 +141,9 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.api.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -188,11 +186,9 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.api.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -234,11 +230,9 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.api.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -272,11 +266,9 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.api.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([[output[0], [1]]] as any);
@@ -295,11 +287,9 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.api.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([]);
@@ -318,11 +308,9 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.api.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([]);
@@ -364,11 +352,9 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.api.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -408,11 +394,9 @@ describe('getListChildren', () => {
         </fragment>
       ) as any as Descendant[];
 
-      const editor = createEditor(
-        (<editor>{input}</editor>) as any as SlateEditor
-      );
+      const editor = createListEditor(input);
 
-      const entry = editor.api.block<TElement>();
+      const entry = editor.api.block<Element>();
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([

@@ -1,0 +1,1327 @@
+[
+  {
+    "file": "content/docs/slate/api/locations/bookmark.mdx",
+    "route": "/docs/slate/api/locations/bookmark",
+    "title": "Bookmark API",
+    "desc": false,
+    "lineCount": 35,
+    "headings": [],
+    "flags": [
+      "missing-description",
+      "long-opening"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/locations/index.mdx",
+    "route": "/docs/slate/api/locations",
+    "title": "Location Types APIs",
+    "desc": false,
+    "lineCount": 21,
+    "headings": [],
+    "flags": [
+      "missing-description",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/locations/location.mdx",
+    "route": "/docs/slate/api/locations/location",
+    "title": "Location API",
+    "desc": false,
+    "lineCount": 21,
+    "headings": [
+      "Static methods"
+    ],
+    "flags": [
+      "missing-description",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/locations/path-ref.mdx",
+    "route": "/docs/slate/api/locations/path-ref",
+    "title": "PathRef API",
+    "desc": false,
+    "lineCount": 38,
+    "headings": [
+      "Instance methods",
+      "Static methods"
+    ],
+    "flags": [
+      "missing-description",
+      "long-opening",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/locations/path.mdx",
+    "route": "/docs/slate/api/locations/path",
+    "title": "Path API",
+    "desc": false,
+    "lineCount": 131,
+    "headings": [
+      "Static methods"
+    ],
+    "flags": [
+      "missing-description",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/locations/point-entry.mdx",
+    "route": "/docs/slate/api/locations/point-entry",
+    "title": "PointEntry API",
+    "desc": false,
+    "lineCount": 10,
+    "headings": [],
+    "flags": [
+      "missing-description"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/locations/point-ref.mdx",
+    "route": "/docs/slate/api/locations/point-ref",
+    "title": "PointRef API",
+    "desc": false,
+    "lineCount": 38,
+    "headings": [
+      "Instance methods",
+      "Static methods"
+    ],
+    "flags": [
+      "missing-description",
+      "long-opening",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/locations/point.mdx",
+    "route": "/docs/slate/api/locations/point",
+    "title": "Point API",
+    "desc": false,
+    "lineCount": 58,
+    "headings": [
+      "Static methods"
+    ],
+    "flags": [
+      "missing-description",
+      "long-opening",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/locations/range-ref.mdx",
+    "route": "/docs/slate/api/locations/range-ref",
+    "title": "RangeRef API",
+    "desc": false,
+    "lineCount": 39,
+    "headings": [
+      "Instance methods",
+      "Static methods"
+    ],
+    "flags": [
+      "missing-description",
+      "long-opening",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/locations/range.mdx",
+    "route": "/docs/slate/api/locations/range",
+    "title": "Range API",
+    "desc": false,
+    "lineCount": 93,
+    "headings": [
+      "Static methods"
+    ],
+    "flags": [
+      "missing-description",
+      "long-opening",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/locations/span.mdx",
+    "route": "/docs/slate/api/locations/span",
+    "title": "Span API",
+    "desc": false,
+    "lineCount": 21,
+    "headings": [
+      "Static Methods"
+    ],
+    "flags": [
+      "missing-description",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/nodes/editor.mdx",
+    "route": "/docs/slate/api/nodes/editor",
+    "title": "Editor",
+    "desc": false,
+    "lineCount": 379,
+    "headings": [
+      "Creating an editor",
+      "Reading state",
+      "Updating state",
+      "Document roots",
+      "Document state",
+      "Schema behavior",
+      "Runtime APIs",
+      "Subscribing to commits"
+    ],
+    "flags": [
+      "missing-description",
+      "long-no-jump",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/nodes/element.mdx",
+    "route": "/docs/slate/api/nodes/element",
+    "title": "Element API",
+    "desc": false,
+    "lineCount": 152,
+    "headings": [
+      "Element Behavior Types",
+      "Static methods"
+    ],
+    "flags": [
+      "missing-description",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/nodes/index.mdx",
+    "route": "/docs/slate/api/nodes",
+    "title": "Node Types APIs",
+    "desc": false,
+    "lineCount": 19,
+    "headings": [],
+    "flags": [
+      "missing-description",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/nodes/node-entry.mdx",
+    "route": "/docs/slate/api/nodes/node-entry",
+    "title": "NodeEntry API",
+    "desc": false,
+    "lineCount": 12,
+    "headings": [],
+    "flags": [
+      "missing-description"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/nodes/node.mdx",
+    "route": "/docs/slate/api/nodes/node",
+    "title": "Node API",
+    "desc": false,
+    "lineCount": 180,
+    "headings": [
+      "Static methods"
+    ],
+    "flags": [
+      "missing-description",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/nodes/text.mdx",
+    "route": "/docs/slate/api/nodes/text",
+    "title": "Text API",
+    "desc": false,
+    "lineCount": 56,
+    "headings": [
+      "Static methods"
+    ],
+    "flags": [
+      "missing-description",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/operations/index.mdx",
+    "route": "/docs/slate/api/operations",
+    "title": "Operation Types",
+    "desc": false,
+    "lineCount": 182,
+    "headings": [],
+    "flags": [
+      "missing-description",
+      "long-opening",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/operations/operation.mdx",
+    "route": "/docs/slate/api/operations/operation",
+    "title": "Operation API",
+    "desc": false,
+    "lineCount": 100,
+    "headings": [
+      "Static methods"
+    ],
+    "flags": [
+      "missing-description",
+      "long-opening",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/scrubber.mdx",
+    "route": "/docs/slate/api/scrubber",
+    "title": "Debug Value Scrubbing",
+    "desc": false,
+    "lineCount": 36,
+    "headings": [
+      "API"
+    ],
+    "flags": [
+      "missing-description",
+      "long-opening"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/api/transforms.mdx",
+    "route": "/docs/slate/api/transforms",
+    "title": "Transforms API",
+    "desc": false,
+    "lineCount": 386,
+    "headings": [
+      "Node options",
+      "Node methods",
+      "Break methods",
+      "Fragment methods",
+      "Text methods",
+      "Selection methods",
+      "Mark methods",
+      "Value and root methods"
+    ],
+    "flags": [
+      "missing-description",
+      "long-no-jump",
+      "local-link-check"
+    ],
+    "status": "rewritten",
+    "action": "Added description, repaired stale anchors/copy where needed, and source/route-checked API reference contracts.",
+    "evidence": "API batch: prettier passed; descriptions/openings ok for 21; stale-link/slop scan clean; local links ok; namespace/source refs ok (107 API refs, 36 tx refs); pnpm --filter www check:docs passed; all /docs/slate/api/* routes returned 200.",
+    "lane": "API reference"
+  },
+  {
+    "file": "content/docs/slate/concepts/01-interfaces.mdx",
+    "route": "/docs/slate/concepts/01-interfaces",
+    "title": "Interfaces",
+    "desc": true,
+    "lineCount": 112,
+    "headings": [
+      "Text",
+      "Element",
+      "Helper Namespaces",
+      "Domain Helpers"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-concept-style-closure",
+    "evidence": "Added description; tightened old-style openings where needed; stale scan clean; descriptions/openings audit passed; concept link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "concept"
+  },
+  {
+    "file": "content/docs/slate/concepts/02-nodes.mdx",
+    "route": "/docs/slate/concepts/02-nodes",
+    "title": "Nodes",
+    "desc": true,
+    "lineCount": 168,
+    "headings": [
+      "Element",
+      "Text",
+      "Blocks And Inlines",
+      "Voids",
+      "Node Tree Rules"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-concept-style-closure",
+    "evidence": "Added description; tightened old-style openings where needed; stale scan clean; descriptions/openings audit passed; concept link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "concept"
+  },
+  {
+    "file": "content/docs/slate/concepts/03-locations.mdx",
+    "route": "/docs/slate/concepts/03-locations",
+    "title": "Locations",
+    "desc": true,
+    "lineCount": 175,
+    "headings": [
+      "Path",
+      "Point",
+      "Range",
+      "Selection",
+      "Bookmarks"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-concept-style-closure",
+    "evidence": "Added description; tightened old-style openings where needed; stale scan clean; descriptions/openings audit passed; concept link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "concept"
+  },
+  {
+    "file": "content/docs/slate/concepts/04-transforms.mdx",
+    "route": "/docs/slate/concepts/04-transforms",
+    "title": "Transforms",
+    "desc": true,
+    "lineCount": 249,
+    "headings": [
+      "Selection",
+      "Text",
+      "Nodes",
+      "Marks",
+      "Operations",
+      "The `at` Option",
+      "The `match` Option",
+      "Normalization"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-concept-style-closure",
+    "evidence": "Added description; tightened old-style openings where needed; stale scan clean; descriptions/openings audit passed; concept link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "concept"
+  },
+  {
+    "file": "content/docs/slate/concepts/05-operations.mdx",
+    "route": "/docs/slate/concepts/05-operations",
+    "title": "Operations",
+    "desc": true,
+    "lineCount": 50,
+    "headings": [],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-concept-style-closure",
+    "evidence": "Added description; tightened old-style openings where needed; stale scan clean; descriptions/openings audit passed; concept link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "concept"
+  },
+  {
+    "file": "content/docs/slate/concepts/06-commands.mdx",
+    "route": "/docs/slate/concepts/06-commands",
+    "title": "Commands",
+    "desc": true,
+    "lineCount": 79,
+    "headings": [
+      "Custom Commands"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-concept-style-closure",
+    "evidence": "Added description; tightened old-style openings where needed; stale scan clean; descriptions/openings audit passed; concept link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "concept"
+  },
+  {
+    "file": "content/docs/slate/concepts/07-editor.mdx",
+    "route": "/docs/slate/concepts/07-editor",
+    "title": "Editor",
+    "desc": true,
+    "lineCount": 202,
+    "headings": [
+      "Reading State",
+      "Writing State",
+      "Snapshots And Commits",
+      "Local Provenance",
+      "Preserving Ranges",
+      "Extending The Editor",
+      "Schema Behavior",
+      "Query Groups"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-concept-style-closure",
+    "evidence": "Added description; tightened old-style openings where needed; stale scan clean; descriptions/openings audit passed; concept link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "concept"
+  },
+  {
+    "file": "content/docs/slate/concepts/08-extensions.mdx",
+    "route": "/docs/slate/concepts/08-extensions",
+    "title": "Extensions",
+    "desc": true,
+    "lineCount": 359,
+    "headings": [
+      "Smallest Extension",
+      "Read And Write Helpers",
+      "Extension Order",
+      "Runtime Setup",
+      "Element Specs",
+      "Transform Middleware",
+      "Clipboard And Fragment Policy",
+      "Slot Reference",
+      "Advanced TypeScript",
+      "Helper Namespaces"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-concept-style-closure",
+    "evidence": "Added description; tightened old-style openings where needed; stale scan clean; descriptions/openings audit passed; concept link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "concept"
+  },
+  {
+    "file": "content/docs/slate/concepts/09-rendering.mdx",
+    "route": "/docs/slate/concepts/09-rendering",
+    "title": "Rendering",
+    "desc": true,
+    "lineCount": 198,
+    "headings": [
+      "Leaves",
+      "Texts",
+      "Decorations",
+      "Toolbars, Menus, Overlays, and more!",
+      "Editor Styling",
+      "Performance"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-concept-style-closure",
+    "evidence": "Added description; tightened old-style openings where needed; stale scan clean; descriptions/openings audit passed; concept link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "concept"
+  },
+  {
+    "file": "content/docs/slate/concepts/10-serializing.mdx",
+    "route": "/docs/slate/concepts/10-serializing",
+    "title": "Serializing",
+    "desc": true,
+    "lineCount": 167,
+    "headings": [
+      "Plain Text",
+      "HTML",
+      "Deserializing HTML",
+      "Clipboard And Persistence"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-concept-style-closure",
+    "evidence": "Added description; tightened old-style openings where needed; stale scan clean; descriptions/openings audit passed; concept link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "concept"
+  },
+  {
+    "file": "content/docs/slate/concepts/11-normalizing.mdx",
+    "route": "/docs/slate/concepts/11-normalizing",
+    "title": "Normalizing",
+    "desc": true,
+    "lineCount": 133,
+    "headings": [
+      "Built-in Constraints",
+      "Fix One Problem At A Time",
+      "Empty Children Run Early",
+      "Incorrect Fixes",
+      "Grouped Repairs",
+      "Extension Normalizers"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-concept-style-closure",
+    "evidence": "Added description; tightened old-style openings where needed; stale scan clean; descriptions/openings audit passed; concept link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "concept"
+  },
+  {
+    "file": "content/docs/slate/concepts/12-typescript.mdx",
+    "route": "/docs/slate/concepts/12-typescript",
+    "title": "Using TypeScript",
+    "desc": true,
+    "lineCount": 106,
+    "headings": [
+      "Defining Element And Text Types",
+      "Annotating Initial Values",
+      "Working With Nodes",
+      "Multiple Document Models"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-concept-style-closure",
+    "evidence": "Added description; tightened old-style openings where needed; stale scan clean; descriptions/openings audit passed; concept link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "concept"
+  },
+  {
+    "file": "content/docs/slate/concepts/13-roots.mdx",
+    "route": "/docs/slate/concepts/13-roots",
+    "title": "Roots",
+    "desc": true,
+    "lineCount": 157,
+    "headings": [
+      "Value Shape",
+      "Reading And Writing Roots",
+      "Rendering Roots",
+      "Content Roots"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-concept-style-closure",
+    "evidence": "Added description; tightened old-style openings where needed; stale scan clean; descriptions/openings audit passed; concept link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "concept"
+  },
+  {
+    "file": "content/docs/slate/concepts/14-document-state.mdx",
+    "route": "/docs/slate/concepts/14-document-state",
+    "title": "Document State",
+    "desc": true,
+    "lineCount": 196,
+    "headings": [
+      "Value Shape",
+      "Save The Document",
+      "Load The Document",
+      "State Fields",
+      "Persistent And Local Fields",
+      "Collaboration",
+      "Comments"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-concept-style-closure",
+    "evidence": "Added description; tightened old-style openings where needed; stale scan clean; descriptions/openings audit passed; concept link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "concept"
+  },
+  {
+    "file": "content/docs/slate/general/contributing.mdx",
+    "route": "/docs/slate/general/contributing",
+    "title": "Contributing",
+    "desc": true,
+    "lineCount": 127,
+    "headings": [
+      "On This Page",
+      "What Fits",
+      "Bug Reports",
+      "Pull Requests",
+      "Local Setup",
+      "Slate Proof Lanes",
+      "Docs Changes",
+      "Release Authority"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "current-state-rewrite",
+    "evidence": "Rewritten from stale donor/upstream copy into current Plate-maintained Slate docs; description added; stale scan clean; general link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "general"
+  },
+  {
+    "file": "content/docs/slate/general/docs-proof-map.mdx",
+    "route": "/docs/slate/general/docs-proof-map",
+    "title": "Docs Proof Map",
+    "desc": true,
+    "lineCount": 64,
+    "headings": [
+      "On This Page",
+      "Package Owners",
+      "Runtime Claims",
+      "React And DOM Claims",
+      "Browser Proof Claims",
+      "Collaboration And Layout Claims",
+      "Docs And Release Claims"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "source-proof-map-rebuilt",
+    "evidence": "Rebuilt current source/proof map with existing package, test, browser, app, and workflow paths; source path audit passed for 43 paths; general link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "general"
+  },
+  {
+    "file": "content/docs/slate/general/faq.mdx",
+    "route": "/docs/slate/general/faq",
+    "title": "FAQ",
+    "desc": true,
+    "lineCount": 38,
+    "headings": [
+      "Why Is Pasted Content Plain Text?",
+      "What Browsers And Devices Does Slate Support?",
+      "Is This The Official Upstream Slate Release?",
+      "Should Apps Use `@platejs/browser`?",
+      "Where Should I Start?"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "current-state-rewrite",
+    "evidence": "Rewritten from stale donor/upstream copy into current Plate-maintained Slate docs; description added; stale scan clean; general link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "general"
+  },
+  {
+    "file": "content/docs/slate/general/resources.mdx",
+    "route": "/docs/slate/general/resources",
+    "title": "Resources",
+    "desc": true,
+    "lineCount": 37,
+    "headings": [
+      "First-Party References",
+      "Source",
+      "Ecosystem Starting Points",
+      "Adjacent Editors"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "current-state-rewrite",
+    "evidence": "Rewritten from stale donor/upstream copy into current Plate-maintained Slate docs; description added; stale scan clean; general link check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "general"
+  },
+  {
+    "file": "content/docs/slate/index.mdx",
+    "route": "/docs/slate",
+    "title": "Overview",
+    "desc": true,
+    "lineCount": 147,
+    "headings": [
+      "On This Page",
+      "Install",
+      "Core Shape",
+      "Pick A First Path",
+      "Examples",
+      "Package Map",
+      "Proof Boundary",
+      "Read Next"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "rewritten-front-door",
+    "evidence": "Added description; replaced stale upstream example links with internal /examples/slate routes; added install, core shape, first-path routing, package map, proof boundary, and Read Next; local links ok; pnpm --filter www check:docs passed; route /docs/slate returned 200 with Overview/Package Map/example link.",
+    "lane": "guide/system"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-browser.mdx",
+    "route": "/docs/slate/libraries/slate-browser",
+    "title": "Slate Browser",
+    "desc": true,
+    "lineCount": 91,
+    "headings": [
+      "Install",
+      "Imports",
+      "First Test",
+      "Proof Contracts",
+      "Transport Claims",
+      "Commands"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-useless-copy-cut",
+    "evidence": "Added description; cut useless package-manager sentence; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-dom.mdx",
+    "route": "/docs/slate/libraries/slate-dom",
+    "title": "Slate DOM",
+    "desc": true,
+    "lineCount": 118,
+    "headings": [
+      "Public Utility Groups",
+      "Public Type Groups",
+      "DOM Coverage",
+      "Internal Subpath",
+      "Related Docs"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-history/history-editor.mdx",
+    "route": "/docs/slate/libraries/slate-history/history-editor",
+    "title": "History Editor API",
+    "desc": true,
+    "lineCount": 75,
+    "headings": [
+      "State API",
+      "Transaction API",
+      "Editor API",
+      "Types"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-history/history-extension-setup.mdx",
+    "route": "/docs/slate/libraries/slate-history/history-extension-setup",
+    "title": "History Extension Setup",
+    "desc": true,
+    "lineCount": 48,
+    "headings": [],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-history/history.mdx",
+    "route": "/docs/slate/libraries/slate-history/history",
+    "title": "History",
+    "desc": true,
+    "lineCount": 125,
+    "headings": [
+      "History Object",
+      "Static Methods",
+      "Editor API",
+      "Controlled Previews"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-history/index.mdx",
+    "route": "/docs/slate/libraries/slate-history",
+    "title": "Slate History",
+    "desc": true,
+    "lineCount": 11,
+    "headings": [],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-hyperscript.mdx",
+    "route": "/docs/slate/libraries/slate-hyperscript",
+    "title": "Slate Hyperscript",
+    "desc": true,
+    "lineCount": 55,
+    "headings": [
+      "Creator Helpers"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-layout/index.mdx",
+    "route": "/docs/slate/libraries/slate-layout",
+    "title": "Slate Layout",
+    "desc": true,
+    "lineCount": 104,
+    "headings": [
+      "Page Layout",
+      "React Usage",
+      "Headless And Static Use",
+      "Provider-Owned Boxes",
+      "Page Virtualization",
+      "Measurement Caveat",
+      "Related Docs"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/annotations.mdx",
+    "route": "/docs/slate/libraries/slate-react/annotations",
+    "title": "Annotations",
+    "desc": true,
+    "lineCount": 273,
+    "headings": [
+      "Annotation Shape",
+      "Local Bookmarks",
+      "External Comment Stores",
+      "Comment Channels",
+      "Widgets",
+      "External Anchor Adapter",
+      "Document-Embedded Ids",
+      "Performance Rules"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/dom-coverage-boundaries.mdx",
+    "route": "/docs/slate/libraries/slate-react/dom-coverage-boundaries",
+    "title": "DOM Coverage Boundaries",
+    "desc": true,
+    "lineCount": 109,
+    "headings": [
+      "Render A Boundary",
+      "Selection Policy",
+      "Copy Policy",
+      "Find Policy",
+      "Boundary Identity",
+      "Boundaries Versus Content Roots"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/editable.mdx",
+    "route": "/docs/slate/libraries/slate-react/editable",
+    "title": "Editable Component",
+    "desc": true,
+    "lineCount": 469,
+    "headings": [
+      "Props",
+      "Render Props",
+      "`renderElement`",
+      "`renderVoid`",
+      "`renderLeaf`",
+      "`renderText`",
+      "`decorate`",
+      "`renderSegment`",
+      "`placeholder` And `renderPlaceholder`",
+      "Event Props",
+      "Projection Sources",
+      "DOM Strategy",
+      "DOM Coverage Boundaries",
+      "Multiple Roots",
+      "Styling"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/event-handling.mdx",
+    "route": "/docs/slate/libraries/slate-react/event-handling",
+    "title": "Slate React Event Handling",
+    "desc": true,
+    "lineCount": 75,
+    "headings": [],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/experimental-virtualized-rendering.mdx",
+    "route": "/docs/slate/libraries/slate-react/experimental-virtualized-rendering",
+    "title": "Virtualized Rendering",
+    "desc": true,
+    "lineCount": 120,
+    "headings": [
+      "When To Use It",
+      "Usage",
+      "Native Behavior Limits",
+      "Metrics",
+      "Production Gate"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/hooks.mdx",
+    "route": "/docs/slate/libraries/slate-react/hooks",
+    "title": "Slate React Hooks",
+    "desc": true,
+    "lineCount": 389,
+    "headings": [
+      "Editor Hooks",
+      "Runtime And Root Hooks"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/index.mdx",
+    "route": "/docs/slate/libraries/slate-react",
+    "title": "Slate React",
+    "desc": true,
+    "lineCount": 63,
+    "headings": [
+      "Stable Runtime Path",
+      "Runtime Boundaries",
+      "Advanced Lanes"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/react-editor-setup.mdx",
+    "route": "/docs/slate/libraries/slate-react/react-editor-setup",
+    "title": "React Editor Setup",
+    "desc": true,
+    "lineCount": 63,
+    "headings": [],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/react-editor.mdx",
+    "route": "/docs/slate/libraries/slate-react/react-editor",
+    "title": "React Editor",
+    "desc": true,
+    "lineCount": 209,
+    "headings": [
+      "Checks",
+      "Focus And Selection",
+      "DOM Translation",
+      "DOM Environment",
+      "DataTransfer"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-react/slate.mdx",
+    "route": "/docs/slate/libraries/slate-react/slate",
+    "title": "Slate Component",
+    "desc": true,
+    "lineCount": 226,
+    "headings": [
+      "Props"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate-yjs.mdx",
+    "route": "/docs/slate/libraries/slate-yjs",
+    "title": "Slate Yjs",
+    "desc": true,
+    "lineCount": 101,
+    "headings": [
+      "Install",
+      "Create The Extension",
+      "React Hooks",
+      "Provider Boundary",
+      "Proof",
+      "Related Docs"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/libraries/slate.mdx",
+    "route": "/docs/slate/libraries/slate",
+    "title": "Slate",
+    "desc": true,
+    "lineCount": 114,
+    "headings": [
+      "Public Type Groups",
+      "Extension Authoring",
+      "Helper Namespaces",
+      "Internal Subpath",
+      "Related Docs"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description and preserved current reference structure; library stale scan clean; description audit passed; link check passed; source anchors ok; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "library/reference"
+  },
+  {
+    "file": "content/docs/slate/migration.mdx",
+    "route": "/docs/slate/migration",
+    "title": "Migration",
+    "desc": true,
+    "lineCount": 783,
+    "headings": [
+      "On This Page",
+      "Should You Migrate This Editor?",
+      "First Migration Slice",
+      "Before You Begin",
+      "Migration Map",
+      "Step 1: Install The Packages",
+      "Step 2: Create The Editor",
+      "Step 3: Move Reads And Writes Into The Runtime",
+      "Step 4: Migrate Custom Elements",
+      "Step 5: Migrate Leaves, Text, And Placeholders",
+      "Step 6: Migrate Event Handlers",
+      "Step 7: Migrate React Hooks",
+      "Step 8: Migrate DOM And React Editor Calls",
+      "Step 9: Migrate History",
+      "Step 10: Persist The Right Value",
+      "Step 11: Migrate Document State",
+      "Step 12: Migrate Extra Roots",
+      "Step 13: Migrate Hyperscript Tests",
+      "Step 14: Check Import Boundaries",
+      "Proof Before Deleting The Old Path",
+      "Validation Checklist",
+      "API Reference Links"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "naming-and-link-repair",
+    "evidence": "Added description; replaced public Slate v2 wording with Plate-maintained Slate runtime wording; kept hard-cut migration guidance; fixed bottom relative links; local links ok; pnpm --filter www check:docs passed; route /docs/slate/migration returned 200 with Migration/Plate-maintained Slate runtime/Validation Checklist and no Slate v2 copy.",
+    "lane": "migration"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/01-installing-slate.mdx",
+    "route": "/docs/slate/walkthroughs/01-installing-slate",
+    "title": "Installing Slate",
+    "desc": true,
+    "lineCount": 99,
+    "headings": [
+      "Listening for changes",
+      "Next steps"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description; opening <=3 sentences; walkthrough stale scan clean; local link/image check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "walkthrough"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/02-adding-event-handlers.mdx",
+    "route": "/docs/slate/walkthroughs/02-adding-event-handlers",
+    "title": "Adding Event Handlers",
+    "desc": true,
+    "lineCount": 83,
+    "headings": [
+      "Read The Native Event",
+      "Write Through The Editor"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description; opening <=3 sentences; walkthrough stale scan clean; local link/image check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "walkthrough"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/03-defining-custom-elements.mdx",
+    "route": "/docs/slate/walkthroughs/03-defining-custom-elements",
+    "title": "Defining Custom Elements",
+    "desc": true,
+    "lineCount": 171,
+    "headings": [
+      "Render Elements",
+      "Toggle A Block Type"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description; opening <=3 sentences; walkthrough stale scan clean; local link/image check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "walkthrough"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/04-applying-custom-formatting.mdx",
+    "route": "/docs/slate/walkthroughs/04-applying-custom-formatting",
+    "title": "Applying Custom Formatting",
+    "desc": true,
+    "lineCount": 155,
+    "headings": [
+      "Toggle A Mark",
+      "Render Marks"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description; opening <=3 sentences; walkthrough stale scan clean; local link/image check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "walkthrough"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/05-executing-commands.mdx",
+    "route": "/docs/slate/walkthroughs/05-executing-commands",
+    "title": "Executing Commands",
+    "desc": true,
+    "lineCount": 241,
+    "headings": [
+      "Extracting Commands",
+      "Using Commands From Editor Events",
+      "Using Commands From UI",
+      "Extension Commands"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description; opening <=3 sentences; walkthrough stale scan clean; local link/image check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "walkthrough"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/06-saving-to-a-database.mdx",
+    "route": "/docs/slate/walkthroughs/06-saving-to-a-database",
+    "title": "Saving to a Database",
+    "desc": true,
+    "lineCount": 217,
+    "headings": [
+      "Save The Full Document",
+      "Single-Root Shortcut",
+      "Load Extra Roots",
+      "Replace Saved Content",
+      "Store Comments Separately"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description; opening <=3 sentences; walkthrough stale scan clean; local link/image check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "walkthrough"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/07-operation-replay-substrate.mdx",
+    "route": "/docs/slate/walkthroughs/07-operation-replay-substrate",
+    "title": "Operation Replay Substrate",
+    "desc": true,
+    "lineCount": 339,
+    "headings": [
+      "Start with a local editor",
+      "Export operations",
+      "Import remote operations",
+      "Subscribe to commits",
+      "Commit metadata",
+      "Runtime ids are local",
+      "Adapter ownership",
+      "Hocuspocus transport",
+      "Extension helpers",
+      "What this page does not cover"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-style-closure",
+    "evidence": "Added description; opening <=3 sentences; walkthrough stale scan clean; local link/image check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "walkthrough"
+  },
+  {
+    "file": "content/docs/slate/walkthroughs/09-performance.mdx",
+    "route": "/docs/slate/walkthroughs/09-performance",
+    "title": "Improving Performance",
+    "desc": true,
+    "lineCount": 124,
+    "headings": [
+      "Optimizing Slate Core",
+      "Optimizing React",
+      "Optimizing DOM Painting"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "description-and-stale-link-repair",
+    "evidence": "Added description; replaced upstream huge-document and bad DevTools links with local/current links; source-checked domStrategy/hooks/image; walkthrough stale scan clean; local link/image check passed; pnpm --filter www check:docs passed; route returned 200.",
+    "lane": "walkthrough"
+  },
+  {
+    "file": "content/docs/slate/why-this-fork.mdx",
+    "route": "/docs/slate/why-this-fork",
+    "title": "Why This Fork",
+    "desc": true,
+    "lineCount": 276,
+    "headings": [
+      "On This Page",
+      "The Main Fork",
+      "Who It Is For",
+      "What Stays Slate",
+      "Runtime Shape",
+      "Document Shape",
+      "Extension Model",
+      "React Runtime",
+      "Overlay Model",
+      "Browser Proof",
+      "Package Ownership",
+      "Current Boundaries",
+      "Complete Change Map",
+      "Read Next"
+    ],
+    "flags": [],
+    "status": "rewritten",
+    "action": "expanded-and-linked",
+    "evidence": "Repaired prior over-cut; 3-sentence opening; On This Page; source-backed package/proof tables; internal Read Next links; pnpm --filter www check:docs passed; route /docs/slate/why-this-fork returned 200; focused anti-slop scan clean; Browser plugin bootstrap blocked by sandboxPolicy metadata, curl used for text route proof.",
+    "lane": "spec/law"
+  }
+]

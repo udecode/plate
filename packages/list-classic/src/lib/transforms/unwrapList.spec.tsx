@@ -1,13 +1,12 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { SlateEditor } from '@platejs/core';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createSlateEditor } from '@platejs/core';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import { unwrapList } from './unwrapList';
-import * as platejs from 'platejs';
 
 jsxt;
 
@@ -190,16 +189,17 @@ describe('li list unwrapping', () => {
   });
 
   it('treats the selection common node as a list root when there is no direct ancestor match', () => {
-    const commonSpy = spyOn(platejs.NodeApi, 'common').mockImplementation(
-      () => {
-        editor.selection = null;
+    let editor: any;
+    const node = mock(() => {
+      editor.selection = null;
 
-        return [{ children: [], type: 'ul' } as any, [0]];
-      }
-    );
-    const editor = {
+      return [{ children: [], type: 'ul' } as any, [0]];
+    });
+
+    editor = {
       api: {
         above: mock(() => {}),
+        node,
       },
       getType: (key: string) => key,
       selection: {
@@ -214,7 +214,7 @@ describe('li list unwrapping', () => {
 
     unwrapList(editor);
 
-    expect(commonSpy).toHaveBeenCalled();
+    expect(node).toHaveBeenCalledWith([0]);
     expect(editor.tf.unwrapNodes).toHaveBeenCalledTimes(4);
   });
 });

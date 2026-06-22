@@ -1,4 +1,4 @@
-import { type Value, createEditor } from '@platejs/slate-legacy';
+import type { Value } from '@platejs/slate';
 
 import type { InferPlugins } from '../../lib/editor/SlateEditor';
 
@@ -46,8 +46,8 @@ describe('TPlateEditor', () => {
   });
 
   describe('Core Plugins', () => {
-    it('exposes DebugPlugin methods on withPlate', () => {
-      const editor = withPlate(createEditor());
+    it('exposes DebugPlugin methods on createPlateEditor', () => {
+      const editor = createPlateEditor();
 
       expect(editor.api.debug).toBeDefined();
       expect(editor.api.debug.log).toBeInstanceOf(Function);
@@ -59,8 +59,8 @@ describe('TPlateEditor', () => {
       editor.api.debug.nonExistentMethod;
     });
 
-    it('combines core and custom plugin APIs with withPlate', () => {
-      const editor = withPlate(createEditor(), {
+    it('combines core and custom plugin APIs with createPlateEditor', () => {
+      const editor = createPlateEditor({
         plugins: [DebugPlugin, TextFormattingPlugin, ImagePlugin],
       });
 
@@ -75,12 +75,12 @@ describe('TPlateEditor', () => {
 
   describe('Custom Plugins', () => {
     it('infers plugin APIs across custom plugin sets', () => {
-      const singlePluginEditor = withPlate(createEditor(), {
+      const singlePluginEditor = createPlateEditor({
         plugins: [MyCustomPlugin],
       });
       expect(singlePluginEditor.api.myCustomMethod).toBeInstanceOf(Function);
 
-      const multiPluginEditor = withPlate(createEditor(), {
+      const multiPluginEditor = createPlateEditor({
         plugins: [TextFormattingPlugin, ListPlugin, TablePlugin],
       });
       expect(multiPluginEditor.api.bold).toBeInstanceOf(Function);
@@ -106,7 +106,7 @@ describe('TPlateEditor', () => {
 
     it('extends a plate editor with additional plugins', () => {
       const plugins = [TextFormattingPlugin, ListPlugin];
-      const editor1 = withPlate(createEditor(), {
+      const editor1 = createPlateEditor({
         plugins,
       });
 
@@ -134,7 +134,7 @@ describe('TPlateEditor', () => {
         },
       });
 
-      const editor = withPlate(createEditor(), {
+      const editor = createPlateEditor({
         plugins: [TextFormattingPlugin, OverlappingPlugin, ImagePlugin],
       });
 

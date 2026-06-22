@@ -1,21 +1,19 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createEditor, createSlateEditor } from 'platejs';
+import { createSlateEditor } from 'platejs';
 
 import { SingleBlockPlugin } from './SingleBlockPlugin';
 
 jsxt;
 
-const input = createEditor(
-  (
-    <editor>
-      <hp>first block</hp>
-      <hp>second block</hp>
-      <hp>third block</hp>
-    </editor>
-  ) as any
-);
+const input = (
+  <editor>
+    <hp>first block</hp>
+    <hp>second block</hp>
+    <hp>third block</hp>
+  </editor>
+) as any;
 const output = (
   <editor>
     <hp>
@@ -26,12 +24,7 @@ const output = (
 
 describe('SingleBlockPlugin', () => {
   it('disables the trailing block plugin while enabled', () => {
-    const editor = createSlateEditor({
-      plugins: [SingleBlockPlugin],
-      value: [{ type: 'p', children: [{ text: 'test' }] }] as any,
-    });
-
-    expect(editor.getPlugin(SingleBlockPlugin).override.enabled).toEqual({
+    expect(SingleBlockPlugin.override.enabled).toEqual({
       trailingBlock: false,
     });
   });
@@ -73,13 +66,11 @@ describe('SingleBlockPlugin', () => {
   });
 
   it('handle single block without changes', () => {
-    const singleBlockInput = createEditor(
-      (
-        <editor>
-          <hp>single block content</hp>
-        </editor>
-      ) as any
-    );
+    const singleBlockInput = (
+      <editor>
+        <hp>single block content</hp>
+      </editor>
+    ) as any;
 
     const editor = createSlateEditor({
       plugins: [SingleBlockPlugin],
@@ -93,14 +84,12 @@ describe('SingleBlockPlugin', () => {
   });
 
   it('preserve existing line breaks in text', () => {
-    const inputWithLineBreaks = createEditor(
-      (
-        <editor>
-          <hp>line one{'\n'}line two</hp>
-          <hp>block two</hp>
-        </editor>
-      ) as any
-    );
+    const inputWithLineBreaks = (
+      <editor>
+        <hp>line one{'\n'}line two</hp>
+        <hp>block two</hp>
+      </editor>
+    ) as any;
 
     const expectedOutput = (
       <editor>
@@ -121,15 +110,13 @@ describe('SingleBlockPlugin', () => {
   });
 
   it('handle empty blocks correctly', () => {
-    const emptyBlocksInput = createEditor(
-      (
-        <editor>
-          <hp>content</hp>
-          <hp />
-          <hp>more content</hp>
-        </editor>
-      ) as any
-    );
+    const emptyBlocksInput = (
+      <editor>
+        <hp>content</hp>
+        <hp />
+        <hp>more content</hp>
+      </editor>
+    ) as any;
 
     const expectedOutput = (
       <editor>

@@ -51,7 +51,7 @@ describe('useBlockSelectable', () => {
           findPath: () => [0],
           isVoid: () => false,
         },
-        getApi: () => ({
+        getPluginApi: () => ({
           blockSelection: { add: mock() },
         }),
         getOption: () => false,
@@ -83,7 +83,7 @@ describe('useBlockSelectable', () => {
           findPath: () => [0],
           isVoid: () => false,
         },
-        getApi: () => ({
+        getPluginApi: () => ({
           blockSelection: { add },
         }),
         getOptions: () => ({
@@ -111,7 +111,7 @@ describe('useBlockSelectable', () => {
           findPath: () => [0],
           isVoid: () => false,
         },
-        getApi: () => ({
+        getPluginApi: () => ({
           blockSelection: { add: mock() },
         }),
         getOptions: () => ({
@@ -139,7 +139,7 @@ describe('useBlockSelectable', () => {
   describe('useBlockSelectable', () => {
     it('returns selectable props when the block is selectable', async () => {
       const editor = {
-        getApi: () => ({
+        getPluginApi: () => ({
           blockSelection: {
             add: mock(),
             isSelectable: () => true,

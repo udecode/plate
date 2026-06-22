@@ -36,7 +36,7 @@ describe('useTocElement', () => {
 
     useEditorPluginMock.mockReturnValue({
       editor: {
-        api: { toDOMNode },
+        api: { node: () => [{ id: 'node' }, [0]], toDOMNode },
       },
       getOptions: () => ({
         isScroll: true,

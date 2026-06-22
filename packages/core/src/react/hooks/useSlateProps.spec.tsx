@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { TRange } from '@platejs/slate-legacy';
+import type { Range } from '@platejs/slate';
 
 import { act, renderHook } from '@testing-library/react';
 
@@ -42,7 +42,7 @@ describe('useSlateProps', () => {
       { wrapper }
     );
     const nextValue = [{ children: [{ text: 'two' }], type: 'p' }];
-    const nextSelection: TRange = {
+    const nextSelection: Range = {
       anchor: { offset: 1, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
     };

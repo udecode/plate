@@ -1,54 +1,52 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, createEditor } from 'platejs';
-import { createSlateEditor } from 'platejs';
+import type { SlateEditor } from '@platejs/core';
+import { createSlateEditor } from '@platejs/core';
 
 import { removeListItem } from './removeListItem';
 
 jsxt;
 
-const input = createEditor(
-  (
-    <editor>
-      <hul id="1">
-        <hli id="11">
-          <hp>1</hp>
-          <hul>
-            <hli>
-              <hp>11</hp>
-            </hli>
-            <hli>
-              <hp>12</hp>
-            </hli>
-          </hul>
-        </hli>
-        <hli id="12">
-          <hp>2</hp>
-          <hul>
-            <hli>
-              <hp>21</hp>
-            </hli>
-            <hli>
-              <hp>22</hp>
-            </hli>
-          </hul>
-        </hli>
-        <hli id="13">
-          <hp>3</hp>
-          <hul>
-            <hli>
-              <hp>31</hp>
-            </hli>
-            <hli>
-              <hp>32</hp>
-            </hli>
-          </hul>
-        </hli>
-      </hul>
-    </editor>
-  ) as any as SlateEditor
-);
+const input = (
+  <editor>
+    <hul id="1">
+      <hli id="11">
+        <hp>1</hp>
+        <hul>
+          <hli>
+            <hp>11</hp>
+          </hli>
+          <hli>
+            <hp>12</hp>
+          </hli>
+        </hul>
+      </hli>
+      <hli id="12">
+        <hp>2</hp>
+        <hul>
+          <hli>
+            <hp>21</hp>
+          </hli>
+          <hli>
+            <hp>22</hp>
+          </hli>
+        </hul>
+      </hli>
+      <hli id="13">
+        <hp>3</hp>
+        <hul>
+          <hli>
+            <hp>31</hp>
+          </hli>
+          <hli>
+            <hp>32</hp>
+          </hli>
+        </hul>
+      </hli>
+    </hul>
+  </editor>
+) as any as SlateEditor;
 
 const output = (
   <editor>
@@ -89,10 +87,13 @@ const output = (
 ) as any;
 
 it('moves the removed item children into the previous sublist', () => {
-  const editor = createSlateEditor({ editor: input });
+  const editor = createSlateEditor({
+    selection: input.selection,
+    value: input.children,
+  });
 
-  const list = input.api.node({ id: '1', at: [] }) as any;
-  const listItem = input.api.node({ id: '13', at: [] }) as any;
+  const list = editor.api.node({ id: '1', at: [] }) as any;
+  const listItem = editor.api.node({ id: '13', at: [] }) as any;
 
   if (list && listItem) {
     removeListItem(editor, { list, listItem });
