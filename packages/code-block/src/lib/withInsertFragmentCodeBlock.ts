@@ -1,7 +1,9 @@
-import { type OverrideEditor, type TElement, KEYS, NodeApi } from 'platejs';
+import type { Element } from '@platejs/slate';
 
-function extractCodeLinesFromCodeBlock(node: TElement) {
-  return node.children as TElement[];
+import { type OverrideEditor, KEYS, NodeApi } from 'platejs';
+
+function extractCodeLinesFromCodeBlock(node: Element) {
+  return node.children as Element[];
 }
 
 export const withInsertFragmentCodeBlock: OverrideEditor = ({
@@ -11,10 +13,10 @@ export const withInsertFragmentCodeBlock: OverrideEditor = ({
 }) => ({
   transforms: {
     insertFragment(fragment) {
-      const [blockAbove] = editor.api.block<TElement>() ?? [];
+      const [blockAbove] = editor.api.block<Element>() ?? [];
       const codeLineType = editor.getType(KEYS.codeLine);
 
-      function convertNodeToCodeLine(node: TElement): TElement {
+      function convertNodeToCodeLine(node: Element): Element {
         return {
           children: [{ text: NodeApi.string(node) }],
           type: codeLineType,
@@ -27,7 +29,7 @@ export const withInsertFragmentCodeBlock: OverrideEditor = ({
       ) {
         return insertFragment(
           fragment.flatMap((node) => {
-            const element = node as TElement;
+            const element = node as Element;
 
             return element.type === codeBlockType
               ? extractCodeLinesFromCodeBlock(element)

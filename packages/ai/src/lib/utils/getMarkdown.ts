@@ -1,8 +1,8 @@
 import { serializeMd } from '@platejs/markdown';
+import type { Element } from '@platejs/slate';
 import { getTableGridAbove } from '@platejs/table';
 import {
   type SlateEditor,
-  type TElement,
   type TTableCellElement,
   type TTableElement,
   KEYS,
@@ -21,7 +21,7 @@ const serializeCellContent = (
   const parts: string[] = [];
 
   for (const child of cell.children) {
-    const md = serializeMd(editor, { value: [child as TElement] }).trim();
+    const md = serializeMd(editor, { value: [child as Element] }).trim();
     if (md) {
       parts.push(md);
     }
@@ -96,7 +96,7 @@ const serializeCellBlocks = (
 
   for (const { cell, id } of cells) {
     const content = serializeMd(editor, {
-      value: cell.children as TElement[],
+      value: cell.children as Element[],
     }).trim();
 
     blocks.push(`<Cell id="${id}">\n${content}\n</Cell>`);
@@ -130,7 +130,7 @@ export const getMarkdown = (
   }
 
   if (type === 'blockSelection' || type === 'blockSelectionWithBlockId') {
-    const fragment = editor.api.fragment<TElement>();
+    const fragment = editor.api.fragment<Element>();
 
     // Remove any block formatting
     if (fragment.length === 1) {

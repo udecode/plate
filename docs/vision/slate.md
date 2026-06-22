@@ -15,7 +15,7 @@ Slate doctrine after the lane is selected.
 4. Relevant `slate-*` source rule under `.agents/rules`.
 5. Transplanted Slate package source/tests/benchmarks in this Plate checkout:
    `packages/slate*`, `packages/browser`, `packages/yjs`,
-   `apps/www/tests/slate-browser/**`, and `benchmarks/slate-v2/**`.
+   `apps/slate/tests/slate-browser/**`, and `benchmarks/slate-v2/**`.
 6. `docs/slate-v2/**` for accepted claim width.
 7. `benchmarks/targets/slate-v2.json` for perf target authority.
 

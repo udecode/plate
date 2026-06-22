@@ -1,4 +1,6 @@
-import type { SlateEditor, TLinkElement, TText } from 'platejs';
+import type { Text } from '@platejs/slate';
+
+import type { SlateEditor, TLinkElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -23,7 +25,7 @@ export const upsertLinkText = (
       const firstText = newLinkNode.children[0];
 
       // remove link children
-      editor.tf.replaceNodes<TText>(
+      editor.tf.replaceNodes<Text>(
         { ...firstText, text },
         {
           at: newLinkPath,

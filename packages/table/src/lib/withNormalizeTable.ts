@@ -1,6 +1,6 @@
+import type { Element } from '@platejs/slate';
 import {
   type OverrideEditor,
-  type TElement,
   type TTableCellElement,
   type TTableElement,
   ElementApi,
@@ -73,7 +73,7 @@ export const withNormalizeTable: OverrideEditor<TableConfig> = ({
           if (initialTableWidth) {
             const tableNode = node as TTableElement;
             const colCount = (
-              tableNode.children[0]?.children as TElement[] | undefined
+              tableNode.children[0]?.children as Element[] | undefined
             )?.length;
 
             if (colCount) {

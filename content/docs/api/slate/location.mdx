@@ -6,7 +6,7 @@ description: API reference for locations in Plate.
 A Location is either a Path, Point or Range. Methods will often accept a Location instead of requiring only a Path, Point or Range.
 
 ```typescript
-type TLocation = Path | Point | TRange
+type Location = Path | Point | Range
 ```
 
 - [Path](/docs/api/slate/path)
@@ -36,7 +36,7 @@ Check if a value implements the `At` interface.
 
 ### `isLocation`
 
-Check if a value implements the `TLocation` interface.
+Check if a value implements the `Location` interface.
 
 <API name="isLocation">
 <APIParameters>
@@ -46,7 +46,7 @@ Check if a value implements the `TLocation` interface.
 </APIParameters>
 
 <APIReturns type="boolean">
-  `true` if the value is a `Path`, `Point`, or `TRange`.
+  `true` if the value is a `Path`, `Point`, or `Range`.
 </APIReturns>
 </API>
 
@@ -68,11 +68,9 @@ Check if a value implements the `Span` interface.
 
 ## Types
 
-### `TLocation`
+### `Location`
 
-`Location` is a type alias for `TLocation`.
-
-<API name="TLocation">
+<API name="Location">
 <APIAttributes>
   <APIItem name="Path" type="Path">
     An array of numbers representing a node's position.
@@ -80,7 +78,7 @@ Check if a value implements the `Span` interface.
   <APIItem name="Point" type="Point">
     An object with `path` and `offset`.
   </APIItem>
-  <APIItem name="TRange" type="TRange">
+  <APIItem name="Range" type="Range">
     An object with `anchor` and `focus`.
   </APIItem>
 </APIAttributes>

@@ -1,8 +1,7 @@
+import type { Element, Range } from '@platejs/slate';
 import {
   type ElementEntry,
   type SlateEditor,
-  type TElement,
-  type TRange,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
@@ -18,7 +17,7 @@ import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
 type FormatType = 'all' | 'cell' | 'table';
 
 type GetTableGridByRangeOptions<T extends FormatType> = {
-  at: TRange;
+  at: Range;
 
   /**
    * Format of the output:
@@ -146,7 +145,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
       cellsSet.add(cell);
 
       const rows = table.children[rowIndex - startRowIndex]
-        .children as TElement[];
+        .children as Element[];
       rows[colIndex - startColIndex] = cell;
 
       const cellPath = editor.api.findPath(cell)!;

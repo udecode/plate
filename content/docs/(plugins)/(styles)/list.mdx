@@ -169,7 +169,7 @@ Plugin for creating and managing lists. It works with the [Indent plugin](/docs/
 
 <API name="ListPlugin">
 <APIOptions>
-  <APIItem name="getSiblingListOptions" type="GetSiblingListOptions<TElement>" optional>
+  <APIItem name="getSiblingListOptions" type="GetSiblingListOptions<Element>" optional>
     Function to determine indent list options for sibling elements.
   </APIItem>
   <APIItem name="getListStyleType" type="(element: HTMLElement) => ListStyleType" optional>
@@ -299,8 +299,8 @@ Used to provide options for getting the sibling indent list in a block of text.
     level equal to the current node. If true, the lookup stops when a sibling
     node with the same indent level is found.
   </APIItem>
-  <APIItem name="breakQuery" type="(node: TNode) => boolean | undefined">
-    A function that takes a `TNode` and returns a boolean value or undefined.
+  <APIItem name="breakQuery" type="(node: Node) => boolean | undefined">
+    A function that takes a `Node` and returns a boolean value or undefined.
     This function is used to specify a condition under which the lookup process
     should be stopped.
   </APIItem>

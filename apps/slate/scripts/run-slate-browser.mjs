@@ -4,12 +4,10 @@ import { spawn, spawnSync } from 'node:child_process';
 
 const mode = process.argv[2] ?? 'matrix';
 const passthroughArgs = process.argv.slice(3);
-const paginationFile =
-  '../www/tests/slate-browser/donor/examples/pagination.test.ts';
+const paginationFile = 'tests/slate-browser/donor/examples/pagination.test.ts';
 const syncedBlocksFile =
-  '../www/tests/slate-browser/donor/examples/synced-blocks.test.ts';
-const checkListsFile =
-  '../www/tests/slate-browser/donor/examples/check-lists.test.ts';
+  'tests/slate-browser/donor/examples/synced-blocks.test.ts';
+const checkListsFile = 'tests/slate-browser/donor/examples/check-lists.test.ts';
 const baseArgs = [
   'exec',
   'playwright',

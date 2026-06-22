@@ -35,7 +35,7 @@ Code reads are allowed across:
 - `/Users/zbeyens/git/plate-2/packages/slate-react/**`
 - `/Users/zbeyens/git/plate-2/packages/browser/**`
 - `/Users/zbeyens/git/plate-2/apps/www/src/app/(app)/examples/slate/_examples/**`
-- `/Users/zbeyens/git/plate-2/apps/www/tests/slate-browser/donor/examples/**`
+- `/Users/zbeyens/git/plate-2/apps/slate/tests/slate-browser/donor/examples/**`
 - `/Users/zbeyens/git/plate-2/benchmarks/slate-v2/donor/**`
 - `/Users/zbeyens/git/plate-2/package.json`
 - `/Users/zbeyens/git/slate/**`

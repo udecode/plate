@@ -1,4 +1,5 @@
-import type { SlateEditor, TElement, TTableCellElement } from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { SlateEditor, TTableCellElement } from 'platejs';
 
 import type { BorderDirection } from '../types';
 
@@ -36,7 +37,7 @@ export type TableBorderStates = {
  */
 export const getSelectedCellsBorders = (
   editor: SlateEditor,
-  selectedCells?: TElement[] | null,
+  selectedCells?: Element[] | null,
   options: GetSelectedCellsBordersOptions = {}
 ): TableBorderStates => {
   const { select = { none: true, outer: true, side: true } } = options;

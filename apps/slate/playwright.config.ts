@@ -63,7 +63,7 @@ const config: PlaywrightTestConfig = {
   projects,
   reporter: process.env.CI ? 'github' : 'list',
   retries: retryCount,
-  testDir: '../www/tests/slate-browser',
+  testDir: './tests/slate-browser',
   timeout: 45_000,
   use: {
     actionTimeout: 0,

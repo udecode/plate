@@ -133,16 +133,48 @@ Migration state:
 - mode: full-loop package-by-package
 - minimum_runtime: N/A, no duration requested
 - current_loop: 333
-- current_checkpoint: final package-by-package closure audit
-- current_checkpoint_status: proof complete; scoped review complete; mechanical
-  plan check pending
+- current_checkpoint: foundation legacy-import retirement
+- current_checkpoint_status: done; direct core source imports are isolated to
+  `packages/core/src/internal/currentRuntimeBridge.ts`, scanner classifies that
+  bridge as private quarantine, and focused core proof is green
 - next_checkpoint: hard pause before full Plate runtime/default-route swap,
-  `packages/slate-legacy` deletion, or any deferred runtime owner claim
+  `packages/slate-legacy` deletion, public Plate v2 API redesign, or any
+  deferred runtime owner claim
 - goal_status: active
 
+Foundation migration checkpoint (2026-06-22):
+- [x] Scope copied before code edits: foundation migration first.
+- [x] Requirement copied before code edits: keep packages green.
+- [x] Requirement copied before code edits: remove `@platejs/slate-legacy`
+      imports where they are not the explicit temporary runtime boundary.
+- [x] Requirement copied before code edits: add temporary private bridges only
+      where needed.
+- [x] Requirement copied before code edits: do not expose temporary bridges as
+      final public API.
+- [x] Non-goal copied before code edits: do not design or hard-cut the whole
+      Plate v2 public API in this packet.
+- [x] Stop condition copied before code edits: if a remaining legacy import is
+      tied to current runtime construction, history/react enhancer behavior,
+      editor API/transform contracts, or plugin override semantics, either move
+      it behind a private core bridge with focused proof or defer it to the
+      runtime/default-route checkpoint with owner and reason.
+- [x] Inventory all current non-generated `@platejs/slate-legacy` references.
+      Evidence: `rg -n "from '@platejs/slate-legacy'" packages apps content
+      docs --glob '!docs/plans/**'` reports only the private core bridge and
+      `packages/slate-legacy` type tests.
+- [x] Remove or privatize safe foundation imports package-by-package. Evidence:
+      core constructor/type/history/plugin-resolution imports now route through
+      `packages/core/src/internal/currentRuntimeBridge.ts`.
+- [x] Run focused core/package proof after each kept packet. Evidence: core
+      typecheck, core tests, core build, migration scanner, and command-surface
+      scanner are green.
+- [x] Record keep/revert/quarantine plus remaining deferred owner rows.
+      Evidence: loop 334 addendum and `hit-overrides.json` private bridge row.
+
 Current verdict:
-- verdict: package-by-package migration lane is closed after final review; broad
-  Plate runtime/default-route migration remains a separate hard checkpoint
+- verdict: package-by-package migration lane was closed, but foundation
+  legacy-import retirement is reopened as a narrow checkpoint; broad Plate
+  runtime/default-route migration remains a separate hard checkpoint
 - confidence: 99/100 after safe package packets, first-party app playground proof,
   source-backed runtime adapter map, kept runtime factory packet, and kept
   plugin metadata/configuration/API-capability packets, plus command-surface
@@ -3276,11 +3308,76 @@ Loop 333 addendum:
 - Next owner: core runtime/helper-boundary retirement checkpoint or one
   explicitly deferred runtime package owner from the command-surface ledger.
 
-Final closure proof after loop 333:
+Loop 334 addendum:
+- Packet: `core-current-runtime-private-bridge`.
+- Owner: `packages/core` current Plate runtime constructor/type/history/plugin
+  resolution boundary.
+- Why: user reopened foundation migration with a stricter rule: remove direct
+  `@platejs/slate-legacy` imports, keep packages green, and allow only
+  temporary private bridges. The remaining core imports were real current
+  runtime contracts, not safe Slate v2 helper swaps.
+- Changed list: added
+  `packages/core/src/internal/currentRuntimeBridge.ts` as the single private
+  core bridge for current-runtime constructor/types/history/method-sync helpers.
+  `withPlate`, `withSlate`, `withStatic`, `PlateEditor`, `SlateEditor`,
+  `BasePlugin`, `SlatePlugin`, `PlatePlugin`, `resolvePlugins`,
+  `HistoryPlugin`, and `withSlate.spec.ts` now import the current-runtime
+  surface from that bridge instead of `@platejs/slate-legacy` directly.
+  `createPlateRuntimeEditor` now wraps runtime `inject.nodeProps` transforms in
+  Plate element context so hook-backed navigation feedback can resolve the
+  rendered element path on the Slate v2 runtime branch. The migration scanner
+  artifact files were refreshed, and `hit-overrides.json` records the private
+  bridge quarantine.
+- Tests/oracles: core tests now catch the v2 runtime inject-context gap through
+  `runs hook-backed createPlateEditor slate-v2 inject transformProps`; the
+  previously failing row now passes and proves navigation highlight attributes
+  render on the v2 runtime branch.
+- Proof: `rg -n "from '@platejs/slate-legacy'" packages apps content docs
+  --glob '!docs/plans/**'` reports only
+  `packages/core/src/internal/currentRuntimeBridge.ts` and
+  `packages/slate-legacy` type tests; `pnpm turbo typecheck
+  --filter=./packages/core` passed; `pnpm --filter @platejs/core test` passed
+  952 tests / 2316 assertions; `pnpm --filter @platejs/core build` passed;
+  `node docs/plans/artifacts/plate-slate-v2-migration/scan-plate-slate-migration.mjs`
+  passed with 5396 scanned files, 1 owner, 2649 hits, and 0 missing direct
+  current Slate deps; `node
+  docs/plans/artifacts/plate-slate-v2-migration/scan-plate-command-surface.mjs`
+  passed with 313 rows across 30 owners; after warming `PORT=3100
+  NEXT_PUBLIC_PLATE_BROWSER_PROOF=1 pnpm --filter www dev:slate`,
+  `PLAYWRIGHT_BASE_URL=http://localhost:3100 pnpm --filter www
+  test:slate-browser:chromium tests/slate-browser/playground.spec.ts` passed 1
+  Chromium playground edit/undo/redo proof.
+- Keep/revert/quarantine: keep. Direct imports are no longer scattered through
+  public Plate code; the only direct core source import is a private bridge.
+  Quarantine the bridge and `packages/core/package.json` dependency until the
+  runtime/default-route packet replaces the current Plate editor contract.
+- Deferred-with-owner: full Plate runtime/default-route migration and
+  `packages/slate-legacy` deletion remain hard checkpoints. Do not expose this
+  bridge as final API. Current declaration output still imports
+  `@platejs/slate-legacy` because exported `PlateEditor.api` / `PlateEditor.tf`
+  types are still the current Plate command facade; removing that requires the
+  Plate v2 API cut, not source import cleanup.
+- Workflow slowdown: the `@platejs/core` test script ignores the apparent file
+  args and runs the package suite; this is acceptable proof here but should not
+  be mistaken for a focused single-file command. The Playwright webServer path
+  failed twice at `page.goto` because cold Next/Fumadocs route compile exceeded
+  the 45s test timeout; manual warm-up showed `/blocks/playground` taking about
+  71s and `/api/slate/ready` about 52s after restart, then the same browser row
+  passed against the warmed server with `NEXT_PUBLIC_PLATE_BROWSER_PROOF=1`.
+- Needs review: high. The source bridge is private, but generated declarations
+  still expose the current legacy-backed Plate command facade because
+  `PlateEditor.api/tf/getTransforms` are public today. I think this is the right
+  temporary state for beta; pretending it can disappear before the Plate v2 API
+  cut would be fake.
+- Next owner: full Plate runtime/default-route checkpoint, not more import
+  churn.
+
+Final closure proof after loop 334:
 - `node docs/plans/artifacts/plate-slate-v2-migration/scan-plate-slate-migration.mjs`
-  passed with 5391 scanned files, 1 owner, 2636 hits, and 0 missing direct
+  passed with 5396 scanned files, 1 owner, 2649 hits, and 0 missing direct
   current Slate deps; the only migration-hit owner is intentional
-  `packages/slate-legacy`.
+  `packages/slate-legacy` because the private core bridge is classified as
+  quarantine.
 - `node docs/plans/artifacts/plate-slate-v2-migration/scan-plate-command-surface.mjs`
   passed with 313 command-surface rows across 30 owners; the candidate-row
   audit reports no open `candidate-*`, global API/transform, editor-runtime,
@@ -3289,13 +3386,14 @@ Final closure proof after loop 333:
   `packages/ai`, `packages/list-classic`, `packages/media`,
   `packages/selection`, `packages/suggestion`, and `packages/table`. These are
   not raw package-local cleanup rows.
-- `pnpm turbo typecheck --filter=./packages/core` passed; `bun test
-  packages/core/src/react/plugins/navigation-feedback/NavigationFeedbackPlugin.spec.tsx
-  packages/core/src/lib/plugins/navigation-feedback/NavigationFeedbackPlugin.spec.ts`
-  passed 9 tests / 29 assertions; `pnpm --filter @platejs/core build` passed.
-- `pnpm --filter www typecheck` passed; `pnpm --filter www
-  test:slate-browser:chromium tests/slate-browser/playground.spec.ts` passed 1
-  Chromium playground edit test.
+- `pnpm turbo typecheck --filter=./packages/core` passed; `pnpm --filter
+  @platejs/core test` passed 952 tests / 2316 assertions; `pnpm --filter
+  @platejs/core build` passed.
+- `pnpm --filter www typecheck` previously passed in this lane; fresh loop 334
+  browser proof passed with `PLAYWRIGHT_BASE_URL=http://localhost:3100 pnpm
+  --filter www test:slate-browser:chromium
+  tests/slate-browser/playground.spec.ts` after manual route warm-up and proof
+  env.
 - Keep/revert/quarantine: keep the loop 333 navigation-feedback fix; keep the
   explicit `packages/slate-legacy` scaffold and deferred runtime owners as hard
   checkpoints instead of deleting or overclaiming them.

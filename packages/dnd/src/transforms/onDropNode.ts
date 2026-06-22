@@ -1,7 +1,8 @@
 import type { PlateEditor } from 'platejs/react';
 import type { DropTargetMonitor } from 'react-dnd';
+import type { Element, NodeEntry, Path } from '@platejs/slate';
 
-import { type NodeEntry, type Path, type TElement, PathApi } from 'platejs';
+import { PathApi } from '@platejs/slate';
 
 import type { UseDropNodeOptions } from '../hooks';
 import type { DragItemNode, ElementDragItemNode } from '../types';
@@ -36,8 +37,8 @@ export const getDropPath = (
 
   if (!direction) return;
 
-  let dragEntry: NodeEntry<TElement> | undefined;
-  let dropEntry: NodeEntry<TElement> | undefined;
+  let dragEntry: NodeEntry<Element> | undefined;
+  let dropEntry: NodeEntry<Element> | undefined;
 
   if ('element' in dragItem) {
     const dragPath = editor.api.findPath(dragItem.element);
@@ -48,7 +49,7 @@ export const getDropPath = (
     dragEntry = [dragItem.element, dragPath];
     dropEntry = [element, hoveredPath];
   } else {
-    dropEntry = editor.api.node<TElement>({ id: element.id as string, at: [] });
+    dropEntry = editor.api.node<Element>({ id: element.id as string, at: [] });
   }
   if (!dropEntry) return;
   if (
@@ -129,10 +130,10 @@ export const onDropNode = (
 
     if (draggedIds.length > 1) {
       // Handle multi-node drop - get elements by their IDs and sort them
-      const elements: TElement[] = [];
+      const elements: Element[] = [];
 
       draggedIds.forEach((id) => {
-        const entry = editor.api.node<TElement>({ id, at: [] });
+        const entry = editor.api.node<Element>({ id, at: [] });
         if (entry) {
           elements.push(entry[0]);
         }
@@ -163,8 +164,8 @@ export const onDropNode = (
           : [];
 
       const paths = draggedIds
-        .map((id) => sourceEditor.api.node<TElement>({ id, at: [] }))
-        .filter((entry): entry is NodeEntry<TElement> => !!entry)
+        .map((id) => sourceEditor.api.node<Element>({ id, at: [] }))
+        .filter((entry): entry is NodeEntry<Element> => !!entry)
         .map(([, path]) => path)
         .sort((a, b) => PathApi.compare(b, a));
 

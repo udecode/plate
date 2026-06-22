@@ -638,7 +638,7 @@ In `Plate repo root`, prefer these focused forms:
 pnpm check:slate
 pnpm --filter slate test:slate-browser:chromium <file-or--grep>
 pnpm check:slate:browser-matrix
-PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter www exec playwright test --config playwright.slate.config.ts --project=<chromium|firefox|webkit> tests/slate-browser/donor/examples/<suite>.test.ts -g "<pattern>"
+PLAYWRIGHT_BASE_URL=http://localhost:3102 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter slate test:slate-browser:chromium tests/slate-browser/donor/examples/<suite>.test.ts -g "<pattern>"
 pnpm --filter @platejs/<package> test -- <file-or-pattern>
 cd packages/<package> && bun test ./test/<file>.test.ts --test-name-pattern "<pattern>"
 ```
@@ -661,13 +661,13 @@ Rules:
   the Plate repo. Do not search the donor checkout for current runtime facts;
 - before running a focused test, resolve the actual runnable entrypoint from
   the owning surface, not memory: use targeted searches such as
-  `rg --files packages/<pkg>/test apps/www/tests tooling benchmarks | rg
+  `rg --files packages/<pkg>/test apps/slate/tests tooling benchmarks | rg
   "<basename>|<suite>"`, or run the same search from the package cwd for
   package-local Vitest. Do this first, not after one failed command. Many owner
   files are imported by a `*.test.*` wrapper, while some root Bun contract files
   intentionally do not use `.test.*`;
 - match the runner to the resolved entrypoint: Slate browser specs under
-  `apps/www/tests/slate-browser/**` use `pnpm --filter www exec playwright test --config playwright.slate.config.ts`; root Bun contracts under
+  `apps/slate/tests/slate-browser/**` use `pnpm --filter slate test:slate-browser:chromium`; root Bun contracts under
   `packages/*/test/*.ts` use `bun test ./...`; package-local Vitest wrappers
   use the package cwd and package script;
 - if Bun or Vitest says "No test files found" or "filters did not match", stop
@@ -676,8 +676,9 @@ Rules:
 - for Bun workspace package commands, prefer path filters such as
   `bun --filter ./packages/slate-history typecheck`. Package-name filters can
   miss in this workspace and waste the loop;
-- use `pnpm --filter www exec playwright test --config playwright.slate.config.ts ...` for Slate browser specs; do not send Playwright specs
-  through `bun test`;
+- use `pnpm --filter slate test:slate-browser:chromium ...` for focused Slate
+  browser specs; do not send Playwright specs through `bun test` or the
+  `apps/www` docs app;
 - do not run multiple managed Playwright commands in parallel,
   including through `multi_tool_use.parallel`. The managed route builds and
   serves the Next example app, and concurrent runs can trip the Next build lock
@@ -852,8 +853,8 @@ Rules:
   stale green or stale red results;
 - for ad hoc route screenshot or DOM-metric proof outside a managed Playwright
   spec, do not run raw `node` and assume it can import `playwright`. Prefer the
-  repo-managed `pnpm --filter www exec playwright test --config
-  playwright.slate.config.ts` path when the proof should be durable;
+  repo-managed `pnpm --filter slate test:slate-browser:chromium` path for
+  Slate proof when the proof should be durable;
 - use `*_SKIP_BUILD=1` benchmark env vars only after a successful fresh build
   from the current runtime source. If runtime, example, package export, or
   benchmark-injected browser-handle code changed since the last build, rerun

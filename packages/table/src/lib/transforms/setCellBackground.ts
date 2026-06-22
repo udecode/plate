@@ -1,4 +1,5 @@
-import type { SlateEditor, TElement, TTableCellElement } from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { SlateEditor, TTableCellElement } from 'platejs';
 
 import { getCellTypes } from '../utils/getCellType';
 
@@ -6,7 +7,7 @@ export const setCellBackground = (
   editor: SlateEditor,
   options: {
     color: string | null;
-    selectedCells?: TElement[];
+    selectedCells?: Element[];
   }
 ) => {
   const { color, selectedCells } = options;

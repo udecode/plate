@@ -1,4 +1,6 @@
-import type { BlockFenceInputRuleMatch, SlateEditor, TRange } from 'platejs';
+import type { Range } from '@platejs/slate';
+
+import type { BlockFenceInputRuleMatch, SlateEditor } from 'platejs';
 
 import { createRuleFactory, KEYS, matchDelimitedInline } from 'platejs';
 
@@ -22,7 +24,7 @@ const getInlineEquationMatch = (
   context: Parameters<typeof matchDelimitedInline>[0]
 ):
   | {
-      deleteRange: TRange;
+      deleteRange: Range;
       texExpression: string;
     }
   | undefined => {
@@ -79,7 +81,7 @@ export const MathRules = {
           },
           apply: ({ editor }, match) => {
             const inlineMatch = match as {
-              deleteRange: TRange;
+              deleteRange: Range;
               texExpression: string;
             };
 

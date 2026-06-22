@@ -121,7 +121,7 @@ Root provider for one editor instance.
   <APIItem name="children" type="React.ReactNode">
     React children that can read the Plate store.
   </APIItem>
-  <APIItem name="decorate" type="({ editor, entry }) => TRange[]" optional>
+  <APIItem name="decorate" type="({ editor, entry }) => Range[]" optional>
     Store-level decorate function used by `PlateContent`.
   </APIItem>
   <APIItem name="readOnly" type="boolean" optional>
@@ -175,7 +175,7 @@ Editable surface for a `Plate` editor.
   <APIItem name="readOnly" type="boolean" optional>
     Overrides the store read-only value and syncs it back to the store.
   </APIItem>
-  <APIItem name="decorate" type="({ editor, entry }) => TRange[]" optional>
+  <APIItem name="decorate" type="({ editor, entry }) => Range[]" optional>
     Editable-level decorate function. Store-level `decorate` wins when present.
   </APIItem>
   <APIItem name="renderEditable" type="(editable: React.ReactElement) => React.ReactNode" optional>

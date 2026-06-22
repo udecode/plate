@@ -1,10 +1,12 @@
-import type { SlateEditor, TLinkElement, TText } from 'platejs';
+import type { Text } from '@platejs/slate';
+
+import type { SlateEditor, TLinkElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 export type CreateLinkNodeOptions = {
   url: string;
-  children?: TText[];
+  children?: Text[];
   target?: string;
   text?: string;
 };

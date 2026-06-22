@@ -1,6 +1,7 @@
 import { deserializeMd } from '@platejs/markdown';
 import { diffToSuggestions } from '@platejs/suggestion';
-import { type SlateEditor, type TElement, ElementApi } from 'platejs';
+import type { Element } from '@platejs/slate';
+import { type SlateEditor, ElementApi } from 'platejs';
 
 import {
   withoutSuggestionAndComments,
@@ -34,7 +35,7 @@ export const applyTableCellSuggestion = (
     return;
   }
 
-  const [cell, cellPath] = cellEntry as [TElement, number[]];
+  const [cell, cellPath] = cellEntry as [Element, number[]];
 
   // Get original cell children (without suggestion marks)
   const originalChildren = withoutSuggestionAndComments(cell.children);

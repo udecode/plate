@@ -1,9 +1,5 @@
-import {
-  KEYS,
-  type OverrideEditor,
-  type TCodeBlockElement,
-  type TElement,
-} from 'platejs';
+import { KEYS, type OverrideEditor, type TCodeBlockElement } from 'platejs';
+import type { Element } from '@platejs/slate';
 
 import type { CodeBlockConfig } from './BaseCodeBlockPlugin';
 
@@ -90,7 +86,7 @@ export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
           if (!editor.api.isStart(editor.selection.anchor, codeLinePath))
             return;
 
-          const previousCodeLine = editor.api.previous<TElement>({
+          const previousCodeLine = editor.api.previous<Element>({
             at: codeLinePath,
             match: { type: editor.getType(KEYS.codeLine) },
           });
@@ -160,14 +156,14 @@ export const withCodeBlock: OverrideEditor<CodeBlockConfig> = (ctx) => {
       tab: (options) => {
         const apply = () => {
           const codeLineType = editor.getType('code_line');
-          const _codeLines = editor.api.nodes<TElement>({
+          const _codeLines = editor.api.nodes<Element>({
             match: { type: codeLineType },
           });
           const codeLines = Array.from(_codeLines);
 
           if (codeLines.length > 0) {
             const [, firstLinePath] = codeLines[0];
-            const codeBlock = editor.api.parent<TElement>(firstLinePath);
+            const codeBlock = editor.api.parent<Element>(firstLinePath);
 
             if (!codeBlock) return;
 

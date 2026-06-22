@@ -255,7 +255,7 @@ For full editor behavior proof, prefer one focused command first, then broaden:
 ```bash
 pnpm slate:test
 pnpm slate:typecheck
-PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter www exec playwright test --config playwright.slate.config.ts --project=chromium tests/slate-browser/donor/examples/<suite>.test.ts
+PLAYWRIGHT_BASE_URL=http://localhost:3102 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter slate test:slate-browser:chromium tests/slate-browser/donor/examples/<suite>.test.ts
 ```
 
 ## Stabilize Mode

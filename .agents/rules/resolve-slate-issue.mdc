@@ -128,8 +128,8 @@ Common Slate v2 gates:
 ```bash
 pnpm slate:test
 pnpm --filter @platejs/slate-react typecheck
-pnpm --filter www test:slate-browser
-PLAYWRIGHT_BASE_URL=http://localhost:3100 pnpm --filter www exec playwright test --config playwright.slate.config.ts <test-file> --project=chromium --grep "<issue row>"
+pnpm --filter slate test:slate-browser
+PLAYWRIGHT_BASE_URL=http://localhost:3102 pnpm --filter slate test:slate-browser:chromium <test-file> --grep "<issue row>"
 ```
 
 Use only the commands that fit the touched surface. If a broad gate fails for an

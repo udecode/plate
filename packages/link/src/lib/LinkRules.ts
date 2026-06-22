@@ -1,4 +1,6 @@
-import type { SlateEditor, TRange, TText } from 'platejs';
+import type { Range, Text } from '@platejs/slate';
+
+import type { SlateEditor } from 'platejs';
 
 import { createRuleFactory, KEYS, PathApi } from 'platejs';
 
@@ -7,7 +9,7 @@ import { upsertLink } from './transforms';
 import { validateUrl } from './utils';
 
 type LinkAutomdMatch = {
-  range: TRange;
+  range: Range;
   text: string;
   url: string;
 };
@@ -19,7 +21,7 @@ type LinkPasteAutolinkMatch = {
 };
 
 type LinkTextAutolinkMatch = {
-  range: TRange;
+  range: Range;
   url: string;
 };
 
@@ -172,7 +174,7 @@ const moveSelectionAfterLink = (editor: SlateEditor) => {
 
   const nextPath = PathApi.next(linkPath);
 
-  editor.tf.insertNodes({ text: '' } as TText, { at: nextPath });
+  editor.tf.insertNodes({ text: '' } as Text, { at: nextPath });
   editor.tf.select(nextPath);
 };
 

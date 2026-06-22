@@ -1,6 +1,8 @@
 import React from 'react';
 
-import { type TElement, KEYS } from 'platejs';
+import type { Element } from '@platejs/slate';
+
+import { KEYS } from 'platejs';
 import { useEditorPlugin } from 'platejs/react';
 
 import { SelectionArea } from '../../internal';
@@ -108,12 +110,12 @@ export const useSelectionArea = () => {
           const next = new Set(getOption('selectedIds'));
           const ids = Array.from(next);
 
-          const isTableElement = (element: TElement) =>
+          const isTableElement = (element: Element) =>
             element.type === KEYS.table ||
             element.type === KEYS.tr ||
             element.type === KEYS.th;
 
-          const isTableRowElement = (element: TElement) =>
+          const isTableRowElement = (element: Element) =>
             element.type === KEYS.tr || element.type === KEYS.th;
 
           const getBlockById = (id: string) =>

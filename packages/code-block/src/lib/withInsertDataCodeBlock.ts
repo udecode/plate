@@ -1,4 +1,5 @@
-import type { OverrideEditor, TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { OverrideEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -20,7 +21,7 @@ export const withInsertDataCodeBlock: OverrideEditor = ({
           const lines = text.split('\n');
 
           // Check if we're in a code block
-          const [blockAbove] = editor.api.block<TElement>() ?? [];
+          const [blockAbove] = editor.api.block<Element>() ?? [];
           const isInCodeBlock =
             blockAbove &&
             [codeBlockType, codeLineType].includes(blockAbove?.type);
@@ -60,7 +61,7 @@ export const withInsertDataCodeBlock: OverrideEditor = ({
       }
 
       // Handle plain text paste into code block only if there are line breaks
-      const [blockAbove] = editor.api.block<TElement>() ?? [];
+      const [blockAbove] = editor.api.block<Element>() ?? [];
       if (
         blockAbove &&
         [codeBlockType, codeLineType].includes(blockAbove?.type) &&

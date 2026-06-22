@@ -3,7 +3,7 @@
 Date: 2026-06-20
 
 Scope: remaining `@platejs/slate-legacy` / old `slate-react` / legacy test
-harness boundaries under `packages/core` after loop 176.
+harness boundaries under `packages/core` after loop 334.
 
 ## Quarantine Summary
 
@@ -13,40 +13,29 @@ to move to Slate v2, or a focused owner packet with behavior proof.
 
 | File | Legacy import | Owner | Decision |
 |------|---------------|-------|----------|
-| `packages/core/src/lib/editor/withSlate.ts` | `Editor`, `createEditor` | current non-React editor constructor | quarantine until `createSlateEditor` is backed by the Slate v2 runtime |
-| `packages/core/src/react/editor/withPlate.ts` | `Editor`, `createEditor` | current React editor constructor | quarantine until `createPlateEditor` is backed by the Slate v2 runtime |
-| `packages/core/src/static/editor/withStatic.tsx` | `Editor`, `createEditor` | current static editor constructor | quarantine until static editor construction is backed by the Slate v2 runtime |
-| `packages/core/src/lib/editor/withSlate.spec.ts` | `createEditor` | current-runtime bridge proof | keep as explicit proof that raw legacy editor construction still receives the temporary `editor.update` bridge |
-| `packages/core/src/lib/editor/SlateEditor.ts` | `EditorBase`, `EditorApi`, `EditorTransforms` | current Plate editor type contract | quarantine until editor base/API/transform contracts are v2-owned |
-| `packages/core/src/react/editor/PlateEditor.ts` | `DescendantIn`, `EditorApi`, `EditorTransforms`, `Operation` | current React Plate editor type contract | quarantine until operation/editor API contracts are v2-owned |
-| `packages/core/src/lib/plugin/BasePlugin.ts` | `EditorApi`, `EditorTransforms` | plugin API/transform extension contract | quarantine until plugin extension contracts no longer target current legacy editor methods |
-| `packages/core/src/lib/plugin/SlatePlugin.ts` | `EditorApi`, `EditorTransforms` | Slate plugin override/extend contract | quarantine until `extendApi` / `extendTransforms` use the final v2 Plate command surface |
-| `packages/core/src/react/plugin/PlatePlugin.ts` | `EditorApi`, `EditorTransforms` | React plugin override/extend contract | quarantine until React plugin command contracts use the final v2 Plate command surface |
-| `packages/core/src/internal/plugin/resolvePlugins.ts` | `assignLegacyApi`, `assignLegacyTransforms`, `syncLegacyMethods` | plugin resolution / current runtime method sync | quarantine until old method mutation is replaced by Slate v2 extension registration |
-| `packages/core/src/lib/plugins/HistoryPlugin.ts` | `withHistory` | current history runtime wrapper | typed quarantine; `@platejs/slate-history` intentionally hard-cuts public `withHistory`, so this still needs a real history-extension packet before the legacy wrapper disappears |
+| `packages/core/src/internal/currentRuntimeBridge.ts` | `Editor`, `createEditor`, `EditorBase`, `EditorApi`, `EditorTransforms`, `Operation`, `DescendantIn`, `assignLegacyApi`, `assignLegacyTransforms`, `syncLegacyMethods`, `withHistory` | current Plate runtime constructor/type/history/plugin-sync bridge | private quarantine until the Plate runtime/default-route packet replaces the current editor contract |
+| `packages/core/package.json` | `@platejs/slate-legacy` dependency | current Plate runtime dependency | quarantine until `currentRuntimeBridge.ts` is deleted |
 | `packages/core/src/react/slate-react.ts` | old `slate-react` `Slate`, `Editable`, and node/context hook re-exports | current Plate React adapter | quarantine until Plate runtime is actually backed by `@platejs/slate-react`; public `withReact`, `useSlateStatic`, and `DefaultPlaceholder` exports are cut |
 | `packages/core/src/react/plugins/react/withPlateReact.ts` | old upstream `withReact` | current Plate React enhancer | quarantine until Plate runtime installs the `@platejs/slate-react` React extension |
 
 ## Proof State
 
-- Latest migration scanner after loops 299-306: 5391 files, 1 owner,
-  2621 visible hits, 0 missing direct current Slate deps.
-- Latest core owner row: no actionable package cleanup rows; all remaining
-  core legacy rows are overridden as runtime/test-harness quarantine.
-- Latest core/app package proof after loop 304:
-  - `pnpm turbo typecheck --filter=./packages/core --filter=./packages/plate`
-  - `pnpm --filter @platejs/core test -- ./src/react/editor/createPlateRuntimeEditor.spec.ts`
-  - `bun test ./apps/www/src/__tests__/package-integration/core-runtime/usePlateEditor-runtime.spec.tsx`
-  - `pnpm --filter @platejs/core lint:fix`
+- Latest migration scanner after loop 334: 5396 files, 1 owner,
+  2649 visible hits, 0 missing direct current Slate deps. The direct core
+  bridge import is classified as private quarantine.
+- Latest core owner row: no actionable package cleanup rows; remaining core
+  legacy ownership is the private current-runtime bridge plus old `slate-react`
+  adapter quarantine.
+- Declaration caveat: `packages/core/dist/*.d.ts` still imports
+  `@platejs/slate-legacy` because exported `PlateEditor.api` /
+  `PlateEditor.tf` / plugin command contracts are still the current Plate
+  command facade. That is a Plate v2 API cut, not a source-import cleanup.
+- Latest core package proof after loop 334:
+  - `pnpm turbo typecheck --filter=./packages/core`
+  - `pnpm --filter @platejs/core test`
   - `pnpm --filter @platejs/core build`
-  - `pnpm --filter platejs build`
-  - `pnpm --filter www typecheck`
   - `node docs/plans/artifacts/plate-slate-v2-migration/scan-plate-slate-migration.mjs`
   - `node docs/plans/artifacts/plate-slate-v2-migration/scan-plate-command-surface.mjs`
-  - `pnpm --filter www exec playwright test --config playwright.slate.config.ts --project=chromium tests/slate-browser/playground.spec.ts`
-  - `pnpm test:types` still crashes in TypeScript 6 before diagnostics in
-    both before/after control states; this is tooling debt, not a keep/revert
-    signal for the type-test fixture packet.
 
 ## Next Owner
 
@@ -87,3 +76,7 @@ work is either:
 - Loop 306 removed local `as any` bridges from SlateExtension node/text handler
   pipes and metadata-prop checks by using typed plugin contexts from the existing
   `getEditorPlugin` owner.
+- Loop 334 moved scattered direct `@platejs/slate-legacy` imports under
+  `packages/core` into `packages/core/src/internal/currentRuntimeBridge.ts`,
+  kept that bridge private/quarantined, and fixed the Slate v2 runtime
+  `inject.nodeProps` element-context gap exposed by the core test suite.

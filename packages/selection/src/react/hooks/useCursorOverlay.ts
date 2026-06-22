@@ -1,6 +1,7 @@
 import React from 'react';
 
-import type { TRange, UnknownObject } from 'platejs';
+import type { Range } from '@platejs/slate';
+import type { UnknownObject } from 'platejs';
 
 import {
   useEditorContainerRef,
@@ -50,7 +51,7 @@ export const useCursorOverlay = <TCursorData extends UnknownObject>({
     'cursors'
   ) as Record<string, CursorState<TCursorData>>;
 
-  const selectionRectCache = React.useRef<WeakMap<TRange, SelectionRect[]>>(
+  const selectionRectCache = React.useRef<WeakMap<Range, SelectionRect[]>>(
     new WeakMap()
   );
 

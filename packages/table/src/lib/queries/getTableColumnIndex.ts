@@ -1,7 +1,8 @@
-import type { Editor, TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 /** Get table column index of a cell node. */
-export const getTableColumnIndex = (editor: Editor, cellNode: TElement) => {
+export const getTableColumnIndex = (editor: SlateEditor, cellNode: Element) => {
   const path = editor.api.findPath(cellNode);
 
   if (!path) return -1;

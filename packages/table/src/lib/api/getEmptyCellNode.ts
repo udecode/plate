@@ -1,4 +1,5 @@
-import type { SlateEditor, TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -11,7 +12,7 @@ export const getEmptyCellNode = (
   header =
     header ??
     (row
-      ? (row as TElement).children.every(
+      ? (row as Element).children.every(
           (c) => c.type === editor.getType(KEYS.th)
         )
       : false);

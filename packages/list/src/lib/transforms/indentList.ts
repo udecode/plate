@@ -1,4 +1,5 @@
-import type { SlateEditor, TLocation } from 'platejs';
+import type { Location } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 import { setIndent } from '@platejs/indent';
 import { KEYS } from 'platejs';
@@ -6,7 +7,7 @@ import { KEYS } from 'platejs';
 import { ListStyleType } from '../types';
 
 export type ListOptions = {
-  at?: TLocation;
+  at?: Location;
   listRestart?: number;
   listRestartPolite?: number;
   listStyleType?: ListStyleType | string;

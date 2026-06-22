@@ -308,7 +308,7 @@ Prefer focused commands from the owner repo:
 ```bash
 pnpm --filter @platejs/<package> test -- <file-or-pattern>
 bun test ./packages/<package>/test/<file>.ts --test-name-pattern "<test>"
-PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter www exec playwright test --config playwright.slate.config.ts --project=chromium tests/slate-browser/donor/examples/<suite>.test.ts --grep "<test>"
+PLAYWRIGHT_BASE_URL=http://localhost:3102 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter slate test:slate-browser:chromium tests/slate-browser/donor/examples/<suite>.test.ts --grep "<test>"
 ```
 
 For Plate-owned rows, use the relevant Plate package/example command. If the

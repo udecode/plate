@@ -1,12 +1,8 @@
 import type { OverrideEditor, PlateEditor } from 'platejs/react';
 
 import { serializeInlineMd } from '@platejs/markdown';
-import {
-  type Operation,
-  type SlateEditor,
-  type TRange,
-  RangeApi,
-} from 'platejs';
+import type { Range } from '@platejs/slate';
+import { type Operation, type SlateEditor, RangeApi } from 'platejs';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
 
@@ -39,7 +35,7 @@ export const withCopilot: OverrideEditor<CopilotPluginConfig> = ({
   setOption,
   tf: { apply, insertText, redo, setSelection, undo, writeHistory },
 }) => {
-  let prevSelection: TRange | null = null;
+  let prevSelection: Range | null = null;
 
   return {
     transforms: {

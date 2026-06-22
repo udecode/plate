@@ -344,7 +344,6 @@ test.describe("images example", () => {
       const images = editor.root.locator("img");
       const bottomImage = images.nth(2);
 
-      await page.waitForLoadState("networkidle");
       await expect(images).toHaveCount(3);
       await expect(bottomImage).toBeVisible();
       await expect
@@ -456,7 +455,7 @@ test.describe("images example", () => {
           text: "Before adjacent images.",
         },
       });
-      await page.waitForLoadState("networkidle");
+      await expect(editor.root.locator("img")).toHaveCount(3);
       await expect(editor.root).toContainText("Before adjacent images.");
       await expect
         .poll(() => editor.get.modelText())
@@ -517,7 +516,7 @@ test.describe("images example", () => {
           text: "Before adjacent images.",
         },
       });
-      await page.waitForLoadState("networkidle");
+      await expect(editor.root.locator("img")).toHaveCount(3);
       await expect(editor.root).toContainText("Before adjacent images.");
       await expect
         .poll(() => editor.get.modelText())
@@ -584,7 +583,7 @@ test.describe("images example", () => {
         },
       });
 
-      await page.waitForLoadState("networkidle");
+      await expect(editor.root.locator("img")).toHaveCount(3);
       await expect(editor.root).toContainText("Before adjacent images.");
       await expect
         .poll(() => editor.get.modelText())
@@ -720,7 +719,7 @@ test.describe("images example", () => {
         },
       });
 
-      await page.waitForLoadState("networkidle");
+      await expect(editor.root.locator("img")).toHaveCount(2);
       await expect(editor.root).toContainText(targetText);
       await expect
         .poll(() => editor.get.modelBlockTexts())

@@ -1,4 +1,5 @@
-import type { SlateEditor, TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -27,7 +28,7 @@ export const toggleCodeBlock = (editor: SlateEditor) => {
         type: codeBlockType,
       };
 
-      editor.tf.wrapNodes<TElement>(codeBlock);
+      editor.tf.wrapNodes<Element>(codeBlock);
     }
   });
 };

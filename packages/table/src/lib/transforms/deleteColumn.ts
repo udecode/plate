@@ -1,4 +1,5 @@
-import type { SlateEditor, TElement, TTableElement } from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { SlateEditor, TTableElement } from 'platejs';
 
 import { getEditorPlugin, KEYS } from 'platejs';
 
@@ -65,8 +66,8 @@ export const deleteColumn = (editor: SlateEditor) => {
         // - don't delete if only one cell in row
         // - don't delete if row doesn't have this cell
         if (
-          (row.children as TElement[]).length === 1 ||
-          colIndex > (row.children as TElement[]).length - 1
+          (row.children as Element[]).length === 1 ||
+          colIndex > (row.children as Element[]).length - 1
         )
           return;
 

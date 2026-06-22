@@ -1,4 +1,5 @@
-import { type SlateEditor, type TLocation, KEYS } from 'platejs';
+import type { Location } from '@platejs/slate';
+import { type SlateEditor, KEYS } from 'platejs';
 
 import { getCellTypes } from '../utils';
 
@@ -8,7 +9,7 @@ import { getCellTypes } from '../utils';
  */
 export const getTableEntries = (
   editor: SlateEditor,
-  { at = editor.selection }: { at?: TLocation | null } = {}
+  { at = editor.selection }: { at?: Location | null } = {}
 ) => {
   if (!at) return;
 

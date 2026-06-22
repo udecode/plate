@@ -1016,7 +1016,7 @@ Implementation verification in Slate v2 packages or Plate:
 - Run the focused package or browser test that owns the new proof.
 - Run `pnpm slate:test` before claiming a Slate applied slice is closed.
 - For release-quality Slate browser claims, pair package proof with
-  `pnpm --filter www test:slate-browser`.
+  `pnpm --filter slate test:slate-browser`.
 - Use raw mobile proof only when real device/Appium artifacts exist; semantic
   mobile handles and Playwright mobile viewports are not raw-device proof.
 - For `behavior-only` sources, verify that versioned local tests use local

@@ -326,7 +326,7 @@ Pick the relevant set:
 - browser repro script when Playwright is not enough;
 - `pnpm slate:test` and `pnpm slate:typecheck` for package
   behavior claims;
-- `pnpm --filter www test:slate-browser` for release-quality browser behavior
+- `pnpm --filter slate test:slate-browser` for release-quality browser behavior
   claims or when explicitly requested.
 
 If a gate fails for unrelated existing debt, record the exact command and why it

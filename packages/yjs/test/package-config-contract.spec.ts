@@ -239,7 +239,7 @@ describe('@platejs/yjs package config contract', () => {
     const fastScriptNames = [
       'check',
       'test',
-      'slate:packages:test',
+      'slate:test',
       'slate:browser:test',
     ];
     const forbiddenFastCheckFragments = [

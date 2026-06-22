@@ -38,7 +38,7 @@
     "build:watch": "ROARR_LOG=true turbowatch ./tooling/config/turbowatch.config.ts | roarr",
     "check": "pnpm lint && pnpm typecheck && pnpm test:all && pnpm test:slowest",
     "check:push": "pnpm lint && pnpm typecheck && pnpm test:all",
-    "check:slate": "pnpm slate:typecheck && pnpm test:slate && pnpm --filter slate test:slate-browser:chromium ../www/tests/slate-browser/slate-examples.spec.ts",
+    "check:slate": "pnpm slate:typecheck && pnpm test:slate && pnpm --filter slate test:slate-browser:chromium",
     "check:slate:browser-matrix": "pnpm slate:browser:install && pnpm --filter slate test:slate-browser",
     "ci:release": "node tooling/scripts/release-packages.mjs",
     "ci:version": "pnpm changeset version && pnpm install --no-frozen-lockfile",

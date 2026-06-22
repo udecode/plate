@@ -1,10 +1,12 @@
-import { type TElement, createSlatePlugin } from 'platejs';
+import type { Element } from '@platejs/slate';
+
+import { createSlatePlugin } from 'platejs';
 
 import type { CodeDrawingData } from './types';
 
 export const CODE_DRAWING_KEY = 'code_drawing' as const;
 
-export interface TCodeDrawingElement extends TElement {
+export interface CodeDrawingElement extends Element {
   data?: CodeDrawingData;
 }
 

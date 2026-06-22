@@ -30,9 +30,6 @@
     "shadcn:dev": "shadcn build public/rd/registry.json --output public/rd",
     "shadcn:dev:docs": "shadcn build public/rd/registry-docs.json --output public/rd",
     "start": "next start",
-    "test:slate-browser": "playwright test --config playwright.slate.config.ts",
-    "test:slate-browser:chromium": "playwright test --config playwright.slate.config.ts --project=chromium --workers=2 --fully-parallel",
-    "test:slate-browser:chromium-smoke": "playwright test --config playwright.slate.config.ts --project=chromium --workers=2 --fully-parallel tests/slate-browser/slate-examples.spec.ts",
     "typecheck": "pnpm build:source && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-docs-source-parity.mts && tsx --tsconfig ./scripts/tsconfig.scripts.json scripts/check-registry-source.mts && tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.package-integration.json",
     "typecheck:watch": "pnpm build:source && concurrently \"tsc --noEmit -p tsconfig.json --watch\" \"tsc --noEmit -p tsconfig.package-integration.json --watch\""
   },

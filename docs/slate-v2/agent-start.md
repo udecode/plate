@@ -65,9 +65,9 @@ For reads, teach `editor.read((state) => ...)`. For writes, teach
 From `/Users/zbeyens/git/plate-2`:
 
 ```sh
-pnpm slate:packages:typecheck
-pnpm slate:packages:test
-pnpm --filter www test:slate-browser
+pnpm slate:typecheck
+pnpm slate:test
+pnpm --filter slate test:slate-browser
 ```
 
 From `plate-2`:

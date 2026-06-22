@@ -1,4 +1,5 @@
-import type { SlateEditor, TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 export type DragItemNode = ElementDragItemNode | FileDragItemNode;
 
@@ -11,7 +12,7 @@ export type ElementDragItemNode = {
   id: string[] | string;
   [key: string]: unknown;
   editorId: string;
-  element: TElement;
+  element: Element;
   editor?: SlateEditor;
 };
 

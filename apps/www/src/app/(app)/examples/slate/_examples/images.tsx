@@ -226,7 +226,9 @@ const Image = ({ element }: RenderVoidProps<ImageElement>) => {
           "slate-images-image",
           selected && focused && "is-selected"
         )}
+        height={90}
         src={element.url}
+        width={160}
       />
       <Button
         active

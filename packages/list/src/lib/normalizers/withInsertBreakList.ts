@@ -1,4 +1,5 @@
-import { type OverrideEditor, type TElement, isDefined, KEYS } from 'platejs';
+import type { Element } from '@platejs/slate';
+import { type OverrideEditor, isDefined, KEYS } from 'platejs';
 
 import type { BaseListConfig } from '../BaseListPlugin';
 
@@ -26,7 +27,7 @@ export const withInsertBreakList: OverrideEditor<BaseListConfig> = ({
       editor.tf.withoutNormalizing(() => {
         insertBreak();
 
-        const newEntry = editor.api.above<TElement>();
+        const newEntry = editor.api.above<Element>();
 
         if (newEntry) {
           editor.tf.setNodes(

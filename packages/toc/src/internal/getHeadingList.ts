@@ -1,4 +1,7 @@
-import { type SlateEditor, type TElement, NodeApi } from 'platejs';
+import type { Element } from '@platejs/slate';
+import { NodeApi } from '@platejs/slate';
+
+import type { SlateEditor } from 'platejs';
 
 import type { Heading } from '../lib/types';
 
@@ -23,7 +26,7 @@ export const getHeadingList = (editor: SlateEditor) => {
 
   const headingList: Heading[] = [];
 
-  const values = editor.api.nodes<TElement>({
+  const values = editor.api.nodes<Element>({
     at: [],
     match: (n) => isHeading(n),
   });

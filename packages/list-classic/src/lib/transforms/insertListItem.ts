@@ -1,4 +1,6 @@
-import { type SlateEditor, type TElement, KEYS, PathApi } from 'platejs';
+import { type Element, PathApi } from '@platejs/slate';
+import type { SlateEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 export type InsertListItemOptions = {
   inheritCheckStateOnLineEndBreak?: boolean;
@@ -90,7 +92,7 @@ export const insertListItem = (
     } else {
       editor.tf.withoutNormalizing(() => {
         editor.tf.splitNodes();
-        editor.tf.wrapNodes<TElement>(
+        editor.tf.wrapNodes<Element>(
           {
             children: [],
             ...optionalTasklistProps,

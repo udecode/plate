@@ -91,6 +91,13 @@
   },
   {
     "decision": "quarantine",
+    "file": "packages/core/src/internal/currentRuntimeBridge.ts",
+    "kind": "legacy-import",
+    "reason": "private bridge is the only direct core source import of @platejs/slate-legacy; remove it only with the runtime/default-route packet",
+    "textIncludes": "@platejs/slate-legacy"
+  },
+  {
+    "decision": "quarantine",
     "file": "packages/core/src/internal/plugin/resolvePlugins.ts",
     "kind": "legacy-import",
     "reason": "plugin resolution currently installs/syncs legacy api and transform methods; replacing this requires the Plate runtime adapter packet"

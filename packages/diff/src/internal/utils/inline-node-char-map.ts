@@ -1,4 +1,6 @@
-import { type Descendant, type TText, NodeApi, TextApi } from 'platejs';
+import type { Descendant, Text } from '@platejs/slate';
+
+import { NodeApi, TextApi } from 'platejs';
 
 export class InlineNodeCharMap {
   private readonly _charGenerator: Generator<string>;
@@ -57,7 +59,7 @@ export class InlineNodeCharMap {
   }
 
   // Replace non-text nodes with a text node containing a unique char
-  nodeToText(node: Descendant): TText {
+  nodeToText(node: Descendant): Text {
     if (TextApi.isText(node)) return node;
 
     const c = this._charGenerator.next().value;
@@ -67,7 +69,7 @@ export class InlineNodeCharMap {
   }
 
   // Replace chars in text node with original nodes
-  textToNode(initialTextNode: TText): Descendant[] {
+  textToNode(initialTextNode: Text): Descendant[] {
     let outputNodes: Descendant[] = [initialTextNode];
 
     for (const [c, originalNode] of this._charToNode) {

@@ -1,16 +1,18 @@
 import {
   type Descendant,
+  type Element,
+  type Text,
   ElementApi,
+} from '@platejs/slate';
+import { normalizeDateValue } from '@platejs/date';
+import {
   type SlateEditor,
-  type TElement,
   type TListElement,
   type TMentionElement,
-  type TText,
   getPluginKey,
   getPluginType,
   KEYS,
 } from 'platejs';
-import { normalizeDateValue } from '@platejs/date';
 
 import type {
   MdBlockquote,
@@ -103,7 +105,7 @@ const groupInlineChildrenIntoParagraphs = (
     elements.push({
       children: inlineNodes as any,
       type: paragraphType,
-    } as TElement);
+    } as Element);
     inlineNodes = [];
   };
 
@@ -132,7 +134,7 @@ const groupInlineChildrenIntoParagraphs = (
     {
       children: [{ text: '' }],
       type: paragraphType,
-    } as TElement,
+    } as Element,
   ];
 };
 
@@ -262,7 +264,7 @@ export const defaultRules: MdRules = {
   code_block: {
     deserialize: (mdastNode, _deco, options) => ({
       children: (mdastNode.value || '').split('\n').map((line) => ({
-        children: [{ text: line } as TText],
+        children: [{ text: line } as Text],
         type: getPluginType(options.editor!, KEYS.codeLine),
       })),
       lang: mdastNode.lang ?? undefined,
@@ -479,7 +481,7 @@ export const defaultRules: MdRules = {
   },
   hr: {
     deserialize: (_, __, options) => ({
-      children: [{ text: '' } as TText],
+      children: [{ text: '' } as Text],
       type: getPluginType(options.editor!, KEYS.hr),
     }),
     serialize: () => ({ type: 'thematicBreak' }),
@@ -499,8 +501,8 @@ export const defaultRules: MdRules = {
       } = attributes ? parseAttributes(attributes) : ({} as any);
 
       return {
-        caption: [{ text: altAttr || alt || '' } as TText],
-        children: [{ text: '' } as TText],
+        caption: [{ text: altAttr || alt || '' } as Text],
+        children: [{ text: '' } as Text],
         ...(title && { title }),
         type: getPluginType(options.editor!, KEYS.img),
         url: src || url,
@@ -678,7 +680,7 @@ export const defaultRules: MdRules = {
       const startIndex = (mdastNode as any).start || 1;
       return parseListItems(mdastNode, 1, startIndex);
     },
-    serialize: (node: { type: 'ol' | 'ul' } & TElement, options): MdList => {
+    serialize: (node: { type: 'ol' | 'ul' } & Element, options): MdList => {
       const editor = options.editor!;
       const isOrdered = getPluginKey(editor, node.type) === KEYS.olClassic;
 
