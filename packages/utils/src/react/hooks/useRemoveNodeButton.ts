@@ -1,7 +1,7 @@
 import { useEditorRef } from '@platejs/core/react';
-import type { TElement } from '@platejs/slate-legacy';
+import type { Element } from '@platejs/slate';
 
-export const useRemoveNodeButton = ({ element }: { element: TElement }) => {
+export const useRemoveNodeButton = ({ element }: { element: Element }) => {
   const editor = useEditorRef();
 
   return {

@@ -4,11 +4,11 @@ import { createStore } from 'jotai/vanilla';
 import type { Nullable } from '@udecode/utils';
 
 import {
+  type Element,
   type ElementEntry,
   type Path,
-  type TElement,
   PathApi,
-} from '@platejs/slate-legacy';
+} from '@platejs/slate';
 
 import { createAtomStore } from '../../libs/jotai';
 import { useComposing, useReadOnly } from '../../slate-react';
@@ -17,7 +17,7 @@ import { useEditorRef, usePlateStore } from '../plate';
 export const SCOPE_ELEMENT = 'element';
 
 export type ElementStoreState = {
-  element: TElement;
+  element: Element;
   entry: ElementEntry;
   path: Path;
 };

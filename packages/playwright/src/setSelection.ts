@@ -1,12 +1,12 @@
 import type { Page } from '@playwright/test';
-import type { TLocation } from 'platejs';
+import type { Location } from '@platejs/slate';
 
 import type { EditorHandle } from './types';
 
 export const setSelection = async (
   page: Page,
   editorHandle: EditorHandle,
-  at: TLocation
+  at: Location
 ) => {
   await page.evaluate(
     ([editor, at]) => {

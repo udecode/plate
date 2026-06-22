@@ -1,12 +1,12 @@
 import type React from 'react';
 
-import type { Path, TElement } from '@platejs/slate-legacy';
+import type { Element, Path } from '@platejs/slate';
 
 export type RenderElementFn = (
   props: RenderElementProps
 ) => React.ReactElement<any>;
 
-export type RenderElementProps<N extends TElement = TElement> = {
+export type RenderElementProps<N extends Element = Element> = {
   attributes: {
     'data-slate-node': 'element';
     ref: any;

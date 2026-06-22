@@ -78,10 +78,10 @@ jobs:
         uses: ./.github/actions/pnpm-install
 
       - name: Typecheck packages
-        run: pnpm slate:packages:typecheck
+        run: pnpm slate:typecheck
 
       - name: Test packages
-        run: pnpm slate:packages:test
+        run: pnpm slate:test
 
       - name: Test browser package
         run: pnpm slate:browser:test

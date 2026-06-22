@@ -1,10 +1,10 @@
 import {
-  type Path,
-  type TText,
   ElementApi,
   NodeApi,
+  type Path,
   TextApi,
-} from '@platejs/slate-legacy';
+  type Text,
+} from '@platejs/slate';
 
 import type { PluginConfig } from '../../plugin/BasePlugin';
 import type { EdgeNodes } from './types';
@@ -74,7 +74,7 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
         }
 
         const textPath = editor.selection.focus.path;
-        const textNode = NodeApi.get<TText>(editor, textPath);
+        const textNode = editor.api.node<Text>(textPath)?.[0];
 
         if (!textNode) {
           return;
@@ -98,10 +98,10 @@ export const AffinityPlugin = createTSlatePlugin<AffinityConfig>({
         const marksToRemove: string[] = [];
 
         // Get next text node once outside the loop
-        let nextTextNode: TText | null = null;
+        let nextTextNode: Text | null = null;
         if (nextPoint) {
           const nextTextPath = nextPoint.path;
-          nextTextNode = NodeApi.get<TText>(editor, nextTextPath) || null;
+          nextTextNode = editor.api.node<Text>(nextTextPath)?.[0] ?? null;
         }
 
         // Check each mark individually

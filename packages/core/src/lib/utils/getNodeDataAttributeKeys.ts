@@ -1,7 +1,7 @@
-import { type TElement, type TText, TextApi } from '@platejs/slate-legacy';
+import { type Element, type Text, TextApi } from '@platejs/slate';
 import kebabCase from 'lodash/kebabCase.js';
 
-export const getNodeDataAttributeKeys = (node: TElement | TText) =>
+export const getNodeDataAttributeKeys = (node: Element | Text) =>
   Object.keys(node)
     .filter(
       (key) =>

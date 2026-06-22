@@ -1,5 +1,5 @@
-import type { TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
 
-export type TFootnoteElement = TElement & {
+export type FootnoteElement = Element & {
   identifier?: string;
 };

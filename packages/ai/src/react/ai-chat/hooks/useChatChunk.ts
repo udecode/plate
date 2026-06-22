@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-import type { TText } from 'platejs';
+import type { Text } from '@platejs/slate';
 
 import { KEYS } from 'platejs';
 import { usePluginOption } from 'platejs/react';
@@ -16,7 +16,7 @@ export const useChatChunk = ({
   onChunk: (chunk: {
     chunk: string;
     isFirst: boolean;
-    nodes: TText[];
+    nodes: Text[];
     text: string;
   }) => void;
   onFinish?: ({ content }: { content: string }) => void;
@@ -53,7 +53,7 @@ export const useChatChunk = ({
 
     const chunk = content.slice(insertedTextRef.current.length);
 
-    const nodes: TText[] = [];
+    const nodes: Text[] = [];
 
     if (chunk) {
       const isFirst = insertedTextRef.current === '';

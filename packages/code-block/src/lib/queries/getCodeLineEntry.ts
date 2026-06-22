@@ -1,18 +1,13 @@
-import {
-  type ElementOf,
-  type NodeEntry,
-  type SlateEditor,
-  type TElement,
-  type TLocation,
-  ElementApi,
-  KEYS,
-} from 'platejs';
+import { type NodeEntry, type SlateEditor, ElementApi, KEYS } from 'platejs';
+import type { Element, Location } from '@platejs/slate';
 
 /** If at (default = selection) is in ul>li>p, return li and ul node entries. */
-export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(
-  editor: E,
-  { at = editor.selection }: { at?: TLocation | null } = {}
-) => {
+export const getCodeLineEntry = (
+  editor: SlateEditor,
+  { at = editor.selection }: { at?: Location | null } = {}
+):
+  | { codeBlock: NodeEntry<Element>; codeLine: NodeEntry<Element> }
+  | undefined => {
   if (
     at &&
     editor.api.some({
@@ -27,10 +22,10 @@ export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(
     const [, parentPath] = selectionParent;
 
     const codeLine =
-      editor.api.above<TElement>({
+      editor.api.above<Element>({
         at,
         match: { type: editor.getType(KEYS.codeLine) },
-      }) || editor.api.parent<N>(parentPath);
+      }) || editor.api.parent<Element>(parentPath);
 
     if (!codeLine) return;
 
@@ -42,13 +37,13 @@ export const getCodeLineEntry = <N extends ElementOf<E>, E extends SlateEditor>(
     )
       return;
 
-    const codeBlock = editor.api.parent<N>(codeLinePath);
+    const codeBlock = editor.api.parent<Element>(codeLinePath);
 
     if (!codeBlock) return;
 
     return {
       codeBlock,
-      codeLine: codeLine as NodeEntry<N>,
+      codeLine,
     };
   }
 };

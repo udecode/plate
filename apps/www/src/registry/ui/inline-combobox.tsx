@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { PointRef, TElement } from 'platejs';
+import type { Element, PointRef } from '@platejs/slate';
 
 import {
   type ComboboxItemProps,
@@ -62,7 +62,7 @@ const defaultFilter: FilterFn = (
 
 type InlineComboboxProps = {
   children: React.ReactNode;
-  element: TElement;
+  element: Element;
   trigger: string;
   filter?: FilterFn | false;
   hideWhenNoValue?: boolean;

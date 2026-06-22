@@ -1,4 +1,4 @@
-import type { TElement } from '@platejs/slate-legacy';
+import type { Element } from '@platejs/slate';
 
 import { useEditorRef } from '../plate';
 import { SCOPE_ELEMENT, useElementContext } from './useElementStore';
@@ -7,7 +7,7 @@ import { SCOPE_ELEMENT, useElementContext } from './useElementStore';
  * Get the element by plugin key. If no element is found in the context, it will
  * return an empty object.
  */
-export const useElement = <T extends TElement = TElement>(
+export const useElement = <T extends Element = Element>(
   pluginKey = SCOPE_ELEMENT
 ): T => {
   const editor = useEditorRef();

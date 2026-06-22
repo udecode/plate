@@ -1,10 +1,9 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
+import type { Descendant, Element } from '@platejs/slate';
 
 import {
-  type Descendant,
   type SlateEditor,
-  type TElement,
   type Value,
   getPluginKey,
   KEYS,
@@ -117,7 +116,7 @@ export const deserializeMd = (
       ? ({
           children: [item],
           type: getPluginKey(editor, KEYS.p) ?? KEYS.p,
-        } as TElement)
+        } as Element)
       : item
   );
 };

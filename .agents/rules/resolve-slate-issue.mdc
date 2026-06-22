@@ -126,7 +126,7 @@ Record exact commands with cwd.
 Common Slate v2 gates:
 
 ```bash
-pnpm slate:packages:test
+pnpm slate:test
 pnpm --filter @platejs/slate-react typecheck
 pnpm --filter www test:slate-browser
 PLAYWRIGHT_BASE_URL=http://localhost:3100 pnpm --filter www exec playwright test --config playwright.slate.config.ts <test-file> --project=chromium --grep "<issue row>"

@@ -1,5 +1,6 @@
 'use client';
 
+import type { Element, Text } from '@platejs/slate';
 import type {
   EmptyText,
   KEYS,
@@ -8,7 +9,6 @@ import type {
   TCaptionProps,
   TComboboxInputElement,
   TCommentText,
-  TElement,
   TFontMarks,
   TImageElement,
   TLineHeightProps,
@@ -18,16 +18,15 @@ import type {
   TMentionElement,
   TResizableProps,
   TTableElement,
-  TText,
   TTextAlignProps,
 } from 'platejs';
 
-export interface MyBlockElement extends TElement, TListProps {
+export interface MyBlockElement extends Element, TListProps {
   id?: string;
 }
 
 export interface MyTextBlockElement
-  extends TElement,
+  extends Element,
     TLineHeightProps,
     TTextAlignProps {
   children: (
@@ -47,7 +46,7 @@ export interface MyCodeBlockElement extends MyBlockElement {
   type: typeof KEYS.codeBlock;
 }
 
-export interface MyCodeLineElement extends TElement {
+export interface MyCodeLineElement extends Element {
   children: PlainText[];
   type: typeof KEYS.codeLine;
 }
@@ -122,7 +121,7 @@ export interface MyParagraphElement extends MyTextBlockElement {
   type: typeof KEYS.p;
 }
 
-export interface MyTableCellElement extends TElement {
+export interface MyTableCellElement extends Element {
   children: MyNestableBlock[];
   type: typeof KEYS.td;
 }
@@ -132,7 +131,7 @@ export interface MyTableElement extends MyBlockElement, TTableElement {
   type: typeof KEYS.table;
 }
 
-export interface MyTableRowElement extends TElement {
+export interface MyTableRowElement extends Element {
   children: MyTableCellElement[];
   type: typeof KEYS.tr;
 }
@@ -141,7 +140,7 @@ export interface MyToggleElement extends MyTextBlockElement {
   type: typeof KEYS.toggle;
 }
 
-export interface RichText extends TBasicMarks, TCommentText, TFontMarks, TText {
+export interface RichText extends TBasicMarks, TCommentText, TFontMarks, Text {
   kbd?: boolean;
 }
 

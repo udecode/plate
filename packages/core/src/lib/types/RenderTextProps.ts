@@ -1,9 +1,9 @@
 import type React from 'react';
 
-import type { Path, TText } from '@platejs/slate-legacy';
+import type { Path, Text } from '@platejs/slate';
 
 export type RenderTextFn = (props: RenderTextProps) => React.ReactElement<any>;
-export type RenderTextProps<N extends TText = TText> = {
+export type RenderTextProps<N extends Text = Text> = {
   /** The text node being rendered. */
   text: N;
   /** Pre-computed path for static rendering. */

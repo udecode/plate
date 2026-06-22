@@ -867,7 +867,7 @@ function createBlockStartInputRule<TMatch extends object = {}>(config: {
   removeMatchedText?: boolean;
   resolveMatch?: (args: {
     match: RegExpMatchArray | string;
-    range: TRange;
+    range: Range;
     text: string;
   }) => TMatch | undefined;
   apply?: (
@@ -911,7 +911,7 @@ function createBlockFenceInputRule<TMatch>(config: {
   resolveMatch?: (args: {
     fence: string;
     path: Path;
-    range: TRange;
+    range: Range;
     text: string;
   }) => TMatch | undefined;
   enabled?: (context: SelectionInputRuleContext) => boolean;

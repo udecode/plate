@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Path, TElement, TText } from '@platejs/slate-legacy';
+import type { Element, Path, Text } from '@platejs/slate';
 import type { UnknownObject } from '@udecode/utils';
 
 import { useComposedRef } from '@udecode/react-utils';
@@ -66,7 +66,7 @@ export const useBlockIdAttributeRef = <T extends HTMLElement>(
 export type PlateChunkProps = RenderChunkProps;
 
 export type PlateElementProps<
-  N extends TElement = TElement,
+  N extends Element = Element,
   C extends AnyPluginConfig = PluginConfig,
 > = PlateNodeProps<C> &
   RenderElementProps<N> & {
@@ -119,7 +119,7 @@ export type PlateHTMLProps<
 };
 
 export type StyledPlateElementProps<
-  N extends TElement = TElement,
+  N extends Element = Element,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'div',
 > = Omit<PlateElementProps<N, C>, keyof DeprecatedNodeProps> &
@@ -154,7 +154,7 @@ export const PlateElement = React.forwardRef(function PlateElement(
     </PlateElementBody>
   );
 }) as <
-  N extends TElement = TElement,
+  N extends Element = Element,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'div',
 >(
@@ -214,7 +214,7 @@ function PlateElementBody({
 }
 
 export type PlateTextProps<
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
 > = PlateNodeProps<C> &
   RenderTextProps<N> &
@@ -223,7 +223,7 @@ export type PlateTextProps<
   };
 
 export type StyledPlateTextProps<
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
 > = Omit<PlateTextProps<N, C>, keyof DeprecatedNodeProps> &
@@ -237,7 +237,7 @@ export const PlateText = React.forwardRef<
 
   return <Tag {...attributes}>{children}</Tag>;
 }) as <
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
 >(
@@ -245,14 +245,14 @@ export const PlateText = React.forwardRef<
 ) => React.ReactElement;
 
 export type PlateLeafProps<
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
 > = PlateNodeProps<C> &
   RenderLeafProps<N> &
   DeprecatedNodeProps & { attributes: UnknownObject; inset?: boolean };
 
 export type StyledPlateLeafProps<
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
 > = Omit<PlateLeafProps<N, C>, keyof DeprecatedNodeProps> &
@@ -287,7 +287,7 @@ export const PlateLeaf = React.forwardRef<
 
   return <Tag {...attributes}>{children}</Tag>;
 }) as <
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
 >({

@@ -1,4 +1,5 @@
-import { type SlateEditor, NodeApi } from 'platejs';
+import type { SlateEditor } from 'platejs';
+import { NodeApi } from '@platejs/slate';
 
 import { getCodeLineEntry } from './getCodeLineEntry';
 
@@ -8,12 +9,13 @@ export const isCodeBlockEmpty = (editor: SlateEditor) => {
 
   if (!codeBlock) return false;
 
-  const codeLines = Array.from(NodeApi.children(editor, codeBlock[1]));
+  const [codeBlockNode] = codeBlock;
+  const codeLines = codeBlockNode.children;
 
   if (codeLines.length === 0) return true;
   if (codeLines.length > 1) return false;
 
-  const firstCodeLineNode = codeLines[0][0];
+  const firstCodeLineNode = codeLines[0];
 
   return !NodeApi.string(firstCodeLineNode);
 };

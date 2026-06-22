@@ -1,4 +1,4 @@
-import type { TElement, TText } from '@platejs/slate-legacy';
+import type { Element, Text } from '@platejs/slate';
 import type { AnyObject } from '@udecode/utils';
 
 import type {
@@ -15,12 +15,12 @@ export type BoxStaticProps = React.ComponentProps<'div'> & {
 };
 
 export type SlateRenderElementProps<
-  N extends TElement = TElement,
+  N extends Element = Element,
   C extends AnyPluginConfig = PluginConfig,
 > = SlateRenderNodeProps<C> & RenderElementProps<N>;
 
 export type SlateRenderLeafProps<
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
 > = SlateRenderNodeProps<C> & RenderLeafProps<N>;
 
@@ -33,6 +33,6 @@ export type SlateRenderNodeProps<C extends AnyPluginConfig = PluginConfig> =
   };
 
 export type SlateRenderTextProps<
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
 > = SlateRenderNodeProps<C> & RenderTextProps<N>;

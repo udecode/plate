@@ -1,4 +1,4 @@
-import type { TElement, TText } from '@platejs/slate-legacy';
+import type { Element, Text } from '@platejs/slate';
 
 import {
   type AnyEditorPlugin,
@@ -9,7 +9,7 @@ import {
 
 export const getNodeDataAttributes = (
   editor: SlateEditor,
-  node: TElement | TText,
+  node: Element | Text,
   {
     isElement,
     isLeaf,
@@ -50,7 +50,7 @@ export const getNodeDataAttributes = (
 export const getPluginDataAttributes = (
   editor: SlateEditor,
   plugin: AnyEditorPlugin,
-  node: TElement | TText
+  node: Element | Text
 ) => {
   const isElement = plugin.node.isElement;
   const isLeaf = plugin.node.isLeaf && plugin.node.isDecoration === true;

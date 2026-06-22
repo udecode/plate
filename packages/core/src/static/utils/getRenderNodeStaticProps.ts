@@ -1,4 +1,4 @@
-import type { Path, TElement, TText } from '@platejs/slate-legacy';
+import type { Element, Path, Text } from '@platejs/slate';
 import type { AnyObject } from '@udecode/utils';
 
 import clsx from 'clsx';
@@ -25,7 +25,7 @@ export const getRenderNodeStaticProps = ({
   editor: SlateEditor;
   props: SlateRenderNodeProps;
   attributes?: AnyObject;
-  node?: TElement | TText;
+  node?: Element | Text;
   /** Pre-computed path to avoid expensive findPath traversal */
   path?: Path;
   plugin?: AnyEditorPlugin;

@@ -646,7 +646,7 @@ cd packages/<package> && bun test ./test/<file>.test.ts --test-name-pattern "<pa
 Rules:
 
 - `pnpm check:slate` is the default daily Slate lane: package typecheck/tests,
-  browser package tests, and Chromium examples proof through `apps/slate`.
+  browser package tests, and full Chromium browser proof through `apps/slate`.
 - Transplant parity, docs-v2 audits, benchmark target audits, www typecheck,
   WebKit, mobile viewport, and the full Playwright app matrix are not part of
   the daily Slate loop.

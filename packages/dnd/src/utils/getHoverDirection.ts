@@ -1,4 +1,4 @@
-import type { TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
 import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 
 import type {
@@ -11,7 +11,7 @@ export type GetHoverDirectionOptions = {
   dragItem: DragItemNode;
 
   /** Hovering node. */
-  element: TElement;
+  element: Element;
 
   monitor: DropTargetMonitor;
 

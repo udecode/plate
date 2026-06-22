@@ -1,4 +1,5 @@
-import type { ElementEntry, SlateEditor, TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { ElementEntry, SlateEditor } from 'platejs';
 
 import { getTableGridAbove } from './getTableGridAbove';
 
@@ -7,9 +8,9 @@ type SelectionQueryCache = {
   children: SlateEditor['children'];
   selection: SlateEditor['selection'];
   selectedCellIds?: string[] | null;
-  selectedCells?: TElement[] | null;
+  selectedCells?: Element[] | null;
   selectedTableIds?: string[] | null;
-  selectedTables?: TElement[] | null;
+  selectedTables?: Element[] | null;
 };
 
 const selectionQueryCache = new WeakMap<SlateEditor, SelectionQueryCache>();
@@ -52,7 +53,7 @@ export const getSelectedCellEntries = (editor: SlateEditor): ElementEntry[] => {
   return nextValue;
 };
 
-export const getSelectedCells = (editor: SlateEditor): TElement[] | null => {
+export const getSelectedCells = (editor: SlateEditor): Element[] | null => {
   const cache = getSelectionQueryCache(editor);
 
   if ('selectedCells' in cache) {
@@ -126,7 +127,7 @@ export const getSelectedCell = (editor: SlateEditor, id?: string | null) => {
   );
 };
 
-export const getSelectedTables = (editor: SlateEditor): TElement[] | null => {
+export const getSelectedTables = (editor: SlateEditor): Element[] | null => {
   const cache = getSelectionQueryCache(editor);
 
   if ('selectedTables' in cache) {

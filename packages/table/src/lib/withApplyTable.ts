@@ -1,7 +1,6 @@
+import type { Element, Range } from '@platejs/slate';
 import {
   type OverrideEditor,
-  type TElement,
-  type TRange,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
@@ -37,7 +36,7 @@ export const withApplyTable: OverrideEditor<TableConfig> = ({
         const newSelection = {
           ...editor.selection,
           ...op.newProperties,
-        } as TRange | null;
+        } as Range | null;
 
         if (
           RangeApi.isRange(newSelection) &&
@@ -92,7 +91,7 @@ export const withApplyTable: OverrideEditor<TableConfig> = ({
         op.type === 'remove_node'
           ? (op.node.type as string)
           : op.type === 'move_node'
-            ? editor.api.node<TElement>(op.path)?.[0].type
+            ? editor.api.node<Element>(op.path)?.[0].type
             : undefined;
 
       const isTableOperation =

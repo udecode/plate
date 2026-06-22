@@ -185,13 +185,13 @@ These helpers normalize editor locations and DOM ranges into rectangles.
   <APIItem name="createVirtualElement" type="() => VirtualElement">
     Creates a Floating UI virtual element with `getDefaultBoundingClientRect`.
   </APIItem>
-  <APIItem name="createVirtualRef" type="(editor: Editor, at?: TLocation | TLocation[], options?: { fallbackRect?: ClientRect }) => VirtualRef">
+  <APIItem name="createVirtualRef" type="(editor: Editor, at?: Location | Location[], options?: { fallbackRect?: ClientRect }) => VirtualRef">
     Creates a ref-like object whose `current.getBoundingClientRect()` reads editor locations. It throws when no rect exists and no `fallbackRect` is provided.
   </APIItem>
-  <APIItem name="getBoundingClientRect" type="(editor: Editor, at?: TLocation | TLocation[]) => DOMRect | undefined">
+  <APIItem name="getBoundingClientRect" type="(editor: Editor, at?: Location | Location[]) => DOMRect | undefined">
     Reads one or more editor locations, converts them to DOM ranges, and returns the merged bounding rect. If `at` is omitted, it uses `editor.selection`.
   </APIItem>
-  <APIItem name="getRangeBoundingClientRect" type="(editor: Editor, at: TRange | null) => ClientRectObject">
+  <APIItem name="getRangeBoundingClientRect" type="(editor: Editor, at: Range | null) => ClientRectObject">
     Returns the DOM rect for a range, or `getDefaultBoundingClientRect()` when the range or DOM range is missing.
   </APIItem>
   <APIItem name="getSelectionBoundingClientRect" type="(editor: PlateEditor) => ClientRectObject">

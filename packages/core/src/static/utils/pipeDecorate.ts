@@ -1,4 +1,4 @@
-import type { NodeEntry, TRange } from '@platejs/slate-legacy';
+import type { NodeEntry, Range } from '@platejs/slate';
 
 import {
   type EditableProps,
@@ -13,15 +13,15 @@ import {
 export const pipeDecorate = (
   editor: SlateEditor,
   decorateProp?:
-    | ((ctx: { editor: SlateEditor; entry: NodeEntry }) => TRange[] | undefined)
+    | ((ctx: { editor: SlateEditor; entry: NodeEntry }) => Range[] | undefined)
     | null
 ): EditableProps['decorate'] => {
   if (editor.meta.pluginCache.decorate.length === 0 && !decorateProp) return;
 
   return (entry: NodeEntry) => {
-    let ranges: TRange[] = [];
+    let ranges: Range[] = [];
 
-    const addRanges = (newRanges?: TRange[]) => {
+    const addRanges = (newRanges?: Range[]) => {
       if (newRanges?.length) ranges = [...ranges, ...newRanges];
     };
 

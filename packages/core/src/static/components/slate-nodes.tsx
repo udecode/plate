@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Path, TElement, TText } from '@platejs/slate-legacy';
+import type { Element, Path, Text } from '@platejs/slate';
 import type { UnknownObject } from '@udecode/utils';
 
 import { clsx } from 'clsx';
@@ -23,7 +23,7 @@ export const useNodeAttributes = (props: any, ref?: any) => ({
 });
 
 export type SlateElementProps<
-  N extends TElement = TElement,
+  N extends Element = Element,
   C extends AnyPluginConfig = PluginConfig,
 > = SlateNodeProps<C> &
   RenderElementProps<N> & {
@@ -69,7 +69,7 @@ export type SlateHTMLProps<
 };
 
 export type StyledSlateElementProps<
-  N extends TElement = TElement,
+  N extends Element = Element,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'div',
 > = Omit<SlateElementProps<N, C>, keyof DeprecatedNodeProps> &
@@ -100,7 +100,7 @@ export const SlateElement = React.forwardRef(function SlateElement(
     </Tag>
   );
 }) as <
-  N extends TElement = TElement,
+  N extends Element = Element,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'div',
 >(
@@ -108,7 +108,7 @@ export const SlateElement = React.forwardRef(function SlateElement(
 ) => React.ReactElement;
 
 export type SlateTextProps<
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
 > = SlateNodeProps<C> &
   RenderTextProps<N> &
@@ -117,7 +117,7 @@ export type SlateTextProps<
   };
 
 export type StyledSlateTextProps<
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
 > = Omit<SlateTextProps<N, C>, keyof DeprecatedNodeProps> &
@@ -131,7 +131,7 @@ export const SlateText = React.forwardRef<
 
   return <Tag {...attributes}>{children}</Tag>;
 }) as <
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
 >(
@@ -139,7 +139,7 @@ export const SlateText = React.forwardRef<
 ) => React.ReactElement;
 
 export type SlateLeafProps<
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
 > = SlateNodeProps<C> &
   RenderLeafProps<N> &
@@ -149,7 +149,7 @@ export type SlateLeafProps<
   };
 
 export type StyledSlateLeafProps<
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
 > = Omit<SlateLeafProps<N, C>, keyof DeprecatedNodeProps> &
@@ -181,7 +181,7 @@ export const SlateLeaf = React.forwardRef<
 
   return <Tag {...attributes}>{children}</Tag>;
 }) as <
-  N extends TText = TText,
+  N extends Text = Text,
   C extends AnyPluginConfig = PluginConfig,
   T extends keyof HTMLElementTagNameMap = 'span',
 >({

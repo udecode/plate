@@ -1,10 +1,10 @@
 import {
   type Path,
-  type TElement,
+  type Element,
   ElementApi,
   PathApi,
   TextApi,
-} from '@platejs/slate-legacy';
+} from '@platejs/slate';
 
 import type { OverrideEditor } from '../../plugin';
 import type { MergeRules } from '../../plugin/BasePlugin';
@@ -59,7 +59,7 @@ export const withMergeRules: OverrideEditor = (ctx) => {
           return false;
         }
 
-        const shouldRemove = (node: TElement, path: Path) => {
+        const shouldRemove = (node: Element, path: Path) => {
           // Override Slate's default: typically only pure text blocks like paragraph and heading nodes want this to be true, so plugin default is false.
           const plugin = getPluginByType(editor, node.type);
           if (!plugin) {

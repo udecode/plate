@@ -55,7 +55,7 @@ Range reference objects keep a specific range in a document synced over time. Cr
 
 <API name="RangeRef">
 <APIAttributes>
-  <APIItem name="current" type="TRange | null">
+  <APIItem name="current" type="Range | null">
     The current range value, updated as operations are applied.
   </APIItem>
   <APIItem name="affinity" type="'forward' | 'backward' | 'inward' | 'outward' | null">
@@ -66,7 +66,7 @@ Range reference objects keep a specific range in a document synced over time. Cr
     - `'outward'`: Range tends to grow when content is inserted at edges
     - `null`: No preference
   </APIItem>
-  <APIItem name="unref()" type="() => TRange | null">
+  <APIItem name="unref()" type="() => Range | null">
     Call this when you no longer need to sync this range. Returns the final range value.
   </APIItem>
 </APIAttributes>

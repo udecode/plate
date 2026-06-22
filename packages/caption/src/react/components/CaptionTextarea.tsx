@@ -2,13 +2,7 @@ import React, { useCallback, useState } from 'react';
 
 import type { TextareaAutosizeProps } from 'react-textarea-autosize';
 
-import {
-  type TCaptionElement,
-  type TElement,
-  isHotkey,
-  NodeApi,
-  PathApi,
-} from 'platejs';
+import { type TCaptionElement, isHotkey, NodeApi, PathApi } from 'platejs';
 import {
   createPrimitiveComponent,
   useEditorRef,
@@ -51,7 +45,10 @@ export const useCaptionTextareaState = () => {
     TextareaAutosizeProps['value']
   >(() => {
     const nodeCaption =
-      element.caption ?? ([{ children: [{ text: '' }] }] as [TElement]);
+      element.caption ??
+      ([{ children: [{ text: '' }] }] as NonNullable<
+        TCaptionElement['caption']
+      >);
 
     return NodeApi.string(nodeCaption[0]);
   });

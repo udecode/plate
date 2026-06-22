@@ -1,4 +1,6 @@
-import { type Editor, type TRange, PathApi, RangeApi, TextApi } from 'platejs';
+import type { Range } from '@platejs/slate';
+
+import { type Editor, PathApi, RangeApi, TextApi } from 'platejs';
 
 import type { SelectionRect } from '../types';
 
@@ -9,7 +11,7 @@ export const getSelectionRects = (
     xOffset,
     yOffset,
   }: {
-    range: TRange;
+    range: Range;
     xOffset: number;
     yOffset: number;
   }

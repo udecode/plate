@@ -1,5 +1,6 @@
+import type { Text } from '@platejs/slate';
+
 import { type OverrideEditor, PathApi, PointApi, TextApi } from 'platejs';
-import type { TText } from 'platejs';
 
 import type { BaseLinkConfig } from './BaseLinkPlugin';
 
@@ -40,7 +41,7 @@ export const withLink: OverrideEditor<BaseLinkConfig> = ({
             // select next text node if any
             if (!nextPoint) {
               const nextPath = PathApi.next(path);
-              editor.tf.insertNodes({ text: '' } as TText, { at: nextPath });
+              editor.tf.insertNodes({ text: '' } as Text, { at: nextPath });
               editor.tf.select(nextPath);
             }
           }

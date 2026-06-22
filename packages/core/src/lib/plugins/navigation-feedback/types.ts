@@ -1,4 +1,4 @@
-import type { Path, PathRef, Point, TRange } from '@platejs/slate-legacy';
+import type { Path, PathRef, Point, Range } from '@platejs/slate';
 
 import type { PluginConfig } from '../../plugin';
 
@@ -42,7 +42,7 @@ export type NavigationNavigateOptions = {
   focus?: boolean;
   scroll?: boolean;
   scrollTarget?: Point;
-  select?: Point | TRange;
+  select?: Point | Range;
   target: NavigationFeedbackTarget;
 };
 

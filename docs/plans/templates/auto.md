@@ -42,7 +42,7 @@ Completion threshold:
 
 Verification surface:
 - TODO: Name the focused package tests, Playwright routes/greps, in-app Browser proof, source audits, benchmark metrics, mobile/raw-device proof, helper API checks, docs audit, skill sync, and final plan check that prove this run.
-- Slate package proof uses `pnpm slate:packages:test` and `pnpm slate:packages:typecheck`.
+- Slate package proof uses `pnpm slate:test` and `pnpm slate:typecheck`.
 - Slate daily proof uses `pnpm check:slate`.
 - Slate focused browser proof uses `pnpm --filter slate test:slate-browser:chromium <file-or--grep>`.
 - `apps/slate` reuses `apps/www` Slate examples; never maintain a second example source tree.

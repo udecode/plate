@@ -253,8 +253,8 @@ node "$AR_CLI" log --cwd . --from-last --status measure --description "<gate res
 For full editor behavior proof, prefer one focused command first, then broaden:
 
 ```bash
-pnpm slate:packages:test
-pnpm slate:packages:typecheck
+pnpm slate:test
+pnpm slate:typecheck
 PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 pnpm --filter www exec playwright test --config playwright.slate.config.ts --project=chromium tests/slate-browser/donor/examples/<suite>.test.ts
 ```
 

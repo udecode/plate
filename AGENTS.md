@@ -175,7 +175,7 @@ Browser usage:
 ### Slate v2 packages in Plate repo
 
 - `pnpm check:slate` is the normal daily Slate lane. It covers Slate package
-  typecheck/tests, browser package tests, and the Chromium examples proof
+  typecheck/tests, browser package tests, and full Chromium browser proof
   through `apps/slate`.
 - Use `pnpm --filter slate test:slate-browser:chromium <file-or--grep>`
   for focused changed browser rows. `apps/slate` must import Slate

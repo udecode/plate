@@ -1,4 +1,5 @@
-import type { NodeEntry, SlateEditor, TElement, Text } from 'platejs';
+import type { Element, Text } from '@platejs/slate';
+import type { NodeEntry, SlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -6,7 +7,7 @@ import { findSuggestionProps } from '../queries';
 
 export const removeNodesSuggestion = (
   editor: SlateEditor,
-  nodes: NodeEntry<TElement | Text>[]
+  nodes: NodeEntry<Element | Text>[]
 ) => {
   if (nodes.length === 0) return;
 

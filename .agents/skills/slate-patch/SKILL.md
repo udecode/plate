@@ -328,7 +328,7 @@ Pick the relevant set:
 - changed site typecheck for examples;
 - focused Playwright route tests;
 - browser repro script when Playwright is not enough;
-- `pnpm slate:packages:test` and `pnpm slate:packages:typecheck` for package
+- `pnpm slate:test` and `pnpm slate:typecheck` for package
   behavior claims;
 - `pnpm --filter www test:slate-browser` for release-quality browser behavior
   claims or when explicitly requested.

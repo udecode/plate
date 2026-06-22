@@ -5,7 +5,8 @@ import {
   useDrop,
 } from 'react-dnd';
 
-import type { NodeEntry, TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { NodeEntry } from 'platejs';
 import type { PlateEditor } from 'platejs/react';
 
 import type {
@@ -20,16 +21,16 @@ import { onHoverNode } from '../transforms/onHoverNode';
 import { canUseDomDnd, noopConnector } from '../utils/dndEnvironment';
 
 export type CanDropCallback = (args: {
-  dragEntry: NodeEntry<TElement>;
+  dragEntry: NodeEntry<Element>;
   dragItem: DragItemNode;
-  dropEntry: NodeEntry<TElement>;
+  dropEntry: NodeEntry<Element>;
   editor: PlateEditor;
 }) => boolean;
 
 export interface UseDropNodeOptions
   extends DropTargetHookSpec<DragItemNode, unknown, { isOver: boolean }> {
   /** The node to which the drop line is attached. */
-  element: TElement;
+  element: Element;
 
   /** The reference to the node being dragged. */
   nodeRef: any;

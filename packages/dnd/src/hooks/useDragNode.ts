@@ -6,7 +6,7 @@ import {
   useDrag,
 } from 'react-dnd';
 
-import type { TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
 import type { PlateEditor } from 'platejs/react';
 
 import type { DragItemNode } from '../types';
@@ -16,7 +16,7 @@ import { canUseDomDnd, noopConnector } from '../utils/dndEnvironment';
 
 export interface UseDragNodeOptions
   extends DragSourceHookSpec<DragItemNode, unknown, { isDragging: boolean }> {
-  element: TElement;
+  element: Element;
 }
 
 /**
@@ -80,7 +80,7 @@ export const useDragNode = (
         document.body.classList.add('dragging');
 
         const _item = typeof item === 'function' ? item(monitor) : item;
-        const [element] = editor.api.node<TElement>({ id: elementId, at: [] })!;
+        const [element] = editor.api.node<Element>({ id: elementId, at: [] })!;
 
         // Check if multiple nodes are selected
         const currentDraggingId = editor.getOption(DndPlugin, 'draggingId');

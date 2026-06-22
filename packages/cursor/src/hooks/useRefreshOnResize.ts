@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { TRange } from 'platejs';
+import type { Range } from '@platejs/slate';
 
 import type { CursorOverlayProps } from '../components';
 import type { SelectionRect } from '../types';
@@ -9,7 +9,7 @@ import { useRequestReRender } from './useRequestReRender';
 
 export interface useRefreshOnResizeOptions
   extends Pick<CursorOverlayProps, 'containerRef' | 'refreshOnResize'> {
-  selectionRectCache: React.MutableRefObject<WeakMap<TRange, SelectionRect[]>>;
+  selectionRectCache: React.MutableRefObject<WeakMap<Range, SelectionRect[]>>;
 }
 
 export const useRefreshOnResize = ({

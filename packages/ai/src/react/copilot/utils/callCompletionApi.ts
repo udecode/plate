@@ -4,7 +4,7 @@ const getOriginalFetch = () => fetch;
 export type CallCompletionApiOptions = {
   prompt: string;
   api?: string;
-  body?: Record<string, any>;
+  body?: Record<string, unknown>;
   credentials?: RequestCredentials | undefined;
   fetch?: ReturnType<typeof getOriginalFetch> | undefined;
   headers?: HeadersInit | undefined;
@@ -94,7 +94,12 @@ export async function callCompletionApi({
     return text as string;
   } catch (error) {
     // Ignore abort errors as they are expected.
-    if ((error as any).name === 'AbortError') {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'name' in error &&
+      error.name === 'AbortError'
+    ) {
       setAbortController(null);
 
       return null;

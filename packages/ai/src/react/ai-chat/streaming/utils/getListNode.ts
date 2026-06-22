@@ -1,7 +1,7 @@
-import type { TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
 import type { PlateEditor } from 'platejs/react';
 
-export const getListNode = (editor: PlateEditor, node: TElement): TElement => {
+export const getListNode = (editor: PlateEditor, node: Element): Element => {
   if (node.listStyleType && node.listStart) {
     const previousNode = editor.api.previous({
       at: editor.selection?.focus,

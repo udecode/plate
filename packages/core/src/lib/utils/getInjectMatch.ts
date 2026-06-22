@@ -1,4 +1,4 @@
-import { type Path, type TNode, ElementApi } from '@platejs/slate-legacy';
+import { type Node, type Path, ElementApi } from '@platejs/slate';
 
 import type { SlateEditor } from '../editor';
 
@@ -8,7 +8,7 @@ export const getInjectMatch = <E extends SlateEditor>(
   editor: E,
   plugin: EditorPlugin
 ) => {
-  return (node: TNode, path?: Path) => {
+  return (node: Node, path?: Path) => {
     const {
       inject: {
         excludeBelowPlugins,

@@ -8,7 +8,7 @@ import {
   useFocused,
   usePluginOption,
 } from '@platejs/core/react';
-import type { Path, TElement } from '@platejs/slate-legacy';
+import type { Element, Path } from '@platejs/slate';
 import React from 'react';
 
 import { KEYS } from '../../lib';
@@ -16,11 +16,11 @@ import { KEYS } from '../../lib';
 export type BlockPlaceholderConfig = PluginConfig<
   'blockPlaceholder',
   {
-    _target: { node: TElement; placeholder: string } | null;
+    _target: { node: Element; placeholder: string } | null;
     placeholders: Record<string, string>;
     query: (
       context: PlatePluginContext<BlockPlaceholderConfig> & {
-        node: TElement;
+        node: Element;
         path: Path;
       }
     ) => boolean;
@@ -68,7 +68,7 @@ export const BlockPlaceholderPlugin =
         const { placeholders, query } = getOptions();
 
         const [element, path] = entry;
-        const firstNode = editor.children[0] as TElement;
+        const firstNode = editor.children[0] as Element;
         const isPristineEmptyEditor =
           editor.children.length === 1 &&
           editor.api.isEmpty(firstNode) &&
@@ -96,7 +96,7 @@ export const BlockPlaceholderPlugin =
     },
   })
     .extendSelectors(({ getOption }) => ({
-      placeholder: (node: TElement) => {
+      placeholder: (node: Element) => {
         const target = getOption('_target');
 
         if (target?.node === node) {
