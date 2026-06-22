@@ -289,7 +289,7 @@ const editor = createPlateEditor({
 
 <API name="node">
   <APIOptions
-    type="EditorNodesOptions & { id?: string; isDraft?: boolean }"
+    type="object & { id?: string; isDraft?: boolean }"
     optional
   >
     查找节点的选项。
@@ -318,7 +318,7 @@ const editor = createPlateEditor({
 
 <API name="nodes">
   <APIOptions
-    type="EditorNodesOptions & { id?: string; isDraft?: boolean }"
+    type="object & { id?: string; isDraft?: boolean }"
     optional
   >
     查找节点的选项。
@@ -341,7 +341,7 @@ const editor = createPlateEditor({
 在当前选区设置草稿评论标记。
 
 <API name="setDraft">
-  <APIOptions type="SetNodesOptions" optional>
+  <APIOptions type="object" optional>
     设置草稿评论的选项。
   </APIOptions>
 </API>
@@ -449,7 +449,7 @@ const editor = createPlateEditor({
 
 <API name="isCommentNodeById">
   <APIParameters>
-    <APIItem name="node" type="TNode">
+    <APIItem name="node" type="Node">
       要检查的节点。
     </APIItem>
     <APIItem name="id" type="string">

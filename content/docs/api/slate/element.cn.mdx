@@ -3,10 +3,10 @@ title: Element
 description: Slate 中元素的 API 参考文档。
 ---
 
-`TElement` 对象是 Plate 文档中的一种 `Node` 类型，可以包含其他 `TElement` 节点或 `Text` 节点。
+`Element` 对象是 Slate 文档中的一种 `Node` 类型，可以包含其他 `Element` 节点或 `Text` 节点。
 
 ```typescript
-interface TElement {
+interface Element {
   children: Descendant[]
   type: string
   [key: string]: unknown
@@ -39,7 +39,7 @@ interface TElement {
 
 ### `isElementType`
 
-检查一个值是否实现了 `TElement` 接口并且 `elementKey` 匹配指定值。默认检查 `'type'` 键。
+检查一个值是否实现了 `Element` 接口并且 `elementKey` 匹配指定值。默认检查 `'type'` 键。
 
 <API name="isElementType">
 <APIParameters>
@@ -77,7 +77,7 @@ interface TElement {
 
 ### `isElement`
 
-检查一个值是否实现了 `TElement` 接口。
+检查一个值是否实现了 `Element` 接口。
 
 <API name="isElement">
 <APIParameters>
@@ -93,7 +93,7 @@ interface TElement {
 
 ### `isElementList`
 
-检查一个值是否是 `TElement` 对象的数组。
+检查一个值是否是 `Element` 对象的数组。
 
 <API name="isElementList">
 <APIParameters>
@@ -109,7 +109,7 @@ interface TElement {
 
 ### `isElementProps`
 
-检查一组属性是否是 `TElement` 的部分。
+检查一组属性是否是 `Element` 的部分。
 
 <API name="isElementProps">
 <APIParameters>
@@ -129,10 +129,10 @@ interface TElement {
 
 <API name="matches">
 <APIParameters>
-  <APIItem name="element" type="TElement">
+  <APIItem name="element" type="Element">
     要检查的元素。
   </APIItem>
-  <APIItem name="props" type="Partial<TElement>">
+  <APIItem name="props" type="Partial<Element>">
     要匹配的属性。
   </APIItem>
 </APIParameters>
@@ -144,13 +144,11 @@ interface TElement {
 
 ## 类型
 
-### `TElement`
+### `Element`
 
-`TElement` 对象是 Plate 文档中的一种节点类型，可以包含其他元素节点或文本节点。根据编辑器配置，它们可以是"块级"或"行内"。
+`Element` 对象是 Slate 文档中的一种节点类型，可以包含其他元素节点或文本节点。根据编辑器配置，它们可以是"块级"或"行内"。
 
-`Element` 是 `TElement` 的类型别名。
-
-<API name="TElement">
+<API name="Element">
 <APIAttributes>
   <APIItem name="children" type="Descendant[]">
     可以是元素或文本节点的子节点数组。

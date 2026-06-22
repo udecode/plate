@@ -180,7 +180,7 @@ DndPlugin.configure({
 返回带有ID的区块数组。
 
 <API name="getBlocksWithId">
-<APIOptions type="EditorNodesOptions">
+<APIOptions type="object">
   获取节点条目的选项
 </APIOptions>
 
@@ -209,7 +209,7 @@ DndPlugin.configure({
 
 <API name="useDndNode">
 <APIOptions type="UseDndNodeOptions">
-  <APIItem name="element" type="TElement">
+  <APIItem name="element" type="Element">
     要拖拽的节点
   </APIItem>
   <APIItem name="type" type="string" optional>
@@ -259,7 +259,7 @@ DndPlugin.configure({
 
 <API name="useDragNode">
 <APIOptions type="UseDragNodeOptions">
-  <APIItem name="element" type="TElement">
+  <APIItem name="element" type="Element">
     要拖拽的节点
   </APIItem>
   <APIItem name="item" type="DragObject | DragObjectFactory<DragObject>" optional>
@@ -274,7 +274,7 @@ DndPlugin.configure({
 
 <API name="useDraggable">
 <APIOptions type="object">
-  <APIItem name="element" type="TElement">
+  <APIItem name="element" type="Element">
     要设为可拖拽的元素
   </APIItem>
   <APIItem name="orientation" type="'horizontal' | 'vertical'" optional>
@@ -312,7 +312,7 @@ DndPlugin.configure({
   <APIItem name="nodeRef" type="any">
     被拖拽节点的引用
   </APIItem>
-  <APIItem name="element" type="TElement">
+  <APIItem name="element" type="Element">
     放置线依附的节点
   </APIItem>
   <APIItem name="dropLine" type="string">

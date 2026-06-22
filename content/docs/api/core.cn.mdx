@@ -65,12 +65,6 @@ description: \@platejs/core 的 API 参考文档。
         - 当 `false`: 跳过初始值 ID 分配
         - **默认值:** `'if-needed'`
       </APISubListItem>
-      <APISubListItem parent="nodeId" name="normalizeInitialValue" type="boolean | null" optional>
-        `initialValueIds` 的弃用别名。
-        - 当 `false`: 等同于 `'if-needed'`
-        - 当 `true`: 等同于 `'always'`
-        - 当 `null`: 等同于 `false`
-      </APISubListItem>
       <APISubListItem parent="nodeId" name="reuseId" type="boolean" optional>
         在撤销/重做和复制/粘贴时重用 ID。
         - 当 `true`: 如果文档中不存在则保留 ID
@@ -405,7 +399,7 @@ description: \@platejs/core 的 API 参考文档。
     plate 编辑器的 ID。
   </APIItem>
 </APIParameters>
-<APIReturns type="TRange | null">
+<APIReturns type="Range | null">
 编辑器中的当前选区。
 </APIReturns>
 </API>
@@ -477,7 +471,7 @@ description: \@platejs/core 的 API 参考文档。
 返回当前选区的片段，可选择解构结构节点。
 
 <API name="useSelectionFragment">
-<APIReturns type="TElement[]">
+<APIReturns type="Element[]">
   当前选区的片段。如果选区未展开或未找到片段，则返回空数组。
 </APIReturns>
 </API>
@@ -494,7 +488,7 @@ description: \@platejs/core 的 API 参考文档。
 <APIItem name="defaultValue" type="string" optional>
 如果未找到有效属性则返回的默认值。
 </APIItem>
-<APIItem name="getProp" type="(node: TElement | TText) => any" optional>
+<APIItem name="getProp" type="(node: Element | Text) => any" optional>
 从节点提取属性值的自定义函数。
 </APIItem>
 <APIItem name="mode" type="'all' | 'block' | 'text'" optional>
@@ -518,7 +512,7 @@ description: \@platejs/core 的 API 参考文档。
 
 <API name="useNodePath">
 <APIParameters>
-  <APIItem name="node" type="TNode">
+  <APIItem name="node" type="Node">
     要查找路径的节点。
   </APIItem>
 </APIParameters>
@@ -637,7 +631,7 @@ const state = useEditorPluginOption(editor, plugin, 'state');
 </APIParameters>
 
 <APIReturns>
-  类型为 `T extends TElement` 的元素，如果在节点组件上下文之外使用则返回空对象。
+  类型为 `T extends Element` 的元素，如果在节点组件上下文之外使用则返回空对象。
 </APIReturns>
 </API>
 
@@ -737,7 +731,7 @@ const CustomMetadataPlugin = createSlatePlugin({
   <APIItem name="editor" type="E">
     编辑器实例。也可使用 `useEditorRef` hook 获取。
   </APIItem>
-  <APIItem name="element" type="TElement">
+  <APIItem name="element" type="Element">
     元素节点。也可使用 `useElement` hook 获取。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -782,10 +776,10 @@ const CustomMetadataPlugin = createSlatePlugin({
   <APIItem name="children" type="any">
     渲染节点子元素所必需。
   </APIItem>
-  <APIItem name="leaf" type="TText">
+  <APIItem name="leaf" type="Text">
     叶节点。
   </APIItem>
-  <APIItem name="text" type="TText">
+  <APIItem name="text" type="Text">
     文本节点。
   </APIItem>
   <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
@@ -812,7 +806,7 @@ const CustomMetadataPlugin = createSlatePlugin({
   <APIItem name="className" type="string" optional>
     应用于组件的 CSS 类。
   </APIItem>
-  <APIItem name="text" type="TText">
+  <APIItem name="text" type="Text">
     文本节点。
   </APIItem>
   <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">

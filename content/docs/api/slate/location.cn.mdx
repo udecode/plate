@@ -6,7 +6,7 @@ description: Plate中位置相关的API参考。
 位置(Location)可以是路径(Path)、点(Point)或范围(Range)。方法通常会接受位置参数，而不仅限于路径、点或范围。
 
 ```typescript
-type TLocation = Path | Point | TRange
+type Location = Path | Point | Range
 ```
 
 - [路径(Path)](/docs/api/slate/path)
@@ -36,7 +36,7 @@ type TLocation = Path | Point | TRange
 
 ### `isLocation`
 
-检查一个值是否实现了`TLocation`接口。
+检查一个值是否实现了`Location`接口。
 
 <API name="isLocation">
 <APIParameters>
@@ -46,7 +46,7 @@ type TLocation = Path | Point | TRange
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果是`Path`、`Point`或`TRange`则返回`true`。
+  如果是`Path`、`Point`或`Range`则返回`true`。
 </APIReturns>
 </API>
 
@@ -68,11 +68,9 @@ type TLocation = Path | Point | TRange
 
 ## 类型
 
-### `TLocation`
+### `Location`
 
-`Location`是`TLocation`的类型别名。
-
-<API name="TLocation">
+<API name="Location">
 <APIAttributes>
   <APIItem name="Path" type="Path">
     表示节点位置的数字数组。
@@ -80,7 +78,7 @@ type TLocation = Path | Point | TRange
   <APIItem name="Point" type="Point">
     包含`path`和`offset`的对象。
   </APIItem>
-  <APIItem name="TRange" type="TRange">
+  <APIItem name="Range" type="Range">
     包含`anchor`和`focus`的对象。
   </APIItem>
 </APIAttributes>

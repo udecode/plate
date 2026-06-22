@@ -24,7 +24,7 @@ description: Plate 编辑器的 API 参考文档。
       <APISubListItem parent="dom" name="focused" type="boolean">
         编辑器当前是否获得焦点。
       </APISubListItem>
-      <APISubListItem parent="dom" name="prevSelection" type="TRange | null">
+      <APISubListItem parent="dom" name="prevSelection" type="Range | null">
         编辑器中之前的选择范围。
       </APISubListItem>
       <APISubListItem parent="dom" name="readOnly" type="boolean">
@@ -70,10 +70,10 @@ description: Plate 编辑器的 API 参考文档。
 
 <API name="API">
 <APIMethods>
-  <APIItem name="getApi" type="(plugin: PlatePlugin) => EditorApi & PlatePlugin['api']">
+  <APIItem name="getPluginApi" type="(plugin: PlatePlugin) => PlateEditor['api'] & PlatePlugin['api']">
     获取插件的类型化 API。
   </APIItem>
-  <APIItem name="getTransforms" type="(plugin: PlatePlugin) => EditorTransforms & PlatePlugin['transforms']">
+  <APIItem name="getTransforms" type="(plugin: PlatePlugin) => PlateEditor['tf'] & PlatePlugin['transforms']">
     获取插件的类型化转换方法。
   </APIItem>
   <APIItem name="getPlugin" type="(plugin: PlatePlugin) => PlatePlugin">

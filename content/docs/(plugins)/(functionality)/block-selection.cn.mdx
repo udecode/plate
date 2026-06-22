@@ -233,7 +233,7 @@ render: {
     （内部）当前选择中锚点块的 ID。用于基于 Shift 的选择。
     - **默认值:** `null`
   </APIItem>
-  <APIItem name="isSelectable" type="(element: TElement, path: Path) => boolean" optional>
+  <APIItem name="isSelectable" type="(element: Element, path: Path) => boolean" optional>
     确定块元素是否可选择的函数。
     - **默认值:** `() => true`
   </APIItem>
@@ -321,7 +321,7 @@ render: {
 
 <API name="isSelectable">
   <APIParameters>
-    <APIItem name="element" type="TElement">
+    <APIItem name="element" type="Element">
       要检查的块元素。
     </APIItem>
     <APIItem name="path" type="Path">
@@ -412,10 +412,10 @@ render: {
 
 <API name="setNodes">
   <APIParameters>
-    <APIItem name="props" type="Partial<NodeProps<TElement>>">
+    <APIItem name="props" type="Partial<NodeProps<Element>>">
       要设置到选中节点的属性。
     </APIItem>
-    <APIItem name="options" type="SetNodesOptions" optional>
+    <APIItem name="options" type="object" optional>
       设置节点的选项。
     </APIItem>
   </APIParameters>
@@ -427,10 +427,10 @@ render: {
 
 <API name="setTexts">
   <APIParameters>
-    <APIItem name="props" type="Partial<NodeProps<TText>>">
+    <APIItem name="props" type="Partial<NodeProps<Text>>">
       要设置到选中节点的文本属性。
     </APIItem>
-    <APIItem name="options" type="Omit<SetNodesOptions, 'at'>" optional>
+    <APIItem name="options" type="Omit<object, 'at'>" optional>
       设置文本节点的选项，不包括 'at' 属性。
     </APIItem>
   </APIParameters>

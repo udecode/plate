@@ -12,7 +12,7 @@ Editor API 提供了一系列辅助函数，用于查询和操作编辑器状态
 编辑器中的位置引用。可以是 Location 或 Node。
 
 ```ts
-type At = TLocation | TNode
+type At = Location | Node
 ```
 
 当传入 Node 时，会使用 [`editor.api.findPath()`](/docs/api/slate/editor-api#findpath) 查找其路径。这样您可以通过以下方式引用位置：
@@ -198,7 +198,7 @@ editor.api.block({ highest: true }) // 获取选区处最高级别的块
 返回所有匹配的块。
 
 <API name="blocks">
-<APIOptions type="EditorNodesOptions<V>">
+<APIOptions type="object<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
     匹配块的通用查询选项。
   </APIItem>
@@ -233,7 +233,7 @@ editor.api.block({ highest: true }) // 获取选区处最高级别的块
 用于获取范围的起始和结束块。
 
 <API name="edgeBlocks">
-<APIOptions type="EditorNodesOptions<V>">
+<APIOptions type="object<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
     匹配块的通用查询选项。
   </APIItem>
@@ -578,7 +578,7 @@ Check if a point is the start point of a location.
 
 <API name="isSelected">
 <APIParameters>
-  <APIItem name="target" type="Path | TRange">
+  <APIItem name="target" type="Path | Range">
     要检查的路径或范围。
   </APIItem>
   <APIItem name="options" type="EditorIsSelectedOptions" optional>
@@ -756,7 +756,7 @@ Check if a point is the start point of a location.
 遍历编辑器中所有匹配给定选项的节点。
 
 <API name="nodes">
-<APIOptions type="EditorNodesOptions<V>">
+<APIOptions type="object<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
     匹配节点的通用查询选项。
   </APIItem>
@@ -851,8 +851,8 @@ Check if a point is the start point of a location.
 从节点列表中获取属性值。如果属性值在所有节点中不一致，则返回 `undefined`。
 
 <API name="prop">
-<APIOptions type="EditorPropOptions<V>">
-  <APIItem name="nodes" type="TElement[]">
+<APIOptions type="object<V>">
+  <APIItem name="nodes" type="Element[]">
     要获取属性值的节点列表。
   </APIItem>
   <APIItem name="key" type="string" optional>
@@ -930,7 +930,7 @@ Check if a point is the start point of a location.
 
 <API name="findPath">
 <APIParameters>
-  <APIItem name="node" type="TNode">
+  <APIItem name="node" type="Node">
     要在编辑器树中查找路径的节点。
   </APIItem>
   <APIItem name="options" type="EditorFindPathOptions" optional>
@@ -1045,7 +1045,7 @@ Check if a point is the start point of a location.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="TRange | undefined">
+<APIReturns type="Range | undefined">
   跨越节点的范围，如果无法创建有效范围则为 undefined。
 </APIReturns>
 </API>
@@ -1067,7 +1067,7 @@ Check if a point is the start point of a location.
   </APIItem>
 </APIOptions>
 
-<APIReturns type="TRange">
+<APIReturns type="Range">
   指定点之间的新范围。
 </APIReturns>
 </API>
@@ -1109,7 +1109,7 @@ Check if a point is the start point of a location.
 
 <API name="unhangRange">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     要取消悬挂的范围。
   </APIItem>
   <APIItem name="options" type="EditorUnhangRangeOptions" optional>
@@ -1122,7 +1122,7 @@ Check if a point is the start point of a location.
   </APIItem>
 </APIOptions>
 
-<APIReturns type="TRange">
+<APIReturns type="Range">
   如果结束点悬挂，则返回结束点向后移动的新范围。
 </APIReturns>
 </API>
@@ -1306,7 +1306,7 @@ Check if a point is the start point of a location.
 
 <API name="rangeRef">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     要引用的范围。
   </APIItem>
   <APIItem name="options" type="EditorRangeRefOptions" optional>
@@ -1362,7 +1362,7 @@ Check if a point is the start point of a location.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="TRange | null">
+<APIReturns type="Range | null">
   事件目标处的范围，如果未找到有效范围则为 null。
 </APIReturns>
 </API>
@@ -1373,7 +1373,7 @@ Check if a point is the start point of a location.
 
 <API name="findKey">
 <APIParameters>
-  <APIItem name="node" type="TNode">
+  <APIItem name="node" type="Node">
     要查找键的节点。
   </APIItem>
 </APIParameters>
@@ -1439,7 +1439,7 @@ Check if a point is the start point of a location.
 
 <API name="hasRange">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     要检查的范围。
   </APIItem>
 </APIParameters>
@@ -1516,8 +1516,8 @@ Check if a point is the start point of a location.
 从 Plate 节点查找原生 DOM 元素。
 
 <API name="toDOMNode">
-<APIOptions type="TNode">
-  <APIItem name="node" type="TNode">
+<APIOptions type="Node">
+  <APIItem name="node" type="Node">
     要转换为 DOM 元素的 Plate 节点。
   </APIItem>
 </APIOptions>
@@ -1548,8 +1548,8 @@ Check if a point is the start point of a location.
 从 Plate 范围查找原生 DOM 范围。
 
 <API name="toDOMRange">
-<APIOptions type="TRange">
-  <APIItem name="range" type="TRange">
+<APIOptions type="Range">
+  <APIItem name="range" type="Range">
     要转换为 DOM 范围的 Plate 范围。
   </APIItem>
 </APIOptions>
@@ -1570,7 +1570,7 @@ Check if a point is the start point of a location.
   </APIItem>
 </APIOptions>
 
-<APIReturns type="TNode | undefined">
+<APIReturns type="Node | undefined">
   如果找到则返回对应的 Plate 节点，否则返回 undefined。
 </APIReturns>
 </API>
@@ -1602,7 +1602,7 @@ Check if a point is the start point of a location.
   </APIItem>
 </APIOptions>
 
-<APIReturns type="TRange | undefined">
+<APIReturns type="Range | undefined">
   如果找到则返回对应的 Plate 范围，否则返回 undefined。
 </APIReturns>
 </API>
@@ -1732,7 +1732,7 @@ Check if a point is the start point of a location.
 
 <API name="create.block">
 <APIParameters>
-  <APIItem name="node" type="Partial<TElement>" optional>
+  <APIItem name="node" type="Partial<Element>" optional>
     要合并到新块中的部分元素属性。
   </APIItem>
   <APIItem name="path" type="Path" optional>
@@ -1740,7 +1740,7 @@ Check if a point is the start point of a location.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="TElement">
+<APIReturns type="Element">
   新的块元素。
 </APIReturns>
 </API>

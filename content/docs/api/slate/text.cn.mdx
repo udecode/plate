@@ -1,12 +1,12 @@
 ---
 title: 文本节点
-description: Plate 文档中文本节点的 API 参考。
+description: Slate 文档中文本节点的 API 参考。
 ---
 
-文本节点（Text）包含 Plate 文档的实际文本内容及任何格式化属性。它们始终是文档树中的叶子节点，因为不能包含任何子节点。
+文本节点（Text）包含 Slate 文档的实际文本内容及任何格式化属性。它们始终是文档树中的叶子节点，因为不能包含任何子节点。
 
 ```ts
-type TText = {
+type Text = {
   text: string
   [key: string]: unknown
 }
@@ -18,7 +18,7 @@ type TText = {
 
 <API name="decorations">
 <APIParameters>
-  <APIItem name="node" type="TText">
+  <APIItem name="node" type="Text">
     要获取叶子的文本节点。
   </APIItem>
   <APIItem name="decorations" type="DecoratedRange[]">
@@ -26,7 +26,7 @@ type TText = {
   </APIItem>
 </APIParameters>
 
-<APIReturns type="{ leaf: TText, position?: LeafPosition }[]">
+<APIReturns type="{ leaf: Text, position?: LeafPosition }[]">
   返回叶子及其位置的数组。如果只有一个叶子，则位置为 undefined。
 </APIReturns>
 </API>
@@ -35,10 +35,10 @@ type TText = {
 
 <API name="equals">
 <APIParameters>
-  <APIItem name="text" type="TText">
+  <APIItem name="text" type="Text">
     要比较的第一个文本节点。
   </APIItem>
-  <APIItem name="another" type="TText">
+  <APIItem name="another" type="Text">
     要比较的第二个文本节点。
   </APIItem>
   <APIItem name="options" type="TextEqualsOptions" optional>
@@ -103,10 +103,10 @@ type TText = {
 
 <API name="matches">
 <APIParameters>
-  <APIItem name="text" type="TText">
+  <APIItem name="text" type="Text">
     要检查的文本节点。
   </APIItem>
-  <APIItem name="props" type="Partial<TText>">
+  <APIItem name="props" type="Partial<Text>">
     要匹配的属性。
   </APIItem>
 </APIParameters>
@@ -118,11 +118,9 @@ type TText = {
 
 ## 类型
 
-### `TText`
+### `Text`
 
-`Text` 是 `TText` 的类型别名。
-
-<API name="TText">
+<API name="Text">
 <APIAttributes>
   <APIItem name="text" type="string">
     节点的文本内容。
@@ -139,7 +137,7 @@ type TText = {
 
 <API name="TextEntry">
 <APIAttributes>
-  <APIItem name="0" type="TText">
+  <APIItem name="0" type="Text">
     文本节点。
   </APIItem>
   <APIItem name="1" type="Path">
@@ -158,7 +156,7 @@ type TText = {
 
 <API name="TextOf">
 <APIParameters>
-  <APIItem name="N" type="TNode">
+  <APIItem name="N" type="Node">
     要提取文本类型的根节点类型。
   </APIItem>
 </APIParameters>
@@ -182,7 +180,7 @@ type TText = {
 
 <API name="MarksOf">
 <APIParameters>
-  <APIItem name="N" type="TNode">
+  <APIItem name="N" type="Node">
     要提取标记类型的根节点类型。
   </APIItem>
 </APIParameters>
@@ -206,7 +204,7 @@ type TText = {
 
 <API name="MarkKeysOf">
 <APIParameters>
-  <APIItem name="N" type="TNode">
+  <APIItem name="N" type="Node">
     要提取标记键的节点类型。
   </APIItem>
 </APIParameters>

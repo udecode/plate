@@ -1,12 +1,12 @@
 ---
 title: Range
-description: Plate 文档中范围（Range）的 API 参考。
+description: Slate 文档中范围（Range）的 API 参考。
 ---
 
-Range（范围）是一组指向 Plate 文档特定跨度的点集合。它可以定义单个节点内的范围，也可以跨越多个节点。一个范围由两个点组成：锚点（起点）和焦点（终点）。
+Range（范围）是一组指向 Slate 文档特定跨度的点集合。它可以定义单个节点内的范围，也可以跨越多个节点。一个范围由两个点组成：锚点（起点）和焦点（终点）。
 
 ```typescript
-type TRange = {
+type Range = {
   anchor: Point
   focus: Point
 }
@@ -22,7 +22,7 @@ type TRange = {
 
 <API name="transform">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     要转换的范围。
   </APIItem>
   <APIItem name="op" type="Operation">
@@ -39,7 +39,7 @@ type TRange = {
   </APIItem>
 </APIOptions>
 
-<APIReturns type="TRange | null">
+<APIReturns type="Range | null">
   转换后的范围，如果范围被删除则返回 `null`。
 </APIReturns>
 </API>
@@ -50,7 +50,7 @@ type TRange = {
 
 <API name="edges">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     要获取边界的范围。
   </APIItem>
   <APIItem name="options" type="RangeEdgesOptions" optional>
@@ -75,7 +75,7 @@ type TRange = {
 
 <API name="end">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     要获取终点的范围。
   </APIItem>
 </APIParameters>
@@ -91,10 +91,10 @@ type TRange = {
 
 <API name="equals">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     要比较的第一个范围。
   </APIItem>
-  <APIItem name="another" type="TRange">
+  <APIItem name="another" type="Range">
     要比较的第二个范围。
   </APIItem>
 </APIParameters>
@@ -110,10 +110,10 @@ type TRange = {
 
 <API name="includes">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     要检查的范围。
   </APIItem>
-  <APIItem name="target" type="Path | Point | TRange">
+  <APIItem name="target" type="Path | Point | Range">
     要检查是否包含的目标。
   </APIItem>
 </APIParameters>
@@ -129,15 +129,15 @@ type TRange = {
 
 <API name="intersection">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     第一个范围。
   </APIItem>
-  <APIItem name="another" type="TRange">
+  <APIItem name="another" type="Range">
     第二个范围。
   </APIItem>
 </APIParameters>
 
-<APIReturns type="TRange | null">
+<APIReturns type="Range | null">
   交集范围，如果没有交集则返回 `null`。
 </APIReturns>
 </API>
@@ -148,7 +148,7 @@ type TRange = {
 
 <API name="isBackward">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     要检查的范围。
   </APIItem>
 </APIParameters>
@@ -164,7 +164,7 @@ type TRange = {
 
 <API name="isCollapsed">
 <APIParameters>
-  <APIItem name="range" type="TRange | null" optional>
+  <APIItem name="range" type="Range | null" optional>
     要检查的范围。
   </APIItem>
 </APIParameters>
@@ -180,7 +180,7 @@ type TRange = {
 
 <API name="isExpanded">
 <APIParameters>
-  <APIItem name="range" type="TRange | null" optional>
+  <APIItem name="range" type="Range | null" optional>
     要检查的范围。
   </APIItem>
 </APIParameters>
@@ -196,7 +196,7 @@ type TRange = {
 
 <API name="isForward">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     要检查的范围。
   </APIItem>
 </APIParameters>
@@ -208,7 +208,7 @@ type TRange = {
 
 ### `isRange`
 
-检查值是否实现了 `TRange` 接口。
+检查值是否实现了 `Range` 接口。
 
 <API name="isRange">
 <APIParameters>
@@ -228,7 +228,7 @@ type TRange = {
 
 <API name="points">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     要遍历的范围。
   </APIItem>
 </APIParameters>
@@ -244,7 +244,7 @@ type TRange = {
 
 <API name="start">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     要获取起点的范围。
   </APIItem>
 </APIParameters>
@@ -260,10 +260,10 @@ type TRange = {
 
 <API name="surrounds">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     可能包围目标的范围。
   </APIItem>
-  <APIItem name="target" type="TRange">
+  <APIItem name="target" type="Range">
     可能被包围的目标范围。
   </APIItem>
 </APIParameters>
@@ -275,13 +275,11 @@ type TRange = {
 
 ## 类型
 
-### `TRange`
+### `Range`
 
-`TRange` 对象是一组指向 Plate 文档特定跨度的点集合。它可以定义单个节点内的范围，也可以跨越多个节点。
+`Range` 对象是一组指向 Slate 文档特定跨度的点集合。它可以定义单个节点内的范围，也可以跨越多个节点。
 
-`Range` 是 `TRange` 的类型别名。
-
-<API name="TRange">
+<API name="Range">
 <APIAttributes>
   <APIItem name="anchor" type="Point">
     范围的起点。

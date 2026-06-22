@@ -55,7 +55,7 @@ description: Plate 中位置引用的 API 参考。
 
 <API name="RangeRef">
 <APIAttributes>
-  <APIItem name="current" type="TRange | null">
+  <APIItem name="current" type="Range | null">
     当前范围值，随操作应用而更新。
   </APIItem>
   <APIItem name="affinity" type="'forward' | 'backward' | 'inward' | 'outward' | null">
@@ -66,7 +66,7 @@ description: Plate 中位置引用的 API 参考。
     - `'outward'`：在边缘插入内容时范围倾向于扩大
     - `null`：无偏好
   </APIItem>
-  <APIItem name="unref()" type="() => TRange | null">
+  <APIItem name="unref()" type="() => Range | null">
     当不再需要同步此范围时调用。返回最终的范围值。
   </APIItem>
 </APIAttributes>

@@ -260,10 +260,10 @@ export type TextOperation = InsertTextOperation | RemoveTextOperation;
 
 <API name="SetSelectionOperation">
 <APIAttributes>
-  <APIItem name="newProperties" type="Partial<TRange> | TRange | null">
+  <APIItem name="newProperties" type="Partial<Range> | Range | null">
     新选区属性。
   </APIItem>
-  <APIItem name="properties" type="Partial<TRange> | TRange | null">
+  <APIItem name="properties" type="Partial<Range> | Range | null">
     旧选区属性。
   </APIItem>
   <APIItem name="type" type="'set_selection'">

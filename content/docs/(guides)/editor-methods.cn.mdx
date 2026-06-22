@@ -114,12 +114,12 @@ const Toolbar = () => {
 const path = editor.findPath(node);
 ```
 
-### getApi
+### getPluginApi
 
 获取编辑器的类型化API：
 
 ```ts
-const api = editor.getApi(TablePlugin);
+const api = editor.getPluginApi(TablePlugin);
 api.api.create.tableCell(); // 类型安全的API方法
 ```
 

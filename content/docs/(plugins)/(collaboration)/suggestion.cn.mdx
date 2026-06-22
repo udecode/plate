@@ -300,7 +300,7 @@ const editor = createPlateEditor({
 
 <API name="isBlockSuggestion">
 <APIParameters>
-  <APIItem name="node" type="TElement">
+  <APIItem name="node" type="Element">
     要检查的节点。
   </APIItem>
 </APIParameters>
@@ -314,7 +314,7 @@ const editor = createPlateEditor({
 获取建议节点条目。
 
 <API name="node">
-<APIOptions type="EditorNodesOptions & { id?: string; isText?: boolean }" optional>
+<APIOptions type="object & { id?: string; isText?: boolean }" optional>
   查找节点的选项。
 </APIOptions>
 <APIReturns type="NodeEntry<TSuggestionElement | TSuggestionText> | undefined">
@@ -328,7 +328,7 @@ const editor = createPlateEditor({
 
 <API name="nodeId">
 <APIParameters>
-  <APIItem name="node" type="TElement | TSuggestionText">
+  <APIItem name="node" type="Element | TSuggestionText">
     要获取ID的节点。
   </APIItem>
 </APIParameters>
@@ -342,10 +342,10 @@ const editor = createPlateEditor({
 获取所有匹配选项的建议节点条目。
 
 <API name="nodes">
-<APIOptions type="EditorNodesOptions" optional>
+<APIOptions type="object" optional>
   查找节点的选项。
 </APIOptions>
-<APIReturns type="NodeEntry<TElement | TSuggestionText>[]">
+<APIReturns type="NodeEntry<Element | TSuggestionText>[]">
   建议节点条目数组。
 </APIReturns>
 </API>
@@ -356,7 +356,7 @@ const editor = createPlateEditor({
 
 <API name="suggestionData">
 <APIParameters>
-  <APIItem name="node" type="TElement | TSuggestionText">
+  <APIItem name="node" type="Element | TSuggestionText">
     要获取建议数据的节点。
   </APIItem>
 </APIParameters>

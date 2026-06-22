@@ -298,7 +298,7 @@ HTML React 序列化器配置。
 <APISubListItem parent="render" name="belowNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
 创建一个函数，在所有其他插件的节点 React 节点下方生成 React 节点，但在它们的子节点上方。
 </APISubListItem>
-<APISubListItem parent="render" name="belowRootNodes" type="(props: PlateElementProps<TElement, C>) => React.ReactNode" optional>
+<APISubListItem parent="render" name="belowRootNodes" type="(props: PlateElementProps<Element, C>) => React.ReactNode" optional>
 在根元素的直接子元素之后渲染组件。与 `belowNodes` 的不同之处在于它是 `PlateElement` 的直接子元素，而不是包装可能是嵌套的子元素。当需要相对于根元素的组件时很有用。
 </APISubListItem>
 <APISubListItem parent="render" name="leaf" type="NodeComponent" optional>

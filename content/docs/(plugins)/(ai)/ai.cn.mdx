@@ -303,7 +303,7 @@ useEditorChat({
 ```tsx
 import { AIChatPlugin } from '@platejs/ai/react';
 
-editor.getApi(AIChatPlugin).aiChat.submit('', {
+editor.getPluginApi(AIChatPlugin).aiChat.submit('', {
   prompt: {
     default: 'Continue the document after {block}',
     selecting: 'Rewrite {selection} with a clearer tone',
@@ -324,7 +324,7 @@ editor.getApi(AIChatPlugin).aiChat.submit('', {
 ```tsx
 import { replacePlaceholders } from '@platejs/ai';
 
-editor.getApi(AIChatPlugin).aiChat.submit('Improve tone', {
+editor.getPluginApi(AIChatPlugin).aiChat.submit('Improve tone', {
   prompt: ({ isSelecting }) =>
     isSelecting
       ? replacePlaceholders(editor, 'Rewrite {blockSelection} using a friendly tone.')
@@ -429,7 +429,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="useChatChunk">
 <APIParameters>
-  <APIItem name="onChunk" type="(chunk: { chunk: string; isFirst: boolean; nodes: TText[]; text: string }) => void">处理每个流式块。</APIItem>
+  <APIItem name="onChunk" type="(chunk: { chunk: string; isFirst: boolean; nodes: Text[]; text: string }) => void">处理每个流式块。</APIItem>
   <APIItem name="onFinish" type="({ content }: { content: string }) => void" optional>流式传输完成时调用。</APIItem>
 </APIParameters>
 </API>
@@ -482,7 +482,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="findTextRangeInBlock">
 <APIParameters>
-  <APIItem name="node" type="TNode">要搜索的块节点。</APIItem>
+  <APIItem name="node" type="Node">要搜索的块节点。</APIItem>
   <APIItem name="searchText" type="string">要定位的文本片段。</APIItem>
 </APIParameters>
 <APIReturns type="{ start: { path: Path; offset: number }; end: { path: Path; offset: number } } | null">匹配的范围或 `null`。</APIReturns>
@@ -537,7 +537,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
     <APIItem name="triggerQuery" type="(editor: SlateEditor) => boolean" optional>返回 `false` 以在特定上下文中取消打开。</APIItem>
     <APIItem name="chat" type="UseChatHelpers&lt;ChatMessage&gt;" optional>存储来自 `useChat` 的助手，以便 API 调用可以访问它们。</APIItem>
     <APIItem name="chatNodes" type="TIdElement[]" optional>用于差异编辑建议的节点快照（内部管理）。</APIItem>
-    <APIItem name="chatSelection" type="TRange | null" optional>提交提示前捕获的选择（内部管理）。</APIItem>
+    <APIItem name="chatSelection" type="Range | null" optional>提交提示前捕获的选择（内部管理）。</APIItem>
     <APIItem name="mode" type="'chat' | 'insert'">控制响应是直接流式传输到文档还是打开审查面板。默认为 `'insert'`。</APIItem>
     <APIItem name="open" type="boolean" optional>AI 菜单是否可见。默认为 `false`。</APIItem>
     <APIItem name="streaming" type="boolean" optional>响应流式传输时为 true。默认为 `false`。</APIItem>
@@ -580,7 +580,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="node">
 <APIParameters>
-  <APIItem name="options" type="EditorNodesOptions &amp; { anchor?: boolean; streaming?: boolean }" optional>设置 `anchor: true` 以获取锚点节点，或 `streaming: true` 以检索当前正在流式传输的节点。</APIItem>
+  <APIItem name="options" type="object &amp; { anchor?: boolean; streaming?: boolean }" optional>设置 `anchor: true` 以获取锚点节点，或 `streaming: true` 以检索当前正在流式传输的节点。</APIItem>
 </APIParameters>
 <APIReturns type="NodeEntry | undefined">匹配的节点条目（如果找到）。</APIReturns>
 </API>
@@ -641,7 +641,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="removeAnchor">
 <APIParameters>
-  <APIItem name="options" type="EditorNodesOptions" optional>过滤要移除的节点。</APIItem>
+  <APIItem name="options" type="object" optional>过滤要移除的节点。</APIItem>
 </APIParameters>
 </API>
 
@@ -720,7 +720,7 @@ summarizeInBullets: {
   label: 'Summarize in bullets',
   value: 'summarizeInBullets',
   onSelect: ({ editor }) => {
-    void editor.getApi(AIChatPlugin).aiChat.submit('', {
+    void editor.getPluginApi(AIChatPlugin).aiChat.submit('', {
       prompt: 'Summarize the current selection using bullet points',
       toolName: 'generate',
     });
@@ -745,7 +745,7 @@ generateTOC: {
         ? 'Create a realistic table of contents for this document'
         : 'Generate a table of contents that reflects the existing headings';
 
-    void editor.getApi(AIChatPlugin).aiChat.submit('', {
+    void editor.getPluginApi(AIChatPlugin).aiChat.submit('', {
       mode: 'insert',
       prompt,
       toolName: 'generate',

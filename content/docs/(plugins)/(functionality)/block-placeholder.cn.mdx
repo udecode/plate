@@ -137,7 +137,7 @@ BlockPlaceholderPlugin.configure({
     插件键与占位文本字符串的映射
     - **默认值:** `{ [KEYS.p]: '输入内容...' }`
   </APIItem>
-  <APIItem name="query" type="(context: PlatePluginContext & { node: TElement; path: Path }) => boolean">
+  <APIItem name="query" type="(context: PlatePluginContext & { node: Element; path: Path }) => boolean">
     决定块是否应显示占位符的函数
     - **默认值:** 对最外层块返回 true (`path.length === 1`)
   </APIItem>

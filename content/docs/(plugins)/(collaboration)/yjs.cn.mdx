@@ -159,14 +159,14 @@ const MyEditorComponent = ({ documentId, initialValue }) => {
     if (!mounted) return;
 
     // 初始化 Yjs 连接、同步文档并设置初始编辑器状态
-    editor.getApi(YjsPlugin).yjs.init({
+    editor.getPluginApi(YjsPlugin).yjs.init({
       id: documentId,          // Yjs 文档的唯一标识符
       value: initialValue,     // 如果 Y.Doc 为空时的初始内容
     });
 
     // 清理：组件卸载时销毁连接
     return () => {
-      editor.getApi(YjsPlugin).yjs.destroy();
+      editor.getPluginApi(YjsPlugin).yjs.destroy();
     };
   }, [editor, mounted]);
 

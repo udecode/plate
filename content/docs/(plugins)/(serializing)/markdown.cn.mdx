@@ -151,7 +151,7 @@ const editor = createPlateEditor({
   ],
   // 初始内容通过反序列化生成
   value: (editor) =>
-    editor.getApi(MarkdownPlugin).markdown.deserialize(markdownString),
+    editor.getPluginApi(MarkdownPlugin).markdown.deserialize(markdownString),
 });
 ```
 
@@ -1027,7 +1027,7 @@ export function PlateMarkdown({
   useEffect(() => {
     editor.tf.reset(); // 清空先前内容
     editor.tf.setValue(
-      editor.getApi(MarkdownPlugin).markdown.deserialize(children)
+      editor.getPluginApi(MarkdownPlugin).markdown.deserialize(children)
     );
   }, [children, editor, remarkPlugins]); // 当 Markdown 内容或插件更改时重新反序列化
 

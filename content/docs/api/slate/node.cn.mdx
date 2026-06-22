@@ -3,10 +3,10 @@ title: Node
 description: Plate 中节点的 API 参考。
 ---
 
-节点是 Plate 文档的基本构建块。它可以是编辑器根节点（最高层级）、Element 节点或 Text 节点（最低层级）。此 API 提供了与节点交互的工具，包括遍历、查询和提取数据。
+节点是 Slate 文档的基本构建块。它可以是编辑器根节点（最高层级）、Element 节点或 Text 节点（最低层级）。此 API 提供了与节点交互的工具，包括遍历、查询和提取数据。
 
 ```ts
-type TNode = Editor | TElement | TText;
+type Node = Editor | Element | Text;
 
 type Descendant = Element | Text
 type Ancestor = Editor | Element
@@ -24,7 +24,7 @@ type Ancestor = Editor | Element
 
 <API name="ancestor">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     起始的根节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -43,7 +43,7 @@ type Ancestor = Editor | Element
 
 <API name="ancestors">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     起始的根节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -71,7 +71,7 @@ type Ancestor = Editor | Element
 
 <API name="child">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     父节点。
   </APIItem>
   <APIItem name="index" type="number">
@@ -79,7 +79,7 @@ type Ancestor = Editor | Element
   </APIItem>
 </APIParameters>
 
-<APIReturns type="TNode | undefined">
+<APIReturns type="Node | undefined">
   如果找到则返回子节点，否则返回 `undefined`。
 </APIReturns>
 </API>
@@ -90,7 +90,7 @@ type Ancestor = Editor | Element
 
 <API name="children">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -113,7 +113,7 @@ type Ancestor = Editor | Element
   </APIItem>
 </APIOptions>
 
-<APIReturns type="Generator<NodeEntry<TNode>, void, undefined>">
+<APIReturns type="Generator<NodeEntry<Node>, void, undefined>">
   子节点条目的生成器。
 </APIReturns>
 </API>
@@ -124,7 +124,7 @@ type Ancestor = Editor | Element
 
 <API name="common">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -146,7 +146,7 @@ type Ancestor = Editor | Element
 
 <API name="descendant">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -165,7 +165,7 @@ type Ancestor = Editor | Element
 
 <API name="descendants">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="options" type="NodeDescendantsOptions" optional>
@@ -199,7 +199,7 @@ type Ancestor = Editor | Element
 
 <API name="elements">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="options" type="NodeElementsOptions" optional>
@@ -233,7 +233,7 @@ type Ancestor = Editor | Element
 
 <API name="first">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -252,7 +252,7 @@ type Ancestor = Editor | Element
 
 <API name="firstChild">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     父节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -271,7 +271,7 @@ type Ancestor = Editor | Element
 
 <API name="firstText">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     父节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -290,10 +290,10 @@ type Ancestor = Editor | Element
 
 <API name="fragment">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     要切片的范围。
   </APIItem>
 </APIParameters>
@@ -309,7 +309,7 @@ type Ancestor = Editor | Element
 
 <API name="get">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -317,7 +317,7 @@ type Ancestor = Editor | Element
   </APIItem>
 </APIParameters>
 
-<APIReturns type="TNode | undefined">
+<APIReturns type="Node | undefined">
   如果找到则返回节点，否则返回 `undefined`。
 </APIReturns>
 </API>
@@ -328,7 +328,7 @@ type Ancestor = Editor | Element
 
 <API name="last">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -347,7 +347,7 @@ type Ancestor = Editor | Element
 
 <API name="lastChild">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     父节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -366,7 +366,7 @@ type Ancestor = Editor | Element
 
 <API name="leaf">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -385,7 +385,7 @@ type Ancestor = Editor | Element
 
 <API name="levels">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -404,7 +404,7 @@ type Ancestor = Editor | Element
 
 <API name="nodes">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="options" type="NodeTextsOptions" optional>
@@ -423,7 +423,7 @@ type Ancestor = Editor | Element
 
 <API name="parent">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -442,7 +442,7 @@ type Ancestor = Editor | Element
 
 <API name="texts">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="options" type="NodeTextsOptions" optional>
@@ -461,7 +461,7 @@ type Ancestor = Editor | Element
 
 <API name="extractProps">
 <APIParameters>
-  <APIItem name="node" type="TNode">
+  <APIItem name="node" type="Node">
     要提取属性的节点。
   </APIItem>
 </APIParameters>
@@ -477,7 +477,7 @@ type Ancestor = Editor | Element
 
 <API name="has">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -496,7 +496,7 @@ type Ancestor = Editor | Element
 
 <API name="hasSingleChild">
 <APIParameters>
-  <APIItem name="node" type="TNode">
+  <APIItem name="node" type="Node">
     要检查的节点。
   </APIItem>
 </APIParameters>
@@ -544,7 +544,7 @@ type Ancestor = Editor | Element
 
 <API name="isLastChild">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     根节点。
   </APIItem>
   <APIItem name="path" type="Path">
@@ -559,7 +559,7 @@ type Ancestor = Editor | Element
 
 ### `isNode`
 
-检查值是否实现了 `TNode` 接口。
+检查值是否实现了 `Node` 接口。
 
 <API name="isNode">
 <APIParameters>
@@ -569,7 +569,7 @@ type Ancestor = Editor | Element
 </APIParameters>
 
 <APIReturns type="boolean">
-  如果值实现了 `TNode` 接口则返回 `true`。
+  如果值实现了 `Node` 接口则返回 `true`。
 </APIReturns>
 </API>
 
@@ -614,7 +614,7 @@ type Ancestor = Editor | Element
 
 <API name="string">
 <APIParameters>
-  <APIItem name="node" type="TNode">
+  <APIItem name="node" type="Node">
     要获取文本的节点。
   </APIItem>
 </APIParameters>
@@ -626,21 +626,19 @@ type Ancestor = Editor | Element
 
 ## 类型
 
-### `TNode`
-
-`Node` 是 `TNode` 的类型别名。
+### `Node`
 
 ```ts
-type TNode = Editor | TElement | TText;
+type Node = Editor | Element | Text;
 ```
 
 ### `NodeEntry`
 
-`NodeEntry` 对象在遍历 Plate 文档树中的节点时返回。它们由两个元素的数组组成：`TNode` 及其相对于文档中根节点的 `Path`。
+`NodeEntry` 对象在遍历 Slate 文档树中的节点时返回。它们由两个元素的数组组成：`Node` 及其相对于文档中根节点的 `Path`。
 
 <API name="NodeEntry">
 <APIAttributes>
-  <APIItem name="0" type="TNode">
+  <APIItem name="0" type="Node">
     节点本身。
   </APIItem>
   <APIItem name="1" type="Path">
@@ -654,7 +652,7 @@ type TNode = Editor | TElement | TText;
 `Descendant` 联合类型表示树中的后代节点。
 
 ```ts
-type Descendant = TElement | TText;
+type Descendant = Element | Text;
 ```
 
 ### `Ancestor`
@@ -662,14 +660,14 @@ type Descendant = TElement | TText;
 `Ancestor` 联合类型表示树中的祖先节点。
 
 ```ts
-type Ancestor = Editor | TElement;
+type Ancestor = Editor | Element;
 ```
 
 ### `NodeOf<N>`
 
 <API name="NodeOf">
 <APIParameters>
-  <APIItem name="node" type="TNode">
+  <APIItem name="node" type="Node">
     要获取类型的节点。
   </APIItem>
 </APIParameters>
@@ -813,7 +811,7 @@ type Ancestor = Editor | TElement;
 
 <API name="NodeChildEntry">
 <APIAttributes>
-  <APIItem name="0" type="TNode">
+  <APIItem name="0" type="Node">
     子节点。
   </APIItem>
   <APIItem name="1" type="Path">
