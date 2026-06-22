@@ -54,7 +54,7 @@ describe('useAIChatEditor', () => {
 
     const editor = {
       children: [],
-      getApi: () => ({
+      getPluginApi: () => ({
         markdown: {
           deserialize,
         },

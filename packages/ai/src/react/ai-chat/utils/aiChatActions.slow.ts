@@ -128,7 +128,7 @@ describe('ai chat action utils', () => {
       },
     };
     const editor = {
-      getApi: () => ({
+      getPluginApi: () => ({
         suggestion: {
           nodes: () => [[suggestionNode, [0]]],
           suggestionData: () => suggestionNode.suggestion,
@@ -164,7 +164,7 @@ describe('ai chat action utils', () => {
       },
     };
     const editor = {
-      getApi: () => ({
+      getPluginApi: () => ({
         suggestion: {
           nodes: () => [[suggestionNode, [0]]],
           suggestionData: () => suggestionNode.suggestion,

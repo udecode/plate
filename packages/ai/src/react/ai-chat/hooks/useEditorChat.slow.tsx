@@ -57,7 +57,7 @@ describe('useEditorChat', () => {
           isCollapsed: () => true,
           isExpanded: () => false,
         },
-        getApi: () => ({
+        getPluginApi: () => ({
           blockSelection: {
             getNodes: () => [[{ id: 'b1' }, [0]]],
           },

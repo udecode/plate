@@ -140,7 +140,7 @@ mock.module('./inline-combobox', () => ({
 
 describe('inline void suggestion styling', () => {
   const editor = {
-    getApi: () => ({
+    getPluginApi: () => ({
       suggestion: {
         dataList: (node: any) =>
           Object.keys(node)

@@ -92,7 +92,7 @@ describe('submitAIChat', () => {
         nodesRange: () => ({ anchor: 'a', focus: 'b' }),
       },
       children: [{ id: 'root', type: 'p' }],
-      getApi: () => ({
+      getPluginApi: () => ({
         blockSelection: {
           getNodes: () => blocks,
         },

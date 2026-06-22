@@ -37,7 +37,7 @@ const withPluginEditor = <T extends Record<string, any>>(editor: T) => {
 
   const pluginEditor = Object.assign(editor, {
     api,
-    getApi: () => api,
+    getPluginApi: () => api,
     getTransforms: () => tf,
     tf,
   });
@@ -84,7 +84,7 @@ mock.module('platejs/react', () => ({
     return selector({
       ...currentEditor,
       api,
-      getApi: () => api,
+      getPluginApi: () => api,
       getOption: currentEditor.getOption ?? (() => null),
       getTransforms: () => tf,
     });
