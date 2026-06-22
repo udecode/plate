@@ -1,10 +1,24 @@
 ---
 title: "Operation Replay Substrate"
+description: "Use commits, operations, and state patches as the raw replay contract for adapters."
 ---
 
 Remote editing in Slate starts with operations and commits. Slate does not
 choose your network layer, CRDT, persistence model, or awareness protocol. This
 walkthrough shows the raw replay substrate an adapter can build on.
+
+## On This Page
+
+- [Start with a local editor](07-operation-replay-substrate#start-with-a-local-editor)
+- [Export operations](07-operation-replay-substrate#export-operations)
+- [Import remote operations](07-operation-replay-substrate#import-remote-operations)
+- [Subscribe to commits](07-operation-replay-substrate#subscribe-to-commits)
+- [Commit metadata](07-operation-replay-substrate#commit-metadata)
+- [Runtime ids are local](07-operation-replay-substrate#runtime-ids-are-local)
+- [Adapter ownership](07-operation-replay-substrate#adapter-ownership)
+- [Hocuspocus transport](07-operation-replay-substrate#hocuspocus-transport)
+- [Extension helpers](07-operation-replay-substrate#extension-helpers)
+- [What this page does not cover](07-operation-replay-substrate#what-this-page-does-not-cover)
 
 ## Start with a local editor
 
@@ -12,22 +26,22 @@ We'll use a normal editor first. Local writes still happen through
 `editor.update`, and the runtime records one commit for the whole update.
 
 ```tsx
-import { createEditor } from '@platejs/slate'
+import { createEditor } from "@platejs/slate";
 
-const editor = createEditor()
+const editor = createEditor();
 
 editor.update(
   (tx) => {
-    tx.text.insert('!')
+    tx.text.insert("!");
     tx.nodes.insert(
-      { type: 'paragraph', children: [{ text: 'four' }] },
+      { type: "paragraph", children: [{ text: "four" }] },
       { at: [3] }
-    )
+    );
   },
-  { tag: ['local-edit', 'collab-export'] }
-)
+  { tag: ["local-edit", "collab-export"] }
+);
 
-const commit = editor.read((state) => state.value.lastCommit())
+const commit = editor.read((state) => state.value.lastCommit());
 ```
 
 The `tag` option is a cheap lifecycle label. `metadata` is the typed policy
@@ -39,13 +53,13 @@ A commit contains the operations that changed the document plus the metadata
 Slate computed while applying them.
 
 ```tsx
-const sharedStateKeys = new Set(['document.title', 'page.settings'])
-const commit = editor.read((state) => state.value.lastCommit())
+const sharedStateKeys = new Set(["document.title", "page.settings"]);
+const commit = editor.read((state) => state.value.lastCommit());
 
 if (commit) {
   const statePatches = commit.statePatches.filter((patch) =>
     sharedStateKeys.has(patch.key)
-  )
+  );
 
   if (commit.operations.length > 0 || statePatches.length > 0) {
     sendToPeers({
@@ -55,7 +69,7 @@ if (commit) {
       tags: commit.tags,
       selectionBefore: commit.selectionBefore,
       selectionAfter: commit.selectionAfter,
-    })
+    });
   }
 }
 ```
@@ -83,16 +97,19 @@ Remote operations enter through `tx.operations.replay(...)`. This is the
 explicit operation replay path.
 
 ```tsx
-editor.update(tx => {
-  tx.operations.replay(message.operations)
-}, {
-  tag: ['collaboration', 'remote-import'],
-  metadata: {
-    collab: { origin: 'remote', saveToHistory: false },
-    history: { mode: 'skip' },
-    selection: { dom: 'preserve' },
+editor.update(
+  (tx) => {
+    tx.operations.replay(message.operations);
   },
-})
+  {
+    tag: ["collaboration", "remote-import"],
+    metadata: {
+      collab: { origin: "remote", saveToHistory: false },
+      history: { mode: "skip" },
+      selection: { dom: "preserve" },
+    },
+  }
+);
 ```
 
 Importing operations produces a normal commit. Subscribers, history, extension
@@ -102,25 +119,25 @@ If the remote message includes document state-field changes, replay those
 patches in the same transaction.
 
 ```tsx
-const sharedStateKeys = new Set(['document.title', 'page.settings'])
+const sharedStateKeys = new Set(["document.title", "page.settings"]);
 const statePatches = (message.statePatches ?? []).filter((patch) =>
   sharedStateKeys.has(patch.key)
-)
+);
 
 editor.update(
   (tx) => {
-    tx.operations.replay(message.operations)
-    tx.statePatches.replay(statePatches)
+    tx.operations.replay(message.operations);
+    tx.statePatches.replay(statePatches);
   },
   {
-    tag: ['collaboration', 'remote-import'],
+    tag: ["collaboration", "remote-import"],
     metadata: {
-      collab: { origin: 'remote', saveToHistory: false },
-      history: { mode: 'skip' },
-      selection: { dom: 'preserve' },
+      collab: { origin: "remote", saveToHistory: false },
+      history: { mode: "skip" },
+      selection: { dom: "preserve" },
     },
   }
-)
+);
 ```
 
 ## Subscribe to commits
@@ -129,20 +146,20 @@ Use `editor.subscribeCommit` when an adapter needs to observe committed state.
 The listener receives the change summary for each commit.
 
 ```tsx
-const sharedStateKeys = new Set(['document.title', 'page.settings'])
+const sharedStateKeys = new Set(["document.title", "page.settings"]);
 
 const unsubscribe = editor.subscribeCommit((change) => {
-  const documentValue = editor.read((state) => state.value.get())
+  const documentValue = editor.read((state) => state.value.get());
   const statePatches = change.statePatches.filter((patch) =>
     sharedStateKeys.has(patch.key)
-  )
+  );
 
-  saveDocument(documentValue)
+  saveDocument(documentValue);
 
-  if (change.metadata.collab?.origin === 'remote') return
+  if (change.metadata.collab?.origin === "remote") return;
 
   if (change.operations.length === 0 && statePatches.length === 0) {
-    return
+    return;
   }
 
   sendToPeers({
@@ -150,8 +167,8 @@ const unsubscribe = editor.subscribeCommit((change) => {
     statePatches,
     tags: change.tags,
     dirty: change.dirty,
-  })
-})
+  });
+});
 ```
 
 Send operations and filtered state patches to peers. Save the full
@@ -161,7 +178,7 @@ transport, unless your adapter strips local persisted state first.
 Call the returned function when the adapter disconnects.
 
 ```tsx
-unsubscribe()
+unsubscribe();
 ```
 
 That's the adapter loop: local `update`, export the commit operations, import
@@ -173,21 +190,21 @@ snapshots.
 The commit is the unit adapters should reason about. It groups every primitive
 write inside one `editor.update` call.
 
-| Field | Use |
-| --- | --- |
-| `operations` | The Slate operations that changed the document. |
-| `statePatches` | State-field changes. Filter to shared adapter-owned keys before exporting remote payloads. |
-| `tags` | Adapter/app metadata such as `local-edit` or `remote-import`. |
-| `metadata` | Typed policy for history, remote import, selection, and origin. |
-| `classes` | Runtime classification, such as text or structural changes. |
-| `selectionBefore` | The model selection before the commit. |
-| `selectionAfter` | The model selection after the commit. |
-| `dirty.paths` | Paths touched by the commit. |
-| `dirty.runtimeIds` | Local runtime ids touched by the commit. |
-| `dirty.topLevelRange` | Top-level document range affected by the commit. |
-| `snapshotChanged` | Whether the document snapshot changed. |
-| `selectionChanged` | Whether the model selection changed. |
-| `textChanged` | Whether text content changed. |
+| Field                 | Use                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `operations`          | The Slate operations that changed the document.                                            |
+| `statePatches`        | State-field changes. Filter to shared adapter-owned keys before exporting remote payloads. |
+| `tags`                | Adapter/app metadata such as `local-edit` or `remote-import`.                              |
+| `metadata`            | Typed policy for history, remote import, selection, and origin.                            |
+| `classes`             | Runtime classification, such as text or structural changes.                                |
+| `selectionBefore`     | The model selection before the commit.                                                     |
+| `selectionAfter`      | The model selection after the commit.                                                      |
+| `dirty.paths`         | Paths touched by the commit.                                                               |
+| `dirty.runtimeIds`    | Local runtime ids touched by the commit.                                                   |
+| `dirty.topLevelRange` | Top-level document range affected by the commit.                                           |
+| `snapshotChanged`     | Whether the document snapshot changed.                                                     |
+| `selectionChanged`    | Whether the model selection changed.                                                       |
+| `textChanged`         | Whether text content changed.                                                              |
 
 Adapters should treat this as an observation contract. If your transport layer
 needs a different representation, derive it from the commit instead of
@@ -201,13 +218,13 @@ stored as remote identifiers.
 
 ```tsx
 const { path, runtimeId } = editor.read((state) => {
-  const runtimeId = state.runtime.idAt([1])
+  const runtimeId = state.runtime.idAt([1]);
 
   return {
     path: runtimeId ? state.runtime.pathOf(runtimeId) : null,
     runtimeId,
-  }
-})
+  };
+});
 ```
 
 Use runtime ids for local projection, target rebasing, and DOM/runtime lookup.
@@ -219,11 +236,11 @@ presence, and persistence.
 Slate owns the document model, operations, snapshots, commits, runtime ids, and
 transaction boundaries. Your adapter owns the distributed system around them.
 
-| Owner | Responsibilities |
-| --- | --- |
-| Slate | Apply operations, produce commits, normalize the document, expose snapshots, rebase local runtime targets. |
+| Owner   | Responsibilities                                                                                                                      |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Slate   | Apply operations, produce commits, normalize the document, expose snapshots, rebase local runtime targets.                            |
 | Adapter | Choose the network layer, translate operations if needed, resolve concurrent edits, persist remote state, own awareness and presence. |
-| React | Render the current projection and subscribe to the runtime through Slate React. |
+| React   | Render the current projection and subscribe to the runtime through Slate React.                                                       |
 
 Keeping those owners separate is what lets Plate, CRDT adapters, custom
 storage, and local-only editors share the same raw Slate substrate without
@@ -241,7 +258,7 @@ Run the local Hocuspocus server:
 bun start:yjs
 ```
 
-Then run the examples site and open `/examples/yjs-hocuspocus`:
+Then run the examples site and open `/examples/slate/yjs-hocuspocus`:
 
 ```sh
 bun serve
@@ -291,18 +308,18 @@ Extensions can add grouped `state` and `tx` helpers for higher-level behavior.
 They should not add adapter-shaped namespaces directly to the editor object.
 
 ```tsx
-import { defineEditorExtension } from '@platejs/slate'
+import { defineEditorExtension } from "@platejs/slate";
 
 editor.extend(
   defineEditorExtension({
-    name: 'table-foundation',
+    name: "table-foundation",
     state: {
       table(state) {
         return {
           rowCount() {
-            return state.nodes.children().length
+            return state.nodes.children().length;
           },
-        }
+        };
       },
     },
     tx: {
@@ -310,15 +327,15 @@ editor.extend(
         return {
           insertRow(text: string) {
             tx.nodes.insert(
-              { type: 'paragraph', children: [{ text }] },
+              { type: "paragraph", children: [{ text }] },
               { at: [tx.nodes.children().length] }
-            )
+            );
           },
-        }
+        };
       },
     },
   })
-)
+);
 ```
 
 That shape gives product frameworks an integration backbone without turning raw

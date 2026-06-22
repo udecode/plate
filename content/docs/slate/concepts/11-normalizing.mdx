@@ -1,10 +1,11 @@
 ---
 title: "Normalizing"
+description: "Keep complex Slate documents valid with built-in constraints and focused repairs."
 ---
 
-Slate editors can edit complex nested data. Normalizing is the part of the runtime that keeps that data in a shape the rest of the editor can reason about.
-
-Validation only tells you that a document is invalid. Normalizing fixes the document.
+Normalizing keeps complex nested data in a shape the rest of the editor can
+reason about. Validation only says a document is invalid; normalizing repairs
+it.
 
 ## Built-in Constraints
 
@@ -40,8 +41,8 @@ The innermost paragraph is valid. The next paragraph is not, because it contains
 
 ```javascript
 editor.update((tx) => {
-  tx.nodes.unwrap({ at: [0, 0] })
-})
+  tx.nodes.unwrap({ at: [0, 0] });
+});
 ```
 
 That repair changes the parent, so Slate can normalize the parent on the next pass. The document eventually becomes:
@@ -66,8 +67,8 @@ Avoid repairs that still leave the node invalid.
 
 ```javascript
 editor.update((tx) => {
-  tx.nodes.set({ url: null }, { at: path })
-})
+  tx.nodes.set({ url: null }, { at: path });
+});
 ```
 
 That looks like it clears an invalid URL, but `null` is not a valid node property value in Slate documents. The node is still invalid, so the normalizer can loop forever.
@@ -76,16 +77,16 @@ Prefer a repair that produces a valid shape:
 
 ```javascript
 editor.update((tx) => {
-  tx.nodes.unset('url', { at: path })
-})
+  tx.nodes.unset("url", { at: path });
+});
 ```
 
 Or remove the invalid wrapper entirely:
 
 ```javascript
 editor.update((tx) => {
-  tx.nodes.unwrap({ at: path })
-})
+  tx.nodes.unwrap({ at: path });
+});
 ```
 
 ## Grouped Repairs
@@ -93,31 +94,31 @@ editor.update((tx) => {
 Sometimes a command needs several structural edits before the tree is valid again. Wrap related writes in one `editor.update(...)`, and use `tx.withoutNormalizing(...)` when the tree should not normalize between those writes.
 
 ```ts
-import { ElementApi, type Editor } from '@platejs/slate'
+import { ElementApi, type Editor } from "@platejs/slate";
 
-const LIST_TYPES = ['numbered-list', 'bulleted-list']
+const LIST_TYPES = ["numbered-list", "bulleted-list"];
 
 function changeBlockType(editor: Editor, type: string) {
   editor.update((tx) => {
     tx.withoutNormalizing(() => {
-      const isActive = isBlockActive(editor, type)
-      const isList = LIST_TYPES.includes(type)
+      const isActive = isBlockActive(editor, type);
+      const isList = LIST_TYPES.includes(type);
 
       tx.nodes.unwrap({
         match: (node) =>
           ElementApi.isElement(node) && LIST_TYPES.includes(node.type),
         split: true,
-      })
+      });
 
       tx.nodes.set({
-        type: isActive ? 'paragraph' : isList ? 'list-item' : type,
-      })
+        type: isActive ? "paragraph" : isList ? "list-item" : type,
+      });
 
       if (!isActive && isList) {
-        tx.nodes.wrap({ type, children: [] })
+        tx.nodes.wrap({ type, children: [] });
       }
-    })
-  })
+    });
+  });
 }
 ```
 

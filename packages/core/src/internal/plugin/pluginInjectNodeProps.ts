@@ -1,4 +1,4 @@
-import type { Path, TElement, TText } from '@platejs/slate-legacy';
+import type { Element, Path, Text } from '@platejs/slate';
 
 import { isDefined } from '@udecode/utils';
 
@@ -26,7 +26,7 @@ export const pluginInjectNodeProps = (
   editor: SlateEditor,
   plugin: EditorPlugin,
   nodeProps: GetInjectNodePropsOptions,
-  getElementPath: (node: TElement | TText) => Path
+  getElementPath: (node: Element | Text) => Path
 ): GetInjectNodePropsReturnType | undefined => {
   const {
     key,

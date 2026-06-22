@@ -1,5 +1,6 @@
 ---
 title: "Nodes"
+description: "Model documents with Element and Text nodes across primary and extra roots."
 ---
 
 Slate documents are JSON trees. The editable content in each root is built from
@@ -7,6 +8,8 @@ two node types:
 
 - `Element` nodes hold structure and contain child nodes.
 - `Text` nodes hold string content and mark properties.
+
+## Value Shape
 
 The editor runtime can also act as the root ancestor for node APIs, but the
 persisted document value is primary children, optional extra roots, and optional
@@ -16,14 +19,14 @@ state fields. Save `state.value.get()` when you need the whole document.
 const documentValue = {
   children: [
     {
-      type: 'paragraph',
-      children: [{ text: 'A line of text!' }],
+      type: "paragraph",
+      children: [{ text: "A line of text!" }],
     },
   ],
   state: {
-    'document.title': 'Draft',
+    "document.title": "Draft",
   },
-}
+};
 ```
 
 The short editor value is still an array of block elements. Slate treats that
@@ -32,10 +35,10 @@ array as the primary document.
 ```ts
 const initialValue = [
   {
-    type: 'paragraph',
-    children: [{ text: 'A line of text!' }],
+    type: "paragraph",
+    children: [{ text: "A line of text!" }],
   },
-]
+];
 ```
 
 See [Document State](14-document-state) for persistence and
@@ -48,7 +51,7 @@ custom to your product domain.
 
 ```ts
 interface Element {
-  children: Node[]
+  children: Node[];
 }
 ```
 
@@ -57,15 +60,15 @@ properties are yours to define.
 
 ```ts
 const paragraph = {
-  type: 'paragraph',
-  children: [{ text: 'Hello' }],
-}
+  type: "paragraph",
+  children: [{ text: "Hello" }],
+};
 
 const link = {
-  type: 'link',
-  url: 'https://example.com',
-  children: [{ text: 'Example' }],
-}
+  type: "link",
+  url: "https://example.com",
+  children: [{ text: "Example" }],
+};
 ```
 
 All elements have `children`. Void elements still keep a text child in the
@@ -73,10 +76,10 @@ model so selection, marks, copy/paste, and normalization have a stable location.
 
 ```ts
 const image = {
-  type: 'image',
-  url: 'https://example.com/image.png',
-  children: [{ text: '' }],
-}
+  type: "image",
+  url: "https://example.com/image.png",
+  children: [{ text: "" }],
+};
 ```
 
 ## Text
@@ -85,7 +88,7 @@ Text nodes are leaves. They contain the string plus any mark properties.
 
 ```ts
 interface Text {
-  text: string
+  text: string;
 }
 ```
 
@@ -93,9 +96,9 @@ Marks are normal custom properties on text nodes.
 
 ```ts
 const boldText = {
-  text: 'Bold',
+  text: "Bold",
   bold: true,
-}
+};
 ```
 
 Slate splits adjacent text into leaves for rendering when decorations or marks
@@ -114,14 +117,14 @@ Declare inline behavior with element specs.
 
 ```ts
 const links = defineEditorExtension({
-  name: 'links',
+  name: "links",
   elements: [
     {
-      type: 'link',
+      type: "link",
       inline: true,
     },
   ],
-})
+});
 ```
 
 Inline nodes cannot be the first or last child of a block and cannot sit next
@@ -138,14 +141,14 @@ Declare void behavior with element specs.
 
 ```ts
 const images = defineEditorExtension({
-  name: 'images',
+  name: "images",
   elements: [
     {
-      type: 'image',
+      type: "image",
       void: true,
     },
   ],
-})
+});
 ```
 
 The React runtime owns the hidden editable anchor and selection shell for voids.

@@ -1,19 +1,24 @@
 ---
 title: "RangeRef API"
+description: "Mutable range references that track selections or anchors across operations."
 ---
 
 `RangeRef` objects keep a specific range synced over time as operations are
 applied. They are low-level location values used by Slate internals and
-advanced runtime code. Read `current` for the up-to-date `Range` value. Call
-`unref()` when you no longer need to track the range. `affinity` controls how
-the range follows insertions at its edges. `inward` keeps the range tight;
-`outward` lets the range grow.
+advanced runtime code.
+
+## Shape
+
+Read `current` for the up-to-date `Range` value. Call `unref()` when you no
+longer need to track the range. `affinity` controls how the range follows
+insertions at its edges. `inward` keeps the range tight; `outward` lets the
+range grow.
 
 ```typescript
 interface RangeRef {
-  current: Range | null
-  affinity: 'forward' | 'backward' | 'outward' | 'inward' | null
-  unref(): Range | null
+  current: Range | null;
+  affinity: "forward" | "backward" | "outward" | "inward" | null;
+  unref(): Range | null;
 }
 ```
 
@@ -21,16 +26,16 @@ interface RangeRef {
 - [Static methods](range-ref#static-methods)
   - [Transform methods](range-ref#transform-methods)
 
-## Instance methods
+## Instance Methods
 
 #### `unref() => Range | null`
 
 Call this when you no longer need to sync this range.
 It also returns the current value.
 
-## Static methods
+## Static Methods
 
-### Transform methods
+### Transform Methods
 
 #### `RangeRefApi.transform(ref: RangeRef, op: Operation)`
 

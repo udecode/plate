@@ -1,6 +1,19 @@
 ---
 title: "Slate React Hooks"
+description: "Read editor state, root state, projections, annotations, widgets, and DOM-aware facts from React."
 ---
+
+Use hooks inside a `Slate` provider when React UI needs editor facts. Prefer the narrowest hook that matches the UI: editor-wide hooks for toolbars, element hooks for rendered nodes, and projection hooks for decorations, annotations, and widgets.
+
+## On This Page
+
+- [Editor Hooks](hooks#editor-hooks)
+- [Runtime And Root Hooks](hooks#runtime-and-root-hooks)
+- [Element And Node Hooks](hooks#element-and-node-hooks)
+- [Projection Hooks](hooks#projection-hooks)
+- [DOM Strategy Hooks](hooks#dom-strategy-hooks)
+- [Annotation Hooks](hooks#annotation-hooks)
+- [Widget Hooks](hooks#widget-hooks)
 
 ## Editor Hooks
 
@@ -35,27 +48,27 @@ Subscribe to a derived editor-state value. The selector runs inside
 hand.
 
 ```typescript
-const isBold = useEditorState(state => {
-  return state.marks.get()?.bold === true
-})
+const isBold = useEditorState((state) => {
+  return state.marks.get()?.bold === true;
+});
 ```
 
 Use `options.shouldUpdate` to skip commits that cannot affect the selected
 value.
 
 ```typescript
-const selection = useEditorState(state => state.selection.get(), {
-  shouldUpdate: change => Boolean(change?.selectionChanged),
-})
+const selection = useEditorState((state) => state.selection.get(), {
+  shouldUpdate: (change) => Boolean(change?.selectionChanged),
+});
 ```
 
 Pass `options.deps` when the selector closes over component props.
 
 ```typescript
 const matchingText = useEditorState(
-  state => state.text.string([]).includes(query),
+  (state) => state.text.string([]).includes(query),
   { deps: [query] }
-)
+);
 ```
 
 #### `useStateFieldValue<T>(field, options?): T`
@@ -63,7 +76,7 @@ const matchingText = useEditorState(
 Subscribe to one `defineStateField` value.
 
 ```tsx
-const title = useStateFieldValue(documentTitle)
+const title = useStateFieldValue(documentTitle);
 ```
 
 The hook only re-renders when that field key appears in
@@ -75,9 +88,9 @@ and other document state controls.
 Create a setter for one `defineStateField` value.
 
 ```tsx
-const setTitle = useSetStateField(documentTitle)
+const setTitle = useSetStateField(documentTitle);
 
-setTitle('Q3 Launch Brief')
+setTitle("Q3 Launch Brief");
 ```
 
 The setter writes through `editor.update` and preserves DOM selection by
@@ -94,8 +107,8 @@ element-scoped hooks when rendering editor content.
 
 ```typescript
 const latestOperationCount = useEditorSelector((_editor, operations) => {
-  return operations?.length ?? 0
-})
+  return operations?.length ?? 0;
+});
 ```
 
 #### `useSlateHistory(options?): SlateHistoryController`
@@ -103,13 +116,13 @@ const latestOperationCount = useEditorSelector((_editor, operations) => {
 Create undo/redo commands and keyboard handling for the active root.
 
 ```tsx
-const history = useSlateHistory()
+const history = useSlateHistory();
 
 return (
   <button disabled={!history.canUndo} onClick={history.undo}>
     Undo
   </button>
-)
+);
 ```
 
 Pass `options.root` to bind history controls to one root. Pass
@@ -171,9 +184,9 @@ Create root chrome props for mouse interaction outside the editable content,
 such as margin clicks and drag selection around a root.
 
 ```tsx
-const chrome = useSlateRootChrome('body')
+const chrome = useSlateRootChrome("body");
 
-return <div {...chrome.props}>{children}</div>
+return <div {...chrome.props}>{children}</div>;
 ```
 
 Pass `selection: 'end'` for chrome that should place the caret at the end of a
@@ -206,15 +219,19 @@ Omit `deps` when the effect should rerun after every React render.
 Create a stable callback that resolves the mounted root editor at call time.
 
 ```tsx
-const toggleTitle = useSlateCommandCallback(editor => {
-  editor.update(tx => tx.text.insert('Title'))
-})
+const toggleTitle = useSlateCommandCallback((editor) => {
+  editor.update((tx) => tx.text.insert("Title"));
+});
 ```
 
 Pass `focus: 'restore-root'` when the command should move focus back to the
 editor root before running. Pass `focus: 'none'` to leave focus alone. The
 default is `focus: 'preserve'`. Pass `root` when the command should target a
 known root instead of the editable or active root.
+
+## Element And Node Hooks
+
+Use these inside rendered editor content or node-local UI.
 
 #### `useElement(): Element`
 
@@ -238,9 +255,9 @@ UI.
 
 ```ts
 type UseElementSelectedOptions = {
-  at?: Path | null
-  mode?: 'intersects' | 'collapsed'
-}
+  at?: Path | null;
+  mode?: "intersects" | "collapsed";
+};
 ```
 
 #### `useSlateNodeRef(runtimeId, options?): (node) => void`
@@ -272,6 +289,11 @@ Subscribe to decoration/projection data for one mounted runtime target.
 Pass `options.runtimeId` to target a specific runtime node, or call it inside a
 renderer that already has runtime target context.
 
+## Projection Hooks
+
+Use projection hooks when ranges need to be shared across the editor, overlays,
+sidebars, annotations, or widgets.
+
 #### `useSlateProjectionEntries<T>(runtimeId): readonly SlateProjectionEntry<T>[]`
 
 Subscribe to low-level projected range entries for one runtime node. Normal app
@@ -288,15 +310,15 @@ or other overlay UI. Use `Editable.decorate` for a simple editor-local callback.
 
 ```tsx
 const searchSource = useSlateDecorationSource(editor, {
-  id: 'search',
+  id: "search",
   read: ({ snapshot }) => findSearchMatches(snapshot, query),
-})
+});
 
 return (
   <Slate decorationSources={[searchSource]} editor={editor}>
     <Editable renderSegment={renderSearchMatch} />
   </Slate>
-)
+);
 ```
 
 #### `useSlateRangeDecorationSource<T>(editor, options): SlateDecorationSource<T>`
@@ -310,10 +332,14 @@ data that already lives as Slate ranges.
 
 ```tsx
 const searchSource = useSlateRangeDecorationSource(editor, {
-  id: 'search',
+  id: "search",
   read: ({ snapshot }) => findSearchRanges(snapshot, query),
-})
+});
 ```
+
+## DOM Strategy Hooks
+
+Use these only when writing DOM-strategy-aware renderers.
 
 #### `useDOMStrategyVirtualOffset(): number`
 
@@ -321,6 +347,11 @@ Read the vertical document offset for the current virtualized row.
 
 Use this inside DOM-strategy renderers that paint projected content against
 absolute document coordinates. Normal editor UI should not need it.
+
+## Annotation Hooks
+
+Use annotation hooks for durable anchored ranges such as comments, suggestions,
+diagnostics, and external review markers.
 
 #### `useSlateAnnotationStore<TData, TProjection>(editor, annotationsOrOptions): SlateAnnotationStore<TData, TProjection>`
 
@@ -338,13 +369,13 @@ dependencies.
 const annotationStore = useSlateAnnotationStore(editor, {
   deps: [comments],
   project: () =>
-    comments.map(comment => ({
+    comments.map((comment) => ({
       anchor: comment.anchor,
       data: comment,
       id: comment.id,
       projection: { tone: comment.tone },
     })),
-})
+});
 ```
 
 #### `useSlateAnnotations<TData, TProjection>(store?): SlateAnnotationSnapshot<TData, TProjection>`
@@ -355,6 +386,10 @@ the store from the nearest `Slate` provider.
 #### `useSlateAnnotation<TData, TProjection>(id, store?): SlateResolvedAnnotation<TData, TProjection> | null`
 
 Read one annotation by id.
+
+## Widget Hooks
+
+Use widget hooks for UI anchored to nodes, selections, or annotations.
 
 #### `useSlateWidgetStore<TWidget, TAnnotation>(editor, widgetsOrOptions, annotationStore?): SlateWidgetStore<TWidget, TAnnotation>`
 
@@ -369,12 +404,12 @@ const widgetStore = useSlateWidgetStore(editor, {
   deps: [commentId],
   project: () => [
     {
-      anchor: { annotationId: commentId, type: 'annotation' },
-      data: { label: 'Comment' },
-      id: 'comment-widget',
+      anchor: { annotationId: commentId, type: "annotation" },
+      data: { label: "Comment" },
+      id: "comment-widget",
     },
   ],
-})
+});
 ```
 
 #### `useSlateWidgets<TWidget, TAnnotation>(store): SlateWidgetSnapshot<TWidget, TAnnotation>`

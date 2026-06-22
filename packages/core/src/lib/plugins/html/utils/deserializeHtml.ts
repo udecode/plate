@@ -1,4 +1,4 @@
-import type { Descendant } from '@platejs/slate-legacy';
+import type { Descendant } from '@platejs/slate';
 
 import type { SlateEditor } from '../../../editor';
 import type { WithRequiredKey } from '../../../plugin';

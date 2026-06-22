@@ -1,9 +1,12 @@
 ---
 title: "Annotations"
+description: "Attach durable range identities to editor text and project them into React UI."
 ---
 
 Annotations attach durable ranges to editor text and publish them to React
 rendering, sidebars, and widgets.
+
+## When To Use Annotations
 
 Use annotations when a range has identity beyond a single render pass: review
 comments, issue markers, tracked external diagnostics, resolved threads, or
@@ -16,16 +19,16 @@ that hangs off a node, selection, or annotation.
 
 ```ts
 type SlateAnnotationAnchor = {
-  resolve(): Range | null
-  unref?(): Range | null
-}
+  resolve(): Range | null;
+  unref?(): Range | null;
+};
 
 type SlateAnnotation<TData, TProjection> = {
-  anchor: SlateAnnotationAnchor
-  data?: TData
-  id: string
-  projection?: TProjection
-}
+  anchor: SlateAnnotationAnchor;
+  data?: TData;
+  id: string;
+  projection?: TProjection;
+};
 ```
 
 `anchor` resolves the current range. A local `Bookmark` satisfies this contract.
@@ -47,7 +50,7 @@ const annotations = comments.map((comment) => ({
     status: comment.status,
     tone: comment.tone,
   },
-}))
+}));
 ```
 
 ## Local Bookmarks
@@ -60,16 +63,16 @@ const anchor = editor.read((state) =>
     anchor: { path: [0, 0], offset: 3 },
     focus: { path: [0, 0], offset: 18 },
   })
-)
+);
 
 const annotationStore = useSlateAnnotationStore(editor, [
   {
     anchor,
-    data: { label: 'Comment 1' },
-    id: 'comment-1',
-    projection: { tone: 'review' },
+    data: { label: "Comment 1" },
+    id: "comment-1",
+    projection: { tone: "review" },
   },
-])
+]);
 ```
 
 When annotations come from React state, use the projector form so the store
@@ -85,7 +88,7 @@ const annotationStore = useSlateAnnotationStore(editor, {
       id: comment.id,
       projection: { tone: comment.tone },
     })),
-})
+});
 ```
 
 Pass the store to `Slate` when editor-local annotation UI lives under that
@@ -96,23 +99,23 @@ by default.
 <Slate annotationStore={annotationStore} editor={editor}>
   <Editable renderSegment={renderCommentSegment} />
   <CommentsSidebar />
-</Slate>
+</Slate>;
 
 function CommentsSidebar() {
-  const snapshot = useSlateAnnotations()
+  const snapshot = useSlateAnnotations();
 
   return snapshot.allIds.map((id) => {
-    const comment = snapshot.byId.get(id)
+    const comment = snapshot.byId.get(id);
 
-    return <CommentThread key={id} comment={comment} />
-  })
+    return <CommentThread key={id} comment={comment} />;
+  });
 }
 ```
 
 Dispose bookmarks when the app removes the annotation.
 
 ```tsx
-anchor.unref()
+anchor.unref();
 ```
 
 ## External Comment Stores
@@ -123,7 +126,7 @@ Use [Document State](../../concepts/14-document-state) for document metadata
 and settings that should persist with the document.
 
 ```tsx
-const comments = useCommentChannel()
+const comments = useCommentChannel();
 
 const annotations = comments.map((comment) => ({
   anchor: comment.anchor,
@@ -137,7 +140,7 @@ const annotations = comments.map((comment) => ({
     status: comment.status,
     tone: comment.tone,
   },
-}))
+}));
 ```
 
 When an external store knows which comments changed, refresh those ids.
@@ -145,8 +148,8 @@ When an external store knows which comments changed, refresh those ids.
 ```tsx
 annotationStore.refresh({
   ids: [threadId],
-  reason: 'annotation',
-})
+  reason: "annotation",
+});
 ```
 
 Refresh semantics:
@@ -162,17 +165,17 @@ Use separate channels for the document and the comments.
 ```tsx
 // Writer lane: document channel.
 writerEditor.update((tx) => {
-  tx.text.insert('hello', { at })
-})
+  tx.text.insert("hello", { at });
+});
 
 // Reviewer lane: annotation channel.
 commentsMap.set(threadId, {
   anchor,
   body,
-  status: 'open',
-})
+  status: "open",
+});
 
-annotationStore.refresh({ ids: [threadId], reason: 'annotation' })
+annotationStore.refresh({ ids: [threadId], reason: "annotation" });
 ```
 
 A read-only reviewer can select text, create a comment anchor, and update a
@@ -197,15 +200,15 @@ or side-panel rows that need resolved visibility.
 
 ```ts
 type SlateWidgetAnchor =
-  | { annotationId: string; type: 'annotation' }
-  | { runtimeId: RuntimeId; type: 'node' }
-  | { type: 'selection' }
+  | { annotationId: string; type: "annotation" }
+  | { runtimeId: RuntimeId; type: "node" }
+  | { type: "selection" };
 
 type SlateWidget<TData> = {
-  anchor: SlateWidgetAnchor
-  data?: TData
-  id: string
-}
+  anchor: SlateWidgetAnchor;
+  data?: TData;
+  id: string;
+};
 ```
 
 Create widget stores with the same explicit-dependency projector shape.
@@ -216,11 +219,11 @@ const widgetStore = useSlateWidgetStore(editor, {
   deps: [comments],
   project: () =>
     comments.map((comment) => ({
-      anchor: { annotationId: comment.id, type: 'annotation' },
+      anchor: { annotationId: comment.id, type: "annotation" },
       data: { label: comment.label },
       id: `comment-widget:${comment.id}`,
     })),
-})
+});
 ```
 
 Use `useSlateWidgets(store)` for panels that render every widget. Use
@@ -232,17 +235,17 @@ An external adapter can keep the document and comments in separate stores.
 
 ```ts
 type ExternalAnnotationAnchor = {
-  resolve(): Range | null
-  unref(): Range | null
-}
+  resolve(): Range | null;
+  unref(): Range | null;
+};
 
-const anchor = externalAnnotationAdapter.anchorFromSlateRange(editor, range)
+const anchor = externalAnnotationAdapter.anchorFromSlateRange(editor, range);
 
 commentChannel.set(threadId, {
   anchor,
   body,
-  status: 'open',
-})
+  status: "open",
+});
 ```
 
 The adapter owns mapping, drift recovery, deletion policy, and permissions.

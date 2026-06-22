@@ -1,9 +1,4 @@
-import {
-  type TElement,
-  type TText,
-  ElementApi,
-  NodeApi,
-} from '@platejs/slate-legacy';
+import { type Element, ElementApi, NodeApi, type Text } from '@platejs/slate';
 
 import type { SlateEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';
@@ -12,7 +7,7 @@ import { getPluginByType } from '../../../plugin/getSlatePlugin';
 
 export const isNodeAffinity = (
   editor: SlateEditor,
-  node: TElement | TText,
+  node: Element | Text,
   affinity: 'directional' | 'hard' | 'outward'
 ) => {
   const marks = Object.keys(NodeApi.extractProps(node));

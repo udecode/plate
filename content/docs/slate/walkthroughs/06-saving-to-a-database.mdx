@@ -1,5 +1,6 @@
 ---
 title: "Saving to a Database"
+description: "Persist primary children, extra roots, and document state from the editor runtime."
 ---
 
 Slate documents are JSON. Save the full document value when you need more than
@@ -15,71 +16,71 @@ Create the editor from the saved value, then persist the full document value
 after committed document or state-field changes.
 
 ```tsx
-import { useEffect, useState } from 'react'
-import { defineStateField } from '@platejs/slate'
-import { Editable, Slate, useSlateEditor } from '@platejs/slate-react'
+import { useEffect, useState } from "react";
+import { defineStateField } from "@platejs/slate";
+import { Editable, Slate, useSlateEditor } from "@platejs/slate-react";
 
-const STORAGE_KEY = 'slate.document'
+const STORAGE_KEY = "slate.document";
 
 const documentTitle = defineStateField({
-  key: 'document.title',
-  initial: () => 'Untitled',
+  key: "document.title",
+  initial: () => "Untitled",
   persist: true,
-})
+});
 
 const fallbackValue = {
   children: [
     {
-      type: 'paragraph',
-      children: [{ text: 'A line of text in a paragraph.' }],
+      type: "paragraph",
+      children: [{ text: "A line of text in a paragraph." }],
     },
   ],
   state: {
-    [documentTitle.key]: 'Untitled',
+    [documentTitle.key]: "Untitled",
   },
-}
+};
 
 const App = () => {
   const [initialValue] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
+    const saved = localStorage.getItem(STORAGE_KEY);
 
-    return saved ? JSON.parse(saved) : fallbackValue
-  })
+    return saved ? JSON.parse(saved) : fallbackValue;
+  });
   const editor = useSlateEditor({
     extensions: [documentTitle],
     initialValue,
-  })
+  });
 
   useEffect(() => {
     return editor.subscribe((_snapshot, change) => {
-      if (!change) return
+      if (!change) return;
 
       if (!change.childrenChanged && change.dirtyStateKeys.length === 0) {
-        return
+        return;
       }
 
-      const documentValue = editor.read((state) => state.value.get())
+      const documentValue = editor.read((state) => state.value.get());
 
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(documentValue))
-    })
-  }, [editor])
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(documentValue));
+    });
+  }, [editor]);
 
   return (
     <Slate editor={editor}>
       <Editable />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 `state.value.get()` returns the persisted document value:
 
 ```ts
 type EditorDocumentValue = {
-  children: Descendant[]
-  roots?: Record<string, Descendant[]>
-  state?: Record<string, unknown>
-}
+  children: Descendant[];
+  roots?: Record<string, Descendant[]>;
+  state?: Record<string, unknown>;
+};
 ```
 
 That shape includes the primary document, every extra root, and persistent state
@@ -95,9 +96,9 @@ persistent state fields.
 <Slate
   editor={editor}
   onChange={(value, change) => {
-    if (!change.valueChanged) return
+    if (!change.valueChanged) return;
 
-    localStorage.setItem('slate.children', JSON.stringify(value))
+    localStorage.setItem("slate.children", JSON.stringify(value));
   }}
 >
   <Editable />
@@ -115,13 +116,13 @@ owns extra roots.
 ```tsx
 const editor = useSlateEditor({
   initialValue: {
-    children: [{ type: 'paragraph', children: [{ text: 'Body' }] }],
+    children: [{ type: "paragraph", children: [{ text: "Body" }] }],
     roots: {
-      header: [{ type: 'paragraph', children: [{ text: 'Draft' }] }],
-      footer: [{ type: 'paragraph', children: [{ text: 'Internal' }] }],
+      header: [{ type: "paragraph", children: [{ text: "Draft" }] }],
+      footer: [{ type: "paragraph", children: [{ text: "Internal" }] }],
     },
   },
-})
+});
 ```
 
 Render each root with `Editable root`.
@@ -151,8 +152,8 @@ editor.update((tx) => {
     children: nextDocument.children,
     marks: null,
     selection: null,
-  })
-})
+  });
+});
 ```
 
 `tx.value.replace` replaces the active root snapshot. For an in-place multi-root
@@ -162,39 +163,39 @@ example assumes your app registered `documentTitle` and `pageSettings` fields.
 
 ```tsx
 editor.update((tx) => {
-  const nextRoots = nextDocument.roots ?? {}
+  const nextRoots = nextDocument.roots ?? {};
 
   tx.value.replace({
     children: nextDocument.children,
     marks: null,
     selection: null,
-  })
+  });
 
-  const currentRoots = tx.value.get().roots ?? {}
+  const currentRoots = tx.value.get().roots ?? {};
 
   for (const root of Object.keys(currentRoots)) {
     if (!Object.hasOwn(nextRoots, root)) {
-      tx.roots.delete(root)
+      tx.roots.delete(root);
     }
   }
 
   for (const [root, children] of Object.entries(nextRoots)) {
     if (Object.hasOwn(currentRoots, root)) {
-      tx.roots.replace(root, children)
+      tx.roots.replace(root, children);
     } else {
-      tx.roots.create(root, children)
+      tx.roots.create(root, children);
     }
   }
 
   tx.setField(
     documentTitle,
-    nextDocument.state?.[documentTitle.key] ?? 'Untitled'
-  )
+    nextDocument.state?.[documentTitle.key] ?? "Untitled"
+  );
   tx.setField(
     pageSettings,
     nextDocument.state?.[pageSettings.key] ?? defaultPageSettings
-  )
-})
+  );
+});
 ```
 
 Do not leave registered persistent fields out of the reconciliation. Missing

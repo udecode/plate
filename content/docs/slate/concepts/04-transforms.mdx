@@ -1,21 +1,24 @@
 ---
 title: "Transforms"
+description: "Write document, selection, mark, root, and operation changes through transaction groups."
 ---
 
 Slate changes the document inside `editor.update(...)`. The callback receives a
 transaction object named `tx`. Use `tx` for writes and for reads that belong to
 the command you are running.
 
+## Transaction Groups
+
 ```javascript
-editor.update(tx => {
+editor.update((tx) => {
   tx.nodes.unwrap({
     at: [],
-    match: node =>
+    match: (node) =>
       ElementApi.isElement(node) &&
-      node.children.every(child => ElementApi.isElement(child)),
-    mode: 'all',
-  })
-})
+      node.children.every((child) => ElementApi.isElement(child)),
+    mode: "all",
+  });
+});
 ```
 
 The core transaction groups are:
@@ -44,30 +47,30 @@ transaction reference.
 Use `tx.selection` to set, clear, collapse, or move the selection.
 
 ```javascript
-editor.update(tx => {
+editor.update((tx) => {
   tx.selection.set({
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [1, 0], offset: 2 },
-  })
-})
+  });
+});
 ```
 
 Move the cursor backward by three words:
 
 ```javascript
-editor.update(tx => {
+editor.update((tx) => {
   tx.selection.move({
     distance: 3,
     reverse: true,
-    unit: 'word',
-  })
-})
+    unit: "word",
+  });
+});
 ```
 
 Read selection with `editor.read(...)` when you are outside an update:
 
 ```javascript
-const selection = editor.read(state => state.selection.get())
+const selection = editor.read((state) => state.selection.get());
 ```
 
 ## Text
@@ -75,32 +78,32 @@ const selection = editor.read(state => state.selection.get())
 Insert text at the current transaction target:
 
 ```javascript
-editor.update(tx => {
-  tx.text.insert('some words')
-})
+editor.update((tx) => {
+  tx.text.insert("some words");
+});
 ```
 
 Insert text at an explicit point:
 
 ```javascript
-editor.update(tx => {
-  tx.text.insert('some words', {
+editor.update((tx) => {
+  tx.text.insert("some words", {
     at: { path: [0, 0], offset: 3 },
-  })
-})
+  });
+});
 ```
 
 Delete a range:
 
 ```javascript
-editor.update(tx => {
+editor.update((tx) => {
   tx.text.delete({
     at: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 2 },
     },
-  })
-})
+  });
+});
 ```
 
 ## Nodes
@@ -108,41 +111,41 @@ editor.update(tx => {
 Insert a text node at an explicit path:
 
 ```javascript
-editor.update(tx => {
+editor.update((tx) => {
   tx.nodes.insert(
     {
-      text: 'A new string of text.',
+      text: "A new string of text.",
     },
     {
       at: [0, 1],
     }
-  )
-})
+  );
+});
 ```
 
 Move a node:
 
 ```javascript
-editor.update(tx => {
+editor.update((tx) => {
   tx.nodes.move({
     at: [0, 0],
     to: [0, 1],
-  })
-})
+  });
+});
 ```
 
 Set a property on matching text nodes:
 
 ```javascript
-editor.update(tx => {
+editor.update((tx) => {
   tx.nodes.set(
     { bold: true },
     {
       at: [],
-      match: node => TextApi.isText(node) && node.italic !== true,
+      match: (node) => TextApi.isText(node) && node.italic !== true,
     }
-  )
-})
+  );
+});
 ```
 
 ## Marks
@@ -150,23 +153,23 @@ editor.update(tx => {
 Use `tx.marks` for text formatting commands.
 
 ```javascript
-editor.update(tx => {
-  tx.marks.toggle('bold')
-})
+editor.update((tx) => {
+  tx.marks.toggle("bold");
+});
 ```
 
 You can read marks inside the same command:
 
 ```javascript
-editor.update(tx => {
-  const marks = tx.marks.get()
+editor.update((tx) => {
+  const marks = tx.marks.get();
 
   if (marks?.code) {
-    tx.marks.remove('code')
+    tx.marks.remove("code");
   } else {
-    tx.marks.add('code', true)
+    tx.marks.add("code", true);
   }
-})
+});
 ```
 
 ## Operations
@@ -176,11 +179,11 @@ through `tx.operations.replay(...)` so replay follows the same commit,
 normalization, history, and subscription boundary as local commands.
 
 ```javascript
-editor.update(tx => {
+editor.update((tx) => {
   tx.operations.replay(remoteOperations, {
-    tag: 'remote-import',
-  })
-})
+    tag: "remote-import",
+  });
+});
 ```
 
 ## The `at` Option
@@ -190,28 +193,28 @@ When `at` is provided, Slate uses that exact location and does not import or
 refresh browser selection.
 
 ```javascript
-editor.update(tx => {
-  tx.text.insert('some words')
-})
+editor.update((tx) => {
+  tx.text.insert("some words");
+});
 
-editor.update(tx => {
-  tx.text.insert('some words', {
+editor.update((tx) => {
+  tx.text.insert("some words", {
     at: { path: [0, 0], offset: 3 },
-  })
-})
+  });
+});
 ```
 
 `at` can be a `Path`, `Point`, or `Range`.
 
 ```javascript
-editor.update(tx => {
-  tx.text.insert('some words', {
+editor.update((tx) => {
+  tx.text.insert("some words", {
     at: {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 3 },
     },
-  })
-})
+  });
+});
 ```
 
 ## The `match` Option
@@ -219,13 +222,13 @@ editor.update(tx => {
 Node methods accept a `match` function to restrict which nodes are changed.
 
 ```javascript
-editor.update(tx => {
+editor.update((tx) => {
   tx.nodes.move({
     at: [2],
     match: (node, path) => path.length === 2,
     to: [5],
-  })
-})
+  });
+});
 ```
 
 The `match` function can examine the node, the path, or surrounding structure
@@ -237,11 +240,11 @@ Keep structural commands in one `editor.update(...)` call. Slate normalizes the
 result before publishing the commit.
 
 ```javascript
-editor.update(tx => {
-  tx.nodes.unwrap({ match: isList })
-  tx.nodes.set({ type: 'list-item' })
-  tx.nodes.wrap({ type: 'bulleted-list', children: [] })
-})
+editor.update((tx) => {
+  tx.nodes.unwrap({ match: isList });
+  tx.nodes.set({ type: "list-item" });
+  tx.nodes.wrap({ type: "bulleted-list", children: [] });
+});
 ```
 
 Runtime internals may use lower-level helpers, but public document changes and

@@ -1,33 +1,51 @@
 ---
 title: "Installing Slate"
+description: "Install the React editor packages and render the smallest useful Slate editor."
 ---
 
 Slate is split into small packages. For a React editor, install the core editor, the DOM helpers, the React renderer, and React itself.
+
+## Installation
+
+Install the React editor path first.
 
 ```text
 npm install @platejs/slate @platejs/slate-dom @platejs/slate-react react react-dom
 ```
 
-Once the packages are installed, import the React editor pieces from
-`@platejs/slate-react`.
+| Package | Owns |
+| --- | --- |
+| `@platejs/slate` | editor runtime, document model, transactions, helper APIs |
+| `@platejs/slate-dom` | DOM conversion, clipboard helpers, browser environment helpers |
+| `@platejs/slate-react` | `<Slate>`, `<Editable>`, React hooks, editor setup |
+| `react`, `react-dom` | React peer packages |
+
+## Usage
+
+Import the React editor pieces from `@platejs/slate-react`.
 
 ```tsx
-import { Editable, Slate, type SlateChange, useSlateEditor } from '@platejs/slate-react'
+import {
+  Editable,
+  Slate,
+  type SlateChange,
+  useSlateEditor,
+} from "@platejs/slate-react";
 ```
 
 Before we render anything, let's define the document shape for this editor.
 
 ```tsx
-type CustomText = { text: string }
-type ParagraphElement = { type: 'paragraph'; children: CustomText[] }
-type CustomValue = ParagraphElement[]
+type CustomText = { text: string };
+type ParagraphElement = { type: "paragraph"; children: CustomText[] };
+type CustomValue = ParagraphElement[];
 
 const initialValue: CustomValue = [
   {
-    type: 'paragraph',
-    children: [{ text: 'A line of text in a paragraph.' }],
+    type: "paragraph",
+    children: [{ text: "A line of text in a paragraph." }],
   },
-]
+];
 ```
 
 `CustomValue` is the TypeScript shape of this editor's primary document.
@@ -37,18 +55,18 @@ editor API.
 Call `useSlateEditor` inside the component so React keeps the same editor
 object for the component lifetime.
 
-Now we can render the editor with `<Slate>` and `<Editable>`.
+Render the editor with `<Slate>` and `<Editable>`.
 
 ```tsx
 const App = () => {
-  const editor = useSlateEditor<CustomValue>({ initialValue })
+  const editor = useSlateEditor<CustomValue>({ initialValue });
 
   return (
     <Slate editor={editor}>
       <Editable />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 The editor is seeded by `useSlateEditor({ initialValue })`. `<Slate>`
@@ -57,32 +75,29 @@ renders the editable document surface.
 
 This is the smallest useful Slate editor. If you render `App`, you should see a paragraph with the text `A line of text in a paragraph.` When you type, Slate updates the document through the editor runtime.
 
-## Listening for changes
+## Listening For Changes
 
 Most applications save the document value somewhere. Pass `onChange` to `<Slate>` and save when `change.valueChanged` is true.
 
 ```tsx
 const App = () => {
-  const editor = useSlateEditor<CustomValue>({ initialValue })
+  const editor = useSlateEditor<CustomValue>({ initialValue });
 
   const handleChange = (
     nextValue: CustomValue,
     change: SlateChange<CustomValue>
   ) => {
-    if (!change.valueChanged) return
+    if (!change.valueChanged) return;
 
-    localStorage.setItem('content', JSON.stringify(nextValue))
-  }
+    localStorage.setItem("content", JSON.stringify(nextValue));
+  };
 
   return (
-    <Slate
-      editor={editor}
-      onChange={handleChange}
-    >
+    <Slate editor={editor} onChange={handleChange}>
       <Editable />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 Use `initialValue` as the one-shot initial document passed to `useSlateEditor`.
@@ -92,5 +107,4 @@ a controlled `<textarea>`.
 
 ## Next steps
 
-The editor is rendering plain text. Next, add event handlers so the editor can
-respond to keyboard shortcuts.
+The editor is rendering plain text. Next, add [event handlers](02-adding-event-handlers) so the editor can respond to keyboard shortcuts.

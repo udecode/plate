@@ -1,21 +1,24 @@
 ---
 title: "Applying Custom Formatting"
+description: "Toggle marks and render inline formatting with current Slate transactions."
 ---
 
 Block types change whole elements. Marks change text. Use marks for inline
 formatting such as bold, italic, code, and strikethrough.
+
+## Starting Point
 
 Start with the block renderer from the previous walkthrough:
 
 ```tsx
 const renderElement = (props) => {
   switch (props.element.type) {
-    case 'code':
-      return <CodeElement {...props} />
+    case "code":
+      return <CodeElement {...props} />;
     default:
-      return <DefaultElement {...props} />
+      return <DefaultElement {...props} />;
   }
-}
+};
 ```
 
 ## Toggle A Mark
@@ -23,10 +26,10 @@ const renderElement = (props) => {
 Use `tx.marks.toggle(...)` inside `editor.update(...)`.
 
 ```tsx
-import { ElementApi } from '@platejs/slate'
+import { ElementApi } from "@platejs/slate";
 
 const App = () => {
-  const editor = useSlateEditor({ initialValue })
+  const editor = useSlateEditor({ initialValue });
 
   return (
     <Slate editor={editor}>
@@ -34,43 +37,43 @@ const App = () => {
         renderElement={renderElement}
         onKeyDown={(event) => {
           if (!event.ctrlKey) {
-            return
+            return;
           }
 
           switch (event.key) {
-            case '`': {
-              event.preventDefault()
+            case "`": {
+              event.preventDefault();
               const match = editor.read((state) =>
                 state.nodes.find({
                   match: (node) =>
-                    ElementApi.isElement(node) && node.type === 'code',
+                    ElementApi.isElement(node) && node.type === "code",
                 })
-              )
+              );
               editor.update((tx) => {
                 tx.nodes.set(
-                  { type: match ? 'paragraph' : 'code' },
+                  { type: match ? "paragraph" : "code" },
                   {
                     match: (node) =>
                       ElementApi.isElement(node) && tx.schema.isBlock(node),
                   }
-                )
-              })
-              break
+                );
+              });
+              break;
             }
 
-            case 'b': {
-              event.preventDefault()
+            case "b": {
+              event.preventDefault();
               editor.update((tx) => {
-                tx.marks.toggle('bold')
-              })
-              break
+                tx.marks.toggle("bold");
+              });
+              break;
             }
           }
         }}
       />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 `tx.marks.toggle('bold')` applies the mark to the selected range. When the
@@ -86,20 +89,20 @@ const renderLeaf = ({ attributes, children, leaf }) => {
     <span
       {...attributes}
       style={{
-        fontWeight: leaf.bold ? 'bold' : 'normal',
+        fontWeight: leaf.bold ? "bold" : "normal",
       }}
     >
       {children}
     </span>
-  )
-}
+  );
+};
 ```
 
 Pass both renderers to `Editable`:
 
 ```tsx
 const App = () => {
-  const editor = useSlateEditor({ initialValue })
+  const editor = useSlateEditor({ initialValue });
 
   return (
     <Slate editor={editor}>
@@ -108,43 +111,43 @@ const App = () => {
         renderLeaf={renderLeaf}
         onKeyDown={(event) => {
           if (!event.ctrlKey) {
-            return
+            return;
           }
 
           switch (event.key) {
-            case '`': {
-              event.preventDefault()
+            case "`": {
+              event.preventDefault();
               const match = editor.read((state) =>
                 state.nodes.find({
                   match: (node) =>
-                    ElementApi.isElement(node) && node.type === 'code',
+                    ElementApi.isElement(node) && node.type === "code",
                 })
-              )
+              );
               editor.update((tx) => {
                 tx.nodes.set(
-                  { type: match ? 'paragraph' : 'code' },
+                  { type: match ? "paragraph" : "code" },
                   {
                     match: (node) =>
                       ElementApi.isElement(node) && tx.schema.isBlock(node),
                   }
-                )
-              })
-              break
+                );
+              });
+              break;
             }
 
-            case 'b': {
-              event.preventDefault()
+            case "b": {
+              event.preventDefault();
               editor.update((tx) => {
-                tx.marks.toggle('bold')
-              })
-              break
+                tx.marks.toggle("bold");
+              });
+              break;
             }
           }
         }}
       />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 Hotkeys like `Ctrl+B` belong in `onKeyDown` because they are UI shortcuts.

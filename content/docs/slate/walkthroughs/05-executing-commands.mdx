@@ -1,53 +1,53 @@
 ---
 title: "Executing Commands"
+description: "Extract reusable editor commands without mutating the editor object directly."
 ---
 
-So far, the formatting examples have lived directly inside event handlers. That
-works for a tiny editor, but it gets repetitive once the same behavior is used
-from keyboard shortcuts, toolbar buttons, menu items, or tests.
-
-A command is just reusable editor logic. Keep command reads in
-`editor.read(...)` and command writes in `editor.update(...)`.
+Formatting logic can live directly inside event handlers, but it gets
+repetitive once the same behavior is used from keyboard shortcuts, toolbar
+buttons, menu items, or tests. A command is reusable editor logic. Keep command
+reads in `editor.read(...)` and command writes in `editor.update(...)`.
 
 ## Extracting Commands
 
 Start by moving the bold and code-block logic into plain functions:
 
 ```tsx
-import { ElementApi, type Editor } from '@platejs/slate'
+import { ElementApi, type Editor } from "@platejs/slate";
 
 const isBoldActive = (editor: Editor) => {
-  return editor.read(state => state.marks.get()?.bold === true)
-}
+  return editor.read((state) => state.marks.get()?.bold === true);
+};
 
 const isCodeBlockActive = (editor: Editor) => {
-  return editor.read(state => {
+  return editor.read((state) => {
     const match = state.nodes.find({
-      match: node => ElementApi.isElement(node) && node.type === 'code',
-    })
+      match: (node) => ElementApi.isElement(node) && node.type === "code",
+    });
 
-    return Boolean(match)
-  })
-}
+    return Boolean(match);
+  });
+};
 
 const toggleBold = (editor: Editor) => {
-  editor.update(tx => {
-    tx.marks.toggle('bold')
-  })
-}
+  editor.update((tx) => {
+    tx.marks.toggle("bold");
+  });
+};
 
 const toggleCodeBlock = (editor: Editor) => {
-  const isActive = isCodeBlockActive(editor)
+  const isActive = isCodeBlockActive(editor);
 
-  editor.update(tx => {
+  editor.update((tx) => {
     tx.nodes.set(
-      { type: isActive ? 'paragraph' : 'code' },
+      { type: isActive ? "paragraph" : "code" },
       {
-        match: node => ElementApi.isElement(node) && !tx.schema.isInline(node),
+        match: (node) =>
+          ElementApi.isElement(node) && !tx.schema.isInline(node),
       }
-    )
-  })
-}
+    );
+  });
+};
 ```
 
 These functions are not added to the editor object. They are normal JavaScript
@@ -58,33 +58,33 @@ functions that receive an editor.
 Use `Editable onKeyDown` for keyboard shortcuts that belong to one editor UI:
 
 ```tsx
-import { Editable, Slate, useSlateEditor } from '@platejs/slate-react'
+import { Editable, Slate, useSlateEditor } from "@platejs/slate-react";
 
 const App = () => {
-  const editor = useSlateEditor({ initialValue })
+  const editor = useSlateEditor({ initialValue });
 
   return (
     <Slate editor={editor}>
       <Editable
         onKeyDown={(event, { editor }) => {
-          if (event.key === '`' && event.ctrlKey) {
-            event.preventDefault()
-            toggleCodeBlock(editor)
-            return true
+          if (event.key === "`" && event.ctrlKey) {
+            event.preventDefault();
+            toggleCodeBlock(editor);
+            return true;
           }
 
-          if (event.key === 'b' && event.ctrlKey) {
-            event.preventDefault()
-            toggleBold(editor)
-            return true
+          if (event.key === "b" && event.ctrlKey) {
+            event.preventDefault();
+            toggleBold(editor);
+            return true;
           }
         }}
         renderElement={renderElement}
         renderLeaf={renderLeaf}
       />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 Use extension `transforms` for behavior that maps to Slate transform names.
@@ -92,108 +92,113 @@ That keeps model behavior available to keyboard input, native input, toolbar
 logic, programmatic calls, and tests.
 
 ```tsx
-import { defineEditorExtension, ElementApi, PointApi, RangeApi } from '@platejs/slate'
+import {
+  defineEditorExtension,
+  ElementApi,
+  PointApi,
+  RangeApi,
+} from "@platejs/slate";
 
 const markdownBlocks = defineEditorExtension({
-  name: 'markdown-blocks',
+  name: "markdown-blocks",
   transforms: {
     deleteBackward({ editor, next, unit }) {
-      const selection = editor.read(state => state.selection.get())
+      const selection = editor.read((state) => state.selection.get());
 
       if (
-        unit === 'character' &&
+        unit === "character" &&
         selection &&
         RangeApi.isCollapsed(selection)
       ) {
-        const blockEntry = editor.read(state =>
+        const blockEntry = editor.read((state) =>
           state.nodes.above({
             at: selection,
-            match: node =>
+            match: (node) =>
               ElementApi.isElement(node) && state.nodes.isBlock(node),
           })
-        )
+        );
 
         if (blockEntry) {
-          const [block, blockPath] = blockEntry
-          const start = editor.read(state => state.points.start(blockPath))
+          const [block, blockPath] = blockEntry;
+          const start = editor.read((state) => state.points.start(blockPath));
 
           if (
             ElementApi.isElement(block) &&
-            block.type !== 'paragraph' &&
+            block.type !== "paragraph" &&
             PointApi.equals(selection.anchor, start)
           ) {
-            editor.update(tx => {
+            editor.update((tx) => {
               tx.nodes.set(
-                { type: 'paragraph' },
+                { type: "paragraph" },
                 {
                   at: blockPath,
-                  match: node =>
+                  match: (node) =>
                     ElementApi.isElement(node) && tx.nodes.isBlock(node),
                 }
-              )
-            })
-            return true
+              );
+            });
+            return true;
           }
         }
       }
 
-      return next({ unit })
+      return next({ unit });
     },
     insertBreak({ editor, next }) {
-      const selection = editor.read(state => state.selection.get())
+      const selection = editor.read((state) => state.selection.get());
 
       if (selection && RangeApi.isCollapsed(selection)) {
-        const blockEntry = editor.read(state =>
+        const blockEntry = editor.read((state) =>
           state.nodes.above({
             at: selection,
-            match: node =>
+            match: (node) =>
               ElementApi.isElement(node) && state.nodes.isBlock(node),
           })
-        )
+        );
 
         if (blockEntry) {
-          const [block, blockPath] = blockEntry
+          const [block, blockPath] = blockEntry;
 
-          if (ElementApi.isElement(block) && block.type === 'heading-one') {
-            const start = editor.read(state => state.points.start(blockPath))
+          if (ElementApi.isElement(block) && block.type === "heading-one") {
+            const start = editor.read((state) => state.points.start(blockPath));
 
             if (PointApi.equals(selection.anchor, start)) {
-              const result = next()
+              const result = next();
 
-              editor.update(tx => {
+              editor.update((tx) => {
                 tx.nodes.set(
-                  { type: 'paragraph' },
+                  { type: "paragraph" },
                   {
                     at: blockPath,
-                    match: node =>
+                    match: (node) =>
                       ElementApi.isElement(node) && tx.nodes.isBlock(node),
                   }
-                )
-              })
+                );
+              });
 
-              return result
+              return result;
             }
           }
         }
       }
 
-      return next()
+      return next();
     },
   },
-})
+});
 
 const App = () => {
   const editor = useSlateEditor({
     extensions: [markdownBlocks],
     initialValue,
-  })
+  });
 
   return (
     <Slate editor={editor}>
       <Editable renderElement={renderElement} renderLeaf={renderLeaf} />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 ## Using Commands From UI
@@ -205,24 +210,24 @@ const Toolbar = ({ editor }) => {
   return (
     <div>
       <button
-        onMouseDown={event => {
-          event.preventDefault()
-          toggleBold(editor)
+        onMouseDown={(event) => {
+          event.preventDefault();
+          toggleBold(editor);
         }}
       >
         Bold
       </button>
       <button
-        onMouseDown={event => {
-          event.preventDefault()
-          toggleCodeBlock(editor)
+        onMouseDown={(event) => {
+          event.preventDefault();
+          toggleCodeBlock(editor);
         }}
       >
         Code Block
       </button>
     </div>
-  )
-}
+  );
+};
 ```
 
 ## Extension Commands

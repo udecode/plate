@@ -1,16 +1,9 @@
 ---
 title: "Migration"
+description: "Move an upstream Slate 0.x editor to the Plate-maintained Slate runtime without keeping compatibility aliases."
 ---
 
-This guide walks through moving a Slate 0.x editor to Slate v2. The migration is
-mostly a runtime migration: create the editor with an initial value, read with
-`editor.read(...)`, write with `editor.update(...)`, and render through the v2
-React runtime.
-
-> Warning: Slate v2 is a hard API cut. Do not migrate by keeping old helpers
-> alive behind aliases. Move one surface at a time, keep the old editor working
-> until the v2 editor has matching behavior, and delete each old path as soon as
-> the replacement is verified.
+This guide walks through moving an upstream Slate 0.x editor to the Plate-maintained Slate runtime. The migration is mostly a runtime migration: create the editor with an initial value, read with `editor.read(...)`, write with `editor.update(...)`, and render through the React runtime.
 
 ## On This Page
 
@@ -24,16 +17,21 @@ React runtime.
 
 ## Should You Migrate This Editor?
 
-Migrate when the v2 runtime solves a real ownership problem in your editor. Do
-not migrate just to rename APIs.
+Migrate when the runtime solves a real ownership problem in your editor. Do not
+migrate just to rename APIs.
 
-| Migrate this surface first | Wait or defer |
-| --- | --- |
-| A representative editor that users type in, save, undo, and paste into. | A low-value editor with no active product pressure. |
-| An editor that needs cleaner command ownership, document state, overlays, extra roots, or large-document proof. | An editor whose only goal is to keep old Slate 0.x behavior with the smallest possible diff. |
-| A surface where you can run browser proof for selection, paste, undo, and save/load. | A surface whose correctness depends on mobile-device proof, collaboration adapters, or production pagination that your app cannot verify yet. |
+> Warning: this package set is a hard API cut. Do not migrate by keeping old helpers
+> alive behind aliases. Move one surface at a time, keep the old editor working
+> until the new editor has matching behavior, and delete each old path as soon
+> as the replacement is verified.
 
-Keep the old editor path alive until the v2 path proves the same user-visible
+| Migrate this surface first                                                                                      | Wait or defer                                                                                                                                 |
+| --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| A representative editor that users type in, save, undo, and paste into.                                         | A low-value editor with no active product pressure.                                                                                           |
+| An editor that needs cleaner command ownership, document state, overlays, extra roots, or large-document proof. | An editor whose only goal is to keep old Slate 0.x behavior with the smallest possible diff.                                                  |
+| A surface where you can run browser proof for selection, paste, undo, and save/load.                            | A surface whose correctness depends on mobile-device proof, collaboration adapters, or production pagination that your app cannot verify yet. |
+
+Keep the old editor path alive until the new path proves the same user-visible
 behavior. If that sounds expensive, the migration is not ready.
 
 ## First Migration Slice
@@ -41,7 +39,7 @@ behavior. If that sounds expensive, the migration is not ready.
 Port the thinnest useful editor before touching every command or reusable
 feature:
 
-1. Create one v2 editor with the same representative document value.
+1. Create one Plate-maintained Slate editor with the same representative document value.
 2. Render one `<Editable>` with the existing element and leaf renderers.
 3. Save the primary value on `change.valueChanged`.
 4. Port one toolbar or shortcut command to `editor.read(...)` and
@@ -69,21 +67,21 @@ into archaeology.
 
 ## Migration Map
 
-| Slate 0.x                                        | Slate v2                                                                                                  |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| `createEditor()` plus `withReact(editor)`        | `useSlateEditor({ initialValue })` in React, or `createReactEditor({ initialValue })` outside a component |
-| `withHistory(editor)`                            | `useSlateEditor(...)` for the default React editor, or `history()` when building an editor manually       |
-| `<Slate editor={editor} initialValue={value}>`   | `const editor = useSlateEditor({ initialValue }); <Slate editor={editor}>`                                |
-| Slate 0.x transform helper calls                 | `editor.update((tx) => tx.*...)`                                                                          |
-| `Editor.*` reads that inspect the current editor | `editor.read((state) => state.*...)`                                                                      |
-| Pure node, point, path, range, and text helpers  | `NodeApi`, `ElementApi`, `PointApi`, `PathApi`, `RangeApi`, and `TextApi` from `@platejs/slate`                    |
-| `ReactEditor.*` DOM bridge calls                 | `editor.api.dom.*`, `editor.api.react.*`, or renderer hooks such as `useElementPath()`                    |
-| `useSlate`, `useSlateStatic`                     | `useEditor()` and `useEditorState(...)`                                                                   |
-| `useSelected`, `useFocused`, `useReadOnly`       | `useElementSelected(...)`, `useEditorFocused()`, and `useEditorReadOnly()`                                |
-| `onChange(value)` as the primary persistence hook | `onChange(value, change)` and `change.valueChanged`, or `state.value.get()` for the full document        |
-| editor-only `children` persistence               | primary `children`, optional extra `roots`, and optional document `state`                                 |
-| `decorate` for simple local ranges               | `<Editable decorate={...} />`                                                                             |
-| `decorate` for shared, external, frequent, or source-scoped overlays | `useSlateDecorationSource`, `useSlateRangeDecorationSource`, or `useSlateAnnotationStore`      |
+| Slate 0.x                                                            | Plate-maintained Slate runtime                                                                            |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `createEditor()` plus `withReact(editor)`                            | `useSlateEditor({ initialValue })` in React, or `createReactEditor({ initialValue })` outside a component |
+| `withHistory(editor)`                                                | `useSlateEditor(...)` for the default React editor, or `history()` when building an editor manually       |
+| `<Slate editor={editor} initialValue={value}>`                       | `const editor = useSlateEditor({ initialValue }); <Slate editor={editor}>`                                |
+| Slate 0.x transform helper calls                                     | `editor.update((tx) => tx.*...)`                                                                          |
+| `Editor.*` reads that inspect the current editor                     | `editor.read((state) => state.*...)`                                                                      |
+| Pure node, point, path, range, and text helpers                      | `NodeApi`, `ElementApi`, `PointApi`, `PathApi`, `RangeApi`, and `TextApi` from `@platejs/slate`           |
+| `ReactEditor.*` DOM bridge calls                                     | `editor.api.dom.*`, `editor.api.react.*`, or renderer hooks such as `useElementPath()`                    |
+| `useSlate`, `useSlateStatic`                                         | `useEditor()` and `useEditorState(...)`                                                                   |
+| `useSelected`, `useFocused`, `useReadOnly`                           | `useElementSelected(...)`, `useEditorFocused()`, and `useEditorReadOnly()`                                |
+| `onChange(value)` as the primary persistence hook                    | `onChange(value, change)` and `change.valueChanged`, or `state.value.get()` for the full document         |
+| editor-only `children` persistence                                   | primary `children`, optional extra `roots`, and optional document `state`                                 |
+| `decorate` for simple local ranges                                   | `<Editable decorate={...} />`                                                                             |
+| `decorate` for shared, external, frequent, or source-scoped overlays | `useSlateDecorationSource`, `useSlateRangeDecorationSource`, or `useSlateAnnotationStore`                 |
 
 ## Step 1: Install The Packages
 
@@ -115,122 +113,122 @@ Package ownership is split deliberately:
 
 ## Step 2: Create The Editor
 
-The v2 editor owns its initial value. `<Slate>` receives an editor that already
+The editor owns its initial value. `<Slate>` receives an editor that already
 exists.
 
 Slate 0.x:
 
 ```tsx
-import { useMemo } from 'react'
+import { useMemo } from "react";
 
 const App = () => {
-  const editor = useMemo(() => withHistory(withReact(createEditor())), [])
+  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
 
   return (
     <Slate editor={editor} initialValue={initialValue}>
       <Editable />
     </Slate>
-  )
-}
+  );
+};
 ```
 
-Slate v2:
+Plate-maintained Slate runtime:
 
 ```tsx
-import { Editable, Slate, useSlateEditor } from '@platejs/slate-react'
+import { Editable, Slate, useSlateEditor } from "@platejs/slate-react";
 
 const App = () => {
-  const editor = useSlateEditor({ initialValue })
+  const editor = useSlateEditor({ initialValue });
 
   return (
     <Slate editor={editor}>
       <Editable />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 Use `createReactEditor` when the editor must be created outside a component,
 such as a test helper or app service.
 
 ```tsx
-import { createReactEditor } from '@platejs/slate-react'
+import { createReactEditor } from "@platejs/slate-react";
 
-const editor = createReactEditor({ initialValue })
+const editor = createReactEditor({ initialValue });
 ```
 
 Use `createEditor` plus extensions for lower-level runtime construction.
 
 ```tsx
-import { createEditor } from '@platejs/slate'
-import { history } from '@platejs/slate-history'
-import { react } from '@platejs/slate-react'
+import { createEditor } from "@platejs/slate";
+import { history } from "@platejs/slate-history";
+import { react } from "@platejs/slate-react";
 
 const editor = createEditor({
   initialValue,
   extensions: [react(), history()],
-})
+});
 ```
 
 ## Step 3: Move Reads And Writes Into The Runtime
 
-Slate v2 separates reads from writes. Reads happen inside `editor.read(...)`.
+The runtime separates reads from writes. Reads happen inside `editor.read(...)`.
 Writes happen inside `editor.update(...)`.
 
 Slate 0.x commands often mixed read helpers and transform helpers directly
-against the editor object. In Slate v2, read the committed runtime state and
+against the editor object. In the Plate-maintained runtime, read the committed runtime state and
 write through a transaction.
 
-Slate v2:
+Plate-maintained Slate runtime:
 
 ```tsx
-import { ElementApi } from '@platejs/slate'
+import { ElementApi } from "@platejs/slate";
 
-const isCodeBlockActive = editor.read(state =>
+const isCodeBlockActive = editor.read((state) =>
   Boolean(
     state.nodes.find({
-      match: node => ElementApi.isElement(node) && node.type === 'code',
+      match: (node) => ElementApi.isElement(node) && node.type === "code",
     })
   )
-)
+);
 
-editor.update(tx => {
+editor.update((tx) => {
   tx.nodes.set(
-    { type: 'code' },
+    { type: "code" },
     {
-      match: node => ElementApi.isElement(node) && tx.schema.isBlock(node),
+      match: (node) => ElementApi.isElement(node) && tx.schema.isBlock(node),
     }
-  )
-})
+  );
+});
 ```
 
 For text commands, write through `tx.text`.
 
 ```tsx
-editor.update(tx => {
-  tx.text.insert('Hello')
-})
+editor.update((tx) => {
+  tx.text.insert("Hello");
+});
 ```
 
 For selection commands, write through `tx.selection`.
 
 ```tsx
-editor.update(tx => {
+editor.update((tx) => {
   tx.selection.set({
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 5 },
-  })
-})
+  });
+});
 ```
 
 For pure data checks, import the helper API from `@platejs/slate`.
 
 ```tsx
-import { NodeApi, RangeApi, TextApi } from '@platejs/slate'
+import { NodeApi, RangeApi, TextApi } from "@platejs/slate";
 
-const plainText = NodeApi.string(element)
-const isCollapsed = selection ? RangeApi.isCollapsed(selection) : false
-const isText = TextApi.isText(node)
+const plainText = NodeApi.string(element);
+const isCollapsed = selection ? RangeApi.isCollapsed(selection) : false;
+const isText = TextApi.isText(node);
 ```
 
 ## Step 4: Migrate Custom Elements
@@ -244,31 +242,31 @@ const CodeElement = ({ attributes, children }) => {
     <pre {...attributes}>
       <code>{children}</code>
     </pre>
-  )
-}
+  );
+};
 
 const DefaultElement = ({ attributes, children }) => {
-  return <p {...attributes}>{children}</p>
-}
+  return <p {...attributes}>{children}</p>;
+};
 
-const renderElement = props => {
+const renderElement = (props) => {
   switch (props.element.type) {
-    case 'code':
-      return <CodeElement {...props} />
+    case "code":
+      return <CodeElement {...props} />;
     default:
-      return <DefaultElement {...props} />
+      return <DefaultElement {...props} />;
   }
-}
+};
 
 const App = () => {
-  const editor = useSlateEditor({ initialValue })
+  const editor = useSlateEditor({ initialValue });
 
   return (
     <Slate editor={editor}>
       <Editable renderElement={renderElement} />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 Keep renderer functions stable. Define them at module scope or memoize them once.
@@ -283,22 +281,22 @@ const renderLeaf = ({ attributes, children, leaf }) => {
   return (
     <span
       {...attributes}
-      style={{ fontWeight: leaf.bold ? 'bold' : undefined }}
+      style={{ fontWeight: leaf.bold ? "bold" : undefined }}
     >
       {children}
     </span>
-  )
-}
+  );
+};
 
 const App = () => {
-  const editor = useSlateEditor({ initialValue })
+  const editor = useSlateEditor({ initialValue });
 
   return (
     <Slate editor={editor}>
       <Editable placeholder="Write something..." renderLeaf={renderLeaf} />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 Use `SlateElement`, `SlateText`, `SlateLeaf`, and `SlatePlaceholder` only when
@@ -316,21 +314,21 @@ and decide whether Slate continues.
 - Return nothing when Slate should decide from the DOM event state.
 
 Slate 0.x event handlers often prevented the browser event and mutated text
-nodes directly. In Slate v2, return a handler decision and route the write
+nodes directly. In the Plate-maintained runtime, return a handler decision and route the write
 through the editor runtime.
 
-Slate v2:
+Plate-maintained Slate runtime:
 
 ```tsx
 <Editable
   onKeyDown={(event, { editor }) => {
-    if (!(event.metaKey && event.key === 'b')) return false
+    if (!(event.metaKey && event.key === "b")) return false;
 
-    editor.update(tx => {
-      tx.marks.toggle('bold')
-    })
+    editor.update((tx) => {
+      tx.marks.toggle("bold");
+    });
 
-    return true
+    return true;
   }}
 />
 ```
@@ -340,13 +338,13 @@ Use `onDOMBeforeInput` for browser input types that need editor context.
 ```tsx
 <Editable
   onDOMBeforeInput={(event, { editor, inputType }) => {
-    if (inputType !== 'formatBold') return false
+    if (inputType !== "formatBold") return false;
 
-    editor.update(tx => {
-      tx.marks.toggle('bold')
-    })
+    editor.update((tx) => {
+      tx.marks.toggle("bold");
+    });
 
-    return true
+    return true;
   }}
 />
 ```
@@ -355,7 +353,7 @@ Use `onDOMBeforeInput` for browser input types that need editor context.
 
 Use editor hooks for editor-wide UI and element hooks for rendered nodes.
 
-| Slate 0.x hook          | Slate v2 hook                                                                                 |
+| Slate 0.x hook          | Plate-maintained Slate hook                                                                   |
 | ----------------------- | --------------------------------------------------------------------------------------------- |
 | `useSlate()`            | `useEditor()` when you need the editor object                                                 |
 | `useSlateSelector(...)` | `useEditorState(...)` for state reads, or `useEditorSelector(...)` for low-level editor reads |
@@ -367,31 +365,31 @@ Use editor hooks for editor-wide UI and element hooks for rendered nodes.
 Toolbar state should subscribe to a derived value.
 
 ```tsx
-import { useEditorState } from '@platejs/slate-react'
+import { useEditorState } from "@platejs/slate-react";
 
 const BoldButton = () => {
-  const isBold = useEditorState(state => {
-    return state.marks.get()?.bold === true
-  })
+  const isBold = useEditorState((state) => {
+    return state.marks.get()?.bold === true;
+  });
 
-  return <button aria-pressed={isBold}>Bold</button>
-}
+  return <button aria-pressed={isBold}>Bold</button>;
+};
 ```
 
 Rendered element UI should subscribe only when it draws selection state.
 
 ```tsx
-import { useElementSelected } from '@platejs/slate-react'
+import { useElementSelected } from "@platejs/slate-react";
 
 const ImageElement = ({ attributes, children }) => {
-  const selected = useElementSelected({ mode: 'collapsed' })
+  const selected = useElementSelected({ mode: "collapsed" });
 
   return (
-    <figure {...attributes} data-selected={selected ? '' : undefined}>
+    <figure {...attributes} data-selected={selected ? "" : undefined}>
       {children}
     </figure>
-  )
-}
+  );
+};
 ```
 
 ## Step 8: Migrate DOM And React Editor Calls
@@ -402,41 +400,41 @@ editor API or renderer hooks.
 Slate 0.x:
 
 ```tsx
-import { ReactEditor } from '@platejs/slate-react'
+import { ReactEditor } from "@platejs/slate-react";
 
-const path = ReactEditor.findPath(editor, element)
-const domNode = ReactEditor.toDOMNode(editor, element)
-ReactEditor.focus(editor)
+const path = ReactEditor.findPath(editor, element);
+const domNode = ReactEditor.toDOMNode(editor, element);
+ReactEditor.focus(editor);
 ```
 
-Slate v2:
+Plate-maintained Slate runtime:
 
 ```tsx
-const path = editor.api.dom.resolvePath(element)
+const path = editor.api.dom.resolvePath(element);
 
-if (!path) return
+if (!path) return;
 
-editor.api.dom.focus()
+editor.api.dom.focus();
 ```
 
 Inside an element renderer, prefer `useElementPath()` when the component must
 render path-derived UI.
 
 ```tsx
-import { useElementPath } from '@platejs/slate-react'
+import { useElementPath } from "@platejs/slate-react";
 
 const BlockToolbarAnchor = () => {
-  const path = useElementPath()
+  const path = useElementPath();
 
-  return <span data-path={path?.join('.')} />
-}
+  return <span data-path={path?.join(".")} />;
+};
 ```
 
 Use `editor.api.react.isComposing()` for React runtime state that belongs to the
 React extension.
 
 ```tsx
-const composing = editor.api.react.isComposing()
+const composing = editor.api.react.isComposing();
 ```
 
 ## Step 9: Migrate History
@@ -444,10 +442,10 @@ const composing = editor.api.react.isComposing()
 The normal React setup includes history. Use the history hook for UI controls.
 
 ```tsx
-import { useSlateHistory } from '@platejs/slate-react'
+import { useSlateHistory } from "@platejs/slate-react";
 
 const HistoryButtons = () => {
-  const history = useSlateHistory()
+  const history = useSlateHistory();
 
   return (
     <>
@@ -458,41 +456,41 @@ const HistoryButtons = () => {
         Redo
       </button>
     </>
-  )
-}
+  );
+};
 ```
 
 For a manually created editor, install the history extension.
 
 ```tsx
-import { createEditor } from '@platejs/slate'
-import { history } from '@platejs/slate-history'
+import { createEditor } from "@platejs/slate";
+import { history } from "@platejs/slate-history";
 
 const editor = createEditor({
   initialValue,
   extensions: [history()],
-})
+});
 ```
 
 Disable default history in a React editor when a test or app surface needs that
 explicitly.
 
 ```tsx
-import { history } from '@platejs/slate-history'
-import { useSlateEditor } from '@platejs/slate-react'
+import { history } from "@platejs/slate-history";
+import { useSlateEditor } from "@platejs/slate-react";
 
 const App = () => {
   const editor = useSlateEditor({
     initialValue,
     extensions: [history({ enabled: false })],
-  })
+  });
 
   return (
     <Slate editor={editor}>
       <Editable />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 ## Step 10: Persist The Right Value
@@ -500,23 +498,23 @@ const App = () => {
 For a single-root editor, save the `value` passed to `<Slate onChange>`.
 
 ```tsx
-import { type SlateChange } from '@platejs/slate-react'
+import { type SlateChange } from "@platejs/slate-react";
 
 const handleChange = (value, change: SlateChange) => {
-  if (!change.valueChanged) return
+  if (!change.valueChanged) return;
 
-  saveDocument(value)
-}
+  saveDocument(value);
+};
 
-;<Slate editor={editor} onChange={handleChange}>
+<Slate editor={editor} onChange={handleChange}>
   <Editable />
-</Slate>
+</Slate>;
 ```
 
 For a document with extra roots or document state, read the full document value.
 
 ```tsx
-const documentValue = editor.read(state => state.value.get())
+const documentValue = editor.read((state) => state.value.get());
 ```
 
 The short value is still a block array.
@@ -524,10 +522,10 @@ The short value is still a block array.
 ```tsx
 const initialValue = [
   {
-    type: 'paragraph',
-    children: [{ text: 'A line of text!' }],
+    type: "paragraph",
+    children: [{ text: "A line of text!" }],
   },
-]
+];
 ```
 
 Use the document value shape when the editor owns more than the primary
@@ -537,22 +535,22 @@ document.
 const initialValue = {
   children: [
     {
-      type: 'paragraph',
-      children: [{ text: 'A line of text!' }],
+      type: "paragraph",
+      children: [{ text: "A line of text!" }],
     },
   ],
   roots: {
     header: [
       {
-        type: 'paragraph',
-        children: [{ text: 'Draft' }],
+        type: "paragraph",
+        children: [{ text: "Draft" }],
       },
     ],
   },
   state: {
-    'document.title': 'Draft',
+    "document.title": "Draft",
   },
-}
+};
 ```
 
 Omit `root` for the primary editable. Pass `root` only for extra roots.
@@ -571,54 +569,54 @@ document, such as title, layout settings, review mode, spellcheck metadata, or
 collaboration-owned state.
 
 ```tsx
-import { defineStateField } from '@platejs/slate'
+import { defineStateField } from "@platejs/slate";
 import {
   Editable,
   Slate,
   useSetStateField,
   useSlateEditor,
   useStateFieldValue,
-} from '@platejs/slate-react'
+} from "@platejs/slate-react";
 
 const documentTitle = defineStateField<string>({
-  key: 'document.title',
-  initial: () => 'Untitled',
+  key: "document.title",
+  initial: () => "Untitled",
   persist: true,
-})
+});
 
 const TitleInput = () => {
-  const title = useStateFieldValue(documentTitle)
-  const setTitle = useSetStateField(documentTitle)
+  const title = useStateFieldValue(documentTitle);
+  const setTitle = useSetStateField(documentTitle);
 
   return (
-    <input value={title} onChange={event => setTitle(event.target.value)} />
-  )
-}
+    <input value={title} onChange={(event) => setTitle(event.target.value)} />
+  );
+};
 
 const App = () => {
   const editor = useSlateEditor({
     extensions: [documentTitle],
     initialValue,
-  })
+  });
 
   return (
     <Slate editor={editor}>
       <TitleInput />
       <Editable />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 Read fields inside `editor.read(...)` and write fields inside
 `editor.update(...)`.
 
 ```tsx
-const title = editor.read(state => state.getField(documentTitle))
+const title = editor.read((state) => state.getField(documentTitle));
 
-editor.update(tx => {
-  tx.setField(documentTitle, 'Launch Brief')
-})
+editor.update((tx) => {
+  tx.setField(documentTitle, "Launch Brief");
+});
 ```
 
 ## Step 12: Migrate Extra Roots
@@ -629,13 +627,13 @@ history, schema, commands, and document state.
 ```tsx
 const editor = useSlateEditor({
   initialValue: {
-    children: [{ type: 'paragraph', children: [{ text: 'Body' }] }],
+    children: [{ type: "paragraph", children: [{ text: "Body" }] }],
     roots: {
-      header: [{ type: 'paragraph', children: [{ text: 'Header' }] }],
-      footer: [{ type: 'paragraph', children: [{ text: 'Footer' }] }],
+      header: [{ type: "paragraph", children: [{ text: "Header" }] }],
+      footer: [{ type: "paragraph", children: [{ text: "Footer" }] }],
     },
   },
-})
+});
 ```
 
 Render the primary document without a `root` prop. Render extra roots by key.
@@ -651,21 +649,21 @@ Render the primary document without a `root` prop. Render extra roots by key.
 Use root-aware hooks for chrome and commands outside editable content.
 
 ```tsx
-import { useSlateRootChrome, useSlateRootEditor } from '@platejs/slate-react'
+import { useSlateRootChrome, useSlateRootEditor } from "@platejs/slate-react";
 
 const HeaderChrome = ({ children }) => {
-  const chrome = useSlateRootChrome('header')
-  const headerEditor = useSlateRootEditor('header')
+  const chrome = useSlateRootChrome("header");
+  const headerEditor = useSlateRootEditor("header");
 
   return (
     <section {...chrome.props}>
-      <button onClick={() => headerEditor.update(tx => tx.text.insert('!'))}>
+      <button onClick={() => headerEditor.update((tx) => tx.text.insert("!"))}>
         Add
       </button>
       {children}
     </section>
-  )
-}
+  );
+};
 ```
 
 ## Step 13: Migrate Hyperscript Tests
@@ -675,7 +673,7 @@ Slate node values.
 
 ```tsx
 /** @jsx jsx */
-import { jsx } from '@platejs/slate-hyperscript'
+import { jsx } from "@platejs/slate-hyperscript";
 
 const editor = (
   <editor>
@@ -684,21 +682,21 @@ const editor = (
       <cursor />
     </element>
   </editor>
-)
+);
 ```
 
 Use `createHyperscript` when your test suite needs domain-specific tags.
 
 ```tsx
-import { createHyperscript } from '@platejs/slate-hyperscript'
+import { createHyperscript } from "@platejs/slate-hyperscript";
 
 const h = createHyperscript({
   elements: {
-    paragraph: { type: 'paragraph' },
+    paragraph: { type: "paragraph" },
   },
-})
+});
 
-const paragraph = h('paragraph', {}, 'hello')
+const paragraph = h("paragraph", {}, "hello");
 ```
 
 ## Step 14: Check Import Boundaries
@@ -714,8 +712,8 @@ import {
   NodeApi,
   RangeApi,
   TextApi,
-} from '@platejs/slate'
-import { DOMCoverage, dom, Hotkeys, isHotkey } from '@platejs/slate-dom'
+} from "@platejs/slate";
+import { DOMCoverage, dom, Hotkeys, isHotkey } from "@platejs/slate-dom";
 import {
   Editable,
   Slate,
@@ -723,9 +721,9 @@ import {
   useEditor,
   useEditorState,
   useSlateEditor,
-} from '@platejs/slate-react'
-import { history } from '@platejs/slate-history'
-import { createHyperscript, jsx } from '@platejs/slate-hyperscript'
+} from "@platejs/slate-react";
+import { history } from "@platejs/slate-history";
+import { createHyperscript, jsx } from "@platejs/slate-hyperscript";
 ```
 
 The `ReactEditor` export in `@platejs/slate-react` is a type. Do not build runtime code
@@ -733,18 +731,18 @@ around `ReactEditor.*` static calls.
 
 ## Proof Before Deleting The Old Path
 
-Delete old Slate code only after the v2 path proves the behavior users depend
+Delete old Slate code only after the new path proves the behavior users depend
 on. Model assertions are useful, but they do not prove browser selection,
 clipboard, focus, or DOM repair.
 
-| Behavior | Minimum proof |
-| --- | --- |
-| Typing and deletion | Type text, Backspace/Delete, Enter, and follow-up typing after command changes. |
-| Selection | Check model selection and native selection for arrows, Shift+arrows, drag, double-click, and blank-space clicks when the surface supports them. |
-| Clipboard and paste | Verify copy, cut, paste, and app-specific paste normalization through browser events. |
-| Undo/redo | Prove command grouping, text input, paste, and structural edits undo and redo in the expected order. |
-| Custom rendering | Verify custom elements, leaves, voids, placeholders, hidden content, and DOM coverage paths used by the editor. |
-| Persistence | Save and reload the exact value shape the editor owns: primary `children`, plus extra `roots` or document `state` when used. |
+| Behavior            | Minimum proof                                                                                                                                   |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Typing and deletion | Type text, Backspace/Delete, Enter, and follow-up typing after command changes.                                                                 |
+| Selection           | Check model selection and native selection for arrows, Shift+arrows, drag, double-click, and blank-space clicks when the surface supports them. |
+| Clipboard and paste | Verify copy, cut, paste, and app-specific paste normalization through browser events.                                                           |
+| Undo/redo           | Prove command grouping, text input, paste, and structural edits undo and redo in the expected order.                                            |
+| Custom rendering    | Verify custom elements, leaves, voids, placeholders, hidden content, and DOM coverage paths used by the editor.                                 |
+| Persistence         | Save and reload the exact value shape the editor owns: primary `children`, plus extra `roots` or document `state` when used.                    |
 
 For selection-sensitive editors, run browser proof before deleting the old path.
 For app-only commands, focused unit tests can be enough after one browser path
@@ -762,24 +760,24 @@ Run the migration in behavior order:
 5. Verify keyboard shortcuts, paste, copy, drag/drop, undo/redo, and selection.
 6. Persist `state.value.get()` if the editor uses extra roots or document state.
 7. Move tests to current public imports.
-8. Delete the old editor wrapper after the v2 editor owns the same behavior.
+8. Delete the old editor wrapper after the new editor owns the same behavior.
 
 The migration is complete when the editor behaves the same from the user's point
 of view and the codebase no longer depends on old helper aliases.
 
 ## API Reference Links
 
-- [Installing Slate](../walkthroughs/01-installing-slate)
-- [Adding Event Handlers](../walkthroughs/02-adding-event-handlers)
-- [Defining Custom Elements](../walkthroughs/03-defining-custom-elements)
-- [Executing Commands](../walkthroughs/05-executing-commands)
-- [Saving to a Database](../walkthroughs/06-saving-to-a-database)
-- [Editor](../concepts/07-editor)
-- [Transforms](../api/transforms)
-- [Roots](../concepts/13-roots)
-- [Document State](../concepts/14-document-state)
-- [Slate React Hooks](../libraries/slate-react/hooks)
-- [Slate React Event Handling](../libraries/slate-react/event-handling)
-- [Slate History](../libraries/slate-history/history-extension-setup)
-- [Slate Hyperscript](../libraries/slate-hyperscript)
-- [Slate Yjs](../libraries/slate-yjs)
+- [Installing Slate](walkthroughs/01-installing-slate)
+- [Adding Event Handlers](walkthroughs/02-adding-event-handlers)
+- [Defining Custom Elements](walkthroughs/03-defining-custom-elements)
+- [Executing Commands](walkthroughs/05-executing-commands)
+- [Saving to a Database](walkthroughs/06-saving-to-a-database)
+- [Editor](concepts/07-editor)
+- [Transforms](api/transforms)
+- [Roots](concepts/13-roots)
+- [Document State](concepts/14-document-state)
+- [Slate React Hooks](libraries/slate-react/hooks)
+- [Slate React Event Handling](libraries/slate-react/event-handling)
+- [Slate History](libraries/slate-history/history-extension-setup)
+- [Slate Hyperscript](libraries/slate-hyperscript)
+- [Slate Yjs](libraries/slate-yjs)

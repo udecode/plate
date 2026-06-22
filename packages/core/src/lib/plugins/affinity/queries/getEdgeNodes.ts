@@ -1,11 +1,5 @@
-import {
-  type TElement,
-  type TText,
-  ElementApi,
-  NodeApi,
-  PathApi,
-} from '@platejs/slate-legacy';
-import { type NodeEntry, Path } from 'slate';
+import type { Element, NodeEntry, Text } from '@platejs/slate';
+import { ElementApi, NodeApi, PathApi } from '@platejs/slate-legacy';
 
 import type { SlateEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';
@@ -35,8 +29,8 @@ export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
 
   if (!edge) return null;
 
-  const parent: TElement | null = (NodeApi.parent(editor, cursor.path) ??
-    null) as TElement | null;
+  const parent: Element | null = (NodeApi.parent(editor, cursor.path) ??
+    null) as Element | null;
 
   /** Inline elements */
 
@@ -49,7 +43,7 @@ export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
     return parentAffinity === 'hard' || parentAffinity === 'directional';
   })();
 
-  const nodeEntry: NodeEntry<TElement | TText> = isAffinityInlineElement
+  const nodeEntry: NodeEntry<Element | Text> = isAffinityInlineElement
     ? [parent!, PathApi.parent(cursor.path)]
     : [NodeApi.get(editor, cursor.path)!, cursor.path];
 
@@ -62,10 +56,15 @@ export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
   }
 
   const siblingPath =
-    edge === 'end' ? Path.next(nodeEntry[1]) : Path.previous(nodeEntry[1]);
-  const siblingNode = NodeApi.get<TText>(editor, siblingPath);
+    edge === 'end'
+      ? PathApi.next(nodeEntry[1])
+      : PathApi.previous(nodeEntry[1]);
+  if (!siblingPath) {
+    return edge === 'end' ? [nodeEntry, null] : [null, nodeEntry];
+  }
+  const siblingNode = NodeApi.get<Text>(editor, siblingPath);
 
-  const siblingEntry: NodeEntry<TText> | null = siblingNode
+  const siblingEntry: NodeEntry<Text> | null = siblingNode
     ? [siblingNode, siblingPath]
     : null;
 

@@ -1,45 +1,48 @@
 ---
 title: "History"
+description: "Understand the undo and redo batch shape stored by the history extension."
 ---
 
 The `history()` extension tracks undo and redo batches for an editor.
 
+## Usage
+
 ```typescript
-import { createEditor } from '@platejs/slate'
-import { history } from '@platejs/slate-history'
+import { createEditor } from "@platejs/slate";
+import { history } from "@platejs/slate-history";
 
 const editor = createEditor({
   extensions: [history()],
-})
+});
 
-editor.read((state) => state.history.undos())
+editor.read((state) => state.history.undos());
 
 editor.update((tx) => {
-  tx.history.undo()
-})
+  tx.history.undo();
+});
 
 editor.api.history.withoutSaving(() => {
   editor.update((tx) => {
-    tx.text.insert('draft')
-  })
-})
+    tx.text.insert("draft");
+  });
+});
 ```
 
 ## History Object
 
 ```typescript
-import type { EditorStatePatch, Operation, Range } from '@platejs/slate'
+import type { EditorStatePatch, Operation, Range } from "@platejs/slate";
 
 export interface History {
-  redos: Batch[]
-  undos: Batch[]
+  redos: Batch[];
+  undos: Batch[];
 }
 
 interface Batch {
-  operations: Operation[]
-  selectionBefore: Range | null
-  selectionBeforeRoot?: string
-  statePatches: EditorStatePatch[]
+  operations: Operation[];
+  selectionBefore: Range | null;
+  selectionBeforeRoot?: string;
+  statePatches: EditorStatePatch[];
 }
 ```
 
@@ -108,17 +111,17 @@ applying the real document edit in one normal update.
 
 ```tsx
 const previewReplacement = defineStateField<string | null>({
-  key: 'local.preview.replacement',
-  history: 'skip',
+  key: "local.preview.replacement",
+  history: "skip",
   initial: () => null,
   persist: false,
-})
+});
 
 editor.update((tx) => {
-  tx.setField(previewReplacement, null)
-  tx.text.delete({ at: selectedRange })
-  tx.text.insert(acceptedText)
-})
+  tx.setField(previewReplacement, null);
+  tx.text.delete({ at: selectedRange });
+  tx.text.insert(acceptedText);
+});
 ```
 
 Undo then restores the document content without resurrecting preview UI.

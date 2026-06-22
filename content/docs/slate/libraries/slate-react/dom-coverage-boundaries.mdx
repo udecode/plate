@@ -1,13 +1,9 @@
 ---
 title: "DOM Coverage Boundaries"
+description: "Keep hidden Slate content selectable, copyable, and materializable without mounting its DOM."
 ---
 
-DOM coverage boundaries let Slate keep model content selectable and copyable
-when the matching editable DOM is intentionally not mounted. Use them for
-closed accordions, inactive tab panels, collapsed sections, and app-hidden
-element shells.
-
-They are React rendering tools. The document content stays in the Slate value.
+DOM coverage boundaries let Slate keep model content selectable and copyable when the matching editable DOM is intentionally not mounted. Use them for closed accordions, inactive tab panels, collapsed sections, and app-hidden element shells. They are React rendering tools; the document content stays in the Slate value, and [Selection And DOM](../../concepts/16-selection-and-dom) owns the broader model-selection and native-selection boundary.
 
 ## Render A Boundary
 
@@ -16,7 +12,7 @@ element with a boundary and tell Slate which children it covers.
 
 ```tsx
 const renderElement = ({ attributes, children, element, slots }) => {
-  if (element.type === 'section') {
+  if (element.type === "section") {
     return (
       <section {...attributes}>
         {React.Children.toArray(children)[0]}
@@ -28,15 +24,15 @@ const renderElement = ({ attributes, children, element, slots }) => {
               Show section
             </button>
           ),
-          scope: { from: 1, type: 'children' },
-          selectionPolicy: 'materialize',
+          scope: { from: 1, type: "children" },
+          selectionPolicy: "materialize",
         })}
       </section>
-    )
+    );
   }
 
-  return <p {...attributes}>{children}</p>
-}
+  return <p {...attributes}>{children}</p>;
+};
 ```
 
 Use `scope={{ type: 'children', from, to }}` when the boundary covers child
@@ -47,11 +43,11 @@ chrome.
 
 `selectionPolicy` controls keyboard and model selection through hidden content.
 
-| Policy | Behavior |
-| --- | --- |
-| `skip` | Move selection outside the hidden range. Use it for closed UI chrome. |
-| `model` | Let the model selection include hidden content without mounting it. |
-| `materialize` | Mount the hidden content before Slate moves selection into it. |
+| Policy        | Behavior                                                              |
+| ------------- | --------------------------------------------------------------------- |
+| `skip`        | Move selection outside the hidden range. Use it for closed UI chrome. |
+| `model`       | Let the model selection include hidden content without mounting it.   |
+| `materialize` | Mount the hidden content before Slate moves selection into it.        |
 
 `materialize` calls `onMaterialize({ boundary, reason, range, rangeRole })`.
 Use that callback to open the accordion, activate the tab, or reveal the
@@ -62,11 +58,11 @@ collapsed panel.
 `copyPolicy` controls clipboard output when a copied selection crosses hidden
 content.
 
-| Policy | Behavior |
-| --- | --- |
-| `model` | Copy the hidden Slate content from the editor value. |
-| `summary` | Copy the boundary placeholder or summary content only. |
-| `exclude` | Omit the hidden content from the clipboard. |
+| Policy        | Behavior                                                        |
+| ------------- | --------------------------------------------------------------- |
+| `model`       | Copy the hidden Slate content from the editor value.            |
+| `summary`     | Copy the boundary placeholder or summary content only.          |
+| `exclude`     | Omit the hidden content from the clipboard.                     |
 | `materialize` | Mount the hidden content before copying and then copy normally. |
 
 `model` is the right default for document content. `exclude` is usually better
@@ -76,9 +72,9 @@ for app-hidden wrappers, private metadata, and chrome-only shells.
 
 `findPolicy` records who owns search for that hidden range.
 
-| Policy | Behavior |
-| --- | --- |
-| `native` | Browser find searches the mounted DOM only. |
+| Policy   | Behavior                                      |
+| -------- | --------------------------------------------- |
+| `native` | Browser find searches the mounted DOM only.   |
 | `custom` | The app owns model search for hidden content. |
 
 Native browser find cannot search content that is not mounted in the DOM. If a

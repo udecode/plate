@@ -1,23 +1,27 @@
 ---
 title: "Slate DOM"
+description: "Use DOM, clipboard, hotkey, and coverage helpers outside React-owned rendering."
 ---
 
 `@platejs/slate-dom` is the DOM bridge for Slate editors. It owns DOM point/range
 conversion, selection conversion, clipboard formatting, hotkey helpers,
 contenteditable helpers, and DOM coverage metadata used by framework runtimes.
-
 React apps normally use these APIs through `@platejs/slate-react`.
 
+## Usage
+
+Framework runtimes usually call the DOM bridge through installed editor APIs.
+
 ```ts
-editor.api.dom.focus()
-editor.api.clipboard.insertTextData(dataTransfer)
+editor.api.dom.focus();
+editor.api.clipboard.insertTextData(dataTransfer);
 ```
 
-Use direct public imports from `@platejs/slate-dom` for framework integration code that
-needs DOM bridge helpers without React.
+Use direct public imports from `@platejs/slate-dom` for framework integration
+code that needs DOM bridge helpers without React.
 
 ```ts
-import { DOMCoverage, Hotkeys, isDOMNode } from '@platejs/slate-dom'
+import { DOMCoverage, Hotkeys, isDOMNode } from "@platejs/slate-dom";
 ```
 
 ## Public Utility Groups
@@ -53,7 +57,7 @@ import {
   isPlainTextOnlyPaste,
   isTrackedMutation,
   normalizeDOMPoint,
-} from '@platejs/slate-dom'
+} from "@platejs/slate-dom";
 ```
 
 Text-diff utilities include string diff normalization, merging, point/range
@@ -68,7 +72,7 @@ import {
   normalizeStringDiff,
   targetRange,
   verifyDiffState,
-} from '@platejs/slate-dom'
+} from "@platejs/slate-dom";
 ```
 
 Environment flags include `CAN_USE_DOM`, `HAS_BEFORE_INPUT_SUPPORT`,

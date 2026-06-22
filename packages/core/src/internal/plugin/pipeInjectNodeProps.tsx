@@ -1,4 +1,4 @@
-import type { Path, TElement, TText } from '@platejs/slate-legacy';
+import type { Element, Path, Text } from '@platejs/slate';
 
 import clsx from 'clsx';
 
@@ -11,7 +11,7 @@ import { pluginInjectNodeProps } from './pluginInjectNodeProps';
 export const pipeInjectNodeProps = (
   editor: SlateEditor,
   nodeProps: any,
-  getElementPath: (node: TElement | TText) => Path,
+  getElementPath: (node: Element | Text) => Path,
   readOnly = false
 ) => {
   editor.meta.pluginCache.inject.nodeProps.forEach((key) => {

@@ -1,6 +1,5 @@
-import type { TElement, TText } from '@platejs/slate-legacy';
-
-import { IS_FIREFOX, NodeApi } from '@platejs/slate-legacy';
+import { type Element, type Text, NodeApi } from '@platejs/slate';
+import { IS_FIREFOX } from '@platejs/slate-dom';
 import isEqual from 'lodash/isEqual.js';
 
 import type { SlateEditor } from '../../../editor';
@@ -13,7 +12,7 @@ export const getMarkBoundaryAffinity = (
   const { marks, selection } = editor;
   if (!selection) return;
 
-  const marksMatchLeaf = (leaf: TElement | TText) =>
+  const marksMatchLeaf = (leaf: Element | Text) =>
     marks &&
     isEqual(NodeApi.extractProps(leaf), marks) &&
     Object.keys(marks).length > 1;

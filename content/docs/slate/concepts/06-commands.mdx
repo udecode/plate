@@ -1,27 +1,28 @@
 ---
 title: "Commands"
+description: "Group user and product intent into reusable functions that run Slate transactions."
 ---
 
-While editing richtext content, your users will be doing things like inserting text, deleting text, splitting paragraphs, and adding formatting. Under the cover these edits are expressed as operations. At the public API level, write them with `editor.update(...)` and transaction methods.
-
-Commands are high-level actions that represent a user or product intent. In
+Commands are high-level actions that represent user or product intent. In
 Slate, command helpers are ordinary functions that run related transaction
 writes inside `editor.update(...)`.
+
+## Command Shape
 
 For example, here are some of the built-in commands:
 
 ```javascript
 editor.update((tx) => {
-  tx.text.insert('A new string of text to be inserted.')
-})
+  tx.text.insert("A new string of text to be inserted.");
+});
 
 editor.update((tx) => {
-  tx.text.delete({ reverse: true, unit: 'word' })
-})
+  tx.text.delete({ reverse: true, unit: "word" });
+});
 
 editor.update((tx) => {
-  tx.nodes.split({ always: true })
-})
+  tx.nodes.split({ always: true });
+});
 ```
 
 Define custom commands for your product domain, such as `formatQuote`,
@@ -38,19 +39,19 @@ boundary used by history, collaboration, and tests.
 When defining custom commands, pass the editor into a function and keep the writes grouped:
 
 ```ts
-import type { Editor } from '@platejs/slate'
+import type { Editor } from "@platejs/slate";
 
 function insertParagraph(editor: Editor) {
   editor.update((tx) => {
-    tx.nodes.insert({ type: 'paragraph', children: [{ text: '' }] })
-  })
+    tx.nodes.insert({ type: "paragraph", children: [{ text: "" }] });
+  });
 }
 ```
 
 When writing your own commands, compose transaction methods inside one update:
 
 ```ts
-import { ElementApi, TextApi } from '@platejs/slate'
+import { ElementApi, TextApi } from "@platejs/slate";
 
 editor.update((tx) => {
   tx.nodes.set(
@@ -60,19 +61,19 @@ editor.update((tx) => {
       match: (node) => TextApi.isText(node),
       split: true,
     }
-  )
+  );
 
   tx.nodes.wrap(
-    { type: 'quote', children: [] },
+    { type: "quote", children: [] },
     {
       at: point,
       match: (node) => ElementApi.isElement(node) && tx.schema.isBlock(node),
-      mode: 'lowest',
+      mode: "lowest",
     }
-  )
+  );
 
-  tx.text.insert('A new string of text.', { at: path })
-})
+  tx.text.insert("A new string of text.", { at: path });
+});
 ```
 
 Transaction methods are designed to be composed together. Keep related writes in

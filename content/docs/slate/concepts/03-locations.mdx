@@ -1,9 +1,12 @@
 ---
 title: "Locations"
+description: "Use paths, points, ranges, spans, and refs to address content in a Slate root."
 ---
 
 Locations tell Slate where to read or write inside an editor root. The core
 location types are `Path`, `Point`, and `Range`.
+
+## Root Resolution
 
 Rootless locations resolve against the current editor or view root. The base
 editor uses the primary document; root-bound views use their own root.
@@ -14,7 +17,7 @@ Locations in extra roots carry the root key on their points.
 A path is an array of indexes from a root to a node.
 
 ```ts
-type Path = number[]
+type Path = number[];
 ```
 
 In this root value, the paragraph has path `[0]` and the text node has path
@@ -23,27 +26,27 @@ In this root value, the paragraph has path `[0]` and the text node has path
 ```ts
 const children = [
   {
-    type: 'paragraph',
-    children: [{ text: 'A line of text!' }],
+    type: "paragraph",
+    children: [{ text: "A line of text!" }],
   },
-]
+];
 ```
 
 Use `[]` for the root itself. For example, this selects the current root.
 
 ```ts
 editor.update((tx) => {
-  tx.selection.set([])
-})
+  tx.selection.set([]);
+});
 ```
 
 Use `PathApi` for path math.
 
 ```ts
-import { PathApi } from '@platejs/slate'
+import { PathApi } from "@platejs/slate";
 
-const parent = PathApi.parent([0, 0])
-const common = PathApi.common([0, 0], [0, 2])
+const parent = PathApi.parent([0, 0]);
+const common = PathApi.common([0, 0], [0, 2]);
 ```
 
 ## Point
@@ -52,9 +55,9 @@ A point targets an offset inside a text node.
 
 ```ts
 interface Point {
-  path: Path
-  offset: number
-  root?: string
+  path: Path;
+  offset: number;
+  root?: string;
 }
 ```
 
@@ -64,7 +67,7 @@ The start of the first text node is:
 const start = {
   path: [0, 0],
   offset: 0,
-}
+};
 ```
 
 A point in a named root carries that root key.
@@ -73,8 +76,8 @@ A point in a named root carries that root key.
 const headerStart = {
   path: [0, 0],
   offset: 0,
-  root: 'header',
-}
+  root: "header",
+};
 ```
 
 Points always resolve to text nodes. Elements do not have cursor offsets.
@@ -85,8 +88,8 @@ A range spans between two points.
 
 ```ts
 interface Range {
-  anchor: Point
-  focus: Point
+  anchor: Point;
+  focus: Point;
 }
 ```
 
@@ -97,11 +100,11 @@ document order.
 Use `RangeApi` when you need ordered edges or direction checks.
 
 ```ts
-import { RangeApi } from '@platejs/slate'
+import { RangeApi } from "@platejs/slate";
 
-const [start, end] = RangeApi.edges(range)
-const collapsed = RangeApi.isCollapsed(range)
-const backward = RangeApi.isBackward(range)
+const [start, end] = RangeApi.edges(range);
+const collapsed = RangeApi.isCollapsed(range);
+const backward = RangeApi.isBackward(range);
 ```
 
 Both points in a range must resolve inside the same root. For named roots, put
@@ -109,9 +112,9 @@ the same `root` on both points.
 
 ```ts
 const headerRange = {
-  anchor: { path: [0, 0], offset: 0, root: 'header' },
-  focus: { path: [0, 0], offset: 6, root: 'header' },
-}
+  anchor: { path: [0, 0], offset: 0, root: "header" },
+  focus: { path: [0, 0], offset: 6, root: "header" },
+};
 ```
 
 ## Selection
@@ -120,7 +123,7 @@ The editor selection is a `Range | null`. Read it from the editor state and
 write it inside `editor.update(...)`.
 
 ```ts
-const selection = editor.read((state) => state.selection.get())
+const selection = editor.read((state) => state.selection.get());
 ```
 
 ```ts
@@ -128,28 +131,28 @@ editor.update((tx) => {
   tx.selection.set({
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [0, 0], offset: 15 },
-  })
-})
+  });
+});
 ```
 
 Set the selection to `null` to clear it.
 
 ```ts
 editor.update((tx) => {
-  tx.selection.set(null)
-})
+  tx.selection.set(null);
+});
 ```
 
 Use read helpers for common editor-derived points and ranges.
 
 ```ts
-const start = editor.read((state) => state.points.start([0]))
-const end = editor.read((state) => state.points.end([0]))
+const start = editor.read((state) => state.points.start([0]));
+const end = editor.read((state) => state.points.end([0]));
 const unhung = editor.read((state) => {
-  const selection = state.selection.get()
+  const selection = state.selection.get();
 
-  return selection ? state.ranges.unhang(selection, { voids: true }) : null
-})
+  return selection ? state.ranges.unhang(selection, { voids: true }) : null;
+});
 ```
 
 Use [Path API](../api/locations/path), [Point API](../api/locations/point),
@@ -167,8 +170,8 @@ const bookmark = editor.read((state) =>
     anchor: { path: [0, 0], offset: 2 },
     focus: { path: [0, 0], offset: 8 },
   })
-)
+);
 
-const range = bookmark.resolve()
-bookmark.unref()
+const range = bookmark.resolve();
+bookmark.unref();
 ```

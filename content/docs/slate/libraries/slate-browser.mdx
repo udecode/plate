@@ -1,22 +1,15 @@
 ---
 title: "Slate Browser"
+description: "Use the first-party browser proof harness for Playwright editor behavior tests."
 ---
 
-`@platejs/browser` is Slate's browser proof harness. Use it to test editor
-behavior through Playwright with model, DOM, native selection, focus,
-screenshots, trace, clipboard, and replayable scenario assertions.
-
-It is test infrastructure, not the product editing API. Application code should
-build editors with `@platejs/slate`, `@platejs/slate-dom`, `@platejs/slate-react`, and extensions.
+`@platejs/browser` is Slate's Playwright proof harness for model, DOM, native selection, focus, screenshots, trace, clipboard, and replayable scenario assertions. It is test infrastructure, not the product editing API; application code builds editors with `@platejs/slate`, `@platejs/slate-dom`, `@platejs/slate-react`, and extensions. Read [Editing Behavior](../concepts/15-editing-behavior) for the runtime pipeline and [Selection And DOM](../concepts/16-selection-and-dom) when proof depends on caret placement, native selection, hidden content, or double-highlight assertions.
 
 ## Install
 
 ```text
 npm install -D @platejs/browser @playwright/test
 ```
-
-Use the matching command for pnpm, Yarn, or Bun when your project uses another
-package manager.
 
 ## Imports
 
@@ -34,21 +27,21 @@ Do not import from `@platejs/browser` directly.
 ## First Test
 
 ```ts
-import { expect, test } from '@playwright/test'
-import { openExample } from '@platejs/browser/playwright'
+import { expect, test } from "@playwright/test";
+import { openExample } from "@platejs/browser/playwright";
 
-test('types through the Slate browser path', async ({ page }) => {
-  const editor = await openExample(page, 'plaintext', {
-    ready: { editor: 'visible' },
-  })
+test("types through the Slate browser path", async ({ page }) => {
+  const editor = await openExample(page, "plaintext", {
+    ready: { editor: "visible" },
+  });
 
-  await editor.focus()
-  await editor.type('Hello from @platejs/browser')
+  await editor.focus();
+  await editor.type("Hello from @platejs/browser");
 
-  await editor.assert.text('Hello from @platejs/browser')
-  await editor.assert.noDoubleSelectionHighlight()
-  expect(await editor.get.selectedText()).toBe('')
-})
+  await editor.assert.text("Hello from @platejs/browser");
+  await editor.assert.noDoubleSelectionHighlight();
+  expect(await editor.get.selectedText()).toBe("");
+});
 ```
 
 `openExample` waits for the mounted editor-ready contract before actions run.
@@ -60,13 +53,15 @@ behavior.
 
 Slate browser proof should usually assert more than model state:
 
-- model text or block text;
-- DOM/native selection endpoints when observable;
-- visible selection or no double-highlight;
-- focus ownership;
-- native event trace shape for input, paste, selection, or IME claims;
-- screenshot or JSON artifacts for bugs that need visual review;
-- follow-up typing after navigation, paste, undo, selection, or DOM repair.
+| Claim | Useful proof |
+| --- | --- |
+| Model state changed correctly | model text, block text, operations, or commit metadata |
+| Browser caret is correct | DOM caret, DOM selection, or native selection snapshot |
+| Visible selection is sane | displayed selection snapshot and no double-highlight |
+| Editor stayed active | focus ownership |
+| Native input path is the bug | native event trace for input, paste, selection, or IME |
+| Visual evidence matters | screenshot or JSON artifact |
+| The editor still works afterward | follow-up typing after navigation, paste, undo, selection, or DOM repair |
 
 Feature contracts group browser behavior families by the owning Slate feature
 area. Use them to keep example coverage honest without turning one manual route

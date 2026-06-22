@@ -1,10 +1,12 @@
-import type { ScrollIntoViewOptions } from '@platejs/slate-legacy';
-
 import isUndefined from 'lodash/isUndefined.js';
 import omitBy from 'lodash/omitBy.js';
 
 import type { SlateEditor } from '../../editor';
-import type { AutoScrollOperationsMap, ScrollMode } from './DOMPlugin';
+import type {
+  AutoScrollOperationsMap,
+  ScrollIntoViewOptions,
+  ScrollMode,
+} from './DOMPlugin';
 
 import { AUTO_SCROLL, DOMPlugin } from './DOMPlugin';
 

@@ -1,6 +1,6 @@
-import type { Descendant } from '@platejs/slate-legacy';
+import type { Descendant } from '@platejs/slate';
 
-import { jsx } from 'slate-hyperscript';
+import { jsx } from '@platejs/slate-hyperscript';
 
 import type { SlateEditor } from '../../../editor';
 

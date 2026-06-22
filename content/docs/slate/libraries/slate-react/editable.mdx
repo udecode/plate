@@ -1,8 +1,11 @@
 ---
 title: "Editable Component"
+description: "Render the editable surface and configure browser events, rendering, overlays, and DOM strategy."
 ---
 
-`Editable` renders the editable document surface for the nearest `Slate` provider. App code customizes what content looks like; the runtime owns browser selection, DOM repair, void shells, and editing events.
+`Editable` renders the editable document surface for the nearest `Slate` provider; app code customizes what content looks like while the runtime owns browser selection, DOM repair, void shells, and editing events. Use [Editing Behavior](../../concepts/15-editing-behavior) for the event-to-commit pipeline and [Selection And DOM](../../concepts/16-selection-and-dom) for model selection, native selection, DOM coverage, and large-document selection proof.
+
+## Minimal Usage
 
 ```tsx
 <Slate editor={editor}>
@@ -10,45 +13,64 @@ title: "Editable Component"
 </Slate>
 ```
 
+## On This Page
+
+- [Props](editable#props)
+- [Render Props](editable#render-props)
+- [`renderElement`](editable#renderelement)
+- [`renderVoid`](editable#rendervoid)
+- [`renderLeaf`](editable#renderleaf)
+- [`renderText`](editable#rendertext)
+- [`decorate`](editable#decorate)
+- [`renderSegment`](editable#rendersegment)
+- [`placeholder` And `renderPlaceholder`](editable#placeholder-and-renderplaceholder)
+- [Event Props](editable#event-props)
+- [Projection Sources](editable#projection-sources)
+- [DOM Strategy](editable#dom-strategy)
+- [DOM Coverage Boundaries](editable#dom-coverage-boundaries)
+- [Multiple Roots](editable#multiple-roots)
+- [Styling](editable#styling)
+
 ## Props
 
 ```typescript
 type EditableProps = {
-  autoFocus?: boolean
-  className?: string
-  decorate?: (entry: NodeEntry) => EditableDecoration[]
-  decorateDirtiness?: SlateSourceDirtiness
-  decorateRuntimeScope?: SlateProjectionRuntimeScope
-  disableDefaultStyles?: boolean
-  id?: string
-  domStrategy?: DOMStrategyOptions | null
-  domStrategyLayout?: EditableDOMStrategyLayout | null
-  onBeforeInput?: React.FormEventHandler<HTMLDivElement>
+  autoFocus?: boolean;
+  className?: string;
+  decorate?: (entry: NodeEntry) => EditableDecoration[];
+  decorateDirtiness?: SlateSourceDirtiness;
+  decorateRuntimeScope?: SlateProjectionRuntimeScope;
+  disableDefaultStyles?: boolean;
+  id?: string;
+  domStrategy?: DOMStrategyOptions | null;
+  domStrategyLayout?: EditableDOMStrategyLayout | null;
+  onBeforeInput?: React.FormEventHandler<HTMLDivElement>;
   onDOMBeforeInput?: (
     event: InputEvent,
     context: EditableDOMBeforeInputContext
-  ) => boolean | EditableRepairRequest | void
-  onKeyDown?: EditableKeyDownHandler
-  onDOMStrategyMetrics?: (
-    metrics: EditableDOMStrategyMetrics
-  ) => void
-  onPaste?: React.ClipboardEventHandler<HTMLDivElement>
-  placeholder?: React.ReactNode
-  readOnly?: boolean
-  renderElement?: (props: RenderElementProps) => React.ReactNode
-  renderLeaf?: (props: RenderLeafProps) => React.ReactNode
-  renderPlaceholder?: (props: RenderPlaceholderProps) => React.ReactNode
+  ) => boolean | EditableRepairRequest | void;
+  onKeyDown?: EditableKeyDownHandler;
+  onDOMStrategyMetrics?: (metrics: EditableDOMStrategyMetrics) => void;
+  onPaste?: React.ClipboardEventHandler<HTMLDivElement>;
+  placeholder?: React.ReactNode;
+  readOnly?: boolean;
+  renderElement?: (props: RenderElementProps) => React.ReactNode;
+  renderLeaf?: (props: RenderLeafProps) => React.ReactNode;
+  renderPlaceholder?: (props: RenderPlaceholderProps) => React.ReactNode;
   renderSegment?: (
     segment: EditableTextSegment,
     children: React.ReactNode
-  ) => React.ReactNode
-  renderText?: (props: RenderTextProps) => React.ReactNode
-  renderVoid?: (props: RenderVoidProps) => React.ReactNode
-  root?: RootKey
-  scrollSelectionIntoView?: (editor: Editor, domRange: globalThis.Range) => void
-  spellCheck?: boolean
-  style?: React.CSSProperties
-}
+  ) => React.ReactNode;
+  renderText?: (props: RenderTextProps) => React.ReactNode;
+  renderVoid?: (props: RenderVoidProps) => React.ReactNode;
+  root?: RootKey;
+  scrollSelectionIntoView?: (
+    editor: Editor,
+    domRange: globalThis.Range
+  ) => void;
+  spellCheck?: boolean;
+  style?: React.CSSProperties;
+};
 ```
 
 `Editable` also accepts safe `div` attributes such as `aria-*`, `data-*`, and event handlers that are not owned by Slate.
@@ -70,18 +92,18 @@ defining them at module scope or creating them once with the editor.
 ```ts
 type RenderElementProps = {
   attributes: {
-    'data-slate-inline'?: true
-    'data-slate-node': 'element'
-    'data-slate-path': string
-    'data-slate-runtime-id': RuntimeId
-    'data-slate-void'?: true
-    ref: React.RefCallback<HTMLElement>
-  }
-  children: React.ReactNode
-  element: Element
-  isInline: boolean
-  slots: EditableElementSlots
-}
+    "data-slate-inline"?: true;
+    "data-slate-node": "element";
+    "data-slate-path": string;
+    "data-slate-runtime-id": RuntimeId;
+    "data-slate-void"?: true;
+    ref: React.RefCallback<HTMLElement>;
+  };
+  children: React.ReactNode;
+  element: Element;
+  isInline: boolean;
+  slots: EditableElementSlots;
+};
 ```
 
 ## `renderElement`
@@ -91,16 +113,16 @@ Use `renderElement` for normal elements that render Slate-managed children.
 ```tsx
 const renderElement = ({ attributes, children, element }) => {
   switch (element.type) {
-    case 'code':
+    case "code":
       return (
         <pre {...attributes}>
           <code>{children}</code>
         </pre>
-      )
+      );
     default:
-      return <p {...attributes}>{children}</p>
+      return <p {...attributes}>{children}</p>;
   }
-}
+};
 ```
 
 Always spread `attributes` on the top-level DOM element and render `children`.
@@ -112,12 +134,12 @@ Use `renderVoid` for void elements. A void renderer returns visible content only
 ```tsx
 const renderVoid = ({ element }) => {
   switch (element.type) {
-    case 'image':
-      return <ImageElement element={element} />
+    case "image":
+      return <ImageElement element={element} />;
     default:
-      return null
+      return null;
   }
-}
+};
 ```
 
 Do not render `children`, hidden text anchors, or shell wrappers in normal void renderers. Slate renders the shell and model anchor for you.
@@ -126,10 +148,10 @@ If a void needs selected UI, subscribe from inside the void component.
 
 ```tsx
 const ImageElement = ({ element }) => {
-  const selected = useElementSelected({ mode: 'collapsed' })
+  const selected = useElementSelected({ mode: "collapsed" });
 
-  return <img data-selected={selected || undefined} src={element.url} />
-}
+  return <img data-selected={selected || undefined} src={element.url} />;
+};
 ```
 
 If an event handler needs the current location of the rendered element, resolve
@@ -137,22 +159,22 @@ the path inside the handler.
 
 ```tsx
 const ImageElement = ({ element }) => {
-  const editor = useEditor()
+  const editor = useEditor();
 
   return (
     <button
       onClick={() => {
-        const path = editor.api.dom.resolvePath(element)
+        const path = editor.api.dom.resolvePath(element);
 
-        if (!path) return
+        if (!path) return;
 
         editor.update((tx) => {
-          tx.nodes.remove({ at: path, voids: true })
-        })
+          tx.nodes.remove({ at: path, voids: true });
+        });
       }}
     />
-  )
-}
+  );
+};
 ```
 
 ## `renderLeaf`
@@ -165,14 +187,14 @@ const renderLeaf = ({ attributes, children, leaf }) => {
     <span
       {...attributes}
       style={{
-        fontWeight: leaf.bold ? 'bold' : 'normal',
-        fontStyle: leaf.italic ? 'italic' : 'normal',
+        fontWeight: leaf.bold ? "bold" : "normal",
+        fontStyle: leaf.italic ? "italic" : "normal",
       }}
     >
       {children}
     </span>
-  )
-}
+  );
+};
 ```
 
 ## `renderText`
@@ -185,8 +207,8 @@ const renderText = ({ attributes, children, text }) => {
     <span {...attributes} data-commented={text.commentId || undefined}>
       {children}
     </span>
-  )
-}
+  );
+};
 ```
 
 ## `decorate`
@@ -197,9 +219,9 @@ match or lightweight syntax highlight.
 ```tsx
 <Editable
   decorate={([node, path]) => {
-    if (!TextApi.isText(node)) return []
+    if (!TextApi.isText(node)) return [];
 
-    const start = node.text.indexOf(query)
+    const start = node.text.indexOf(query);
 
     return start === -1
       ? []
@@ -209,7 +231,7 @@ match or lightweight syntax highlight.
             data: { search: true },
             focus: { path, offset: start + query.length },
           },
-        ]
+        ];
   }}
   renderSegment={(segment, children) =>
     segment.slices.some((slice) => slice.data?.search) ? (
@@ -271,11 +293,11 @@ Use `onKeyDown` for UI hotkeys on one `Editable` instance.
 ```tsx
 <Editable
   onKeyDown={(event, { editor }) => {
-    if (event.key === '`' && event.ctrlKey) {
-      editor.update(tx => {
-        tx.nodes.set({ type: 'code' })
-      })
-      return true
+    if (event.key === "`" && event.ctrlKey) {
+      editor.update((tx) => {
+        tx.nodes.set({ type: "code" });
+      });
+      return true;
     }
   }}
 />
@@ -286,22 +308,22 @@ Those handlers run for keyboard input, native input, programmatic transforms, an
 
 ```tsx
 const markdown = defineEditorExtension({
-  name: 'markdown',
+  name: "markdown",
   transforms: {
     insertText({ next, text, tx }) {
-      if (text === ' ') {
-        const selection = tx.selection.get()
+      if (text === " ") {
+        const selection = tx.selection.get();
 
         if (selection) {
-          tx.nodes.set({ type: 'code' })
+          tx.nodes.set({ type: "code" });
         }
-        return true
+        return true;
       }
 
-      return next()
+      return next();
     },
   },
-})
+});
 ```
 
 `onBeforeInput` is the React form-event hook on the editable root. Use
@@ -329,12 +351,12 @@ Inline, void, selectable, and read-only behavior belongs to the editor schema.
 editor.extend({
   elements: [
     {
-      type: 'mention',
-      void: 'markable-inline',
+      type: "mention",
+      void: "markable-inline",
     },
   ],
-  name: 'mentions',
-})
+  name: "mentions",
+});
 ```
 
 Product input rules belong in higher-level command layers or editor extensions. Keep raw `Editable` focused on rendering and DOM events.
@@ -357,8 +379,8 @@ coverage boundary counts, visible DOM node count, and editable descendant count.
 ```tsx
 <Editable
   domStrategy="auto"
-  onDOMStrategyMetrics={metrics => {
-    datadogRum.addAction('slate.dom_strategy.surface', metrics)
+  onDOMStrategyMetrics={(metrics) => {
+    datadogRum.addAction("slate.dom_strategy.surface", metrics);
   }}
 />
 ```
@@ -383,7 +405,7 @@ value.
 
 ```tsx
 const renderElement = ({ children, element, slots }) => {
-  if (element.type === 'section') {
+  if (element.type === "section") {
     return (
       <EditableElement>
         {React.Children.toArray(children)[0]}
@@ -395,31 +417,31 @@ const renderElement = ({ children, element, slots }) => {
               Show section
             </button>
           ),
-          scope: { from: 1, type: 'children' },
-          selectionPolicy: 'materialize',
+          scope: { from: 1, type: "children" },
+          selectionPolicy: "materialize",
         })}
       </EditableElement>
-    )
+    );
   }
 
-  if (element.type === 'hidden-header') {
+  if (element.type === "hidden-header") {
     return (
       <EditableElement>
         {slots.contentBoundary({
-          boundaryId: 'hidden-header',
+          boundaryId: "hidden-header",
           children: <button type="button">Show header</button>,
-          copyPolicy: 'exclude',
+          copyPolicy: "exclude",
           mounted: !element.hidden,
-          reason: 'app-hidden',
-          scope: { type: 'self' },
-          selectionPolicy: 'skip',
+          reason: "app-hidden",
+          scope: { type: "self" },
+          selectionPolicy: "skip",
         })}
       </EditableElement>
-    )
+    );
   }
 
-  return <EditableElement>{children}</EditableElement>
-}
+  return <EditableElement>{children}</EditableElement>;
+};
 ```
 
 Boundary content is model-present but DOM-incomplete while `mounted` is `false`.
@@ -448,9 +470,9 @@ editable child root, such as a synced block body.
 const SyncedBlock = ({ attributes, element, slots }) => (
   <section {...attributes}>
     <header>Synced block</header>
-    {slots.contentRoot('body', { ariaLabel: 'Synced block body' })}
+    {slots.contentRoot("body", { ariaLabel: "Synced block body" })}
   </section>
-)
+);
 ```
 
 See [Roots](../../concepts/13-roots) for the value shape, `tx.roots`, root

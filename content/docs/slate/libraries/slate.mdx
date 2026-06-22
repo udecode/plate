@@ -1,5 +1,6 @@
 ---
 title: "Slate"
+description: "Use the core editor runtime, document model, transactions, helper APIs, and extensions."
 ---
 
 `@platejs/slate` is the core editor runtime. It owns the document model, operations,
@@ -8,12 +9,14 @@ node/location helper namespaces.
 
 Use `createEditor` to create an editor.
 
+## Create An Editor
+
 ```ts
-import { createEditor } from '@platejs/slate'
+import { createEditor } from "@platejs/slate";
 
 const editor = createEditor({
-  initialValue: [{ type: 'paragraph', children: [{ text: '' }] }],
-})
+  initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
+});
 ```
 
 Use `isEditor` when library code needs to validate an unknown value before
@@ -27,8 +30,8 @@ should normally use the framework package helpers, such as `useSlateEditor` in
 Read committed state with `editor.read(...)`.
 
 ```ts
-const value = editor.read((state) => state.value.get())
-const selection = editor.read((state) => state.selection.get())
+const value = editor.read((state) => state.value.get());
+const selection = editor.read((state) => state.selection.get());
 ```
 
 Write document, selection, mark, root, state-field, and operation changes inside
@@ -36,8 +39,8 @@ Write document, selection, mark, root, state-field, and operation changes inside
 
 ```ts
 editor.update((tx) => {
-  tx.text.insert('Hello')
-})
+  tx.text.insert("Hello");
+});
 ```
 
 ## Public Type Groups
@@ -80,7 +83,11 @@ Use `api` for mounted host/runtime services. Use `tx` for feature commands that
 change Slate model state.
 
 ```ts
-import { defineEditorExtension, defineStateField, elementProperty } from '@platejs/slate'
+import {
+  defineEditorExtension,
+  defineStateField,
+  elementProperty,
+} from "@platejs/slate";
 ```
 
 ## Helper Namespaces

@@ -1,26 +1,29 @@
 ---
 title: "Editor"
+description: "Core editor runtime API for reads, transactions, roots, state, schema, and extension APIs."
 ---
 
 An editor owns the document runtime. It is the root node of the document, and
-its path is `[]`.
+its path is `[]`. The public editor object is intentionally small.
 
-The public editor object is intentionally small:
+## Public Editor Shape
 
 ```typescript
 interface Editor<TExtensions extends readonly unknown[] = []> {
-  api: Readonly<InstalledApiGroups<TExtensions>>
-  getApi(extension: EditorExtension): unknown
-  read<T>(fn: (state: EditorState) => T): T
-  subscribe(listener: SnapshotListener): () => void
-  subscribeCommit(listener: (commit: EditorCommit) => void): () => void
+  api: Readonly<InstalledApiGroups<TExtensions>>;
+  getApi(extension: EditorExtension): unknown;
+  read<T>(fn: (state: EditorState) => T): T;
+  subscribe(listener: SnapshotListener): () => void;
+  subscribeCommit(listener: (commit: EditorCommit) => void): () => void;
   update(
     fn: (tx: EditorTransaction, context: EditorUpdateContext) => void,
     options?: EditorUpdateOptions
-  ): void
-  extend(extension: EditorExtension | EditorExtension[]): () => void
+  ): void;
+  extend(extension: EditorExtension | EditorExtension[]): () => void;
 }
 ```
+
+## On This Page
 
 - [Creating an editor](editor#creating-an-editor)
 - [Reading state](editor#reading-state)
@@ -41,8 +44,8 @@ Create an editor.
 
 ```javascript
 const editor = createEditor({
-  initialValue: [{ type: 'paragraph', children: [{ text: 'Body' }] }],
-})
+  initialValue: [{ type: "paragraph", children: [{ text: "Body" }] }],
+});
 ```
 
 Extensions define schema, normalizers, commit listeners, operation middleware,
@@ -55,27 +58,27 @@ feature namespaces, and optional runtime registration.
 Read a coherent snapshot of editor state.
 
 ```javascript
-const selection = editor.read(state => state.selection.get())
+const selection = editor.read((state) => state.selection.get());
 ```
 
 Use `state` for editor-state queries:
 
 ```javascript
-editor.read(state => {
-  const children = state.nodes.children()
-  const marks = state.marks.get()
-  const first = state.nodes.get([0])
-  const start = state.points.start([])
-  const range = state.ranges.get([])
+editor.read((state) => {
+  const children = state.nodes.children();
+  const marks = state.marks.get();
+  const first = state.nodes.get([0]);
+  const start = state.points.start([]);
+  const range = state.ranges.get([]);
 
-  return { children, first, marks, range, start }
-})
+  return { children, first, marks, range, start };
+});
 ```
 
 Schema policy is read through `state.schema`:
 
 ```javascript
-const isInline = editor.read(state => state.schema.isInline(element))
+const isInline = editor.read((state) => state.schema.isInline(element));
 ```
 
 ## Updating state
@@ -86,37 +89,37 @@ Run a transaction. The callback receives `tx`, which owns command reads and
 writes.
 
 ```javascript
-editor.update(tx => {
-  tx.marks.toggle('bold')
-})
+editor.update((tx) => {
+  tx.marks.toggle("bold");
+});
 ```
 
 Use transaction groups for document changes:
 
 ```javascript
-editor.update(tx => {
-  tx.nodes.set({ type: 'heading' })
-  tx.text.insert('Title')
-  tx.selection.move({ distance: 1 })
-})
+editor.update((tx) => {
+  tx.nodes.set({ type: "heading" });
+  tx.text.insert("Title");
+  tx.selection.move({ distance: 1 });
+});
 ```
 
 Replay operations through the transaction boundary:
 
 ```javascript
 editor.update(
-  tx => {
-    tx.operations.replay(remoteOperations)
+  (tx) => {
+    tx.operations.replay(remoteOperations);
   },
   {
-    tag: ['collaboration', 'remote-import'],
+    tag: ["collaboration", "remote-import"],
     metadata: {
-      collab: { origin: 'remote', saveToHistory: false },
-      history: { mode: 'skip' },
-      selection: { dom: 'preserve' },
+      collab: { origin: "remote", saveToHistory: false },
+      history: { mode: "skip" },
+      selection: { dom: "preserve" },
     },
   }
-)
+);
 ```
 
 `tag` is the cheap lifecycle label. `metadata` is the typed policy channel for
@@ -126,12 +129,12 @@ The update callback also receives a context object for local post-commit hooks:
 
 ```javascript
 editor.update((tx, { afterCommit }) => {
-  tx.text.insert('Saved')
+  tx.text.insert("Saved");
 
   afterCommit((change) => {
-    analytics.track('editor-change', change.source)
-  })
-})
+    analytics.track("editor-change", change.source);
+  });
+});
 ```
 
 ## Document roots
@@ -143,30 +146,30 @@ roots.
 ```javascript
 const editor = createEditor({
   initialValue: {
-    children: [{ type: 'paragraph', children: [{ text: 'Body' }] }],
+    children: [{ type: "paragraph", children: [{ text: "Body" }] }],
     roots: {
-      header: [{ type: 'paragraph', children: [{ text: 'Draft' }] }],
-      footer: [{ type: 'paragraph', children: [{ text: 'Internal' }] }],
+      header: [{ type: "paragraph", children: [{ text: "Draft" }] }],
+      footer: [{ type: "paragraph", children: [{ text: "Internal" }] }],
     },
   },
-})
+});
 ```
 
 Read the primary document with `state.value.root()`. Read an extra root by key.
 
 ```javascript
-const body = editor.read((state) => state.value.root())
-const footer = editor.read((state) => state.value.root('footer'))
+const body = editor.read((state) => state.value.root());
+const footer = editor.read((state) => state.value.root("footer"));
 ```
 
 Create, replace, or delete extra roots with `tx.roots`.
 
 ```javascript
 editor.update((tx) => {
-  tx.roots.create('aside:1', [
-    { type: 'paragraph', children: [{ text: 'Aside' }] },
-  ])
-})
+  tx.roots.create("aside:1", [
+    { type: "paragraph", children: [{ text: "Aside" }] },
+  ]);
+});
 ```
 
 Use normal node and text transforms for the primary document. See
@@ -179,32 +182,32 @@ content roots.
 
 ```ts
 type EditorDocumentValue = {
-  children: Descendant[]
-  roots?: Record<string, Descendant[]>
-  state?: Record<string, unknown>
-}
+  children: Descendant[];
+  roots?: Record<string, Descendant[]>;
+  state?: Record<string, unknown>;
+};
 ```
 
 Use it for database persistence because it includes the primary document, extra
 roots, and persistent state fields.
 
 ```javascript
-const documentValue = editor.read((state) => state.value.get())
+const documentValue = editor.read((state) => state.value.get());
 ```
 
 State fields are registered with `defineStateField` and read through
 `state.getField(field)`.
 
 ```javascript
-const title = editor.read((state) => state.getField(documentTitle))
+const title = editor.read((state) => state.getField(documentTitle));
 ```
 
 Write state fields with `tx.setField`.
 
 ```javascript
 editor.update((tx) => {
-  tx.setField(documentTitle, 'Q3 Launch Brief')
-})
+  tx.setField(documentTitle, "Q3 Launch Brief");
+});
 ```
 
 State-field writes appear in `commit.statePatches` and
@@ -214,17 +217,17 @@ state-patch keys. Replay remote state patches with `tx.statePatches.replay(...)`
 ```javascript
 editor.update(
   (tx) => {
-    tx.statePatches.replay(remoteStatePatches)
+    tx.statePatches.replay(remoteStatePatches);
   },
   {
     metadata: {
-      collab: { origin: 'remote', saveToHistory: false },
-      history: { mode: 'skip' },
-      selection: { dom: 'preserve' },
+      collab: { origin: "remote", saveToHistory: false },
+      history: { mode: "skip" },
+      selection: { dom: "preserve" },
     },
-    tag: ['collaboration', 'remote-state'],
+    tag: ["collaboration", "remote-state"],
   }
-)
+);
 ```
 
 See [Document State](../../concepts/14-document-state) for persistence
@@ -236,13 +239,13 @@ Schema setup belongs to extensions. Read schema policy through `state.schema`
 or `tx.schema`.
 
 ```javascript
-import { defineEditorExtension, elementProperty } from '@platejs/slate'
+import { defineEditorExtension, elementProperty } from "@platejs/slate";
 
 const tables = defineEditorExtension({
-  name: 'tables',
+  name: "tables",
   elements: [
     {
-      type: 'table-cell',
+      type: "table-cell",
       isolating: true,
       keyboardSelectable: true,
       properties: {
@@ -251,17 +254,17 @@ const tables = defineEditorExtension({
       },
     },
   ],
-})
+});
 
-editor.extend(tables)
+editor.extend(tables);
 
-editor.read(state => state.schema.isVoid(element))
+editor.read((state) => state.schema.isVoid(element));
 
-editor.update(tx => {
+editor.update((tx) => {
   if (tx.schema.isInline(element)) {
-    tx.selection.move({ unit: 'character' })
+    tx.selection.move({ unit: "character" });
   }
-})
+});
 ```
 
 Common schema checks include:
@@ -290,13 +293,13 @@ field.
 Extensions expose mounted host and runtime services through `editor.api`.
 
 ```javascript
-editor.api.dom.focus()
-editor.api.clipboard.insertTextData(dataTransfer)
+editor.api.dom.focus();
+editor.api.clipboard.insertTextData(dataTransfer);
 editor.api.history.withoutSaving(() => {
   editor.update((tx) => {
-    tx.text.insert('Imported')
-  })
-})
+    tx.text.insert("Imported");
+  });
+});
 ```
 
 Use `api` for services that are not transaction-scoped document mutations:
@@ -318,11 +321,11 @@ optional change summary.
 ```javascript
 const unsubscribe = editor.subscribe((_snapshot, change) => {
   if (change?.childrenChanged || change?.dirtyStateKeys.length) {
-    const documentValue = editor.read((state) => state.value.get())
+    const documentValue = editor.read((state) => state.value.get());
 
-    save(documentValue)
+    save(documentValue);
   }
-})
+});
 ```
 
 #### `editor.subscribeCommit(listener) => () => void`
@@ -333,9 +336,9 @@ for each commit.
 ```javascript
 const unsubscribe = editor.subscribeCommit((change) => {
   if (change.selectionChanged) {
-    syncSelection(change.selection)
+    syncSelection(change.selection);
   }
-})
+});
 ```
 
 Call the returned function to unsubscribe.
@@ -347,16 +350,16 @@ Call the returned function to unsubscribe.
 Install an extension and return a cleanup function.
 
 ```javascript
-const removeExtension = editor.extend(myExtension)
+const removeExtension = editor.extend(myExtension);
 ```
 
 Extensions add typed `state` and `tx` namespaces. They should not add methods to
 the editor object.
 
 ```javascript
-editor.update(tx => {
-  tx.links.toggle({ href })
-})
+editor.update((tx) => {
+  tx.links.toggle({ href });
+});
 ```
 
 ## Pure node and location helpers
@@ -365,13 +368,13 @@ Pure helpers stay on their own namespaces because they do not read editor
 runtime state.
 
 ```javascript
-NodeApi.string(node)
-ElementApi.isElement(value)
-TextApi.isText(value)
-PathApi.next(path)
-PointApi.equals(point, other)
-RangeApi.isCollapsed(range)
-OperationApi.isOperation(value)
+NodeApi.string(node);
+ElementApi.isElement(value);
+TextApi.isText(value);
+PathApi.next(path);
+PointApi.equals(point, other);
+RangeApi.isCollapsed(range);
+OperationApi.isOperation(value);
 ```
 
 Use `editor.read(...)` or `editor.update(...)` when a helper needs editor

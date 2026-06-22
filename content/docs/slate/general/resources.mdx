@@ -1,39 +1,35 @@
 ---
 title: "Resources"
+description: "Source, proof, ecosystem, and adjacent-editor links for Slate work."
 ---
 
-Use these links as starting points. The Slate v2 docs and package READMEs are
-the source of truth for current APIs.
+Use these links as starting points. Current API truth lives in this docs section, package READMEs, source, and tests.
 
 ## First-Party References
 
-- [Why This Fork](../why-this-fork) explains the public package set,
-  browser proof posture, and beta scope.
-- [Migration guide](../migration) gives an ordered path for moving an
-  existing editor to Slate v2.
-- [Docs proof map](docs-proof-map) links public claims to tests and proof
-  commands.
-- [Slate Browser](../libraries/slate-browser) documents Slate's first-party
-  browser proof harness.
+- [Why This Fork](../why-this-fork) explains the maintenance model, package set, and proof boundary.
+- [Migration](../migration) gives an ordered path for moving an upstream Slate 0.x editor.
+- [Docs Proof Map](docs-proof-map) links public claims to source and tests.
+- [Slate Browser](../libraries/slate-browser) documents the first-party browser proof harness.
+- [Contributing](contributing) explains issue and PR expectations.
+
+## Source
+
+- [Plate repository](https://github.com/udecode/plate)
+- [Plate package docs](https://platejs.org/docs)
+- [Plate examples](https://platejs.org/examples/slate/richtext)
 
 ## Ecosystem Starting Points
 
-Check Slate v2 support before installing an ecosystem package. Some packages are
-still useful as design references even when their released builds target older
-Slate APIs.
+Treat ecosystem packages as compatibility research unless their current release explicitly targets this package set.
 
-- [Plate](https://github.com/udecode/plate) is the product-level rich text
-  framework built on Slate.
-- [`slate-yjs`](https://github.com/BitPhinix/@platejs/yjs/) provides Yjs-oriented
-  collaboration utilities for Slate.
-- [`slate-angular`](https://github.com/worktile/slate-angular) and
-  [`slate-vue3`](https://github.com/Guan-Erjia/slate-vue3) explore non-React
-  view layers around Slate.
+- [Plate](https://github.com/udecode/plate) is the product-level editor framework built on Slate.
+- [`slate-yjs`](https://github.com/BitPhinix/slate-yjs) is useful prior art for Yjs integration patterns.
+- [`slate-angular`](https://github.com/worktile/slate-angular) and [`slate-vue3`](https://github.com/Guan-Erjia/slate-vue3) are useful prior art for non-React view layers.
 
-## Adjacent Editor References
+## Adjacent Editors
 
-These editors are useful for comparing behavior, test strategy, and document
-model tradeoffs. Treat their APIs as research material, not Slate guidance.
+These projects are useful for behavior and architecture comparison. Do not copy their APIs into Slate docs.
 
 - [ProseMirror](https://prosemirror.net/)
 - [Lexical](https://lexical.dev/)

@@ -1,15 +1,20 @@
 ---
 title: "Node Types APIs"
+description: "Node union API for editors, elements, and text nodes."
 ---
 
 The `Node` union type represents all of the different types of nodes that occur in a Slate document tree.
 
-```typescript
-type Node = Editor | Element | Text
+## Types
 
-type Descendant = Element | Text
-type Ancestor = Editor | Element
+```typescript
+type Node = Editor | Element | Text;
+
+type Descendant = Element | Text;
+type Ancestor = Editor | Element;
 ```
+
+## Node Pages
 
 - [Node](./node)
 - [NodeEntry](./node-entry)

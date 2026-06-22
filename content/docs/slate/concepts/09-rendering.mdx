@@ -1,54 +1,54 @@
 ---
 title: "Rendering"
+description: "Render elements, leaves, text, overlays, voids, and hidden content with Slate React."
 ---
 
 Slate React renders your document with normal React components. You provide the
-components for your product-specific elements, text nodes, leaves, toolbars,
-menus, and overlays.
+components for product-specific elements, text nodes, leaves, toolbars, menus,
+and overlays. Pass stable render props to `Editable` so React does not receive
+a fresh renderer on every render.
 
-Pass stable render props to `Editable`. Define them at module scope, or create
-them once with the editor, so React does not receive a fresh renderer on every
-render.
+## Elements
 
 ```tsx
-import { Slate, Editable, useSlateEditor } from '@platejs/slate-react'
+import { Slate, Editable, useSlateEditor } from "@platejs/slate-react";
 
 const ParagraphElement = ({ attributes, children }) => {
-  return <p {...attributes}>{children}</p>
-}
+  return <p {...attributes}>{children}</p>;
+};
 
 const QuoteElement = ({ attributes, children }) => {
-  return <blockquote {...attributes}>{children}</blockquote>
-}
+  return <blockquote {...attributes}>{children}</blockquote>;
+};
 
 const LinkElement = ({ attributes, children, element }) => {
   return (
     <a {...attributes} href={element.url}>
       {children}
     </a>
-  )
-}
+  );
+};
 
-const renderElement = props => {
+const renderElement = (props) => {
   switch (props.element.type) {
-    case 'quote':
-      return <QuoteElement {...props} />
-    case 'link':
-      return <LinkElement {...props} />
+    case "quote":
+      return <QuoteElement {...props} />;
+    case "link":
+      return <LinkElement {...props} />;
     default:
-      return <ParagraphElement {...props} />
+      return <ParagraphElement {...props} />;
   }
-}
+};
 
 const MyEditor = () => {
-  const editor = useSlateEditor({ initialValue })
+  const editor = useSlateEditor({ initialValue });
 
   return (
     <Slate editor={editor}>
       <Editable renderElement={renderElement} />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 Always spread `props.attributes` on the top-level DOM element returned by the
@@ -65,14 +65,14 @@ To customize leaf rendering, pass `renderLeaf`:
 ```tsx
 const renderLeaf = ({ attributes, children, leaf }) => {
   if (leaf.bold) {
-    children = <strong>{children}</strong>
+    children = <strong>{children}</strong>;
   }
   if (leaf.italic) {
-    children = <em>{children}</em>
+    children = <em>{children}</em>;
   }
 
-  return <span {...attributes}>{children}</span>
-}
+  return <span {...attributes}>{children}</span>;
+};
 ```
 
 Keep spreading `props.attributes` and rendering `props.children`.
@@ -108,14 +108,13 @@ all the leaves generated for a single `Text` node.
 ```tsx
 const TextNode = ({ attributes, children, text }) => {
   return (
-    <span {...attributes} className="custom-text">
+    <span {...attributes} className="custom-text" data-length={text.text.length}>
       {children}
-      {/* Render anything you want here */}
     </span>
-  )
-}
+  );
+};
 
-<Editable renderText={TextNode} />
+<Editable renderText={TextNode} />;
 ```
 
 **When to use `renderLeaf` vs `renderText`:**
@@ -144,28 +143,28 @@ A common use case for this is rendering a toolbar with formatting buttons that a
 
 ```tsx
 const MyEditor = () => {
-  const editor = useSlateEditor({ initialValue })
+  const editor = useSlateEditor({ initialValue });
 
   return (
     <Slate editor={editor}>
       <Toolbar />
       <Editable />
     </Slate>
-  )
-}
+  );
+};
 
 const Toolbar = () => {
-  const isBold = useEditorState(state => {
-    return state.marks.get()?.bold === true
-  })
+  const isBold = useEditorState((state) => {
+    return state.marks.get()?.bold === true;
+  });
 
   return (
     <div>
       <Button active={isBold}>B</Button>
       <Button>I</Button>
     </div>
-  )
-}
+  );
+};
 ```
 
 Because the toolbar draws editor-level state, `useEditorState` is the right level of subscription. It runs the selector inside `editor.read` and re-renders only when the selected result changes. Element renderers should prefer target-scoped hooks such as `useElementSelected()`, `useElementSelected({ mode: 'collapsed' })`, `useNodeSelector`, `useTextSelector`, and `useDecorationSelector`.
@@ -176,14 +175,14 @@ Custom styles can be applied to the editor itself by using the `style` prop on t
 
 ```tsx
 const MyEditor = () => {
-  const editor = useSlateEditor({ initialValue })
+  const editor = useSlateEditor({ initialValue });
 
   return (
     <Slate editor={editor}>
-      <Editable style={{ minHeight: '200px', backgroundColor: 'lime' }} />
+      <Editable style={{ minHeight: "200px", backgroundColor: "lime" }} />
     </Slate>
-  )
-}
+  );
+};
 ```
 
 It is also possible to apply custom styles with a stylesheet and `className`. However, Slate uses inline styles to provide some default styles for the editor. Because inline styles take precedence over stylesheets, styles you provide using stylesheets will not override the default styles. If you are trying to use a stylesheet and your rules are not taking effect, do one of the following:

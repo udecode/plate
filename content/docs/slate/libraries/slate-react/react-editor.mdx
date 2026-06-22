@@ -1,17 +1,22 @@
 ---
 title: "React Editor"
+description: "Use React, DOM, focus, selection, clipboard, and DataTransfer host APIs on a React editor."
 ---
 
 `createReactEditor` creates an editor with React, DOM, and clipboard host APIs
 installed. Hooks such as `useSlateEditor` create the same editor shape.
 
+## Minimal Usage
+
 ```typescript
-import { createReactEditor } from '@platejs/slate-react'
+import { createReactEditor } from "@platejs/slate-react";
 
-const editor = createReactEditor()
+const editor = createReactEditor();
 
-editor.api.dom.focus()
+editor.api.dom.focus();
 ```
+
+## On This Page
 
 - [Checks](react-editor#checks)
 - [Focus And Selection](react-editor#focus-and-selection)

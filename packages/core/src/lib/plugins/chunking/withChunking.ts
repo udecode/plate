@@ -1,4 +1,4 @@
-import type { Ancestor } from '@platejs/slate-legacy';
+import type { Ancestor } from '@platejs/slate';
 
 import type { OverrideEditor } from '../../plugin/SlatePlugin';
 import type { ChunkingConfig } from './ChunkingPlugin';

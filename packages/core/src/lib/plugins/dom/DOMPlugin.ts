@@ -1,8 +1,5 @@
-import type {
-  Operation,
-  ScrollIntoViewOptions,
-  TRange,
-} from '@platejs/slate-legacy';
+import type { Operation, Range } from '@platejs/slate';
+import type { StandardBehaviorOptions } from 'scroll-into-view-if-needed';
 
 import { bindFirst } from '@udecode/utils';
 
@@ -16,6 +13,8 @@ export const AUTO_SCROLL = new WeakMap<SlateEditor, boolean>();
 export type AutoScrollOperationsMap = Partial<
   Record<Operation['type'], boolean>
 >;
+
+export type ScrollIntoViewOptions = StandardBehaviorOptions | boolean;
 
 export type DomConfig = PluginConfig<
   'dom',
@@ -110,7 +109,7 @@ export const DOMPlugin = createTSlatePlugin<DomConfig>({
       apply(operation) {
         if (operation.type === 'set_selection') {
           const { properties } = operation;
-          editor.dom.prevSelection = properties as TRange | null;
+          editor.dom.prevSelection = properties as Range | null;
           apply(operation);
           editor.dom.currentKeyboardEvent = null;
           return;

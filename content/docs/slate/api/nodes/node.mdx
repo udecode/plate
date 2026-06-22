@@ -1,5 +1,6 @@
 ---
 title: "Node API"
+description: "Pure node-tree helpers for traversing, querying, and checking Slate nodes."
 ---
 
 - [Static methods](node#static-methods)
@@ -35,7 +36,8 @@ Options: `{reverse?: boolean}`
 
 Get an entry for the common ancestor node of two paths. It might be a Text node, an Element, or the Editor itself.
 
-For the common block ancestor, see [Editor Selection](https://docs.slatejs.org/concepts/03-locations#selection)
+For the common block ancestor, see
+[selection](../../concepts/03-locations#selection).
 
 #### `NodeApi.descendant(root: Node, path: Path) => Descendant`
 
@@ -60,16 +62,16 @@ Extract all properties from a Node except for its content-related fields (`child
 ```typescript
 // For an Element node
 const element = {
-  type: 'paragraph',
-  align: 'center',
-  children: [{ text: 'Try it out for yourself!' }],
-}
-const props = NodeApi.extractProps(element)
+  type: "paragraph",
+  align: "center",
+  children: [{ text: "Try it out for yourself!" }],
+};
+const props = NodeApi.extractProps(element);
 // Returns: { type: 'paragraph', align: "center" }
 
 // For a Text node
-const text = { text: 'Hello', bold: true }
-const props = NodeApi.extractProps(text)
+const text = { text: "Hello", bold: true };
+const props = NodeApi.extractProps(text);
 // Returns: { bold: true }
 ```
 
@@ -96,7 +98,7 @@ Get the descendant node referred to by a specific `path`. If the path is an empt
 Get a descendant node at a specific path, returning `undefined` if the node does not exist. This is a safer alternative to `NodeApi.get()` as it won't throw an error if the path is invalid.
 
 ```typescript
-const node = NodeApi.getIf(root, [0, 1])
+const node = NodeApi.getIf(root, [0, 1]);
 if (node) {
   // node exists at path [0, 1]
 } else {
@@ -130,7 +132,7 @@ Get the parent of a node at a specific `path`.
 
 ### Text methods
 
-Methods related to TextApi.
+Methods related to text leaves.
 
 #### `NodeApi.string(root: Node) => string`
 
@@ -144,7 +146,7 @@ Options: `{from?: Path, to?: Path, reverse?: boolean, pass?: (node: NodeEntry =>
 
 ### Check methods
 
-Methods used to check some attribute of a NodeApi.
+Methods used to check attributes of a node.
 
 #### `NodeApi.has(root: Node, path: Path) => boolean`
 

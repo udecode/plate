@@ -1,5 +1,6 @@
 ---
 title: "Slate React Event Handling"
+description: "Customize Editable browser events without replacing Slate's default editing runtime."
 ---
 
 `Editable` owns the default browser event handlers for rich-text editing,
@@ -9,6 +10,12 @@ events.
 Pass event handlers to `Editable` when app UI needs to run before Slate's
 default behavior.
 
+Use [Editing Behavior](../../concepts/15-editing-behavior) when the behavior
+belongs in transactions or extension transform middleware instead of one
+`Editable` event prop.
+
+## Handler Return Values
+
 Handler return values control whether Slate continues with its own handling:
 
 - Return `true` to mark the event handled and skip Slate's default handler.
@@ -17,62 +24,60 @@ Handler return values control whether Slate continues with its own handling:
   propagation-stopped.
 
 ```tsx
-import type { DragEvent, MouseEvent } from 'react'
-import { Editable } from '@platejs/slate-react'
+import type { DragEvent, MouseEvent } from "react";
+import { Editable } from "@platejs/slate-react";
 
 const MyEditor = () => {
   const onClick = (event: MouseEvent<HTMLDivElement>) => {
-    trackEditorClick(event)
+    trackEditorClick(event);
 
     // Slate runs its click handler unless this handler prevents default,
     // stops propagation, or returns true.
-  }
+  };
 
   const onDrop = (event: DragEvent<HTMLDivElement>) => {
-    if (!isAppOwnedDrop(event)) return false
+    if (!isAppOwnedDrop(event)) return false;
 
-    insertAppOwnedDrop(event)
+    insertAppOwnedDrop(event);
 
-    return true
-  }
+    return true;
+  };
 
   const onDragStart = (event: DragEvent<HTMLDivElement>) => {
-    annotateDragPayload(event)
+    annotateDragPayload(event);
 
-    return false
-  }
+    return false;
+  };
 
   return (
-    <Editable
-      onClick={onClick}
-      onDrop={onDrop}
-      onDragStart={onDragStart}
-    />
-  )
-}
+    <Editable onClick={onClick} onDrop={onDrop} onDragStart={onDragStart} />
+  );
+};
 ```
+
+## Editor-Aware Handlers
 
 Use `onKeyDown` and `onDOMBeforeInput` when a handler needs editor context:
 
 ```tsx
 <Editable
   onDOMBeforeInput={(event, { editor, inputType }) => {
-    if (inputType !== 'formatBold') return false
+    if (inputType !== "formatBold") return false;
 
     editor.update((tx) => {
-      tx.marks.toggle('bold')
-    })
+      tx.marks.toggle("bold");
+    });
 
-    return true
+    return true;
   }}
   onKeyDown={(event, { editor }) => {
-    if (!(event.metaKey && event.key === 'k')) return false
+    if (!(event.metaKey && event.key === "k")) return false;
 
     editor.update((tx) => {
-      tx.text.insert('link')
-    })
+      tx.text.insert("link");
+    });
 
-    return true
+    return true;
   }}
 />
 ```

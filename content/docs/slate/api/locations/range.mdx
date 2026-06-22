@@ -1,13 +1,16 @@
 ---
 title: "Range API"
+description: "Range helpers for selections and document spans."
 ---
 
 `Range` objects are a set of points that refer to a specific span of a Slate document. They can define a span inside a single node or they can span across multiple nodes. The editor's `selection` is stored as a range.
 
+## Shape
+
 ```typescript
 interface Range {
-  anchor: Point
-  focus: Point
+  anchor: Point;
+  focus: Point;
 }
 ```
 
@@ -19,9 +22,9 @@ implicit; extra roots are stored on each point with `root`.
   - [Check methods](range#check-methods)
   - [Transform methods](range#transform-methods)
 
-## Static methods
+## Static Methods
 
-### Retrieval methods
+### Retrieval Methods
 
 #### `RangeApi.edges(range: Range, options?) => [Point, Point]`
 
@@ -45,9 +48,9 @@ Iterate through the two point entries in a `Range`. First it will yield a `Point
 
 Get the start point of a `range` according to the order in which it appears in the document.
 
-### Check methods
+### Check Methods
 
-Check some attribute of a RangeApi. Always returns a boolean.
+Check some attribute of a `Range`. Always returns a boolean.
 
 #### `RangeApi.equals(range: Range, another: Range) => boolean`
 
@@ -57,7 +60,8 @@ Check if a `range` is exactly equal to `another`.
 
 Check if a `range` includes a path, a point, or part of another range.
 
-For clarity the definition of `includes` can mean partially includes. Another way to describe this is if one Range intersects the other RangeApi.
+For clarity, `includes` can mean partial inclusion. Another way to describe
+this is that one range intersects the other range.
 
 #### `RangeApi.surrounds(range: Range, target: Range) => boolean`
 
@@ -83,7 +87,7 @@ Check if a `range` is forward. This is the opposite of `RangeApi.isBackward` and
 
 Check if a `value` implements the `Range` interface.
 
-### Transform methods
+### Transform Methods
 
 #### `RangeApi.transform(range: Range, op: Operation, options) => Range | null`
 

@@ -1,5 +1,6 @@
 ---
 title: "History Editor API"
+description: "Read history state, run undo/redo transactions, and control history batching."
 ---
 
 History adds read, transaction, and editor API groups instead of mutating the
@@ -58,17 +59,17 @@ Read the current saving flag.
 ## Types
 
 ```typescript
-import type { EditorStatePatch, Operation, Range } from '@platejs/slate'
+import type { EditorStatePatch, Operation, Range } from "@platejs/slate";
 
 type History = {
-  redos: Batch[]
-  undos: Batch[]
-}
+  redos: Batch[];
+  undos: Batch[];
+};
 
 type Batch = {
-  operations: Operation[]
-  selectionBefore: Range | null
-  selectionBeforeRoot?: string
-  statePatches: EditorStatePatch[]
-}
+  operations: Operation[];
+  selectionBefore: Range | null;
+  selectionBeforeRoot?: string;
+  statePatches: EditorStatePatch[];
+};
 ```

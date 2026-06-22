@@ -1,5 +1,5 @@
-import { type Descendant, ElementApi, TextApi } from '@platejs/slate-legacy';
-import { jsx } from 'slate-hyperscript';
+import { type Descendant, ElementApi, TextApi } from '@platejs/slate';
+import { jsx } from '@platejs/slate-hyperscript';
 
 import type { SlateEditor } from '../../../editor';
 

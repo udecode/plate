@@ -1,18 +1,23 @@
 ---
 title: "PointRef API"
+description: "Mutable point references that track a point as operations change text and nodes."
 ---
 
 `PointRef` objects keep a specific point synced over time as operations are
 applied. They are low-level location values used by Slate internals and
-advanced runtime code. Read `current` for the up-to-date `Point` value. Call
-`unref()` when you no longer need to track the point. `affinity` controls which
-side the point follows when content is inserted at the current position.
+advanced runtime code.
+
+## Shape
+
+Read `current` for the up-to-date `Point` value. Call `unref()` when you no
+longer need to track the point. `affinity` controls which side the point follows
+when content is inserted at the current position.
 
 ```typescript
 interface PointRef {
-  current: Point | null
-  affinity: 'forward' | 'backward' | null
-  unref(): Point | null
+  current: Point | null;
+  affinity: "forward" | "backward" | null;
+  unref(): Point | null;
 }
 ```
 
@@ -20,16 +25,16 @@ interface PointRef {
 - [Static methods](point-ref#static-methods)
   - [Transform methods](point-ref#transform-methods)
 
-## Instance methods
+## Instance Methods
 
 #### `unref() => Point | null`
 
 Call this when you no longer need to sync this point.
 It also returns the current value.
 
-## Static methods
+## Static Methods
 
-### Transform methods
+### Transform Methods
 
 #### `PointRefApi.transform(ref: PointRef, op: Operation)`
 

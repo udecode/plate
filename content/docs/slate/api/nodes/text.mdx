@@ -1,14 +1,19 @@
 ---
 title: "Text API"
+description: "Text leaf API for marks, decorations, and text checks."
 ---
 
 `Text` objects represent the nodes that contain the actual text content of a Slate document along with any formatting properties. They are always leaf nodes in the document tree as they cannot contain any children.
 
+## Interface
+
 ```typescript
 interface Text {
-  text: string
+  text: string;
 }
 ```
+
+## On This Page
 
 - [Static methods](text#static-methods)
   - [Retrieval methods](text#retrieval-methods)

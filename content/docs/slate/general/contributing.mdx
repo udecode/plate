@@ -1,268 +1,127 @@
 ---
 title: "Contributing"
+description: "Contribute to the Plate-maintained Slate packages with reproducible evidence and the right local proof lane."
 ---
 
-Want to contribute to Slate? That would be awesome!
+Slate work happens in the Plate repository. Treat issues and PRs as execution handoffs: name the affected package, show the behavior, and include the smallest proof that would let a maintainer or agent continue locally.
 
-- [Contributing](contributing#contributing)
-  - [Reporting Bugs](contributing#reporting-bugs)
-  - [Asking Questions](contributing#asking-questions)
-  - [Submitting Pull Requests](contributing#submitting-pull-requests)
-  - [Repository Setup](contributing#repository-setup)
-  - [Running Examples](contributing#running-examples)
-  - [Running Tests](contributing#running-tests)
-  - [Testing Input Methods](contributing#testing-input-methods)
-  - [Publishing Releases](contributing#publishing-releases)
-    - [Publishing Normal `@latest` Release](contributing#publishing-normal-latest-release)
-    - [Publishing `@next` Release](contributing#publishing-next-release)
-    - [Publishing `@experimental` Release](contributing#publishing-experimental-release)
-    - [Running Prerelease Script](contributing#running-prerelease-script)
+## On This Page
 
-## Reporting Bugs
+- [What Fits](#what-fits)
+- [Bug Reports](#bug-reports)
+- [Pull Requests](#pull-requests)
+- [Local Setup](#local-setup)
+- [Slate Proof Lanes](#slate-proof-lanes)
+- [Docs Changes](#docs-changes)
+- [Release Authority](#release-authority)
 
-If you run into any weird behavior while using Slate, feel free to open a new issue in this repository! Please run a **search before opening** a new issue, to make sure that someone else hasn't already reported or solved the bug you've found.
+## What Fits
 
-Any issue you open must include:
+Good Slate contributions improve one of these surfaces:
 
-- A [JSFiddle](https://jsfiddle.net/01pLxfzu/) that reproduces the bug with a minimal setup.
-- A GIF showing the issue in action. \(Using something like [RecordIt](http://recordit.co/).\)
-- A clear explanation of what the issue is.
+- editor runtime correctness in `@platejs/slate`;
+- DOM, clipboard, hotkey, or browser bridge behavior in `@platejs/slate-dom`;
+- React editor behavior in `@platejs/slate-react`;
+- history behavior in `@platejs/slate-history`;
+- Yjs adapter behavior in `@platejs/yjs`;
+- layout proof in `@platejs/slate-layout`;
+- browser proof in `@platejs/browser`;
+- docs and examples under `content/docs/slate/**` and `/examples/slate/*`.
 
-Here's a [JSFiddle template for Slate](https://jsfiddle.net/01pLxfzu/) to get you started:
+Do not add compatibility aliases, wrapper APIs, or old Slate helper shims. If the current API is wrong, propose the better current API and prove it.
 
-[![](../.gitbook/assets/jsfiddle.png)](https://jsfiddle.net/01pLxfzu/)
+## Bug Reports
 
-## Asking Questions
+Editor bugs need more than a screenshot.
 
-**ℹ️ If you're looking for help with the [Slate CRM platform](https://slate.org/), that's an unrelated project to us.**
+Include:
 
-We've also got a [Slate Slack team](https://join.slack.com/t/slate-js/shared_invite/zt-f8t986ip-7dA1DyiqPpzootz1snKXkw) where you can ask questions and get answers from other people using Slate:
+- the exact docs page, example route, package, or API involved;
+- expected behavior;
+- actual behavior;
+- browser, OS, and input method;
+- a minimal value or code path;
+- a short recording when the bug is visual;
+- focused reproduction steps;
+- whether the bug affects model state, rendered DOM, native selection, focus, paste, undo/redo, or follow-up typing.
 
-[![](../.gitbook/assets/slack.png)](https://join.slack.com/t/slate-js/shared_invite/zt-f8t986ip-7dA1DyiqPpzootz1snKXkw)
+For selection, paste, IME, void, hidden DOM, or huge-document behavior, include browser-visible evidence. Model-only tests are useful, but they do not prove contenteditable behavior.
 
-Please use the Slack instead of asking questions in issues, since we want to reserve issues for keeping track of bugs and features. We close questions in issues so that maintaining the project isn't overwhelming.
+## Pull Requests
 
-## Submitting Pull Requests
+Keep PRs narrow and takeover-ready.
 
-All pull requests are super welcomed and greatly appreciated! Issues in need of a solution are marked with a [`♥ help`](https://github.com/ianstormtaylor/slate/issues?q=is%3Aissue+is%3Aopen+label%3A%22%E2%99%A5+help%22) label if you're looking for somewhere to start.
+Every behavior PR should include:
 
-Please include tests and docs with every pull request!
+- the package or docs owner;
+- the bug or design reason;
+- the smallest source change;
+- a focused test, browser proof, or explicit reason no automated proof fits;
+- the exact command that proves the change;
+- docs updates when public behavior or API changes.
 
-## Repository Setup
+If a PR changes package exports, run `pnpm brl`. If it changes published package behavior, add the right changeset unless a maintainer explicitly says the release lane does not need one.
 
-The Slate repository is a Bun workspace orchestrated with [Turbo](https://turbo.build/). Unlike more traditional repositories, this means that the repository must be built in order for tests, linting, or other common development activities to function as expected.
+## Local Setup
 
-To run the build, you need to have the Slate repository cloned to your computer. After that, you need to `cd` into the directory where you cloned it, and install the dependencies with Bun and build the monorepo:
+Install dependencies from the repository root:
 
-```text
-bun install
-bun run build
+```bash
+pnpm install
 ```
 
-## Running Examples
+Run the smallest relevant lane first. Do not start with the full repo check unless the change truly crosses the whole repo.
 
-To run the examples, start by building the monorepo as described in the [Repository Setup](contributing#repository-setup) section.
-
-Then you can start the examples server with:
-
-```text
-bun dev
+```bash
+pnpm slate:packages:typecheck
+pnpm slate:packages:test
+pnpm --filter www check:docs
 ```
 
-## Running Tests
+Use `pnpm check:slate:fast` for normal Slate confidence:
 
-To run the tests, start by building the monorepo as described in the [Repository Setup](contributing#repository-setup) section.
-
-The fast local repository gate is:
-
-```text
-bun check
+```bash
+pnpm check:slate:fast
 ```
 
-It runs lint, typecheck, and tests. Playwright integration coverage lives in
-the fuller gates:
+Use `pnpm check:slate` for release or deletion confidence:
 
-```text
-bun check:ci
-bun check:full
+```bash
+pnpm check:slate
 ```
 
-Package typechecking pulls the package build prerequisites through Turbo
-instead of front-loading a full root build. For purely mechanical formatting
-fixes, run:
+## Slate Proof Lanes
 
-```text
-bun lint:fix
-```
+| Change                                                 | Start with                                                       |
+| ------------------------------------------------------ | ---------------------------------------------------------------- |
+| Core runtime, transforms, operations, nodes, locations | `pnpm --filter @platejs/slate test`                              |
+| React editor behavior                                  | `pnpm --filter @platejs/slate-react test`                        |
+| History                                                | `pnpm --filter @platejs/slate-history test`                      |
+| DOM bridge or browser harness                          | `pnpm --filter @platejs/browser test`                            |
+| Yjs adapter                                            | `pnpm --filter @platejs/yjs test`                                |
+| Layout                                                 | `pnpm --filter @platejs/slate-layout test`                       |
+| Docs source                                            | `pnpm --filter www check:docs`                                   |
+| Example browser behavior                               | `pnpm --filter slate test:slate-browser:chromium <file-or-grep>` |
+| Full browser matrix                                    | `pnpm check:slate:browser-matrix`                                |
 
-If you only want to rerun the tests, use:
+Browser proof should hit `/examples/slate/*`, not docs pages. Docs pages prove reading and navigation. Example routes prove editor behavior.
 
-```text
-bun run test
-```
+## Docs Changes
 
-That runs the full package test graph:
+Docs should describe the current API, not migration history.
 
-- `bun test` for Bun-owned lanes
-- `bun test:vitest` for the `@platejs/slate-react` DOM lane
+Use:
 
-If you only want the Bun-owned package tests, use:
+- exact package names;
+- exact import specifiers;
+- runnable examples;
+- links to real leaf docs;
+- source-backed claims;
+- short openings;
+- scan-friendly headings and tables when a page is large.
 
-```text
-bun test
-```
+Do not write placeholder prose, fake APIs, stale upstream URLs, or broad claims that the proof lane does not own.
 
-If you only want the `@platejs/slate-react` Vitest lane, use:
+## Release Authority
 
-```text
-bun test:vitest
-```
-
-If you need to debug something, you can add a `debugger` line to the source, and then run `bun test:inspect`.
-
-If you only want to run a specific Bun-owned test or tests, use Bun's test-name filtering:
-
-```text
-bun test ./packages/slate/test/index.spec.ts --test-name-pattern "Editor\\.above"
-```
-
-If you only want to run a specific `@platejs/slate-react` Vitest test or tests, run Vitest directly:
-
-```text
-cd ./packages/slate-react && bun test:vitest -- test/react-editor.test.tsx -t "should not trigger onValueChange"
-```
-
-If you only want the lint gate, use:
-
-```text
-bun lint
-```
-
-## Running integration tests
-
-To run integrations with [Playwright](https://playwright.dev/), either:
-
-- run `bun dev` and then `bun run playwright` in a separate session
-- or run `bun test:integration-local`
-
-The local integration command manages its own exported-site server, so it does
-not need the normal dev server to already be running.
-
-For a broad local sweep that should not block your current terminal or agent
-thread, start it asynchronously:
-
-```text
-bun test:integration-local:async
-```
-
-The async command accepts Playwright targets and flags when you want a narrower
-background run:
-
-```text
-bun test:integration-local:async playwright/integration/examples/richtext.test.ts --project=chromium
-```
-
-Then inspect the latest run later:
-
-```text
-bun test:integration-local:pickup
-bun test:integration-local:status
-bun test:integration-local:failures
-```
-
-Async runs write ignored artifacts under `.tmp/integration-runs/<run-id>/`,
-including `status.json`, `pickup.md`, `raw.log`, `report.json`, and
-`failures.md`. Only one async integration run starts at a time. Start from
-`pickup.md` or `bun test:integration-local:pickup` when resuming a previous
-run.
-
-The async command is shared across local agents. If the same command is already
-running for the current source stamp, `bun test:integration-local:async` reuses
-that run and prints its pickup/status commands instead of starting another
-Playwright sweep. If the same command already completed for the current source
-stamp, it prints the cached pickup. A different command while another run is
-active is rejected clearly; use `pickup` first, then start the different sweep
-after the active one finishes.
-
-### Running integration tests in Docker
-
-If tests fail on CI but pass locally (often due to OS differences), you can run tests in a Docker container that replicates the same environment as CI.
-
-**Prerequisites:** The project must be built first (same as running tests locally).
-
-```text
-bun test:integration-docker
-```
-
-The script will automatically:
-
-1. Start the development server (if not already running)
-2. Run tests inside a Docker container
-3. Stop the server when tests complete
-
-You can also pass additional arguments to the test runner. For example, to run a specific test file:
-
-```text
-bun test:integration-docker playwright/integration/slate-react/selection.test.ts
-```
-
-Or run a specific browser project:
-
-```text
-bun test:integration-docker --project=chromium
-```
-
-You can combine arguments as well:
-
-```text
-bun test:integration-docker playwright/integration/examples/richtext.test.ts --project chromium
-```
-
-## Testing Input Methods
-
-[Here's a helpful page](https://github.com/Microsoft/vscode/wiki/IME-Test) detailing how to test various input scenarios on Windows, Mac and Linux.
-
-## Android tests
-
-When making changes that affect Android or IME behavior, test against
-`/examples/android-tests`.
-
-That page links to the `placeholder`, `inline-edge`, and `void-edge` examples.
-
-## Publishing Releases
-
-### Publishing Normal `@latest` Release
-
-Slate uses Changesets for publishing, so run:
-
-```text
-bun release:latest
-```
-
-This automatically runs the prerelease script first so the build, test, and lint gate is green before publishing.
-
-### Publishing `@next` Release
-
-If we are unsure as to the stability of a release because there are significant changes and/or particularly complex changes, release with the `@next` tag.
-
-```text
-bun release:next
-```
-
-### Publishing `@experimental` Release
-
-If you need to create an experimental release to see how a published package will behave during an actual publish, release with the `@experimental` tag. End users should have no expectation that an `@experimental` release will be usable.
-
-```text
-bun release:experimental
-```
-
-### Running Prerelease Script
-
-If we want to make sure that Slate code follows the preparations for a release but without actually publishing, run:
-
-```text
-bun prerelease
-```
-
-Which will build, test and lint Slate code.
+Public release, package promotion, and npm publishing decisions belong to maintainers. A contribution can prepare proof and docs, but it should not claim release readiness unless the release lane has run.

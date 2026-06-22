@@ -1,13 +1,16 @@
 ---
 title: "Slate Hyperscript"
+description: "Write Slate test fixtures as JSX when nested editor state is clearer as markup."
 ---
 
 `@platejs/slate-hyperscript` creates Slate test fixtures with JSX. Use it when nested
 editor state is easier to read as markup than as raw JSON.
 
+## JSX Fixtures
+
 ```tsx
 /** @jsx jsx */
-import { jsx } from '@platejs/slate-hyperscript'
+import { jsx } from "@platejs/slate-hyperscript";
 
 const editor = (
   <editor>
@@ -16,7 +19,7 @@ const editor = (
       <cursor />
     </element>
   </editor>
-)
+);
 ```
 
 The built-in tags create normal Slate objects:
@@ -32,15 +35,15 @@ The built-in tags create normal Slate objects:
 Define domain tags with `createHyperscript`.
 
 ```tsx
-import { createHyperscript } from '@platejs/slate-hyperscript'
+import { createHyperscript } from "@platejs/slate-hyperscript";
 
 const h = createHyperscript({
   elements: {
-    paragraph: { type: 'paragraph' },
+    paragraph: { type: "paragraph" },
   },
-})
+});
 
-const paragraph = h('paragraph', {}, 'hello')
+const paragraph = h("paragraph", {}, "hello");
 ```
 
 ## Creator Helpers

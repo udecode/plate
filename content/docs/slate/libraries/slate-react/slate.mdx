@@ -1,9 +1,12 @@
 ---
 title: "Slate Component"
+description: "Provide one editor to Editable, toolbars, sidebars, projection sources, and change callbacks."
 ---
 
 `Slate` provides a React context for one editor. Render it above `Editable`,
 toolbars, sidebars, and any component that needs editor state.
+
+## Minimal Usage
 
 ```tsx
 <Slate editor={editor} onChange={handleChange}>
@@ -16,30 +19,30 @@ toolbars, sidebars, and any component that needs editor state.
 
 ```typescript
 type SlateBaseProps = {
-  annotationStore?: SlateAnnotationStore | null
-  children: React.ReactNode
-  decorationSources?: readonly SlateDecorationSource[] | null
-  onChange?: (value: Descendant[], change: SlateChange) => void
-  onSelectionChange?: (selection: Range | null, change: SlateChange) => void
-  onValueChange?: (value: Descendant[], change: SlateChange) => void
-  readOnly?: boolean
-}
+  annotationStore?: SlateAnnotationStore | null;
+  children: React.ReactNode;
+  decorationSources?: readonly SlateDecorationSource[] | null;
+  onChange?: (value: Descendant[], change: SlateChange) => void;
+  onSelectionChange?: (selection: Range | null, change: SlateChange) => void;
+  onValueChange?: (value: Descendant[], change: SlateChange) => void;
+  readOnly?: boolean;
+};
 
 type SlateProps =
   | (SlateBaseProps & { editor: ReactEditor; root?: never })
-  | (SlateBaseProps & { editor?: never; root: string })
+  | (SlateBaseProps & { editor?: never; root: string });
 
 type SlateChange = {
-  commit: EditorCommit
-  marksChanged: boolean
-  operations: readonly Operation[]
-  selection: Range | null
-  selectionChanged: boolean
-  snapshot: EditorSnapshot
-  tags: readonly string[]
-  value: Descendant[]
-  valueChanged: boolean
-}
+  commit: EditorCommit;
+  marksChanged: boolean;
+  operations: readonly Operation[];
+  selection: Range | null;
+  selectionChanged: boolean;
+  snapshot: EditorSnapshot;
+  tags: readonly string[];
+  value: Descendant[];
+  valueChanged: boolean;
+};
 ```
 
 `SlateChange` is the React callback detail for the provider root. Use it when
@@ -56,10 +59,10 @@ Pass the editor created with `useSlateEditor`.
 
 ```tsx
 const MyEditor = () => {
-  const editor = useSlateEditor<CustomValue>({ initialValue })
+  const editor = useSlateEditor<CustomValue>({ initialValue });
 
-  return <Slate editor={editor}>...</Slate>
-}
+  return <Slate editor={editor}>...</Slate>;
+};
 ```
 
 Seed the editor with `initialValue` when the editor is created. `<Slate>` does
@@ -94,11 +97,11 @@ changes.
   editor={editor}
   onChange={(value, change) => {
     if (change.selectionChanged) {
-      updateToolbar(change.selection)
+      updateToolbar(change.selection);
     }
 
     if (change.valueChanged) {
-      updateCurrentRootPreview(value)
+      updateCurrentRootPreview(value);
     }
   }}
 >
@@ -132,9 +135,9 @@ full document persistence path.
 <Slate
   editor={editor}
   onChange={(value, change) => {
-    if (!change.valueChanged) return
+    if (!change.valueChanged) return;
 
-    localStorage.setItem('slate.children', JSON.stringify(value))
+    localStorage.setItem("slate.children", JSON.stringify(value));
   }}
 >
   <Editable />
@@ -148,17 +151,17 @@ you need named roots or persistent state fields.
 ```tsx
 useEffect(() => {
   return editor.subscribe((_snapshot, change) => {
-    if (!change) return
+    if (!change) return;
 
     if (!change.childrenChanged && change.dirtyStateKeys.length === 0) {
-      return
+      return;
     }
 
-    const documentValue = editor.read((state) => state.value.get())
+    const documentValue = editor.read((state) => state.value.get());
 
-    localStorage.setItem('slate.document', JSON.stringify(documentValue))
-  })
-}, [editor])
+    localStorage.setItem("slate.document", JSON.stringify(documentValue));
+  });
+}, [editor]);
 ```
 
 See [Document State](../../concepts/14-document-state) for the full
@@ -184,13 +187,13 @@ diagnostics, and code highlights.
 
 ```tsx
 const searchSource = useSlateDecorationSource(editor, {
-  id: 'search',
+  id: "search",
   read: ({ snapshot }) => findSearchMatches(snapshot, query),
 });
 
 <Slate decorationSources={[searchSource]} editor={editor}>
   <Editable renderSegment={renderSearchMatch} />
-</Slate>
+</Slate>;
 ```
 
 Use provider-owned `decorationSources` so every `Editable` and overlay UI reads
@@ -217,7 +220,7 @@ const annotationStore = useSlateAnnotationStore(editor, annotations);
 <Slate annotationStore={annotationStore} editor={editor}>
   <Editable renderSegment={renderCommentSegment} />
   <CommentsSidebar />
-</Slate>
+</Slate>;
 ```
 
 Widget stores are hook-owned. Create them with `useSlateWidgetStore` and pass

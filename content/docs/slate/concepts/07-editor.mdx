@@ -1,5 +1,6 @@
 ---
 title: "Editor"
+description: "Use the Editor runtime for document state, selection, operations, schema, extensions, and subscriptions."
 ---
 
 The `Editor` object is the runtime for one Slate document. It owns the document value, selection, operations, schema behavior, extensions, and subscriptions.
@@ -20,8 +21,8 @@ const info = editor.read((state) => {
     selection: state.selection.get(),
     text: state.text.string([]),
     value: state.value.get(),
-  }
-})
+  };
+});
 ```
 
 The callback is read-only. Starting a write from inside a read is rejected because it would mix two different editor snapshots.
@@ -32,10 +33,10 @@ Use `editor.update(...)` when you need to change the document or selection. Slat
 
 ```javascript
 editor.update((tx) => {
-  tx.text.insert('!')
-  tx.nodes.set({ type: 'heading-one' }, { at: [0] })
-  tx.selection.set(tx.points.end([]))
-})
+  tx.text.insert("!");
+  tx.nodes.set({ type: "heading-one" }, { at: [0] });
+  tx.selection.set(tx.points.end([]));
+});
 ```
 
 All writes in the callback become one commit. That gives history, operation replay, sync adapters, and React rendering one consistent change to observe.
@@ -49,11 +50,11 @@ extension-owned state.
 ```javascript
 const unsubscribe = editor.subscribe((_snapshot, change) => {
   if (change?.childrenChanged || change?.dirtyStateKeys.length) {
-    const documentValue = editor.read((state) => state.value.get())
+    const documentValue = editor.read((state) => state.value.get());
 
-    saveDocument(documentValue)
+    saveDocument(documentValue);
   }
-})
+});
 ```
 
 Use subscriptions for app services that need to observe commits. Use React hooks from `@platejs/slate-react` for UI that renders editor state.
@@ -63,7 +64,7 @@ tooling that intentionally needs the whole document, selection, marks,
 operation index, and runtime id index.
 
 ```javascript
-const snapshot = editor.read((state) => state.runtime.snapshot())
+const snapshot = editor.read((state) => state.runtime.snapshot());
 ```
 
 ## Local Provenance
@@ -74,16 +75,16 @@ label the commit without adding provenance fields to document nodes.
 
 ```javascript
 editor.update(
-  tx => {
-    tx.text.insert(importedText)
+  (tx) => {
+    tx.text.insert(importedText);
   },
   {
-    tag: ['paste', 'import'],
+    tag: ["paste", "import"],
     metadata: {
-      origin: { kind: 'clipboard', source: 'html' },
+      origin: { kind: "clipboard", source: "html" },
     },
   }
-)
+);
 ```
 
 Use `persist: false` state fields for local provenance UI that should follow the
@@ -97,22 +98,22 @@ Use bookmarks when you need a local range to survive document edits.
 
 ```javascript
 const bookmark = editor.read((state) => {
-  const selection = state.selection.get()
+  const selection = state.selection.get();
 
   return selection
-    ? state.ranges.bookmark(selection, { affinity: 'inward' })
-    : null
-})
+    ? state.ranges.bookmark(selection, { affinity: "inward" })
+    : null;
+});
 
 editor.update((tx) => {
-  tx.nodes.unwrap()
+  tx.nodes.unwrap();
 
-  const selection = bookmark?.unref()
+  const selection = bookmark?.unref();
 
   if (selection) {
-    tx.selection.set(selection)
+    tx.selection.set(selection);
   }
-})
+});
 ```
 
 Bookmarks are local runtime anchors. Store shared document state as document
@@ -130,48 +131,48 @@ entries, and optional runtime registration.
 Here's a small extension that adds a table namespace:
 
 ```javascript
-import { createEditor, defineEditorExtension } from '@platejs/slate'
+import { createEditor, defineEditorExtension } from "@platejs/slate";
 
 const tables = defineEditorExtension({
-  name: 'tables',
+  name: "tables",
   state: {
     table(state) {
       return {
         rowCount() {
-          return state.nodes.children().length
+          return state.nodes.children().length;
         },
-      }
+      };
     },
   },
   tx: {
     table(tx) {
       return {
-        insertRow(text = 'row') {
+        insertRow(text = "row") {
           tx.nodes.insert(
             {
-              type: 'paragraph',
+              type: "paragraph",
               children: [{ text }],
             },
             { at: [tx.nodes.children().length] }
-          )
+          );
         },
-      }
+      };
     },
   },
-})
+});
 
-const editor = createEditor()
-editor.extend(tables)
+const editor = createEditor();
+editor.extend(tables);
 ```
 
 The extension adds helpers to the read and write callbacks, not to the editor object itself.
 
 ```javascript
-const rows = editor.read((state) => state.table.rowCount())
+const rows = editor.read((state) => state.table.rowCount());
 
 editor.update((tx) => {
-  tx.table.insertRow()
-})
+  tx.table.insertRow();
+});
 ```
 
 This keeps extension behavior scoped to the runtime phase where it is valid.
@@ -188,10 +189,10 @@ For example, image elements can be treated as block voids, and mention elements 
 The read callback exposes grouped helpers for common reads and queries.
 
 ```javascript
-const point = editor.read(state => state.points.start([0, 0]))
-const text = editor.read(state => state.text.string(range))
+const point = editor.read((state) => state.points.start([0, 0]));
+const text = editor.read((state) => state.text.string(range));
 
-for (const [node, path] of editor.read(state =>
+for (const [node, path] of editor.read((state) =>
   state.nodes.entries({ at: range })
 )) {
   // ...

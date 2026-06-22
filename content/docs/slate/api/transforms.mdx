@@ -1,14 +1,19 @@
 ---
 title: "Transforms API"
+description: "Transaction transform groups for node, text, selection, mark, root, state, and operation writes."
 ---
 
 Transforms are transaction helpers used inside `editor.update(...)`.
 
+## Basic Usage
+
 ```javascript
-editor.update(tx => {
-  tx.text.insert('Hello')
-})
+editor.update((tx) => {
+  tx.text.insert("Hello");
+});
 ```
+
+## On This Page
 
 - [Node options](transforms#node-options)
 - [Node methods](transforms#node-methods)
@@ -29,11 +34,11 @@ across most node methods:
 
 ```typescript
 type NodeSelectorOptions = {
-  at?: Location
-  match?: (node: Node, path: Path) => boolean
-  mode?: 'highest' | 'lowest' | 'all'
-  voids?: boolean
-}
+  at?: Location;
+  match?: (node: Node, path: Path) => boolean;
+  mode?: "highest" | "lowest" | "all";
+  voids?: boolean;
+};
 ```
 
 - `at?: Location`: The explicit location to change. When omitted inside
@@ -59,12 +64,9 @@ Options: `at`, `match`, `mode`, `hanging`, `select`, `voids`, `batchDirty`.
 - `batchDirty?: boolean`: Batch dirty-path work for a multi-node insert.
 
 ```javascript
-editor.update(tx => {
-  tx.nodes.insert(
-    { type: targetType, children: [{ text: '' }] },
-    { at: [0] }
-  )
-})
+editor.update((tx) => {
+  tx.nodes.insert({ type: targetType, children: [{ text: "" }] }, { at: [0] });
+});
 ```
 
 #### `tx.nodes.remove(options?)`
@@ -209,9 +211,9 @@ Options:
 - `voids?: boolean`: Allow deletion inside void elements.
 
 ```javascript
-editor.update(tx => {
-  tx.text.delete({ reverse: true, unit: 'word' })
-})
+editor.update((tx) => {
+  tx.text.delete({ reverse: true, unit: "word" });
+});
 ```
 
 #### `tx.text.deleteBackward(options?)`
@@ -239,12 +241,12 @@ Options:
 Set the selection to a new target.
 
 ```javascript
-editor.update(tx => {
+editor.update((tx) => {
   tx.selection.set({
     anchor: { path: [0, 0], offset: 0 },
     focus: { path: [1, 0], offset: 0 },
-  })
-})
+  });
+});
 ```
 
 #### `tx.selection.clear()`
@@ -296,6 +298,12 @@ Add a mark to the current selection or pending marks.
 
 Remove a mark from the current selection or pending marks.
 
+#### `tx.marks.set(marks: Record<string, unknown> | null)`
+
+Replace the pending insertion marks. Use `{}` to force plain inserted text at a
+collapsed selection, or `null` to let inserted text inherit from the selected
+text position.
+
 #### `tx.marks.toggle(key: string, value?)`
 
 Toggle a mark for the current selection or pending marks.
@@ -311,12 +319,12 @@ typing commands should use `tx.text`, `tx.nodes`, `tx.fragment`, or
 Replace the active root or complete snapshot.
 
 ```javascript
-editor.update(tx => {
+editor.update((tx) => {
   tx.value.replace({
-    children: [{ type: 'paragraph', children: [{ text: 'Imported' }] }],
+    children: [{ type: "paragraph", children: [{ text: "Imported" }] }],
     selection: null,
-  })
-})
+  });
+});
 ```
 
 Pass `roots` in the input when replacing multiple roots at once.
@@ -340,9 +348,9 @@ Delete an extra root. The primary document is not deleted through `tx.roots`.
 Write a registered state field.
 
 ```javascript
-editor.update(tx => {
-  tx.setField(documentTitle, 'Q3 Launch Brief')
-})
+editor.update((tx) => {
+  tx.setField(documentTitle, "Q3 Launch Brief");
+});
 ```
 
 State-field writes appear in `commit.statePatches`.
@@ -371,9 +379,9 @@ transaction normalize afterward.
 Replay operations through the transaction boundary.
 
 ```javascript
-editor.update(tx => {
+editor.update((tx) => {
   tx.operations.replay(remoteOperations, {
-    tag: 'remote-import',
-  })
-})
+    tag: "remote-import",
+  });
+});
 ```

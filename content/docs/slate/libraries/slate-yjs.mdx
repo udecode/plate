@@ -1,5 +1,6 @@
 ---
 title: "Slate Yjs"
+description: "Connect a Slate editor to Yjs document state, awareness, and provider lifecycle."
 ---
 
 `@platejs/yjs` connects a Slate editor to a Yjs document. Use it when your app
@@ -29,32 +30,32 @@ Create or wrap a provider as a `YjsProviderLike`, then pass it to
 adapter.
 
 ```tsx
-import { createEditor } from '@platejs/slate'
-import { createYjsExtension } from '@platejs/yjs'
-import { history } from '@platejs/slate-history'
+import { createEditor } from "@platejs/slate";
+import { createYjsExtension } from "@platejs/yjs";
+import { history } from "@platejs/slate-history";
 
 const editor = createEditor({
   extensions: [
     history(),
     createYjsExtension({
-      clientId: 'local-user',
+      clientId: "local-user",
       doc,
       provider,
-      rootName: '@platejs/slate',
+      rootName: "@platejs/slate",
     }),
   ],
   initialValue,
-})
+});
 ```
 
 The extension adds a `yjs` group to `state` and `tx`.
 
 ```tsx
-const connected = editor.read(state => state.yjs.connected())
+const connected = editor.read((state) => state.yjs.connected());
 
-editor.update(tx => {
-  tx.yjs.sendSelection(selection, { name: 'Ada' })
-})
+editor.update((tx) => {
+  tx.yjs.sendSelection(selection, { name: "Ada" });
+});
 ```
 
 ## React Hooks
@@ -66,7 +67,7 @@ import {
   useYjsProviderStatus,
   useYjsProviderSynced,
   useYjsRemoteCursors,
-} from '@platejs/yjs/react'
+} from "@platejs/yjs/react";
 ```
 
 `useYjsRemoteCursorDecorationSource` converts remote selections into a Slate

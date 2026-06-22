@@ -1,5 +1,6 @@
 ---
 title: "Document State"
+description: "Persist primary children, extra roots, and typed document state fields in one value."
 ---
 
 Slate persists a document as primary children, optional extra roots, and
@@ -16,10 +17,10 @@ The full persisted value is `EditorDocumentValue`.
 
 ```ts
 type EditorDocumentValue = {
-  children: Descendant[]
-  roots?: Record<string, Descendant[]>
-  state?: Record<string, unknown>
-}
+  children: Descendant[];
+  roots?: Record<string, Descendant[]>;
+  state?: Record<string, unknown>;
+};
 ```
 
 `children` is the primary editable body. Extra roots store headers, footers,
@@ -34,9 +35,9 @@ same editor.
 Read the full document value from `state.value.get()`.
 
 ```tsx
-const documentValue = editor.read((state) => state.value.get())
+const documentValue = editor.read((state) => state.value.get());
 
-await saveDocument(JSON.stringify(documentValue))
+await saveDocument(JSON.stringify(documentValue));
 ```
 
 The first argument passed to `<Slate onChange>` is the provider root's block
@@ -48,17 +49,17 @@ commits and edits in other roots are observed.
 ```tsx
 useEffect(() => {
   return editor.subscribe((_snapshot, change) => {
-    if (!change) return
+    if (!change) return;
 
     if (!change.childrenChanged && change.dirtyStateKeys.length === 0) {
-      return
+      return;
     }
 
-    const documentValue = editor.read((state) => state.value.get())
+    const documentValue = editor.read((state) => state.value.get());
 
-    localStorage.setItem('slate.document', JSON.stringify(documentValue))
-  })
-}, [editor])
+    localStorage.setItem("slate.document", JSON.stringify(documentValue));
+  });
+}, [editor]);
 ```
 
 ## Load The Document
@@ -66,17 +67,17 @@ useEffect(() => {
 Pass the saved document value back as `initialValue` when the editor is created.
 
 ```tsx
-const saved = localStorage.getItem('slate.document')
+const saved = localStorage.getItem("slate.document");
 const initialValue = saved
   ? JSON.parse(saved)
   : {
-      children: [{ type: 'paragraph', children: [{ text: 'Body' }] }],
-    }
+      children: [{ type: "paragraph", children: [{ text: "Body" }] }],
+    };
 
 const editor = useSlateEditor({
   extensions: [documentTitle],
   initialValue,
-})
+});
 ```
 
 `initialValue` seeds the editor once. Replace document content later with
@@ -88,36 +89,38 @@ Use `defineStateField` for document metadata and settings that belong to the
 editor model.
 
 ```tsx
-import { defineStateField } from '@platejs/slate'
+import { defineStateField } from "@platejs/slate";
 
 const documentTitle = defineStateField({
-  key: 'document.title',
-  collab: 'shared',
-  history: 'push',
-  initial: () => 'Untitled',
+  key: "document.title",
+  collab: "shared",
+  history: "push",
+  initial: () => "Untitled",
   persist: true,
-})
+});
 ```
 
 Read and write state fields through the editor.
 
 ```tsx
-const title = editor.read((state) => state.getField(documentTitle))
+const title = editor.read((state) => state.getField(documentTitle));
 
 editor.update((tx) => {
-  tx.setField(documentTitle, 'Q3 Launch Brief')
-})
+  tx.setField(documentTitle, "Q3 Launch Brief");
+});
 ```
 
 In React, use `useStateFieldValue` and `useSetStateField` for UI controls.
 
 ```tsx
-import { useSetStateField, useStateFieldValue } from '@platejs/slate-react'
+import { useSetStateField, useStateFieldValue } from "@platejs/slate-react";
 
-const title = useStateFieldValue(documentTitle)
-const setTitle = useSetStateField(documentTitle)
+const title = useStateFieldValue(documentTitle);
+const setTitle = useSetStateField(documentTitle);
 
-return <input value={title} onChange={(event) => setTitle(event.target.value)} />
+return (
+  <input value={title} onChange={(event) => setTitle(event.target.value)} />
+);
 ```
 
 Use state fields for title, layout settings, spellcheck, page settings, or
@@ -131,11 +134,11 @@ through `state.getField(field)` but omits it from `state.value.get()`.
 
 ```tsx
 const sidePanel = defineStateField({
-  key: 'ui.side-panel',
-  history: 'skip',
-  initial: () => 'closed',
+  key: "ui.side-panel",
+  history: "skip",
+  initial: () => "closed",
   persist: false,
-})
+});
 ```
 
 Use this for view-only UI state, temporary panels, local drafts, or caches.
@@ -149,33 +152,33 @@ local.
 
 ```tsx
 editor.update((tx) => {
-  tx.setField(documentTitle, 'Remote Q2 Brief')
-})
+  tx.setField(documentTitle, "Remote Q2 Brief");
+});
 
-const commit = editor.read((state) => state.value.lastCommit())
+const commit = editor.read((state) => state.value.lastCommit());
 ```
 
 Replay remote state changes through `tx.statePatches.replay(...)`.
 
 ```tsx
-const sharedStateKeys = new Set([documentTitle.key])
+const sharedStateKeys = new Set([documentTitle.key]);
 const statePatches = (message.statePatches ?? []).filter((patch) =>
   sharedStateKeys.has(patch.key)
-)
+);
 
 editor.update(
   (tx) => {
-    tx.statePatches.replay(statePatches)
+    tx.statePatches.replay(statePatches);
   },
   {
     metadata: {
-      collab: { origin: 'remote', saveToHistory: false },
-      history: { mode: 'skip' },
-      selection: { dom: 'preserve' },
+      collab: { origin: "remote", saveToHistory: false },
+      history: { mode: "skip" },
+      selection: { dom: "preserve" },
     },
-    tag: ['collaboration', 'remote-state'],
+    tag: ["collaboration", "remote-state"],
   }
-)
+);
 ```
 
 Keep large shared state compact by defining `diff`, `applyPatch`, and

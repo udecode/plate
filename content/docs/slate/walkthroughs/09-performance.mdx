@@ -1,31 +1,28 @@
 ---
 title: "Improving Performance"
+description: "Keep large Slate editors responsive by measuring the hot path before changing rendering strategy."
 ---
 
-When building a text editor, it's important for user interactions to take place without any noticeable delay. For small and moderately sized documents (less than 1000 blocks), you probably don't need to worry about performance. If your editor needs to support very large documents (10,000+ or 100,000+ blocks), follow this guide to ensure the editor stays responsive.
+Small and moderately sized editors usually do not need special performance
+work; large editors do. Measure the slow path first, then change normalization,
+React subscriptions, DOM strategy, or painting policy based on that evidence.
+The [Huge Document](/examples/slate/huge-document) example is the local
+playground for document size, DOM strategy, selection, typing, and rendering
+cost.
 
-The [Huge Document](https://slatejs.org/examples/huge-document) example contains an interactive playground where you can explore the effect of various factors on the performance of a very simple Slate editor.
+## Measure First
 
-The type of performance this guide is mostly concerned with is the **Interaction to Next Paint** (INP) while typing. If the INP is below roughly 100ms, typing should feel very responsive. The editor will still be usable when the INP duration is longer, but it will feel increasingly sluggish and unpleasant to use.
+This guide mostly cares about **Interaction to Next Paint** (INP) while typing. If the INP is below roughly 100ms, typing should feel responsive. When it rises above that, the editor starts to feel sluggish.
 
-Other performance metrics to be aware of (but which are not currently covered in this guide) are **time to first paint** and the INP when performing non-typing operations (such as selecting all content or pasting).
+Also measure click latency, selection latency, paste, Select All, undo/redo, and scroll stability for very large documents. Typing is not the only hot path that users feel.
 
-INP is easiest to measure in Chrome using the [Performance panel](https://developer.chrome.com/docs/slate/devtools/performance) in DevTools, but there are ways to determine it in Firefox and Safari too. For example, in Firefox, you can use the [Firefox Profiler](https://profiler.firefox.com/) to see a timeline of events.
+INP is easiest to measure in Chrome using the [Performance panel](https://developer.chrome.com/docs/devtools/performance) in DevTools. In Firefox, use the [Firefox Profiler](https://profiler.firefox.com/) to inspect event and paint timelines.
 
 ![Screenshot of the Stack Chart tab of the Firefox Profiler, annotated to show a breakdown of time spent in core Slate, React, and painting the DOM.](../images/performance/firefox-inp.png)
 
-There are three areas that can be optimized:
-
-- [Improving Performance](#improving-performance)
-  - [Optimizing Slate Core](#optimizing-slate-core)
-  - [Optimizing React](#optimizing-react)
-    - [Reduce Renders](#reduce-renders)
-    - [DOM Strategy](#dom-strategy)
-  - [Optimizing DOM Painting](#optimizing-dom-painting)
-
 Before you start optimizing, make sure you know which of these areas is most responsible for any slowness you're seeing. The best way of doing this is to use your browser's profiler (see the example for Firefox above), but you can also use these heuristics to guess which area is most at fault:
 
-1. If performance is much better in Firefox than in Chrome or Safari, DOM painting is usually the problem (tested May 2025).
+1. If performance is much better in Firefox than in Chrome or Safari, DOM painting is usually the problem.
 2. If disabling any custom normalization logic improves performance, the normalization logic is the problem.
 3. Otherwise, it's likely to be React.
 
@@ -103,7 +100,7 @@ everything through one `decorate` prop.
 
 In Chrome and Safari, painting large numbers of DOM nodes can be extremely slow, over 100x slower than the core Slate logic and React rendering combined in some cases. In Firefox, the impact of painting on performance is much less significant.
 
-The best way of speeding up painting large documents is to use the [`content-visibility`](https://developer.mozilla.org/en-US/docs/slate/Web/CSS/content-visibility) CSS property. When set to `auto`, this property instructs browsers not to paint content that is off-screen. However, it also comes with a performance overhead proportional to the number of DOM nodes it is applied to, which is especially bad in Safari. When rendering large documents in Safari, applying `content-visibility: auto` to each Slate element individually is often slower than not using it at all.
+The best way of speeding up painting large documents is to use the [`content-visibility`](https://developer.mozilla.org/en-US/docs/Web/CSS/content-visibility) CSS property. When set to `auto`, this property instructs browsers not to paint content that is off-screen. However, it also comes with a performance overhead proportional to the number of DOM nodes it is applied to, which is especially bad in Safari. When rendering large documents in Safari, applying `content-visibility: auto` to each Slate element individually is often slower than not using it at all.
 
 For aggressive mounting control, use explicit virtualized rendering only when a
 pathological document needs a degraded viewport-mounted surface.

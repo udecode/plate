@@ -1,64 +1,148 @@
 ---
-title: "Introduction"
+title: "Overview"
+description: "Slate editor runtime docs for the Plate-maintained package set."
 ---
 
-[Slate](http://slatejs.org) is a customizable framework for building rich text editors.
+Slate is a JSON editor runtime for building product-specific rich text editors. This docs section covers the Plate-maintained Slate packages, their React renderer, their browser proof harness, and the boundaries that keep the runtime verifiable. Start here when you want the current package shape, not upstream Slate 0.x compatibility notes.
 
-Slate gives you a small document model, a transaction runtime, and a React renderer that you can shape around your product. You bring the schema, the UI, and the behavior that makes your editor different.
+## On This Page
 
-## Why?
+- [Install](#install)
+- [Core Shape](#core-shape)
+- [Pick A First Path](#pick-a-first-path)
+- [Examples](#examples)
+- [Package Map](#package-map)
+- [Proof Boundary](#proof-boundary)
+- [Read Next](#read-next)
 
-Most rich text editors make the simple case feel easy. The hard part starts when your editor needs comments, embeds, mentions, tables, operation replay, or a document model that belongs to your application instead of the editor library.
+## Install
 
-Slate is built for that harder case.
+Install the React editor path first:
 
-- **Your document model is yours.** Slate stores documents as nested JSON nodes, so paragraphs, links, images, tables, comments, and domain-specific elements all use the same tree model.
-- **Core stays small.** Slate gives you primitives for reading, updating, normalizing, rendering, and replaying operations. It does not decide what a "blog post", "comment", or "task" node should mean.
-- **Programmatic editing is explicit.** Reads go through `editor.read(...)`; writes go through `editor.update(...)`. This keeps user edits, app commands, history, and operation replay on the same runtime path.
-- **React is the view layer.** `@platejs/slate-react` renders the editor and subscribes to committed editor state. App components render content; the runtime owns selection, DOM repair, void shells, and browser editing details.
-- **Adapters can target the operation model.** Slate exposes snapshots, commits, tags, and operation replay so sync, import, export, and audit adapters can move document changes without persisting React or DOM state.
+```bash
+npm install @platejs/slate @platejs/slate-dom @platejs/slate-react react react-dom
+```
 
-If that sounds like the shape of editor you need, Slate is probably a good fit.
+Add optional packages only when the editor imports them:
 
-## Principles
+```bash
+npm install @platejs/slate-history @platejs/slate-hyperscript @platejs/yjs @platejs/slate-layout
+```
 
-Slate follows a few principles:
+`@platejs/browser` is the browser proof package. Use it in tests and proof harnesses, not as the product editing API.
 
-1. **Schema-less core.** Slate's core does not bake in paragraphs, headings, lists, or images. Those are conventions you define with elements, text, rendering, and normalization.
-2. **Nested document model.** Slate documents are recursive trees. This makes simple editors straightforward and gives complex editors enough room for tables, embeds, captions, and nested blocks.
-3. **Explicit transactions.** Slate separates reads from writes. You read committed state with `editor.read(...)` and make document changes inside `editor.update(...)`.
-4. **Operations as the shared layer.** User edits, commands, history, import/export, and replay all meet at the operation and commit layer.
-5. **React as projection.** React renders the editor, but hot editing policy stays in the runtime. Renderers subscribe to the smallest editor facts they actually display.
-6. **Unopinionated extension points.** Slate exposes low-level extension hooks for schema, namespaced reads and writes, normalization, commit listeners, operation middleware, and rendering. Product frameworks like Plate can build richer command conventions on top.
+## Core Shape
+
+Slate gives you a document model, an explicit runtime, and React rendering hooks.
+
+| Layer          | What it owns                                                                                                                    |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Document model | nested JSON nodes, paths, points, ranges, operations, primary `children`, extra `roots`, and document `state`                   |
+| Runtime        | `editor.read(...)`, `editor.update(...)`, transactions, commits, normalization, refs, history integration, and extension groups |
+| React          | `<Slate>`, `<Editable>`, render functions, editor hooks, DOM repair, selection sync, overlays, and root-aware chrome            |
+| Proof          | browser tests that check model state, rendered DOM, native selection where observable, focus, replay, and follow-up typing      |
+
+The first editor usually looks like this:
+
+```tsx
+import { Editable, Slate, useSlateEditor } from "@platejs/slate-react";
+
+const initialValue = [
+  {
+    type: "paragraph",
+    children: [{ text: "A line of text." }],
+  },
+];
+
+export function Editor() {
+  const editor = useSlateEditor({ initialValue });
+
+  return (
+    <Slate editor={editor}>
+      <Editable placeholder="Start typing..." />
+    </Slate>
+  );
+}
+```
+
+Reads stay explicit:
+
+```tsx
+const value = editor.read((state) => state.value.get());
+```
+
+Writes stay explicit:
+
+```tsx
+editor.update((tx) => {
+  tx.text.insert("Hello");
+});
+```
+
+## Pick A First Path
+
+| If you want to...                 | Start with                                                                                                    |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Render one editor in React        | [Installing Slate](walkthroughs/01-installing-slate)                                                          |
+| Understand the model              | [Nodes](concepts/02-nodes), then [Locations](concepts/03-locations)                                           |
+| Port commands                     | [Executing Commands](walkthroughs/05-executing-commands), then [Commands](concepts/06-commands)               |
+| Store editor values               | [Saving to a Database](walkthroughs/06-saving-to-a-database) and [Document State](concepts/14-document-state) |
+| Add schema or custom transactions | [Extensions](concepts/08-extensions)                                                                          |
+| Understand editing behavior       | [Editing Behavior](concepts/15-editing-behavior), then [Selection And DOM](concepts/16-selection-and-dom)     |
+| Test browser editing behavior     | [Slate Browser](libraries/slate-browser)                                                                      |
+| Move from upstream Slate 0.x      | [Migration](migration)                                                                                        |
 
 ## Examples
 
-To get a sense for how you might use Slate, check out a few examples:
+The examples run inside this docs app:
 
-- [**Plain text**](https://www.slatejs.org/examples/plaintext) shows the most basic editable document.
-- [**Rich text**](https://www.slatejs.org/examples/richtext) shows marks, blocks, and keyboard handlers.
-- [**Markdown preview**](https://www.slatejs.org/examples/markdown-preview) shows Markdown-like shortcuts.
-- [**Inlines**](https://www.slatejs.org/examples/inlines) shows inline nodes with associated data.
-- [**Images**](https://www.slatejs.org/examples/images) shows block void nodes.
-- [**Hovering toolbar**](https://www.slatejs.org/examples/hovering-toolbar) shows a contextual menu driven by selection state.
-- [**Tables**](https://www.slatejs.org/examples/tables) shows nested block structures.
-- [**Paste HTML**](https://www.slatejs.org/examples/paste-html) shows custom paste handling.
-- [**Mentions**](https://www.slatejs.org/examples/mentions) shows inline void nodes for @-mentions.
+- [Plain text](/examples/slate/plaintext)
+- [Rich text](/examples/slate/richtext)
+- [Markdown shortcuts](/examples/slate/markdown-shortcuts)
+- [Checklists](/examples/slate/check-lists)
+- [Editable voids](/examples/slate/editable-voids)
+- [Custom placeholder](/examples/slate/custom-placeholder)
+- [Hidden content blocks](/examples/slate/hidden-content-blocks)
+- [Huge document](/examples/slate/huge-document)
+- [Multi-root document](/examples/slate/multi-root-document)
+- [Document state](/examples/slate/document-state)
+- [Yjs collaboration](/examples/slate/yjs-collaboration)
 
-Examples are a good way to see the APIs in motion. The walkthroughs are the better place to learn the model step by step.
+Use examples for behavior shape. Use the docs pages for the API contract.
 
-## Documentation
+## Package Map
 
-If you're using Slate for the first time, start with [Installing Slate](walkthroughs/01-installing-slate). Then read the walkthroughs in order before jumping into the API reference.
+| Package                                                     | Read when                                                                                            |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [`@platejs/slate`](libraries/slate)                         | You need the editor runtime, document model, helper APIs, transactions, extensions, or state fields. |
+| [`@platejs/slate-dom`](libraries/slate-dom)                 | You need DOM conversion, clipboard helpers, hotkeys, or browser environment helpers.                 |
+| [`@platejs/slate-react`](libraries/slate-react)             | You render editors with React, use `<Editable>`, read editor state in components, or build overlays. |
+| [`@platejs/slate-history`](libraries/slate-history)         | You need undo/redo and history state.                                                                |
+| [`@platejs/slate-hyperscript`](libraries/slate-hyperscript) | You write JSX editor fixtures for tests.                                                             |
+| [`@platejs/yjs`](libraries/slate-yjs)                       | You connect a Slate editor to Yjs document state and awareness.                                      |
+| [`@platejs/slate-layout`](libraries/slate-layout)           | You build page-layout proof surfaces or paged editor experiments.                                    |
+| [`@platejs/browser`](libraries/slate-browser)               | You write browser-level editor proof.                                                                |
 
-- [**Walkthroughs**](walkthroughs/01-installing-slate)
-- [**Concepts**](concepts/01-interfaces)
-- [**API**](api/nodes)
-- [**Slate React**](libraries/slate-react)
-- [**FAQ**](general/faq)
+## Proof Boundary
 
-That's the shape: learn the editor, render it with React, then add the behaviors your application needs.
+This package set is unpublished beta documentation. Treat the runtime as current, but do not treat every adjacent editor problem as solved.
 
-## Contributing
+| Area                       | Claim                                                                                    |
+| -------------------------- | ---------------------------------------------------------------------------------------- |
+| Desktop editor behavior    | Claimed when package tests and browser proof cover the behavior.                         |
+| Raw mobile device behavior | Deferred until real device proof exists.                                                 |
+| Pagination                 | Kept in `@platejs/slate-layout` and example lanes; not the core editor promise.          |
+| Collaboration              | `@platejs/yjs` owns Slate/Yjs mapping. Apps own providers, auth, persistence, and rooms. |
+| Upstream identity          | This is Plate's Slate package set, not an official upstream Slate release.               |
 
-Slate is [MIT-licensed](https://github.com/ianstormtaylor/slate/blob/HEAD/License). Check out the [Contributing instructions](general/contributing) if you'd like to help.
+Read [Why This Fork](why-this-fork) for the maintenance philosophy and hard boundaries.
+
+## Read Next
+
+- [Installing Slate](walkthroughs/01-installing-slate)
+- [Why This Fork](why-this-fork)
+- [Migration](migration)
+- [React Editor Setup](libraries/slate-react/react-editor-setup)
+- [Editable Component](libraries/slate-react/editable)
+- [Extensions](concepts/08-extensions)
+- [Docs Proof Map](general/docs-proof-map)

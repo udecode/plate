@@ -1,12 +1,17 @@
 ---
 title: "Path API"
+description: "Path array helpers for locating and comparing nodes in a Slate tree."
 ---
 
 `Path` arrays are a list of indexes that describe a node's exact position in a Slate node tree. Although they are usually relative to the root `Editor` object, they can be relative to any `Node` object.
 
+## Type
+
 ```typescript
-type Path = number[]
+type Path = number[];
 ```
+
+## On This Page
 
 - [Static methods](path#static-methods)
   - [Retrieval methods](path#retrieval-methods)
@@ -31,7 +36,9 @@ Get the common ancestor path of two paths.
 
 Compare a path to another, returning an integer indicating whether the path was before, at, or after the other.
 
-Note: Two paths of unequal length can still receive a `0` result if one is directly above or below the other. If you want exact matching, use \[\[PathApi.equals\]\] instead.
+Note: Two paths of unequal length can still receive a `0` result if one is
+directly above or below the other. If you want exact matching, use
+`PathApi.equals` instead.
 
 #### `PathApi.levels(path: Path, options?) => Path[]`
 
@@ -111,7 +118,7 @@ Check if a path is the parent of another.
 
 #### `PathApi.isPath(value: unknown) => value is Path`
 
-Check is a value implements the `Path` interface.
+Check if a value implements the `Path` interface.
 
 #### `PathApi.isSibling(path: Path, another: Path) => boolean`
 

@@ -1,14 +1,19 @@
 ---
 title: "Element API"
+description: "Element node API for schema behavior, void rendering, and element checks."
 ---
 
 `Element` objects are a type of `Node` in a Slate document that contain other `Element` nodes or `Text` nodes.
 
+## Interface
+
 ```typescript
 interface Element {
-  children: Node[]
+  children: Node[];
 }
 ```
+
+## On This Page
 
 - [Behavior Types](element#element-behavior-types)
   - [Block vs. Inline](element#block-vs-inline)
@@ -36,7 +41,7 @@ In a not "void" element, Slate handles the rendering of its `children` (e.g. in 
 #### Voids That Support Marks
 
 Some void elements are effectively stand-ins for text, such as with the
-[Mentions](https://www.slatejs.org/examples/mentions) example, where the
+[mentions](/examples/slate/mentions) example, where the
 mention element renders the character's name. Users might want to format Void
 elements like this with bold, or set their font and size, so
 `state.schema.markableVoid(element)` tells Slate whether or not to apply Marks
@@ -52,28 +57,28 @@ hidden anchor and browser shell for you. App renderers should use
 Typical rendering code will resemble this image element:
 
 ```tsx
-import type { RenderVoidProps } from '@platejs/slate-react'
+import type { RenderVoidProps } from "@platejs/slate-react";
 
 type ImageElement = {
-  type: 'image'
-  url: string
-  children: [{ text: '' }]
-}
+  type: "image";
+  url: string;
+  children: [{ text: "" }];
+};
 
 const Image = ({ element }: RenderVoidProps<ImageElement>) => {
-  return <img alt="" src={element.url} />
-}
+  return <img alt="" src={element.url} />;
+};
 
 <Editable
   renderVoid={(props) => {
     switch (props.element.type) {
-      case 'image':
-        return <Image {...props} />
+      case "image":
+        return <Image {...props} />;
       default:
-        return null
+        return null;
     }
   }}
-/>
+/>;
 ```
 
 For a "markable" void such as a `mention` element, marks on the text child can
@@ -81,42 +86,42 @@ still be used to determine how the visible content is rendered. Selection UI is
 an opt-in target subscription:
 
 ```tsx
-import { useElementSelected, type RenderVoidProps } from '@platejs/slate-react'
+import { useElementSelected, type RenderVoidProps } from "@platejs/slate-react";
 
 type MentionElement = {
-  type: 'mention'
-  character: string
-  children: [{ bold?: true; italic?: true; text: '' }]
-}
+  type: "mention";
+  character: string;
+  children: [{ bold?: true; italic?: true; text: "" }];
+};
 
 const Mention = ({ element }: RenderVoidProps<MentionElement>) => {
-  const selected = useElementSelected()
-  const text = element.children[0] ?? {}
+  const selected = useElementSelected();
+  const text = element.children[0] ?? {};
   const style = {
-    padding: '3px 3px 2px',
-    margin: '0 1px',
-    verticalAlign: 'baseline',
-    display: 'inline-block',
-    borderRadius: '4px',
-    backgroundColor: '#eee',
-    fontSize: '0.9em',
-    boxShadow: selected ? '0 0 0 2px #B4D5FF' : 'none',
-  }
+    padding: "3px 3px 2px",
+    margin: "0 1px",
+    verticalAlign: "baseline",
+    display: "inline-block",
+    borderRadius: "4px",
+    backgroundColor: "#eee",
+    fontSize: "0.9em",
+    boxShadow: selected ? "0 0 0 2px #B4D5FF" : "none",
+  };
   if (text.bold) {
-    style.fontWeight = 'bold'
+    style.fontWeight = "bold";
   }
   if (text.italic) {
-    style.fontStyle = 'italic'
+    style.fontStyle = "italic";
   }
   return (
     <span
-      data-cy={`mention-${element.character.replace(' ', '-')}`}
+      data-cy={`mention-${element.character.replace(" ", "-")}`}
       style={style}
     >
       @{element.character}
     </span>
-  )
-}
+  );
+};
 ```
 
 ## Static methods
@@ -145,7 +150,7 @@ Check if a `value` is an array of `Element` objects.
 
 Check if a value is an object that can be used as partial `Element` props.
 
-#### `ElementApi.isElementType<T Extends Element>(value: unknown, elementVal: string, ElementKey: string = 'type'): value is T`
+#### `ElementApi.isElementType<T extends Element>(value: unknown, elementVal: string, elementKey: string = 'type'): value is T`
 
-Check if a value implements the `Element` interface and has elementKey with selected value.
-Default it check to `type` key value
+Check if a value implements the `Element` interface and has `elementKey` with
+the selected value. The default key is `type`.
