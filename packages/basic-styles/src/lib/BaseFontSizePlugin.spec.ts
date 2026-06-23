@@ -2,6 +2,9 @@ import { KEYS, createSlateEditor } from 'platejs';
 
 import { BaseFontSizePlugin } from './BaseFontSizePlugin';
 
+type ExpectTrue<T extends true> = T;
+type IsAssignable<From, To> = From extends To ? true : false;
+
 const runAddMarkTx = (value: string) => {
   const add = mock();
   const extension = (BaseFontSizePlugin as any).__txExtensions[0];
@@ -42,5 +45,33 @@ describe('BaseFontSizePlugin', () => {
 
   it('registers set as a transaction mark add', () => {
     expect(runAddMarkTx('24px')).toHaveBeenCalledWith(KEYS.fontSize, '24px');
+  });
+
+  it('applies font size through the editor update transaction', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseFontSizePlugin],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+      value: [{ children: [{ text: 'One' }], type: 'p' }],
+    });
+
+    editor.update((tx) => {
+      tx[KEYS.fontSize].set('24px');
+
+      type Tx = typeof tx;
+      // @ts-expect-error unknown tx groups must not be accepted.
+      type _UnknownTxGroup = Tx['notAStyleGroup'];
+      type FontSizeSet = Tx[typeof KEYS.fontSize]['set'];
+      type BadFontSizeValue = IsAssignable<number, Parameters<FontSizeSet>[0]>;
+      // @ts-expect-error font size tx expects a string value.
+      type _FontSizeRejectsNumber = ExpectTrue<BadFontSizeValue>;
+    });
+
+    expect(editor.children[0].children[0]).toMatchObject({
+      [KEYS.fontSize]: '24px',
+      text: 'One',
+    });
   });
 });

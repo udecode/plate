@@ -142,7 +142,7 @@ non-matching findings instead of patching around reviewer hallucinations.
 - `sync-main-to-next` for the fast direct `main -> next` release-lane sync wrapper without promotion or autoreview ceremony
 - `tdd`
 - @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
-- @.agents/rules/plate-plan.mdc when defining or updating editor-behavior law, authority maps, protocol rows, or parity coverage
+- @.agents/rules/plate-plan.mdc when defining Plate v2 architecture/API/boundary plans, minimal breaking changes, Slate/Plate ownership, or editor-behavior law when that surface is touched
 
 Skill ownership:
 

@@ -4,6 +4,8 @@ import { createSlateEditor } from '../../lib/editor';
 import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
 import { resolvePlugin } from './resolvePlugin';
 
+type CreateSlatePluginInput = Parameters<typeof createSlatePlugin>[0];
+
 export const resolvePluginTest = <P extends AnyPluginConfig>(p: P) => {
   const editor = createSlateEditor({
     plugins: [p],
@@ -18,7 +20,7 @@ export const resolvePluginTest = <P extends AnyPluginConfig>(p: P) => {
   return editor.getPlugin({ key });
 };
 
-export const resolveCreatePluginTest = ((plugin: AnyPluginConfig) => {
+export const resolveCreatePluginTest = ((plugin: CreateSlatePluginInput) => {
   const p = createSlatePlugin(plugin);
 
   const editor = createSlateEditor({

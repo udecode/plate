@@ -3,7 +3,7 @@ title: "Slate Browser"
 description: "Use the first-party browser proof harness for Playwright editor behavior tests."
 ---
 
-`@platejs/browser` is Slate's Playwright proof harness for model, DOM, native selection, focus, screenshots, trace, clipboard, and replayable scenario assertions. It is test infrastructure, not the product editing API; application code builds editors with `@platejs/slate`, `@platejs/slate-dom`, `@platejs/slate-react`, and extensions. Read [Editing Behavior](../concepts/15-editing-behavior) for the runtime pipeline and [Selection And DOM](../concepts/16-selection-and-dom) when proof depends on caret placement, native selection, hidden content, or double-highlight assertions.
+`@platejs/browser` is Slate's Playwright proof harness for model, DOM, native selection, focus, screenshots, trace, clipboard, and replayable scenario assertions. It is test infrastructure, not the product editing API; application code builds editors with `@platejs/slate`, `@platejs/slate-dom`, `@platejs/slate-react`, and extensions. Read [Editing Behavior](../concepts/15-editing-behavior) for the runtime pipeline, [Selection And DOM](../concepts/16-selection-and-dom) for caret proof, [Clipboard And Paste](../concepts/17-clipboard-and-paste) for payload proof, and [Projection And Overlays](../concepts/18-projection-and-overlays) for visible highlight and overlay proof.
 
 ## Install
 
@@ -53,14 +53,14 @@ behavior.
 
 Slate browser proof should usually assert more than model state:
 
-| Claim | Useful proof |
-| --- | --- |
-| Model state changed correctly | model text, block text, operations, or commit metadata |
-| Browser caret is correct | DOM caret, DOM selection, or native selection snapshot |
-| Visible selection is sane | displayed selection snapshot and no double-highlight |
-| Editor stayed active | focus ownership |
-| Native input path is the bug | native event trace for input, paste, selection, or IME |
-| Visual evidence matters | screenshot or JSON artifact |
+| Claim                            | Useful proof                                                             |
+| -------------------------------- | ------------------------------------------------------------------------ |
+| Model state changed correctly    | model text, block text, operations, or commit metadata                   |
+| Browser caret is correct         | DOM caret, DOM selection, or native selection snapshot                   |
+| Visible selection is sane        | displayed selection snapshot and no double-highlight                     |
+| Editor stayed active             | focus ownership                                                          |
+| Native input path is the bug     | native event trace for input, paste, selection, or IME                   |
+| Visual evidence matters          | screenshot or JSON artifact                                              |
 | The editor still works afterward | follow-up typing after navigation, paste, undo, selection, or DOM repair |
 
 Feature contracts group browser behavior families by the owning Slate feature

@@ -2,6 +2,9 @@ import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
 
 import { BaseTextAlignPlugin } from './BaseTextAlignPlugin';
 
+type ExpectTrue<T extends true> = T;
+type IsAssignable<From, To> = From extends To ? true : false;
+
 const runTextAlignTx = (value: string, options?: unknown) => {
   const set = mock();
   const unset = mock();
@@ -92,5 +95,31 @@ describe('BaseTextAlignPlugin', () => {
       'align',
       expect.objectContaining({ at: [] })
     );
+  });
+
+  it('applies text alignment through the editor update transaction', () => {
+    const editor = createSlateEditor({
+      plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
+      value: [{ children: [{ text: 'One' }], type: 'p' }],
+    });
+
+    editor.update((tx) => {
+      tx[BaseTextAlignPlugin.key].set('center', { at: [0] });
+
+      type Tx = typeof tx;
+      type TextAlignSet = Tx[typeof BaseTextAlignPlugin.key]['set'];
+      type BadTextAlignValue = IsAssignable<
+        'middle',
+        Parameters<TextAlignSet>[0]
+      >;
+      // @ts-expect-error text align tx accepts only known alignment values.
+      type _TextAlignRejectsMiddle = ExpectTrue<BadTextAlignValue>;
+    });
+
+    expect(editor.children[0]).toMatchObject({
+      align: 'center',
+      children: [{ text: 'One' }],
+      type: 'p',
+    });
   });
 });

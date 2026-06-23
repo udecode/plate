@@ -88,7 +88,8 @@ const patterns = [
   },
   {
     name: 'current-platejs-slate-import',
-    regex: /@platejs\/(?:slate|slate-dom|slate-react|slate-history|slate-hyperscript|slate-layout|yjs|browser)(?:\/[^'"\s]*)?/g,
+    regex:
+      /@platejs\/(?:slate|slate-dom|slate-react|slate-history|slate-hyperscript|slate-layout|yjs|browser)(?:\/[^'"\s]*)?/g,
   },
 ];
 
@@ -246,12 +247,15 @@ function packageProof(owner) {
     commands.push(`pnpm --filter ${pkg.name} build`);
   }
 
-  return commands.length ? commands.join(' && ') : `pnpm --filter ${pkg.name} lint`;
+  return commands.length
+    ? commands.join(' && ')
+    : `pnpm --filter ${pkg.name} lint`;
 }
 
 function dependencyState(owner) {
   const pkg = readPackageJson(owner);
-  if (!pkg) return { allDeps: new Set(), legacyDep: false, currentSlateDeps: [] };
+  if (!pkg)
+    return { allDeps: new Set(), legacyDep: false, currentSlateDeps: [] };
 
   const allDeps = {
     ...pkg.dependencies,
@@ -292,18 +296,16 @@ for (const filePath of files) {
   const staleTypeSourceFile =
     hasLegacyTypeImportBlock(text) ||
     lines.some((line) => usesLegacyTypeSource(line));
-  const ownerStat =
-    ownerStats.get(owner) ??
-    {
-      actionableHitCount: 0,
-      currentPlatejsSlateFiles: new Set(),
-      currentPlatejsSlateImports: new Set(),
-      files: new Set(),
-      hitCount: 0,
-      legacyFiles: new Set(),
-      oldBareSlateFiles: new Set(),
-      staleTypeFiles: new Set(),
-    };
+  const ownerStat = ownerStats.get(owner) ?? {
+    actionableHitCount: 0,
+    currentPlatejsSlateFiles: new Set(),
+    currentPlatejsSlateImports: new Set(),
+    files: new Set(),
+    hitCount: 0,
+    legacyFiles: new Set(),
+    oldBareSlateFiles: new Set(),
+    staleTypeFiles: new Set(),
+  };
 
   ownerStat.files.add(relativePath);
 
@@ -426,16 +428,23 @@ const ownerRows = [...ownerStats.entries()]
       row.missingCurrentSlateDeps ||
       row.legacyDep === 'yes'
   )
-  .sort((a, b) => b.priorityScore - a.priorityScore || a.owner.localeCompare(b.owner));
+  .sort(
+    (a, b) =>
+      b.priorityScore - a.priorityScore || a.owner.localeCompare(b.owner)
+  );
 
 function tsvEscape(value) {
-  return String(value ?? '').replaceAll('\t', ' ').replaceAll('\n', ' ');
+  return String(value ?? '')
+    .replaceAll('\t', ' ')
+    .replaceAll('\n', ' ');
 }
 
 function writeTsv(fileName, rows, columns) {
   const body = [
     columns.join('\t'),
-    ...rows.map((row) => columns.map((column) => tsvEscape(row[column])).join('\t')),
+    ...rows.map((row) =>
+      columns.map((column) => tsvEscape(row[column])).join('\t')
+    ),
   ].join('\n');
   fs.writeFileSync(path.join(outDir, fileName), `${body}\n`);
 }
@@ -477,10 +486,12 @@ const summary = [
   '',
   '| Owner | Package | Score | Legacy files | Bare Slate files | T* files | Proof |',
   '| --- | --- | ---: | ---: | ---: | ---: | --- |',
-  ...ownerRows.slice(0, 30).map(
-    (row) =>
-      `| \`${row.owner}\` | \`${row.packageName}\` | ${row.priorityScore} | ${row.legacyFiles} | ${row.oldBareSlateFiles} | ${row.staleTypeFiles} | \`${row.proof}\` |`
-  ),
+  ...ownerRows
+    .slice(0, 30)
+    .map(
+      (row) =>
+        `| \`${row.owner}\` | \`${row.packageName}\` | ${row.priorityScore} | ${row.legacyFiles} | ${row.oldBareSlateFiles} | ${row.staleTypeFiles} | \`${row.proof}\` |`
+    ),
   '',
   '## Files',
   '',

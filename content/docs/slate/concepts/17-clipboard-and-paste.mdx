@@ -1,0 +1,152 @@
+---
+title: "Clipboard And Paste"
+description: "Route copy, paste, drop, and fragment insertion through Slate's editor, DOM, and extension layers."
+---
+
+Clipboard work crosses browser events, Slate fragments, transactions, DOM
+coverage, and browser proof. Use this page to decide whether a paste, copy, or
+drop policy belongs in `Editable`, an extension, `editor.api.clipboard`, or a
+fragment transform.
+
+## Choose The Right Surface
+
+Paste bugs usually come from mixing browser event ownership with model
+insertion ownership.
+
+| Need                                                 | Start with                                                 | Owner                                               |
+| ---------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------- |
+| One editor instance needs a local paste/drop hook    | `Editable` `onPaste` or `onDrop`                           | `@platejs/slate-react`                              |
+| A reusable package owns paste/drop import policy     | extension `clipboard.insertData`                           | `@platejs/slate`                                    |
+| Framework code needs to import a `DataTransfer`      | `editor.api.clipboard.insertData(data)`                    | `@platejs/slate-dom` through `@platejs/slate-react` |
+| Structural fragment insertion is already decoded     | `tx.fragment.insert(fragment, options?)`                   | `@platejs/slate`                                    |
+| Copy or drag must include hidden model content       | DOM coverage `copyPolicy` plus model-backed clipboard data | `@platejs/slate-dom` and `@platejs/slate-react`     |
+| The claim depends on real browser clipboard behavior | `@platejs/browser` clipboard helpers                       | `@platejs/browser`                                  |
+
+Use `Editable` for local event interception. Use extension clipboard policy when
+the behavior should apply to native paste, drop, browser tests, and every React
+surface that installs the extension.
+
+## Runtime Pipeline
+
+Clipboard data enters Slate through explicit layers.
+
+| Stage                | What happens                                                                                                           | Owner                                       |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| Browser event        | The browser produces `paste`, `cut`, `copy`, `dragstart`, or `drop` with a `DataTransfer`.                             | Browser                                     |
+| Editable handler     | App handlers can handle the event or let Slate continue.                                                               | `@platejs/slate-react`                      |
+| Clipboard middleware | Extension `clipboard.insertData` handlers can claim the payload.                                                       | `@platejs/slate`                            |
+| DOM clipboard import | Slate reads the configured internal Slate fragment key, then falls back to text.                                       | `@platejs/slate-dom`                        |
+| Transaction          | The decoded content is inserted through `tx.fragment`, `tx.text`, or another extension-owned transform.                | `@platejs/slate`                            |
+| Commit and render    | Slate publishes one change; React renders and repairs selection.                                                       | `@platejs/slate` and `@platejs/slate-react` |
+| Proof                | Browser tests assert model content, DOM/native selection where needed, focus, clipboard payload, and follow-up typing. | `@platejs/browser`                          |
+
+Do not close a paste bug with only a model assertion when the failure was in the
+browser event, DOM clipboard payload, native selection, or follow-up typing.
+
+## Extension Clipboard Policy
+
+Use `clipboard.insertData` when a feature owns a reusable import rule.
+
+```ts
+import { defineEditorExtension } from "@platejs/slate";
+
+const pasteTodoPrefix = defineEditorExtension({
+  name: "paste-todo-prefix",
+  clipboard: {
+    insertData(data, { editor, next }) {
+      const text = data.getData("text/plain");
+
+      if (!text.startsWith("todo:")) {
+        return next();
+      }
+
+      editor.update((tx) => {
+        tx.text.insert(text.slice("todo:".length).trim());
+      });
+
+      return true;
+    },
+  },
+});
+```
+
+Return `true` when the extension handled the payload. Return `next()` when Slate
+should keep running the internal fragment and plain-text import path.
+
+Use this for package-owned import rules such as custom inline syntax, pasted
+URLs, product fragments, and table-specific paste policy. Do not put those rules
+in Slate core unless the rule is part of Slate's model contract.
+
+## DOM Clipboard API
+
+React editors expose DOM clipboard helpers through `editor.api.clipboard`.
+
+```ts
+editor.api.clipboard.insertData(dataTransfer);
+editor.api.clipboard.insertFragmentData(dataTransfer);
+editor.api.clipboard.insertTextData(dataTransfer);
+editor.api.clipboard.writeSelection(dataTransfer);
+```
+
+Use these APIs from framework bridges, tests, or low-level event code that
+already has a `DataTransfer`. Product commands should still write model state
+through `editor.update((tx) => ...)`.
+
+Slate writes plain text, HTML, and an internal Slate fragment payload. The
+fragment payload uses `application/${clipboardFormatKey}`, so editors with
+different keys do not blindly import each other's internal JSON.
+
+## Fragment Insertion
+
+Fragments are Slate node slices. Insert them with `tx.fragment.insert(...)` when
+the payload is already decoded.
+
+```ts
+editor.update((tx) => {
+  tx.fragment.insert([
+    {
+      type: "paragraph",
+      children: [{ text: "Pasted paragraph" }],
+    },
+  ]);
+});
+```
+
+Core fragment insertion is structural. Grid-aware table paste, spreadsheet
+mapping, and product-specific merge rules belong in the table or product
+extension that understands those structures.
+
+## Hidden And Projected Content
+
+Copy and drag can involve model content whose DOM is hidden, staged, or
+virtualized. DOM coverage boundaries decide whether hidden content participates
+in copy, find, and selection conversion.
+
+Use [DOM Coverage Boundaries](../libraries/slate-react/dom-coverage-boundaries)
+for `copyPolicy`, `findPolicy`, `selectionPolicy`, and materialization behavior.
+Use [Selection And DOM](16-selection-and-dom) when a copy or paste bug also
+depends on caret position or native selection repair.
+
+## Browser Proof
+
+Clipboard proof should name the layer that can fail.
+
+| Claim                                  | Useful proof                                                                 |
+| -------------------------------------- | ---------------------------------------------------------------------------- |
+| The model inserted the right content   | model text, fragment, operations, and selection                              |
+| The DOM payload was imported correctly | browser clipboard helper or dispatched `DataTransfer`                        |
+| Hidden content copied correctly        | copied plain text, HTML, Slate fragment, and DOM coverage policy             |
+| Selection survived paste               | model selection, DOM/native selection where observable, and follow-up typing |
+| A feature owns paste policy            | focused extension test plus browser paste smoke                              |
+
+Use [Slate Browser](../libraries/slate-browser) for clipboard helpers and
+[Editing Behavior](15-editing-behavior) for the full event-to-commit pipeline.
+
+## Related Docs
+
+- [Editable Component](../libraries/slate-react/editable)
+- [React Editor](../libraries/slate-react/react-editor)
+- [Slate DOM](../libraries/slate-dom)
+- [DOM Coverage Boundaries](../libraries/slate-react/dom-coverage-boundaries)
+- [Operation Replay Substrate](../walkthroughs/07-operation-replay-substrate)
+- [Transforms API](../api/transforms)

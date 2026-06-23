@@ -9,13 +9,13 @@ Slate stores selection in the model, then reconciles it with browser-native sele
 
 Selection bugs need the layer that can actually fail.
 
-| Claim | Assert | Owner |
-| --- | --- | --- |
-| The Slate selection is correct | model selection | `@platejs/slate` |
-| The browser caret lands in the right DOM text | DOM caret or DOM selection | `@platejs/slate-react` and `@platejs/slate-dom` |
-| The visible browser highlight is not duplicated | displayed selection snapshot | `@platejs/browser` |
-| Hidden content remains selectable or copyable | DOM coverage policy plus model result | `@platejs/slate-dom` and `@platejs/slate-react` |
-| Follow-up typing still works | text, selection, focus, and commit after the asserted state | `@platejs/browser` |
+| Claim                                           | Assert                                                      | Owner                                           |
+| ----------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------- |
+| The Slate selection is correct                  | model selection                                             | `@platejs/slate`                                |
+| The browser caret lands in the right DOM text   | DOM caret or DOM selection                                  | `@platejs/slate-react` and `@platejs/slate-dom` |
+| The visible browser highlight is not duplicated | displayed selection snapshot                                | `@platejs/browser`                              |
+| Hidden content remains selectable or copyable   | DOM coverage policy plus model result                       | `@platejs/slate-dom` and `@platejs/slate-react` |
+| Follow-up typing still works                    | text, selection, focus, and commit after the asserted state | `@platejs/browser`                              |
 
 Do not close a selection bug with only one layer unless the bug only exists in that layer.
 
@@ -23,10 +23,10 @@ Do not close a selection bug with only one layer unless the bug only exists in t
 
 Slate has two selection systems in a React editor:
 
-| Selection | What it means |
-| --- | --- |
-| Model selection | The `Range` stored by the Slate editor. Transactions read and write this value. |
-| Native selection | The browser `Selection` visible in the contenteditable DOM. |
+| Selection        | What it means                                                                   |
+| ---------------- | ------------------------------------------------------------------------------- |
+| Model selection  | The `Range` stored by the Slate editor. Transactions read and write this value. |
+| Native selection | The browser `Selection` visible in the contenteditable DOM.                     |
 
 Most editor code should write the model selection and let Slate export the DOM/native selection. Slate imports the native selection when the browser is the current source of truth, such as user selection movement or native input.
 
@@ -63,13 +63,15 @@ Use [React Editor](../libraries/slate-react/react-editor) for DOM translation he
 
 DOM coverage boundaries represent model content whose editable DOM is not mounted.
 
-| Policy | Use it when |
-| --- | --- |
-| `selectionPolicy="skip"` | Hidden content is app chrome or should not receive cursor movement. |
-| `selectionPolicy="model"` | Hidden content can be selected in the Slate model without mounting DOM. |
+| Policy                          | Use it when                                                                 |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| `selectionPolicy="skip"`        | Hidden content is app chrome or should not receive cursor movement.         |
+| `selectionPolicy="model"`       | Hidden content can be selected in the Slate model without mounting DOM.     |
 | `selectionPolicy="materialize"` | Slate should ask the app to reveal content before moving selection into it. |
 
 Clipboard has its own policy. Model-backed copy can include hidden document content without selecting every hidden DOM node.
+Use [Clipboard And Paste](17-clipboard-and-paste) for copy, paste, drop, and
+fragment import ownership.
 
 Use [DOM Coverage Boundaries](../libraries/slate-react/dom-coverage-boundaries) for `selectionPolicy`, `copyPolicy`, `findPolicy`, and materialization behavior.
 
@@ -134,6 +136,8 @@ Use [Slate Browser](../libraries/slate-browser) for Playwright helpers that capt
 - [Range API](../api/locations/range)
 - [Point API](../api/locations/point)
 - [Transforms API](../api/transforms)
+- [Clipboard And Paste](17-clipboard-and-paste)
+- [Projection And Overlays](18-projection-and-overlays)
 - [React Editor](../libraries/slate-react/react-editor)
 - [DOM Coverage Boundaries](../libraries/slate-react/dom-coverage-boundaries)
 - [Slate Browser](../libraries/slate-browser)

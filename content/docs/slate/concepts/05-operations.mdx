@@ -38,9 +38,9 @@ editor.update((tx) => {
 });
 ```
 
-Slate converts editor method calls into low-level operations and applies them
-automatically. You usually think about operations when implementing
-operation replay, history, or import/export tooling.
+Slate converts editor method calls into low-level operations and applies those
+operations during the transaction. You usually think about operations when
+implementing operation replay, history, or import/export tooling.
 
 Bulk edits can still be one operation. For example, paste can produce a
 `replace_fragment` operation that replaces a child slice and moves the model

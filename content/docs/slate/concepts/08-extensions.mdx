@@ -271,6 +271,8 @@ names such as `deleteBackward`, `deleteForward`, `insertBreak`, and
 Use `clipboard.insertData` for paste/drop ingress. The handler receives the
 `DataTransfer`, may apply a document update, and returns `true` when it handles
 the payload. Return `next()` to keep Slate's fragment and plain-text fallback.
+Use [Clipboard And Paste](17-clipboard-and-paste) for the full clipboard
+pipeline and proof boundary.
 
 Use `queries.fragment.get` to sanitize copied or dragged Slate fragments, such
 as removing local preview marks before DOM clipboard serialization. Product

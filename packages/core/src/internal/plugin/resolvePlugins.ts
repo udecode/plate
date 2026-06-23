@@ -1,8 +1,8 @@
 import {
-  assignLegacyApi,
-  assignLegacyTransforms,
-  syncLegacyMethods,
-} from '@platejs/slate-legacy';
+  assignCurrentRuntimeApi,
+  assignCurrentRuntimeTransforms,
+  syncCurrentRuntimeMethods,
+} from '../currentRuntimeBridge';
 import { isDefined } from '@udecode/utils';
 import merge from 'lodash/merge.js';
 import { createVanillaStore } from 'zustand-x/vanilla';
@@ -96,7 +96,7 @@ export const resolvePlugins = (
       editor = plugin.extendEditor(getEditorPlugin(editor, plugin) as any);
 
       // Sync any editor methods that were modified by extendEditor
-      syncLegacyMethods(editor);
+      syncCurrentRuntimeMethods(editor);
     }
 
     // Sync overridden plugin methods to legacy editor methods
@@ -253,12 +253,12 @@ const resolvePluginMethods = (editor: SlateEditor, plugin: any) => {
           if (newExtensions.api) {
             merge(editor.api, newExtensions.api);
             merge(plugin.api, newExtensions.api);
-            assignLegacyApi(editor, editor.api);
+            assignCurrentRuntimeApi(editor, editor.api);
           }
           if (newExtensions.transforms) {
             merge(editor.transforms, newExtensions.transforms);
             merge(plugin.transforms, newExtensions.transforms);
-            assignLegacyTransforms(editor, newExtensions.transforms);
+            assignCurrentRuntimeTransforms(editor, newExtensions.transforms);
           }
         } else if (isTransform) {
           // Handle transforms
@@ -277,7 +277,7 @@ const resolvePluginMethods = (editor: SlateEditor, plugin: any) => {
             // Editor-wide transform
             merge(editor.transforms, newExtensions);
             merge(plugin.transforms, newExtensions);
-            assignLegacyTransforms(editor, newExtensions);
+            assignCurrentRuntimeTransforms(editor, newExtensions);
           }
         } else if (isPluginSpecific) {
           // Handle APIs - Plugin-specific API
@@ -294,7 +294,7 @@ const resolvePluginMethods = (editor: SlateEditor, plugin: any) => {
           // Handle APIs - Editor-wide API
           merge(editor.api, newExtensions);
           merge(plugin.api, newExtensions);
-          assignLegacyApi(editor, editor.api);
+          assignCurrentRuntimeApi(editor, editor.api);
         }
       }
     );

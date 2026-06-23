@@ -246,6 +246,8 @@ match or lightweight syntax highlight.
 `decorate` is a convenience adapter over the projection runtime. Use
 provider-owned `decorationSources` when the ranges are shared with other UI,
 come from external state, update frequently, or need source-scoped refreshes.
+Use [Projection And Overlays](../../concepts/18-projection-and-overlays) to
+choose between local decorations, decoration sources, annotations, and widgets.
 
 Use `decorateDirtiness` and `decorateRuntimeScope` when a decoration callback
 depends on external projection state and can name which runtime targets should
@@ -305,6 +307,8 @@ Use `onKeyDown` for UI hotkeys on one `Editable` instance.
 
 Use extension `transforms` for model behavior such as `deleteBackward`, `deleteForward`, and `insertBreak`.
 Those handlers run for keyboard input, native input, programmatic transforms, and tests.
+Use [Clipboard And Paste](../../concepts/17-clipboard-and-paste) for paste,
+copy, drop, and fragment import ownership.
 
 ```tsx
 const markdown = defineEditorExtension({
@@ -333,6 +337,8 @@ const markdown = defineEditorExtension({
 ## Projection Sources
 
 Put decoration sources and the annotation store on `Slate`, not `Editable`. The provider owns editor-level projection sources so the editor surface, toolbar, and overlay UI read the same committed projection.
+Use [Projection And Overlays](../../concepts/18-projection-and-overlays) for the
+cross-package projection model.
 
 ```tsx
 <Slate

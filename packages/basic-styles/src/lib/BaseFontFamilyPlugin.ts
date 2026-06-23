@@ -1,4 +1,4 @@
-import { type SlateEditor, createSlatePlugin, KEYS } from 'platejs';
+import { createSlatePlugin, KEYS } from 'platejs';
 
 export const BaseFontFamilyPlugin = createSlatePlugin({
   key: KEYS.fontFamily,
@@ -24,10 +24,8 @@ export const BaseFontFamilyPlugin = createSlatePlugin({
       },
     },
   },
-}).extendTransforms(({ editor }: { editor: SlateEditor }) => ({
-  addMark: (value: string) => {
-    editor.tf.addMarks({
-      [KEYS.fontFamily]: value,
-    });
+}).extendTx(({ plugin, type }) => (tx) => ({
+  set: (value: string) => {
+    tx.marks.add(plugin.inject.nodeProps?.nodeKey ?? type, value);
   },
 }));

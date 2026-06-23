@@ -8,6 +8,7 @@ Plate's Slate fork is an agent-first editor substrate, not an official upstream 
 ## On This Page
 
 - [The Main Fork](#the-main-fork)
+- [Why Not Stay Closer To Slate?](#why-not-stay-closer-to-slate)
 - [Who It Is For](#who-it-is-for)
 - [What Stays Slate](#what-stays-slate)
 - [Runtime Shape](#runtime-shape)
@@ -36,6 +37,27 @@ This fork is built for the opposite shape:
 - APIs can be hard-cut when the old shape makes the system harder to verify.
 
 That is the real fork. The code matters, but the maintenance philosophy matters more.
+
+## Why Not Stay Closer To Slate?
+
+The first attempted design was conservative: keep upstream Slate core intact, rewrite `slate-react`, and push the hard work into the renderer. That would have kept the public runtime closer to Slate 0.x while trying to unlock extra roots, document state, overlays, and React performance from React alone.
+
+That path broke down because the renderer cannot safely own the facts that make a rich-text editor correct. React can render a tree, but it cannot be the source of truth for write boundaries, selection authority, operation batching, dirty regions, stable node identity, history grouping, collaboration metadata, and DOM repair.
+
+If `slate-react` tried to own those anyway, it would become a hidden second runtime beside Slate. The adapter would have to translate between mutable editor fields, React subscriptions, browser selection, history, collaboration, and test proof. That is the black box this fork avoids.
+
+| Example | Why `slate-react` alone is the wrong owner |
+| ------- | ------------------------------------------ |
+| `Shift+Down` in a huge document | The runtime needs one selection target, one DOM-selection import/export path, and one dirty-render plan. A React component can patch symptoms, but it cannot make the model selection, native selection, and rendered corridor agree by itself. |
+| `Cmd+A` then Delete | The editor needs one transaction that owns model deletion, selection collapse, history grouping, operation output, DOM repair, and follow-up typing. Splitting that across core mutation plus React cleanup makes the proof lie. |
+| Extra editable regions | Headers, footers, sidebars, and body content need to serialize as one document value. If roots live only in React, normalization, history, collaboration, and persistence all get side channels. |
+| Document metadata | Values like `document.title` must travel with the document model. Keeping them as app-only React state makes save/load, undo policy, collaboration patches, and tests disagree. |
+| Overlays and comments | Decorations, annotations, and widgets share projection machinery, but they do not share ownership semantics. Treating them as React leaf hacks makes durable comments and transient search hits look the same. |
+| Browser proof | A model-only assertion can pass while the caret is wrong. A DOM-only assertion can pass while Slate state is wrong. The proof harness needs one commit that model, DOM, native selection, focus, replay, and follow-up typing can all inspect. |
+
+The fork keeps Slate's core model: JSON nodes, paths, points, ranges, operations, and app-owned schema. It rewrites the runtime around `editor.read(...)`, `editor.update(...)`, transaction groups, commits, and state fields so React can subscribe to precise state instead of guessing from broad tree changes.
+
+The influence is narrow. Lexical is the reference for explicit read/update discipline and dirty reconciliation. ProseMirror is the reference for transaction authority and DOM-selection import/export. The document layer stays Slate-shaped, which is the point: keep the flexible JSON model, replace the runtime shape that made React and browser proof fight the core.
 
 ## Who It Is For
 

@@ -176,10 +176,8 @@ describe('createSlatePlugin', () => {
 
     it('infers tx groups in later plugin extension contexts', () => {
       createSlatePlugin({ key: 'txPlugin' })
-        .extendTx(({ plugin }) => ({
-          [plugin.key]: () => ({
-            replace: (text: string) => text.length,
-          }),
+        .extendTx(() => () => ({
+          replace: (text: string) => text.length,
         }))
         .extendTransforms(({ editor, plugin }) => ({
           replace: (text: string) =>
@@ -188,6 +186,29 @@ describe('createSlatePlugin', () => {
 
               return length satisfies number;
             }),
+        }));
+
+      expect(1).toBe(1);
+    });
+
+    it('infers explicit tx groups in later plugin extension contexts', () => {
+      createSlatePlugin({ key: 'sourcePlugin' })
+        .extendTxGroup('foreignTx', () => () => ({
+          replace: (text: string) => text.length,
+        }))
+        .extendTransforms(({ editor }) => ({
+          replace: (text: string) => {
+            // @ts-expect-error extendTxGroup does not add the plugin-owned group
+            type _MissingPluginGroup = Parameters<
+              Parameters<typeof editor.update>[0]
+            >[0]['sourcePlugin'];
+
+            return editor.update((tx) => {
+              const length = tx.foreignTx.replace(text);
+
+              return length satisfies number;
+            });
+          },
         }));
 
       expect(1).toBe(1);

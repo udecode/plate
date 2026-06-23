@@ -211,10 +211,8 @@ function isRuntimeBackedApiCapabilityDecision(text, index, relativePath) {
   const after = text.slice(index, index + 1800);
 
   return (
-    (relativePath.endsWith('/DebugPlugin.ts') &&
-      after.includes('debug:')) ||
-    (relativePath.endsWith('/DOMPlugin.ts') &&
-      after.includes('isScrolling')) ||
+    (relativePath.endsWith('/DebugPlugin.ts') && after.includes('debug:')) ||
+    (relativePath.endsWith('/DOMPlugin.ts') && after.includes('isScrolling')) ||
     (relativePath.endsWith('/NavigationFeedbackPlugin.ts') &&
       after.includes('navigation:') &&
       after.includes('activeTarget')) ||
@@ -314,34 +312,31 @@ function isDeferredRuntimeOwnerDecision(text, index, relativePath) {
   }
 
   return (
-    relativePath.endsWith('/BaseSuggestionPlugin.ts') &&
-    ownerWindow.includes('withSuggestion') &&
-    (ownerWindow.includes('.overrideEditor(withSuggestion)') ||
-      ownerWindow.includes('.extendApi<BaseSuggestionConfig'))
-  ) || (
-    relativePath.endsWith('/BaseListPlugin.ts') &&
-    (ownerWindow.includes('.overrideEditor(withList)') ||
-      ownerWindow.includes('toggleBulletedList') ||
-      ownerWindow.includes('toggleNumberedList') ||
-      ownerWindow.includes('toggleTaskList') ||
-      ownerWindow.includes('toggleList'))
-  ) || (
-    relativePath.endsWith('/BaseImagePlugin.ts') &&
-    (ownerWindow.includes('.overrideEditor(withImageUpload)') ||
-      ownerWindow.includes('.overrideEditor(withImageEmbed)') ||
-      ownerWindow.includes('insertImageFromFiles'))
-  ) || (
-    relativePath.endsWith('/PlaceholderPlugin.tsx') &&
-    (ownerWindow.includes('writeHistory(stack, batch)') ||
-      ownerWindow.includes('insertMedia') ||
-      ownerWindow.includes('uploadingFiles'))
-  ) || (
-    relativePath.endsWith('/BaseTablePlugin.ts') &&
-    (ownerWindow.includes('.extendEditorApi<TableConfig') ||
-      ownerWindow.includes('.extendEditorTransforms<TableConfig') ||
-      ownerWindow.includes('.overrideEditor(withTable)'))
-  ) || relativePath.endsWith('/BlockSelectionPlugin.tsx') ||
-    relativePath.endsWith('/CursorOverlayPlugin.tsx');
+    (relativePath.endsWith('/BaseSuggestionPlugin.ts') &&
+      ownerWindow.includes('withSuggestion') &&
+      (ownerWindow.includes('.overrideEditor(withSuggestion)') ||
+        ownerWindow.includes('.extendApi<BaseSuggestionConfig'))) ||
+    (relativePath.endsWith('/BaseListPlugin.ts') &&
+      (ownerWindow.includes('.overrideEditor(withList)') ||
+        ownerWindow.includes('toggleBulletedList') ||
+        ownerWindow.includes('toggleNumberedList') ||
+        ownerWindow.includes('toggleTaskList') ||
+        ownerWindow.includes('toggleList'))) ||
+    (relativePath.endsWith('/BaseImagePlugin.ts') &&
+      (ownerWindow.includes('.overrideEditor(withImageUpload)') ||
+        ownerWindow.includes('.overrideEditor(withImageEmbed)') ||
+        ownerWindow.includes('insertImageFromFiles'))) ||
+    (relativePath.endsWith('/PlaceholderPlugin.tsx') &&
+      (ownerWindow.includes('writeHistory(stack, batch)') ||
+        ownerWindow.includes('insertMedia') ||
+        ownerWindow.includes('uploadingFiles'))) ||
+    (relativePath.endsWith('/BaseTablePlugin.ts') &&
+      (ownerWindow.includes('.extendEditorApi<TableConfig') ||
+        ownerWindow.includes('.extendEditorTransforms<TableConfig') ||
+        ownerWindow.includes('.overrideEditor(withTable)'))) ||
+    relativePath.endsWith('/BlockSelectionPlugin.tsx') ||
+    relativePath.endsWith('/CursorOverlayPlugin.tsx')
+  );
 }
 
 function isLegacyBatchTransformDecision(text, index) {
@@ -390,10 +385,10 @@ function isRuntimeBackedTransformFacadeDecision(text, index, relativePath) {
       after.includes('reset(options)')) ||
     (relativePath.endsWith('/ExitBreakPlugin.ts') &&
       after.includes('editor.tf.insertExitBreak')) ||
-    relativePath.endsWith('/BaseFootnoteReferencePlugin.ts') &&
+    (relativePath.endsWith('/BaseFootnoteReferencePlugin.ts') &&
       after.includes('createFootnoteDefinition') &&
       after.includes('focusFootnoteDefinition') &&
-      after.includes('insertFootnote')
+      after.includes('insertFootnote'))
   );
 }
 
@@ -431,68 +426,50 @@ function isRuntimeBackedEditorDecision(text, index, relativePath) {
     (relativePath.endsWith('/createPlateRuntimeEditor.ts') &&
       ownerWindow.includes('runtime') &&
       ownerWindow.includes('extendEditor')) ||
-    relativePath.endsWith('/BaseBlockquotePlugin.ts') &&
+    (relativePath.endsWith('/BaseBlockquotePlugin.ts') &&
       after.includes('normalizeBlockquoteChildren') &&
-      after.includes('isLiftableBlockquoteChild')
-  ) || (
-    relativePath.endsWith('/BaseCaptionPlugin.ts') &&
-    after.includes('withCaption')
-  ) || (
-    relativePath.endsWith('/BaseColumnPlugin.ts') &&
-    ownerWindow.includes('BaseColumnItemPlugin') &&
-    ownerWindow.includes('withColumn')
-  ) || (
-    relativePath.endsWith('/BaseIndentPlugin.ts') &&
-    ownerWindow.includes('BaseIndentPlugin') &&
-    ownerWindow.includes('withIndent')
-  ) || (
-    relativePath.endsWith('/BaseCodeBlockPlugin.ts') &&
-    ownerWindow.includes('withCodeBlock')
-  ) || (
-    relativePath.endsWith('/BaseListPlugin.tsx') &&
-    ownerWindow.includes('withList')
-  ) || (
-    relativePath.endsWith('/BaseTodoListPlugin.ts') &&
-    after.includes('insertBreak()') &&
-    after.includes('insertTodoListItem')
-  ) || (
-    relativePath.endsWith('/BaseSlashPlugin.ts') &&
-    after.includes('withTriggerCombobox')
-  ) || (
-    relativePath.endsWith('/BaseEmojiPlugin.ts') &&
-    after.includes('withTriggerCombobox')
-  ) || (
-    relativePath.endsWith('/BaseMentionPlugin.ts') &&
-    after.includes('withMentionTriggerCombobox')
-  ) || (
-    relativePath.endsWith('/TagPlugin.tsx') &&
-    ownerWindow.includes('MultiSelectPlugin') &&
-    ownerWindow.includes('BaseTagPlugin.overrideEditor')
-  ) || (
-    relativePath.endsWith('/TogglePlugin.tsx') &&
-    ownerWindow.includes('TogglePlugin') &&
-    ownerWindow.includes('withToggle')
-  ) || (
-    relativePath.endsWith('/BaseLinkPlugin.ts') &&
-    ownerWindow.includes('withLink')
-  ) || (
-    relativePath.endsWith('/BaseCommentPlugin.ts') &&
-    ownerWindow.includes('withComment')
-  ) || (
-    relativePath.endsWith('/BaseFootnoteReferencePlugin.ts') &&
-    ownerWindow.includes('withTriggerCombobox')
-  ) || (
-    relativePath.endsWith('/SingleBlockPlugin.ts') &&
-    ownerWindow.includes('SingleBlockPlugin')
-  ) || (
-    relativePath.endsWith('/SingleLinePlugin.ts') &&
-    ownerWindow.includes('SingleLinePlugin')
-  ) || (
-    relativePath.endsWith('/NormalizeTypesPlugin.ts') &&
-    ownerWindow.includes('NormalizeTypesPlugin')
-  ) || (
-    relativePath.endsWith('/TrailingBlockPlugin.ts') &&
-    ownerWindow.includes('TrailingBlockPlugin')
+      after.includes('isLiftableBlockquoteChild')) ||
+    (relativePath.endsWith('/BaseCaptionPlugin.ts') &&
+      after.includes('withCaption')) ||
+    (relativePath.endsWith('/BaseColumnPlugin.ts') &&
+      ownerWindow.includes('BaseColumnItemPlugin') &&
+      ownerWindow.includes('withColumn')) ||
+    (relativePath.endsWith('/BaseIndentPlugin.ts') &&
+      ownerWindow.includes('BaseIndentPlugin') &&
+      ownerWindow.includes('withIndent')) ||
+    (relativePath.endsWith('/BaseCodeBlockPlugin.ts') &&
+      ownerWindow.includes('withCodeBlock')) ||
+    (relativePath.endsWith('/BaseListPlugin.tsx') &&
+      ownerWindow.includes('withList')) ||
+    (relativePath.endsWith('/BaseTodoListPlugin.ts') &&
+      after.includes('insertBreak()') &&
+      after.includes('insertTodoListItem')) ||
+    (relativePath.endsWith('/BaseSlashPlugin.ts') &&
+      after.includes('withTriggerCombobox')) ||
+    (relativePath.endsWith('/BaseEmojiPlugin.ts') &&
+      after.includes('withTriggerCombobox')) ||
+    (relativePath.endsWith('/BaseMentionPlugin.ts') &&
+      after.includes('withMentionTriggerCombobox')) ||
+    (relativePath.endsWith('/TagPlugin.tsx') &&
+      ownerWindow.includes('MultiSelectPlugin') &&
+      ownerWindow.includes('BaseTagPlugin.overrideEditor')) ||
+    (relativePath.endsWith('/TogglePlugin.tsx') &&
+      ownerWindow.includes('TogglePlugin') &&
+      ownerWindow.includes('withToggle')) ||
+    (relativePath.endsWith('/BaseLinkPlugin.ts') &&
+      ownerWindow.includes('withLink')) ||
+    (relativePath.endsWith('/BaseCommentPlugin.ts') &&
+      ownerWindow.includes('withComment')) ||
+    (relativePath.endsWith('/BaseFootnoteReferencePlugin.ts') &&
+      ownerWindow.includes('withTriggerCombobox')) ||
+    (relativePath.endsWith('/SingleBlockPlugin.ts') &&
+      ownerWindow.includes('SingleBlockPlugin')) ||
+    (relativePath.endsWith('/SingleLinePlugin.ts') &&
+      ownerWindow.includes('SingleLinePlugin')) ||
+    (relativePath.endsWith('/NormalizeTypesPlugin.ts') &&
+      ownerWindow.includes('NormalizeTypesPlugin')) ||
+    (relativePath.endsWith('/TrailingBlockPlugin.ts') &&
+      ownerWindow.includes('TrailingBlockPlugin'))
   );
 }
 
@@ -614,30 +591,28 @@ for (const root of roots) {
           match.index,
           relativePath
         );
-        const stat =
-          ownerStats.get(owner) ??
-          {
-            api: 0,
-            coreCommandFacade: 0,
-            deferredRuntimeOwner: 0,
-            editorApi: 0,
-            editorRuntime: 0,
-            exportSideEffectApi: 0,
-            exportSideEffectTransform: 0,
-            legacyBatchTransform: 0,
-            mixedApiRuntime: 0,
-            runtimeBackedApi: 0,
-            runtimeBackedTransform: 0,
-            staticDomApi: 0,
-            staticDomTransform: 0,
-            mixedTransformFacade: 0,
-            platePluginStateApi: 0,
-            runtimeBackedEditor: 0,
-            testFixture: 0,
-            transformFacade: 0,
-            transform: 0,
-            transformGlobal: 0,
-          };
+        const stat = ownerStats.get(owner) ?? {
+          api: 0,
+          coreCommandFacade: 0,
+          deferredRuntimeOwner: 0,
+          editorApi: 0,
+          editorRuntime: 0,
+          exportSideEffectApi: 0,
+          exportSideEffectTransform: 0,
+          legacyBatchTransform: 0,
+          mixedApiRuntime: 0,
+          runtimeBackedApi: 0,
+          runtimeBackedTransform: 0,
+          staticDomApi: 0,
+          staticDomTransform: 0,
+          mixedTransformFacade: 0,
+          platePluginStateApi: 0,
+          runtimeBackedEditor: 0,
+          testFixture: 0,
+          transformFacade: 0,
+          transform: 0,
+          transformGlobal: 0,
+        };
 
         if (classification === 'candidate-api-capability') stat.api += 1;
         if (classification === 'runtime-backed-api-capability') {

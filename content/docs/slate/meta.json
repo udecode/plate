@@ -30,6 +30,8 @@
     "[Document State](/docs/slate/concepts/14-document-state)",
     "[Editing Behavior](/docs/slate/concepts/15-editing-behavior)",
     "[Selection And DOM](/docs/slate/concepts/16-selection-and-dom)",
+    "[Clipboard And Paste](/docs/slate/concepts/17-clipboard-and-paste)",
+    "[Projection And Overlays](/docs/slate/concepts/18-projection-and-overlays)",
     "---API---",
     "[Bookmark API](/docs/slate/api/locations/bookmark)",
     "[Location API](/docs/slate/api/locations/location)",

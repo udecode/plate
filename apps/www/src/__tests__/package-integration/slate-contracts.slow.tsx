@@ -234,9 +234,7 @@ describe('slate cross-package contracts', () => {
         .slice(blockPath.length);
       const childIndex = selectionPath[0];
 
-      const siblings = Array.from(
-        NodeApi.children(editor as any, blockPath)
-      )
+      const siblings = Array.from(NodeApi.children(editor as any, blockPath))
         .slice(childIndex + 1)
         .map(([node]) => node);
 

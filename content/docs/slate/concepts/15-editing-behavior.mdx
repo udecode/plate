@@ -9,14 +9,14 @@ Editing behavior is the path from user intent to committed Slate state. Use this
 
 Most editing bugs come from putting behavior in the wrong layer.
 
-| Surface | Use it when | Owner |
-| --- | --- | --- |
-| `Editable` event props | One React editable needs a local browser shortcut or event hook. | `@platejs/slate-react` |
-| `editor.update((tx) => ...)` | A command should change the document, selection, marks, roots, or state. | `@platejs/slate` |
-| Extension `transforms` | A reusable behavior should affect keyboard, native input, programmatic transforms, and tests. | `@platejs/slate` |
-| Extension `clipboard.insertData` | Paste or drop ingress needs package-owned policy. | `@platejs/slate` plus host clipboard data |
-| DOM coverage boundaries | Model content exists but its DOM is intentionally hidden or virtualized. | `@platejs/slate-dom` and `@platejs/slate-react` |
-| `@platejs/browser` | A behavior claim needs model, DOM, native selection, focus, trace, screenshot, or follow-up typing proof. | `@platejs/browser` |
+| Surface                          | Use it when                                                                                               | Owner                                           |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| `Editable` event props           | One React editable needs a local browser shortcut or event hook.                                          | `@platejs/slate-react`                          |
+| `editor.update((tx) => ...)`     | A command should change the document, selection, marks, roots, or state.                                  | `@platejs/slate`                                |
+| Extension `transforms`           | A reusable behavior should affect keyboard, native input, programmatic transforms, and tests.             | `@platejs/slate`                                |
+| Extension `clipboard.insertData` | Paste or drop ingress needs package-owned policy.                                                         | `@platejs/slate` plus host clipboard data       |
+| DOM coverage boundaries          | Model content exists but its DOM is intentionally hidden or virtualized.                                  | `@platejs/slate-dom` and `@platejs/slate-react` |
+| `@platejs/browser`               | A behavior claim needs model, DOM, native selection, focus, trace, screenshot, or follow-up typing proof. | `@platejs/browser`                              |
 
 Use `Editable` for UI-local event interception. Use transactions and extensions for editor behavior that should survive another input path.
 
@@ -24,18 +24,18 @@ Use `Editable` for UI-local event interception. Use transactions and extensions 
 
 Slate edits run through explicit owners.
 
-| Stage | What happens | Owner |
-| --- | --- | --- |
-| Browser event | The browser sends key, beforeinput, input, paste, cut, drop, focus, drag, or selection events. | Browser |
-| Editable handler | `Editable` runs app handlers and decides whether Slate should continue. | `@platejs/slate-react` |
-| Input import | Slate imports the relevant DOM/native selection when the browser owns the current edit target. | `@platejs/slate-react` and `@platejs/slate-dom` |
-| Transform middleware | Extension transform hooks can handle, wrap, or pass through semantic edit names. | `@platejs/slate` |
-| Transaction | `editor.update((tx) => ...)` groups model writes into one runtime change. | `@platejs/slate` |
-| Operations | Slate records low-level operations for document, selection, root, and state changes. | `@platejs/slate` |
-| Normalization | Built-in and extension normalizers repair invalid document shapes. | `@platejs/slate` |
-| Commit | Subscribers, history, React, replay, collaboration adapters, and proof tools observe one committed change. | `@platejs/slate` |
-| Render and repair | React renders the new state and exports a valid DOM/native selection when needed. | `@platejs/slate-react` |
-| Proof | Browser tests assert the model, DOM, native selection, focus, trace, and follow-up typing that matter for the claim. | `@platejs/browser` |
+| Stage                | What happens                                                                                                         | Owner                                           |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| Browser event        | The browser sends key, beforeinput, input, paste, cut, drop, focus, drag, or selection events.                       | Browser                                         |
+| Editable handler     | `Editable` runs app handlers and decides whether Slate should continue.                                              | `@platejs/slate-react`                          |
+| Input import         | Slate imports the relevant DOM/native selection when the browser owns the current edit target.                       | `@platejs/slate-react` and `@platejs/slate-dom` |
+| Transform middleware | Extension transform hooks can handle, wrap, or pass through semantic edit names.                                     | `@platejs/slate`                                |
+| Transaction          | `editor.update((tx) => ...)` groups model writes into one runtime change.                                            | `@platejs/slate`                                |
+| Operations           | Slate records low-level operations for document, selection, root, and state changes.                                 | `@platejs/slate`                                |
+| Normalization        | Built-in and extension normalizers repair invalid document shapes.                                                   | `@platejs/slate`                                |
+| Commit               | Subscribers, history, React, replay, collaboration adapters, and proof tools observe one committed change.           | `@platejs/slate`                                |
+| Render and repair    | React renders the new state and exports a valid DOM/native selection when needed.                                    | `@platejs/slate-react`                          |
+| Proof                | Browser tests assert the model, DOM, native selection, focus, trace, and follow-up typing that matter for the claim. | `@platejs/browser`                              |
 
 The important rule is simple: user intent can arrive through many browser paths, but Slate behavior should land in the transaction pipeline when it changes editor state.
 
@@ -56,7 +56,7 @@ import { Editable } from "@platejs/slate-react";
 
     return true;
   }}
-/>
+/>;
 ```
 
 Return `true` when your handler owns the event. Return `false` when Slate should keep running its default behavior.
@@ -158,14 +158,16 @@ Use [Slate Browser](../libraries/slate-browser) when a claim depends on browser 
 
 ## Recipes
 
-| Goal | Start with |
-| --- | --- |
-| Add one local hotkey | [Slate React Event Handling](../libraries/slate-react/event-handling) |
-| Write a reusable command | [Commands](06-commands) and [Transforms](04-transforms) |
-| Change Enter, Backspace, Delete, or typed text behavior | [Extensions](08-extensions#transform-middleware) |
-| Preserve valid document shape | [Normalizing](11-normalizing) |
-| Replay operations from storage or sync | [Operation Replay Substrate](../walkthroughs/07-operation-replay-substrate) |
-| Debug caret or DOM selection bugs | [Selection And DOM](16-selection-and-dom) |
-| Prove a browser editing claim | [Slate Browser](../libraries/slate-browser) |
+| Goal                                                    | Start with                                                                  |
+| ------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Add one local hotkey                                    | [Slate React Event Handling](../libraries/slate-react/event-handling)       |
+| Write a reusable command                                | [Commands](06-commands) and [Transforms](04-transforms)                     |
+| Change Enter, Backspace, Delete, or typed text behavior | [Extensions](08-extensions#transform-middleware)                            |
+| Preserve valid document shape                           | [Normalizing](11-normalizing)                                               |
+| Replay operations from storage or sync                  | [Operation Replay Substrate](../walkthroughs/07-operation-replay-substrate) |
+| Debug caret or DOM selection bugs                       | [Selection And DOM](16-selection-and-dom)                                   |
+| Own paste, copy, drop, or fragment import policy        | [Clipboard And Paste](17-clipboard-and-paste)                               |
+| Build comments, highlights, diagnostics, or overlay UI  | [Projection And Overlays](18-projection-and-overlays)                       |
+| Prove a browser editing claim                           | [Slate Browser](../libraries/slate-browser)                                 |
 
 Done. You can now place an editing behavior in the layer that owns it.

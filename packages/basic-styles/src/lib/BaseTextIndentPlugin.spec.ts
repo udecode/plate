@@ -58,10 +58,14 @@ describe('BaseTextIndentPlugin', () => {
     } as any);
     const nodeKey = editor.getType(KEYS.textIndent);
 
-    editor.tf.setNodes({ [nodeKey]: 2 }, { at: [0] });
+    editor.update((tx) => {
+      tx.nodes.set({ [nodeKey]: 2 }, { at: [0] });
+    });
     expect((editor.children[0] as any)[nodeKey]).toBe(2);
 
-    editor.tf.unsetNodes(nodeKey, { at: [0] });
+    editor.update((tx) => {
+      tx.nodes.unset(nodeKey, { at: [0] });
+    });
     expect((editor.children[0] as any)[nodeKey]).toBeUndefined();
   });
 });

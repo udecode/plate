@@ -1,8 +1,4 @@
-import {
-  normalizeNodeId,
-  type Descendant,
-  type Value,
-} from 'platejs';
+import { normalizeNodeId, type Descendant, type Value } from 'platejs';
 import type { Element } from '@platejs/slate';
 
 import { createHugeDocumentValue } from '@/registry/examples/values/huge-document-value';
