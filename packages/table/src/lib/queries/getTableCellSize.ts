@@ -1,5 +1,5 @@
 import type {
-  SlateEditor,
+  BasePlateEditor,
   TTableCellElement,
   TTableElement,
   TTableRowElement,
@@ -17,7 +17,7 @@ import { findTableNodePath } from '../utils/findTableNodePath';
 
 /** Get the width of a cell with colSpan support. */
 export const getTableCellSize = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     cellIndices,
     colSizes,

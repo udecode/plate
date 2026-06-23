@@ -1,10 +1,10 @@
-import type { Node } from "@platejs/slate";
+import type { Node } from '@platejs/plite';
 
-import { type SlateEditor, KEYS, nanoid, TextApi } from "platejs";
+import { type BasePlateEditor, KEYS, nanoid, TextApi } from 'platejs';
 
-import { getInlineSuggestionData, getSuggestionKey } from "../..";
-import { BaseSuggestionPlugin } from "../BaseSuggestionPlugin";
-import { getSuggestionApi } from "../utils/getSuggestionApi";
+import { getInlineSuggestionData, getSuggestionKey } from '../..';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { getSuggestionApi } from '../utils/getSuggestionApi';
 
 const getAddMarkProps = () => {
   const defaultProps = {
@@ -16,7 +16,7 @@ const getAddMarkProps = () => {
 };
 
 export const addMarkSuggestion = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   key: string,
   value: any
 ) => {
@@ -29,7 +29,7 @@ export const addMarkSuggestion = (
       if (n[KEYS.suggestion]) {
         const data = getInlineSuggestionData(n);
 
-        if (data?.type === "update") {
+        if (data?.type === 'update') {
           return true;
         }
 
@@ -49,7 +49,7 @@ export const addMarkSuggestion = (
             newProperties: {
               [key]: value,
             },
-            type: "update",
+            type: 'update',
             userId: editor.getOptions(BaseSuggestionPlugin).currentUserId,
           },
           [KEYS.suggestion]: true,

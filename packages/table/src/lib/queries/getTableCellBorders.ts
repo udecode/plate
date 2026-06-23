@@ -1,5 +1,5 @@
 import type {
-  SlateEditor,
+  BasePlateEditor,
   TTableCellBorder,
   TTableCellElement,
   TTableElement,
@@ -21,7 +21,7 @@ export type BorderStylesDefault = {
 };
 
 export const getTableCellBorders = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     cellIndices,
     defaultBorder = {

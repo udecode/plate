@@ -367,7 +367,7 @@ Converts a Markdown string into a Plate `Value` (`Descendant[]`).
 
 ### `api.markdown.deserializeInline`
 
-Converts inline Markdown text into Slate children.
+Converts inline Markdown text into Plite children.
 
 <API name="deserializeInline">
   <APIParameters>
@@ -378,7 +378,7 @@ Converts inline Markdown text into Slate children.
       Options for this call, overriding plugin defaults.
     </APIItem>
   </APIParameters>
-  <APIReturns type="Descendant[]">Slate children for inline content.</APIReturns>
+  <APIReturns type="Descendant[]">Plite children for inline content.</APIReturns>
 </API>
 
 ---
@@ -825,7 +825,7 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
     - `mdast-to-slate` converts mdast to Plate nodes using `rules`.
     - Plate renders nodes via its component system.
 2.  **Stringify (Serialization):**
-    - Plate nodes → `slate-to-mdast` (using `rules`) → mdast.
+    - Plate nodes → `plite-to-mdast` (using `rules`) → mdast.
     - `remarkPlugins` transform mdast.
     - `remark-stringify` converts mdast to Markdown string.
 

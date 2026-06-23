@@ -1,6 +1,6 @@
-import type { SlateEditor, TCodeBlockElement } from 'platejs';
+import type { BasePlateEditor, TCodeBlockElement } from 'platejs';
 
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createBasePlateEditor } from 'platejs';
 
 import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 import { formatCodeBlock, isLangSupported, isValidSyntax } from './formatter';
@@ -15,7 +15,7 @@ const createEditor = (code: string) => {
       string: mock(() => code),
     },
     getType: (key: string) => key,
-  } as unknown as SlateEditor;
+  } as unknown as BasePlateEditor;
 
   return {
     editor,
@@ -65,7 +65,7 @@ describe('formatter', () => {
   });
 
   it('formats valid json code blocks in place', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       value: [
         {
@@ -103,7 +103,7 @@ describe('formatter', () => {
       highlightAuto: mock(() => ({ value: [] })),
       listLanguages: mock(() => ['json']),
     };
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseParagraphPlugin,
         BaseCodeBlockPlugin.configure({

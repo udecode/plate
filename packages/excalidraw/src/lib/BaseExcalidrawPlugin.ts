@@ -1,6 +1,6 @@
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
 import type { ExcalidrawDataState } from './types';
 
@@ -11,8 +11,8 @@ export interface ExcalidrawElement extends Element {
   } | null;
 }
 
-/** Enables support for Excalidraw drawing tool within a Slate document */
-export const BaseExcalidrawPlugin = createSlatePlugin({
+/** Enables support for Excalidraw drawing tool within a Plite document */
+export const BaseExcalidrawPlugin = createEditorPlugin({
   key: KEYS.excalidraw,
   node: { isElement: true, isVoid: true },
 });

@@ -1,12 +1,12 @@
 import {
   combinePlateMatchOptions,
-  createTSlatePlugin,
+  createEditorPlugin,
   getPluginByType,
   type InsertExitBreakOptions,
   type PlateNodeMatch,
   type PluginConfig,
 } from '@platejs/core';
-import { PathApi } from '@platejs/slate';
+import { PathApi } from '@platejs/plite';
 
 import { KEYS } from '../plate-keys';
 
@@ -32,14 +32,11 @@ export type ExitBreakConfig = PluginConfig<
  * Insert soft break following configurable rules. Each rule specifies a hotkey
  * and query options.
  */
-export const ExitBreakPlugin = createTSlatePlugin<ExitBreakConfig>({
+export const ExitBreakPlugin = createEditorPlugin<ExitBreakConfig>({
   key: KEYS.exitBreak,
   editOnly: true,
 }).extendTxGroup('exitBreak', ({ editor }) => (tx) => {
-  const insertExitBreak = ({
-    match,
-    reverse,
-  }: InsertExitBreakOptions = {}) => {
+  const insertExitBreak = ({ match, reverse }: InsertExitBreakOptions = {}) => {
     if (!editor.selection || !editor.api.isCollapsed()) return;
 
     const block = editor.api.block();

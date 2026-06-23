@@ -1,26 +1,26 @@
 import type { Locator } from '@playwright/test';
 
 import type {
-  SlateBrowserNativeEventTraceAnomaly,
-  SlateBrowserNativeEventTraceDOMDelta,
-  SlateBrowserNativeEventTraceEntry,
-  SlateBrowserNativeEventTraceNodeSnapshot,
-  SlateBrowserNativeEventTraceOptions,
-  SlateBrowserNativeEventTraceRect,
-  SlateBrowserNativeEventTraceSelectionSnapshot,
-  SlateBrowserNativeEventTraceSnapshot,
-  SlateBrowserNativeEventTraceTargetRangeSnapshot,
-  SlateBrowserNativeEventTraceTextNodeDelta,
-  SlateBrowserNativeEventTraceTextNodeSnapshot,
-  SlateBrowserNativeEventTraceType,
+  PliteBrowserNativeEventTraceAnomaly,
+  PliteBrowserNativeEventTraceDOMDelta,
+  PliteBrowserNativeEventTraceEntry,
+  PliteBrowserNativeEventTraceNodeSnapshot,
+  PliteBrowserNativeEventTraceOptions,
+  PliteBrowserNativeEventTraceRect,
+  PliteBrowserNativeEventTraceSelectionSnapshot,
+  PliteBrowserNativeEventTraceSnapshot,
+  PliteBrowserNativeEventTraceTargetRangeSnapshot,
+  PliteBrowserNativeEventTraceTextNodeDelta,
+  PliteBrowserNativeEventTraceTextNodeSnapshot,
+  PliteBrowserNativeEventTraceType,
 } from './types';
 
-const NATIVE_EVENT_TRACE_KEY = '__SLATE_BROWSER_NATIVE_EVENT_TRACE__';
+const NATIVE_EVENT_TRACE_KEY = '__PLITE_BROWSER_NATIVE_EVENT_TRACE__';
 
-/** Start native event tracing for a Slate browser root. */
-export const startSlateBrowserNativeEventTrace = async (
+/** Start native event tracing for a Plite browser root. */
+export const startPliteBrowserNativeEventTrace = async (
   root: Locator,
-  options: SlateBrowserNativeEventTraceOptions = {}
+  options: PliteBrowserNativeEventTraceOptions = {}
 ) => {
   await root.evaluate(
     (
@@ -28,7 +28,7 @@ export const startSlateBrowserNativeEventTrace = async (
       {
         key,
         options,
-      }: { key: string; options: SlateBrowserNativeEventTraceOptions }
+      }: { key: string; options: PliteBrowserNativeEventTraceOptions }
     ) => {
       const previous = (element as Record<string, any>)[key] as
         | { stop?: () => void }
@@ -37,7 +37,7 @@ export const startSlateBrowserNativeEventTrace = async (
       previous?.stop?.();
 
       const maxEntries = Math.max(1, options.maxEntries ?? 100);
-      const enabledEvents = new Set<SlateBrowserNativeEventTraceType>(
+      const enabledEvents = new Set<PliteBrowserNativeEventTraceType>(
         options.events ?? [
           'selectionchange',
           'beforeinput',
@@ -47,15 +47,15 @@ export const startSlateBrowserNativeEventTrace = async (
           'compositionend',
         ]
       );
-      const entries: SlateBrowserNativeEventTraceEntry[] = [];
-      const anomalies: SlateBrowserNativeEventTraceAnomaly[] = [];
+      const entries: PliteBrowserNativeEventTraceEntry[] = [];
+      const anomalies: PliteBrowserNativeEventTraceAnomaly[] = [];
       const nodeIds = new WeakMap<Text, string>();
       let nodeId = 0;
       let beforeInputTextNodes:
-        | SlateBrowserNativeEventTraceTextNodeSnapshot[]
+        | PliteBrowserNativeEventTraceTextNodeSnapshot[]
         | null = null;
-      let lastBeforeInput: SlateBrowserNativeEventTraceEntry | null = null;
-      let lastComposition: SlateBrowserNativeEventTraceEntry | null = null;
+      let lastBeforeInput: PliteBrowserNativeEventTraceEntry | null = null;
+      let lastComposition: PliteBrowserNativeEventTraceEntry | null = null;
 
       const rootNode = element.getRootNode() as Document | ShadowRoot;
       const ownerDocument = element.ownerDocument;
@@ -71,9 +71,9 @@ export const startSlateBrowserNativeEventTrace = async (
         }
 
         const path = parent
-          .closest('[data-slate-node="text"]')
-          ?.getAttribute('data-slate-path');
-        const ownPath = parent.getAttribute('data-slate-path');
+          .closest('[data-plite-node="text"]')
+          ?.getAttribute('data-plite-path');
+        const ownPath = parent.getAttribute('data-plite-path');
         const directParent = parent.parentElement;
         const sameTagIndex = directParent
           ? Array.from(directParent.children)
@@ -88,7 +88,7 @@ export const startSlateBrowserNativeEventTrace = async (
 
       const getNodeSnapshot = (
         node: Node | null
-      ): SlateBrowserNativeEventTraceNodeSnapshot => {
+      ): PliteBrowserNativeEventTraceNodeSnapshot => {
         if (!node) {
           return {
             nodeName: null,
@@ -107,21 +107,21 @@ export const startSlateBrowserNativeEventTrace = async (
             ? node.parentElement
             : (elementNode?.parentElement ?? null);
         const textNodeOwner = (elementNode ?? parent)?.closest(
-          '[data-slate-node="text"]'
+          '[data-plite-node="text"]'
         );
 
         return {
           nodeName: node.nodeName,
           parentNodeName: parent?.nodeName ?? null,
-          parentPath: parent?.getAttribute('data-slate-path') ?? null,
+          parentPath: parent?.getAttribute('data-plite-path') ?? null,
           parentSignature: getParentSignature(parent),
-          path: textNodeOwner?.getAttribute('data-slate-path') ?? null,
+          path: textNodeOwner?.getAttribute('data-plite-path') ?? null,
           text: node.textContent ?? null,
         };
       };
 
       const takeSelection =
-        (): SlateBrowserNativeEventTraceSelectionSnapshot => {
+        (): PliteBrowserNativeEventTraceSelectionSnapshot => {
           const selection = getRootSelection();
 
           if (!selection || selection.rangeCount === 0) {
@@ -149,7 +149,7 @@ export const startSlateBrowserNativeEventTrace = async (
 
       const toRectSnapshots = (
         rects: DOMRectList | readonly DOMRect[]
-      ): SlateBrowserNativeEventTraceRect[] =>
+      ): PliteBrowserNativeEventTraceRect[] =>
         Array.from(rects).map((rect) => ({
           height: rect.height,
           width: rect.width,
@@ -159,11 +159,11 @@ export const startSlateBrowserNativeEventTrace = async (
 
       const takeTargetRanges = (
         event: InputEvent
-      ): SlateBrowserNativeEventTraceTargetRangeSnapshot[] => {
+      ): PliteBrowserNativeEventTraceTargetRangeSnapshot[] => {
         const ranges = event.getTargetRanges?.() ?? [];
 
         return Array.from(ranges).map((range) => {
-          let rects: SlateBrowserNativeEventTraceRect[] = [];
+          let rects: PliteBrowserNativeEventTraceRect[] = [];
 
           try {
             const liveRange = ownerDocument.createRange();
@@ -198,8 +198,8 @@ export const startSlateBrowserNativeEventTrace = async (
       };
 
       const snapshotTextNodes =
-        (): SlateBrowserNativeEventTraceTextNodeSnapshot[] => {
-          const snapshot: SlateBrowserNativeEventTraceTextNodeSnapshot[] = [];
+        (): PliteBrowserNativeEventTraceTextNodeSnapshot[] => {
+          const snapshot: PliteBrowserNativeEventTraceTextNodeSnapshot[] = [];
           const walker = ownerDocument.createTreeWalker(
             element,
             NodeFilter.SHOW_TEXT
@@ -213,7 +213,7 @@ export const startSlateBrowserNativeEventTrace = async (
             if (parent) {
               snapshot.push({
                 id: getTextNodeId(textNode),
-                parentPath: parent.getAttribute('data-slate-path'),
+                parentPath: parent.getAttribute('data-plite-path'),
                 parentSignature: getParentSignature(parent) ?? parent.nodeName,
                 text: textNode.data,
               });
@@ -226,14 +226,14 @@ export const startSlateBrowserNativeEventTrace = async (
         };
 
       const diffTextNodes = (
-        before: SlateBrowserNativeEventTraceTextNodeSnapshot[] | null,
-        after: SlateBrowserNativeEventTraceTextNodeSnapshot[]
-      ): SlateBrowserNativeEventTraceDOMDelta | null => {
+        before: PliteBrowserNativeEventTraceTextNodeSnapshot[] | null,
+        after: PliteBrowserNativeEventTraceTextNodeSnapshot[]
+      ): PliteBrowserNativeEventTraceDOMDelta | null => {
         if (!before) {
           return null;
         }
 
-        const deltas: SlateBrowserNativeEventTraceTextNodeDelta[] = [];
+        const deltas: PliteBrowserNativeEventTraceTextNodeDelta[] = [];
         const afterById = new Map(after.map((node) => [node.id, node]));
         const beforeById = new Map(before.map((node) => [node.id, node]));
 
@@ -267,14 +267,14 @@ export const startSlateBrowserNativeEventTrace = async (
       };
 
       const addAnomaly = (
-        type: SlateBrowserNativeEventTraceAnomaly['type'],
+        type: PliteBrowserNativeEventTraceAnomaly['type'],
         detail: string
       ) => {
         anomalies.push({ detail, type });
       };
 
       const detectInputAnomalies = (
-        entry: SlateBrowserNativeEventTraceEntry
+        entry: PliteBrowserNativeEventTraceEntry
       ) => {
         if (
           !lastBeforeInput ||
@@ -356,7 +356,7 @@ export const startSlateBrowserNativeEventTrace = async (
       };
 
       const detectCompositionAnomalies = (
-        entry: SlateBrowserNativeEventTraceEntry
+        entry: PliteBrowserNativeEventTraceEntry
       ) => {
         if (
           lastComposition?.data &&
@@ -371,7 +371,7 @@ export const startSlateBrowserNativeEventTrace = async (
         }
       };
 
-      const pushEntry = (entry: SlateBrowserNativeEventTraceEntry) => {
+      const pushEntry = (entry: PliteBrowserNativeEventTraceEntry) => {
         entries.push(entry);
 
         if (entries.length > maxEntries) {
@@ -380,7 +380,7 @@ export const startSlateBrowserNativeEventTrace = async (
       };
 
       const record = (event: Event) => {
-        const type = event.type as SlateBrowserNativeEventTraceType;
+        const type = event.type as PliteBrowserNativeEventTraceType;
 
         if (!enabledEvents.has(type)) {
           return;
@@ -397,7 +397,7 @@ export const startSlateBrowserNativeEventTrace = async (
           beforeInputTextNodes = snapshotTextNodes();
         }
 
-        const entry: SlateBrowserNativeEventTraceEntry = {
+        const entry: PliteBrowserNativeEventTraceEntry = {
           data: inputEvent?.data ?? compositionEvent?.data ?? null,
           domDelta:
             type === 'input'
@@ -423,7 +423,7 @@ export const startSlateBrowserNativeEventTrace = async (
         pushEntry(entry);
       };
 
-      const eventTypes: SlateBrowserNativeEventTraceType[] = [
+      const eventTypes: PliteBrowserNativeEventTraceType[] = [
         'beforeinput',
         'input',
         'compositionstart',
@@ -458,8 +458,8 @@ export const startSlateBrowserNativeEventTrace = async (
   );
 };
 
-/** Clear the current native event trace for a Slate browser root. */
-export const resetSlateBrowserNativeEventTrace = async (root: Locator) => {
+/** Clear the current native event trace for a Plite browser root. */
+export const resetPliteBrowserNativeEventTrace = async (root: Locator) => {
   await root.evaluate(
     (element: HTMLElement, { key }: { key: string }) => {
       (element as Record<string, any>)[key]?.reset?.();
@@ -468,8 +468,8 @@ export const resetSlateBrowserNativeEventTrace = async (root: Locator) => {
   );
 };
 
-/** Stop native event tracing for a Slate browser root. */
-export const stopSlateBrowserNativeEventTrace = async (root: Locator) => {
+/** Stop native event tracing for a Plite browser root. */
+export const stopPliteBrowserNativeEventTrace = async (root: Locator) => {
   await root.evaluate(
     (element: HTMLElement, { key }: { key: string }) => {
       (element as Record<string, any>)[key]?.stop?.();
@@ -479,10 +479,10 @@ export const stopSlateBrowserNativeEventTrace = async (root: Locator) => {
   );
 };
 
-/** Read the native event trace captured for a Slate browser root. */
-export const takeSlateBrowserNativeEventTrace = async (
+/** Read the native event trace captured for a Plite browser root. */
+export const takePliteBrowserNativeEventTrace = async (
   root: Locator
-): Promise<SlateBrowserNativeEventTraceSnapshot> =>
+): Promise<PliteBrowserNativeEventTraceSnapshot> =>
   root.evaluate(
     (element: HTMLElement, { key }: { key: string }) => {
       const trace = (element as Record<string, any>)[key];
@@ -490,10 +490,10 @@ export const takeSlateBrowserNativeEventTrace = async (
       return {
         anomalies:
           trace?.anomalies?.map(
-            (anomaly: SlateBrowserNativeEventTraceAnomaly) => ({ ...anomaly })
+            (anomaly: PliteBrowserNativeEventTraceAnomaly) => ({ ...anomaly })
           ) ?? [],
         entries:
-          trace?.entries?.map((entry: SlateBrowserNativeEventTraceEntry) => ({
+          trace?.entries?.map((entry: PliteBrowserNativeEventTraceEntry) => ({
             ...entry,
             domDelta: entry.domDelta
               ? {
@@ -520,7 +520,7 @@ export const takeSlateBrowserNativeEventTrace = async (
               start: { ...range.start },
             })),
           })) ?? [],
-      } satisfies SlateBrowserNativeEventTraceSnapshot;
+      } satisfies PliteBrowserNativeEventTraceSnapshot;
     },
     { key: NATIVE_EVENT_TRACE_KEY }
   );

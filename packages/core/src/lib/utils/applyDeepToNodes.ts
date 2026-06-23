@@ -1,4 +1,4 @@
-import type { Node, NodeEntry, NodeOf, Path } from '@platejs/slate';
+import type { Node, NodeEntry, NodeOf, Path } from '@platejs/plite';
 
 import { type QueryNodeOptions, queryNode } from './queryNode';
 

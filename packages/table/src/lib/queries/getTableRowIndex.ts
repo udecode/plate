@@ -1,10 +1,13 @@
-import { type Element, PathApi } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import { type Element, PathApi } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { findTableNodePath } from '../utils/findTableNodePath';
 
 /** Get table row index of a cell node. */
-export const getTableRowIndex = (editor: SlateEditor, cellNode: Element) => {
+export const getTableRowIndex = (
+  editor: BasePlateEditor,
+  cellNode: Element
+) => {
   const path = findTableNodePath(editor, cellNode);
 
   if (!path) return 0;

@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -9,8 +9,8 @@ import { deleteTableMergeRow } from './deleteRow';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: BasePlateEditor) =>
+  createBasePlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins({ disableMerge: false }),
     selection: input.selection,
@@ -48,7 +48,7 @@ describe('deleteTableMergeRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
 
@@ -111,7 +111,7 @@ describe('deleteTableMergeRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
 
@@ -184,7 +184,7 @@ describe('deleteTableMergeRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
 
@@ -234,7 +234,7 @@ describe('deleteTableMergeRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
 

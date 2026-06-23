@@ -74,9 +74,9 @@ Create the suggestion plugin with extended configuration for state management:
 ```tsx
 import {
   type ExtendConfig,
-  isSlateEditor,
-  isSlateElement,
-  isSlateString,
+  isPliteEditor,
+  isPliteElement,
+  isPliteString,
 } from 'platejs';
 import {
   type BaseSuggestionConfig,
@@ -141,14 +141,14 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
           isSet = true;
         };
 
-        if (!isSlateString(leaf)) unsetActiveSuggestion();
+        if (!isPliteString(leaf)) unsetActiveSuggestion();
 
         while (
           leaf.parentElement &&
-          !isSlateElement(leaf.parentElement) &&
-          !isSlateEditor(leaf.parentElement)
+          !isPliteElement(leaf.parentElement) &&
+          !isPliteEditor(leaf.parentElement)
         ) {
-          if (leaf.classList.contains(`slate-${type}`)) {
+          if (leaf.classList.contains(`plite-${type}`)) {
             const suggestionEntry = api.suggestion!.node({ isText: true });
 
             if (!suggestionEntry) {

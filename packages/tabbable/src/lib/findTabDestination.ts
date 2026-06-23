@@ -1,4 +1,4 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import type { TabbableEntry, TabDestination } from './types';
 
@@ -24,7 +24,7 @@ export type FindTabDestinationOptions = {
 };
 
 export const findTabDestination = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { activeTabbableEntry, direction, tabbableEntries }: FindTabDestinationOptions
 ): TabDestination | null => {
   // Case 1: A tabbable entry was active before tab was pressed

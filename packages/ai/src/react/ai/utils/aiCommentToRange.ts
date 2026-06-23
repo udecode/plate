@@ -1,13 +1,13 @@
 import { deserializeMd } from '@platejs/markdown';
-import type { Element, Range } from '@platejs/slate';
-import { type NodeEntry, type SlateEditor, NodeApi } from 'platejs';
+import type { Element, Range } from '@platejs/plite';
+import { type NodeEntry, type BasePlateEditor, NodeApi } from 'platejs';
 
 import type { TComment } from '../../ai-chat/internal/types';
 
 import { findTextRangeInBlock } from './findTextRangeInBlock';
 
 export const aiCommentToRange = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   aiComment: TComment
 ): Range | undefined => {
   const { blockId, content } = aiComment;

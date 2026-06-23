@@ -1,10 +1,10 @@
 import {
-  createSlateEditor,
+  createBasePlateEditor,
   type PlatePluginTxGroup,
-  type SlateEditor,
+  type BasePlateEditor,
 } from 'platejs';
 import { createPlateRuntimeEditor } from 'platejs/react';
-import type { EditorUpdateTransaction, Value } from '@platejs/slate';
+import type { EditorUpdateTransaction, Value } from '@platejs/plite';
 
 import { BaseBlockquotePlugin } from './BaseBlockquotePlugin';
 
@@ -23,7 +23,7 @@ const runBlockquoteToggleTx = (isActive: boolean) => {
     {
       nodes: { set, some, unwrap, wrap },
     } as unknown as EditorUpdateTransaction,
-    createSlateEditor() as SlateEditor,
+    createBasePlateEditor() as BasePlateEditor,
     { afterCommit: () => {} }
   ) as { toggle: () => void };
 
@@ -34,7 +34,7 @@ const runBlockquoteToggleTx = (isActive: boolean) => {
 
 describe('BaseBlockquotePlugin', () => {
   it('uses wrapper semantics and drops text-block break rules', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseBlockquotePlugin],
     });
     const plugin = editor.getPlugin(BaseBlockquotePlugin);

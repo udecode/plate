@@ -25,14 +25,13 @@
         "@platejs/math": "workspace:^",
         "@platejs/media": "workspace:^",
         "@platejs/mention": "workspace:^",
+        "@platejs/plite": "workspace:^",
+        "@platejs/plite-dom": "workspace:^",
+        "@platejs/plite-history": "workspace:^",
+        "@platejs/plite-hyperscript": "workspace:^",
+        "@platejs/plite-layout": "workspace:^",
+        "@platejs/plite-react": "workspace:^",
         "@platejs/selection": "workspace:^",
-        "@platejs/slate": "workspace:^",
-        "@platejs/slate-dom": "workspace:^",
-        "@platejs/slate-history": "workspace:^",
-        "@platejs/slate-hyperscript": "workspace:^",
-        "@platejs/slate-layout": "workspace:^",
-        "@platejs/slate-legacy": "workspace:^",
-        "@platejs/slate-react": "workspace:^",
         "@platejs/suggestion": "workspace:^",
         "@platejs/table": "workspace:^",
         "@platejs/test-utils": "workspace:^",
@@ -93,9 +92,23 @@
         "zod": "4.1.12",
       },
     },
+    "apps/plite": {
+      "name": "plite",
+      "version": "0.0.0-private",
+      "dependencies": {
+        "@playwright/test": "1.53.0",
+        "next": "16.2.6",
+        "nuqs": "2.4.3",
+        "react": "19.2.4",
+        "react-dom": "19.2.4",
+        "serve-handler": "6.1.6",
+      },
+      "devDependencies": {
+        "@types/serve-handler": "6.1.4",
+      },
+    },
     "apps/slate": {
       "name": "slate",
-      "version": "0.0.0-private",
       "dependencies": {
         "@playwright/test": "1.53.0",
         "next": "16.2.6",
@@ -155,15 +168,15 @@
         "@platejs/media": "workspace:^",
         "@platejs/mention": "workspace:^",
         "@platejs/playwright": "workspace:^",
+        "@platejs/plite": "workspace:^",
+        "@platejs/plite-dom": "workspace:^",
+        "@platejs/plite-history": "workspace:^",
+        "@platejs/plite-hyperscript": "workspace:^",
+        "@platejs/plite-layout": "workspace:^",
+        "@platejs/plite-react": "workspace:^",
         "@platejs/resizable": "workspace:^",
         "@platejs/selection": "workspace:^",
         "@platejs/slash-command": "workspace:^",
-        "@platejs/slate": "workspace:^",
-        "@platejs/slate-dom": "workspace:^",
-        "@platejs/slate-history": "workspace:^",
-        "@platejs/slate-hyperscript": "workspace:^",
-        "@platejs/slate-layout": "workspace:^",
-        "@platejs/slate-react": "workspace:^",
         "@platejs/suggestion": "workspace:^",
         "@platejs/tabbable": "workspace:^",
         "@platejs/table": "workspace:^",
@@ -307,8 +320,8 @@
       "version": "54.0.0-beta.1",
       "dependencies": {
         "@platejs/markdown": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "@platejs/selection": "workspace:^",
-        "@platejs/slate": "workspace:^",
         "@platejs/suggestion": "workspace:^",
         "@platejs/table": "workspace:^",
         "fastest-levenshtein": "1.0.16",
@@ -342,7 +355,7 @@
       "name": "@platejs/basic-nodes",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -359,6 +372,7 @@
       "name": "@platejs/basic-styles",
       "version": "54.0.0-beta.0",
       "dependencies": {
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -394,6 +408,7 @@
       "name": "@platejs/callout",
       "version": "54.0.0-beta.0",
       "dependencies": {
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -410,7 +425,7 @@
       "name": "@platejs/caption",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
         "react-textarea-autosize": "^8.5.9",
       },
@@ -428,7 +443,7 @@
       "name": "@platejs/code-block",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -448,7 +463,7 @@
       "dependencies": {
         "@codemirror/lang-javascript": "6.2.4",
         "@codemirror/theme-one-dark": "6.1.3",
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "@uiw/react-codemirror": "4.25.4",
         "flowchart.js": "^1.15.0",
         "lodash": "^4.17.21",
@@ -474,7 +489,7 @@
       "name": "@platejs/combobox",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -491,7 +506,7 @@
       "name": "@platejs/comment",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "lodash": "^4.17.21",
         "react-compiler-runtime": "^1.0.0",
       },
@@ -509,11 +524,11 @@
       "name": "@platejs/core",
       "version": "54.0.0-beta.1",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
-        "@platejs/slate-dom": "workspace:^",
-        "@platejs/slate-hyperscript": "workspace:^",
-        "@platejs/slate-legacy": "workspace:*",
-        "@platejs/slate-react": "workspace:^",
+        "@platejs/plite": "workspace:^",
+        "@platejs/plite-dom": "workspace:^",
+        "@platejs/plite-history": "workspace:^",
+        "@platejs/plite-hyperscript": "workspace:^",
+        "@platejs/plite-react": "workspace:^",
         "@udecode/react-hotkeys": "workspace:*",
         "@udecode/react-utils": "workspace:*",
         "@udecode/utils": "workspace:*",
@@ -528,9 +543,6 @@
         "optics-ts": "2.4.1",
         "react-compiler-runtime": "^1.0.0",
         "scroll-into-view-if-needed": "^3.1.0",
-        "slate": "0.124.1",
-        "slate-dom": "0.124.1",
-        "slate-react": "0.124.2",
         "use-deep-compare": "^1.3.0",
         "zustand": "^5.0.5",
         "zustand-x": "6.2.1",
@@ -567,7 +579,7 @@
       "name": "@platejs/cursor",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -584,7 +596,7 @@
       "name": "@platejs/date",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -601,7 +613,7 @@
       "name": "@platejs/diff",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "diff-match-patch-ts": "^0.6.0",
         "lodash": "^4.17.21",
         "react-compiler-runtime": "^1.0.0",
@@ -620,7 +632,7 @@
       "name": "@platejs/dnd",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "lodash": "^4.17.21",
         "raf": "^3.4.1",
         "react-compiler-runtime": "^1.0.0",
@@ -708,7 +720,7 @@
       "version": "54.0.0-beta.0",
       "dependencies": {
         "@excalidraw/excalidraw": "0.18.0",
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "lodash": "^4.17.21",
         "react-compiler-runtime": "^1.0.0",
       },
@@ -727,7 +739,7 @@
       "name": "@platejs/find-replace",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -746,7 +758,7 @@
       "dependencies": {
         "@floating-ui/core": "^1.6.7",
         "@floating-ui/react": "^0.26.23",
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -764,7 +776,7 @@
       "version": "54.0.0-beta.0",
       "dependencies": {
         "@platejs/combobox": "workspace:^",
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -831,7 +843,7 @@
       "version": "54.0.0-beta.0",
       "dependencies": {
         "@platejs/floating": "workspace:^",
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -855,7 +867,7 @@
       },
       "devDependencies": {
         "@plate/scripts": "workspace:*",
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "platejs": "workspace:^",
       },
       "peerDependencies": {
@@ -869,7 +881,7 @@
       "version": "54.0.0-beta.0",
       "dependencies": {
         "@platejs/core": "workspace:^",
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "@platejs/utils": "workspace:^",
         "@udecode/utils": "workspace:^",
         "lodash": "^4.17.21",
@@ -890,7 +902,7 @@
       "version": "54.0.0-beta.1",
       "dependencies": {
         "@platejs/date": "workspace:*",
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "lodash": "^4.17.23",
         "marked": "^15.0.12",
         "mdast-util-math": "3.0.0",
@@ -924,7 +936,7 @@
       "name": "@platejs/math",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "katex": "0.16.22",
         "react-compiler-runtime": "^1.0.0",
       },
@@ -943,7 +955,7 @@
       "name": "@platejs/media",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -961,6 +973,7 @@
       "version": "54.0.0-beta.0",
       "dependencies": {
         "@platejs/combobox": "workspace:*",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -978,7 +991,7 @@
       "version": "54.0.0-beta.1",
       "dependencies": {
         "@platejs/core": "workspace:^",
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "@platejs/utils": "workspace:^",
         "@udecode/react-hotkeys": "workspace:^",
         "@udecode/react-utils": "workspace:^",
@@ -1004,7 +1017,7 @@
       "name": "@platejs/playwright",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -1016,6 +1029,108 @@
         "platejs": ">=54.0.0-beta.0",
         "react": ">=18.0.0",
         "react-dom": ">=18.0.0",
+      },
+    },
+    "packages/plite": {
+      "name": "@platejs/plite",
+      "version": "54.0.0-beta.0",
+      "devDependencies": {
+        "@plate/scripts": "workspace:*",
+        "lodash": "^4.17.21",
+      },
+    },
+    "packages/plite-dom": {
+      "name": "@platejs/plite-dom",
+      "version": "54.0.0-beta.0",
+      "devDependencies": {
+        "@plate/scripts": "workspace:*",
+        "@platejs/plite": "workspace:^",
+        "@types/node": "24.12.0",
+        "jsdom": "20.0.3",
+      },
+      "peerDependencies": {
+        "@platejs/plite": ">=54.0.0-beta.0",
+      },
+    },
+    "packages/plite-history": {
+      "name": "@platejs/plite-history",
+      "version": "54.0.0-beta.0",
+      "devDependencies": {
+        "@plate/scripts": "workspace:*",
+        "@platejs/plite": "workspace:^",
+        "lodash": "^4.17.21",
+      },
+      "peerDependencies": {
+        "@platejs/plite": ">=54.0.0-beta.0",
+      },
+    },
+    "packages/plite-hyperscript": {
+      "name": "@platejs/plite-hyperscript",
+      "version": "54.0.0-beta.0",
+      "devDependencies": {
+        "@plate/scripts": "workspace:*",
+        "@platejs/plite": "workspace:^",
+      },
+      "peerDependencies": {
+        "@platejs/plite": ">=54.0.0-beta.0",
+      },
+    },
+    "packages/plite-layout": {
+      "name": "@platejs/plite-layout",
+      "version": "54.0.0-beta.0",
+      "dependencies": {
+        "@chenglou/pretext": "^0.0.7",
+      },
+      "devDependencies": {
+        "@happy-dom/global-registrator": "20.0.10",
+        "@plate/scripts": "workspace:*",
+        "@platejs/plite": "workspace:^",
+        "@platejs/plite-react": "workspace:^",
+        "@testing-library/react": "16.3.0",
+        "@types/react": "19.2.7",
+        "@types/react-dom": "19.2.3",
+        "react": "19.2.4",
+        "react-dom": "19.2.4",
+      },
+      "peerDependencies": {
+        "@platejs/plite": ">=54.0.0-beta.0",
+        "@platejs/plite-react": ">=54.0.0-beta.0",
+        "react": ">=19.2.0",
+        "react-dom": ">=19.2.0",
+      },
+    },
+    "packages/plite-react": {
+      "name": "@platejs/plite-react",
+      "version": "54.0.0-beta.0",
+      "dependencies": {
+        "@juggle/resize-observer": "^3.4.0",
+        "@platejs/plite-history": "workspace:^",
+        "@tanstack/react-virtual": "^3.13.25",
+        "lodash": "^4.17.21",
+        "react-compiler-runtime": "^1.0.0",
+      },
+      "devDependencies": {
+        "@plate/scripts": "workspace:*",
+        "@platejs/plite": "workspace:^",
+        "@platejs/plite-dom": "workspace:^",
+        "@platejs/plite-hyperscript": "workspace:^",
+        "@testing-library/dom": "10.4.0",
+        "@testing-library/jest-dom": "6.6.3",
+        "@testing-library/react": "16.3.0",
+        "@types/lodash": "^4.14.200",
+        "@types/node": "24.12.0",
+        "@types/react": "19.2.7",
+        "@types/react-dom": "19.2.3",
+        "jsdom": "20.0.3",
+        "react": "19.2.4",
+        "react-dom": "19.2.4",
+        "vitest": "^4.1.0",
+      },
+      "peerDependencies": {
+        "@platejs/plite": ">=54.0.0-beta.0",
+        "@platejs/plite-dom": ">=54.0.0-beta.0",
+        "react": ">=19.2.0",
+        "react-dom": ">=19.2.0",
       },
     },
     "packages/resizable": {
@@ -1038,7 +1153,7 @@
       "name": "@platejs/selection",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "copy-to-clipboard": "^3.3.3",
         "react-compiler-runtime": "^1.0.0",
       },
@@ -1069,129 +1184,12 @@
         "react-dom": ">=18.0.0",
       },
     },
-    "packages/slate": {
-      "name": "@platejs/slate",
-      "version": "54.0.0-beta.0",
-      "devDependencies": {
-        "@plate/scripts": "workspace:*",
-        "lodash": "^4.17.21",
-      },
-    },
-    "packages/slate-dom": {
-      "name": "@platejs/slate-dom",
-      "version": "54.0.0-beta.0",
-      "devDependencies": {
-        "@plate/scripts": "workspace:*",
-        "@platejs/slate": "workspace:^",
-        "@types/node": "24.12.0",
-        "jsdom": "20.0.3",
-      },
-      "peerDependencies": {
-        "@platejs/slate": ">=54.0.0-beta.0",
-      },
-    },
-    "packages/slate-history": {
-      "name": "@platejs/slate-history",
-      "version": "54.0.0-beta.0",
-      "devDependencies": {
-        "@plate/scripts": "workspace:*",
-        "@platejs/slate": "workspace:^",
-        "lodash": "^4.17.21",
-      },
-      "peerDependencies": {
-        "@platejs/slate": ">=54.0.0-beta.0",
-      },
-    },
-    "packages/slate-hyperscript": {
-      "name": "@platejs/slate-hyperscript",
-      "version": "54.0.0-beta.0",
-      "devDependencies": {
-        "@plate/scripts": "workspace:*",
-        "@platejs/slate": "workspace:^",
-      },
-      "peerDependencies": {
-        "@platejs/slate": ">=54.0.0-beta.0",
-      },
-    },
-    "packages/slate-layout": {
-      "name": "@platejs/slate-layout",
-      "version": "54.0.0-beta.0",
-      "dependencies": {
-        "@chenglou/pretext": "^0.0.7",
-      },
-      "devDependencies": {
-        "@happy-dom/global-registrator": "20.0.10",
-        "@plate/scripts": "workspace:*",
-        "@platejs/slate": "workspace:^",
-        "@platejs/slate-react": "workspace:^",
-        "@testing-library/react": "16.3.0",
-        "@types/react": "19.2.7",
-        "@types/react-dom": "19.2.3",
-        "react": "19.2.4",
-        "react-dom": "19.2.4",
-      },
-      "peerDependencies": {
-        "@platejs/slate": ">=54.0.0-beta.0",
-        "@platejs/slate-react": ">=54.0.0-beta.0",
-        "react": ">=19.2.0",
-        "react-dom": ">=19.2.0",
-      },
-    },
-    "packages/slate-legacy": {
-      "name": "@platejs/slate-legacy",
-      "version": "54.0.0-beta.0",
-      "dependencies": {
-        "@udecode/utils": "workspace:^",
-        "is-plain-object": "^5.0.0",
-        "lodash": "^4.17.21",
-        "scroll-into-view-if-needed": "^3.1.0",
-        "slate": "0.124.1",
-        "slate-dom": "0.124.1",
-      },
-      "devDependencies": {
-        "@plate/scripts": "workspace:*",
-      },
-    },
-    "packages/slate-react": {
-      "name": "@platejs/slate-react",
-      "version": "54.0.0-beta.0",
-      "dependencies": {
-        "@juggle/resize-observer": "^3.4.0",
-        "@platejs/slate-history": "workspace:^",
-        "@tanstack/react-virtual": "^3.13.25",
-        "lodash": "^4.17.21",
-        "react-compiler-runtime": "^1.0.0",
-      },
-      "devDependencies": {
-        "@plate/scripts": "workspace:*",
-        "@platejs/slate": "workspace:^",
-        "@platejs/slate-dom": "workspace:^",
-        "@platejs/slate-hyperscript": "workspace:^",
-        "@testing-library/dom": "10.4.0",
-        "@testing-library/jest-dom": "6.6.3",
-        "@testing-library/react": "16.3.0",
-        "@types/lodash": "^4.14.200",
-        "@types/node": "24.12.0",
-        "@types/react": "19.2.7",
-        "@types/react-dom": "19.2.3",
-        "jsdom": "20.0.3",
-        "react": "19.2.4",
-        "react-dom": "19.2.4",
-        "vitest": "^4.1.0",
-      },
-      "peerDependencies": {
-        "@platejs/slate": ">=54.0.0-beta.0",
-        "@platejs/slate-dom": ">=54.0.0-beta.0",
-        "react": ">=19.2.0",
-        "react-dom": ">=19.2.0",
-      },
-    },
     "packages/suggestion": {
       "name": "@platejs/suggestion",
       "version": "54.0.0-beta.0",
       "dependencies": {
         "@platejs/diff": "workspace:^",
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "lodash": "^4.17.21",
         "react-compiler-runtime": "^1.0.0",
       },
@@ -1226,8 +1224,8 @@
       "name": "@platejs/table",
       "version": "54.0.0-beta.0",
       "dependencies": {
+        "@platejs/plite": "workspace:^",
         "@platejs/resizable": "workspace:^",
-        "@platejs/slate": "workspace:^",
         "lodash": "^4.17.21",
         "react-compiler-runtime": "^1.0.0",
       },
@@ -1246,7 +1244,7 @@
       "name": "@platejs/tag",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -1263,7 +1261,7 @@
       "name": "@platejs/test-utils",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
       },
       "devDependencies": {
         "@plate/scripts": "workspace:*",
@@ -1273,7 +1271,7 @@
       "name": "@platejs/toc",
       "version": "54.0.0-beta.0",
       "dependencies": {
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "react-compiler-runtime": "^1.0.0",
       },
       "devDependencies": {
@@ -1401,7 +1399,7 @@
       "version": "54.0.0-beta.1",
       "dependencies": {
         "@platejs/core": "workspace:^",
-        "@platejs/slate": "workspace:^",
+        "@platejs/plite": "workspace:^",
         "@udecode/react-utils": "workspace:^",
         "@udecode/utils": "workspace:^",
         "clsx": "^2.1.1",
@@ -1421,17 +1419,17 @@
       "version": "54.0.0-beta.0",
       "devDependencies": {
         "@plate/scripts": "workspace:*",
-        "@platejs/slate": "workspace:^",
-        "@platejs/slate-history": "workspace:^",
-        "@platejs/slate-react": "workspace:^",
+        "@platejs/plite": "workspace:^",
+        "@platejs/plite-history": "workspace:^",
+        "@platejs/plite-react": "workspace:^",
         "@types/node": "24.12.0",
         "@types/react": "19.2.7",
         "react": "19.2.4",
         "yjs": "13.6.30",
       },
       "peerDependencies": {
-        "@platejs/slate": ">=54.0.0-beta.0",
-        "@platejs/slate-react": ">=54.0.0-beta.0",
+        "@platejs/plite": ">=54.0.0-beta.0",
+        "@platejs/plite-react": ">=54.0.0-beta.0",
         "react": ">=19.2.0",
         "yjs": "13.6.30",
       },
@@ -2050,25 +2048,23 @@
 
     "@platejs/playwright": ["@platejs/playwright@workspace:packages/playwright"],
 
+    "@platejs/plite": ["@platejs/plite@workspace:packages/plite"],
+
+    "@platejs/plite-dom": ["@platejs/plite-dom@workspace:packages/plite-dom"],
+
+    "@platejs/plite-history": ["@platejs/plite-history@workspace:packages/plite-history"],
+
+    "@platejs/plite-hyperscript": ["@platejs/plite-hyperscript@workspace:packages/plite-hyperscript"],
+
+    "@platejs/plite-layout": ["@platejs/plite-layout@workspace:packages/plite-layout"],
+
+    "@platejs/plite-react": ["@platejs/plite-react@workspace:packages/plite-react"],
+
     "@platejs/resizable": ["@platejs/resizable@workspace:packages/resizable"],
 
     "@platejs/selection": ["@platejs/selection@workspace:packages/selection"],
 
     "@platejs/slash-command": ["@platejs/slash-command@workspace:packages/slash-command"],
-
-    "@platejs/slate": ["@platejs/slate@workspace:packages/slate"],
-
-    "@platejs/slate-dom": ["@platejs/slate-dom@workspace:packages/slate-dom"],
-
-    "@platejs/slate-history": ["@platejs/slate-history@workspace:packages/slate-history"],
-
-    "@platejs/slate-hyperscript": ["@platejs/slate-hyperscript@workspace:packages/slate-hyperscript"],
-
-    "@platejs/slate-layout": ["@platejs/slate-layout@workspace:packages/slate-layout"],
-
-    "@platejs/slate-legacy": ["@platejs/slate-legacy@workspace:packages/slate-legacy"],
-
-    "@platejs/slate-react": ["@platejs/slate-react@workspace:packages/slate-react"],
 
     "@platejs/suggestion": ["@platejs/suggestion@workspace:packages/suggestion"],
 
@@ -4158,6 +4154,8 @@
 
     "playwright-core": ["playwright-core@1.61.0", "", { "bin": { "playwright-core": "cli.js" } }, "sha512-caX7TrY3Ml6egyDX0WUcTHDxodl/b51y5wJOdCEA36QviK/s2g081hvmGs8eaE3DWb6NYZQ6BjO/QkNRPenoPA=="],
 
+    "plite": ["plite@workspace:apps/plite"],
+
     "png-chunk-text": ["png-chunk-text@1.0.0", "", {}, "sha512-DEROKU3SkkLGWNMzru3xPVgxyd48UGuMSZvioErCure6yhOc/pRH2ZV+SEn7nmaf7WNf3NdIpH+UTrRdKyq9Lw=="],
 
     "png-chunks-encode": ["png-chunks-encode@1.0.0", "", { "dependencies": { "crc-32": "0.3.0", "sliced": "1.0.1" } }, "sha512-J1jcHgbQRsIIgx5wxW9UmCymV3wwn4qCCJl6KYgEU/yHCh/L2Mwq/nMOkRPtmV79TLxRZj5w3tH69pvygFkDqA=="],
@@ -4488,7 +4486,7 @@
 
     "slash": ["slash@3.0.0", "", {}, "sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q=="],
 
-    "slate": ["slate@workspace:apps/slate"],
+    "slate": ["slate@0.124.1", "", {}, "sha512-ii7DwezgvbLAyKtHBIunjTR1kzbNfYLCUKLMzJELlbTZkvHzX4DzN7HKIwcakf6dPxO6AoeT/P7kHOcyTym/hA=="],
 
     "slate-dom": ["slate-dom@0.124.1", "", { "dependencies": { "@juggle/resize-observer": "^3.4.0", "direction": "^1.0.4", "is-hotkey": "^0.2.0", "is-plain-object": "^5.0.0", "lodash": "^4.17.21", "scroll-into-view-if-needed": "^3.1.0", "tiny-invariant": "1.3.1" }, "peerDependencies": { "slate": ">=0.121.0" } }, "sha512-D3yVibjLZM4Oj4MmXxOEXbjrlf4wJez3OvGABBNYrAP7gXb0d96tKNtWZ0hGm/5y84idw/LHjZ7W1uTYqFR9rQ=="],
 
@@ -5006,10 +5004,6 @@
 
     "@modelcontextprotocol/sdk/ajv": ["ajv@8.18.0", "", { "dependencies": { "fast-deep-equal": "3.1.3", "fast-uri": "3.1.0", "json-schema-traverse": "1.0.0", "require-from-string": "2.0.2" } }, "sha512-PlXPeEWMXMZ7sPYOHqmDyCJzcfNrUr3fGNKtezX14ykXOEIvyK81d+qydx89KY5O71FKMPaQ2vBfBFI5NHR63A=="],
 
-    "@platejs/core/slate": ["slate@0.124.1", "", {}, "sha512-ii7DwezgvbLAyKtHBIunjTR1kzbNfYLCUKLMzJELlbTZkvHzX4DzN7HKIwcakf6dPxO6AoeT/P7kHOcyTym/hA=="],
-
-    "@platejs/slate-legacy/slate": ["slate@0.124.1", "", {}, "sha512-ii7DwezgvbLAyKtHBIunjTR1kzbNfYLCUKLMzJELlbTZkvHzX4DzN7HKIwcakf6dPxO6AoeT/P7kHOcyTym/hA=="],
-
     "@platejs/toggle/jotai": ["jotai@2.18.0", "", { "optionalDependencies": { "@babel/core": "7.29.0", "@babel/template": "7.28.6", "@types/react": "19.2.7", "react": "19.2.4" } }, "sha512-XI38kGWAvtxAZ+cwHcTgJsd+kJOJGf3OfL4XYaXWZMZ7IIY8e53abpIHvtVn1eAgJ5dlgwlGFnP4psrZ/vZbtA=="],
 
     "@playwright/test/playwright": ["playwright@1.53.0", "", { "dependencies": { "playwright-core": "1.53.0" }, "optionalDependencies": { "fsevents": "2.3.2" }, "bin": { "playwright": "cli.js" } }, "sha512-ghGNnIEYZC4E+YtclRn4/p6oYbdPiASELBIYkBXfaTVKreQUYbMUYQDwS12a8F0/HtIjr/CkGjtwABeFPGcS4Q=="],
@@ -5370,7 +5364,11 @@
 
     "@shikijs/transformers/shiki": ["shiki@1.1.7", "", { "dependencies": { "@shikijs/core": "1.1.7" } }, "sha512-9kUTMjZtcPH3i7vHunA6EraTPpPOITYTdA5uMrvsJRexktqP0s7P3s9HVK80b4pP42FRVe03D7fT3NmJv2yYhw=="],
 
+    "@slate-yjs/core/slate": ["slate@workspace:apps/slate"],
+
     "@slate-yjs/core/yjs": ["yjs@13.6.29", "", { "dependencies": { "lib0": "0.2.117" } }, "sha512-kHqDPdltoXH+X4w1lVmMtddE3Oeqq48nM40FD5ojTd8xYhQpzIDcfE2keMSU5bAgRPJBe225WTUdyUgj1DtbiQ=="],
+
+    "@slate-yjs/react/slate": ["slate@workspace:apps/slate"],
 
     "@slate-yjs/react/slate-react": ["slate-react@0.123.0", "", { "dependencies": { "@juggle/resize-observer": "3.4.0", "direction": "1.0.4", "is-hotkey": "0.2.0", "lodash": "4.17.23", "scroll-into-view-if-needed": "3.1.0", "tiny-invariant": "1.3.1" }, "peerDependencies": { "react": "19.2.4", "react-dom": "19.2.4", "slate": "0.123.0", "slate-dom": "0.123.0" } }, "sha512-nQwXL1FEacrY9ZFmatRhoBnsySNUX2x6qB77V3oNHd7wWxBJWuzz4GMrBXcVoRE8Gac7Angf8xaNGzb6zcPlHg=="],
 
@@ -5906,6 +5904,10 @@
 
     "simple-peer/readable-stream": ["readable-stream@3.6.2", "", { "dependencies": { "inherits": "2.0.4", "string_decoder": "1.3.0", "util-deprecate": "1.0.2" } }, "sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA=="],
 
+    "slate-dom/slate": ["slate@workspace:apps/slate"],
+
+    "slate-react/slate": ["slate@workspace:apps/slate"],
+
     "slice-ansi/ansi-styles": ["ansi-styles@6.2.3", "", {}, "sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg=="],
 
     "slice-ansi/is-fullwidth-code-point": ["is-fullwidth-code-point@4.0.0", "", {}, "sha512-O4L094N2/dZ7xqVdrXhh9r1KODPJpFms8B5sGdJLPy664AgvXsreZUyCQQNItZRDlYug4xStLjNp/sz3HvBowQ=="],
@@ -5999,8 +6001,6 @@
     "www/@radix-ui/react-slot": ["@radix-ui/react-slot@1.2.3", "", { "dependencies": { "@radix-ui/react-compose-refs": "1.1.2" }, "optionalDependencies": { "@types/react": "19.2.7" }, "peerDependencies": { "react": "19.2.4" } }, "sha512-aeNmHnBxbi2St0au6VBVC7JXFlhLlOnvIIlePNniyUNAClzmtAUEY8/pBiK3iHjufOlwA+c20/8jngo7xcrg8A=="],
 
     "www/lodash": ["lodash@4.17.21", "", {}, "sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg=="],
-
-    "www/slate": ["slate@0.124.1", "", {}, "sha512-ii7DwezgvbLAyKtHBIunjTR1kzbNfYLCUKLMzJELlbTZkvHzX4DzN7HKIwcakf6dPxO6AoeT/P7kHOcyTym/hA=="],
 
     "www/zod": ["zod@3.25.61", "", {}, "sha512-fzfJgUw78LTNnHujj9re1Ov/JJQkRZZGDMcYqSx7Hp4rPOkKywaFHq0S6GoHeXs0wGNE/sIOutkXgnwzrVOGCQ=="],
 

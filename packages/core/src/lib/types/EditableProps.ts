@@ -1,9 +1,9 @@
 import type { JSX } from 'react';
 
-import type { NodeEntry, Range } from '@platejs/slate';
-import type { DOMRange } from '@platejs/slate-dom';
+import type { NodeEntry, Range } from '@platejs/plite';
+import type { DOMRange } from '@platejs/plite-dom';
 
-import type { SlateEditor } from '../editor';
+import type { BasePlateEditor } from '../editor';
 import type { RenderChunkFn } from './RenderChunkProps';
 import type { RenderElementFn } from './RenderElementProps';
 import type { RenderLeafFn } from './RenderLeafProps';
@@ -25,13 +25,16 @@ export type EditableProps = {
   renderPlaceholder?: (props: {
     attributes: {
       contentEditable: boolean;
-      'data-slate-placeholder': boolean;
+      'data-plite-placeholder': boolean;
       ref: React.RefCallback<any>;
       style: React.CSSProperties;
       dir?: 'rtl';
     };
     children: any;
   }) => JSX.Element;
-  scrollSelectionIntoView?: (editor: SlateEditor, domRange: DOMRange) => void;
+  scrollSelectionIntoView?: (
+    editor: BasePlateEditor,
+    domRange: DOMRange
+  ) => void;
   onDOMBeforeInput?: (event: InputEvent) => void;
 } & React.TextareaHTMLAttributes<HTMLDivElement>;

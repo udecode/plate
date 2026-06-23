@@ -3,7 +3,7 @@
 import type { JSX } from 'react';
 
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { isPointNextToNode } from './isPointNextToNode';
 
@@ -11,9 +11,9 @@ jsxt;
 
 describe('isPointNextToNode', () => {
   const createTestEditor = (input: JSX.Element) => {
-    const fixture = input as unknown as SlateEditor;
+    const fixture = input as unknown as BasePlateEditor;
 
-    return createSlateEditor({
+    return createBasePlateEditor({
       selection: fixture.selection,
       value: fixture.children,
     });
@@ -137,7 +137,7 @@ describe('isPointNextToNode', () => {
 
   describe('when neither selection nor at is available', () => {
     it('throws a clear error', () => {
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         value: [
           {
             children: [{ text: 'test' }],

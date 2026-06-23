@@ -1,7 +1,7 @@
 import type { PluginConfig } from '@platejs/core';
 import type { PlatePlugin } from '@platejs/core/react';
 import { createTPlatePlugin } from '@platejs/core/react';
-import { type Element, type Path, PathApi } from '@platejs/slate';
+import { type Element, type Path, PathApi } from '@platejs/plite';
 
 import { KEYS } from '../../lib';
 
@@ -11,6 +11,11 @@ export type BlockPlaceholderConfig = PluginConfig<
     placeholders?: Record<string, string>;
     query?: (context: BlockPlaceholderQueryContext) => boolean;
     className?: string;
+  },
+  {},
+  {},
+  {
+    placeholder: (node: Element, path?: Path) => string | undefined;
   }
 >;
 

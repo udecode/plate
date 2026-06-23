@@ -1,9 +1,9 @@
-import type { Path, SlateEditor, TCaptionElement } from 'platejs';
+import type { Path, BasePlateEditor, TCaptionElement } from 'platejs';
 
 import { CaptionPlugin } from '../CaptionPlugin';
 
 export const showCaption = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   element: TCaptionElement,
   path: Path | null
 ) => {

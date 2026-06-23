@@ -1,9 +1,12 @@
-import { type SlateEditor, getEditorPlugin, PathApi } from 'platejs';
+import { type BasePlateEditor, getEditorPlugin, PathApi } from 'platejs';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { selectInsertedBlocks } from './selectInsertedBlocks';
 
-export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
+export const pasteSelectedBlocks = (
+  editor: BasePlateEditor,
+  e: ClipboardEvent
+) => {
   const { api } = getEditorPlugin(editor, BlockSelectionPlugin);
 
   const entries = api.blockSelection.getNodes();

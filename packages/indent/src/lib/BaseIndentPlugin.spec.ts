@@ -1,10 +1,10 @@
-import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, KEYS, createBasePlateEditor } from 'platejs';
 
 import { BaseIndentPlugin } from './BaseIndentPlugin';
 
 describe('BaseIndentPlugin', () => {
   it('exposes the default options and injected node-prop contract', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin],
     });
     const plugin = editor.getPlugin(BaseIndentPlugin);

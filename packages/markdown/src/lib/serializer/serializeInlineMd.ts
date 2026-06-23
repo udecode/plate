@@ -1,4 +1,4 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import remarkStringify from 'remark-stringify';
 import { unified } from 'unified';
@@ -9,7 +9,7 @@ import { convertTextsSerialize } from './convertTextsSerialize';
 import { getMergedOptionsSerialize } from './utils';
 
 export const serializeInlineMd = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options?: SerializeMdOptions
 ) => {
   const mergedOptions = getMergedOptionsSerialize(editor, options);

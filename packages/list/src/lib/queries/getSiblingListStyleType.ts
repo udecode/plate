@@ -1,5 +1,5 @@
-import type { Element, NodeEntry } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Element, NodeEntry } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -12,7 +12,7 @@ import { type GetListSiblingsOptions, getListSiblings } from './index';
  * the entry list style type.
  */
 export const getSiblingListStyleType = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     entry,
     indent,

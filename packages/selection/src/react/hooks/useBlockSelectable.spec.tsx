@@ -157,7 +157,7 @@ describe('useBlockSelectable', () => {
       const { useBlockSelectable } = await loadModule();
       const { result } = renderHook(() => useBlockSelectable());
 
-      expect(result.current.props.className).toBe('slate-selectable');
+      expect(result.current.props.className).toBe('plite-selectable');
       expect(typeof result.current.props.onContextMenu).toBe('function');
     });
 

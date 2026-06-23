@@ -1,4 +1,4 @@
-import type { NodeEntry, SlateEditor } from 'platejs';
+import type { NodeEntry, BasePlateEditor } from 'platejs';
 
 import last from 'lodash/last.js';
 
@@ -8,7 +8,7 @@ import { isToggleIndexElement } from '../internal/toggleElement';
 import { buildToggleIndex } from '../toggleIndexAtom';
 
 export const getLastEntryEnclosedInToggle = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   toggleId: string
 ): NodeEntry<ToggleIndexElement> | undefined => {
   const toggleIndex = buildToggleIndex(editor.children);

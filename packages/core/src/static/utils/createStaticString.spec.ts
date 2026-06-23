@@ -5,7 +5,7 @@ describe('createStaticString', () => {
     const element = createStaticString({ text: 'hello' });
 
     expect(element.type).toBe('span');
-    expect(element.props['data-slate-string']).toBe(true);
+    expect(element.props['data-plite-string']).toBe(true);
     expect(element.props.children).toBe('hello');
   });
 

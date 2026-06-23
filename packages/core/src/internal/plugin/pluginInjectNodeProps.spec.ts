@@ -1,10 +1,10 @@
-import { createSlateEditor } from '../../lib/editor';
-import { createSlatePlugin } from '../../lib/plugin';
+import { createBasePlateEditor } from '../../lib/editor';
+import { createEditorPlugin } from '../../lib/plugin';
 import { pluginInjectNodeProps } from './pluginInjectNodeProps';
 
 describe('pluginInjectNodeProps', () => {
   it('returns default class and style props for matching elements', () => {
-    const AlignPlugin = createSlatePlugin({
+    const AlignPlugin = createEditorPlugin({
       inject: {
         nodeProps: {
           nodeKey: 'align',
@@ -14,9 +14,9 @@ describe('pluginInjectNodeProps', () => {
       key: 'align',
     });
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'paragraph',
           node: { isElement: true, type: 'p' },
         }),
@@ -38,7 +38,7 @@ describe('pluginInjectNodeProps', () => {
         () => [0]
       )
     ).toEqual({
-      className: 'slate-align-center',
+      className: 'plite-align-center',
       style: {
         textAlign: 'center',
       },
@@ -46,7 +46,7 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('returns undefined when the query fails or the node is missing', () => {
-    const BoldPlugin = createSlatePlugin({
+    const BoldPlugin = createEditorPlugin({
       inject: {
         nodeProps: {
           nodeKey: 'bold',
@@ -56,7 +56,7 @@ describe('pluginInjectNodeProps', () => {
       key: 'bold',
     });
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BoldPlugin],
     });
 
@@ -74,7 +74,7 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('suppresses default node values unless transformProps forces an injection', () => {
-    const ForcedPlugin = createSlatePlugin({
+    const ForcedPlugin = createEditorPlugin({
       inject: {
         nodeProps: {
           defaultNodeValue: false,
@@ -88,7 +88,7 @@ describe('pluginInjectNodeProps', () => {
       },
       key: 'forced',
     });
-    const SilentPlugin = createSlatePlugin({
+    const SilentPlugin = createEditorPlugin({
       inject: {
         nodeProps: {
           defaultNodeValue: false,
@@ -98,7 +98,7 @@ describe('pluginInjectNodeProps', () => {
       key: 'silent',
     });
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [ForcedPlugin, SilentPlugin],
     });
 
@@ -123,7 +123,7 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('uses transform callbacks in precedence order', () => {
-    const TonePlugin = createSlatePlugin({
+    const TonePlugin = createEditorPlugin({
       inject: {
         nodeProps: {
           classNames: {
@@ -143,7 +143,7 @@ describe('pluginInjectNodeProps', () => {
       key: 'tone',
     });
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [TonePlugin],
     });
 
@@ -164,7 +164,7 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('does not resolve a path when inject matching is pathless', () => {
-    const ListishPlugin = createSlatePlugin({
+    const ListishPlugin = createEditorPlugin({
       inject: {
         nodeProps: {
           nodeKey: 'listStyleType',
@@ -182,9 +182,9 @@ describe('pluginInjectNodeProps', () => {
       key: 'list',
     });
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'paragraph',
           node: { isElement: true, type: 'p' },
         }),
@@ -210,7 +210,7 @@ describe('pluginInjectNodeProps', () => {
         getPath as any
       )
     ).toEqual({
-      className: 'slate-listStyleType-disc',
+      className: 'plite-listStyleType-disc',
       style: {
         listStyleType: 'disc',
       },
@@ -220,7 +220,7 @@ describe('pluginInjectNodeProps', () => {
   });
 
   it('does not resolve a path for inject matching when the plugin has no path-based filters', () => {
-    const PathlessPlugin = createSlatePlugin({
+    const PathlessPlugin = createEditorPlugin({
       inject: {
         nodeProps: {
           styleKey: '',
@@ -230,7 +230,7 @@ describe('pluginInjectNodeProps', () => {
       key: 'pathless',
     });
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [PathlessPlugin],
     });
     const getPath = mock(() => [0]);

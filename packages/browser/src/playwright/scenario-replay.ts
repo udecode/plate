@@ -1,21 +1,21 @@
 import type {
   OffsetExpectation,
   SelectionSnapshotExpectation,
-  SlateBrowserNormalizedScenarioMetadata,
-  SlateBrowserScenarioMetadata,
-  SlateBrowserScenarioReductionCandidate,
-  SlateBrowserScenarioReductionCandidateSummary,
-  SlateBrowserScenarioReplay,
-  SlateBrowserScenarioReplayStep,
-  SlateBrowserScenarioStep,
-  SlateBrowserTransportClaim,
+  PliteBrowserNormalizedScenarioMetadata,
+  PliteBrowserScenarioMetadata,
+  PliteBrowserScenarioReductionCandidate,
+  PliteBrowserScenarioReductionCandidateSummary,
+  PliteBrowserScenarioReplay,
+  PliteBrowserScenarioReplayStep,
+  PliteBrowserScenarioStep,
+  PliteBrowserTransportClaim,
 } from './types';
 
 /** Create candidate reduced scenarios from a failing scenario result. */
 export const createScenarioReductionCandidates = (
-  steps: readonly SlateBrowserScenarioStep[]
-): SlateBrowserScenarioReductionCandidate[] => {
-  const candidates: SlateBrowserScenarioReductionCandidate[] = [];
+  steps: readonly PliteBrowserScenarioStep[]
+): PliteBrowserScenarioReductionCandidate[] => {
+  const candidates: PliteBrowserScenarioReductionCandidate[] = [];
   let warmRange: {
     end: number;
     iteration: number;
@@ -99,7 +99,7 @@ export const createScenarioReductionCandidates = (
   return candidates.filter((candidate) => candidate.steps.length > 0);
 };
 
-const getScenarioStepLabel = (step: SlateBrowserScenarioStep, index: number) =>
+const getScenarioStepLabel = (step: PliteBrowserScenarioStep, index: number) =>
   step.label ?? `${index}:${step.kind}`;
 
 const summarizeTextPayload = (text: string) => {
@@ -123,7 +123,7 @@ const summarizeSelectionPayload = (selection: SelectionSnapshotExpectation) =>
 
 /** Summarize a scenario step for logs and reduction output. */
 export const summarizeScenarioStep = (
-  step: SlateBrowserScenarioStep,
+  step: PliteBrowserScenarioStep,
   index: number
 ) => {
   const label = getScenarioStepLabel(step, index);
@@ -240,9 +240,9 @@ const toReplayValue = (
 
 /** Serialize a scenario step into a replayable description. */
 export const serializeScenarioStepForReplay = (
-  step: SlateBrowserScenarioStep,
+  step: PliteBrowserScenarioStep,
   index: number
-): SlateBrowserScenarioReplayStep => {
+): PliteBrowserScenarioReplayStep => {
   const { value, replayable } = toReplayValue(step);
   const replayValue =
     value && typeof value === 'object'
@@ -262,8 +262,8 @@ export const serializeScenarioStepForReplay = (
 
 /** Create a replay artifact from scenario metadata and steps. */
 export const createScenarioReplay = (
-  steps: readonly SlateBrowserScenarioStep[]
-): SlateBrowserScenarioReplay => {
+  steps: readonly PliteBrowserScenarioStep[]
+): PliteBrowserScenarioReplay => {
   const replaySteps = steps.map(serializeScenarioStepForReplay);
 
   return {
@@ -279,7 +279,7 @@ export const summarizeScenarioReductionCandidate = ({
   removedSteps,
   removedRange,
   steps,
-}: SlateBrowserScenarioReductionCandidate): SlateBrowserScenarioReductionCandidateSummary => ({
+}: PliteBrowserScenarioReductionCandidate): PliteBrowserScenarioReductionCandidateSummary => ({
   kind,
   label,
   removedStepLabels: removedSteps.map(getScenarioStepLabel),
@@ -292,8 +292,8 @@ export const summarizeScenarioReductionCandidate = ({
 
 /** Normalize scenario metadata with defaults for transport and labels. */
 export const normalizeScenarioMetadata = (
-  metadata: SlateBrowserScenarioMetadata = {}
-): SlateBrowserNormalizedScenarioMetadata => ({
+  metadata: PliteBrowserScenarioMetadata = {}
+): PliteBrowserNormalizedScenarioMetadata => ({
   capabilities: Array.from(new Set(metadata.capabilities ?? [])).sort(),
   claim: classifyScenarioTransportClaim(metadata),
   platform: metadata.platform ?? null,
@@ -304,7 +304,7 @@ export const normalizeScenarioMetadata = (
 export const classifyScenarioTransportClaim = ({
   platform,
   transport,
-}: SlateBrowserScenarioMetadata): SlateBrowserTransportClaim => {
+}: PliteBrowserScenarioMetadata): PliteBrowserTransportClaim => {
   if (!transport) {
     return platform === 'mobile' ? 'playwright-mobile-viewport' : 'unspecified';
   }

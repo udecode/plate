@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -21,7 +21,7 @@ describe('unwrapLink', () => {
           before <ha url="https://example.com">link</ha> after
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createPlateRuntimeEditor({
       initialSelection: {
@@ -32,7 +32,7 @@ describe('unwrapLink', () => {
       plugins: [BaseLinkPlugin],
     });
 
-    unwrapLink(editor as unknown as SlateEditor);
+    unwrapLink(editor as unknown as BasePlateEditor);
 
     expect(root(editor)).toEqual(
       (
@@ -66,7 +66,7 @@ describe('unwrapLink', () => {
       plugins: [BaseLinkPlugin],
     });
 
-    unwrapLink(editor as unknown as SlateEditor, { split: true });
+    unwrapLink(editor as unknown as BasePlateEditor, { split: true });
 
     expect(root(editor)).toEqual([
       {
@@ -107,7 +107,7 @@ describe('unwrapLink', () => {
       plugins: [BaseLinkPlugin],
     });
 
-    unwrapLink(editor as unknown as SlateEditor, { split: true });
+    unwrapLink(editor as unknown as BasePlateEditor, { split: true });
 
     expect(root(editor)).toEqual([
       {
@@ -148,7 +148,7 @@ describe('unwrapLink', () => {
       plugins: [BaseLinkPlugin],
     });
 
-    unwrapLink(editor as unknown as SlateEditor, { split: true });
+    unwrapLink(editor as unknown as BasePlateEditor, { split: true });
 
     expect(root(editor)).toEqual([
       {

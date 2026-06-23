@@ -1,4 +1,4 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import { BaseFontFamilyPlugin } from './BaseFontFamilyPlugin';
 
@@ -19,7 +19,7 @@ const runAddMarkTx = (value: string) => {
 
 describe('BaseFontFamilyPlugin', () => {
   it('parses html font-family styles into leaf marks', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFontFamilyPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseFontFamilyPlugin);

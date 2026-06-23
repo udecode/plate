@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -9,8 +9,8 @@ import { getCellInPreviousTableRow } from './getCellInPreviousTableRow';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: BasePlateEditor) =>
+  createBasePlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     value: input.children,
@@ -36,7 +36,7 @@ describe('getCellInPreviousTableRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
     const previousCell = getCellInPreviousTableRow(editor, [0, 1])!;
@@ -56,7 +56,7 @@ describe('getCellInPreviousTableRow', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
 

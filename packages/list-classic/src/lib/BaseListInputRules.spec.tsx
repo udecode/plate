@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlatePlugin } from '@platejs/core';
+import { createEditorPlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
-import { createListClassicLegacyTestEditor as createSlateEditor } from './__tests__/createListClassicLegacyTestEditor';
+import { createListClassicLegacyTestEditor as createBasePlateEditor } from './__tests__/createListClassicLegacyTestEditor';
 
 import { BaseListPlugin } from './BaseListPlugin';
 import { BulletedListRules } from './BulletedListRules';
@@ -12,14 +12,14 @@ import { TaskListRules } from './TaskListRules';
 
 jsxt;
 
-const BaseCodeBlockPlugin = createSlatePlugin({
+const BaseCodeBlockPlugin = createEditorPlugin({
   key: KEYS.codeBlock,
   node: { isElement: true },
 });
 
 describe('BaseListPlugin input rules', () => {
   it('stays literal until markdown groups are explicitly enabled', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: {
         anchor: { offset: 1, path: [0, 0] },
@@ -53,7 +53,7 @@ describe('BaseListPlugin input rules', () => {
       title: 'formats ordered shorthand',
     },
   ])('$title', ({ input, selection, title }) => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseListPlugin.configure({
           inputRules: [
@@ -120,7 +120,7 @@ describe('BaseListPlugin input rules', () => {
       title: 'formats checked task shorthand',
     },
   ])('$title', ({ checked, input, selection }) => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseListPlugin.configure({
           inputRules: [
@@ -154,7 +154,7 @@ describe('BaseListPlugin input rules', () => {
   });
 
   it('keeps list shorthand literal inside code blocks', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseCodeBlockPlugin,
         BaseListPlugin.configure({

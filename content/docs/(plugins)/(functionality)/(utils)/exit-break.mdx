@@ -177,7 +177,7 @@ Configure [`isStrictSiblings`](/docs/api/core/plate-plugin#isstrictsiblings) for
 
 ```tsx
 // Table structure
-const CustomTablePlugin = createSlatePlugin({
+const CustomTablePlugin = createEditorPlugin({
   key: 'table',
   node: {
     isElement: true,
@@ -185,7 +185,7 @@ const CustomTablePlugin = createSlatePlugin({
   },
 });
 
-const CustomTableRowPlugin = createSlatePlugin({
+const CustomTableRowPlugin = createEditorPlugin({
   key: 'tr',
   node: {
     isElement: true,
@@ -193,7 +193,7 @@ const CustomTableRowPlugin = createSlatePlugin({
   },
 });
 
-const CustomTableCellPlugin = createSlatePlugin({
+const CustomTableCellPlugin = createEditorPlugin({
   key: 'td',
   node: {
     isElement: true,

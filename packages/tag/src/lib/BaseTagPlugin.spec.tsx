@@ -1,10 +1,10 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { BaseTagPlugin } from './BaseTagPlugin';
 
 describe('BaseTagPlugin', () => {
   it('configures inline void tags and inserts them into text content', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseTagPlugin],
       selection: {
         anchor: { offset: 2, path: [0, 0] },
@@ -34,7 +34,7 @@ describe('BaseTagPlugin', () => {
   });
 
   it('exposes an inferred tag transaction group', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseTagPlugin],
       value: [{ children: [{ text: 'hello' }], type: 'p' }],
     });

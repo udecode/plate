@@ -45,17 +45,17 @@ export const getSelectionRect = async (
           return null;
         }
 
-        const nearestSlateRectOwner = start.closest(
+        const nearestPliteRectOwner = start.closest(
           [
-            '[data-slate-string]',
-            '[data-slate-zero-width]',
-            '[data-slate-leaf]',
-            '[data-slate-node="text"]',
-            '[data-slate-node="element"]',
+            '[data-plite-string]',
+            '[data-plite-zero-width]',
+            '[data-plite-leaf]',
+            '[data-plite-node="text"]',
+            '[data-plite-node="element"]',
           ].join(',')
         );
 
-        let current: Element | null = nearestSlateRectOwner;
+        let current: Element | null = nearestPliteRectOwner;
 
         while (current && element.contains(current)) {
           const fallbackRect = current.getBoundingClientRect();

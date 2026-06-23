@@ -1,10 +1,10 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseCaptionPlugin } from './BaseCaptionPlugin';
 
 describe('BaseCaptionPlugin', () => {
   it('ships caption defaults, visibility selector, and runtime ownership', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseCaptionPlugin],
     });
     const plugin = editor.getPlugin(BaseCaptionPlugin);

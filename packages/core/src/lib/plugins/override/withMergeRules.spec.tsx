@@ -5,8 +5,8 @@ import { BaseTablePlugin } from '@platejs/table';
 import { jsxt } from '@platejs/test-utils';
 
 import { getCurrentRuntimeTransforms } from '../../../internal/currentRuntimeBridge';
-import { type SlateEditor, createSlateEditor } from '../../editor';
-import { createSlatePlugin } from '../../plugin/createSlatePlugin';
+import { type BasePlateEditor, createBasePlateEditor } from '../../editor';
+import { createEditorPlugin } from '../../plugin/createEditorPlugin';
 
 jsxt;
 
@@ -21,7 +21,7 @@ const createElementPlugin = ({
   mergeRules?: Record<string, unknown>;
   type?: string;
 }) =>
-  createSlatePlugin({
+  createEditorPlugin({
     key,
     node: {
       isElement: true,
@@ -43,12 +43,12 @@ const getEditorAfterAction = ({
   nodeId,
   plugins = [],
 }: {
-  action: (editor: ReturnType<typeof createSlateEditor>) => void;
+  action: (editor: ReturnType<typeof createBasePlateEditor>) => void;
   input: any;
   nodeId?: boolean;
   plugins?: any[];
 }) => {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     nodeId,
     plugins,
     selection: input.selection,
@@ -360,7 +360,7 @@ describe('withMergeRules', () => {
               <cursor />a
             </hp>
           </editor>
-        ) as any as SlateEditor,
+        ) as any as BasePlateEditor,
         (
           <editor>
             <htable>
@@ -377,8 +377,8 @@ describe('withMergeRules', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor,
-        (editor: ReturnType<typeof createSlateEditor>) =>
+        ) as any as BasePlateEditor,
+        (editor: ReturnType<typeof createBasePlateEditor>) =>
           getCurrentRuntimeTransforms(editor).deleteBackward(),
       ],
       [
@@ -399,7 +399,7 @@ describe('withMergeRules', () => {
               <cursor />a
             </hp>
           </editor>
-        ) as any as SlateEditor,
+        ) as any as BasePlateEditor,
         (
           <editor>
             <htable>
@@ -413,8 +413,8 @@ describe('withMergeRules', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor,
-        (editor: ReturnType<typeof createSlateEditor>) =>
+        ) as any as BasePlateEditor,
+        (editor: ReturnType<typeof createBasePlateEditor>) =>
           getCurrentRuntimeTransforms(editor).deleteBackward(),
       ],
       [
@@ -436,7 +436,7 @@ describe('withMergeRules', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor,
+        ) as any as BasePlateEditor,
         (
           <editor>
             <hp>
@@ -454,8 +454,8 @@ describe('withMergeRules', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor,
-        (editor: ReturnType<typeof createSlateEditor>) =>
+        ) as any as BasePlateEditor,
+        (editor: ReturnType<typeof createBasePlateEditor>) =>
           getCurrentRuntimeTransforms(editor).deleteForward(),
       ],
       [
@@ -477,7 +477,7 @@ describe('withMergeRules', () => {
             </htable>
             <hp>next content</hp>
           </editor>
-        ) as any as SlateEditor,
+        ) as any as BasePlateEditor,
         (
           <editor>
             <htable>
@@ -495,8 +495,8 @@ describe('withMergeRules', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor,
-        (editor: ReturnType<typeof createSlateEditor>) =>
+        ) as any as BasePlateEditor,
+        (editor: ReturnType<typeof createBasePlateEditor>) =>
           getCurrentRuntimeTransforms(editor).deleteForward(),
       ],
       [
@@ -518,7 +518,7 @@ describe('withMergeRules', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor,
+        ) as any as BasePlateEditor,
         (
           <editor>
             <hp>
@@ -537,8 +537,8 @@ describe('withMergeRules', () => {
               </htr>
             </htable>
           </editor>
-        ) as any as SlateEditor,
-        (editor: ReturnType<typeof createSlateEditor>) =>
+        ) as any as BasePlateEditor,
+        (editor: ReturnType<typeof createBasePlateEditor>) =>
           getCurrentRuntimeTransforms(editor).deleteBackward(),
       ],
     ])('%s', (_label, input, output, action) => {
@@ -590,7 +590,7 @@ describe('withMergeRules', () => {
   });
 
   describe('void merge behavior', () => {
-    const VoidPlugin = createSlatePlugin({
+    const VoidPlugin = createEditorPlugin({
       key: 'void',
       node: {
         isElement: true,

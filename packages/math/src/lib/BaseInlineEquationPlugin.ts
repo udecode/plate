@@ -1,8 +1,8 @@
-import type { EditorUpdateTransaction } from '@platejs/slate';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 import {
   type PluginConfig,
-  type SlatePlugin,
-  createTSlatePlugin,
+  type EditorPlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -28,26 +28,22 @@ export type InlineEquationConfig = PluginConfig<
   InlineEquationTx
 >;
 
-export const BaseInlineEquationPlugin: SlatePlugin<InlineEquationConfig> =
-  createTSlatePlugin<InlineEquationConfig>({
+export const BaseInlineEquationPlugin: EditorPlugin<InlineEquationConfig> =
+  createEditorPlugin<InlineEquationConfig>({
     key: KEYS.inlineEquation,
     node: { isElement: true, isInline: true, isVoid: true },
-  })
-    .extendTxGroup(
-      'inlineEquation',
-      ({ editor, type }) =>
-        (tx: EditorUpdateTransaction) => ({
-          insert: (
-            texExpression?: string,
-            options?: InsertInlineEquationOptions
-          ) => {
-            const expression =
-              texExpression ?? editor.api.string(editor.selection) ?? '';
+  }).extendTxGroup(
+    'inlineEquation',
+    ({ editor, type }) =>
+      (tx: EditorUpdateTransaction) => ({
+        insert: (
+          texExpression?: string,
+          options?: InsertInlineEquationOptions
+        ) => {
+          const expression =
+            texExpression ?? editor.api.string(editor.selection) ?? '';
 
-            tx.nodes.insert(
-              createInlineEquationNode(type, expression),
-              options
-            );
-          },
-        })
-    );
+          tx.nodes.insert(createInlineEquationNode(type, expression), options);
+        },
+      })
+  );

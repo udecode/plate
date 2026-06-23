@@ -1,6 +1,6 @@
-import type { Element, NodeEntry } from '@platejs/slate';
-import { NodeApi, PathApi } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Element, NodeEntry } from '@platejs/plite';
+import { NodeApi, PathApi } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { isDefined, KEYS } from 'platejs';
 
@@ -9,7 +9,7 @@ import { isDefined, KEYS } from 'platejs';
  * indent). Stops when encountering an item with equal or lower indent.
  */
 export const getListChildren = <N extends Element = Element>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   entry: NodeEntry<Element>
 ): NodeEntry<N>[] => {
   const children: NodeEntry<N>[] = [];

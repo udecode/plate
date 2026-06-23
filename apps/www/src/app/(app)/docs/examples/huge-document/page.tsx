@@ -8,7 +8,7 @@ import HugeDocumentDemo from '@/registry/examples/huge-document-demo';
 
 const title = 'Huge Document';
 const description =
-  'Slate huge-document controls with isolated Plate and Slate panes.';
+  'Plite huge-document controls with isolated Plate and Plite panes.';
 
 export const metadata: Metadata = {
   description,

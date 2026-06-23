@@ -1,4 +1,4 @@
-import { type Node, NodeApi } from '@platejs/slate';
+import { type Node, NodeApi } from '@platejs/plite';
 
 const isCaptionNode = (node: unknown): node is Node => NodeApi.isNode(node);
 

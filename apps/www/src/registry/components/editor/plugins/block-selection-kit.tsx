@@ -16,7 +16,7 @@ export const hasSelectableClass = ({
   [className, attributes.className]
     .filter(Boolean)
     .join(' ')
-    .includes('slate-selectable');
+    .includes('plite-selectable');
 
 export const BlockSelectionKit = [
   BlockSelectionPlugin.configure(({ editor }) => ({

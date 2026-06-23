@@ -40,7 +40,7 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/slate": "workspace:^",
+    "@platejs/plite": "workspace:^",
     "copy-to-clipboard": "^3.3.3",
     "react-compiler-runtime": "^1.0.0"
   },

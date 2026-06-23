@@ -1,4 +1,4 @@
-import type { Editor as PliteEditor } from '@platejs/plite';
+import type { Editor as EditorType } from '@platejs/plite';
 import {
   inheritEditorExtensionRegistry as inheritEditorExtensionRegistryCore,
   getEditorTransformRegistry as readEditorTransformRegistry,
@@ -28,15 +28,15 @@ export {
 } from '@platejs/plite/internal';
 
 export const inheritEditorExtensionRegistry = (
-  editor: PliteEditor,
-  source: PliteEditor
+  editor: EditorType,
+  source: EditorType
 ) => {
   inheritEditorExtensionRegistryCore(editor, source);
 };
 
 export const inheritEditorTransformRegistry = (
-  editor: PliteEditor,
-  source: PliteEditor
+  editor: EditorType,
+  source: EditorType
 ) => {
   writeEditorTransformRegistry(editor, readEditorTransformRegistry(source));
 };

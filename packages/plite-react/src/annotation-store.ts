@@ -2,7 +2,7 @@ import type {
   EditorCommit,
   Range,
   RuntimeId,
-  Editor as PliteEditor,
+  Editor as EditorType,
 } from '@platejs/plite';
 import { Editor } from './editable/runtime-editor-api';
 import type {
@@ -278,7 +278,7 @@ const areAnnotationProjectionDataEqual = (left: unknown, right: unknown) => {
   return areDataEqual(left, right);
 };
 
-const projectAnnotationRange = (editor: PliteEditor, range: Range) => {
+const projectAnnotationRange = (editor: EditorType, range: Range) => {
   try {
     return Editor.projectRange(editor, range);
   } catch (error) {
@@ -291,7 +291,7 @@ const projectAnnotationRange = (editor: PliteEditor, range: Range) => {
 };
 
 const resolveAnnotationRange = (
-  editor: PliteEditor,
+  editor: EditorType,
   anchor: PliteAnnotationAnchor
 ) => {
   const range = anchor.resolve();
@@ -307,7 +307,7 @@ const buildAnnotationSnapshot = <
   TData,
   TProjection extends Record<string, unknown>,
 >(
-  editor: PliteEditor,
+  editor: EditorType,
   annotations: readonly PliteAnnotation<TData, TProjection>[]
 ): PliteAnnotationSnapshot<TData, TProjection> => {
   if (annotations.length === 0) {
@@ -346,7 +346,7 @@ const buildAnnotationSnapshotForCandidates = <
   TData,
   TProjection extends Record<string, unknown>,
 >(
-  editor: PliteEditor,
+  editor: EditorType,
   current: PliteAnnotationSnapshot<TData, TProjection>,
   annotations: readonly PliteAnnotation<TData, TProjection>[],
   candidateAnnotationIds: readonly string[] | null
@@ -401,7 +401,7 @@ const buildProjectionSnapshot = <
   TData,
   TProjection extends Record<string, unknown>,
 >(
-  editor: PliteEditor,
+  editor: EditorType,
   annotationSnapshot: PliteAnnotationSnapshot<TData, TProjection>
 ): Readonly<
   Record<
@@ -465,7 +465,7 @@ const buildProjectionSnapshotForCandidates = <
   TData,
   TProjection extends Record<string, unknown>,
 >(
-  editor: PliteEditor,
+  editor: EditorType,
   current: Readonly<
     Record<
       RuntimeId,
@@ -796,7 +796,7 @@ export function createPliteAnnotationStore<
   TData = unknown,
   TProjection extends Record<string, unknown> = Record<string, unknown>,
 >(
-  editor: PliteEditor,
+  editor: EditorType,
   source:
     | readonly PliteAnnotation<TData, TProjection>[]
     | (() => readonly PliteAnnotation<TData, TProjection>[])

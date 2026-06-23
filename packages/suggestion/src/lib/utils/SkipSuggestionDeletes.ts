@@ -1,5 +1,5 @@
-import { type Node, ElementApi, NodeApi, TextApi } from '@platejs/slate';
-import { type SlateEditor, type TSuggestionText, KEYS } from 'platejs';
+import { type Node, ElementApi, NodeApi, TextApi } from '@platejs/plite';
+import { type BasePlateEditor, type TSuggestionText, KEYS } from 'platejs';
 
 import { getSuggestionApi } from './getSuggestionApi';
 
@@ -9,7 +9,7 @@ import { getSuggestionApi } from './getSuggestionApi';
  * "update" suggestions.
  */
 export const SkipSuggestionDeletes = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   node: Node
 ): string => {
   if (

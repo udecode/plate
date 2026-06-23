@@ -17,7 +17,7 @@ title: 主要版本更新
         -   将所有 `@udecode/plate/react` 替换为 `platejs/react`
         -   将所有 `'@udecode/plate'` 替换为 `'platejs'`
 
-## @platejs/slate@49.0.0
+## @platejs/plite@49.0.0
 
 -   [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
 
@@ -79,7 +79,7 @@ title: 主要版本更新
             });
             ```
     -   移除了 `serializeHtml` 和 `PlateStatic` 中的 `components` 属性。
-        -   迁移：将 `components` 传递给 `createSlateEditor({ components })` 或各个插件。
+        -   迁移：将 `components` 传递给 `createBasePlateEditor({ components })` 或各个插件。
     -   插件快捷键系统变更：
         -   定义在 `editor.shortcuts` 中的快捷键键现在按插件键命名空间化（例如，`CodePlugin` 的 `code.toggle`）。
         -   快捷键的 `priority` 属性用于解决多个快捷键共享完全相同键组合时的冲突，而非按名称覆盖快捷键。

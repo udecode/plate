@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Descendant, Range } from '@platejs/slate';
+import type { Descendant, Range } from '@platejs/plite';
 
 import {
   clearYjsTrace,
@@ -79,7 +79,7 @@ describe('@platejs/yjs awareness contract', () => {
     assert.deepEqual(getYjsRemoteCursors(peer), []);
   });
 
-  it('projects remote awareness selections to Slate ranges', () => {
+  it('projects remote awareness selections to Plite ranges', () => {
     const { awareness, peer } = createAwarePeer();
     const range = selection([1, 0], 3);
 

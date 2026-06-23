@@ -5,10 +5,6 @@ import { withLegacyTransformOverride } from '../../../internal/plugin/withLegacy
 import { createPlateEditor } from '../../../react/editor/withPlate';
 import { createPlatePlugin } from '../../plugin/createPlatePlugin';
 
-type CurrentRuntimeInsertDataEditor = PlateEditor & {
-  insertData: ReturnType<typeof getCurrentRuntimeTransforms>['insertData'];
-};
-
 describe('ReactPlugin', () => {
   let editor: PlateEditor;
 
@@ -23,27 +19,13 @@ describe('ReactPlugin', () => {
     (runtimeTransforms.focus as ReturnType<typeof mock>).mockReset();
   });
 
-  it('allows overriding both legacy and new APIs', () => {
-    const fn = mock();
+  it('allows overriding current runtime transforms', () => {
     const fn2 = mock();
     editor = createPlateEditor({
-      runtime: 'legacy',
       plugins: [
         withLegacyTransformOverride(
           createPlatePlugin({
             key: 'reactText',
-            extendEditor: ({ editor }) => {
-              const e = editor as CurrentRuntimeInsertDataEditor;
-              const { insertData } = e;
-
-              e.insertData = (data: any) => {
-                fn();
-
-                return insertData(data);
-              };
-
-              return editor;
-            },
           }),
           ({ tf: { insertData } }) => ({
             tf: {
@@ -56,17 +38,22 @@ describe('ReactPlugin', () => {
           })
         ),
       ],
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      },
+      value: [{ children: [{ text: '' }], type: 'p' }],
     });
 
     const mockDataTransfer = {
       getData: (format: string) => (format === 'text/plain' ? 'test' : ''),
     } as DataTransfer;
 
-    (editor as CurrentRuntimeInsertDataEditor).insertData(mockDataTransfer);
-    getCurrentRuntimeTransforms(editor).insertData(mockDataTransfer);
+    editor.update(() => {
+      getCurrentRuntimeTransforms(editor).insertData(mockDataTransfer);
+    });
 
-    expect(fn).toHaveBeenCalledTimes(2);
-    expect(fn2).toHaveBeenCalledTimes(2);
+    expect(fn2).toHaveBeenCalledTimes(1);
   });
 
   it('override reset method', () => {

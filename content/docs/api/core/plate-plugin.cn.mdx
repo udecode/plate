@@ -138,12 +138,12 @@ Plate 用于向任何节点组件注入 props 的属性。
 <APISubListItem parent="rules" name="selection.affinity" type="'default' | 'directional' | 'outward' | 'hard'" optional>
 定义节点边界的选区行为。参见 [插件规则](/docs/plugin-rules#rulesselection)。
 
-- `'default'`: 使用 Slate 的默认行为
+- `'default'`: 使用 Plite 的默认行为
 - `'directional'`: 选区亲和性由光标移动方向决定。根据接近方向保持向内或向外亲和性
 - `'outward'`: 强制向外亲和性。在标记边缘输入不会将标记应用到新文本
 - `'hard'`: 创建需要两次按键才能跨越的"硬"边缘。使用基于偏移的导航
 
-- **默认值:** `undefined` (Slate 的默认行为)
+- **默认值:** `undefined` (Plite 的默认行为)
 </APISubListItem>
 <APISubListItem parent="node" name="isMarkableVoid" type="boolean" optional>
 指示此插件的 void elements 是否可标记。
@@ -232,13 +232,13 @@ Plate 用于向任何节点组件注入 props 的属性。
 用于渲染此插件节点的 React 组件。
 </APISubListItem>
 <APISubListItem parent="node" name="leafProps" type="LeafNodeProps<WithAnyKey<C>>" optional>
-覆盖 `data-slate-leaf` 元素属性。
+覆盖 `data-plite-leaf` 元素属性。
 </APISubListItem>
 <APISubListItem parent="node" name="props" type="NodeProps<WithAnyKey<C>>" optional>
 覆盖节点属性。
 </APISubListItem>
 <APISubListItem parent="node" name="textProps" type="TextNodeProps<WithAnyKey<C>>" optional>
-覆盖 `data-slate-node="text"` 元素属性。
+覆盖 `data-plite-node="text"` 元素属性。
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -281,13 +281,13 @@ HTML React 序列化器配置。
 
 <APISubList>
 <APISubListItem parent="render" name="aboveEditable" type="Component" optional>
-在 Editable 组件上方但在 Slate 包装器内部渲染的组件。
+在 Editable 组件上方但在 Plite 包装器内部渲染的组件。
 </APISubListItem>
 <APISubListItem parent="render" name="aboveNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
 创建一个函数，为所有其他插件的节点组件生成父 React 节点。
 </APISubListItem>
-<APISubListItem parent="render" name="aboveSlate" type="Component" optional>
-在 Slate 包装器上方渲染的组件。
+<APISubListItem parent="render" name="abovePlite" type="Component" optional>
+在 Plite 包装器上方渲染的组件。
 </APISubListItem>
 <APISubListItem parent="render" name="afterEditable" type="EditableSiblingComponent" optional>
 在 Editable 组件之后渲染的组件。
@@ -350,11 +350,11 @@ Plate 用于装饰编辑器范围的属性。
 </APIItem>
 
 <APIItem name="extendEditor" type="ExtendEditor<WithAnyKey<C>>" optional>
-扩展编辑器实例的函数。主要用于集成需要直接编辑器变异的旧版 Slate 插件。每个插件只允许一个 `extendEditor`。
+扩展编辑器实例的函数。主要用于集成需要直接编辑器变异的旧版 Plite 插件。每个插件只允许一个 `extendEditor`。
 
 ```ts
 extendEditor: ({ editor }) => {
-  // 示例：集成旧版 Slate 插件
+  // 示例：集成旧版 Plite 插件
   return withYjs(editor);
 }
 ```

@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
 import { type Value, NodeApi } from 'platejs';
 

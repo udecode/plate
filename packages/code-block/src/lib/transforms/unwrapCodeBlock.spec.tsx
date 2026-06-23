@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { unwrapCodeBlock } from './unwrapCodeBlock';
@@ -23,7 +23,7 @@ describe('unwrap code block', () => {
           <hcodeline>line 2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -33,9 +33,9 @@ describe('unwrap code block', () => {
         </hp>
         <hp>line 2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
@@ -65,7 +65,7 @@ describe('unwrap code block', () => {
           <hcodeline>line 5</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -81,9 +81,9 @@ describe('unwrap code block', () => {
         </hp>
         <hp>line 5</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
@@ -108,7 +108,7 @@ describe('unwrap code block', () => {
             <hcodeline>line 3</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -124,9 +124,9 @@ describe('unwrap code block', () => {
             <hcodeline>line 3</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,

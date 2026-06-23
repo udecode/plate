@@ -1,11 +1,11 @@
-import type { NodeEntry } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { NodeEntry } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { isDefined, KEYS } from 'platejs';
 
 /** Unset listStyle, listStart if KEYS.indent is not defined. */
 export const normalizeListNotIndented = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   [node, path]: NodeEntry
 ) => {
   const nodeProps = node as Record<string, unknown>;

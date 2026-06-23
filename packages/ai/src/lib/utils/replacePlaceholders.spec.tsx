@@ -10,8 +10,8 @@ import {
 } from '@platejs/table';
 import {
   BaseParagraphPlugin,
-  type SlateEditor,
-  createSlateEditor,
+  type BasePlateEditor,
+  createBasePlateEditor,
 } from 'platejs';
 
 import { getMarkdown } from './getMarkdown';
@@ -19,8 +19,8 @@ import { replacePlaceholders } from './replacePlaceholders';
 
 jsxt;
 
-const createTestEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTestEditor = (input: BasePlateEditor) =>
+  createBasePlateEditor({
     plugins: [
       BaseParagraphPlugin,
       BaseTablePlugin,
@@ -44,7 +44,7 @@ describe('replacePlaceholders', () => {
         </hp>
         <hp>After</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
     const editor = createTestEditor(input);
     const expectedBlock = getMarkdown(editor, { type: 'block' });
     const expectedBlockSelection = getMarkdown(editor, {
@@ -93,7 +93,7 @@ describe('replacePlaceholders', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
     const editor = createTestEditor(input);
     const expectedTable = getMarkdown(editor, { type: 'tableCellWithId' });
 
@@ -110,7 +110,7 @@ describe('replacePlaceholders', () => {
         <editor>
           <hp>Plain text</hp>
         </editor>
-      ) as any as SlateEditor
+      ) as any as BasePlateEditor
     );
 
     expect(replacePlaceholders(editor, 'Nothing to replace here.')).toBe(

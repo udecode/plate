@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 import { cva } from 'class-variance-authority';
 import { CornerDownLeftIcon } from 'lucide-react';
 import type {

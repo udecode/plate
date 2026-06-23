@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@platejs/core';
-import { createListClassicRuntimeTestEditor as createSlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
+import type { BasePlateEditor } from '@platejs/core';
+import { createListClassicRuntimeTestEditor as createBasePlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -9,8 +9,8 @@ import { BaseListPlugin } from './BaseListPlugin';
 
 jsxt;
 
-const createListEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createListEditor = (input: BasePlateEditor) =>
+  createBasePlateEditor({
     plugins: [BaseListPlugin],
     selection: input.selection,
     value: input.children,
@@ -26,12 +26,12 @@ describe('ListClassicExtension deleteFragment', () => {
           <focus />d
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
     const expected = (
       <editor>
         <hp>ad</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createListEditor(input);
 
@@ -61,7 +61,7 @@ describe('ListClassicExtension deleteFragment', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
     const expected = (
       <editor>
         <hul>
@@ -73,7 +73,7 @@ describe('ListClassicExtension deleteFragment', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createListEditor(input);
 
@@ -105,7 +105,7 @@ describe('ListClassicExtension deleteFragment', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
     const expected = (
       <editor>
         <hul>
@@ -117,7 +117,7 @@ describe('ListClassicExtension deleteFragment', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createListEditor(input);
 

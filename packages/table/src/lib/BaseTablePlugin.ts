@@ -1,12 +1,11 @@
-import type { Descendant, Element } from '@platejs/slate';
+import type { Descendant, Element } from '@platejs/plite';
 import {
   type HtmlDeserializer,
   type OmitFirst,
   type PluginConfig,
   type TTableCellElement,
   bindFirst,
-  createSlatePlugin,
-  createTSlatePlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -60,7 +59,7 @@ const getCellAttributeProps = (element?: Descendant) => {
   };
 };
 
-export const BaseTableRowPlugin = createSlatePlugin({
+export const BaseTableRowPlugin = createEditorPlugin({
   key: KEYS.tr,
   node: { isContainer: true, isElement: true, isStrictSiblings: true },
   parsers: {
@@ -72,7 +71,7 @@ export const BaseTableRowPlugin = createSlatePlugin({
   },
 });
 
-export const BaseTableCellPlugin = createSlatePlugin({
+export const BaseTableCellPlugin = createEditorPlugin({
   key: KEYS.td,
   node: {
     dangerouslyAllowAttributes: ['colspan', 'rowspan'],
@@ -95,7 +94,7 @@ export const BaseTableCellPlugin = createSlatePlugin({
   },
 });
 
-export const BaseTableCellHeaderPlugin = createSlatePlugin({
+export const BaseTableCellHeaderPlugin = createEditorPlugin({
   key: KEYS.th,
   node: {
     dangerouslyAllowAttributes: ['colspan', 'rowspan'],
@@ -213,7 +212,7 @@ export type TableConfig = PluginConfig<
 >;
 
 /** Enables support for tables. */
-export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
+export const BaseTablePlugin = createEditorPlugin<TableConfig>({
   key: KEYS.table,
   node: {
     isContainer: true,
@@ -240,7 +239,7 @@ export const BaseTablePlugin = createTSlatePlugin<TableConfig>({
   plugins: [BaseTableRowPlugin, BaseTableCellPlugin, BaseTableCellHeaderPlugin],
 })
   .extend(({ api, editor, getOption, getOptions, plugin, type }) => ({
-    slateExtensions: [
+    editorExtensions: [
       createTableExtension({
         api,
         editor,

@@ -1,4 +1,4 @@
-import { createEditor as createPliteEditor } from '@platejs/plite';
+import { createEditor as createBaseEditor } from '@platejs/plite';
 import { Editor } from '@platejs/plite/internal';
 
 import {
@@ -36,7 +36,7 @@ describe('plite-hyperscript smoke contract', () => {
   });
 
   it('creates an empty editor through the exported editor creator', () => {
-    const makeEditor = createEditor(createPliteEditor);
+    const makeEditor = createEditor(createBaseEditor);
     const editor = makeEditor('editor', {}, []);
 
     expect(Editor.getChildren(editor)).toEqual([]);

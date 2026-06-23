@@ -5,7 +5,7 @@ import {
   nanoid,
   PathApi,
 } from 'platejs';
-import type { NodeInsertNodesOptions } from '@platejs/slate';
+import type { NodeInsertNodesOptions } from '@platejs/plite';
 import type { PlateEditor } from 'platejs/react';
 
 import { type PlaceholderApi, PlaceholderPlugin } from '../PlaceholderPlugin';

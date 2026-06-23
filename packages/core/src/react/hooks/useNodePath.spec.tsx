@@ -5,14 +5,13 @@ import React from 'react';
 import { render } from '@testing-library/react';
 
 import { TestPlate as Plate } from '../__tests__/TestPlate';
-import { PlateSlate } from '../components/PlateSlate';
+import { Plite } from '../components/Plite';
 import { createPlateEditor } from '../editor/withPlate';
 import { useNodePath } from './useNodePath';
 
 describe('useNodePath', () => {
-  it('resolves the initial path without editor.findPath', () => {
+  it('resolves the initial path from the Plite node store', () => {
     const editor = createPlateEditor({
-      runtime: 'legacy',
       value: [
         {
           children: [{ text: 'Body' }],
@@ -22,10 +21,6 @@ describe('useNodePath', () => {
     });
     const node = editor.children[0] as any;
 
-    editor.api.findPath = () => {
-      throw new Error('unexpected findPath call');
-    };
-
     const Probe = () => {
       const path = useNodePath(node);
 
@@ -34,9 +29,9 @@ describe('useNodePath', () => {
 
     const { getByTestId } = render(
       <Plate editor={editor}>
-        <PlateSlate>
+        <Plite>
           <Probe />
-        </PlateSlate>
+        </Plite>
       </Plate>
     );
 

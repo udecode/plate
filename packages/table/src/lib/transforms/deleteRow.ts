@@ -1,4 +1,4 @@
-import type { SlateEditor, TTableElement } from 'platejs';
+import type { BasePlateEditor, TTableElement } from 'platejs';
 
 import { getEditorPlugin, KEYS } from 'platejs';
 
@@ -7,7 +7,7 @@ import type { TableConfig } from '..';
 import { deleteRowWhenExpanded } from '../merge';
 import { deleteTableMergeRow } from '../merge/deleteRow';
 
-export const deleteRow = (editor: SlateEditor) => {
+export const deleteRow = (editor: BasePlateEditor) => {
   const { getOptions, type } = getEditorPlugin<TableConfig>(editor, {
     key: KEYS.table,
   });

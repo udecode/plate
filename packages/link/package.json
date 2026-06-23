@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@platejs/floating": "workspace:^",
-    "@platejs/slate": "workspace:^",
+    "@platejs/plite": "workspace:^",
     "react-compiler-runtime": "^1.0.0"
   },
   "devDependencies": {

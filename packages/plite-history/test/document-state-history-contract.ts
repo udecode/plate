@@ -8,7 +8,7 @@ import {
   type Descendant,
   defineStateField,
   type Range,
-  type Editor as PliteEditor,
+  type Editor as EditorType,
 } from '@platejs/plite';
 import { Editor } from '@platejs/plite/internal';
 
@@ -20,13 +20,13 @@ const paragraph = (text: string) =>
     children: [{ text }],
   }) satisfies Descendant;
 
-const undo = (editor: PliteEditor) => {
+const undo = (editor: EditorType) => {
   editor.update((tx) => {
     tx.history.undo();
   });
 };
 
-const redo = (editor: PliteEditor) => {
+const redo = (editor: EditorType) => {
   editor.update((tx) => {
     tx.history.redo();
   });

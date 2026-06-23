@@ -1,11 +1,11 @@
-import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, KEYS, createBasePlateEditor } from 'platejs';
 
 import { BaseLineHeightPlugin } from './BaseLineHeightPlugin';
 
 const runLineHeightTx = (value: number, options?: unknown) => {
   const set = mock();
   const unset = mock();
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
   } as any);
   const extension = (BaseLineHeightPlugin as any).__txExtensions[0];
@@ -26,7 +26,7 @@ const runLineHeightTx = (value: number, options?: unknown) => {
 
 describe('BaseLineHeightPlugin', () => {
   it('exposes the injected block contract and tx extension', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseLineHeightPlugin);
@@ -41,7 +41,7 @@ describe('BaseLineHeightPlugin', () => {
   });
 
   it('parses line-height styles through the injected target plugin deserializer', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseLineHeightPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseLineHeightPlugin);

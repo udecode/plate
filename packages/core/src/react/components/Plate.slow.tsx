@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
 import { act, render, renderHook } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';
@@ -12,7 +12,7 @@ import memoize from 'lodash/memoize';
 import type { PlatePlugins } from '../plugin';
 import type { PlateElementProps, PlateLeafProps } from './plate-nodes';
 
-import { type SlatePlugins, createSlatePlugin } from '../../lib';
+import { type EditorPlugins, createEditorPlugin } from '../../lib';
 import { createPlateEditor, usePlateEditor } from '../editor';
 import { createPlatePlugin } from '../plugin/createPlatePlugin';
 import {
@@ -127,7 +127,7 @@ describe('Plate', () => {
 
   describe('useEditorRef().plugins', () => {
     it('uses the plugins already attached to the editor', () => {
-      const _plugins = [createSlatePlugin({ key: 'test' })];
+      const _plugins = [createEditorPlugin({ key: 'test' })];
       const editor = createPlateEditor({ plugins: _plugins });
 
       const wrapper = ({ children }: any) => (
@@ -281,9 +281,9 @@ describe('Plate', () => {
         }
       });
 
-      const plugins: SlatePlugins = memoize(
-        (): SlatePlugins => [
-          createSlatePlugin({ key: 'a' }).overrideEditor(
+      const plugins: EditorPlugins = memoize(
+        (): EditorPlugins => [
+          createEditorPlugin({ key: 'a' }).overrideEditor(
             ({ editor, tf: { normalizeNode } }) => ({
               tf: {
                 normalizeNode(node) {
@@ -315,13 +315,13 @@ describe('Plate', () => {
     });
   });
 
-  describe('when render aboveSlate renders null', () => {
+  describe('when render abovePlite renders null', () => {
     it('renders without normalizing editor children', () => {
       const plugins: PlatePlugins = [
         createPlatePlugin({
           key: 'a',
           render: {
-            aboveSlate: () => null,
+            abovePlite: () => null,
           },
         }),
       ];

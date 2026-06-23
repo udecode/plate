@@ -84,7 +84,7 @@ import { DndPlugin } from '@platejs/dnd';
 
 DndPlugin.configure({
   render: {
-    aboveSlate: ({ children }) => (
+    abovePlite: ({ children }) => (
       <DndProvider backend={HTML5Backend}>{children}</DndProvider>
     ),
   },
@@ -92,7 +92,7 @@ DndPlugin.configure({
 ```
 
 - `render.aboveNodes`: Assigns [`BlockDraggable`](/docs/components/block-draggable) to render drag handles above blocks.
-- `render.aboveSlate`: Wraps the editor with `DndProvider` and `HTML5Backend`. Remove this if you already have `DndProvider` in your React tree.
+- `render.abovePlite`: Wraps the editor with `DndProvider` and `HTML5Backend`. Remove this if you already have `DndProvider` in your React tree.
 
 ### Advanced Configuration
 
@@ -113,7 +113,7 @@ DndPlugin.configure({
   },
   render: {
     aboveNodes: BlockDraggable,
-    aboveSlate: ({ children }) => (
+    abovePlite: ({ children }) => (
       <DndProvider backend={HTML5Backend}>{children}</DndProvider>
     ),
   },

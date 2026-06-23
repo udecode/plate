@@ -1,13 +1,13 @@
-/** Serializable Slate path used by browser proof snapshots. */
+/** Serializable Plite path used by browser proof snapshots. */
 export type Path = readonly number[];
 
-/** Serializable Slate point used by browser proof snapshots. */
+/** Serializable Plite point used by browser proof snapshots. */
 export type Point = {
   path: Path;
   offset: number;
 };
 
-/** Serializable Slate range used by browser proof snapshots. */
+/** Serializable Plite range used by browser proof snapshots. */
 export type Range = {
   anchor: Point;
   focus: Point;

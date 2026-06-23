@@ -1,4 +1,4 @@
-import type { Element, NodeEntry, Text } from '@platejs/slate';
+import type { Element, NodeEntry, Text } from '@platejs/plite';
 
 export type EdgeNodes =
   | [NodeEntry<Element | Text>, NodeEntry<Element | Text>]

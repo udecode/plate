@@ -1,8 +1,8 @@
 import {
   type Path,
   type PluginConfig,
-  type SlatePlugin,
-  createTSlatePlugin,
+  type EditorPlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -28,8 +28,8 @@ export type CaptionConfig = PluginConfig<
 >;
 
 /** Enables support for caption. */
-const BaseCaptionPluginBase: SlatePlugin<CaptionConfig> =
-  createTSlatePlugin<CaptionConfig>({
+const BaseCaptionPluginBase: EditorPlugin<CaptionConfig> =
+  createEditorPlugin<CaptionConfig>({
     key: KEYS.caption,
     options: {
       focusEndPath: null,
@@ -41,7 +41,7 @@ const BaseCaptionPluginBase: SlatePlugin<CaptionConfig> =
     isVisible: (elementId) => getOptions().visibleId === elementId,
   }));
 
-export const BaseCaptionPlugin: SlatePlugin<CaptionConfig> & {
+export const BaseCaptionPlugin: EditorPlugin<CaptionConfig> & {
   runtimeCaption: boolean;
 } = Object.assign(BaseCaptionPluginBase, {
   runtimeCaption: true,

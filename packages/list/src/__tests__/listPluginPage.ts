@@ -1,5 +1,5 @@
-import type { Element } from '@platejs/slate';
-import { NodeApi, PathApi } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
+import { NodeApi, PathApi } from '@platejs/plite';
 
 import { type GetSiblingListOptions, BaseListPlugin } from '../lib';
 

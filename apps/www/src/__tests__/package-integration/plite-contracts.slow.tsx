@@ -3,19 +3,19 @@
 import { BoldPlugin, ItalicPlugin } from '@platejs/basic-nodes/react';
 import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt } from '@platejs/test-utils';
-import { NodeApi, createPliteEditor, createPlitePlugin } from 'platejs';
+import { NodeApi, createBasePlateEditor, createEditorPlugin } from 'platejs';
 
 jsxt;
 
 const createMarkEditor = (input: any) =>
-  createPliteEditor({
+  createBasePlateEditor({
     plugins: [BoldPlugin, ItalicPlugin],
     selection: input.selection,
     value: input.children,
   });
 
 const createVoidElementPlugin = (key: string) =>
-  createPlitePlugin({
+  createEditorPlugin({
     key,
     node: {
       isElement: true,
@@ -26,7 +26,7 @@ const createVoidElementPlugin = (key: string) =>
 
 const voidBoundaryCases = [
   {
-    action: (editor: ReturnType<typeof createPliteEditor>) =>
+    action: (editor: ReturnType<typeof createBasePlateEditor>) =>
       editor.tf.deleteBackward('character'),
     input: (
       <editor>
@@ -49,7 +49,7 @@ const voidBoundaryCases = [
     plugins: [createVoidElementPlugin('img')],
   },
   {
-    action: (editor: ReturnType<typeof createPliteEditor>) =>
+    action: (editor: ReturnType<typeof createBasePlateEditor>) =>
       editor.tf.deleteBackward('character'),
     input: (
       <editor>
@@ -75,7 +75,7 @@ const voidBoundaryCases = [
     plugins: [createVoidElementPlugin('img')],
   },
   {
-    action: (editor: ReturnType<typeof createPliteEditor>) =>
+    action: (editor: ReturnType<typeof createBasePlateEditor>) =>
       editor.tf.deleteBackward('character'),
     input: (
       <editor>
@@ -100,7 +100,7 @@ const voidBoundaryCases = [
     plugins: [],
   },
   {
-    action: (editor: ReturnType<typeof createPliteEditor>) =>
+    action: (editor: ReturnType<typeof createBasePlateEditor>) =>
       editor.tf.deleteBackward('character'),
     input: (
       <editor>
@@ -131,7 +131,7 @@ const voidBoundaryCases = [
     plugins: [createVoidElementPlugin('img')],
   },
   {
-    action: (editor: ReturnType<typeof createPliteEditor>) =>
+    action: (editor: ReturnType<typeof createBasePlateEditor>) =>
       editor.tf.deleteBackward('character'),
     input: (
       <editor>
@@ -154,7 +154,7 @@ const voidBoundaryCases = [
     plugins: [createVoidElementPlugin('hr')],
   },
   {
-    action: (editor: ReturnType<typeof createPliteEditor>) =>
+    action: (editor: ReturnType<typeof createBasePlateEditor>) =>
       editor.tf.deleteForward('character'),
     input: (
       <editor>
@@ -178,7 +178,7 @@ const voidBoundaryCases = [
     plugins: [createVoidElementPlugin('hr')],
   },
   {
-    action: (editor: ReturnType<typeof createPliteEditor>) =>
+    action: (editor: ReturnType<typeof createBasePlateEditor>) =>
       editor.tf.deleteForward('character'),
     input: (
       <editor>
@@ -222,7 +222,7 @@ describe('slate cross-package contracts', () => {
         </editor>
       ) as any;
 
-      const editor = createPliteEditor({
+      const editor = createBasePlateEditor({
         plugins: [BaseLinkPlugin],
         selection: input.selection,
         value: input.children,
@@ -254,7 +254,7 @@ describe('slate cross-package contracts', () => {
         </editor>
       ) as any;
 
-      const editor = createPliteEditor({
+      const editor = createBasePlateEditor({
         plugins: [BaseLinkPlugin],
         selection: input.selection,
         value: input.children,
@@ -277,7 +277,7 @@ describe('slate cross-package contracts', () => {
         </editor>
       ) as any;
 
-      const editor = createPliteEditor({
+      const editor = createBasePlateEditor({
         plugins: [BaseLinkPlugin],
         selection: input.selection,
         value: input.children,
@@ -379,7 +379,7 @@ describe('slate cross-package contracts', () => {
   describe('void boundaries', () => {
     for (const { action, input, label, output, plugins } of voidBoundaryCases) {
       it(label, () => {
-        const editor = createPliteEditor({
+        const editor = createBasePlateEditor({
           plugins,
           selection: input.selection,
           value: input.children,

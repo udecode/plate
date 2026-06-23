@@ -129,7 +129,7 @@ function DropLine() {
   return (
     <div
       className={cn(
-        'slate-dropLine',
+        'plite-dropLine',
         'absolute bg-brand/50',
         dropLine === 'left' &&
           'group-first/column:-left-1 inset-y-0 left-[-10.5px] w-1',

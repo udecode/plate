@@ -1,6 +1,6 @@
 import type {
   NodeEntry,
-  SlateEditor,
+  BasePlateEditor,
   TTableCellElement,
   TTableElement,
   TTableRowElement,
@@ -9,7 +9,7 @@ import type {
 import { getCellIndices } from '../utils/getCellIndices';
 
 export const getCellPath = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   tableEntry: NodeEntry<TTableElement>,
   curRowIndex: number,
   curColIndex: number

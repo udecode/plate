@@ -16,7 +16,7 @@ import {
   type Ancestor,
   type Descendant,
   ElementApi,
-  type Element as SlateElement,
+  type Element as PliteElement,
   type ElementOrTextIn,
   type EditorMarks,
   type EditorElementSpec,
@@ -49,19 +49,19 @@ import {
   type TextUnit,
   type TextOperation,
   type Value,
-} from '@platejs/slate';
-import type { DOMRange } from '@platejs/slate-dom';
+} from '@platejs/plite';
+import type { DOMRange } from '@platejs/plite-dom';
 import {
   createReactEditor,
   type CreateReactEditorOptions,
   Editable,
   type EditableProps,
   type ReactEditor,
-  type SlateChange,
-  Slate,
-  type SlateProps,
+  type PliteChange,
+  Plite,
+  type PliteProps,
   useElementPath,
-} from '@platejs/slate-react';
+} from '@platejs/plite-react';
 import type { UnionToIntersection } from '@udecode/utils';
 import clsx from 'clsx';
 import { nanoid } from 'nanoid';
@@ -76,7 +76,7 @@ import type {
   AnyPluginConfig,
   InferApi,
   InferTx,
-  SlatePlugin,
+  EditorPlugin,
 } from '../../lib/plugin';
 import { isCurrentEditorRoot } from '../../lib/plugins/chunking/ChunkingPlugin';
 import { withChunking } from '../../lib/plugins/chunking/withChunking';
@@ -260,7 +260,7 @@ type PlateRuntimePlugin = {
   render?: {
     aboveEditable?: unknown;
     aboveNodes?: unknown;
-    aboveSlate?: unknown;
+    abovePlite?: unknown;
     afterContainer?: unknown;
     afterEditable?: unknown;
     beforeContainer?: unknown;
@@ -281,7 +281,7 @@ type PlateRuntimePlugin = {
       affinity?: 'directional' | 'hard' | 'outward';
     };
   };
-  slateExtensions?: unknown[] | ((ctx: RuntimePluginContext) => unknown);
+  editorExtensions?: unknown[] | ((ctx: RuntimePluginContext) => unknown);
   runtimeDomExtension?: unknown;
   runtimeDomExtensionCleanup?: () => void;
   runtimeAffinity?: boolean;
@@ -332,9 +332,9 @@ type PlateRuntimePlugin = {
   runtimeNodeIdCleanup?: () => void;
   runtimeNodeIdExtension?: unknown;
   runtimeParser?: boolean;
-  runtimeSlateExtensionPipeline?: boolean;
-  runtimeSlateExtensionPipelineCleanup?: () => void;
-  runtimeSlateExtensionPipelineExtension?: unknown;
+  runtimePliteExtensionPipeline?: boolean;
+  runtimePliteExtensionPipelineCleanup?: () => void;
+  runtimePliteExtensionPipelineExtension?: unknown;
   runtimeSlateReactOverride?: boolean;
   runtimeSlateReactOverrideCleanup?: () => void;
   runtimeSlateReactOverrideExtension?: unknown;
@@ -349,8 +349,8 @@ type PlateRuntimePlugin = {
   runtimeTrailingBlockExtension?: unknown;
   runtimeToggle?: boolean;
   runtimeTriggerCombobox?: boolean;
-  runtimeSlateExtensionsCleanup?: Array<() => void>;
-  runtimeSlateExtensions?: unknown[];
+  runtimePliteExtensionsCleanup?: Array<() => void>;
+  runtimePliteExtensions?: unknown[];
   shortcuts?: Record<string, unknown>;
   transformInitialValue?: (
     ctx: RuntimePluginContext & { value: Value }
@@ -449,7 +449,7 @@ type RuntimeInsertTextOptions = TextInsertTextOptions & {
 };
 
 type RuntimeTriggerComboboxOptions = {
-  createComboboxInput?: (trigger: string) => SlateElement;
+  createComboboxInput?: (trigger: string) => PliteElement;
   trigger?: RegExp | readonly string[] | string;
   triggerPreviousCharPattern?: RegExp;
   triggerQuery?: (editor: unknown) => boolean;
@@ -574,7 +574,7 @@ type InferRuntimePluginTxProperty<TTx> = string extends keyof NonNullable<TTx>
 type InferPlateRuntimePluginTx<P> =
   P extends PlatePlugin<infer C>
     ? InferTx<C>
-    : P extends SlatePlugin<infer C>
+    : P extends EditorPlugin<infer C>
       ? InferTx<C>
       : P extends AnyPluginConfig
         ? InferTx<P>
@@ -588,7 +588,7 @@ type InferRuntimePluginApiProperty<TApi> =
 type InferPlateRuntimePluginApi<P> =
   P extends PlatePlugin<infer C>
     ? InferApi<C>
-    : P extends SlatePlugin<infer C>
+    : P extends EditorPlugin<infer C>
       ? InferApi<C>
       : P extends AnyPluginConfig
         ? InferApi<P>
@@ -621,7 +621,7 @@ type PlateRuntimePluginCache = {
   render: {
     aboveEditable: string[];
     aboveNodes: string[];
-    aboveSlate: string[];
+    abovePlite: string[];
     afterContainer: string[];
     afterEditable: string[];
     beforeContainer: string[];
@@ -747,7 +747,9 @@ export type PlateRuntimeEditor<
   plugins: Record<string, PlateRuntimePlugin>;
   selection: Selection;
   getPluginApi: (plugin: { key: string }) => Record<string, unknown>;
-  getTransforms: (plugin: { key: string }) => PlateRuntimeTransforms<V, TExtensions>;
+  getTransforms: (plugin: {
+    key: string;
+  }) => PlateRuntimeTransforms<V, TExtensions>;
   getChunkSize?: (ancestor: Ancestor) => number | null;
   getInjectProps: (plugin: { key: string }) => PlateRuntimeInjectNodeProps;
   getOption: <T = unknown>(
@@ -812,7 +814,7 @@ export type CreatePlateRuntimeEditorOptions<
 export type PlateRuntimeSlateProps<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-> = Omit<SlateProps<V, TExtensions>, 'children' | 'editor' | 'readOnly'> & {
+> = Omit<PliteProps<V, TExtensions>, 'children' | 'editor' | 'readOnly'> & {
   children?: ReactNode;
   editor: PlateRuntimeEditor<V, TExtensions>;
   readOnly?: boolean;
@@ -822,7 +824,7 @@ export type PlateRuntimeEditableProps<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
   T = unknown,
-  TElement extends SlateElement = SlateElement,
+  TElement extends PliteElement = PliteElement,
 > = EditableProps<T, TElement> & {
   editor: PlateRuntimeEditor<V, TExtensions>;
   renderEditable?: (editable: ReactElement) => ReactNode;
@@ -832,7 +834,7 @@ export type PlateRuntimeContentProps<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
   T = unknown,
-  TElement extends SlateElement = SlateElement,
+  TElement extends PliteElement = PliteElement,
 > = Omit<PlateRuntimeSlateProps<V, TExtensions>, 'children'> & {
   editableProps?: Omit<
     PlateRuntimeEditableProps<V, TExtensions, T, TElement>,
@@ -844,13 +846,13 @@ type PlateRuntimeEditableSiblingProps<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
   T = unknown,
-  TElement extends SlateElement = SlateElement,
+  TElement extends PliteElement = PliteElement,
 > = EditableProps<T, TElement> & {
   editor: PlateRuntimeEditor<V, TExtensions>;
 };
 
 type PlateRuntimeRenderElementProps<
-  TElement extends SlateElement = SlateElement,
+  TElement extends PliteElement = PliteElement,
 > = Parameters<
   NonNullable<EditableProps<unknown, TElement>['renderElement']>
 >[0];
@@ -866,7 +868,7 @@ type PlateRuntimeDecoration<T = unknown> = ReturnType<
 type PlateRuntimeElementComponentProps<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-  TElement extends SlateElement = SlateElement,
+  TElement extends PliteElement = PliteElement,
 > = PlateRuntimeRenderElementProps<TElement> &
   RuntimePluginContext & {
     editor: PlateRuntimeEditor<V, TExtensions>;
@@ -875,7 +877,7 @@ type PlateRuntimeElementComponentProps<
   };
 
 type PlateRuntimeElementAttributes<
-  TElement extends SlateElement = SlateElement,
+  TElement extends PliteElement = PliteElement,
 > = PlateRuntimeRenderElementProps<TElement>['attributes'] & {
   className?: string;
   style?: CSSProperties;
@@ -903,7 +905,7 @@ type PlateRuntimeInjectNodeProps = {
 type PlateRuntimeInjectNodeContext = {
   attributes?: PlateRuntimeElementAttributes;
   className?: string;
-  element?: SlateElement;
+  element?: PliteElement;
   path?: Path;
   style?: CSSProperties;
 };
@@ -916,17 +918,17 @@ type PlateRuntimeInjectTransformContext = RuntimePluginContext &
     value?: unknown;
   };
 
-const parseRuntimeElementPath = <TElement extends SlateElement>(
+const parseRuntimeElementPath = <TElement extends PliteElement>(
   props: PlateRuntimeRenderElementProps<TElement>
 ): Path => {
-  const path = props.attributes['data-slate-path'];
+  const path = props.attributes['data-plite-path'];
 
   if (!path) return [];
 
   return path.split(',').map((segment) => Number(segment));
 };
 
-const PlateRuntimeDefaultElement = <TElement extends SlateElement>({
+const PlateRuntimeDefaultElement = <TElement extends PliteElement>({
   as = 'div',
   attributes,
   children,
@@ -975,7 +977,7 @@ const getRuntimeReactComponent = <TProps extends object>(
 type PlateRuntimeNodeWrapperProps<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-  TElement extends SlateElement = SlateElement,
+  TElement extends PliteElement = PliteElement,
 > = PlateRuntimeElementComponentProps<V, TExtensions, TElement> & {
   key: string;
 };
@@ -983,7 +985,7 @@ type PlateRuntimeNodeWrapperProps<
 type PlateRuntimeNodeWrapper<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
-  TElement extends SlateElement = SlateElement,
+  TElement extends PliteElement = PliteElement,
 > = (props: PlateRuntimeNodeWrapperProps<V, TExtensions, TElement>) =>
   | ((
       props: PlateRuntimeNodeWrapperProps<V, TExtensions, TElement> & {
@@ -996,7 +998,7 @@ type PlateRuntimeNodeWrapper<
 const getRuntimeNodeWrapper = <
   V extends Value,
   const TExtensions extends readonly unknown[],
-  TElement extends SlateElement,
+  TElement extends PliteElement,
 >(
   pluginKey: string,
   slot: string,
@@ -1054,7 +1056,7 @@ const includesRuntimeValue = (
 const matchesRuntimeInjectTarget = (
   injectingPlugin: PlateRuntimePlugin,
   renderedPlugin: PlateRuntimePlugin,
-  element: SlateElement
+  element: PliteElement
 ) => {
   const targetPlugins = injectingPlugin.inject?.targetPlugins;
 
@@ -1071,7 +1073,7 @@ const matchesRuntimeInjectTarget = (
 const getRuntimeInjectedElementAttributes = <
   V extends Value,
   const TExtensions extends readonly unknown[],
-  TElement extends SlateElement,
+  TElement extends PliteElement,
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
   renderedPlugin: PlateRuntimePlugin,
@@ -1159,7 +1161,7 @@ const getRuntimeInjectedElementAttributes = <
     const nextProps: Record<string, unknown> = {};
 
     if (nodeKey && hasDefinedRuntimeValue(nodeValue)) {
-      nextProps.className = `slate-${nodeKey}-${String(nodeValue)}`;
+      nextProps.className = `plite-${nodeKey}-${String(nodeValue)}`;
     }
     if (
       injectNodeProps.transformClassName ||
@@ -1213,7 +1215,7 @@ const getRuntimeInjectedElementAttributes = <
 const PlateRuntimeElementContent = <
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly [],
-  TElement extends SlateElement = SlateElement,
+  TElement extends PliteElement = PliteElement,
 >({
   editor,
   plugin,
@@ -1373,13 +1375,13 @@ const pipeRuntimeChangeHandler = <
   const TExtensions extends readonly unknown[],
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
-  propsHandler?: (value: V, change: SlateChange<V>) => void
+  propsHandler?: (value: V, change: PliteChange<V>) => void
 ) => {
   if (editor.meta.pluginCache.handlers.onChange.length === 0 && !propsHandler) {
     return;
   }
 
-  return (value: V, change: SlateChange<V>) => {
+  return (value: V, change: PliteChange<V>) => {
     const eventIsHandled = editor.meta.pluginCache.handlers.onChange.some(
       (key) => {
         const plugin = editor.getPlugin({ key });
@@ -1564,7 +1566,7 @@ const getRuntimePluginForElement = <
   const TExtensions extends readonly unknown[],
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
-  element: SlateElement
+  element: PliteElement
 ) => {
   const type = typeof element.type === 'string' ? element.type : undefined;
   const pluginKey = type
@@ -1597,7 +1599,7 @@ const hasRuntimeNodePropsInjectors = <
 const pipeRuntimeRenderElement = <
   V extends Value,
   const TExtensions extends readonly unknown[],
-  TElement extends SlateElement,
+  TElement extends PliteElement,
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
   propsRenderElement?: (
@@ -1667,7 +1669,7 @@ type RuntimeTextChangeHandler<
   }
 ) => boolean | void;
 
-type RuntimeSlateExtensionNodeOption<
+type RuntimePliteExtensionNodeOption<
   V extends Value,
   TExtensions extends readonly unknown[],
 > = (ctx: {
@@ -1677,7 +1679,7 @@ type RuntimeSlateExtensionNodeOption<
   prevNode: Descendant;
 }) => void;
 
-type RuntimeSlateExtensionTextOption<
+type RuntimePliteExtensionTextOption<
   V extends Value,
   TExtensions extends readonly unknown[],
 > = (ctx: {
@@ -1708,29 +1710,29 @@ const getRuntimeTextChangeHandler = <
     ? (handler as RuntimeTextChangeHandler<V, TExtensions>)
     : null;
 
-const getRuntimeSlateExtensionNodeOption = <
+const getRuntimePliteExtensionNodeOption = <
   V extends Value,
   const TExtensions extends readonly unknown[],
 >(
   plugin: PlateRuntimePlugin
-): RuntimeSlateExtensionNodeOption<V, TExtensions> | null => {
+): RuntimePliteExtensionNodeOption<V, TExtensions> | null => {
   const handler = plugin.options?.onNodeChange;
 
   return typeof handler === 'function'
-    ? (handler as RuntimeSlateExtensionNodeOption<V, TExtensions>)
+    ? (handler as RuntimePliteExtensionNodeOption<V, TExtensions>)
     : null;
 };
 
-const getRuntimeSlateExtensionTextOption = <
+const getRuntimePliteExtensionTextOption = <
   V extends Value,
   const TExtensions extends readonly unknown[],
 >(
   plugin: PlateRuntimePlugin
-): RuntimeSlateExtensionTextOption<V, TExtensions> | null => {
+): RuntimePliteExtensionTextOption<V, TExtensions> | null => {
   const handler = plugin.options?.onTextChange;
 
   return typeof handler === 'function'
-    ? (handler as RuntimeSlateExtensionTextOption<V, TExtensions>)
+    ? (handler as RuntimePliteExtensionTextOption<V, TExtensions>)
     : null;
 };
 
@@ -1817,7 +1819,7 @@ const createPlateRuntimePluginCache = (): PlateRuntimePluginCache => ({
   render: {
     aboveEditable: [],
     aboveNodes: [],
-    aboveSlate: [],
+    abovePlite: [],
     afterContainer: [],
     afterEditable: [],
     beforeContainer: [],
@@ -1900,7 +1902,7 @@ const isRuntimeTextNode = (node: unknown): node is { text: string } =>
   'text' in node &&
   typeof node.text === 'string';
 
-const isRuntimeElementNode = (node: unknown): node is SlateElement =>
+const isRuntimeElementNode = (node: unknown): node is PliteElement =>
   typeof node === 'object' &&
   node !== null &&
   !isRuntimeTextNode(node) &&
@@ -2355,11 +2357,11 @@ type RuntimeAffinity = 'backward' | 'forward';
 type RuntimeAffinityKind = 'directional' | 'hard' | 'outward';
 
 type RuntimeAffinityEdgeNodes = [
-  NodeEntry<SlateElement | Text> | null,
-  NodeEntry<SlateElement | Text> | null,
+  NodeEntry<PliteElement | Text> | null,
+  NodeEntry<PliteElement | Text> | null,
 ];
 
-const getRuntimeNodeProps = (node: SlateElement | Text) =>
+const getRuntimeNodeProps = (node: PliteElement | Text) =>
   NodeApi.extractProps(node) as Record<string, unknown>;
 
 const areRuntimeMarksEqual = (
@@ -2380,7 +2382,7 @@ const getRuntimeNodeAffinity = <
   const TExtensions extends readonly unknown[],
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
-  node: SlateElement | Text,
+  node: PliteElement | Text,
   affinity: RuntimeAffinityKind
 ) => {
   const keys = ElementApi.isElement(node)
@@ -2447,7 +2449,7 @@ const getRuntimeAffinityEdgeNodes = <
 
     const parentEntry = editor.read((state) =>
       state.nodes.parent(cursor.path)
-    ) as NodeEntry<SlateElement> | undefined;
+    ) as NodeEntry<PliteElement> | undefined;
     const parent = parentEntry?.[0] ?? null;
     const parentAffinity =
       parent && ElementApi.isElement(parent) && typeof parent.type === 'string'
@@ -2515,7 +2517,7 @@ const getRuntimeMarkBoundaryAffinity = <
 
   if (!selection) return;
 
-  const marksMatchLeaf = (leaf: SlateElement | Text) =>
+  const marksMatchLeaf = (leaf: PliteElement | Text) =>
     !!marks &&
     areRuntimeMarksEqual(getRuntimeNodeProps(leaf), marks) &&
     Object.keys(marks).length > 1;
@@ -2768,7 +2770,7 @@ const getRuntimeBreakOverridePlugin = <
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
   rule: string,
-  blockNode: SlateElement,
+  blockNode: PliteElement,
   blockPath: number[]
 ) => {
   for (const key of editor.meta.pluginCache.rules.match) {
@@ -2798,7 +2800,7 @@ const getRuntimeDeleteOverridePlugin = <
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
   rule: string,
-  blockNode: SlateElement,
+  blockNode: PliteElement,
   blockPath: number[]
 ) => {
   for (const key of editor.meta.pluginCache.rules.match) {
@@ -2828,7 +2830,7 @@ const getRuntimeMergeOverrideRules = <
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
   rule: string,
-  blockNode: SlateElement,
+  blockNode: PliteElement,
   blockPath: number[]
 ) => {
   for (const key of editor.meta.pluginCache.rules.match) {
@@ -2858,7 +2860,7 @@ const getRuntimeNormalizeOverrideRules = <
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
   rule: string,
-  blockNode: SlateElement,
+  blockNode: PliteElement,
   blockPath: number[]
 ) => {
   for (const key of editor.meta.pluginCache.rules.match) {
@@ -2887,7 +2889,7 @@ const shouldRuntimeRemoveEmptyMergeTarget = <
   const TExtensions extends readonly unknown[],
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
-  node: SlateElement,
+  node: PliteElement,
   path: number[]
 ) => {
   const type = typeof node.type === 'string' ? node.type : undefined;
@@ -2912,13 +2914,13 @@ const shouldRuntimePreserveRemovedMergeTarget = <
   const TExtensions extends readonly unknown[],
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
-  node: SlateElement,
+  node: PliteElement,
   path: number[]
 ) =>
   getRuntimeNodeText(node).length === 0 &&
   !shouldRuntimeRemoveEmptyMergeTarget(editor, node, path);
 
-const getRuntimeMergeNodeProperties = (node: SlateElement) => {
+const getRuntimeMergeNodeProperties = (node: PliteElement) => {
   const { children: _children, ...properties } = node;
 
   return properties;
@@ -2929,7 +2931,7 @@ const shouldRuntimeRemoveEmptyNormalizeTarget = <
   const TExtensions extends readonly unknown[],
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
-  node: SlateElement,
+  node: PliteElement,
   path: number[]
 ) => {
   const overrideRules = getRuntimeNormalizeOverrideRules(
@@ -3114,7 +3116,7 @@ const isRuntimeBlockElement = <
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
   node: unknown
-): node is SlateElement =>
+): node is PliteElement =>
   isRuntimeElementNode(node) &&
   editor.read((state) => state.schema.isBlock(node));
 
@@ -3693,7 +3695,7 @@ const isRuntimeElementStateEmpty = <
   const TExtensions extends readonly unknown[],
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
-  element: SlateElement
+  element: PliteElement
 ) => {
   const props = NodeApi.extractProps(element);
 
@@ -3976,8 +3978,9 @@ const installPlateRuntimeCompatibilityBridge = <
   setApi('fragment', (at = editor.selection, options = {}) =>
     editor.read((state) => state.fragment.get({ at, ...options }))
   );
-  setApi('mark', (key: string) =>
-    editor.read((state) => state.marks.get())?.[key]
+  setApi(
+    'mark',
+    (key: string) => editor.read((state) => state.marks.get())?.[key]
   );
   setApi('marks', () => editor.read((state) => state.marks.get()));
   setApi('hasMark', (key: string) => {
@@ -4023,7 +4026,7 @@ const installPlateRuntimeCompatibilityBridge = <
 
     return true;
   });
-  setApi('isBlock', (element: SlateElement) =>
+  setApi('isBlock', (element: PliteElement) =>
     editor.read((state) => state.schema.isBlock(element))
   );
   setApi('isCollapsed', () => {
@@ -4031,13 +4034,13 @@ const installPlateRuntimeCompatibilityBridge = <
 
     return !!selection && RangeApi.isCollapsed(selection);
   });
-  setApi('isElementStateEmpty', (element: SlateElement) =>
+  setApi('isElementStateEmpty', (element: PliteElement) =>
     isRuntimeElementStateEmpty(editor, element)
   );
   setApi('isEnd', (point: Point, at: Location) =>
     editor.read((state) => state.points.isEnd(point, at))
   );
-  setApi('isEmpty', (at?: Location | SlateElement, options = {}) => {
+  setApi('isEmpty', (at?: Location | PliteElement, options = {}) => {
     if (ElementApi.isElement(at)) {
       return editor.read((state) => state.nodes.isEmpty(at));
     }
@@ -4057,16 +4060,16 @@ const installPlateRuntimeCompatibilityBridge = <
 
     return !!selection && RangeApi.isExpanded(selection);
   });
-  setApi('isInline', (element: SlateElement) =>
+  setApi('isInline', (element: PliteElement) =>
     editor.read((state) => state.schema.isInline(element))
   );
-  setApi('isSelectable', (element: SlateElement) =>
+  setApi('isSelectable', (element: PliteElement) =>
     editor.read((state) => state.schema.isSelectable(element))
   );
   setApi('isStart', (point: Point, at: Location) =>
     editor.read((state) => state.points.isStart(point, at))
   );
-  setApi('isVoid', (element: SlateElement) =>
+  setApi('isVoid', (element: PliteElement) =>
     editor.read((state) => state.schema.isVoid(element))
   );
   setApi('node', (atOrOptions: Location | Record<string, any> = []) =>
@@ -4307,26 +4310,26 @@ const installRuntimeDomExtension = <
   plugin.runtimeDomExtension = extension;
 };
 
-const installRuntimeSlateExtensionPipeline = <
+const installRuntimePliteExtensionPipeline = <
   V extends Value,
   const TExtensions extends readonly unknown[],
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
   plugin: PlateRuntimePlugin
 ) => {
-  if (!plugin.runtimeSlateExtensionPipeline) return;
+  if (!plugin.runtimePliteExtensionPipeline) return;
 
   const extension = defineEditorExtension({
-    name: 'plate:slate-extension:runtime',
+    name: 'plate:plite-extension:runtime',
     setup() {
       return {
         operations: {
           apply({ operation, next }) {
-            const onNodeChange = getRuntimeSlateExtensionNodeOption<
+            const onNodeChange = getRuntimePliteExtensionNodeOption<
               V,
               TExtensions
             >(plugin);
-            const onTextChange = getRuntimeSlateExtensionTextOption<
+            const onTextChange = getRuntimePliteExtensionTextOption<
               V,
               TExtensions
             >(plugin);
@@ -4475,8 +4478,8 @@ const installRuntimeSlateExtensionPipeline = <
     },
   });
 
-  plugin.runtimeSlateExtensionPipelineCleanup = editor.extend(extension);
-  plugin.runtimeSlateExtensionPipelineExtension = extension;
+  plugin.runtimePliteExtensionPipelineCleanup = editor.extend(extension);
+  plugin.runtimePliteExtensionPipelineExtension = extension;
 };
 
 const installRuntimeSlateReactOverride = <
@@ -4681,7 +4684,7 @@ const getRuntimeLiftableBlockquoteChildren = <
 
   return editor.read((state) =>
     Array.from(
-      state.nodes.entries<SlateElement>({
+      state.nodes.entries<PliteElement>({
         at: selection,
         match: (node, path) =>
           isRuntimeLiftableBlockquoteChild(editor, node, path, blockquoteType),
@@ -4729,7 +4732,7 @@ const getRuntimeCaptionEntry = <
   if (allowedTypes.size === 0) return;
 
   return editor.read((state) =>
-    state.nodes.above<SlateElement>({
+    state.nodes.above<PliteElement>({
       at,
       match: (node) =>
         ElementApi.isElement(node) &&
@@ -4827,11 +4830,11 @@ const createRuntimeComboboxInput = (
   plugin: PlateRuntimePlugin,
   options: RuntimeTriggerComboboxOptions,
   trigger: string
-): SlateElement & { userId?: string } =>
+): PliteElement & { userId?: string } =>
   (options.createComboboxInput?.(trigger) ?? {
     children: [{ text: '' }],
     type: plugin.node?.type ?? plugin.key,
-  }) as SlateElement & { userId?: string };
+  }) as PliteElement & { userId?: string };
 
 const installRuntimeTriggerCombobox = <
   V extends Value,
@@ -4882,7 +4885,7 @@ const installRuntimeTriggerCombobox = <
   }) as PlateRuntimeTransforms;
 };
 
-type RuntimeToggleElement = SlateElement & {
+type RuntimeToggleElement = PliteElement & {
   id?: unknown;
   indent?: unknown;
   listStyleType?: unknown;
@@ -5003,7 +5006,7 @@ const getRuntimeToggleTopLevelEntry = <
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
   at?: Location
-): NodeEntry<SlateElement> | undefined => {
+): NodeEntry<PliteElement> | undefined => {
   const blockPath = getRuntimeBlockPath(editor, at);
 
   if (!blockPath) return;
@@ -5271,11 +5274,11 @@ const installRuntimeToggle = <
 
       if (isOpen) {
         editor.update((tx) => {
-          tx.nodes.set<SlateElement>(
+          tx.nodes.set<PliteElement>(
             {
               indent: getRuntimeToggleIndent(currentBlock) + 1,
               type: paragraphType,
-            } as Partial<SlateElement>,
+            } as Partial<PliteElement>,
             { at: newlyInsertedTogglePath }
           );
         });
@@ -5572,7 +5575,7 @@ const getRuntimeCodeBlockIndent = (node: unknown) => {
   return RUNTIME_CODE_BLOCK_INDENT_RE.exec(text)?.[0] ?? '';
 };
 
-const createRuntimeCodeLine = (type: string, text: string): SlateElement => ({
+const createRuntimeCodeLine = (type: string, text: string): PliteElement => ({
   children: [{ text }],
   type,
 });
@@ -5590,7 +5593,7 @@ const createRuntimeCodeBlock = ({
   codeLineType: string;
   lang?: string;
   lines: string[];
-}): SlateElement => ({
+}): PliteElement => ({
   children: createRuntimeCodeLines(codeLineType, lines),
   ...(lang ? { lang } : {}),
   type: codeBlockType,
@@ -5603,7 +5606,7 @@ const toRuntimeCodeLineFragment = (
 ) =>
   fragment.flatMap((node) => {
     if (isRuntimeElementNode(node) && node.type === codeBlockType) {
-      return node.children.filter(isRuntimeElementNode) as SlateElement[];
+      return node.children.filter(isRuntimeElementNode) as PliteElement[];
     }
 
     return [createRuntimeCodeLine(codeLineType, getRuntimeNodeText(node))];
@@ -5611,7 +5614,7 @@ const toRuntimeCodeLineFragment = (
 
 const getRuntimeElementEndPoint = (
   path: number[],
-  element: SlateElement
+  element: PliteElement
 ): Point => {
   for (let index = element.children.length - 1; index >= 0; index--) {
     const child = element.children[index];
@@ -5701,7 +5704,7 @@ const getRuntimeSelectedCodeLinePaths = <
   }
 
   return getRuntimeRootNodeEntries(editor)
-    .filter((entry): entry is [SlateElement, number[]] => {
+    .filter((entry): entry is [PliteElement, number[]] => {
       const [node, path] = entry;
 
       return (
@@ -5721,7 +5724,7 @@ const insertRuntimeCodeLinesAtCodeLine = <
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
   blockPath: number[],
-  lines: SlateElement[]
+  lines: PliteElement[]
 ) => {
   const firstLine = lines[0];
   const firstLineText = getRuntimeNodeText(firstLine);
@@ -5790,8 +5793,8 @@ const installRuntimeCodeBlock = <
           );
 
           if (nonCodeLineIndex >= 0) {
-            tx.nodes.set<SlateElement>(
-              { type: codeLineType } as Partial<SlateElement>,
+            tx.nodes.set<PliteElement>(
+              { type: codeLineType } as Partial<PliteElement>,
               { at: [...path, nonCodeLineIndex] }
             );
             return;
@@ -6062,12 +6065,12 @@ const installRuntimeCodeBlock = <
 
       editor.update((tx) => {
         codeBlock.children.forEach((_, index) => {
-          tx.nodes.set<SlateElement>(
-            { type: paragraphType } as Partial<SlateElement>,
+          tx.nodes.set<PliteElement>(
+            { type: paragraphType } as Partial<PliteElement>,
             { at: [...codeBlockPath, index] }
           );
         });
-        tx.nodes.unwrap<SlateElement>({
+        tx.nodes.unwrap<PliteElement>({
           at: codeBlockPath,
           match: (node) =>
             isRuntimeElementNode(node) && node.type === codeBlockType,
@@ -6182,7 +6185,7 @@ const installRuntimeCodeBlock = <
   }) as PlateRuntimeTransforms;
 };
 
-type RuntimeListElement = SlateElement & {
+type RuntimeListElement = PliteElement & {
   checked?: unknown;
   indent?: unknown;
   listRestart?: unknown;
@@ -6222,7 +6225,7 @@ const getRuntimePreviousSiblingElement = <
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
   path: number[]
-): NodeEntry<SlateElement> | undefined => {
+): NodeEntry<PliteElement> | undefined => {
   if (!PathApi.hasPrevious(path)) return;
 
   const previousPath = PathApi.previous(path);
@@ -6239,7 +6242,7 @@ const getRuntimeNextSiblingElement = <
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
   path: number[]
-): NodeEntry<SlateElement> | undefined => {
+): NodeEntry<PliteElement> | undefined => {
   const nextPath = PathApi.next(path);
   const nextNode = getRuntimeDescendant(editor, nextPath);
 
@@ -6318,7 +6321,7 @@ const normalizeRuntimeListEntry = <
 >(
   tx: RuntimeListMutationTx<V>,
   editor: PlateRuntimeEditor<V, TExtensions>,
-  entry: NodeEntry<SlateElement>
+  entry: NodeEntry<PliteElement>
 ) => {
   const [node, path] = entry;
 
@@ -6347,8 +6350,8 @@ const normalizeRuntimeListEntry = <
     listNode.listStyleType === 'lower-roman' &&
     previousIndented?.[0].listStyleType === 'lower-alpha'
   ) {
-    tx.nodes.set<SlateElement>(
-      { [RUNTIME_LIST_STYLE_TYPE_KEY]: 'lower-alpha' } as Partial<SlateElement>,
+    tx.nodes.set<PliteElement>(
+      { [RUNTIME_LIST_STYLE_TYPE_KEY]: 'lower-alpha' } as Partial<PliteElement>,
       { at: path }
     );
     return true;
@@ -6358,8 +6361,8 @@ const normalizeRuntimeListEntry = <
     listNode.listStyleType === 'upper-roman' &&
     previousIndented?.[0].listStyleType === 'upper-alpha'
   ) {
-    tx.nodes.set<SlateElement>(
-      { [RUNTIME_LIST_STYLE_TYPE_KEY]: 'upper-alpha' } as Partial<SlateElement>,
+    tx.nodes.set<PliteElement>(
+      { [RUNTIME_LIST_STYLE_TYPE_KEY]: 'upper-alpha' } as Partial<PliteElement>,
       { at: path }
     );
     return true;
@@ -6389,8 +6392,8 @@ const normalizeRuntimeListEntry = <
   }
 
   if (listNode.listStart !== expectedListStart && expectedListStart > 1) {
-    tx.nodes.set<SlateElement>(
-      { [RUNTIME_LIST_START_KEY]: expectedListStart } as Partial<SlateElement>,
+    tx.nodes.set<PliteElement>(
+      { [RUNTIME_LIST_START_KEY]: expectedListStart } as Partial<PliteElement>,
       { at: path }
     );
     return true;
@@ -6411,7 +6414,7 @@ const normalizeRuntimeListFromPath = <
   editor.update((tx) => {
     let entry = editor.read((state) =>
       state.nodes.hasPath(currentPath)
-        ? state.nodes.get<SlateElement>(currentPath)
+        ? state.nodes.get<PliteElement>(currentPath)
         : undefined
     );
 
@@ -6471,7 +6474,7 @@ const installRuntimeList = <
         if (
           ElementApi.isElement(entry[0]) &&
           normalizeRuntimeListEntry(tx, editor, [
-            entry[0] as SlateElement,
+            entry[0] as PliteElement,
             entry[1],
           ])
         )
@@ -6519,8 +6522,8 @@ const installRuntimeList = <
 
         if (nextBlockPath) {
           editor.update((tx) => {
-            tx.nodes.set<SlateElement>(
-              { [RUNTIME_LIST_CHECKED_KEY]: false } as Partial<SlateElement>,
+            tx.nodes.set<PliteElement>(
+              { [RUNTIME_LIST_CHECKED_KEY]: false } as Partial<PliteElement>,
               { at: nextBlockPath }
             );
           });
@@ -6555,8 +6558,8 @@ const installRuntimeList = <
           return;
         }
 
-        tx.nodes.set<SlateElement>(
-          { [RUNTIME_LIST_INDENT_KEY]: indent - 1 } as Partial<SlateElement>,
+        tx.nodes.set<PliteElement>(
+          { [RUNTIME_LIST_INDENT_KEY]: indent - 1 } as Partial<PliteElement>,
           { at: blockPath }
         );
       });
@@ -6571,7 +6574,7 @@ type RuntimeClassicTodoListOptions = {
   inheritCheckStateOnLineStartBreak?: boolean;
 };
 
-type RuntimeClassicTodoListElement = SlateElement & {
+type RuntimeClassicTodoListElement = PliteElement & {
   checked?: unknown;
   type?: unknown;
 };
@@ -6692,7 +6695,7 @@ const installRuntimeClassicTodoList = <
   }) as PlateRuntimeTransforms;
 };
 
-type RuntimeFootnoteElement = SlateElement & {
+type RuntimeFootnoteElement = PliteElement & {
   identifier?: unknown;
   type?: unknown;
 };
@@ -6929,7 +6932,7 @@ const getRuntimeFootnoteReferenceSelectionPoint = <
   path: number[]
 ) => {
   const parentPath = PathApi.parent(path);
-  const parent = getRuntimeDescendant<V, TExtensions, SlateElement>(
+  const parent = getRuntimeDescendant<V, TExtensions, PliteElement>(
     editor,
     parentPath
   );
@@ -7204,7 +7207,7 @@ const installRuntimeFootnote = <
 const isRuntimeMultiSelectTag = (
   node: unknown,
   type: string
-): node is SlateElement & { value?: unknown } =>
+): node is PliteElement & { value?: unknown } =>
   isRuntimeElementNode(node) && node.type === type && 'value' in node;
 
 const hasRuntimeMultiSelectTag = <
@@ -7539,8 +7542,8 @@ const installRuntimeLayoutColumn = <
             const adjustment = (100 - sum) / totalColumns;
 
             widths.forEach((width, index) => {
-              tx.nodes.set<SlateElement>(
-                { width: `${width + adjustment}%` } as Partial<SlateElement>,
+              tx.nodes.set<PliteElement>(
+                { width: `${width + adjustment}%` } as Partial<PliteElement>,
                 { at: [...path, index] }
               );
             });
@@ -7571,7 +7574,7 @@ const installRuntimeLayoutColumn = <
       if (!selection) return previousSelectAll();
 
       const column = editor.read((state) =>
-        state.nodes.above<SlateElement>({
+        state.nodes.above<PliteElement>({
           at: selection,
           match: (node) =>
             ElementApi.isElement(node) && node.type === columnType,
@@ -7606,7 +7609,7 @@ const installRuntimeLayoutColumn = <
   }) as PlateRuntimeTransforms;
 };
 
-const getRuntimeIndentValue = (node: SlateElement) => {
+const getRuntimeIndentValue = (node: PliteElement) => {
   const value = node.indent;
 
   return typeof value === 'number' ? value : 0;
@@ -7640,7 +7643,7 @@ const getRuntimeIndentBlockEntries = <
 
   return editor.read((state) =>
     Array.from(
-      state.nodes.entries<SlateElement>({
+      state.nodes.entries<PliteElement>({
         at: selection,
         match: (node) =>
           ElementApi.isElement(node) &&
@@ -7648,7 +7651,7 @@ const getRuntimeIndentBlockEntries = <
           targetTypes.has(node.type),
       })
     )
-  ) as NodeEntry<SlateElement>[];
+  ) as NodeEntry<PliteElement>[];
 };
 
 const applyRuntimeIndent = <
@@ -7656,7 +7659,7 @@ const applyRuntimeIndent = <
   const TExtensions extends readonly unknown[],
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
-  entries: NodeEntry<SlateElement>[],
+  entries: NodeEntry<PliteElement>[],
   offset: number
 ) => {
   editor.update((tx) => {
@@ -7668,8 +7671,8 @@ const applyRuntimeIndent = <
         return;
       }
 
-      tx.nodes.set<SlateElement>(
-        { indent: nextIndent } as Partial<SlateElement>,
+      tx.nodes.set<PliteElement>(
+        { indent: nextIndent } as Partial<PliteElement>,
         { at: path }
       );
     });
@@ -7703,8 +7706,8 @@ const installRuntimeIndent = <
         const { indentMax } = editor.getOptions<{ indentMax?: number }>(plugin);
 
         if (matchesTarget && indentMax && indent > indentMax) {
-          tx.nodes.set<SlateElement>(
-            { indent: indentMax } as Partial<SlateElement>,
+          tx.nodes.set<PliteElement>(
+            { indent: indentMax } as Partial<PliteElement>,
             { at: path }
           );
           return;
@@ -8278,7 +8281,7 @@ type RuntimeInputRuleSelectionContext<
   TExtensions extends readonly unknown[],
 > = {
   editor: PlateRuntimeEditor<V, TExtensions>;
-  getBlockEntry: () => NodeEntry<SlateElement> | undefined;
+  getBlockEntry: () => NodeEntry<PliteElement> | undefined;
   getBlockStartRange: () => Range | undefined;
   getBlockStartText: () => string | undefined;
   getBlockTextBeforeSelection: () => string;
@@ -8345,7 +8348,7 @@ const createRuntimeInputRuleSelectionContext = <
     const node = getRuntimeDescendant(editor, path);
 
     return isRuntimeElementNode(node)
-      ? ([node as SlateElement, path] as NodeEntry<SlateElement>)
+      ? ([node as PliteElement, path] as NodeEntry<PliteElement>)
       : undefined;
   });
   const getBlockStartRange = createRuntimeCachedGetter(() => {
@@ -9581,7 +9584,7 @@ const createPlateRuntimeTransforms = <
       if (!ancestorPath) return;
 
       editor.update((tx) => {
-        tx.nodes.unwrap<SlateElement>({
+        tx.nodes.unwrap<PliteElement>({
           at: ancestorPath,
           match: (node, path) => matchesRuntimeNode(node, path, match),
           split: true,
@@ -9646,8 +9649,8 @@ const createPlateRuntimeTransforms = <
         }
 
         if (block.type !== paragraphType) {
-          tx.nodes.set<SlateElement>(
-            { type: paragraphType } as Partial<SlateElement>,
+          tx.nodes.set<PliteElement>(
+            { type: paragraphType } as Partial<PliteElement>,
             { at: blockPath }
           );
         }
@@ -9862,13 +9865,13 @@ const createRuntimeTransformPluginContext = <
   return context;
 };
 
-const normalizeRuntimeSlateExtensions = (extensions: unknown) => {
+const normalizeRuntimePliteExtensions = (extensions: unknown) => {
   if (!extensions) return [];
 
   return Array.isArray(extensions) ? extensions : [extensions];
 };
 
-const installRuntimeSlateExtensions = <
+const installRuntimePliteExtensions = <
   V extends Value,
   const TExtensions extends readonly unknown[],
 >(
@@ -9876,15 +9879,15 @@ const installRuntimeSlateExtensions = <
   plugin: PlateRuntimePlugin
 ) => {
   const rawExtensions =
-    typeof plugin.slateExtensions === 'function'
-      ? plugin.slateExtensions(createRuntimePluginContext(editor, plugin))
-      : plugin.slateExtensions;
-  const extensions = normalizeRuntimeSlateExtensions(rawExtensions);
+    typeof plugin.editorExtensions === 'function'
+      ? plugin.editorExtensions(createRuntimePluginContext(editor, plugin))
+      : plugin.editorExtensions;
+  const extensions = normalizeRuntimePliteExtensions(rawExtensions);
 
   if (extensions.length === 0) return;
 
-  plugin.runtimeSlateExtensions = extensions;
-  plugin.runtimeSlateExtensionsCleanup = extensions.map((extension) =>
+  plugin.runtimePliteExtensions = extensions;
+  plugin.runtimePliteExtensionsCleanup = extensions.map((extension) =>
     editor.extend(extension as EditorExtensionInput)
   );
 };
@@ -10236,12 +10239,12 @@ const resolveRuntimePluginConfig = <
       }
 
       if (
-        plugin.key === 'slateExtension' &&
+        plugin.key === 'pliteExtension' &&
         apiExtension.isTransform &&
         !apiExtension.isPluginSpecific &&
         !apiExtension.isOverride
       ) {
-        plugin.runtimeSlateExtensionPipeline = true;
+        plugin.runtimePliteExtensionPipeline = true;
         continue;
       }
 
@@ -10271,7 +10274,7 @@ const resolveRuntimePluginConfig = <
       }
 
       if (
-        plugin.key === 'slateExtension' &&
+        plugin.key === 'pliteExtension' &&
         apiExtension.isOverride &&
         apiExtension.isTransform
       ) {
@@ -10283,7 +10286,7 @@ const resolveRuntimePluginConfig = <
         const tf = extension.tf;
 
         if (tf?.apply || tf?.init) {
-          plugin.runtimeSlateExtensionPipeline = true;
+          plugin.runtimePliteExtensionPipeline = true;
         } else {
           plugin.runtimeSlateReactOverride = true;
         }
@@ -10610,8 +10613,10 @@ const applyRuntimePluginMetadata = <
   plugins: PlateRuntimePlugin[],
   createStore: PlateRuntimePluginStoreFactory
 ) => {
-  const pluginTxGroups: Record<string, NonNullable<PlateRuntimePlugin['tx']>[string][]> =
-    {};
+  const pluginTxGroups: Record<
+    string,
+    NonNullable<PlateRuntimePlugin['tx']>[string][]
+  > = {};
 
   editor.meta.pluginList = plugins;
   editor.plugins = Object.fromEntries(
@@ -10685,8 +10690,8 @@ const applyRuntimePluginMetadata = <
     if (plugin.render?.aboveEditable) {
       editor.meta.pluginCache.render.aboveEditable.push(plugin.key);
     }
-    if (plugin.render?.aboveSlate) {
-      editor.meta.pluginCache.render.aboveSlate.push(plugin.key);
+    if (plugin.render?.abovePlite) {
+      editor.meta.pluginCache.render.abovePlite.push(plugin.key);
     }
     if (plugin.render?.afterEditable) {
       editor.meta.pluginCache.render.afterEditable.push(plugin.key);
@@ -10761,7 +10766,7 @@ const applyRuntimePluginMetadata = <
     installRuntimeOverrideMergeRules(editor, plugin);
     installRuntimeOverrideNormalizeRules(editor, plugin);
     installRuntimeParser(editor, plugin);
-    installRuntimeSlateExtensionPipeline(editor, plugin);
+    installRuntimePliteExtensionPipeline(editor, plugin);
     installRuntimeSlateReactOverride(editor, plugin);
     installRuntimeSingleBlock(editor, plugin);
     installRuntimeSingleLine(editor, plugin);
@@ -10769,7 +10774,7 @@ const applyRuntimePluginMetadata = <
     installRuntimeToggle(editor, plugin);
     installRuntimeTriggerCombobox(editor, plugin);
     installRuntimeMultiSelect(editor, plugin);
-    installRuntimeSlateExtensions(editor, plugin);
+    installRuntimePliteExtensions(editor, plugin);
 
     if (plugin.api && Object.keys(plugin.api).length > 0) {
       const extension = defineEditorExtension({
@@ -10898,7 +10903,7 @@ const pipeRuntimeTransformInitialValue = <
 };
 
 /**
- * Create the first Plate-owned editor scaffold on top of the Slate v2 React
+ * Create the first Plate-owned editor scaffold on top of the Plite React
  * runtime. This does not replace `createPlateEditor` yet; plugin resolution and
  * React provider migration are separate packets.
  */
@@ -11058,7 +11063,7 @@ export const PlateRuntimeSlate = <
   ...props
 }: PlateRuntimeSlateProps<V, TExtensions>): ReactElement => {
   const onChange = pipeRuntimeChangeHandler(editor, propsOnChange);
-  let content: ReactElement = createElement(Slate<V, TExtensions>, {
+  let content: ReactElement = createElement(Plite<V, TExtensions>, {
     ...props,
     ...(onChange ? { onChange } : {}),
     children,
@@ -11066,12 +11071,12 @@ export const PlateRuntimeSlate = <
     readOnly,
   });
 
-  editor.meta.pluginCache.render.aboveSlate.forEach((key) => {
+  editor.meta.pluginCache.render.abovePlite.forEach((key) => {
     const plugin = editor.getPlugin({ key });
     const AboveSlate = getRuntimeReactComponent<{ children?: ReactNode }>(
       key,
-      'render.aboveSlate',
-      plugin.render?.aboveSlate
+      'render.abovePlite',
+      plugin.render?.abovePlite
     );
 
     content = createElement(AboveSlate, {}, content);
@@ -11092,7 +11097,7 @@ export const PlateRuntimeEditable = <
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly [],
   T = unknown,
-  TElement extends SlateElement = SlateElement,
+  TElement extends PliteElement = PliteElement,
 >({
   editor,
   readOnly = editor.dom.readOnly,
@@ -11213,7 +11218,7 @@ export const PlateRuntimeContent = <
   V extends Value = Value,
   const TExtensions extends readonly unknown[] = readonly [],
   T = unknown,
-  TElement extends SlateElement = SlateElement,
+  TElement extends PliteElement = PliteElement,
 >({
   editableProps,
   editor,

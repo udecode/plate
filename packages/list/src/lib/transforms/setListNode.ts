@@ -1,5 +1,5 @@
-import type { EditorUpdateTransaction, Path } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { EditorUpdateTransaction, Path } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -34,7 +34,7 @@ export const setListNodeTx = (
 };
 
 export const setListNode = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     at,
     indent = 0,
@@ -76,7 +76,7 @@ export const setIndentTodoNodeTx = (
 };
 
 export const setIndentTodoNode = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     at,
     indent = 0,

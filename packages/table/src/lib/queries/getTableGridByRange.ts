@@ -1,6 +1,6 @@
-import type { Element, ElementEntry, Range } from '@platejs/slate';
+import type { Element, ElementEntry, Range } from '@platejs/plite';
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type TTableCellElement,
   type TTableElement,
   KEYS,
@@ -36,7 +36,7 @@ export type GetTableGridByRangeOptions = {
 
 /** Get sub table between 2 cell paths. */
 export const getTableGridByRange = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { at, format = 'table' }: GetTableGridByRangeOptions
 ): ElementEntry[] => {
   const { api } = editor.getPlugin<TableConfig>({ key: KEYS.table });

@@ -1,15 +1,15 @@
-import type { Element, Path, Text } from '@platejs/slate';
+import type { Element, Path, Text } from '@platejs/plite';
 
 import clsx from 'clsx';
 
-import type { SlateEditor } from '../../lib/editor';
+import type { BasePlateEditor } from '../../lib/editor';
 
 import { isEditOnly } from './isEditOnlyDisabled';
 import { pluginInjectNodeProps } from './pluginInjectNodeProps';
 
 /** Inject plugin props, editor. */
 export const pipeInjectNodeProps = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   nodeProps: any,
   getElementPath: (node: Element | Text) => Path,
   readOnly = false

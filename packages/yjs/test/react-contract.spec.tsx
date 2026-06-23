@@ -3,8 +3,8 @@ import { after, describe, it } from 'node:test';
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 import React, { act, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import type { Descendant, Editor, Range } from '@platejs/slate';
-import type { SlateDecorationSource } from '@platejs/slate-react';
+import type { Descendant, Editor, Range } from '@platejs/plite';
+import type { PliteDecorationSource } from '@platejs/plite-react';
 
 import type { YjsRemoteCursorDecorationData } from '../src';
 import {
@@ -160,7 +160,7 @@ describe('@platejs/yjs react contract', () => {
 
     setEditorDomApi(peer.editor, { isFocused: () => true });
 
-    let source: SlateDecorationSource<
+    let source: PliteDecorationSource<
       YjsRemoteCursorDecorationData<CursorData>
     > | null = null;
     let lastRefreshRequiresDOMSelectionExport: boolean | null = null;
@@ -214,7 +214,7 @@ describe('@platejs/yjs react contract', () => {
       clientId: 'd',
       numericClientId: 4,
     });
-    let source: SlateDecorationSource<LabelDecorationData> | null = null;
+    let source: PliteDecorationSource<LabelDecorationData> | null = null;
     let setLabel: ((label: string) => void) | null = null;
 
     const DecorationProbe = ({

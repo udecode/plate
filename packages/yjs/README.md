@@ -1,16 +1,16 @@
 # @platejs/yjs
 
-Yjs collaboration bindings for Slate editors.
+Yjs collaboration bindings for Plite editors.
 
-`@platejs/yjs` maps Slate operations, selection state, awareness, provider
+`@platejs/yjs` maps Plite operations, selection state, awareness, provider
 lifecycle, and undo/redo coordination onto a Yjs document. Provider packages
 stay at the application edge: wrap your Hocuspocus, WebSocket, WebRTC, or
 custom provider as a `YjsProviderLike`, then pass it to `createYjsExtension`.
 
 ```tsx
-import { createEditor } from '@platejs/slate'
+import { createEditor } from '@platejs/plite'
 import { createYjsExtension } from '@platejs/yjs'
-import { history } from '@platejs/slate-history'
+import { history } from '@platejs/plite-history'
 
 const editor = createEditor({
   extensions: [
@@ -19,7 +19,7 @@ const editor = createEditor({
       clientId: 'local-user',
       doc,
       provider,
-      rootName: '@platejs/slate',
+      rootName: '@platejs/plite',
     }),
   ],
   initialValue,
@@ -39,7 +39,7 @@ import {
 
 ## Boundaries
 
-- `@platejs/yjs` owns the Slate/Yjs adapter, awareness model, provider lifecycle
+- `@platejs/yjs` owns the Plite/Yjs adapter, awareness model, provider lifecycle
   bridge, operation replay, and Yjs-aware undo/redo coordination.
 - App code owns transport packages, authentication, persistence, room naming,
   server scaling, and provider-specific options.
@@ -47,10 +47,10 @@ import {
   on Hocuspocus, `y-websocket`, IndexedDB, WebRTC, or another transport
   package.
 - Public imports are `@platejs/yjs`, `@platejs/yjs/core`, and `@platejs/yjs/react`.
-  The `@platejs/yjs/internal` subpath is reserved for sibling Slate packages.
+  The `@platejs/yjs/internal` subpath is reserved for sibling Plite packages.
 
 ## Related Docs
 
-- [Slate Yjs](../../docs/libraries/slate-yjs.md)
+- [Plite Yjs](../../content/docs/plite/libraries/plite-yjs.mdx)
 - [Operation Replay Substrate](../../docs/walkthroughs/07-operation-replay-substrate.md)
-- [Slate v2 Release](../../docs/releases/slate-v2.md)
+- [Plite Release](../../docs/releases/plite.md)

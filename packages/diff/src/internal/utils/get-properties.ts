@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { Text } from '@platejs/slate';
+import type { Text } from '@platejs/plite';
 
 // Get object that will set the properties of before
 // to equal the properties of node, in terms of the

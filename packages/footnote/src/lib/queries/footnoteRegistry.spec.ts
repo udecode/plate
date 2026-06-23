@@ -1,4 +1,4 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import {
   BaseFootnoteDefinitionPlugin,
@@ -10,7 +10,7 @@ type FootnoteTransaction = FootnoteConfig['tx'];
 
 describe('footnote registry', () => {
   it('reuses one scan across repeated lookups and survives text edits inside a definition', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
       selection: {
         anchor: { offset: 4, path: [1, 0, 0] },
@@ -85,7 +85,7 @@ describe('footnote registry', () => {
   });
 
   it('detects duplicate definitions without scanning on every lookup', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
       value: [
         {
@@ -123,7 +123,7 @@ describe('footnote registry', () => {
   });
 
   it('can renumber a later duplicate definition without touching the canonical first definition', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
       value: [
         {

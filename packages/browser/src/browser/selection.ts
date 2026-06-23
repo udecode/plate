@@ -1,10 +1,10 @@
-/** Slate model selection endpoint captured from the DOM. */
+/** Plite model selection endpoint captured from the DOM. */
 export type EditorSelectionPoint = {
   path: number[];
   offset: number;
 };
 
-/** Slate model selection snapshot resolved from browser selection endpoints. */
+/** Plite model selection snapshot resolved from browser selection endpoints. */
 export type EditorSelectionSnapshot = {
   anchor: EditorSelectionPoint;
   focus: EditorSelectionPoint;
@@ -18,11 +18,11 @@ export type DOMSelectionSnapshot = {
   focusOffset: number;
 };
 
-const parseSlatePath = (value: string) => {
+const parsePlitePath = (value: string) => {
   const path = value.split(',').map((part) => Number.parseInt(part, 10));
 
   if (path.some((part) => !Number.isInteger(part))) {
-    throw new Error('Invalid Slate DOM path');
+    throw new Error('Invalid Plite DOM path');
   }
 
   return path;
@@ -32,7 +32,7 @@ const findZeroWidthMarker = (node: Node | null) => {
   const element =
     node?.nodeType === 1 ? (node as Element) : node?.parentElement;
 
-  return element?.closest('[data-slate-zero-width]') ?? null;
+  return element?.closest('[data-plite-zero-width]') ?? null;
 };
 
 const toEditorOffset = (node: Node | null, offset: number) =>
@@ -41,24 +41,24 @@ const toEditorOffset = (node: Node | null, offset: number) =>
 const findTextPath = (root: ParentNode, node: Node | null) => {
   const owner =
     node?.nodeType === 1
-      ? (node as Element).closest('[data-slate-node="text"]')
-      : node?.parentElement?.closest('[data-slate-node="text"]');
+      ? (node as Element).closest('[data-plite-node="text"]')
+      : node?.parentElement?.closest('[data-plite-node="text"]');
 
   if (!owner) {
-    throw new Error('Cannot resolve selection to a Slate text node');
+    throw new Error('Cannot resolve selection to a Plite text node');
   }
 
   if (!(root as Node).contains(owner)) {
     throw new Error('Selection text node is outside the editor root');
   }
 
-  const pathAttribute = owner.getAttribute('data-slate-path');
+  const pathAttribute = owner.getAttribute('data-plite-path');
 
   if (pathAttribute) {
-    return parseSlatePath(pathAttribute);
+    return parsePlitePath(pathAttribute);
   }
 
-  throw new Error('Cannot resolve selection to a Slate DOM path');
+  throw new Error('Cannot resolve selection to a Plite DOM path');
 };
 
 const findTextPathOrNull = (root: ParentNode, node: Node | null) => {
@@ -85,7 +85,7 @@ export const takeDOMSelectionSnapshot = (
   };
 };
 
-/** Resolve browser selection endpoints back to Slate text paths and offsets. */
+/** Resolve browser selection endpoints back to Plite text paths and offsets. */
 export const takeEditorSelectionSnapshot = (
   root: ParentNode,
   selection: Selection | null

@@ -1,14 +1,14 @@
 import { type AnyObject, type Nullable, isDefined } from '@udecode/utils';
 import castArray from 'lodash/castArray.js';
 
-import type { SlateEditor } from '../../../editor';
+import type { BasePlateEditor } from '../../../editor';
 import type {
   AnyEditorPlugin,
   HtmlDeserializer,
-} from '../../../plugin/SlatePlugin';
+} from '../../../plugin/EditorPlugin';
 
 import { getEditorPlugin } from '../../../plugin';
-import { isSlateNode } from '../../../utils/checkUtils';
+import { isPliteNode } from '../../../utils/checkUtils';
 import { getInjectedPlugins } from '../../../utils/getInjectedPlugins';
 import { getDataNodeProps } from './getDataNodeProps';
 
@@ -23,14 +23,14 @@ const getDeserializedWithStaticRules = (plugin: AnyEditorPlugin) => {
 
   // Check if rules already contain slate-xxx className
   const hasSlateRule = rules.some((rule) =>
-    rule.validClassName?.includes(`slate-${plugin.key}`)
+    rule.validClassName?.includes(`plite-${plugin.key}`)
   );
 
   const staticRules = hasSlateRule
     ? rules
     : [
         {
-          validClassName: `slate-${plugin.key}`,
+          validClassName: `plite-${plugin.key}`,
           validNodeName: '*',
         },
         ...rules,
@@ -45,7 +45,7 @@ const getDeserializedWithStaticRules = (plugin: AnyEditorPlugin) => {
 
 /** Get a deserializer by type, node names, class names and styles. */
 export const pluginDeserializeHtml = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   plugin: AnyEditorPlugin,
   {
     deserializeLeaf,
@@ -157,7 +157,7 @@ export const pluginDeserializeHtml = (
     }
 
   const parsedNode = (() => {
-    if (isSlateNode(el)) {
+    if (isPliteNode(el)) {
       return {};
     }
 
@@ -192,7 +192,7 @@ export const pluginDeserializeHtml = (
       node,
     });
 
-    if (res && !isSlateNode(el)) {
+    if (res && !isPliteNode(el)) {
       node = {
         ...node,
         ...res,

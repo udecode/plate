@@ -1,9 +1,9 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { toggleListByPath, toggleListByPathUnSet } from './toggleListByPath';
 
 const createTransformEditor = (children: any[]) =>
-  createSlateEditor({
+  createBasePlateEditor({
     value: children,
   });
 

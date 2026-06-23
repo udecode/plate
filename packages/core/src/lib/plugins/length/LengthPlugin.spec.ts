@@ -1,12 +1,12 @@
-import type { SlateEditor } from '../../editor';
+import type { BasePlateEditor } from '../../editor';
 
-import { createSlateEditor } from '../../editor';
+import { createBasePlateEditor } from '../../editor';
 
 describe('LengthPlugin', () => {
-  let editor: SlateEditor;
+  let editor: BasePlateEditor;
 
   const createEditorWithLength = (maxLength: number) =>
-    createSlateEditor({
+    createBasePlateEditor({
       autoSelect: true,
       maxLength,
     });
@@ -69,7 +69,7 @@ describe('LengthPlugin', () => {
 
   describe('when maxLength is not set', () => {
     it('does not limit text input', () => {
-      editor = createSlateEditor({
+      editor = createBasePlateEditor({
         autoSelect: true,
       });
       editor.tf.insertText(

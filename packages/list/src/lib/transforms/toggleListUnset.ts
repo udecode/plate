@@ -1,5 +1,5 @@
-import type { Element, NodeEntry } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Element, NodeEntry } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -9,7 +9,7 @@ import { outdentList } from './outdentList';
 
 /** Unset list style type if already set. */
 export const toggleListUnset = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   [node, path]: NodeEntry<Element>,
   {
     listStyleType = ListStyleType.Disc,

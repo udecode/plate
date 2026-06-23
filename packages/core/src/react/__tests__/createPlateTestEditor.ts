@@ -1,4 +1,4 @@
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
 import { act, fireEvent, render } from '@testing-library/react';
 import { parseHotkey } from 'is-hotkey';
@@ -9,7 +9,7 @@ import type { AnyPluginConfig, InferPlugins } from '../../lib';
 import { getCurrentRuntimeTransforms } from '../../internal/currentRuntimeBridge';
 import { PlateTest } from '../components/PlateTest';
 import {
-  type CreatePlateEditorOptions,
+  type CreatePlateEditorRuntimeOptions,
   type PlateCorePlugin,
   type TPlateEditor,
   createPlateEditor,
@@ -84,7 +84,7 @@ export const createPlateTestEditor = async <
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
 >(
-  options: CreatePlateEditorOptions<V, P>,
+  options: CreatePlateEditorRuntimeOptions<V, P>,
   buildTestHarnessOptions: PlateTestHarnessOptions = {}
 ): Promise<
   [PlateTestEditor<V, P>, PlateTestActions, PlateTestRenderResult]
@@ -93,12 +93,11 @@ export const createPlateTestEditor = async <
     componentProps = {},
     debug = false,
     strict: _strict = false,
-    testID = 'slate-content-editable',
+    testID = 'plite-content-editable',
   } = buildTestHarnessOptions;
   const editor = createPlateEditor({
-    runtime: 'legacy',
     ...options,
-  } as CreatePlateEditorOptions<V, P>) as PlateTestEditor<V, P>;
+  } as CreatePlateEditorRuntimeOptions<V, P>) as PlateTestEditor<V, P>;
   const plateProps = {
     ...componentProps,
     editor,

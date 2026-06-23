@@ -1,4 +1,4 @@
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
 import { useEditorRef } from '../plate';
 import { SCOPE_ELEMENT, useElementContext } from './useElementStore';

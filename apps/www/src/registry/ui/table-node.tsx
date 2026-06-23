@@ -45,7 +45,7 @@ import {
   Trash2Icon,
   XIcon,
 } from 'lucide-react';
-import type { Element as SlateElement } from '@platejs/slate';
+import type { Element as PliteElement } from '@platejs/plite';
 import {
   type TTableCellElement,
   type TTableElement,
@@ -1181,7 +1181,7 @@ export function TableRowElement({
         PathApi.parent(dropEntry[1])
       ),
     onDropHandler: (_, { dragItem }) => {
-      const dragElement = (dragItem as { element: SlateElement }).element;
+      const dragElement = (dragItem as { element: PliteElement }).element;
 
       if (dragElement) {
         editor.tf.select(dragElement);

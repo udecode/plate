@@ -1,4 +1,4 @@
-import { type PluginConfig, createTSlatePlugin, KEYS } from 'platejs';
+import { type PluginConfig, createEditorPlugin, KEYS } from 'platejs';
 
 export type BaseToggleConfig = PluginConfig<
   'toggle',
@@ -17,7 +17,7 @@ export type BaseToggleConfig = PluginConfig<
   }
 >;
 
-export const BaseTogglePlugin = createTSlatePlugin<BaseToggleConfig>({
+export const BaseTogglePlugin = createEditorPlugin<BaseToggleConfig>({
   key: KEYS.toggle,
   node: { isElement: true },
   options: {

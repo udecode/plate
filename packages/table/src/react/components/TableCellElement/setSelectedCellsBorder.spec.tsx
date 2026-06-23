@@ -1,7 +1,7 @@
 /** @jsx jsx */
 
 import { jsx } from '@platejs/test-utils';
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import * as setBorderSizeModule from '../../../lib/transforms/setBorderSize';
 import * as findTableNodePathModule from '../../../lib/utils/findTableNodePath';
@@ -13,7 +13,7 @@ import { setSelectedCellsBorder } from './getOnSelectTableBorderFactory';
 jsx;
 
 describe('setSelectedCellsBorder', () => {
-  let editor: SlateEditor;
+  let editor: BasePlateEditor;
   let setBorderSizeSpy: ReturnType<typeof spyOn>;
   let getCellIndicesSpy: ReturnType<typeof spyOn>;
   let getCellTypesSpy: ReturnType<typeof spyOn>;
@@ -78,7 +78,7 @@ describe('setSelectedCellsBorder', () => {
       'findTableNodePath'
     ).mockImplementation(findTableNodePathMock as any);
 
-    editor = createSlateEditor({ nodeId: true });
+    editor = createBasePlateEditor({ nodeId: true });
   });
 
   afterEach(() => {

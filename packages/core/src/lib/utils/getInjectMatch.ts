@@ -1,10 +1,10 @@
-import { type Node, type Path, ElementApi } from '@platejs/slate';
+import { type Node, type Path, ElementApi } from '@platejs/plite';
 
-import type { SlateEditor } from '../editor';
+import type { BasePlateEditor } from '../editor';
 
 import { type EditorPlugin, getPluginKey, getPluginKeys } from '../plugin';
 
-export const getInjectMatch = <E extends SlateEditor>(
+export const getInjectMatch = <E extends BasePlateEditor>(
   editor: E,
   plugin: EditorPlugin
 ) => {
@@ -50,7 +50,7 @@ export const getInjectMatch = <E extends SlateEditor>(
         const excludeTypes = getPluginKeys(editor, excludeBelowPlugins);
         const isBelow = editor.api.above({
           at: path,
-          match: (n) =>
+          match: (n: any) =>
             ElementApi.isElement(n) && excludeTypes.includes(n.type),
         });
 

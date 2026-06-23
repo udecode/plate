@@ -1,4 +1,4 @@
-import type { Path } from '@platejs/slate';
+import type { Path } from '@platejs/plite';
 import type { PlateEditor } from 'platejs/react';
 
 import { useEditorRef, useNodePath, useReadOnly } from 'platejs/react';

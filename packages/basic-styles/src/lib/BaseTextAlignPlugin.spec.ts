@@ -1,4 +1,4 @@
-import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, KEYS, createBasePlateEditor } from 'platejs';
 
 import { BaseTextAlignPlugin } from './BaseTextAlignPlugin';
 
@@ -8,7 +8,7 @@ type IsAssignable<From, To> = From extends To ? true : false;
 const runTextAlignTx = (value: string, options?: unknown) => {
   const set = mock();
   const unset = mock();
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
   } as any);
   const extension = (BaseTextAlignPlugin as any).__txExtensions[0];
@@ -29,7 +29,7 @@ const runTextAlignTx = (value: string, options?: unknown) => {
 
 describe('BaseTextAlignPlugin', () => {
   it('exposes the injected block contract and tx extension', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseTextAlignPlugin);
@@ -45,7 +45,7 @@ describe('BaseTextAlignPlugin', () => {
   });
 
   it('parses text-align styles through the injected target plugin deserializer', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseTextAlignPlugin);
@@ -98,7 +98,7 @@ describe('BaseTextAlignPlugin', () => {
   });
 
   it('applies text alignment through the editor update transaction', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseTextAlignPlugin],
       value: [{ children: [{ text: 'One' }], type: 'p' }],
     });

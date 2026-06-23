@@ -1,11 +1,11 @@
 {
   "name": "@platejs/yjs",
   "version": "54.0.0-beta.0",
-  "description": "Yjs collaboration bindings for Slate.",
+  "description": "Yjs collaboration bindings for Plite.",
   "keywords": [
     "collaboration",
     "editor",
-    "@platejs/slate",
+    "@platejs/plite",
     "yjs"
   ],
   "homepage": "https://platejs.org",
@@ -55,23 +55,23 @@
     "clean": "rimraf dist lib",
     "lint": "plate-pkg p:lint",
     "lint:fix": "plate-pkg p:lint:fix",
-    "test": "bun test --preload ../../config/slate-source-test-setup.ts ./test --path-ignore-patterns ''",
+    "test": "bun test --preload ../../config/plite-source-test-setup.ts ./test --path-ignore-patterns ''",
     "typecheck": "tsc --project tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@types/node": "24.12.0",
     "@types/react": "19.2.7",
     "react": "19.2.4",
-    "@platejs/slate": "workspace:^",
-    "@platejs/slate-history": "workspace:^",
-    "@platejs/slate-react": "workspace:^",
+    "@platejs/plite": "workspace:^",
+    "@platejs/plite-history": "workspace:^",
+    "@platejs/plite-react": "workspace:^",
     "@plate/scripts": "workspace:*",
     "yjs": "13.6.30"
   },
   "peerDependencies": {
     "react": ">=19.2.0",
-    "@platejs/slate": ">=54.0.0-beta.0",
-    "@platejs/slate-react": ">=54.0.0-beta.0",
+    "@platejs/plite": ">=54.0.0-beta.0",
+    "@platejs/plite-react": ">=54.0.0-beta.0",
     "yjs": "13.6.30"
   },
   "publishConfig": {

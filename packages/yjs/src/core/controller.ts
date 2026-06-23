@@ -4,7 +4,7 @@ import type {
   EditorCommit,
   EditorSnapshot,
   Operation,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import * as Y from 'yjs';
 
 import {
@@ -12,7 +12,7 @@ import {
   type YjsAwarenessAdapter,
 } from './awareness-adapter';
 import {
-  readSlateValueFromYjs,
+  readPliteValueFromYjs,
   removeRedundantEmptyYjsTextNodes,
   replaceYjsChildren,
 } from './document';
@@ -25,8 +25,8 @@ import {
   removeRejectedYjsOperationsFromHistoryAfterCommit,
 } from './history';
 import {
-  applySlateOperationToYjs,
-  isNoopSlateOperationForYjs,
+  applyPliteOperationToYjs,
+  isNoopPliteOperationForYjs,
 } from './operations';
 import {
   createYjsProviderLifecycleAdapter,
@@ -99,7 +99,7 @@ const collectYjsCommitOperations = (
       continue;
     }
 
-    if (!isNoopSlateOperationForYjs(operation)) {
+    if (!isNoopPliteOperationForYjs(operation)) {
       operations[operationCount] = operation;
       operationCount++;
     }
@@ -153,7 +153,7 @@ export class YjsController {
       (options.doc !== undefined || this.provider.doc !== undefined);
     this.doc = options.doc ?? this.provider?.doc ?? new Y.Doc();
     this.root = this.doc.get(
-      options.rootName ?? '@platejs/slate',
+      options.rootName ?? '@platejs/plite',
       Y.XmlElement
     );
     this.clientId = options.clientId ?? this.doc.clientID;
@@ -312,7 +312,7 @@ export class YjsController {
     if (rejectedLocalOperationCount > 0) {
       rejectedLocalOperations.length = rejectedLocalOperationCount;
       this.editorAdapter.replaceValue(
-        readSlateValueFromYjs(this.root),
+        readPliteValueFromYjs(this.root),
         snapshot.selection
       );
       this.removeRejectedOperationsFromHistory(rejectedLocalOperations);
@@ -508,7 +508,7 @@ export class YjsController {
   }
 
   private applyOperation(operation: Operation): YjsTraceEntry | null {
-    const trace = applySlateOperationToYjs(this.root, operation);
+    const trace = applyPliteOperationToYjs(this.root, operation);
 
     if (trace === null) {
       return null;
@@ -538,7 +538,7 @@ export class YjsController {
       removeRedundantEmptyYjsTextNodes(this.root);
     }, this.canonicalizeOrigin);
 
-    const children = readSlateValueFromYjs(this.root);
+    const children = readPliteValueFromYjs(this.root);
 
     this.traceEntries.push({
       importedChildren: children.length,

@@ -8,7 +8,7 @@ import {
   type Descendant,
   type Operation,
   type Text,
-} from '@platejs/slate';
+} from '@platejs/plite';
 
 import { KEYS, PathApi, TextApi } from 'platejs';
 

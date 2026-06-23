@@ -1,9 +1,9 @@
 import {
   type OmitFirst,
   type PluginConfig,
-  type SlateEditor,
+  type BasePlateEditor,
   bindFirst,
-  createTSlatePlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -44,7 +44,7 @@ export type BaseAIPluginConfig = PluginConfig<
   }
 >;
 
-const getAITransforms = (editor: SlateEditor) => ({
+const getAITransforms = (editor: BasePlateEditor) => ({
   acceptPreview: bindFirst(acceptAIPreview, editor),
   beginPreview: bindFirst(beginAIPreview, editor),
   cancelPreview: bindFirst(cancelAIPreview, editor),
@@ -56,7 +56,7 @@ const getAITransforms = (editor: SlateEditor) => ({
   undo: bindFirst(undoAI, editor),
 });
 
-export const BaseAIPlugin = createTSlatePlugin<BaseAIPluginConfig>({
+export const BaseAIPlugin = createEditorPlugin<BaseAIPluginConfig>({
   key: KEYS.ai,
   node: { isDecoration: false, isLeaf: true },
 }).extendTxGroup(

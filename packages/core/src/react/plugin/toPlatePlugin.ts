@@ -5,7 +5,7 @@ import type {
   InferSelectors,
   InferTx,
   PluginConfig,
-  SlatePlugin,
+  EditorPlugin,
 } from '../../lib';
 import type {
   PlatePlugin,
@@ -81,17 +81,17 @@ const preserveExtensionArrays = <P extends PlatePlugin>(
 };
 
 /**
- * Extends a SlatePlugin to create a React PlatePlugin.
+ * Extends a EditorPlugin to create a React PlatePlugin.
  *
  * @remarks
- *   This function adapts a SlatePlugin into a React PlatePlugin, allowing for
+ *   This function adapts a EditorPlugin into a React PlatePlugin, allowing for
  *   React-specific functionality to be added.
- * @param basePlugin - The base SlatePlugin to be extended.
+ * @param basePlugin - The base EditorPlugin to be extended.
  * @param extendConfig - A function or object that provides the extension
  *   configuration. If a function, it receives the plugin context and should
  *   return a partial PlatePlugin. If an object, it should be a partial
  *   PlatePlugin configuration.
- * @returns A new PlatePlugin that combines the base SlatePlugin functionality
+ * @returns A new PlatePlugin that combines the base EditorPlugin functionality
  *   with React-specific features defined in the extension configuration.
  */
 export function toPlatePlugin<
@@ -100,7 +100,7 @@ export function toPlatePlugin<
   EA = {},
   ES = {},
 >(
-  basePlugin: SlatePlugin<C>,
+  basePlugin: EditorPlugin<C>,
   extendConfig?:
     | ((ctx: PlatePluginContext<C>) => PlatePluginConfig<C, EO, EA, ES>)
     | PlatePluginConfig<C, EO, EA, ES>
@@ -121,7 +121,7 @@ export function toPlatePlugin<
 
     (plugin as any)[method] = (...args: any[]) => {
       const slatePlugin = (
-        originalMethod as unknown as (...args: any[]) => SlatePlugin
+        originalMethod as unknown as (...args: any[]) => EditorPlugin
       )(...args);
 
       return preserveExtensionArrays(plugin, toPlatePlugin(slatePlugin));
@@ -161,14 +161,14 @@ type ExtendPluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
  *   doesn't provide the desired result.
  * @typeParam C - The type of the extension configuration for the PlatePlugin
  *   (required).
- * @typeParam TContext - The type of the base SlatePlugin configuration
+ * @typeParam TContext - The type of the base EditorPlugin configuration
  *   (optional).
  */
 export function toTPlatePlugin<
   C extends AnyPluginConfig = PluginConfig,
   TContext extends AnyPluginConfig = AnyPluginConfig,
 >(
-  basePlugin: SlatePlugin<TContext>,
+  basePlugin: EditorPlugin<TContext>,
   extendConfig?:
     | ((ctx: PlatePluginContext<TContext>) => ExtendPluginConfig<C>)
     | ExtendPluginConfig<C>

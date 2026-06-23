@@ -1,9 +1,9 @@
 import type { Value } from '@platejs/plite';
 
-import type { PliteEditor } from '../../../editor';
+import type { BasePlateEditor } from '../../../editor';
 
 export const setValue = <V extends Value>(
-  editor: PliteEditor,
+  editor: BasePlateEditor,
   value?: V | string
 ) => {
   let children = value as V;

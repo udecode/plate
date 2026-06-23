@@ -1,4 +1,4 @@
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
 import { BaseIndentPlugin } from '@platejs/indent';
 import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
@@ -19,7 +19,7 @@ type ListRuntimeTransforms = {
 const runtimeTransforms = (editor: unknown) =>
   getCurrentRuntimeTransforms(editor) as unknown as ListRuntimeTransforms;
 
-describe('BaseListPlugin Slate v2 runtime', () => {
+describe('BaseListPlugin Plite runtime', () => {
   it('removes the list layer on resetBlock at a root list item', () => {
     const editor = createPlateRuntimeEditor<Value>({
       plugins,

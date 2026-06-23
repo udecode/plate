@@ -1,4 +1,4 @@
-import type { Range } from '@platejs/slate';
+import type { Range } from '@platejs/plite';
 
 import { PathApi, RangeApi, TextApi } from 'platejs';
 

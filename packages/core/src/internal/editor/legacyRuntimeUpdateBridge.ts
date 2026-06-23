@@ -1,16 +1,19 @@
 import type {
   EditorUpdateContext,
   EditorUpdateTransaction,
+  Node,
+  Path,
   Value,
-} from '@platejs/slate';
+} from '@platejs/plite';
+import { defineEditorExtension } from '@platejs/plite';
 
-import type { SlateEditor } from '../../lib/editor/SlateEditor';
+import type { BasePlateEditor } from '../../lib/editor/BasePlateEditor';
 import type { AnyPluginConfig } from '../../lib/plugin/BasePlugin';
 import type {
-  AnySlatePlugin,
+  AnyEditorPlugin,
   PlatePluginTxGroup,
-  SlatePluginContext,
-} from '../../lib/plugin/SlatePlugin';
+  EditorPluginContext,
+} from '../../lib/plugin/EditorPlugin';
 import {
   getCurrentRuntimeTransforms,
   type CurrentRuntimeEditorTransforms,
@@ -19,16 +22,50 @@ import {
 type LegacyRuntimeUpdateTransaction = EditorUpdateTransaction<Value> &
   Record<string, unknown>;
 
-type LegacyRuntimeUpdateCallback = Parameters<SlateEditor['update']>[0];
-type LegacyRuntimeApi = SlateEditor['api'];
+type LegacyRuntimeUpdateCallback = Parameters<BasePlateEditor['update']>[0];
+type LegacyRuntimeApi = BasePlateEditor['api'];
 type LegacyRuntimeTransforms = CurrentRuntimeEditorTransforms;
 type LegacyRuntimePluginContext = Omit<
-  SlatePluginContext<AnyPluginConfig>,
+  EditorPluginContext<AnyPluginConfig>,
   'tf'
 >;
-type LegacyRuntimePluginInput = Parameters<SlateEditor['getOptions']>[0];
+type LegacyRuntimePluginInput = Parameters<BasePlateEditor['getOptions']>[0];
+
+const plateTxExtensionCleanups = new WeakMap<object, () => void>();
 
 const asLegacyApiArg = <T>(value: unknown): T => value as T;
+
+const matchesLegacyObject = (
+  node: Node,
+  objectMatch: Record<string, unknown>
+) =>
+  Object.entries(objectMatch).every(([key, expected]) => {
+    const actual = (node as Record<string, unknown>)[key];
+
+    return Array.isArray(expected)
+      ? expected.includes(actual)
+      : actual === expected;
+  });
+
+const normalizeLegacyMatch = (match: unknown) => {
+  if (!match || typeof match === 'function') return match;
+  if (typeof match !== 'object') return;
+
+  return (node: Node, _path: Path) =>
+    matchesLegacyObject(node, match as Record<string, unknown>);
+};
+
+const normalizeLegacyNodeOptions = (options: unknown) => {
+  if (!options || typeof options !== 'object' || Array.isArray(options)) {
+    return options;
+  }
+
+  const match = normalizeLegacyMatch(
+    (options as Record<string, unknown>).match
+  );
+
+  return match ? { ...(options as Record<string, unknown>), match } : options;
+};
 
 const toLegacyTextUnit = (options: unknown) => {
   if (typeof options === 'string') return options;
@@ -40,7 +77,7 @@ const toLegacyTextUnit = (options: unknown) => {
 };
 
 const asLegacyPluginInput = (
-  plugin: AnySlatePlugin
+  plugin: AnyEditorPlugin
 ): LegacyRuntimePluginInput => plugin as unknown as LegacyRuntimePluginInput;
 
 const createLegacyRuntimeUpdateContext = (): EditorUpdateContext => ({
@@ -52,7 +89,7 @@ const createLegacyRuntimeUpdateContext = (): EditorUpdateContext => ({
 });
 
 const createLegacyTxBase = (
-  editor: SlateEditor
+  editor: BasePlateEditor
 ): LegacyRuntimeUpdateTransaction =>
   ({
     break: {
@@ -97,14 +134,14 @@ const createLegacyTxBase = (
       merge: (options?: unknown) => {
         getCurrentRuntimeTransforms(editor).mergeNodes(
           asLegacyApiArg<Parameters<LegacyRuntimeTransforms['mergeNodes']>[0]>(
-            options
+            normalizeLegacyNodeOptions(options)
           )
         );
       },
       remove: (options?: unknown) => {
         getCurrentRuntimeTransforms(editor).removeNodes(
           asLegacyApiArg<Parameters<LegacyRuntimeTransforms['removeNodes']>[0]>(
-            options
+            normalizeLegacyNodeOptions(options)
           )
         );
       },
@@ -114,7 +151,7 @@ const createLegacyTxBase = (
             props
           ),
           asLegacyApiArg<Parameters<LegacyRuntimeTransforms['setNodes']>[1]>(
-            options
+            normalizeLegacyNodeOptions(options)
           )
         );
       },
@@ -134,14 +171,14 @@ const createLegacyTxBase = (
             props
           ),
           asLegacyApiArg<Parameters<LegacyRuntimeTransforms['unsetNodes']>[1]>(
-            options
+            normalizeLegacyNodeOptions(options)
           )
         );
       },
       unwrap: (options: unknown) => {
         getCurrentRuntimeTransforms(editor).unwrapNodes(
           asLegacyApiArg<Parameters<LegacyRuntimeTransforms['unwrapNodes']>[0]>(
-            options
+            normalizeLegacyNodeOptions(options)
           )
         );
       },
@@ -151,7 +188,7 @@ const createLegacyTxBase = (
             element
           ),
           asLegacyApiArg<Parameters<LegacyRuntimeTransforms['wrapNodes']>[1]>(
-            options
+            normalizeLegacyNodeOptions(options)
           )
         );
       },
@@ -249,15 +286,15 @@ const createLegacyTxBase = (
         }
 
         if (marks !== undefined) {
-          editor.marks = asLegacyApiArg<SlateEditor['marks']>(marks);
+          editor.marks = asLegacyApiArg<BasePlateEditor['marks']>(marks);
         }
       },
     },
   }) as LegacyRuntimeUpdateTransaction;
 
 const createLegacyPluginContext = (
-  editor: SlateEditor,
-  plugin: AnySlatePlugin
+  editor: BasePlateEditor,
+  plugin: AnyEditorPlugin
 ): LegacyRuntimePluginContext =>
   ({
     api: editor.api,
@@ -277,15 +314,15 @@ const createLegacyPluginContext = (
       if (typeof key === 'string') {
         editor.setOption(
           pluginInput,
-          asLegacyApiArg<Parameters<SlateEditor['setOption']>[1]>(key),
-          asLegacyApiArg<Parameters<SlateEditor['setOption']>[2]>(value)
+          asLegacyApiArg<Parameters<BasePlateEditor['setOption']>[1]>(key),
+          asLegacyApiArg<Parameters<BasePlateEditor['setOption']>[2]>(value)
         );
         return;
       }
 
       editor.setOptions(
         pluginInput,
-        asLegacyApiArg<Parameters<SlateEditor['setOptions']>[1]>(key)
+        asLegacyApiArg<Parameters<BasePlateEditor['setOptions']>[1]>(key)
       );
     },
     setOptions: (
@@ -295,17 +332,17 @@ const createLegacyPluginContext = (
     ) => {
       editor.setOptions(
         asLegacyPluginInput(plugin),
-        asLegacyApiArg<Parameters<SlateEditor['setOptions']>[1]>(options)
+        asLegacyApiArg<Parameters<BasePlateEditor['setOptions']>[1]>(options)
       );
     },
   }) as LegacyRuntimePluginContext;
 
 const createLegacyUpdateTransaction = (
-  editor: SlateEditor
+  editor: BasePlateEditor
 ): LegacyRuntimeUpdateTransaction => {
   const transaction = createLegacyTxBase(editor);
 
-  editor.meta.pluginList.forEach((plugin: AnySlatePlugin) => {
+  editor.meta.pluginList.forEach((plugin: AnyEditorPlugin) => {
     plugin.__txExtensions.forEach((txExtension) => {
       Object.entries(
         txExtension(createLegacyPluginContext(editor, plugin))
@@ -334,8 +371,75 @@ const createLegacyUpdateTransaction = (
   return transaction;
 };
 
+const collectLegacyTxGroupFactories = (editor: BasePlateEditor) => {
+  const txGroups = new Map<string, PlatePluginTxGroup[]>();
+  const addGroup = (groupKey: string, groupFactory: unknown) => {
+    if (!groupFactory) return;
+
+    const list = txGroups.get(groupKey) ?? [];
+
+    list.push(groupFactory as PlatePluginTxGroup);
+    txGroups.set(groupKey, list);
+  };
+
+  editor.meta.pluginList.forEach((plugin: AnyEditorPlugin) => {
+    plugin.__txExtensions.forEach((txExtension) => {
+      Object.entries(
+        txExtension(createLegacyPluginContext(editor, plugin))
+      ).forEach(([groupKey, groupFactory]) => {
+        addGroup(groupKey, groupFactory);
+      });
+    });
+
+    Object.entries(plugin.tx ?? {}).forEach(([groupKey, groupFactory]) => {
+      addGroup(groupKey, groupFactory);
+    });
+  });
+
+  return txGroups;
+};
+
+const installLegacyRuntimeTxExtensionBridge = (editor: BasePlateEditor) => {
+  plateTxExtensionCleanups.get(editor)?.();
+  plateTxExtensionCleanups.delete(editor);
+
+  const txGroups = collectLegacyTxGroupFactories(editor);
+
+  if (txGroups.size === 0) return;
+
+  const tx = Object.create(null) as Record<string, PlatePluginTxGroup>;
+
+  txGroups.forEach((groupFactories, groupKey) => {
+    tx[groupKey] = (transaction, runtimeEditor, context) => {
+      const group = Object.create(null) as Record<string, unknown>;
+
+      groupFactories.forEach((groupFactory) => {
+        Object.assign(
+          group,
+          groupFactory(
+            transaction,
+            runtimeEditor as BasePlateEditor,
+            context as EditorUpdateContext<BasePlateEditor>
+          )
+        );
+      });
+
+      return group;
+    };
+  });
+
+  const cleanup = editor.extend(
+    defineEditorExtension({
+      name: 'plate-plugin-tx',
+      tx,
+    })
+  );
+
+  plateTxExtensionCleanups.set(editor, cleanup);
+};
+
 const installLegacyRuntimeTxGroupTransforms = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   groupKey: string,
   groupFactory: unknown
 ) => {
@@ -369,7 +473,7 @@ const installLegacyRuntimeTxGroupTransforms = (
   });
 };
 
-export const installLegacyRuntimeUpdateBridge = (editor: SlateEditor) => {
+export const installLegacyRuntimeUpdateBridge = (editor: BasePlateEditor) => {
   if (typeof editor.update === 'function') return;
 
   editor.update = ((callback: LegacyRuntimeUpdateCallback) => {
@@ -383,19 +487,19 @@ export const installLegacyRuntimeUpdateBridge = (editor: SlateEditor) => {
     });
 
     return result;
-  }) as SlateEditor['update'];
+  }) as BasePlateEditor['update'];
 };
 
 export const installLegacyRuntimePluginTxTransformBridge = (
-  editor: SlateEditor,
-  plugin: AnySlatePlugin
+  editor: BasePlateEditor,
+  plugin: AnyEditorPlugin
 ) => {
   plugin.__txExtensions.forEach((txExtension) => {
-    Object.entries(txExtension(createLegacyPluginContext(editor, plugin))).forEach(
-      ([groupKey, groupFactory]) => {
-        installLegacyRuntimeTxGroupTransforms(editor, groupKey, groupFactory);
-      }
-    );
+    Object.entries(
+      txExtension(createLegacyPluginContext(editor, plugin))
+    ).forEach(([groupKey, groupFactory]) => {
+      installLegacyRuntimeTxGroupTransforms(editor, groupKey, groupFactory);
+    });
   });
 
   Object.entries(plugin.tx ?? {}).forEach(([groupKey, groupFactory]) => {
@@ -403,8 +507,12 @@ export const installLegacyRuntimePluginTxTransformBridge = (
   });
 };
 
-export const installLegacyRuntimeTxTransformBridge = (editor: SlateEditor) => {
-  editor.meta.pluginList.forEach((plugin: AnySlatePlugin) => {
+export const installLegacyRuntimeTxTransformBridge = (
+  editor: BasePlateEditor
+) => {
+  installLegacyRuntimeTxExtensionBridge(editor);
+
+  editor.meta.pluginList.forEach((plugin: AnyEditorPlugin) => {
     installLegacyRuntimePluginTxTransformBridge(editor, plugin);
   });
 };

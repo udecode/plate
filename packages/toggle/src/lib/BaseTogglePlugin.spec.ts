@@ -1,11 +1,11 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 import { BaseTogglePlugin } from './BaseTogglePlugin';
 
 describe('BaseTogglePlugin', () => {
   it('tracks open ids and respects explicit force overrides', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseTogglePlugin],
     });
 
@@ -30,10 +30,10 @@ describe('BaseTogglePlugin', () => {
     ).toEqual(['a', 'c']);
   });
 
-  it('tracks open ids on the Slate v2 runtime route', () => {
+  it('tracks open ids on the Plite runtime route', () => {
     const editor = createPlateEditor({
       plugins: [BaseTogglePlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
     });
     const getOpenIds = () =>
       editor.getOptions<{ openIds?: Set<string> }>(BaseTogglePlugin).openIds ??

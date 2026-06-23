@@ -21,6 +21,18 @@ import { isNormalizing } from './is-normalizing';
 import { node } from './node';
 import { setNormalizing } from './set-normalizing';
 
+const createSerializablePropSignature = (value: unknown): unknown => {
+  if (value === null || typeof value !== 'object') {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return ['array', value.length];
+  }
+
+  return ['object', Object.keys(value).sort()];
+};
+
 export const normalize: EditorStaticApi['normalize'] = (
   editor,
   options = {}
@@ -67,6 +79,10 @@ export const normalize: EditorStaticApi['normalize'] = (
     const props = Object.fromEntries(
       Object.entries(entryNode)
         .filter(([key]) => key !== 'children' && key !== 'text')
+        .map(
+          ([key, value]) =>
+            [key, createSerializablePropSignature(value)] as const
+        )
         .sort(([left], [right]) => left.localeCompare(right))
     );
 

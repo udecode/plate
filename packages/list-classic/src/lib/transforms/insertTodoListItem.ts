@@ -1,5 +1,5 @@
-import { PathApi } from '@platejs/slate';
-import type { SlateEditor } from '@platejs/core';
+import { PathApi } from '@platejs/plite';
+import type { BasePlateEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 import {
   isEditorPointEnd,
@@ -11,7 +11,7 @@ import { getEditorMarks } from '../internal/getEditorMarks';
 import { BaseTodoListPlugin } from '../BaseTodoListPlugin';
 
 /** Insert todo list item if selection in li>p. TODO: test */
-export const insertTodoListItem = (editor: SlateEditor): boolean => {
+export const insertTodoListItem = (editor: BasePlateEditor): boolean => {
   const { inheritCheckStateOnLineEndBreak, inheritCheckStateOnLineStartBreak } =
     editor.getOptions(BaseTodoListPlugin);
   const todoType = editor.getType(KEYS.listTodoClassic);
@@ -43,7 +43,7 @@ export const insertTodoListItem = (editor: SlateEditor): boolean => {
       );
       const isEnd =
         isEditorPointEnd(editor, editor.selection!.focus, paragraphPath) ||
-        editor.api.isEmpty?.(editor.selection, { after: true });
+        editor.api.isEmpty?.(editor.selection!, { after: true });
 
       const nextParagraphPath = PathApi.next(paragraphPath);
 

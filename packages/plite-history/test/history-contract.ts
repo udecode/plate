@@ -6,7 +6,7 @@ import type {
   Descendant,
   Element,
   Selection,
-  Editor as PliteEditor,
+  Editor as EditorType,
 } from '@platejs/plite';
 import {
   createEditor,
@@ -28,23 +28,23 @@ const paragraph = (
 
 const historyTestEditor = () => createEditor({ extensions: [history()] });
 
-const getHistory = (editor: PliteEditor) =>
+const getHistory = (editor: EditorType) =>
   editor.read((state: any) => state.history.get());
 
-const undo = (editor: PliteEditor) => {
+const undo = (editor: EditorType) => {
   editor.update((tx) => {
     tx.history.undo();
   });
 };
 
-const redo = (editor: PliteEditor) => {
+const redo = (editor: EditorType) => {
   editor.update((tx) => {
     tx.history.redo();
   });
 };
 
 const replace = (
-  editor: PliteEditor,
+  editor: EditorType,
   children: Descendant[],
   selection: Selection = null
 ) => {
@@ -55,7 +55,7 @@ const replace = (
   });
 };
 
-const getVisibleState = (editor: PliteEditor) => {
+const getVisibleState = (editor: EditorType) => {
   const snapshot = Editor.getSnapshot(editor);
 
   return {
@@ -65,9 +65,9 @@ const getVisibleState = (editor: PliteEditor) => {
 };
 
 const write = (
-  editor: PliteEditor,
-  fn: Parameters<PliteEditor['update']>[0],
-  options?: Parameters<PliteEditor['update']>[1]
+  editor: EditorType,
+  fn: Parameters<EditorType['update']>[0],
+  options?: Parameters<EditorType['update']>[1]
 ) => {
   editor.update(fn, options);
 };

@@ -1,6 +1,10 @@
 /** @jsx jsxt */
 
-import type { SlateEditor, TSuggestionData, TSuggestionElement } from 'platejs';
+import type {
+  BasePlateEditor,
+  TSuggestionData,
+  TSuggestionElement,
+} from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -10,12 +14,12 @@ import { getInlineSuggestionData } from './utils';
 import { getSuggestionApi } from './utils/getSuggestionApi';
 jsxt;
 
-const createSlateEditor = ({ selection, value, ...options }: any = {}) =>
+const createBasePlateEditor = ({ selection, value, ...options }: any = {}) =>
   createPlateRuntimeEditor({
     ...options,
     initialSelection: selection,
     initialValue: value,
-  }) as any as SlateEditor;
+  }) as any as BasePlateEditor;
 
 const suggestionPlugin = BaseSuggestionPlugin.configure({
   options: {
@@ -48,9 +52,9 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -81,9 +85,9 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -111,7 +115,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -121,9 +125,9 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -145,7 +149,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -155,9 +159,9 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
         </hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -179,9 +183,9 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -219,7 +223,7 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -229,9 +233,9 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -253,7 +257,7 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -263,9 +267,9 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
           test2
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,

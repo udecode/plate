@@ -1,5 +1,5 @@
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type TSuggestionElement,
   type TSuggestionText,
   ElementApi,
@@ -7,7 +7,7 @@ import {
   PathApi,
   TextApi,
 } from 'platejs';
-import type { Text } from '@platejs/slate';
+import type { Text } from '@platejs/plite';
 
 import type { TResolvedSuggestion } from '../types';
 
@@ -19,7 +19,7 @@ import {
 import { getSuggestionApi } from '../utils/getSuggestionApi';
 
 export const rejectSuggestion = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   description: TResolvedSuggestion
 ) => {
   const suggestionApi = getSuggestionApi(editor);
@@ -33,9 +33,9 @@ export const rejectSuggestion = (
 
           const suggestionData = getInlineSuggestionData(n);
 
-          return (
+          return Boolean(
             suggestionData?.type === 'insert' &&
-            suggestionData.id === description.suggestionId
+              suggestionData.id === description.suggestionId
           );
         },
       }),
@@ -48,10 +48,10 @@ export const rejectSuggestion = (
 
           if (suggestionApi.isBlockSuggestion(n)) {
             const suggestionElement = n as TSuggestionElement;
-            return (
+            return Boolean(
               suggestionElement.suggestion.type === 'insert' &&
-              suggestionElement.suggestion.isLineBreak &&
-              suggestionElement.suggestion.id === description.suggestionId
+                suggestionElement.suggestion.isLineBreak &&
+                suggestionElement.suggestion.id === description.suggestionId
             );
           }
 
@@ -155,6 +155,8 @@ export const rejectSuggestion = (
 
             return false;
           }
+
+          return false;
         },
       }),
     ];

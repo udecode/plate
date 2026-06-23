@@ -1,4 +1,4 @@
-import { type Descendant, type SlateEditor, KEYS, TextApi } from 'platejs';
+import { type Descendant, type BasePlateEditor, KEYS, TextApi } from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries';
@@ -7,7 +7,7 @@ import { getSuggestionApi } from '../utils/getSuggestionApi';
 import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
 
 export const insertFragmentSuggestion = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   fragment: Descendant[],
   {
     insertFragment = (nextFragment) => {

@@ -1,8 +1,8 @@
-import type { Ancestor } from '@platejs/slate';
+import type { Ancestor } from '@platejs/plite';
 
 import type { PluginConfig } from '../../plugin/BasePlugin';
 
-import { createTSlatePlugin } from '../../plugin/createSlatePlugin';
+import { createEditorPlugin } from '../../plugin/createEditorPlugin';
 import { withChunking } from './withChunking';
 
 export const isCurrentEditorRoot = (ancestor: Ancestor) =>
@@ -39,7 +39,7 @@ export type ChunkingConfig = PluginConfig<
   }
 >;
 
-export const ChunkingPlugin = createTSlatePlugin<ChunkingConfig>({
+export const ChunkingPlugin = createEditorPlugin<ChunkingConfig>({
   key: 'chunking',
   options: {
     chunkSize: 1000,

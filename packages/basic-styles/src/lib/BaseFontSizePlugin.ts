@@ -1,6 +1,6 @@
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
-export const BaseFontSizePlugin = createSlatePlugin({
+export const BaseFontSizePlugin = createEditorPlugin({
   key: KEYS.fontSize,
   inject: {
     nodeProps: {

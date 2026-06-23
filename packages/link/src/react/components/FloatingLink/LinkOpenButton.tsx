@@ -1,5 +1,6 @@
 import React from 'react';
 
+import type { NodeEntry } from '@platejs/plite';
 import { type TLinkElement, KEYS } from 'platejs';
 import {
   createPrimitiveComponent,
@@ -16,9 +17,9 @@ export const useLinkOpenButtonState = () => {
 
   const entry = React.useMemo(
     () =>
-      editor.api.node<TLinkElement>({
+      editor.api.node({
         match: { type: editor.getType(KEYS.link) },
-      }),
+      }) as NodeEntry<TLinkElement> | undefined,
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [editor, selection]
   );

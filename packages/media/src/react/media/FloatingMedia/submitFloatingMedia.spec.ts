@@ -1,4 +1,4 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { BaseMediaEmbedPlugin } from '../../../lib/media-embed/BaseMediaEmbedPlugin';
 import { FloatingMediaStore } from './FloatingMediaStore';
@@ -11,7 +11,7 @@ describe('submitFloatingMedia', () => {
   });
 
   it('applies transformUrl before validation so allowlisted embed snippets can submit', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseMediaEmbedPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
@@ -49,7 +49,7 @@ describe('submitFloatingMedia', () => {
   });
 
   it('stores canonical provider metadata for supported video urls', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseMediaEmbedPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
@@ -86,7 +86,7 @@ describe('submitFloatingMedia', () => {
   });
 
   it('rejects non-allowlisted script embed snippets after transform', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseMediaEmbedPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },

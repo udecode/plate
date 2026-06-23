@@ -10,16 +10,16 @@ import {
 } from '@platejs/table';
 import {
   BaseParagraphPlugin,
-  type SlateEditor,
-  createSlateEditor,
+  type BasePlateEditor,
+  createBasePlateEditor,
 } from 'platejs';
 
 import { getMarkdown } from './getMarkdown';
 
 jsxt;
 
-const createTestEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTestEditor = (input: BasePlateEditor) =>
+  createBasePlateEditor({
     plugins: [
       BaseParagraphPlugin,
       BaseTablePlugin,
@@ -88,7 +88,7 @@ describe('getMarkdown', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTestEditor(input);
 
@@ -127,7 +127,7 @@ describe('getMarkdown', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTestEditor(input);
 
@@ -163,7 +163,7 @@ describe('getMarkdown', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTestEditor(input);
 

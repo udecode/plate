@@ -1,5 +1,5 @@
 import type { Editor, EditorSnapshot, RuntimeId } from '@platejs/plite';
-import { Editor as PliteEditor } from '../editable/runtime-editor-api';
+import { Editor as RuntimeEditor } from '../editable/runtime-editor-api';
 
 export type MountedTopLevelRange = {
   endIndex: number;
@@ -16,8 +16,8 @@ const samePoint = (
 ) => left.offset === right.offset && samePath(left.path, right.path);
 
 export const getFullDocumentRange = (editor: Editor) => ({
-  anchor: PliteEditor.point(editor, [], { edge: 'start' }),
-  focus: PliteEditor.point(editor, [], { edge: 'end' }),
+  anchor: RuntimeEditor.point(editor, [], { edge: 'start' }),
+  focus: RuntimeEditor.point(editor, [], { edge: 'end' }),
 });
 
 export const isFullDocumentSelection = (

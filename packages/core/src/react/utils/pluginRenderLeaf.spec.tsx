@@ -4,12 +4,12 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import { createTSlatePlugin } from '../../lib/plugin';
+import { createEditorPlugin } from '../../lib/plugin';
 import { createPlateEditor } from '../editor/withPlate';
 import { pluginRenderLeaf } from './pluginRenderLeaf';
 
 it('uses a plain render.as fast path for simple leaf plugins', () => {
-  const testPlugin = createTSlatePlugin({
+  const testPlugin = createEditorPlugin({
     key: 'test',
     node: {
       isLeaf: true,
@@ -28,7 +28,7 @@ it('uses a plain render.as fast path for simple leaf plugins', () => {
   const TestComponent = () =>
     renderLeaf({
       attributes: {
-        'data-slate-leaf': true,
+        'data-plite-leaf': true,
         className: 'from-slate',
       } as any,
       children: 'test content',
@@ -42,14 +42,14 @@ it('uses a plain render.as fast path for simple leaf plugins', () => {
   const leaf = container.querySelector('strong');
 
   expect(leaf).not.toBeNull();
-  expect(leaf).toHaveClass('slate-test');
+  expect(leaf).toHaveClass('plite-test');
   expect(leaf).toHaveClass('from-slate');
-  expect(leaf).toHaveAttribute('data-slate-leaf', 'true');
+  expect(leaf).toHaveAttribute('data-plite-leaf', 'true');
   expect(leaf).toHaveTextContent('test content');
 });
 
 it('renders simple hard-affinity leaves without spacers when inactive', () => {
-  const testPlugin = createTSlatePlugin({
+  const testPlugin = createEditorPlugin({
     key: 'test',
     node: {
       isLeaf: true,
@@ -83,13 +83,13 @@ it('renders simple hard-affinity leaves without spacers when inactive', () => {
   const spacers = container.querySelectorAll('span[contenteditable="false"]');
 
   expect(leaf).not.toBeNull();
-  expect(leaf).toHaveClass('slate-test');
+  expect(leaf).toHaveClass('plite-test');
   expect(leaf).toHaveTextContent('test content');
   expect(spacers).toHaveLength(0);
 });
 
 it('renders simple directional-affinity leaves without PlateLeaf fallback', () => {
-  const testPlugin = createTSlatePlugin({
+  const testPlugin = createEditorPlugin({
     key: 'test',
     node: {
       isLeaf: true,
@@ -121,12 +121,12 @@ it('renders simple directional-affinity leaves without PlateLeaf fallback', () =
   const leaf = container.querySelector('s');
 
   expect(leaf).not.toBeNull();
-  expect(leaf).toHaveClass('slate-test');
+  expect(leaf).toHaveClass('plite-test');
   expect(leaf).toHaveTextContent('test content');
 });
 
 it('renders boundary spacers only for the active hard-affinity edge', () => {
-  const testPlugin = createTSlatePlugin({
+  const testPlugin = createEditorPlugin({
     key: 'test',
     node: {
       isLeaf: true,
@@ -171,7 +171,7 @@ it('renders boundary spacers only for the active hard-affinity edge', () => {
   const spacers = container.querySelectorAll('span[contenteditable="false"]');
 
   expect(leaf).not.toBeNull();
-  expect(leaf).toHaveClass('slate-test');
+  expect(leaf).toHaveClass('plite-test');
   expect(leaf).toHaveTextContent('test content');
   expect(spacers).toHaveLength(2);
 });

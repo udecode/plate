@@ -1,14 +1,14 @@
-import type { SlateEditor } from '@platejs/core';
+import type { BasePlateEditor } from '@platejs/core';
 import type {
   EditorCoreStateView,
   Element,
   ElementEntry,
   Path,
   Point,
-} from '@platejs/slate';
+} from '@platejs/plite';
 
 export const getEditorDescendant = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     at,
     match,
@@ -24,7 +24,7 @@ export const getEditorDescendant = (
     })
   ).find(([, path]) => path.length > at.length);
 
-export const hasEditorPath = (editor: SlateEditor, path: Path) => {
+export const hasEditorPath = (editor: BasePlateEditor, path: Path) => {
   if ('read' in editor && typeof editor.read === 'function') {
     return editor.read((state: EditorCoreStateView) =>
       state.nodes.hasPath(path)
@@ -39,7 +39,7 @@ export const hasEditorPath = (editor: SlateEditor, path: Path) => {
 };
 
 export const isEditorPointEnd = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   point: Point,
   at: Path
 ) =>
@@ -52,7 +52,7 @@ export const isEditorPointEnd = (
       ).isEnd?.(point, at) ?? false);
 
 export const isEditorPointStart = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   point: Point,
   at: Path
 ) =>

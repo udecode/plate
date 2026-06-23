@@ -1,13 +1,13 @@
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
-import type { Element, NodeEntry, Path, Range, Text } from '@platejs/slate';
+import type { Element, NodeEntry, Path, Range, Text } from '@platejs/plite';
 
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { ElementApi } from '@platejs/slate';
+import { ElementApi } from '@platejs/plite';
 import {
   type OmitFirst,
   type PluginConfig,
-  type SlateEditor,
+  type BasePlateEditor,
   type TIdElement,
   bindFirst,
   getPluginType,
@@ -17,6 +17,7 @@ import { createTPlatePlugin } from 'platejs/react';
 
 import type { AIBatch } from '../../lib';
 import { undoAI } from '../../lib/transforms';
+import { getEditorHistory } from '../../lib/internal/history';
 import type { AIMode, AIToolName } from '../../lib/types';
 import type { ChatMessage } from './internal/types';
 import type { AIChatPlateEditor } from './internal/editorTypes';
@@ -31,7 +32,7 @@ import { submitAIChat } from './utils/submitAIChat';
 import { createAIChatExtension } from './withAIChat';
 
 type AIChatNodeOptions = NonNullable<
-  Parameters<SlateEditor['api']['node']>[0]
+  Parameters<BasePlateEditor['api']['node']>[0]
 > & {
   anchor?: boolean;
   streaming?: boolean;
@@ -51,7 +52,7 @@ export type AIChatPluginConfig = PluginConfig<
     _mdxName: string | null;
     _replaceIds: string[];
     /** @private The Editor used to generate the AI response. */
-    aiEditor: SlateEditor | null;
+    aiEditor: BasePlateEditor | null;
     chat: UseChatHelpers<ChatMessage>;
     chatOptions: AIChatTransportOptions;
     chatNodes: TIdElement[];
@@ -122,7 +123,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
   },
 })
   .extend((ctx) => ({
-    slateExtensions: [createAIChatExtension(ctx)],
+    editorExtensions: [createAIChatExtension(ctx)],
   }))
   .extendApi<
     Pick<
@@ -141,7 +142,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         if (anchor) {
           return editor.api.node({
             at: [],
-            match: (n) => ElementApi.isElement(n) && n.type === type,
+            match: (n: unknown) => ElementApi.isElement(n) && n.type === type,
             ...rest,
           });
         }
@@ -156,13 +157,17 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
             at: path,
             mode: 'lowest',
             reverse: true,
-            match: (t) => !!t[getPluginType(editor, KEYS.ai)],
+            match: (t: unknown) =>
+              !!(t as Record<string, unknown>)[getPluginType(editor, KEYS.ai)],
             ...rest,
           });
         }
 
         return editor.api.node({
-          match: (n) => n[getPluginType(editor, KEYS.ai)],
+          match: (n: unknown) =>
+            Boolean(
+              (n as Record<string, unknown>)[getPluginType(editor, KEYS.ai)]
+            ),
           ...rest,
         });
       },
@@ -227,7 +232,7 @@ export const AIChatPlugin = createTPlatePlugin<AIChatPluginConfig>({
         }
       }
 
-      const lastBatch = editor.history.undos.at(-1) as AIBatch;
+      const lastBatch = getEditorHistory(editor).undos.at(-1) as AIBatch;
 
       if (lastBatch?.ai) {
         lastBatch.ai = undefined;

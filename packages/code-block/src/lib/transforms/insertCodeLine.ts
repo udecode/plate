@@ -1,9 +1,9 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 /** Insert a code line starting with indentation. */
-export const insertCodeLine = (editor: SlateEditor, indentDepth = 0) => {
+export const insertCodeLine = (editor: BasePlateEditor, indentDepth = 0) => {
   if (editor.selection) {
     const indent = ' '.repeat(indentDepth);
 

@@ -21,11 +21,11 @@ toc: true
 ### 添加套件
 
 ```tsx
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { serializeHtml } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 
-const editor = createSlateEditor({
+const editor = createBasePlateEditor({
   plugins: BaseEditorKit,
   value: [
     { type: 'h1', children: [{ text: 'Hello World' }] },
@@ -41,7 +41,7 @@ const html = await serializeHtml(editor);
 
 查看完整的服务端HTML生成示例：
 
-<ComponentSource name="slate-to-html" />
+<ComponentSource name="plite-to-html" />
 
 </Steps>
 
@@ -49,12 +49,12 @@ const html = await serializeHtml(editor);
 
 将Plate编辑器内容（Plate节点）转换为HTML字符串。这通常在服务端完成。
 
-[查看服务端示例](/docs/examples/slate-to-html)
+[查看服务端示例](/docs/examples/plite-to-html)
 
 <Callout type="warning" title="关键服务端限制">
   在服务端环境（Node.js, RSC）中使用`serializeHtml`或其他Plate工具时，**不得**从任何`platejs*`包的`/react`子路径导入。始终使用基础导入（例如使用`@platejs/basic-nodes`而非`@platejs/basic-nodes/react`）。
 
-  这意味着服务端编辑器实例应使用`platejs`中的`createSlateEditor`，而非`platejs/react`中的`usePlateEditor`或`createPlateEditor`。
+  这意味着服务端编辑器实例应使用`platejs`中的`createBasePlateEditor`，而非`platejs/react`中的`usePlateEditor`或`createPlateEditor`。
 </Callout>
 
 <Steps>
@@ -64,7 +64,7 @@ const html = await serializeHtml(editor);
 提供服务端编辑器实例并在编辑器创建时配置Plate组件。
 
 ```tsx title="lib/generate-html.ts"
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { serializeHtml } from 'platejs/static'; // 静态导入
 // 导入基础插件（不从/react路径导入）
 import { BaseHeadingPlugin } from '@platejs/basic-nodes';
@@ -82,7 +82,7 @@ const components = {
 };
 
 // 创建带组件的服务端编辑器实例
-const editor = createSlateEditor({
+const editor = createBasePlateEditor({
   plugins: [
     BaseHeadingPlugin,   // 标题基础插件
     // ... 添加与内容相关的所有其他基础插件
@@ -150,14 +150,14 @@ async function getFullHtmlDocument() {
 
 ```tsx title="components/ui/paragraph-node-static.tsx"
 import React from 'react';
-import type { SlateElementProps } from 'platejs/static';
+import type { PliteElementProps } from 'platejs/static';
 
 // 示例静态段落组件
-export function ParagraphElementStatic(props: SlateElementProps) {
+export function ParagraphElementStatic(props: PliteElementProps) {
   return (
-    <SlateElement {...props} className={cn('m-0 px-0 py-1')}>
+    <PliteElement {...props} className={cn('m-0 px-0 py-1')}>
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }
 ```
@@ -251,7 +251,7 @@ function MyHtmlImporter({ htmlString }: { htmlString: string }) {
 
 插件可以在其`parsers.html.deserializer`配置中定义如何处理HTML反序列化：
 
--   **`parse`**: 函数`({ editor, element, getOptions, ... }) => Partial<SlateNode>`，接收HTML元素并返回部分Plate节点。这是主要转换逻辑所在。
+-   **`parse`**: 函数`({ editor, element, getOptions, ... }) => Partial<PliteNode>`，接收HTML元素并返回部分Plate节点。这是主要转换逻辑所在。
 -   **`query`**: 可选函数`({ element, getOptions }) => boolean`，确定是否应考虑当前HTML元素的反序列化规则。
 -   **`rules`**: 规则对象数组，每个定义匹配HTML元素的条件：
     -   `validNodeName`: 字符串或字符串数组，用于匹配HTML标签名（例如`'P'`, `['STRONG', 'B']`）。
@@ -349,7 +349,7 @@ export const ListPluginConfig = {
 <API name="serializeHtml">
 <APIParameters>
   <APIItem name="editor" type="PlateEditor">
-    通过 `createSlateEditor` 创建的服务端 Plate 编辑器实例，已配置组件。
+    通过 `createBasePlateEditor` 创建的服务端 Plate 编辑器实例，已配置组件。
   </APIItem>
   <APIItem name="options" type="SerializeHtmlOptions">
     序列化选项。
@@ -367,7 +367,7 @@ export const ListPluginConfig = {
     要序列化的 Plate 节点。如果未提供，将使用 `editor.children`。
   </APIItem>
   <APIItem name="preserveClassNames" type="string[] | null" optional>
-    如果 `stripClassNames` 为 true，则保留的类名前缀数组。如果 `stripClassNames` 为 true，`null` 将保留所有类名。默认值：`['slate-', 'line-clamp']`。
+    如果 `stripClassNames` 为 true，则保留的类名前缀数组。如果 `stripClassNames` 为 true，`null` 将保留所有类名。默认值：`['plite-', 'line-clamp']`。
   </APIItem>
   <APIItem name="stripClassNames" type="boolean" optional>
     如果为 `true`，则从输出 HTML 中删除所有类名，但保留 `preserveClassNames` 中列出的前缀的类名。默认值：`true`。
@@ -420,4 +420,4 @@ export const ListPluginConfig = {
 
 -   探索[静态渲染指南](/docs/static)以创建服务端安全的组件。
 -   查看各个插件文档以了解特定的 HTML 序列化/反序列化功能和默认规则。
--   查看[服务端 HTML 生成示例](/docs/examples/slate-to-html)。
+-   查看[服务端 HTML 生成示例](/docs/examples/plite-to-html)。

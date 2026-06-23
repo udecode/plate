@@ -3,10 +3,10 @@ import {
   type Element,
   type Text,
   ElementApi,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import { normalizeDateValue } from '@platejs/date';
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type TListElement,
   type TMentionElement,
   getPluginKey,
@@ -32,7 +32,7 @@ import type { MentionNode } from '../plugins/remarkMention';
 import type { MdRules } from '../types';
 
 import {
-  buildSlateNode,
+  buildPliteNode,
   convertChildrenDeserialize,
   convertNodesDeserialize,
   convertTextsDeserialize,
@@ -58,7 +58,7 @@ function isBoolean(value: any) {
 }
 
 const createClassicListItemContent = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   children: Descendant[] = []
 ) => ({
   children: children.length > 0 ? children : [{ text: '' }],
@@ -68,7 +68,7 @@ const createClassicListItemContent = (
 const deserializeClassicListItemChildren = (
   mdastChildren: MdRootContent[],
   deco: any,
-  options: { editor?: SlateEditor } & Record<string, any>
+  options: { editor?: BasePlateEditor } & Record<string, any>
 ) => {
   const licType = getPluginType(options.editor!, KEYS.lic);
   const children = mdastChildren
@@ -92,7 +92,7 @@ const deserializeClassicListItemChildren = (
 };
 
 const groupInlineChildrenIntoParagraphs = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   children: Descendant[] = []
 ) => {
   const paragraphType = getPluginType(editor, KEYS.p);
@@ -606,7 +606,7 @@ export const defaultRules: MdRules = {
 
           // Create list item from paragraph content
           const result = paragraph
-            ? buildSlateNode(paragraph, deco, options)
+            ? buildPliteNode(paragraph, deco, options)
             : {
                 children: [{ text: '' }],
                 type: getPluginType(options.editor!, KEYS.p),
@@ -653,8 +653,8 @@ export const defaultRules: MdRules = {
               );
               items.push(...nestedItems);
             } else {
-              // Transform any other node type using buildSlateNode
-              const result = buildSlateNode(subNode, deco, options);
+              // Transform any other node type using buildPliteNode
+              const result = buildPliteNode(subNode, deco, options);
 
               // Handle both array and single node results
               if (Array.isArray(result)) {
@@ -1114,7 +1114,7 @@ export const defaultRules: MdRules = {
   ...columnRules,
 };
 
-export const buildRules = (editor: SlateEditor) => {
+export const buildRules = (editor: BasePlateEditor) => {
   const keys = Object.keys(defaultRules);
 
   const newRules: Record<string, any> = {};

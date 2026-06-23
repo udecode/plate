@@ -1,4 +1,4 @@
-import type { Element, Text } from '@platejs/slate';
+import type { Element, Text } from '@platejs/plite';
 import type { AnyObject } from '@udecode/utils';
 
 import pick from 'lodash/pick.js';

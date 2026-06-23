@@ -1,6 +1,11 @@
-import type { Text } from '@platejs/slate';
+import type { NodeEntry, Text } from '@platejs/plite';
 
-import { type SlateEditor, type TLinkElement, ElementApi, KEYS } from 'platejs';
+import {
+  type BasePlateEditor,
+  type TLinkElement,
+  ElementApi,
+  KEYS,
+} from 'platejs';
 
 import type { UpsertLinkOptions } from './upsertLink';
 
@@ -9,13 +14,14 @@ import type { UpsertLinkOptions } from './upsertLink';
  * new text. The new text has the same marks than the first text replaced.
  */
 export const upsertLinkText = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { text }: UpsertLinkOptions
 ) => {
   const linkType = editor.getType(KEYS.link);
-  const newLink = editor.api.above<TLinkElement>({
-    match: (node) => ElementApi.isElement(node) && node.type === linkType,
-  });
+  const newLink = editor.api.above({
+    match: (node: unknown) =>
+      ElementApi.isElement(node) && node.type === linkType,
+  }) as NodeEntry<TLinkElement> | undefined;
 
   if (newLink) {
     const [newLinkNode, newLinkPath] = newLink;

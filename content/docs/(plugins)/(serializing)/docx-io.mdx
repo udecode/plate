@@ -174,7 +174,7 @@ Plugin providing DOCX export functionality with typed API methods.
 
 <API name="DocxExportPlugin">
 <APIOptions>
-<APIItem name="editorPlugins" type="SlatePlugin[]" optional>
+<APIItem name="editorPlugins" type="EditorPlugin[]" optional>
 Plugins to use for HTML serialization. If not provided, uses the editor's current plugins.
 </APIItem>
 <APIItem name="editorStaticComponent" type="React.ComponentType<PlateStaticProps>" optional>
@@ -191,7 +191,7 @@ Import a DOCX file and convert it to Plate nodes.
 
 <API name="importDocx">
 <APIParameters>
-<APIItem name="editor" type="SlateEditor">
+<APIItem name="editor" type="BasePlateEditor">
 The Plate editor instance.
 </APIItem>
 <APIItem name="arrayBuffer" type="ArrayBuffer">
@@ -255,7 +255,7 @@ Additional CSS styles to include. Appended after default DOCX_EXPORT_STYLES.
 <APIItem name="title" type="string" optional>
 Document title for metadata.
 </APIItem>
-<APIItem name="editorPlugins" type="SlatePlugin[]" optional>
+<APIItem name="editorPlugins" type="EditorPlugin[]" optional>
 Plugins for HTML serialization.
 </APIItem>
 <APIItem name="editorStaticComponent" type="React.ComponentType" optional>

@@ -1,5 +1,5 @@
-import type { EditorUpdateTransaction, Element } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { EditorUpdateTransaction, Element } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -12,7 +12,7 @@ type InsertNodesOptions = NonNullable<
  * If the cursor is not at the block start, insert break before.
  */
 export const insertCodeBlock = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   insertNodesOptions: Omit<InsertNodesOptions, 'match'> = {}
 ) => {
   if (!editor.selection || editor.api.isExpanded()) return;

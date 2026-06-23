@@ -6,11 +6,11 @@ import {
   useState,
   useSyncExternalStore,
 } from 'react';
-import type { Editor, Range } from '@platejs/slate';
+import type { Editor, Range } from '@platejs/plite';
 import {
-  type SlateDecorationSource,
-  useSlateRangeDecorationSource,
-} from '@platejs/slate-react';
+  type PliteDecorationSource,
+  usePliteRangeDecorationSource,
+} from '@platejs/plite-react';
 
 import type {
   YjsProviderStatus,
@@ -482,14 +482,14 @@ export function useYjsRemoteCursorDecorationSource<
     TCursorData,
     TDecorationData
   > = {}
-): SlateDecorationSource<TDecorationData> {
+): PliteDecorationSource<TDecorationData> {
   const awarenessRevision = useYjsAwarenessRevision(editor);
   const decorateRefreshDeps = options.deps ?? EMPTY_DEPS;
   const optionsRef = useRef(options);
   const id = options.id ?? DEFAULT_CURSOR_DECORATION_SOURCE_ID;
   optionsRef.current = options;
 
-  const source = useSlateRangeDecorationSource<TDecorationData>(editor, {
+  const source = usePliteRangeDecorationSource<TDecorationData>(editor, {
     deps: [awarenessRevision, ...decorateRefreshDeps],
     id,
     read: () =>

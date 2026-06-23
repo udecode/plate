@@ -1,7 +1,7 @@
 import React from 'react';
 
-import { type SlateEditor, getPluginByType } from '../lib';
-import { SlateElement } from './components/slate-nodes';
+import { type BasePlateEditor, getPluginByType } from '../lib';
+import { PliteElement } from './components/plite-nodes';
 import {
   type SlateRenderElement,
   pluginRenderElementStatic,
@@ -9,7 +9,7 @@ import {
 import { getRenderNodeStaticProps } from './utils';
 
 export const pipeRenderElementStatic = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     renderElement: renderElementProp,
   }: {
@@ -34,7 +34,7 @@ export const pipeRenderElementStatic = (
     }) as any;
 
     return (
-      <SlateElement {...ctxProps}>
+      <PliteElement {...ctxProps}>
         {props.children}
 
         {editor.meta.pluginCache.render.belowRootNodes.map((key) => {
@@ -43,6 +43,6 @@ export const pipeRenderElementStatic = (
 
           return <Component key={key} {...ctxProps} />;
         })}
-      </SlateElement>
+      </PliteElement>
     );
   };

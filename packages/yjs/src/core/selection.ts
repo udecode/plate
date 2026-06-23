@@ -1,4 +1,4 @@
-import type { Point, Range } from '@platejs/slate';
+import type { Point, Range } from '@platejs/plite';
 import * as Y from 'yjs';
 
 import { getYjsLength, getYjsNode, getYjsVisiblePath } from './document';
@@ -11,14 +11,14 @@ export type YjsRelativeRange = {
 const clampTextOffset = (offset: number, length: number): number =>
   Math.max(0, Math.min(offset, length));
 
-export const slatePointToYjsRelativePosition = (
+export const plitePointToYjsRelativePosition = (
   root: Y.XmlElement,
   point: Point
 ): Y.RelativePosition => {
   const target = getYjsNode(root, point.path);
 
   if (!(target instanceof Y.XmlText)) {
-    throw new Error('Slate point does not target a Y.XmlText.');
+    throw new Error('Plite point does not target a Y.XmlText.');
   }
 
   const length = getYjsLength(target);
@@ -31,7 +31,7 @@ export const slatePointToYjsRelativePosition = (
   );
 };
 
-export const yjsRelativePositionToSlatePoint = (
+export const yjsRelativePositionToPlitePoint = (
   root: Y.XmlElement,
   position: Y.RelativePosition
 ): Point | null => {
@@ -60,12 +60,12 @@ export const yjsRelativePositionToSlatePoint = (
   };
 };
 
-export const slateRangeToYjsRelativeRange = (
+export const pliteRangeToYjsRelativeRange = (
   root: Y.XmlElement,
   range: Range
 ): YjsRelativeRange => ({
-  anchor: slatePointToYjsRelativePosition(root, range.anchor),
-  focus: slatePointToYjsRelativePosition(root, range.focus),
+  anchor: plitePointToYjsRelativePosition(root, range.anchor),
+  focus: plitePointToYjsRelativePosition(root, range.focus),
 });
 
 export const yjsRelativeRangesEqual = (
@@ -75,17 +75,17 @@ export const yjsRelativeRangesEqual = (
   Y.compareRelativePositions(a.anchor, b.anchor) &&
   Y.compareRelativePositions(a.focus, b.focus);
 
-export const yjsRelativeRangeToSlateRange = (
+export const yjsRelativeRangeToPliteRange = (
   root: Y.XmlElement,
   range: YjsRelativeRange
 ): Range | null => {
-  const anchor = yjsRelativePositionToSlatePoint(root, range.anchor);
+  const anchor = yjsRelativePositionToPlitePoint(root, range.anchor);
 
   if (anchor === null) {
     return null;
   }
 
-  const focus = yjsRelativePositionToSlatePoint(root, range.focus);
+  const focus = yjsRelativePositionToPlitePoint(root, range.focus);
 
   if (focus === null) {
     return null;

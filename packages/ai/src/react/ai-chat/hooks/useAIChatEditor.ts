@@ -4,7 +4,7 @@ import type { DeserializeMdOptions } from '@platejs/markdown';
 import { useEditorPlugin } from 'platejs/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
-import type { AIChatSlateEditor } from '../internal/editorTypes';
+import type { AIChatPliteEditor } from '../internal/editorTypes';
 
 /**
  * Register an editor in the AI chat plugin, and deserializes the content into
@@ -13,7 +13,7 @@ import type { AIChatSlateEditor } from '../internal/editorTypes';
  * @returns Deserialized children to pass as `value` prop to PlateStatic
  */
 export const useAIChatEditor = (
-  editor: AIChatSlateEditor,
+  editor: AIChatPliteEditor,
   content: string,
   { parser }: DeserializeMdOptions = {}
 ) => {

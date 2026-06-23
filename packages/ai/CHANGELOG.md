@@ -553,7 +553,7 @@
 
 ### Patch Changes
 
-- [#3874](https://github.com/udecode/plate/pull/3874) by [@felixfeng33](https://github.com/felixfeng33) – Fix editor type using `SlateEditor` instead of `PlateEditor`.
+- [#3874](https://github.com/udecode/plate/pull/3874) by [@felixfeng33](https://github.com/felixfeng33) – Fix editor type using `PliteEditor` instead of `PlateEditor`.
 
 ## 41.0.0
 

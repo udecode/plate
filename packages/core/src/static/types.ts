@@ -1,4 +1,4 @@
-import type { Element, Text } from '@platejs/slate';
+import type { Element, Text } from '@platejs/plite';
 import type { AnyObject } from '@udecode/utils';
 
 import type {
@@ -7,7 +7,7 @@ import type {
   RenderElementProps,
   RenderLeafProps,
   RenderTextProps,
-  SlatePluginContext,
+  EditorPluginContext,
 } from '..';
 
 export type BoxStaticProps = React.ComponentProps<'div'> & {
@@ -25,7 +25,7 @@ export type SlateRenderLeafProps<
 > = SlateRenderNodeProps<C> & RenderLeafProps<N>;
 
 export type SlateRenderNodeProps<C extends AnyPluginConfig = PluginConfig> =
-  SlatePluginContext<C> & {
+  EditorPluginContext<C> & {
     attributes?: AnyObject;
     className?: string;
     /** @see {@link NodeProps} */

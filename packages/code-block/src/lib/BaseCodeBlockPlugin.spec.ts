@@ -1,10 +1,10 @@
-import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, KEYS, createBasePlateEditor } from 'platejs';
 
 import { BaseCodeBlockPlugin, BaseCodeLinePlugin } from './BaseCodeBlockPlugin';
 import * as decorationsModule from './setCodeBlockToDecorations';
 
 const runCodeBlockToggleTx = (isActive: boolean) => {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: [BaseCodeBlockPlugin],
   } as any);
   const set = mock(() => {});
@@ -51,7 +51,7 @@ describe('BaseCodeBlockPlugin', () => {
   });
 
   it('injects the html query guard', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseCodeBlockPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseCodeBlockPlugin);
@@ -88,7 +88,7 @@ describe('BaseCodeBlockPlugin', () => {
   });
 
   it('exposes an inferred code block transaction group', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
@@ -126,7 +126,7 @@ describe('BaseCodeBlockPlugin', () => {
       decorationsModule,
       'setCodeBlockToDecorations'
     ).mockImplementation(() => {});
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseCodeBlockPlugin.configure({
           options: { lowlight: {} as any },

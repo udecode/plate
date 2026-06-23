@@ -1,11 +1,11 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { BaseEquationPlugin } from '../BaseEquationPlugin';
 import { insertEquation } from './insertEquation';
 
 describe('insertEquation', () => {
   it('inserts the default equation node shape at the cursor', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseEquationPlugin],
       selection: {
         anchor: { offset: 2, path: [0, 0] },
@@ -35,7 +35,7 @@ describe('insertEquation', () => {
   });
 
   it('respects the configured node type and explicit insertion target', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseEquationPlugin.configure({
           node: { type: 'custom-equation' },

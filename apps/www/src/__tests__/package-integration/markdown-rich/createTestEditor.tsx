@@ -33,7 +33,7 @@ import {
   BaseFootnoteDefinitionPlugin,
   BaseFootnoteReferencePlugin,
 } from '@platejs/footnote';
-import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, KEYS, createBasePlateEditor } from 'platejs';
 import remarkEmoji from 'remark-emoji';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -58,7 +58,7 @@ const markdownPlugin = MarkdownPlugin.configure({
 });
 
 export const createTestEditor = (plugins: any[] = []) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: [
       BaseParagraphPlugin,
       BaseH1Plugin,

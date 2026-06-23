@@ -1,8 +1,8 @@
-import type { EditorUpdateTransaction } from '@platejs/slate';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 import {
   type PluginConfig,
-  type SlatePlugin,
-  createTSlatePlugin,
+  type EditorPlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -27,13 +27,12 @@ export type EquationConfig = PluginConfig<
   EquationTx
 >;
 
-export const BaseEquationPlugin: SlatePlugin<EquationConfig> =
-  createTSlatePlugin<EquationConfig>({
+export const BaseEquationPlugin: EditorPlugin<EquationConfig> =
+  createEditorPlugin<EquationConfig>({
     key: KEYS.equation,
     node: { isElement: true, isVoid: true },
-  })
-    .extendTx(({ type }) => (tx: EditorUpdateTransaction) => ({
-      insert: (options?: InsertEquationOptions) => {
-        tx.nodes.insert(createEquationNode(type), options);
-      },
-    }));
+  }).extendTx(({ type }) => (tx: EditorUpdateTransaction) => ({
+    insert: (options?: InsertEquationOptions) => {
+      tx.nodes.insert(createEquationNode(type), options);
+    },
+  }));

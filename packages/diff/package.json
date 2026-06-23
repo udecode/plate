@@ -1,7 +1,7 @@
 {
   "name": "@platejs/diff",
   "version": "54.0.0-beta.0",
-  "description": "Compute a diff of two Slate documents",
+  "description": "Compute a diff of two Plite documents",
   "keywords": [
     "plate",
     "plugin",
@@ -38,7 +38,7 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/slate": "workspace:^",
+    "@platejs/plite": "workspace:^",
     "diff-match-patch-ts": "^0.6.0",
     "lodash": "^4.17.21",
     "react-compiler-runtime": "^1.0.0"

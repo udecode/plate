@@ -1,5 +1,5 @@
-import type { NodeEntry } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { NodeEntry } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -8,7 +8,7 @@ import { type ListOptions, indentList, indentTodo } from './indentList';
 
 /** Set indent list if not set. */
 export const toggleListSet = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   [node, _path]: NodeEntry,
   { listStyleType = ListStyleType.Disc, ...options }: ListOptions
 ) => {

@@ -2,7 +2,7 @@ import type {
   Descendant,
   Path,
   RuntimeId,
-  Editor as PliteEditor,
+  Editor as EditorType,
   Element as PliteElementNode,
   Text as PliteTextNode,
 } from '@platejs/plite';
@@ -34,7 +34,7 @@ export const readEditableDescendantBinding = ({
   renderSegment,
   renderText,
 }: {
-  editor: PliteEditor;
+  editor: EditorType;
   node: unknown;
   path: Path | null;
   renderLeaf?: unknown;

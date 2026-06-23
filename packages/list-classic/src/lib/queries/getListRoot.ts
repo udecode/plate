@@ -1,13 +1,13 @@
-import type { Element, Range } from '@platejs/slate';
-import type { ElementEntry, Path, Point } from '@platejs/slate';
-import { ElementApi } from '@platejs/slate';
-import type { SlateEditor } from '@platejs/core';
+import type { Element, Range } from '@platejs/plite';
+import type { ElementEntry, Path, Point } from '@platejs/plite';
+import { ElementApi } from '@platejs/plite';
+import type { BasePlateEditor } from '@platejs/core';
 
 import { getListTypes } from './getListTypes';
 
 /** Searches upward for the root list element */
 export const getListRoot = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   at: Path | Point | Range | null = editor.selection
 ): ElementEntry | undefined => {
   if (!at) return;

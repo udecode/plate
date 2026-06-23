@@ -5,7 +5,7 @@ export type PlaceholderShape = {
   kind: string | null;
 };
 
-/** Inspect the rendered shape of a Slate zero-width placeholder element. */
+/** Inspect the rendered shape of a Plite zero-width placeholder element. */
 export const inspectZeroWidthPlaceholder = (
   element: Element | null
 ): PlaceholderShape => {
@@ -20,6 +20,6 @@ export const inspectZeroWidthPlaceholder = (
   return {
     hasBr: !!element.querySelector('br'),
     hasFEFF: element.textContent?.includes('\uFEFF') ?? false,
-    kind: element.getAttribute('data-slate-zero-width'),
+    kind: element.getAttribute('data-plite-zero-width'),
   };
 };

@@ -1,9 +1,9 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { getFootnoteDefinition } from './getFootnoteDefinition';
 
 export const getFootnoteDefinitionText = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { identifier }: { identifier: string }
 ) => {
   const definition = getFootnoteDefinition(editor, { identifier });

@@ -1,12 +1,12 @@
 {
   "name": "@platejs/browser",
   "version": "54.0.0-beta.0",
-  "description": "Browser proof harness for Slate editors.",
+  "description": "Browser proof harness for Plite editors.",
   "keywords": [
     "browser",
     "editor",
     "playwright",
-    "@platejs/slate",
+    "@platejs/plite",
     "testing"
   ],
   "homepage": "https://platejs.org",
@@ -55,9 +55,9 @@
     "lint:fix": "plate-pkg p:lint:fix",
     "test": "bun run test:core && bun run test:dom",
     "typecheck": "tsc --project tsconfig.json --noEmit",
-    "test:core": "bun test --preload ../../config/slate-source-test-setup.ts test/core",
+    "test:core": "bun test --preload ../../config/plite-source-test-setup.ts test/core",
     "test:dom": "vitest run --config ./vitest.config.ts --project browser",
-    "test:proof": "bun test --preload ../../config/slate-source-test-setup.ts test/core/release-proof.test.ts test/core/scenario.test.ts",
+    "test:proof": "bun test --preload ../../config/plite-source-test-setup.ts test/core/release-proof.test.ts test/core/scenario.test.ts",
     "test:selection": "vitest run --config ./vitest.config.ts --project browser test/browser/selection.browser.test.ts"
   },
   "devDependencies": {

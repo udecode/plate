@@ -1,36 +1,39 @@
-import type { Element } from '@platejs/slate';
-import type { ElementEntry, SlateEditor } from 'platejs';
+import type { Element } from '@platejs/plite';
+import type { ElementEntry, BasePlateEditor } from 'platejs';
 
 import { getTableGridAbove } from './getTableGridAbove';
 
 type SelectionQueryCache = {
   cellEntries?: ElementEntry[];
-  children: SlateEditor['children'];
-  selection: SlateEditor['selection'];
+  operationsLength: number;
+  selection: BasePlateEditor['selection'];
+  selectionKey: string;
   selectedCellIds?: string[] | null;
   selectedCells?: Element[] | null;
   selectedTableIds?: string[] | null;
   selectedTables?: Element[] | null;
 };
 
-const selectionQueryCache = new WeakMap<SlateEditor, SelectionQueryCache>();
+const selectionQueryCache = new WeakMap<BasePlateEditor, SelectionQueryCache>();
 
-const getSelectionQueryCache = (editor: SlateEditor) => {
+const getSelectionQueryCache = (editor: BasePlateEditor) => {
   const { selection } = editor;
-  const { children } = editor;
+  const operationsLength = editor.operations.length;
+  const selectionKey = selection ? JSON.stringify(selection) : '';
   const cachedValue = selectionQueryCache.get(editor);
 
   if (
     cachedValue &&
-    cachedValue.children === children &&
-    cachedValue.selection === selection
+    cachedValue.operationsLength === operationsLength &&
+    cachedValue.selectionKey === selectionKey
   ) {
     return cachedValue;
   }
 
   const nextValue: SelectionQueryCache = {
-    children,
+    operationsLength,
     selection,
+    selectionKey,
   };
 
   selectionQueryCache.set(editor, nextValue);
@@ -38,7 +41,9 @@ const getSelectionQueryCache = (editor: SlateEditor) => {
   return nextValue;
 };
 
-export const getSelectedCellEntries = (editor: SlateEditor): ElementEntry[] => {
+export const getSelectedCellEntries = (
+  editor: BasePlateEditor
+): ElementEntry[] => {
   const cache = getSelectionQueryCache(editor);
 
   if ('cellEntries' in cache) {
@@ -53,7 +58,7 @@ export const getSelectedCellEntries = (editor: SlateEditor): ElementEntry[] => {
   return nextValue;
 };
 
-export const getSelectedCells = (editor: SlateEditor): Element[] | null => {
+export const getSelectedCells = (editor: BasePlateEditor): Element[] | null => {
   const cache = getSelectionQueryCache(editor);
 
   if ('selectedCells' in cache) {
@@ -75,7 +80,9 @@ export const getSelectedCells = (editor: SlateEditor): Element[] | null => {
   return nextValue;
 };
 
-export const getSelectedCellIds = (editor: SlateEditor): string[] | null => {
+export const getSelectedCellIds = (
+  editor: BasePlateEditor
+): string[] | null => {
   const cache = getSelectionQueryCache(editor);
 
   if ('selectedCellIds' in cache) {
@@ -93,7 +100,9 @@ export const getSelectedCellIds = (editor: SlateEditor): string[] | null => {
   return nextValue;
 };
 
-export const getSelectedTableIds = (editor: SlateEditor): string[] | null => {
+export const getSelectedTableIds = (
+  editor: BasePlateEditor
+): string[] | null => {
   const cache = getSelectionQueryCache(editor);
 
   if ('selectedTableIds' in cache) {
@@ -119,7 +128,10 @@ export const getSelectedTableIds = (editor: SlateEditor): string[] | null => {
   return nextValue;
 };
 
-export const getSelectedCell = (editor: SlateEditor, id?: string | null) => {
+export const getSelectedCell = (
+  editor: BasePlateEditor,
+  id?: string | null
+) => {
   if (!id) return null;
 
   return (
@@ -127,7 +139,9 @@ export const getSelectedCell = (editor: SlateEditor, id?: string | null) => {
   );
 };
 
-export const getSelectedTables = (editor: SlateEditor): Element[] | null => {
+export const getSelectedTables = (
+  editor: BasePlateEditor
+): Element[] | null => {
   const cache = getSelectionQueryCache(editor);
 
   if ('selectedTables' in cache) {
@@ -151,8 +165,8 @@ export const getSelectedTables = (editor: SlateEditor): Element[] | null => {
   return nextValue;
 };
 
-export const isCellSelected = (editor: SlateEditor, id?: string | null) =>
+export const isCellSelected = (editor: BasePlateEditor, id?: string | null) =>
   !!getSelectedCell(editor, id);
 
-export const isSelectingCell = (editor: SlateEditor) =>
+export const isSelectingCell = (editor: BasePlateEditor) =>
   getSelectedCellEntries(editor).length > 0;

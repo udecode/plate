@@ -1,4 +1,4 @@
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 import type { TTableRowElement } from 'platejs';
 
 export type BorderDirection = 'bottom' | 'left' | 'right' | 'top';

@@ -1,4 +1,4 @@
-# Compute a diff of two Slate documents
+# Compute a diff of two Plite documents
 
 ## License
 

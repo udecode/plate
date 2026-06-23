@@ -1,5 +1,5 @@
-import type { Element, NodeEntry } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Element, NodeEntry } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -16,7 +16,7 @@ export interface GetListSiblingsOptions<N extends Element = Element>
 }
 
 export const getListSiblings = <N extends Element = Element>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   entry: NodeEntry<Element>,
   {
     current = true,

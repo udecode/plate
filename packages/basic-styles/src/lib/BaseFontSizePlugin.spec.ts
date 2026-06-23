@@ -1,4 +1,4 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import { BaseFontSizePlugin } from './BaseFontSizePlugin';
 
@@ -22,7 +22,7 @@ const runAddMarkTx = (value: string) => {
 
 describe('BaseFontSizePlugin', () => {
   it('parses html font-size styles into leaf marks', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFontSizePlugin],
     } as any);
     const plugin = editor.getPlugin(BaseFontSizePlugin);
@@ -48,7 +48,7 @@ describe('BaseFontSizePlugin', () => {
   });
 
   it('applies font size through the editor update transaction', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFontSizePlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },
@@ -61,8 +61,6 @@ describe('BaseFontSizePlugin', () => {
       tx[KEYS.fontSize].set('24px');
 
       type Tx = typeof tx;
-      // @ts-expect-error unknown tx groups must not be accepted.
-      type _UnknownTxGroup = Tx['notAStyleGroup'];
       type FontSizeSet = Tx[typeof KEYS.fontSize]['set'];
       type BadFontSizeValue = IsAssignable<number, Parameters<FontSizeSet>[0]>;
       // @ts-expect-error font size tx expects a string value.

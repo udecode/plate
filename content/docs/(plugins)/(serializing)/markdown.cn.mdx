@@ -751,7 +751,7 @@ const markdownOutput = editor.api.markdown.serialize({ value: slateValue });
     - `mdast-to-slate` 利用 `rules` 转化为 Plate 节点
     - Plate 组件系统渲染节点
 2.  **序列化：**
-    - Plate 节点 → `slate-to-mdast`（用 `rules`）→ mdast
+    - Plate 节点 → `plite-to-mdast`（用 `rules`）→ mdast
     - `remarkPlugins` 变换 mdast
     - `remark-stringify` 输出为 Markdown 字符串
 

@@ -1,11 +1,11 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findInlineSuggestionNode } from './findSuggestionNode';
 
 describe('findInlineSuggestionNode', () => {
   it('returns the first inline suggestion text node', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseSuggestionPlugin],
       value: [
         {
@@ -31,7 +31,7 @@ describe('findInlineSuggestionNode', () => {
   });
 
   it('respects additional match filters', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseSuggestionPlugin],
       value: [
         {

@@ -1,4 +1,4 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { KEYS } from 'platejs';
 import { createPlateRuntimeEditor } from 'platejs/react';
 
@@ -6,7 +6,7 @@ import { BaseInlineEquationPlugin } from './BaseInlineEquationPlugin';
 
 describe('BaseInlineEquationPlugin', () => {
   it('configures inlineEquation as an inline void element and exposes tx.inlineEquation.insert', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseInlineEquationPlugin],
     });
     const plugin = editor.getPlugin(BaseInlineEquationPlugin);
@@ -88,7 +88,7 @@ describe('BaseInlineEquationPlugin', () => {
   });
 
   it('exposes an inferred inline equation transaction group', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseInlineEquationPlugin],
       value: [
         { children: [{ text: 'before' }, { text: 'after' }], type: KEYS.p },

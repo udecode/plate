@@ -19,8 +19,8 @@ npm install platejs
 
 ```ts
 // 之前
-import { createEditor } from 'slate';
-import { Plite, Editable, withReact } from 'plite-react';
+import { createBasePlateEditor } from '@platejs/plite';
+import { Plite, Editable, withReact } from '@platejs/plite-react';
 
 // 之后
 import { createPlateEditor, Plate, PlateContent } from 'platejs/react';
@@ -28,11 +28,11 @@ import { createPlateEditor, Plate, PlateContent } from 'platejs/react';
 
 ## 3. 创建 Plate 编辑器
 
-将 `createEditor`、`withHistory` 和 `withReact` 替换为 `createPlateEditor`：
+将 `createBasePlateEditor`、`withHistory` 和 `withReact` 替换为 `createPlateEditor`：
 
 ```ts
 // 之前
-const editor = useMemo(() => withReact(withHistory(createEditor()))), []);
+const editor = useMemo(() => withReact(withHistory(createBasePlateEditor()))), []);
 
 // 之后
 const editor = createPlateEditor({

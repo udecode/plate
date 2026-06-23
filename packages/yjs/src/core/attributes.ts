@@ -1,6 +1,6 @@
 import * as Y from 'yjs';
 
-export const SLATE_TYPE_ATTRIBUTE = 'slate:type';
+export const PLITE_TYPE_ATTRIBUTE = 'plite:type';
 
 export type YjsNode = Y.XmlElement | Y.XmlText;
 export type YjsAttributeRecord = Record<string, unknown>;
@@ -71,16 +71,16 @@ export const setYjsAttributes = (
   }
 };
 
-export const getSlateYjsElementType = (element: Y.XmlElement): string =>
-  String(element.getAttribute(SLATE_TYPE_ATTRIBUTE) ?? element.nodeName);
+export const getPliteYjsElementType = (element: Y.XmlElement): string =>
+  String(element.getAttribute(PLITE_TYPE_ATTRIBUTE) ?? element.nodeName);
 
-export const setSlateYjsAttribute = (
+export const setPliteYjsAttribute = (
   node: YjsNode,
   key: string,
   value: unknown
 ): void => {
   if (key === 'type' && node instanceof Y.XmlElement) {
-    setYjsAttribute(node, SLATE_TYPE_ATTRIBUTE, String(value));
+    setYjsAttribute(node, PLITE_TYPE_ATTRIBUTE, String(value));
 
     return;
   }
@@ -88,9 +88,9 @@ export const setSlateYjsAttribute = (
   setYjsAttribute(node, key, value);
 };
 
-export const removeSlateYjsAttribute = (node: YjsNode, key: string): void => {
+export const removePliteYjsAttribute = (node: YjsNode, key: string): void => {
   if (key === 'type' && node instanceof Y.XmlElement) {
-    node.removeAttribute(SLATE_TYPE_ATTRIBUTE);
+    node.removeAttribute(PLITE_TYPE_ATTRIBUTE);
 
     return;
   }
@@ -98,7 +98,7 @@ export const removeSlateYjsAttribute = (node: YjsNode, key: string): void => {
   node.removeAttribute(key);
 };
 
-export const setSlateYjsAttributes = (
+export const setPliteYjsAttributes = (
   node: YjsNode,
   attributes: YjsAttributeRecord
 ): void => {
@@ -107,6 +107,6 @@ export const setSlateYjsAttributes = (
       continue;
     }
 
-    setSlateYjsAttribute(node, key, attributes[key]);
+    setPliteYjsAttribute(node, key, attributes[key]);
   }
 };

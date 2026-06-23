@@ -5,15 +5,15 @@ import {
   type Node,
   type Path,
   type Value,
-} from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+} from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
-type RuntimeReadableTableEditor = SlateEditor & {
+type RuntimeReadableTableEditor = BasePlateEditor & {
   read?: <T>(fn: (state: EditorStateView<Value>) => T) => T;
 };
 
 export const findTableNodePath = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   node: Descendant
 ): Path | undefined => {
   const runtimeEditor = editor as RuntimeReadableTableEditor;

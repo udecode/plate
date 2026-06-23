@@ -1,5 +1,5 @@
 import type { DeserializeMdOptions } from '@platejs/markdown';
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 import { getPluginType, KEYS, TextApi } from 'platejs';
 
 import { AIChatPlugin } from '../AIChatPlugin';

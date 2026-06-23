@@ -1,10 +1,10 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { JuicePlugin } from './JuicePlugin';
 
 describe('JuicePlugin', () => {
   it('removes commented style guards before inlining css', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [JuicePlugin],
     } as any);
     const plugin = editor.getPlugin(JuicePlugin);
@@ -24,7 +24,7 @@ describe('JuicePlugin', () => {
   });
 
   it('leaves plain html alone when there is nothing to inline', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [JuicePlugin],
     } as any);
     const plugin = editor.getPlugin(JuicePlugin);

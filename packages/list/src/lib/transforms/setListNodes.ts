@@ -1,5 +1,5 @@
-import type { NodeEntry } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { NodeEntry } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -12,7 +12,7 @@ import { setIndentTodoNodeTx, setListNodeTx } from './setListNode';
  * defined.
  */
 export const setListNodes = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   entries: NodeEntry[],
   {
     listStyleType = ListStyleType.Disc,

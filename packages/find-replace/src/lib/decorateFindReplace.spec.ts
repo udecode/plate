@@ -1,4 +1,4 @@
-import { createSlateEditor, getEditorPlugin } from 'platejs';
+import { createBasePlateEditor, getEditorPlugin } from 'platejs';
 
 import { FindReplacePlugin } from './FindReplacePlugin';
 import { decorateFindReplace } from './decorateFindReplace';
@@ -155,7 +155,7 @@ describe('decorateFindReplace', () => {
   });
 
   it('is wired into FindReplacePlugin.decorate', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [FindReplacePlugin],
     } as any);
 

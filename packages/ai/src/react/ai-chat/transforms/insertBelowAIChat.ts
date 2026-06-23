@@ -7,7 +7,7 @@ import {
   type NodeEntry,
   PathApi,
   RangeApi,
-  type SlateEditor,
+  type BasePlateEditor,
   type TIdElement,
 } from 'platejs';
 
@@ -20,7 +20,7 @@ import { createFormattedBlocks } from './replaceSelectionAIChat';
 
 export const insertBelowAIChat = (
   editor: AIChatPlateEditor,
-  sourceEditor: SlateEditor,
+  sourceEditor: BasePlateEditor,
   { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
   const { toolName } = editor.getOptions(AIChatPlugin);
@@ -61,7 +61,7 @@ export const insertBelowAIChat = (
 
 export const insertBelowGenerate = (
   editor: AIChatPlateEditor,
-  sourceEditor: SlateEditor,
+  sourceEditor: BasePlateEditor,
   { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
   if (!sourceEditor || sourceEditor.api.isEmpty()) return;

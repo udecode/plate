@@ -66,10 +66,10 @@ export function ReadOnlyEditor() {
 | Component | Use For |
 |-----------|---------|
 | `Plate` | Store provider for one editor instance. |
-| `PlateContent` | Editable Slate surface with plugin handlers, decorators, renderers, hotkeys, and editor effects. |
+| `PlateContent` | Editable Plite surface with plugin handlers, decorators, renderers, hotkeys, and editor effects. |
 | `PlateView` | Static read-only rendering with Plate fragment copy support. |
 | `PlateContainer` | Editor container `div` plus `beforeContainer` and `afterContainer` plugin slots. |
-| `PlateSlate` | Slate provider wrapper used by `PlateContent`; also applies `aboveSlate` plugin wrappers. |
+| `Plite` | Plite provider wrapper used by `PlateContent`; also applies `abovePlite` plugin wrappers. |
 | `PlateElement` | Default element renderer for block and inline elements. |
 | `PlateLeaf` | Default decorated text-leaf renderer. |
 | `PlateText` | Default text-node renderer for non-decoration leaf rendering. |
@@ -82,7 +82,7 @@ export function ReadOnlyEditor() {
 
 | Stage | Source |
 |-------|--------|
-| Slate provider | `PlateSlate` uses `editor.children`, `editor.meta.key`, and store callbacks. |
+| Plite provider | `Plite` uses `editor.children`, `editor.meta.key`, and store callbacks. |
 | Editable props | `useEditableProps` pipes decorators, DOM handlers, `renderChunk`, `renderElement`, `renderLeaf`, and `renderText`. |
 | Plugin slots | `beforeEditable`, `aboveEditable`, and `afterEditable` wrap or sit around the editable surface. |
 | Effects | `EditorMethodsEffect`, `EditorHotkeysEffect`, `EditorRefEffect`, and `PlateControllerEffect` run inside `PlateContent`. |
@@ -90,7 +90,7 @@ export function ReadOnlyEditor() {
 
 ## Node Primitives
 
-Use `PlateElement`, `PlateLeaf`, and `PlateText` inside plugin components. They merge Slate attributes with your `className`, `style`, and `ref`.
+Use `PlateElement`, `PlateLeaf`, and `PlateText` inside plugin components. They merge Plite attributes with your `className`, `style`, and `ref`.
 
 ```tsx title="components/paragraph-element.tsx"
 import { PlateElement, type PlateElementProps } from 'platejs/react';
@@ -102,10 +102,10 @@ export function ParagraphElement(props: PlateElementProps) {
 
 | Primitive | Behavior |
 |-----------|----------|
-| `PlateElement` | Adds `data-slate-node="element"`, preserves inline metadata, sets `data-block-id` for mounted block elements with an `id`, and adds directional-affinity spacers when needed. |
+| `PlateElement` | Adds `data-plite-node="element"`, preserves inline metadata, sets `data-block-id` for mounted block elements with an `id`, and adds directional-affinity spacers when needed. |
 | `PlateLeaf` | Renders a text leaf and adds hard-affinity spacers when needed. |
 | `PlateText` | Renders a text node without leaf-decoration matching. |
-| `useNodeAttributes` | Merges Slate attributes, refs, class names, and styles for node primitives. |
+| `useNodeAttributes` | Merges Plite attributes, refs, class names, and styles for node primitives. |
 
 ## API Reference
 
@@ -137,19 +137,19 @@ Root provider for one editor instance.
     Fallback leaf renderer stored on the Plate store.
   </APIItem>
   <APIItem name="onChange" type="({ editor, value }) => void" optional>
-    Runs after Slate change handling when plugin `onChange` handlers do not handle the event.
+    Runs after Plite change handling when plugin `onChange` handlers do not handle the event.
   </APIItem>
   <APIItem name="onValueChange" type="({ editor, value }) => void" optional>
-    Runs when Slate reports a value change.
+    Runs when Plite reports a value change.
   </APIItem>
   <APIItem name="onSelectionChange" type="({ editor, selection }) => void" optional>
-    Runs when Slate reports a selection change.
+    Runs when Plite reports a selection change.
   </APIItem>
   <APIItem name="onNodeChange" type="({ editor, node, operation, prevNode }) => void" optional>
-    Stored on `SlateExtensionPlugin` by `PlateContent` and called for node operations.
+    Stored on `PliteExtensionPlugin` by `PlateContent` and called for node operations.
   </APIItem>
   <APIItem name="onTextChange" type="({ editor, node, operation, prevText, text }) => void" optional>
-    Stored on `SlateExtensionPlugin` by `PlateContent` and called for text operations.
+    Stored on `PliteExtensionPlugin` by `PlateContent` and called for text operations.
   </APIItem>
   <APIItem name="suppressInstanceWarning" type="boolean" optional>
     Suppresses the multiple-instance warning from `usePlateInstancesWarn`.
@@ -194,13 +194,13 @@ Editable surface for a `Plate` editor.
     Fallback text renderer after non-decoration text renderers.
   </APIItem>
   <APIItem name="renderPlaceholder" type="EditableProps['renderPlaceholder']" optional>
-    Placeholder renderer passed to Slate `Editable`.
+    Placeholder renderer passed to Plite `Editable`.
   </APIItem>
   <APIItem name="placeholder" type="string" optional>
-    Placeholder text passed to Slate `Editable`.
+    Placeholder text passed to Plite `Editable`.
   </APIItem>
   <APIItem name="scrollSelectionIntoView" type="(editor, domRange) => void" optional>
-    Slate selection scrolling hook.
+    Plite selection scrolling hook.
   </APIItem>
   <APIItem name="onDOMBeforeInput" type="(event: InputEvent) => void" optional>
     DOM before-input handler passed through the plugin handler pipeline.
@@ -209,16 +209,16 @@ Editable surface for a `Plate` editor.
     Keyboard handler passed through the plugin handler pipeline.
   </APIItem>
   <APIItem name="as" type="React.ElementType" optional>
-    Element type passed to Slate `Editable`.
+    Element type passed to Plite `Editable`.
   </APIItem>
   <APIItem name="disableDefaultStyles" type="boolean" optional>
-    Passed to Slate `Editable`.
+    Passed to Plite `Editable`.
   </APIItem>
   <APIItem name="role" type="string" optional>
-    ARIA role passed to Slate `Editable`.
+    ARIA role passed to Plite `Editable`.
   </APIItem>
   <APIItem name="style" type="React.CSSProperties" optional>
-    Style object passed to Slate `Editable`.
+    Style object passed to Plite `Editable`.
   </APIItem>
 </APIProps>
 </API>
@@ -231,7 +231,7 @@ Read-only static renderer with Plate copy support.
 
 <API name="PlateView">
 <APIProps>
-  <APIItem name="editor" type="SlateEditor">
+  <APIItem name="editor" type="BasePlateEditor">
     Static editor instance.
   </APIItem>
   <APIItem name="value" type="Value" optional>
@@ -241,7 +241,7 @@ Read-only static renderer with Plate copy support.
     Overrides the default Plate fragment copy handler.
   </APIItem>
   <APIItem name="className" type="string" optional>
-    Merged with the `slate-editor` class by `PlateStatic`.
+    Merged with the `plite-editor` class by `PlateStatic`.
   </APIItem>
   <APIItem name="style" type="React.CSSProperties" optional>
     Style object passed to the static root `div`.

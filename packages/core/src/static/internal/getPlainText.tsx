@@ -1,4 +1,4 @@
-import type { DOMElement, DOMNode, DOMText } from '@platejs/slate-dom';
+import type { DOMElement, DOMNode, DOMText } from '@platejs/plite-dom';
 
 const getDefaultView = (value: any): Window | null =>
   value?.ownerDocument?.defaultView || null;

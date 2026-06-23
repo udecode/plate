@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import type { TResolvedSuggestion } from '@platejs/suggestion';
 import type { PlateEditor } from 'platejs/react';
-import type { Element, NodeEntry, Path } from '@platejs/slate';
+import type { Element, NodeEntry, Path } from '@platejs/plite';
 
 import { CommentPlugin } from '@platejs/comment/react';
 import { getSuggestionKey, keyId2SuggestionId } from '@platejs/suggestion';

@@ -34,7 +34,7 @@ const value = normalizeStaticValue([
   {
     children: [
       { text: 'Experience a modern rich-text editor built with ' },
-      { children: [{ text: 'Slate' }], type: 'a', url: 'https://slatejs.org' },
+      { children: [{ text: 'Plite' }], type: 'a', url: 'https://slatejs.org' },
       { text: ' and ' },
       { children: [{ text: 'React' }], type: 'a', url: 'https://reactjs.org' },
       {

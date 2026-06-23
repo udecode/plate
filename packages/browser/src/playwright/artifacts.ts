@@ -3,19 +3,19 @@ import { dirname } from 'node:path';
 
 import type { Page, TestInfo } from '@playwright/test';
 
-import type { SlateBrowserEditorHarness } from './types';
+import type { PliteBrowserEditorHarness } from './types';
 
 const JPEG_SCREENSHOT_EXTENSION_RE = /\.(?:jpe?g)$/i;
 
-/** Screenshot options accepted by Slate browser screenshot helpers. */
-export type SlateBrowserPageScreenshotOptions = Omit<
+/** Screenshot options accepted by Plite browser screenshot helpers. */
+export type PliteBrowserPageScreenshotOptions = Omit<
   NonNullable<Parameters<Page['screenshot']>[0]>,
   'path'
 >;
 
 const getScreenshotContentType = (
   name: string,
-  options: SlateBrowserPageScreenshotOptions
+  options: PliteBrowserPageScreenshotOptions
 ) => {
   const type =
     options.type ?? (JPEG_SCREENSHOT_EXTENSION_RE.test(name) ? 'jpeg' : 'png');
@@ -31,7 +31,7 @@ export const attachPageScreenshot = async (
   page: Page,
   testInfo: TestInfo,
   name: string,
-  options: SlateBrowserPageScreenshotOptions = {}
+  options: PliteBrowserPageScreenshotOptions = {}
 ) => {
   const path = testInfo.outputPath(name);
   const contentType = getScreenshotContentType(name, options);
@@ -45,11 +45,11 @@ export const attachPageScreenshot = async (
 /**
  * Attach a focused editor selection screenshot to the current test report.
  */
-export const attachSlateBrowserSelectionScreenshot = async (
-  editor: SlateBrowserEditorHarness,
+export const attachPliteBrowserSelectionScreenshot = async (
+  editor: PliteBrowserEditorHarness,
   testInfo: TestInfo,
   name: string,
-  options: SlateBrowserPageScreenshotOptions = {}
+  options: PliteBrowserPageScreenshotOptions = {}
 ) =>
   attachPageScreenshot(editor.page, testInfo, name, {
     fullPage: false,
@@ -60,7 +60,7 @@ export const attachSlateBrowserSelectionScreenshot = async (
  * Write a JSON proof artifact into the current test output directory and attach
  * that file to the test report.
  */
-export const attachSlateBrowserJsonArtifact = async (
+export const attachPliteBrowserJsonArtifact = async (
   testInfo: TestInfo,
   name: string,
   value: unknown

@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 import { defineInputRule } from 'platejs';
@@ -26,7 +26,7 @@ const createClipboardData = (text: string) =>
   }) as any;
 
 const createLinkEditor = (
-  input: SlateEditor,
+  input: BasePlateEditor,
   config?: {
     inputRules?: any[];
     options?: Record<string, any>;
@@ -57,7 +57,7 @@ describe('LinkRules', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createLinkEditor(input, {
         inputRules: autolinkRules,
@@ -88,7 +88,7 @@ describe('LinkRules', () => {
             <focus />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createLinkEditor(input, {
         inputRules: autolinkRules,
@@ -118,7 +118,7 @@ describe('LinkRules', () => {
             <focus />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createLinkEditor(input, {
         inputRules: autolinkRules,
@@ -150,7 +150,7 @@ describe('LinkRules', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createLinkEditor(input, {
         inputRules: autolinkRules,
@@ -176,7 +176,7 @@ describe('LinkRules', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
       const CustomLinkPlugin = BaseLinkPlugin.extend({
         inputRules: [
           defineInputRule({
@@ -247,14 +247,14 @@ describe('LinkRules', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
       const output = (
         <editor>
           <hp>
             link: <ha url="http://google.com">http://google.com</ha> <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createLinkEditor(input, {
         inputRules: autolinkRules,
@@ -273,7 +273,7 @@ describe('LinkRules', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createLinkEditor(input, {
         inputRules: [
@@ -302,7 +302,7 @@ describe('LinkRules', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createLinkEditor(input, {
         inputRules: autolinkRules,
@@ -333,7 +333,7 @@ describe('LinkRules', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createLinkEditor(input, {
         inputRules: autolinkRules,
@@ -362,7 +362,7 @@ describe('LinkRules', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createLinkEditor(input, {
         inputRules: autolinkRules,
@@ -394,7 +394,7 @@ describe('LinkRules', () => {
             <focus /> after
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createLinkEditor(input);
       getCurrentRuntimeTransforms(editor).insertBreak();
@@ -418,7 +418,7 @@ describe('LinkRules', () => {
             Before <ha url="http://example.com">link text</ha> after
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createLinkEditor(input);
 
@@ -445,7 +445,7 @@ describe('LinkRules', () => {
             Before <ha url="http://example.com">link text</ha> after
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createLinkEditor(input);
 

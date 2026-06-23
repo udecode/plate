@@ -1,4 +1,4 @@
-import type { EditorUpdateTransaction } from '@platejs/slate';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 import type { TColumnElement } from 'platejs';
 
 import { KEYS } from 'platejs';

@@ -1,34 +1,34 @@
-export const isSlateVoid = (element: HTMLElement) =>
-  element.dataset.slateVoid === 'true';
+export const isPliteVoid = (element: HTMLElement) =>
+  element.dataset.pliteVoid === 'true';
 
-export const isSlateElement = (element: HTMLElement) =>
-  element.dataset.slateNode === 'element';
+export const isPliteElement = (element: HTMLElement) =>
+  element.dataset.pliteNode === 'element';
 
-export const isSlateText = (element: HTMLElement) =>
-  element.dataset.slateNode === 'text';
+export const isPliteText = (element: HTMLElement) =>
+  element.dataset.pliteNode === 'text';
 
-export const isSlateString = (element: HTMLElement) =>
-  element.dataset.slateString === 'true';
+export const isPliteString = (element: HTMLElement) =>
+  element.dataset.pliteString === 'true';
 
-export const isSlateLeaf = (element: HTMLElement) =>
-  element.dataset.slateLeaf === 'true';
+export const isPliteLeaf = (element: HTMLElement) =>
+  element.dataset.pliteLeaf === 'true';
 
-export const isSlateEditor = (element: HTMLElement) =>
-  element.dataset.slateEditor === 'true';
+export const isBasePlateEditor = (element: HTMLElement) =>
+  element.dataset.pliteEditor === 'true';
 
-export const isSlateNode = (element: HTMLElement) =>
-  isSlateLeaf(element) ||
-  isSlateElement(element) ||
-  isSlateVoid(element) ||
-  isSlateString(element) ||
-  isSlateText(element);
+export const isPliteNode = (element: HTMLElement) =>
+  isPliteLeaf(element) ||
+  isPliteElement(element) ||
+  isPliteVoid(element) ||
+  isPliteString(element) ||
+  isPliteText(element);
 
-export const isSlatePluginElement = (element: HTMLElement, pluginKey: string) =>
-  element.dataset.slateNode === 'element' &&
-  element.classList.contains(`slate-${pluginKey}`);
+export const isPlitePluginElement = (element: HTMLElement, pluginKey: string) =>
+  element.dataset.pliteNode === 'element' &&
+  element.classList.contains(`plite-${pluginKey}`);
 
-export const isSlatePluginNode = (element: HTMLElement, pluginKey: string) =>
-  element.classList.contains(`slate-${pluginKey}`);
+export const isPlitePluginNode = (element: HTMLElement, pluginKey: string) =>
+  element.classList.contains(`plite-${pluginKey}`);
 
-export const getSlateElements = (element: HTMLElement): HTMLElement[] =>
-  Array.from(element.querySelectorAll('[data-slate-node="element"]'));
+export const getPliteElements = (element: HTMLElement): HTMLElement[] =>
+  Array.from(element.querySelectorAll('[data-plite-node="element"]'));

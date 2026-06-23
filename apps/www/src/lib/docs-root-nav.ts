@@ -1,35 +1,35 @@
 import type { SidebarNavItem } from '@/types/nav';
 
-import slateMeta from '../../../../content/docs/slate/meta.json';
+import pliteMeta from '../../../../content/docs/plite/meta.json';
 
 const CN_DOCS_PREFIX_REGEX = /^\/cn(?=\/docs)/;
-const SLATE_DOCS_PREFIX = '/docs/slate';
+const PLITE_DOCS_PREFIX = '/docs/plite';
 const META_LINK_REGEX = /^\[([^\]]+)\]\(([^)]+)\)$/;
 const META_SEPARATOR_REGEX = /^---(.+)---$/;
 
-export type DocsRootId = 'plate' | 'slate';
+export type DocsRootId = 'plate' | 'plite';
 
 function normalizeDocsPath(pathname: string) {
   return pathname.replace(CN_DOCS_PREFIX_REGEX, '');
 }
 
 export function getDocsRootFromPathname(pathname: string): DocsRootId {
-  return normalizeDocsPath(pathname).startsWith(SLATE_DOCS_PREFIX)
-    ? 'slate'
+  return normalizeDocsPath(pathname).startsWith(PLITE_DOCS_PREFIX)
+    ? 'plite'
     : 'plate';
 }
 
-function isSlateHref(href: string) {
+function isPliteHref(href: string) {
   const normalizedHref = normalizeDocsPath(href);
 
   return (
-    normalizedHref === SLATE_DOCS_PREFIX ||
-    normalizedHref.startsWith(`${SLATE_DOCS_PREFIX}/`)
+    normalizedHref === PLITE_DOCS_PREFIX ||
+    normalizedHref.startsWith(`${PLITE_DOCS_PREFIX}/`)
   );
 }
 
 function filterPlateNavItem(item: SidebarNavItem): SidebarNavItem | null {
-  if (item.href && isSlateHref(item.href)) return null;
+  if (item.href && isPliteHref(item.href)) return null;
 
   const items = item.items
     ?.map(filterPlateNavItem)
@@ -49,7 +49,7 @@ function getPlateSidebarNav(sidebarNav: SidebarNavItem[]) {
     .filter((section): section is SidebarNavItem => section !== null);
 }
 
-function getSlateSidebarNav() {
+function getPliteSidebarNav() {
   const sections: SidebarNavItem[] = [];
   let currentSection: SidebarNavItem | undefined;
   let hasSeenSeparator = false;
@@ -66,7 +66,7 @@ function getSlateSidebarNav() {
     return currentSection;
   };
 
-  for (const entry of slateMeta.pages) {
+  for (const entry of pliteMeta.pages) {
     const separatorMatch = entry.match(META_SEPARATOR_REGEX);
 
     if (separatorMatch) {
@@ -104,7 +104,7 @@ export function getSidebarNavForDocsRoot(
   sidebarNav: SidebarNavItem[],
   root: DocsRootId
 ) {
-  return root === 'slate'
-    ? getSlateSidebarNav()
+  return root === 'plite'
+    ? getPliteSidebarNav()
     : getPlateSidebarNav(sidebarNav);
 }

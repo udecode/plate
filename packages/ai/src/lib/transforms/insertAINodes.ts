@@ -1,8 +1,8 @@
-import type { Descendant, Path } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Descendant, Path } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 export const insertAINodes = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   nodes: Descendant[],
   {
     target,

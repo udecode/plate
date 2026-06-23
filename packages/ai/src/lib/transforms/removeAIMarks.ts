@@ -1,8 +1,8 @@
-import type { Location } from '@platejs/slate';
-import { type SlateEditor, getPluginType, KEYS } from 'platejs';
+import type { Location } from '@platejs/plite';
+import { type BasePlateEditor, getPluginType, KEYS } from 'platejs';
 
 export const removeAIMarks = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { at = [] }: { at?: Location } = {}
 ) => {
   const nodeType = getPluginType(editor, KEYS.ai);

@@ -1,8 +1,8 @@
-import { PathApi } from '@platejs/slate';
+import { PathApi } from '@platejs/plite';
 
 import type { LegacyTransformOverride } from '../../../../internal/plugin/withLegacyTransformOverride';
 
-import { getPluginByType } from '../../../plugin/getSlatePlugin';
+import { getPluginByType } from '../../../plugin/getEditorPluginInstance';
 
 export const withBreakRules: LegacyTransformOverride = (ctx) => {
   const { editor, tf } = ctx;
@@ -168,7 +168,7 @@ export const withBreakRules: LegacyTransformOverride = (ctx) => {
           }
         }
 
-        // Standard Slate insertBreak if no custom breakRules handled it
+        // Standard Plite insertBreak if no custom breakRules handled it
         insertBreak();
       },
     },

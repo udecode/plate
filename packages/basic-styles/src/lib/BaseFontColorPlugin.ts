@@ -1,6 +1,6 @@
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
-export const BaseFontColorPlugin = createSlatePlugin({
+export const BaseFontColorPlugin = createEditorPlugin({
   key: KEYS.color,
   inject: {
     nodeProps: {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import type { Editor as PliteEditor } from '@platejs/plite';
+import type { Editor as EditorType } from '@platejs/plite';
 
 import {
   createDecorationSource,
@@ -45,7 +45,7 @@ const useStableDirtiness = (dirtiness: PliteSourceDirtiness | undefined) => {
   return useMemo(() => dirtiness, [dirtinessIdentity]);
 };
 
-const isReactEditorFocused = (editor: PliteEditor) =>
+const isReactEditorFocused = (editor: EditorType) =>
   ReactEditor.isFocused(editor as unknown as ReactRuntimeEditor);
 
 const useDecorationSourceLifecycle = <T>(source: PliteDecorationSource<T>) => {
@@ -76,7 +76,7 @@ const useDecorationSourceLifecycle = <T>(source: PliteDecorationSource<T>) => {
  * Pass `deps` when the source options close over changing values.
  */
 export const usePliteDecorationSource = <T = unknown>(
-  editor: PliteEditor,
+  editor: EditorType,
   options: UsePliteDecorationSourceOptions<T>
 ): PliteDecorationSource<T> => {
   const optionsCell = useRef(options);
@@ -128,7 +128,7 @@ export const usePliteDecorationSource = <T = unknown>(
  * keyed decorations for the projection store.
  */
 export const usePliteRangeDecorationSource = <T = unknown>(
-  editor: PliteEditor,
+  editor: EditorType,
   options: UsePliteRangeDecorationSourceOptions<T>
 ): PliteDecorationSource<T> => {
   const optionsCell = useRef(options);

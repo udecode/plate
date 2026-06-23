@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@plate/scripts": "workspace:*",
-    "@platejs/slate": "workspace:^",
+    "@platejs/plite": "workspace:^",
     "platejs": "workspace:^"
   },
   "peerDependencies": {

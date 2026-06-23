@@ -1,7 +1,7 @@
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 import type {
   Path,
-  SlateEditor,
+  BasePlateEditor,
   TTableCellElement,
   TTableRowElement,
 } from 'platejs';
@@ -13,7 +13,7 @@ import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
 import { findTableNodePath } from '../utils/findTableNodePath';
 
-export const splitTableCell = (editor: SlateEditor) => {
+export const splitTableCell = (editor: BasePlateEditor) => {
   const { api } = getEditorPlugin(editor, BaseTablePlugin);
   const tableRowType = editor.getType(KEYS.tr);
 

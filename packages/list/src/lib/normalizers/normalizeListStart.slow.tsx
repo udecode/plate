@@ -1,11 +1,11 @@
 /** @jsx jsxt */
 
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type Value,
   BaseParagraphPlugin,
-  createSlateEditor,
-  createTSlatePlugin,
+  createBasePlateEditor,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -21,7 +21,7 @@ jsxt;
 
 const CUSTOM_H1 = 'heading-one';
 
-const H1Plugin = createTSlatePlugin({
+const H1Plugin = createEditorPlugin({
   key: KEYS.h1,
 });
 
@@ -29,7 +29,7 @@ const CustomH1Plugin = H1Plugin.extend({
   node: { type: CUSTOM_H1 },
 });
 
-const BlockquotePlugin = createTSlatePlugin({
+const BlockquotePlugin = createEditorPlugin({
   key: KEYS.blockquote,
 });
 
@@ -46,7 +46,7 @@ const createEditor = ({
   pages?: boolean;
   targetPlugins?: string[];
 }) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: [
       BaseParagraphPlugin,
       headingPlugin,
@@ -141,7 +141,7 @@ const createBlockquoteItem = (
   </hblockquote>
 );
 
-const expectAlreadyNormalized = (editor: SlateEditor) => {
+const expectAlreadyNormalized = (editor: BasePlateEditor) => {
   const before = editor.children;
   getCurrentRuntimeTransforms(editor).normalize({ force: true });
   expect(editor.children).toBe(before);

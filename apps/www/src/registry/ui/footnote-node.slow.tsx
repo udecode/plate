@@ -55,7 +55,7 @@ const PlateElementMock = mock(
   )
 );
 
-const SlateElementMock = mock(
+const PliteElementMock = mock(
   ({ children, as: Comp = 'div', attributes, className, ...props }: any) => (
     <Comp {...attributes} {...props} className={className}>
       {children}
@@ -103,7 +103,7 @@ mock.module('platejs/react', () => ({
 }));
 
 mock.module('platejs/static', () => ({
-  SlateElement: SlateElementMock,
+  PliteElement: PliteElementMock,
 }));
 
 mock.module('@/components/ui/hover-card', () => ({
@@ -186,7 +186,7 @@ describe('footnote node rendering', () => {
     editorSelectorEditor = undefined;
     lastPluginEditor = undefined;
     PlateElementMock.mockClear();
-    SlateElementMock.mockClear();
+    PliteElementMock.mockClear();
   });
 
   afterAll(() => {

@@ -37,7 +37,7 @@ export const getRenderedBlockDOMShapes = async (
     };
 
     return Array.from(
-      element.querySelectorAll(':scope > [data-slate-node="element"]')
+      element.querySelectorAll(':scope > [data-plite-node="element"]')
     ).map((block, index) => {
       const textContent = normalizeText(block.textContent ?? '');
       const innerText = normalizeText(
@@ -46,14 +46,14 @@ export const getRenderedBlockDOMShapes = async (
           : (block.textContent ?? '')
       );
       const zeroWidthNodes = Array.from(
-        block.querySelectorAll('[data-slate-zero-width]')
+        block.querySelectorAll('[data-plite-zero-width]')
       ).map((zeroWidth, zeroWidthIndex) => ({
         hasBr: !!zeroWidth.querySelector('br'),
         hasFEFF: zeroWidth.textContent?.includes('\uFEFF') ?? false,
         html: zeroWidth.innerHTML,
         index: zeroWidthIndex,
-        kind: zeroWidth.getAttribute('data-slate-zero-width'),
-        length: zeroWidth.getAttribute('data-slate-length'),
+        kind: zeroWidth.getAttribute('data-plite-zero-width'),
+        length: zeroWidth.getAttribute('data-plite-length'),
         textContent: zeroWidth.textContent ?? '',
       }));
 

@@ -1,13 +1,13 @@
 import type { Locator } from '@playwright/test';
 import { toPlainText } from './clipboard';
-import { SLATE_BROWSER_HANDLE_KEY } from './constants';
+import { PLITE_BROWSER_HANDLE_KEY } from './constants';
 import type { SurfaceTarget } from './surface';
 import type { HtmlNormalizationOptions } from './types';
 
 export const getBlockTexts = async (root: Locator): Promise<string[]> =>
   root.evaluate((element: HTMLElement) =>
     Array.from(
-      element.querySelectorAll(':scope > [data-slate-node="element"]')
+      element.querySelectorAll(':scope > [data-plite-node="element"]')
     ).map((block) => (block.textContent ?? '').replace(/\uFEFF/g, ''))
   );
 
@@ -51,7 +51,7 @@ export const insertTextThroughHandle = async (root: Locator, text: string) =>
 
       handle.insertText(nextText);
     },
-    { key: SLATE_BROWSER_HANDLE_KEY, nextText: text }
+    { key: PLITE_BROWSER_HANDLE_KEY, nextText: text }
   );
 
 export const dropHtml = async (

@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import type { Element, NodeEntry } from '@platejs/plite';
+
 import { isHotkey, KEYS, PathApi } from 'platejs';
 import {
   type EditableSiblingComponent,
@@ -34,10 +36,10 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   const removeSelectedBlocks = React.useCallback(
     (options: { selectPrevious?: boolean } = {}) => {
       const entries = [
-        ...editor.api.nodes({
+        ...(editor.api.nodes({
           at: [],
-          match: (n) => !!n.id && selectedIds?.has(n.id as string),
-        }),
+          match: (n: Element) => !!n.id && selectedIds?.has(n.id as string),
+        }) as Iterable<NodeEntry<Element>>),
       ];
 
       if (entries.length === 0) return null;
@@ -164,8 +166,8 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         const entry = editor.api.node({
           at: [],
           block: true,
-          match: (n) => !!n.id && selectedIds?.has(n.id as string),
-        });
+          match: (n: Element) => !!n.id && selectedIds?.has(n.id as string),
+        }) as NodeEntry<Element> | undefined;
 
         if (entry) {
           const [, path] = entry;
@@ -289,7 +291,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
   return ReactDOM.createPortal(
     <input
       ref={inputRef}
-      className="slate-shadow-input"
+      className="plite-shadow-input"
       style={{
         left: '-300px',
         opacity: 0,

@@ -1,6 +1,6 @@
-import type { EditorUpdateTransaction } from '@platejs/slate';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 
-import type { SlateEditor, TLinkElement } from 'platejs';
+import type { BasePlateEditor, TLinkElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -15,7 +15,7 @@ export interface WrapLinkOptions extends WrapNodesOptions {
 
 /** Wrap a link node with split. */
 export const wrapLink = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { target, url, ...options }: WrapLinkOptions
 ) => {
   editor.update((tx) => {

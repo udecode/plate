@@ -4,8 +4,8 @@ import type {
   NodeProps,
   Path,
   Text,
-} from '@platejs/slate';
-import { TextApi } from '@platejs/slate';
+} from '@platejs/plite';
+import { TextApi } from '@platejs/plite';
 import type { PlateEditor } from 'platejs/react';
 
 import type { BlockSelectionConfig } from '../BlockSelectionPlugin';

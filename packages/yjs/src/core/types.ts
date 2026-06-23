@@ -1,4 +1,4 @@
-import type { Range, Value } from '@platejs/slate';
+import type { Range, Value } from '@platejs/plite';
 import type * as Y from 'yjs';
 
 export type YjsAwarenessChange = {
@@ -116,9 +116,9 @@ export type YjsTraceFallback =
 
 export type YjsTraceEntry = {
   readonly fallback?: YjsTraceFallback;
-  /** Number of top-level Slate children read from Yjs during a full import. */
+  /** Number of top-level Plite children read from Yjs during a full import. */
   readonly importedChildren?: number;
-  /** Describes the import strategy used when Yjs state is read into Slate. */
+  /** Describes the import strategy used when Yjs state is read into Plite. */
   readonly importKind?: 'full-read-replace';
   readonly mode: YjsTraceMode;
   readonly operationType?: string;
@@ -178,7 +178,7 @@ export type YjsTx = {
   readonly undo: () => void;
 };
 
-declare module '@platejs/slate' {
+declare module '@platejs/plite' {
   interface EditorStateExtensionGroups<V extends Value = Value> {
     yjs: YjsState;
   }

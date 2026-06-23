@@ -5,7 +5,7 @@ import {
   type OmitFirst,
   type PluginConfig,
   bindFirst,
-  createTSlatePlugin,
+  createEditorPlugin,
   isUrl,
   KEYS,
 } from 'platejs';
@@ -53,8 +53,8 @@ export type MarkdownConfig = PluginConfig<
      */
     remarkStringifyOptions: RemarkStringifyOptions | null;
     /**
-     * Rules that define how to convert Markdown syntax elements to Slate editor
-     * elements. Or rules that how to convert Slate editor elements to Markdown
+     * Rules that define how to convert Markdown syntax elements to Plite editor
+     * elements. Or rules that how to convert Plite editor elements to Markdown
      * syntax elements. Includes conversion rules for elements such as
      * paragraphs, headings, lists, links, images, etc.
      *
@@ -88,7 +88,7 @@ export type MarkdownConfig = PluginConfig<
   }
 >;
 
-export const MarkdownPlugin = createTSlatePlugin<MarkdownConfig>({
+export const MarkdownPlugin = createEditorPlugin<MarkdownConfig>({
   key: KEYS.markdown,
   options: {
     allowedNodes: null,

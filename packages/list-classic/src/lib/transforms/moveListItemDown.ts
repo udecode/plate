@@ -1,5 +1,5 @@
-import type { SlateEditor } from '@platejs/core';
-import type { Element, ElementEntry } from '@platejs/slate';
+import type { BasePlateEditor } from '@platejs/core';
+import type { Element, ElementEntry } from '@platejs/plite';
 import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
 
 import { getListTypes, getPreviousSiblingPath } from '../queries/index';
@@ -10,7 +10,7 @@ export type MoveListItemDownOptions = {
 };
 
 export const moveListItemDown = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { list, listItem }: MoveListItemDownOptions
 ) => {
   let moved = false;

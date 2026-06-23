@@ -1,4 +1,4 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import {
   BaseBoldPlugin,
@@ -13,7 +13,7 @@ import {
 } from './index';
 
 const getDeserializerQuery = (plugin: any) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: [plugin],
   } as any).getPlugin(plugin).parsers.html.deserializer.query;
 

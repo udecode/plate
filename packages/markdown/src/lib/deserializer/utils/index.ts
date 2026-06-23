@@ -8,7 +8,7 @@ export * from './getDeserializerByKey';
 export * from './getMergedOptionsDeserialize';
 export * from './getStyleValue';
 export * from './htmlToJsx';
-export * from './markdownToSlateNodesSafely';
+export * from './markdownToPliteNodesSafely';
 export * from './parseMarkdownBlocks';
 export * from './splitIncompleteMdx';
 export * from './stripMarkdown';

@@ -8,7 +8,7 @@ import {
   type Path,
   type Point,
   RangeApi,
-} from '@platejs/slate';
+} from '@platejs/plite';
 
 type RuntimeReadableEditor = {
   api?: Record<string, any>;
@@ -157,11 +157,15 @@ export const getEditorNode = <T extends Node = Node>(
   editor: RuntimeReadableEditor,
   at: Location
 ): NodeEntry<T> | undefined => {
-  if (hasApi(editor, 'node')) return editor.api.node(at) as NodeEntry<T>;
+  try {
+    if (hasApi(editor, 'node')) return editor.api.node(at) as NodeEntry<T>;
 
-  return editor.read?.((state) => state.nodes.get(at)) as
-    | NodeEntry<T>
-    | undefined;
+    return editor.read?.((state) => state.nodes.get(at)) as
+      | NodeEntry<T>
+      | undefined;
+  } catch {
+    return;
+  }
 };
 
 export const getEditorParent = <T extends Element = Element>(

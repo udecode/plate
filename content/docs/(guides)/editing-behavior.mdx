@@ -35,7 +35,7 @@ Rules keep common editor policy close to the plugin that owns the node. Transfor
 
 ## Runtime Pipeline
 
-Plate resolves plugins first, then core plugins wrap Slate APIs and transforms.
+Plate resolves plugins first, then core plugins wrap Plite APIs and transforms.
 
 | Layer | Owner | Handles |
 | --- | --- | --- |
@@ -114,7 +114,7 @@ Plate checks collapsed `deleteBackward` in this order:
 | Cursor at the start of the current block | `delete.start` | Runs `reset`, `lift`, or falls through. |
 | Current block is empty | `delete.empty` | Runs `reset` or falls through. |
 | Cursor is at the start of the document | Core default | Resets the first block. |
-| Nothing handled the case | Slate transform | Runs the original delete transform. |
+| Nothing handled the case | Plite transform | Runs the original delete transform. |
 
 Use `start: 'reset'` for formatted text blocks that should become paragraphs before they merge into the previous block.
 
@@ -198,7 +198,7 @@ export const StableCalloutPlugin = CalloutPlugin.configure({
 
 ## Normalize Behavior
 
-`rules.normalize` runs during Slate normalization.
+`rules.normalize` runs during Plite normalization.
 
 Use `normalize.removeEmpty` for elements that should not exist without text content. Links use this shape because an empty link has no useful editing surface.
 
@@ -222,7 +222,7 @@ Keep normalization rules boring. If a node needs a rich repair strategy, write a
 
 | Affinity | Use for |
 | --- | --- |
-| `default` | Normal Slate boundary behavior. |
+| `default` | Normal Plite boundary behavior. |
 | `directional` | Links and highlights where cursor direction decides whether typed text stays inside. |
 | `outward` | Comment and suggestion marks where edge typing should leave the mark. |
 | `hard` | Boundaries that should take an extra arrow-key step to cross. |
@@ -255,8 +255,8 @@ For list metadata and code-block children, use `rules.match` so the feature plug
 | `rules.normalize` | Core rule engine plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesnormalize) |
 | `rules.selection` | Affinity core plugin plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesselection) |
 | `rules.match` | Core rule lookup plus feature plugin config | [Plugin Rules](/docs/plugin-rules#rulesmatch) |
-| `editor.tf.mergeNodes()` | Slate transform patched by Plate | [Editor Transforms](/docs/api/slate/editor-transforms#mergenodes) |
-| `editor.api.shouldMergeNodes()` | Slate editor API patched by Plate | [Editor API](/docs/api/slate/editor-api#shouldmergenodes) |
+| `editor.tf.mergeNodes()` | Plite transform patched by Plate | [Editor Transforms](/docs/api/plite/editor-transforms#mergenodes) |
+| `editor.api.shouldMergeNodes()` | Plite editor API patched by Plate | [Editor API](/docs/api/plite/editor-api#shouldmergenodes) |
 | `editor.tf.table.merge()` | Table feature package | [Table](/docs/table#editing-behavior) |
 
 Done. Rules describe the policy; transforms do the work.

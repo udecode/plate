@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createListClassicLegacyTestEditor as createSlateEditor } from '../__tests__/createListClassicLegacyTestEditor';
+import { createListClassicLegacyTestEditor as createBasePlateEditor } from '../__tests__/createListClassicLegacyTestEditor';
 
 import { getHighestEmptyList } from './getHighestEmptyList';
 
@@ -9,7 +9,7 @@ jsxt;
 
 describe('getHighestEmptyList', () => {
   it('returns undefined when the path is not inside a list', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 
@@ -29,7 +29,7 @@ describe('getHighestEmptyList', () => {
         </hul>
       </editor>
     ) as any;
-    const editor = createSlateEditor({ value: input.children });
+    const editor = createBasePlateEditor({ value: input.children });
 
     expect(getHighestEmptyList(editor, { liPath: [0, 1] })).toEqual([0, 1]);
   });
@@ -52,7 +52,7 @@ describe('getHighestEmptyList', () => {
         </hul>
       </editor>
     ) as any;
-    const editor = createSlateEditor({ value: input.children });
+    const editor = createBasePlateEditor({ value: input.children });
 
     expect(getHighestEmptyList(editor, { liPath: [0, 0, 1, 0] })).toEqual([
       0, 0,
@@ -77,7 +77,7 @@ describe('getHighestEmptyList', () => {
         </hul>
       </editor>
     ) as any;
-    const editor = createSlateEditor({ value: input.children });
+    const editor = createBasePlateEditor({ value: input.children });
 
     expect(
       getHighestEmptyList(editor, {

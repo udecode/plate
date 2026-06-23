@@ -1,12 +1,12 @@
 import React from 'react';
 
-import type { Element as SlateElement } from '@platejs/slate';
+import type { Element as PliteElement } from '@platejs/plite';
 import type { SlateRenderElementProps } from 'platejs/static';
 
 import {
   type PluginConfig,
   type TListElement,
-  createTSlatePlugin,
+  createEditorPlugin,
   isDefined,
   isHtmlBlockElement,
   KEYS,
@@ -35,13 +35,13 @@ import { isOrderedList } from './queries';
 export type BaseListConfig = PluginConfig<
   'list',
   {
-    getSiblingListOptions?: GetSiblingListOptions<SlateElement>;
+    getSiblingListOptions?: GetSiblingListOptions<PliteElement>;
     /** Map html element to list style type. */
     getListStyleType?: (element: HTMLElement) => ListStyleType;
   }
 >;
 
-export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
+export const BaseListPlugin = createEditorPlugin<BaseListConfig>({
   key: KEYS.list,
   inject: {
     plugins: {

@@ -38,7 +38,7 @@ const WORKSPACE_ALIAS_SUBPATHS = [
   'transports',
 ];
 
-const isSlateMode = process.env.PLATE_WWW_SLATE === '1';
+const isPliteMode = process.env.PLATE_WWW_PLITE === '1';
 
 const addAliasEntries = (
   aliases: Record<string, string>,
@@ -141,7 +141,7 @@ const withMDX = createMDX({});
 const nextConfig = async (_phase: string) => {
   const isDev = _phase === PHASE_DEVELOPMENT_SERVER;
   const config: NextConfig = {
-    distDir: isSlateMode ? '.next-slate' : '.next',
+    distDir: isPliteMode ? '.next-slate' : '.next',
     typescript: {
       ignoreBuildErrors: true,
     },
@@ -179,7 +179,7 @@ const nextConfig = async (_phase: string) => {
       '/blocks/slate-to-html': ['./public/tailwind.css'],
       '/cn/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
       '/docs/[[...slug]]': ['./src/registry/**/*', './public/r/**/*'],
-      '/docs/examples/slate-to-html': ['./public/tailwind.css'],
+      '/docs/examples/plite-to-html': ['./public/tailwind.css'],
       '/view/slate-to-html': ['./public/tailwind.css'],
     },
     reactCompiler: !isDev,
@@ -210,19 +210,19 @@ const nextConfig = async (_phase: string) => {
           source: '/cn/docs/migration',
         },
         {
-          destination: '/examples/slate/richtext',
+          destination: '/examples/plite/richtext',
           permanent: true,
-          source: '/docs/slate/examples',
+          source: '/docs/plite/examples',
         },
         {
-          destination: '/docs/slate/migration',
+          destination: '/docs/plite/migration',
           permanent: true,
-          source: '/docs/slate/migration/slate-v2',
+          source: '/docs/plite/migration/plite',
         },
         {
-          destination: '/docs/slate/why-this-fork',
+          destination: '/docs/plite/why-this-fork',
           permanent: true,
-          source: '/docs/slate/releases/slate-v2',
+          source: '/docs/plite/releases/plite',
         },
         {
           destination: '/docs/installation/plate-ui#sync-copied-files',

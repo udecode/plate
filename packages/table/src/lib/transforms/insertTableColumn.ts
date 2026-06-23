@@ -1,6 +1,6 @@
-import type { Element } from '@platejs/slate';
-import { PathApi, type Path } from '@platejs/slate';
-import type { SlateEditor, TTableElement } from 'platejs';
+import type { Element } from '@platejs/plite';
+import { PathApi, type Path } from '@platejs/plite';
+import type { BasePlateEditor, TTableElement } from 'platejs';
 
 import { getEditorPlugin, KEYS } from 'platejs';
 
@@ -9,7 +9,7 @@ import { insertTableMergeColumn } from '../merge/insertTableColumn';
 import { getCellTypes } from '../utils/index';
 
 export const insertTableColumn = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options: {
     /** Exact path of the cell to insert the column at. Will overrule `fromCell`. */
     at?: Path;
@@ -133,12 +133,9 @@ export const insertTableColumn = (
         }
       }
 
-      tx.nodes.set(
-        { colSizes: newColSizes } satisfies Partial<TTableElement>,
-        {
-          at: tablePath,
-        }
-      );
+      tx.nodes.set({ colSizes: newColSizes } satisfies Partial<TTableElement>, {
+        at: tablePath,
+      });
     }
   });
 };

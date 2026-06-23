@@ -1,12 +1,12 @@
-import type { Range } from '@platejs/slate';
+import type { Range } from '@platejs/plite';
 import * as Y from 'yjs';
 
 import { isRecord } from './record';
 import {
-  slateRangeToYjsRelativeRange,
+  pliteRangeToYjsRelativeRange,
   type YjsRelativeRange,
   yjsRelativeRangesEqual,
-  yjsRelativeRangeToSlateRange,
+  yjsRelativeRangeToPliteRange,
 } from './selection';
 import type { YjsAwarenessSelection } from './types';
 
@@ -14,7 +14,7 @@ export const createYjsAwarenessSelection = (
   root: Y.XmlElement,
   range: Range
 ): YjsAwarenessSelection => {
-  const relative = slateRangeToYjsRelativeRange(root, range);
+  const relative = pliteRangeToYjsRelativeRange(root, range);
 
   return {
     anchor: Y.relativePositionToJSON(relative.anchor),
@@ -31,7 +31,7 @@ export const readYjsAwarenessSelection = (
   }
 
   try {
-    return yjsRelativeRangeToSlateRange(
+    return yjsRelativeRangeToPliteRange(
       root,
       readYjsAwarenessRelativeRange(value)
     );

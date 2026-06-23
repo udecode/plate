@@ -1,6 +1,8 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { getTransientSuggestionKey } from '@platejs/suggestion';
+
+import { getEditorHistory } from '../internal/history';
 
 import { cancelAIPreview, hasAIPreview } from './aiStreamSnapshot';
 
@@ -8,25 +10,27 @@ type AIHistoryBatch = {
   ai?: unknown;
 };
 
-export const undoAI = (editor: SlateEditor) => {
+export const undoAI = (editor: BasePlateEditor) => {
   if (hasAIPreview(editor) && cancelAIPreview(editor)) return;
 
+  const history = getEditorHistory(editor);
   const hasAINodeOrAISuggestion =
     editor.api.some({
       at: [],
-      match: (n) => !!(n as Record<string, unknown>).ai,
+      match: (n: unknown) => !!(n as Record<string, unknown>).ai,
     }) ||
     editor.api.some({
       at: [],
-      match: (n) => !!n[getTransientSuggestionKey()],
+      match: (n: unknown) =>
+        !!(n as Record<string, unknown>)[getTransientSuggestionKey()],
     });
 
   if (
-    (editor.history.undos.at(-1) as AIHistoryBatch | undefined)?.ai &&
+    (history.undos.at(-1) as AIHistoryBatch | undefined)?.ai &&
     hasAINodeOrAISuggestion
   ) {
     editor.undo();
-    editor.history.redos.pop();
+    history.redos.pop();
 
     return;
   }

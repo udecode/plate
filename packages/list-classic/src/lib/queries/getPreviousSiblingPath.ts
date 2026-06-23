@@ -1,4 +1,4 @@
-import type { Path } from '@platejs/slate';
+import type { Path } from '@platejs/plite';
 
 export const getPreviousSiblingPath = (path: Path): Path | undefined => {
   const index = path.at(-1);

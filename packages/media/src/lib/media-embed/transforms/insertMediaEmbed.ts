@@ -1,6 +1,6 @@
 import type {
   NodeInsertNodesOptions,
-  SlateEditor,
+  BasePlateEditor,
   TMediaEmbedElement,
 } from 'platejs';
 
@@ -15,7 +15,7 @@ type InsertNodesOptions = NonNullable<
 >;
 
 export const insertMediaEmbed = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { url = '' }: Partial<TMediaEmbedElement>,
   options: InsertNodesOptions = {}
 ): void => {

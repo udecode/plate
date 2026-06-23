@@ -6,7 +6,7 @@ import {
   type Path,
   PathApi,
   type PathRef,
-  type Editor as PliteEditor,
+  type Editor as EditorType,
 } from '@platejs/plite';
 import {
   Editor,
@@ -43,7 +43,7 @@ import {
 
 const DEFAULT_CLIPBOARD_FORMAT_KEY = 'x-plite-fragment';
 
-const clearUserSelectionRef = (editor: PliteEditor) => {
+const clearUserSelectionRef = (editor: EditorType) => {
   EDITOR_TO_USER_SELECTION.get(editor)?.unref();
   EDITOR_TO_USER_SELECTION.delete(editor);
 };
@@ -128,7 +128,7 @@ export const installDOM = <
         withOperationRootChildren(e, op, () => {
           const matches: [Path, Key][] = [];
           const pathRefMatches: [PathRef, Key][] = [];
-          const transformPendingState = (editor: PliteEditor) => {
+          const transformPendingState = (editor: EditorType) => {
             const pendingDiffs = EDITOR_TO_PENDING_DIFFS.get(editor);
 
             if (pendingDiffs?.length) {
@@ -267,7 +267,7 @@ export const installDOM = <
 export const dom = (options: DOMEditorOptions = {}) =>
   defineEditorExtension({
     name: 'dom',
-    setup(context: EditorExtensionSetupContext<PliteEditor>) {
+    setup(context: EditorExtensionSetupContext<EditorType>) {
       const editor = installDOM(context.editor, options);
       const { clipboard, ...domApi } = editor.dom;
 

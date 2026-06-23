@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 import {
   createEditor,
   type Descendant,
-  type Editor as PliteEditor,
+  type Editor as EditorType,
 } from '@platejs/plite';
 import { Editor } from '@platejs/plite/internal';
 import { History, history } from '@platejs/plite-history';
@@ -11,7 +11,7 @@ import { createHyperscript } from '@platejs/plite-hyperscript';
 
 import { jsx } from './index.js';
 
-const createSelectedEditor = (): PliteEditor =>
+const createSelectedEditor = (): EditorType =>
   jsx(
     'editor',
     {},
@@ -25,7 +25,7 @@ const createSelectedEditor = (): PliteEditor =>
       jsx('anchor', { path: [1, 0], offset: 2 }),
       jsx('focus', { path: [1, 0], offset: 2 })
     )
-  ) as PliteEditor;
+  ) as EditorType;
 
 describe('plite headless contract', () => {
   it('supports package-split headless composition through source-resolved package imports', () => {
@@ -101,7 +101,7 @@ describe('plite headless contract', () => {
         h('anchor', { path: [0, 0], offset: 1 }),
         h('focus', { path: [0, 0], offset: 3 })
       )
-    ) as PliteEditor;
+    ) as EditorType;
     const editor = createEditor();
 
     Editor.replace(editor, {

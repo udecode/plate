@@ -3,7 +3,7 @@
 import { LinkPlugin } from '@platejs/link/react';
 import { jsxt } from '@platejs/test-utils';
 
-import { createSlateEditor } from '../../editor';
+import { createBasePlateEditor } from '../../editor';
 import {
   NodeIdPlugin,
   normalizeNodeId,
@@ -130,7 +130,7 @@ describe('normalizeNodeIdWithEditor', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       nodeId: false,
       plugins: [LinkPlugin],
       value: input.children,
@@ -155,7 +155,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -177,7 +177,7 @@ describe('NodeIdPlugin', () => {
       { children: [{ text: 'last' }], type: 'p' },
     ] as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -203,7 +203,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -229,7 +229,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -254,7 +254,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -280,7 +280,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -306,7 +306,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {
@@ -334,7 +334,7 @@ describe('NodeIdPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         NodeIdPlugin.configure({
           options: {

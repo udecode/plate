@@ -1,6 +1,6 @@
 import { expect, type Locator } from '@playwright/test';
 
-import type { SlateBrowserEditorHarness } from './types';
+import type { PliteBrowserEditorHarness } from './types';
 
 /** Snapshot used to prove caret visibility inside a scroll container. */
 /** Caret visibility evidence captured inside a scrollable parent. */
@@ -80,7 +80,7 @@ const takeCaretVisibilitySnapshot = async (
         : selection.anchorNode instanceof Text
           ? selection.anchorNode.parentElement
           : null;
-    const textHost = anchorElement?.closest('[data-slate-node="text"]');
+    const textHost = anchorElement?.closest('[data-plite-node="text"]');
     const range = selection.getRangeAt(0);
     const caretRect =
       Array.from(range.getClientRects())[0] ?? range.getBoundingClientRect();
@@ -182,8 +182,8 @@ export const assertNoVisibleCaretInRoot = async (root: Locator) => {
 };
 
 /** Assert the caret is visible inside its scrollable ancestor. */
-export const assertSlateBrowserCaretVisibleInScrollableParent = async (
-  editor: SlateBrowserEditorHarness
+export const assertPliteBrowserCaretVisibleInScrollableParent = async (
+  editor: PliteBrowserEditorHarness
 ) => {
   await assertCaretVisibleInScrollableParent(editor.root);
 };

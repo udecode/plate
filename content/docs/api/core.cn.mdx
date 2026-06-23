@@ -186,12 +186,12 @@ description: \@platejs/core 的 API 参考文档。
 
 ### `toPlatePlugin`
 
-扩展 SlatePlugin 以创建 React PlatePlugin。
+扩展 EditorPlugin 以创建 React PlatePlugin。
 
 <API name="toPlatePlugin">
 <APIParameters>
-  <APIItem name="basePlugin" type="SlatePlugin">
-    要扩展的基础 SlatePlugin。
+  <APIItem name="basePlugin" type="EditorPlugin">
+    要扩展的基础 EditorPlugin。
   </APIItem>
   <APIItem name="extendConfig" type="PlatePluginConfig | ((ctx: PlatePluginContext<C>) => PlatePluginConfig)" optional>
     提供扩展配置的函数或对象。如果是函数，它接收插件上下文并应返回部分 PlatePlugin。如果是对象，它应是部分 PlatePlugin 配置。
@@ -199,7 +199,7 @@ description: \@platejs/core 的 API 参考文档。
 </APIParameters>
 
 <APIReturns type="PlatePlugin">
-  一个新的插件实例，结合了基础 SlatePlugin 功能和扩展配置中定义的 React 特定特性。
+  一个新的插件实例，结合了基础 EditorPlugin 功能和扩展配置中定义的 React 特定特性。
 </APIReturns>
 </API>
 
@@ -209,8 +209,8 @@ description: \@platejs/core 的 API 参考文档。
 
 <API name="toTPlatePlugin">
 <APIParameters>
-  <APIItem name="basePlugin" type="SlatePlugin<TContext>">
-    要扩展的基础 SlatePlugin。
+  <APIItem name="basePlugin" type="EditorPlugin<TContext>">
+    要扩展的基础 EditorPlugin。
   </APIItem>
   <APIItem name="extendConfig" type="ExtendPluginConfig<C> | ((ctx: PlatePluginContext<TContext>) => ExtendPluginConfig<C>)" optional>
     提供扩展配置的函数或对象。此版本需要为基本插件配置(`TContext`)和扩展配置(`C`)提供显式类型参数。
@@ -642,10 +642,10 @@ const state = useEditorPluginOption(editor, plugin, 'state');
 
 查看[调试](/docs/debugging)了解更多详情。
 
-### `SlateExtensionPlugin & SlateReactExtensionPlugin`
+### `PliteExtensionPlugin & PliteReactExtensionPlugin`
 扩展核心 API 并改进默认功能。
 
-`SlateExtensionPlugin` 提供 `editor.api.isElementStateEmpty(element)`。它检查元素自身的属性状态，而不是文本内容。默认只忽略 `type` 和插件通过 `node.isMetadataProp` 声明为空的属性；任何其他属性都表示该元素带有状态。`NodeIdPlugin` 使用 `node.isMetadataProp` 处理配置的 NodeId 键。
+`PliteExtensionPlugin` 提供 `editor.api.isElementStateEmpty(element)`。它检查元素自身的属性状态，而不是文本内容。默认只忽略 `type` 和插件通过 `node.isMetadataProp` 声明为空的属性；任何其他属性都表示该元素带有状态。`NodeIdPlugin` 使用 `node.isMetadataProp` 处理配置的 NodeId 键。
 
 ```tsx
 editor.api.isElementStateEmpty({
@@ -659,7 +659,7 @@ editor.api.isElementStateEmpty({
   type: 'p',
 }); // false
 
-const CustomMetadataPlugin = createSlatePlugin({
+const CustomMetadataPlugin = createEditorPlugin({
   key: 'customMetadata',
   node: {
     isMetadataProp: ({ key }) => key === 'customId',
@@ -740,11 +740,11 @@ const CustomMetadataPlugin = createSlatePlugin({
   <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
     要应用到顶层元素的元素属性。
     <APISubList>
-      <APISubListItem parent="attributes" name="data-slate-node" type="'element'">
+      <APISubListItem parent="attributes" name="data-plite-node" type="'element'">
         始终设置为 `'element'`。
       </APISubListItem>
-      <APISubListItem parent="attributes" name="data-slate-inline" type="boolean" optional />
-      <APISubListItem parent="attributes" name="data-slate-void" type="boolean" optional />
+      <APISubListItem parent="attributes" name="data-plite-inline" type="boolean" optional />
+      <APISubListItem parent="attributes" name="data-plite-void" type="boolean" optional />
       <APISubListItem parent="attributes" name="dir" type="string" optional />
       <APISubListItem parent="attributes" name="ref" type="any">
         元素的引用。如果使用自己的引用，请与此引用合并。
@@ -785,7 +785,7 @@ const CustomMetadataPlugin = createSlatePlugin({
   <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
     要应用到顶层元素的叶节点属性。
     <APISubList>
-      <APISubListItem parent="attributes" name="data-slate-leaf" type="true">
+      <APISubListItem parent="attributes" name="data-plite-leaf" type="true">
         始终设置为 `true`。
       </APISubListItem>
     </APISubList>

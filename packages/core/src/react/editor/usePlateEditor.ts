@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
 import type { AnyPluginConfig, InferPlugins } from '../../lib';
 
@@ -47,7 +47,7 @@ type UsePlateEditorReturn<TEnabled, TEditor> = TEnabled extends false
  * @param options - Configuration options for creating the Plate editor
  * @param deps - Additional dependencies for the useMemo hook (default: [])
  * @see {@link createPlateEditor} for detailed information on React editor creation and configuration.
- * @see {@link createSlateEditor} for a non-React version of editor creation.
+ * @see {@link createBasePlateEditor} for a non-React version of editor creation.
  * @see {@link withPlate} for the underlying React-specific enhancement function.
  */
 export function usePlateEditor<

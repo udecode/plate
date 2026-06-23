@@ -2,7 +2,7 @@
 
 import { jsxt } from '@platejs/test-utils';
 import { KEYS } from '@platejs/utils';
-import { createListClassicTestEditor as createSlateEditor } from '../__tests__/createListClassicTestEditor';
+import { createListClassicTestEditor as createBasePlateEditor } from '../__tests__/createListClassicTestEditor';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import { normalizeNestedList } from './normalizeNestedList';
@@ -11,7 +11,7 @@ jsxt;
 
 describe('normalizeNestedList', () => {
   it('returns false when the parent is not a list', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
@@ -34,7 +34,7 @@ describe('normalizeNestedList', () => {
         </hul>
       </editor>
     ) as any;
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       value: input.children,
     });
@@ -60,7 +60,7 @@ describe('normalizeNestedList', () => {
         </hul>
       </editor>
     ) as any;
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       value: input.children,
     });

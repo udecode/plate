@@ -1,4 +1,4 @@
-import type { NodeInsertNodesOptions, NodeProps, SlateEditor } from 'platejs';
+import type { NodeInsertNodesOptions, NodeProps, BasePlateEditor } from 'platejs';
 
 import { KEYS, PathApi } from 'platejs';
 
@@ -9,7 +9,7 @@ export type InsertExcalidrawOptions = NonNullable<
 >;
 
 export const insertExcalidraw = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   props: NodeProps<ExcalidrawElement> = {},
   options: InsertExcalidrawOptions = {}
 ): void => {

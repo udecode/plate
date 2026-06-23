@@ -9,8 +9,8 @@ import { BaseIndentPlugin } from '@platejs/indent';
 import { BaseListPlugin } from '@platejs/list';
 import { jsxt } from '@platejs/test-utils';
 
-import { createSlateEditor } from '../../editor';
-import { createSlatePlugin } from '../../plugin/createSlatePlugin';
+import { createBasePlateEditor } from '../../editor';
+import { createEditorPlugin } from '../../plugin/createEditorPlugin';
 
 jsxt;
 
@@ -25,7 +25,7 @@ const createElementPlugin = ({
   match?: ({ node }: any) => boolean;
   type?: string;
 }) =>
-  createSlatePlugin({
+  createEditorPlugin({
     key,
     node: {
       isElement: true,
@@ -57,7 +57,7 @@ const getInsertBreakEditor = ({
   input: any;
   plugins: any[];
 }) => {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins,
     selection: input.selection,
     value: input.children,
@@ -528,7 +528,7 @@ describe('withBreakRules', () => {
     it.each([
       ['without break rules', undefined],
       ['with an empty break rule object', {}],
-    ])('uses Slate default behavior %s', (_label, breakRules) => {
+    ])('uses Plite default behavior %s', (_label, breakRules) => {
       const input = (
         <editor>
           <element type="custom">

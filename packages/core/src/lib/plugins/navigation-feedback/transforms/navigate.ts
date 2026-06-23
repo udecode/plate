@@ -1,12 +1,12 @@
-import type { Point } from '@platejs/slate';
-import type { SlateEditor } from '../../../editor';
+import type { Point } from '@platejs/plite';
+import type { BasePlateEditor } from '../../../editor';
 import type { NavigationNavigateOptions } from '../types';
 
 import { getCurrentRuntimeTransforms } from '../../../../internal/currentRuntimeBridge';
 import { flashTarget } from './flashTarget';
 
 const getScrollTarget = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { scrollTarget, select, target }: NavigationNavigateOptions
 ): Point | undefined => {
   if (scrollTarget) return scrollTarget;
@@ -18,7 +18,7 @@ const getScrollTarget = (
 };
 
 export const navigate = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     flash,
     focus = true,

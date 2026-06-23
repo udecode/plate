@@ -9,7 +9,7 @@ export const editableVoidsValue: any = (
     <hp>
       In addition to nodes that contain editable text, you can insert void
       nodes, which can also contain editable elements, inputs, or an entire
-      other Slate editor.
+      other Plite editor.
     </hp>
     <element type="editable-void">
       <htext />

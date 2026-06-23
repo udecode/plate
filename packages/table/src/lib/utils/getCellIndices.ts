@@ -1,5 +1,5 @@
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type TTableCellElement,
   getEditorPlugin,
   KEYS,
@@ -15,7 +15,7 @@ export type CellIndices = {
 };
 
 export const getCellIndices = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   element: TTableCellElement
 ): CellIndices => {
   const { getOption } = getEditorPlugin<TableConfig>(editor, {

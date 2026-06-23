@@ -1,6 +1,6 @@
-import { ElementApi, NodeApi, type Node } from '@platejs/slate';
+import { ElementApi, NodeApi, type Node } from '@platejs/plite';
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
@@ -12,7 +12,7 @@ import type { BaseTablePlugin } from '../BaseTablePlugin';
 import { findTableNodePath } from './findTableNodePath';
 
 const findTableNodeByCellId = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   nodes: readonly unknown[],
   cellId: string | undefined
 ): TTableElement | undefined => {
@@ -42,7 +42,7 @@ const findTableNodeByCellId = (
 };
 
 export function computeCellIndices(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     all,
     cellNode,
@@ -93,19 +93,25 @@ export function computeCellIndices(
       }
 
       const currentIndices = { col: colIndex, row: rowIndex };
-      const prevIndicesForCell = prevIndices[cellElement.id!];
+      const cellId = cellElement.id;
+      const prevIndicesForCell = cellId ? prevIndices[cellId] : undefined;
 
       // Check if indices changed for this cell
-      if (
-        prevIndicesForCell?.col !== currentIndices.col ||
-        prevIndicesForCell?.row !== currentIndices.row
-      ) {
-        hasIndicesChanged = true;
+      if (cellId) {
+        if (
+          prevIndicesForCell?.col !== currentIndices.col ||
+          prevIndicesForCell?.row !== currentIndices.row
+        ) {
+          hasIndicesChanged = true;
+        }
+
+        cellIndices[cellId] = currentIndices;
       }
 
-      cellIndices[cellElement.id!] = currentIndices;
-
-      if (cellElement.id === cellNode?.id) {
+      if (
+        cellElement === cellNode ||
+        (cellId !== undefined && cellId === cellNode?.id)
+      ) {
         targetIndices = currentIndices;
 
         if (!all) break;

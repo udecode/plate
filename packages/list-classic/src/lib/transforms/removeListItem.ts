@@ -1,7 +1,7 @@
-import type { Element } from '@platejs/slate';
-import type { ElementEntry } from '@platejs/slate';
-import { PathApi } from '@platejs/slate';
-import type { SlateEditor } from '@platejs/core';
+import type { Element } from '@platejs/plite';
+import type { ElementEntry } from '@platejs/plite';
+import { PathApi } from '@platejs/plite';
+import type { BasePlateEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
 
@@ -21,7 +21,7 @@ export type RemoveListItemOptions = {
 
 /** Remove list item and move its sublist to list if any. */
 export const removeListItem = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { list, listItem, reverse = true }: RemoveListItemOptions
 ) => {
   const [liNode, liPath] = listItem;

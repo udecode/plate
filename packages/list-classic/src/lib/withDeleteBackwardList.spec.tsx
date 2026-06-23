@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@platejs/core';
-import { createListClassicRuntimeTestEditor as createSlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
+import type { BasePlateEditor } from '@platejs/core';
+import { createListClassicRuntimeTestEditor as createBasePlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -23,7 +23,7 @@ describe('li > lic * 2 with selection at second child start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const expected = (
       <editor>
@@ -33,9 +33,9 @@ describe('li > lic * 2 with selection at second child start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
@@ -63,7 +63,7 @@ describe('li with selection at start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const expected = (
       <editor>
@@ -74,9 +74,9 @@ describe('li with selection at start', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
@@ -114,7 +114,7 @@ describe('list + sublist where second item has multiple children', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const expected = (
       <editor>
@@ -135,9 +135,9 @@ describe('list + sublist where second item has multiple children', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,

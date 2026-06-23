@@ -1,6 +1,6 @@
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
-import { ElementApi } from '@platejs/slate';
+import { ElementApi } from '@platejs/plite';
 import { KEYS } from 'platejs';
 
 export const isHeading = (node: unknown): node is Element =>

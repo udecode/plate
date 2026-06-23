@@ -1,11 +1,11 @@
-import { type PluginConfig, createTSlatePlugin, KEYS } from 'platejs';
+import { type PluginConfig, createEditorPlugin, KEYS } from 'platejs';
 
 export type TextIndentConfig = PluginConfig<
   'textIndent',
   { offset: number; unit: string }
 >;
 
-export const BaseTextIndentPlugin = createTSlatePlugin<TextIndentConfig>({
+export const BaseTextIndentPlugin = createEditorPlugin<TextIndentConfig>({
   key: KEYS.textIndent,
   inject: {
     isBlock: true,

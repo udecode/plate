@@ -1,8 +1,8 @@
-import type { EditorUpdateTransaction } from '@platejs/slate';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 import {
   type PluginConfig,
-  type SlatePlugin,
-  createTSlatePlugin,
+  type EditorPlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -16,26 +16,18 @@ type DateTx = {
   };
 };
 
-export type DateConfig = PluginConfig<
-  typeof KEYS.date,
-  {},
-  {},
-  {},
-  {},
-  DateTx
->;
+export type DateConfig = PluginConfig<typeof KEYS.date, {}, {}, {}, {}, DateTx>;
 
-export const BaseDatePlugin: SlatePlugin<DateConfig> =
-  createTSlatePlugin<DateConfig>({
+export const BaseDatePlugin: EditorPlugin<DateConfig> =
+  createEditorPlugin<DateConfig>({
     key: KEYS.date,
     node: {
       isElement: true,
       isInline: true,
       isVoid: true,
     },
-  })
-    .extendTx(({ type }) => (tx: EditorUpdateTransaction) => ({
-      insert: ({ date, ...options }: InsertDateOptions = {}) => {
-        tx.nodes.insert(createDateNodes(type, date), options);
-      },
-    }));
+  }).extendTx(({ type }) => (tx: EditorUpdateTransaction) => ({
+    insert: ({ date, ...options }: InsertDateOptions = {}) => {
+      tx.nodes.insert(createDateNodes(type, date), options);
+    },
+  }));

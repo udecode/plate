@@ -1,6 +1,6 @@
 import type {
   NodeInsertNodesOptions,
-  SlateEditor,
+  BasePlateEditor,
   TEquationElement,
 } from 'platejs';
 
@@ -15,7 +15,7 @@ export const createEquationNode = (type: string): TEquationElement => ({
 });
 
 export const insertEquation = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options?: InsertEquationOptions
 ) => {
   editor.update((tx) => {

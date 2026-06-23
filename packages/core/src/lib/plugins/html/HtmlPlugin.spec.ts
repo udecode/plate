@@ -1,15 +1,15 @@
-import { createSlateEditor } from '../../editor';
+import { createBasePlateEditor } from '../../editor';
 import { HtmlPlugin } from './HtmlPlugin';
 
 describe('HtmlPlugin', () => {
   it('declares the html parser format', () => {
-    const editor = createSlateEditor();
+    const editor = createBasePlateEditor();
 
     expect(editor.getPlugin(HtmlPlugin).parser.format).toBe('text/html');
   });
 
   it('deserializes through api.html using the parsed document body', () => {
-    const editor = createSlateEditor();
+    const editor = createBasePlateEditor();
     const fragment = [{ children: [{ text: 'Hello' }], type: 'p' }] as any;
     const deserializeSpy = spyOn(
       editor.api.html,

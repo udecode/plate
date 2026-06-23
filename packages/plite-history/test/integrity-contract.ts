@@ -4,7 +4,7 @@ import { describe, it } from 'node:test';
 import type {
   Descendant,
   Selection,
-  Editor as PliteEditor,
+  Editor as EditorType,
 } from '@platejs/plite';
 import { createEditor } from '@platejs/plite';
 import { Editor } from '@platejs/plite/internal';
@@ -18,17 +18,17 @@ const paragraph = (text: string): Descendant => ({
 
 const historyTestEditor = () => createEditor({ extensions: [history()] });
 
-const getHistory = (editor: PliteEditor) =>
+const getHistory = (editor: EditorType) =>
   editor.read((state: any) => state.history.get());
 
-const undo = (editor: PliteEditor) => {
+const undo = (editor: EditorType) => {
   editor.update((tx) => {
     tx.history.undo();
   });
 };
 
 const replace = (
-  editor: PliteEditor,
+  editor: EditorType,
   children: Descendant[],
   selection: Selection = null
 ) => {
@@ -39,11 +39,11 @@ const replace = (
   });
 };
 
-const getText = (editor: PliteEditor) =>
+const getText = (editor: EditorType) =>
   ((Editor.getSnapshot(editor).children[0] as any)?.children?.[0]?.text ??
     null) as string | null;
 
-const getVisibleState = (editor: PliteEditor) => {
+const getVisibleState = (editor: EditorType) => {
   const snapshot = Editor.getSnapshot(editor);
 
   return {
@@ -53,8 +53,8 @@ const getVisibleState = (editor: PliteEditor) => {
 };
 
 const write = (
-  editor: PliteEditor,
-  fn: Parameters<PliteEditor['update']>[0]
+  editor: EditorType,
+  fn: Parameters<EditorType['update']>[0]
 ) => {
   editor.update(fn);
 };

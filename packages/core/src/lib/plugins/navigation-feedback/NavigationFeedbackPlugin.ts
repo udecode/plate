@@ -1,7 +1,7 @@
-import { PathApi } from '@platejs/slate';
+import { PathApi } from '@platejs/plite';
 
 import { withLegacyTransformOverride } from '../../../internal/plugin/withLegacyTransformOverride';
-import { createTSlatePlugin } from '../../plugin';
+import { createEditorPlugin } from '../../plugin';
 import {
   clearNavigationFeedbackTarget,
   flashTarget,
@@ -16,7 +16,7 @@ import type {
 import { NAVIGATION_FEEDBACK_KEY, NavigationFeedbackPluginKey } from './types';
 
 export const NavigationFeedbackPlugin = withLegacyTransformOverride(
-  createTSlatePlugin<NavigationFeedbackConfig>({
+  createEditorPlugin<NavigationFeedbackConfig>({
     key: NAVIGATION_FEEDBACK_KEY,
     options: {
       activeTarget: null,

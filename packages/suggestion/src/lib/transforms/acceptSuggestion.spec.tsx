@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -11,12 +11,12 @@ import { acceptSuggestion } from './acceptSuggestion';
 
 jsxt;
 
-const createSlateEditor = ({ selection, value, ...options }: any = {}) =>
+const createBasePlateEditor = ({ selection, value, ...options }: any = {}) =>
   createPlateRuntimeEditor({
     ...options,
     initialSelection: selection,
     initialValue: value,
-  }) as any as SlateEditor;
+  }) as any as BasePlateEditor;
 
 const suggestionPlugin = BaseSuggestionPlugin.configure({
   options: {
@@ -43,15 +43,15 @@ describe('acceptSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
         <hp>testinsertedtext</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -82,15 +82,15 @@ describe('acceptSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
         <hp>testtext</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -124,7 +124,7 @@ describe('acceptSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -134,9 +134,9 @@ describe('acceptSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -163,16 +163,16 @@ describe('acceptSuggestion', () => {
         <hp suggestion={lineBreakData}>test1</hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
         <hp>test1</hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -199,15 +199,15 @@ describe('acceptSuggestion', () => {
         <hp suggestion={lineBreakData}>test1</hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
         <hp>test1test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -221,7 +221,7 @@ describe('acceptSuggestion', () => {
   });
 
   it('merges paragraphs after deleteBackward creates a remove line break suggestion', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: {
         anchor: { offset: 0, path: [1, 0] },
@@ -283,15 +283,15 @@ describe('acceptSuggestion', () => {
           text
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
         <hp>testinsertedtext</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -318,15 +318,15 @@ describe('acceptSuggestion', () => {
         <hp suggestion={removeData}>test1</hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });
@@ -352,16 +352,16 @@ describe('acceptSuggestion', () => {
         <hp>test1</hp>
         <hp suggestion={insertData}>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
         <hp>test1</hp>
         <hp>test2</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       value: input.children,
     });

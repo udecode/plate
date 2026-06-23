@@ -36,7 +36,7 @@ const toPlateValue = (blocks: HugeDocumentBlock[]): Value =>
     type: type === 'heading-one' ? 'h1' : 'p',
   })) as Value;
 
-const toSlateValue = (blocks: HugeDocumentBlock[]): Value =>
+const toPliteValue = (blocks: HugeDocumentBlock[]): Value =>
   blocks.map(({ text, type }) => ({
     children: [{ text }],
     type,
@@ -65,6 +65,6 @@ export const createHugeDocumentValue = ({
   const hugeDocumentBlocks = getHugeDocumentBlocks(blocks);
 
   return engine === 'slate'
-    ? toSlateValue(hugeDocumentBlocks)
+    ? toPliteValue(hugeDocumentBlocks)
     : toPlateValue(hugeDocumentBlocks);
 };

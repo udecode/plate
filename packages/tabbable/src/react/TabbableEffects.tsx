@@ -68,12 +68,12 @@ export function TabbableEffects() {
       const tabbableDOMNodes = tabbable(editorDOMNode) as HTMLElement[];
 
       /**
-       * Construct a tabbable entry for each tabbable Slate node, filtered by
+       * Construct a tabbable entry for each tabbable Plite node, filtered by
        * the `isTabbable` option (defaulting to only void nodes).
        */
       const defaultTabbableEntries = tabbableDOMNodes
         .map((domNode) => {
-          const slateNode = editor.api.dom.resolveSlateNode(domNode);
+          const slateNode = editor.api.dom.resolvePliteNode(domNode);
 
           if (!slateNode) return null;
 
@@ -106,7 +106,7 @@ export function TabbableEffects() {
           tabbableEntries.find((entry) => entry.domNode === activeElement)) ??
         null;
 
-      // Find the next Slate node or DOM node to focus
+      // Find the next Plite node or DOM node to focus
       const tabDestination = findTabDestination(editor, {
         activeTabbableEntry,
         direction: event.shiftKey ? 'backward' : 'forward',

@@ -3,14 +3,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-import type { Node as SlateNode } from '@platejs/slate';
+import type { Node as PliteNode } from '@platejs/plite';
 
 import { cleanDocx } from '@platejs/docx';
 import { htmlToDocxBlob, preprocessMammothHtml } from '@platejs/docx-io';
 import { jsx } from '@platejs/test-utils';
 import mammoth from 'mammoth';
-import type { SlatePlugin, Value } from 'platejs';
-import { createSlateEditor } from 'platejs';
+import type { EditorPlugin, Value } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { serializeHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -18,10 +18,10 @@ import { DocxExportKit } from '@/registry/components/editor/plugins/docx-export-
 
 jsx;
 
-const editorPlugins = [...BaseEditorKit, ...DocxExportKit] as SlatePlugin[];
+const editorPlugins = [...BaseEditorKit, ...DocxExportKit] as EditorPlugin[];
 
 const createTestEditor = (value?: Value) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: editorPlugins,
     value,
   });
@@ -35,7 +35,7 @@ const readDocxFixture = (filename: string): Buffer => {
 const importDocxBuffer = async (
   editor: ReturnType<typeof createTestEditor>,
   buffer: Buffer
-): Promise<SlateNode[]> => {
+): Promise<PliteNode[]> => {
   const mammothResult = await mammoth.convertToHtml(
     { buffer },
     { styleMap: ['comment-reference => sup'] }
@@ -44,10 +44,10 @@ const importDocxBuffer = async (
   const cleanedHtml = cleanDocx(preprocessedHtml, '');
   const doc = new DOMParser().parseFromString(cleanedHtml, 'text/html');
 
-  return editor.api.html.deserialize({ element: doc.body }) as SlateNode[];
+  return editor.api.html.deserialize({ element: doc.body }) as PliteNode[];
 };
 
-const exportNodesToDocx = async (nodes: SlateNode[]): Promise<Buffer> => {
+const exportNodesToDocx = async (nodes: PliteNode[]): Promise<Buffer> => {
   const html = await serializeHtml(createTestEditor(nodes as Value));
   const blob = await htmlToDocxBlob(html);
 
@@ -81,7 +81,7 @@ describe('docx roundtrip', () => {
       await exportNodesToDocx(importedNodes)
     );
 
-    const normalizeUrls = (nodes: SlateNode[]) =>
+    const normalizeUrls = (nodes: PliteNode[]) =>
       JSON.parse(
         JSON.stringify(nodes).replaceAll(
           /"url":"(https?:\/\/[^"/]+)"/g,

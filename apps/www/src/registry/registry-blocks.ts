@@ -190,7 +190,7 @@ export const registryBlocks: Registry['items'] = [
     meta: {
       rsc: true,
     },
-    name: 'slate-to-html',
+    name: 'plite-to-html',
     registryDependencies: ['@plate/editor-base-kit', 'button'],
     type: 'registry:block',
   },

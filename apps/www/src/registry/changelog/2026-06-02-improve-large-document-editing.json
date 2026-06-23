@@ -66,7 +66,7 @@
     {
       "id": "2026-05-31-31-1-huge-document-10k-block-plate-slate-acc08681",
       "kind": "new",
-      "summary": "Add a 10k-block Plate and Slate comparison demo with performance controls and benchmark links.",
+      "summary": "Add a 10k-block Plate and Plite comparison demo with performance controls and benchmark links.",
       "details": [],
       "migrationNotes": [],
       "targets": ["huge-document-demo"],

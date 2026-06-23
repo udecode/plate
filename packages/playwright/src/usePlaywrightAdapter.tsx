@@ -1,4 +1,4 @@
-import type { Range } from '@platejs/slate';
+import type { Range } from '@platejs/plite';
 
 import { type PlateEditor, useEditorRef } from 'platejs/react';
 import { useEffect } from 'react';
@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import type { TPlatePlaywrightAdapter } from './types';
 
 const EDITABLE_TO_EDITOR = new WeakMap<HTMLElement, PlateEditor>();
-const SLATE_BROWSER_HANDLE_KEY = '__slateBrowserHandle';
+const PLITE_BROWSER_HANDLE_KEY = '__pliteBrowserHandle';
 
 type PlatePlaywrightBrowserHandle = {
   deleteBackward: () => void;
@@ -29,7 +29,7 @@ type PlatePlaywrightBrowserHandle = {
 };
 
 type PlatePlaywrightBrowserHandleElement = HTMLElement & {
-  [SLATE_BROWSER_HANDLE_KEY]?: PlatePlaywrightBrowserHandle;
+  [PLITE_BROWSER_HANDLE_KEY]?: PlatePlaywrightBrowserHandle;
 };
 
 type PlateEditorWithHistory = PlateEditor & {
@@ -57,7 +57,7 @@ const getRootText = (editor: PlateEditor) =>
 
 const getBlockTexts = (editor: PlateEditor) => editor.children.map(getNodeText);
 
-const createSlateBrowserHandle = (
+const createPliteBrowserHandle = (
   editor: PlateEditor
 ): PlatePlaywrightBrowserHandle => {
   const historyEditor = editor as PlateEditorWithHistory;
@@ -132,15 +132,15 @@ export const usePlaywrightAdapter = () => {
     EDITABLE_TO_EDITOR.set(editable, editor);
     const browserHandleElement =
       editable as PlatePlaywrightBrowserHandleElement;
-    const browserHandle = createSlateBrowserHandle(editor);
+    const browserHandle = createPliteBrowserHandle(editor);
 
-    browserHandleElement[SLATE_BROWSER_HANDLE_KEY] = browserHandle;
+    browserHandleElement[PLITE_BROWSER_HANDLE_KEY] = browserHandle;
 
     return () => {
       EDITABLE_TO_EDITOR.delete(editable);
 
-      if (browserHandleElement[SLATE_BROWSER_HANDLE_KEY] === browserHandle) {
-        browserHandleElement[SLATE_BROWSER_HANDLE_KEY] = undefined;
+      if (browserHandleElement[PLITE_BROWSER_HANDLE_KEY] === browserHandle) {
+        browserHandleElement[PLITE_BROWSER_HANDLE_KEY] = undefined;
       }
     };
   }, [editor]);

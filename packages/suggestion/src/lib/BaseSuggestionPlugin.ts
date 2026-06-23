@@ -1,18 +1,18 @@
 import {
   type Element,
-  type Node as SlateNode,
+  type Node as PliteNode,
   type NodeEntry,
   ElementApi,
   NodeApi,
   TextApi,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import {
   type PluginConfig,
-  type SlateEditor,
+  type BasePlateEditor,
   type TInlineSuggestionData,
   type TSuggestionElement,
   type TSuggestionText,
-  createTSlatePlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -21,15 +21,15 @@ import { getSuggestionKey, getSuggestionKeyId } from './utils';
 import { getTransientSuggestionKey } from './utils/getTransientSuggestionKey';
 
 type SuggestionNodeOptions = NonNullable<
-  Parameters<SlateEditor['api']['node']>[0]
+  Parameters<BasePlateEditor['api']['node']>[0]
 >;
 type SuggestionNodesOptions = NonNullable<
-  Parameters<SlateEditor['api']['nodes']>[0]
+  Parameters<BasePlateEditor['api']['nodes']>[0]
 >;
 
 const resolveSuggestionAt = <TAt>(
-  editor: SlateEditor,
-  at: SlateNode | TAt | null | undefined
+  editor: BasePlateEditor,
+  at: PliteNode | TAt | null | undefined
 ): TAt | undefined => {
   if (NodeApi.isNode(at)) {
     const entry = [
@@ -75,7 +75,7 @@ export type BaseSuggestionConfig = PluginConfig<
   }
 >;
 
-export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
+export const BaseSuggestionPlugin = createEditorPlugin<BaseSuggestionConfig>({
   key: KEYS.suggestion,
   node: { isLeaf: true },
   options: {
@@ -85,7 +85,7 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
   rules: { selection: { affinity: 'outward' } },
 })
   .extend(({ editor, getOptions }) => ({
-    slateExtensions: [
+    editorExtensions: [
       createSuggestionExtension({
         editor,
         getOptions,
@@ -158,7 +158,9 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
             at,
             mode: 'all',
             match: (n) =>
-              n[type] && (transient ? n[getTransientSuggestionKey()] : true),
+              Boolean(
+                n[type] && (transient ? n[getTransientSuggestionKey()] : true)
+              ),
           }),
         ];
       },

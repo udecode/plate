@@ -2,9 +2,9 @@ import type {
   EditorExtensionInput,
   EditorUpdateTransaction,
   Element,
-} from '@platejs/slate';
-import { createSlatePlugin } from '@platejs/core';
-import { defineEditorExtension } from '@platejs/slate';
+} from '@platejs/plite';
+import { createEditorPlugin } from '@platejs/core';
+import { defineEditorExtension } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { getTodoListItemEntry } from './queries';
@@ -40,7 +40,7 @@ const createTodoListClassicExtension = (
     },
   });
 
-export const BaseTodoListPlugin = createSlatePlugin({
+export const BaseTodoListPlugin = createEditorPlugin({
   key: KEYS.listTodoClassic,
   node: { isElement: true },
   options: {
@@ -49,7 +49,7 @@ export const BaseTodoListPlugin = createSlatePlugin({
   },
 })
   .extend(({ editor }) => ({
-    slateExtensions: [createTodoListClassicExtension(editor)],
+    editorExtensions: [createTodoListClassicExtension(editor)],
   }))
   .extendTx(({ editor, type }) => (tx: EditorUpdateTransaction) => ({
     toggle: () => {

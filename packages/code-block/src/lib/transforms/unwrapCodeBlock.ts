@@ -1,8 +1,13 @@
-import type { Location, Path } from '@platejs/slate';
+import type { Location, Path } from '@platejs/plite';
 
-import { type SlateEditor, ElementApi, KEYS } from 'platejs';
+import {
+  type BasePlateEditor,
+  type ElementEntry,
+  ElementApi,
+  KEYS,
+} from 'platejs';
 
-export const unwrapCodeBlock = (editor: SlateEditor) => {
+export const unwrapCodeBlock = (editor: BasePlateEditor) => {
   if (!editor.selection) return;
 
   const codeBlockType = editor.getType(KEYS.codeBlock);
@@ -13,7 +18,9 @@ export const unwrapCodeBlock = (editor: SlateEditor) => {
     match: { type: codeBlockType },
   });
 
-  const reversedCodeBlockEntries = Array.from(codeBlockEntries).reverse();
+  const reversedCodeBlockEntries = Array.from(
+    codeBlockEntries
+  ).reverse() as ElementEntry[];
 
   editor.update((tx) => {
     for (const codeBlockEntry of reversedCodeBlockEntries) {
@@ -28,7 +35,7 @@ export const unwrapCodeBlock = (editor: SlateEditor) => {
 
       tx.nodes.unwrap({
         at: codeBlockPath,
-        match: (node) =>
+        match: (node: unknown) =>
           ElementApi.isElement(node) && node.type === codeBlockType,
         split: true,
       });

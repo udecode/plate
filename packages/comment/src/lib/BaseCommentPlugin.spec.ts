@@ -1,11 +1,11 @@
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
-import { type TCommentText, createSlateEditor } from 'platejs';
+import { type TCommentText, createBasePlateEditor } from 'platejs';
 
 import { BaseCommentPlugin } from './BaseCommentPlugin';
 
 const createCommentEditor = (value: Value) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: [BaseCommentPlugin],
     value,
   });
@@ -134,5 +134,4 @@ describe('BaseCommentPlugin', () => {
 
     expect(editor.children[0].children[0]).toEqual({ text: 'a' });
   });
-
 });

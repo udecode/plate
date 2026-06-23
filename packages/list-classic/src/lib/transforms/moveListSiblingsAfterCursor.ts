@@ -1,11 +1,11 @@
-import type { SlateEditor } from '@platejs/core';
-import type { Element, Path } from '@platejs/slate';
-import { PathApi } from '@platejs/slate';
+import type { BasePlateEditor } from '@platejs/core';
+import type { Element, Path } from '@platejs/plite';
+import { PathApi } from '@platejs/plite';
 
 import { getListTypes } from '../queries/getListTypes';
 
 export const moveListSiblingsAfterCursor = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     at,
     to,

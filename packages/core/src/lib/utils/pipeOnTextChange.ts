@@ -1,6 +1,6 @@
-import type { Descendant, TextOperation } from '@platejs/slate';
+import type { Descendant, TextOperation } from '@platejs/plite';
 
-import type { SlateEditor } from '../editor/SlateEditor';
+import type { BasePlateEditor } from '../editor/BasePlateEditor';
 import type { AnyEditorPlugin } from '../plugin';
 import { getEditorPlugin } from '../plugin/getEditorPlugin';
 
@@ -9,7 +9,7 @@ type OnTextChangeContext = Parameters<
 >[0];
 
 export const pipeOnTextChange = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   node: Descendant,
   text: string,
   prevText: string,

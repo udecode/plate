@@ -1,4 +1,4 @@
-import type { Selection, Value } from '@platejs/slate';
+import type { Selection, Value } from '@platejs/plite';
 
 import {
   type CreatePlateEditorRuntimeOptions,

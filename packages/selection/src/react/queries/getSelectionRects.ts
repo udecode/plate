@@ -1,6 +1,6 @@
-import type { Range } from '@platejs/slate';
+import type { Range } from '@platejs/plite';
 
-import { TextApi } from '@platejs/slate';
+import { TextApi } from '@platejs/plite';
 
 import type { SelectionRect } from '../types';
 

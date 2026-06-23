@@ -1,4 +1,4 @@
-import { createEditor, type Descendant } from '@platejs/slate';
+import { createEditor, type Descendant } from '@platejs/plite';
 
 import { withChangeTracking } from './with-change-tracking';
 

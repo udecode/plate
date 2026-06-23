@@ -1,4 +1,4 @@
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createBasePlateEditor } from 'platejs';
 
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { getSuggestionApi } from './utils/getSuggestionApi';
@@ -19,7 +19,7 @@ describe('BaseSuggestionPlugin', () => {
   };
 
   const createEditor = () =>
-    createSlateEditor({
+    createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseSuggestionPlugin],
       value: [
         {

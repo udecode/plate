@@ -1,5 +1,5 @@
-import { PathApi } from '@platejs/slate';
-import type { SlateEditor } from '@platejs/core';
+import { PathApi } from '@platejs/plite';
+import type { BasePlateEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 import { isEditorPointStart } from '../internal/editorQueries';
 import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
@@ -12,7 +12,7 @@ export type InsertListItemOptions = {
 
 /** Insert list item if selection in li>p. TODO: test */
 export const insertListItem = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options: InsertListItemOptions = {}
 ): boolean => {
   const liType = editor.getType(KEYS.li);
@@ -54,7 +54,7 @@ export const insertListItem = (
         editor.selection!.focus,
         paragraphPath
       );
-      const isEnd = editor.api.isEmpty(editor.selection, { after: true });
+      const isEnd = editor.api.isEmpty(editor.selection!, { after: true });
 
       const nextParagraphPath = PathApi.next(paragraphPath);
       const nextListItemPath = PathApi.next(listItemPath);

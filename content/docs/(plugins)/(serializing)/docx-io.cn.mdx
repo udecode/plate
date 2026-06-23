@@ -174,7 +174,7 @@ await editor.api.docxExport.exportAndDownload('document', {
 
 <API name="DocxExportPlugin">
 <APIOptions>
-<APIItem name="editorPlugins" type="SlatePlugin[]" optional>
+<APIItem name="editorPlugins" type="EditorPlugin[]" optional>
 用于 HTML 序列化的插件。如未提供，则使用编辑器当前的插件。
 </APIItem>
 <APIItem name="editorStaticComponent" type="React.ComponentType<PlateStaticProps>" optional>
@@ -191,7 +191,7 @@ await editor.api.docxExport.exportAndDownload('document', {
 
 <API name="importDocx">
 <APIParameters>
-<APIItem name="editor" type="SlateEditor">
+<APIItem name="editor" type="BasePlateEditor">
 Plate 编辑器实例。
 </APIItem>
 <APIItem name="arrayBuffer" type="ArrayBuffer">
@@ -255,7 +255,7 @@ Plate 编辑器值（节点数组）。
 <APIItem name="title" type="string" optional>
 用于元数据的文档标题。
 </APIItem>
-<APIItem name="editorPlugins" type="SlatePlugin[]" optional>
+<APIItem name="editorPlugins" type="EditorPlugin[]" optional>
 用于 HTML 序列化的插件。
 </APIItem>
 <APIItem name="editorStaticComponent" type="React.ComponentType" optional>

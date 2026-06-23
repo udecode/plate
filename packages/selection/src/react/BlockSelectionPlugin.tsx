@@ -1,13 +1,13 @@
 import type { CSSProperties } from 'react';
 import type React from 'react';
 
-import { type Element, ElementApi } from '@platejs/slate';
+import { type Element, ElementApi } from '@platejs/plite';
 import type {
   NodeEntry,
   OmitFirst,
   Path,
   PluginConfig,
-  SlateEditor,
+  BasePlateEditor,
   TIdElement,
 } from 'platejs';
 
@@ -64,7 +64,7 @@ export type BlockSelectionConfig = PluginConfig<
     shadowInputRef?: React.RefObject<HTMLInputElement | null>;
     /** Check if a block is selectable */
     isSelectable?: (element: Element, path: Path) => boolean;
-    onKeyDownSelecting?: (editor: SlateEditor, e: KeyboardEvent) => void;
+    onKeyDownSelecting?: (editor: BasePlateEditor, e: KeyboardEvent) => void;
   },
   {
     blockSelection: {
@@ -260,7 +260,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
 
         return editor.api.node({
           at: [],
-          match: (n) => selectedIds.has(n.id as string),
+          match: (n: TIdElement) => selectedIds.has(n.id as string),
         })!;
       },
       focus: () => {
@@ -273,10 +273,14 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       getNodes: (options) => {
         const selectedIds = getOption('selectedIds');
 
-        const nodes = editor.api.blocks<TIdElement>({
-          at: [],
-          match: (n) => !!n.id && selectedIds?.has(n.id as string),
-        });
+        const nodes = editor.read((state) => [
+          ...state.nodes.entries<TIdElement>({
+            at: [],
+            match: (n: unknown) =>
+              isBlockSelectionElement(n) &&
+              Boolean(selectedIds?.has(n.id as string)),
+          }),
+        ]);
 
         if (options?.sort) {
           nodes.sort(([, pathA], [, pathB]) => PathApi.compare(pathA, pathB));
@@ -288,7 +292,9 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
           nodes.forEach(([node, path]) => {
             if (node.type === KEYS.tr) {
               const tablePath = PathApi.parent(path);
-              const tableNodeEntry = editor.api.node<TIdElement>(tablePath)!;
+              const tableNodeEntry = editor.api.node(
+                tablePath
+              ) as NodeEntry<TIdElement>;
 
               // Check if table already exists in collapsedNodes
               const existingTableIndex = collapsedNodes.findIndex(

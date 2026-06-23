@@ -3,7 +3,7 @@ import type {
   EditorUpdateOptions,
   EditorUpdateTransaction,
   Value,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import type {
   CurrentRuntimeDescendantIn as DescendantIn,
   CurrentRuntimeEditorApi as EditorApi,

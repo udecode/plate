@@ -1,10 +1,10 @@
-import type { Operation, Range } from '@platejs/slate';
+import type { Operation, Range } from '@platejs/plite';
 import type { StandardBehaviorOptions } from 'scroll-into-view-if-needed';
 
 import { bindFirst } from '@udecode/utils';
 
 import { withLegacyTransformOverride } from '../../../internal/plugin/withLegacyTransformOverride';
-import { type PluginConfig, createTSlatePlugin } from '../../plugin';
+import { type PluginConfig, createEditorPlugin } from '../../plugin';
 import { withScrolling } from './withScrolling';
 
 export const AUTO_SCROLL = new WeakMap<object, boolean>();
@@ -51,7 +51,7 @@ export type ScrollMode = 'first' | 'last';
  * Placeholder plugin for DOM interaction, that could be replaced with
  * ReactPlugin.
  */
-const BaseDOMPlugin = createTSlatePlugin<DomConfig>({
+const BaseDOMPlugin = createEditorPlugin<DomConfig>({
   key: 'dom',
   options: {
     scrollMode: 'last',

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { type Descendant, type Element, NodeApi } from '@platejs/slate';
+import { type Descendant, type Element, NodeApi } from '@platejs/plite';
 
 import {
   assertPeerTexts,

@@ -1,6 +1,6 @@
-import type { SlateEditor, TCodeBlockElement } from 'platejs';
+import type { BasePlateEditor, TCodeBlockElement } from 'platejs';
 
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 import {
@@ -24,7 +24,7 @@ const mockLowlight = {
   registerAlias: mockRegisterAlias,
 };
 
-let editor: SlateEditor;
+let editor: BasePlateEditor;
 
 beforeEach(() => {
   // Reset mocks
@@ -36,7 +36,7 @@ beforeEach(() => {
   mockListLanguages.mockReturnValue(['javascript', 'typescript']);
 
   // Create a basic editor
-  editor = createSlateEditor({
+  editor = createBasePlateEditor({
     plugins: [BaseCodeBlockPlugin],
   });
 

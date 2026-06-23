@@ -1,5 +1,5 @@
 import type { ElementHandle, Page } from '@playwright/test';
-import type { Path } from '@platejs/slate';
+import type { Path } from '@platejs/plite';
 import { getNodeByPath } from './getNodeByPath';
 import { getAdapter } from './internal/getAdapter';
 import type { EditorHandle } from './types';

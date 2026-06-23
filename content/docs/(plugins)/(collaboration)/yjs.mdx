@@ -10,7 +10,7 @@ toc: true
 
 ## Features
 
-- **Multi-Provider Support:** Enables real-time collaboration using [Yjs](https://github.com/yjs/yjs) and [slate-yjs](https://docs.slate-yjs.dev/). Supports multiple synchronization providers simultaneously (e.g., IndexedDB + Hocuspocus + WebRTC) working on a shared `Y.Doc`.
+- **Multi-Provider Support:** Enables real-time collaboration using [Yjs](https://github.com/yjs/yjs) and [slate-yjs](https://docs.plite-yjs.dev/). Supports multiple synchronization providers simultaneously (e.g., IndexedDB + Hocuspocus + WebRTC) working on a shared `Y.Doc`.
 - **Built-in Providers:** Includes support for [IndexedDB](https://github.com/yjs/y-indexeddb) local persistence, [Hocuspocus](https://tiptap.dev/hocuspocus) server-based collaboration, and [WebRTC](https://github.com/yjs/y-webrtc) peer-to-peer collaboration.
 - **Custom Providers:** Extensible architecture allows adding custom providers by implementing the `UnifiedProvider` interface.
 - **Awareness & Cursors:** Integrates Yjs Awareness protocol for sharing cursor locations and other ephemeral state between users. Includes [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) for rendering remote cursors.
@@ -498,7 +498,7 @@ YjsPlugin.configure({
 ## Related
 
 - [Yjs](https://github.com/yjs/yjs) - CRDT framework for collaboration
-- [slate-yjs](https://docs.slate-yjs.dev/) - Yjs bindings for Slate
+- [slate-yjs](https://docs.plite-yjs.dev/) - Yjs bindings for Plite
 - [y-indexeddb](https://github.com/yjs/y-indexeddb) - IndexedDB persistence provider
 - [Hocuspocus](https://tiptap.dev/hocuspocus) - Backend server for Yjs
 - [y-webrtc](https://github.com/yjs/y-webrtc) - WebRTC provider
@@ -519,7 +519,7 @@ Enables real-time collaboration using Yjs with support for multiple providers an
     `UnifiedProvider` interface.
   </APIItem>
   <APIItem name="cursors" type="WithCursorsOptions | null" optional>
-    Configuration for remote cursors. Set to `null` to explicitly disable cursors. If omitted, cursors are enabled by default if providers are specified. Passed to `withTCursors`. See [WithCursorsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#withcursors). Includes `data` for local user info and `autoSend` (default `true`).
+    Configuration for remote cursors. Set to `null` to explicitly disable cursors. If omitted, cursors are enabled by default if providers are specified. Passed to `withTCursors`. See [WithCursorsOptions API](https://docs.plite-yjs.dev/api/plite-yjs-core/cursor-plugin#withcursors). Includes `data` for local user info and `autoSend` (default `true`).
   </APIItem>
   <APIItem name="ydoc" type="Y.Doc" optional>
     Optional shared Y.Doc instance. If not provided, a new one will be created internally by the plugin. Provide your own if integrating with other Yjs tools or managing multiple documents.

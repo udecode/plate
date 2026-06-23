@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import type { Path } from '@platejs/slate';
+import type { Path } from '@platejs/plite';
 import type { NavigationFeedbackConfig } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 

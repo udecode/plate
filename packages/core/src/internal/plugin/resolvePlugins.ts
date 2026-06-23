@@ -9,7 +9,7 @@ import { isDefined } from '@udecode/utils';
 import merge from 'lodash/merge.js';
 import { createVanillaStore } from 'zustand-x/vanilla';
 
-import type { SlateEditor, SlatePlugin, SlatePlugins } from '../../lib';
+import type { BasePlateEditor, EditorPlugin, EditorPlugins } from '../../lib';
 
 import { getEditorPlugin } from '../../lib/plugin';
 import { mergePlugins } from '../utils/mergePlugins';
@@ -29,8 +29,8 @@ import { createInputRuleBuilder } from '../../lib/plugins/input-rules/internal/c
 export type PluginStoreFactory = typeof createVanillaStore;
 
 export const resolvePlugins = (
-  editor: SlateEditor,
-  plugins: SlatePlugins = [],
+  editor: BasePlateEditor,
+  plugins: EditorPlugins = [],
   createStore: PluginStoreFactory = createVanillaStore
 ) => {
   editor.plugins = {};
@@ -43,7 +43,7 @@ export const resolvePlugins = (
   } as ResolvedInputRulesMeta;
   editor.meta.shortcuts = {} as Record<
     string,
-    SlatePlugin['shortcuts'][string]
+    EditorPlugin['shortcuts'][string]
   >;
   editor.meta.components = {};
   editor.meta.pluginCache = {
@@ -69,7 +69,7 @@ export const resolvePlugins = (
     render: {
       aboveEditable: [],
       aboveNodes: [],
-      aboveSlate: [],
+      abovePlite: [],
       afterContainer: [],
       afterEditable: [],
       beforeContainer: [],
@@ -92,7 +92,7 @@ export const resolvePlugins = (
   resolvePluginStores(editor, createStore);
 
   // Last pass
-  editor.meta.pluginList.forEach((plugin: SlatePlugin) => {
+  editor.meta.pluginList.forEach((plugin: EditorPlugin) => {
     if (plugin.extendEditor) {
       // biome-ignore lint/style/noParameterAssign: Intentional editor extension pattern
       editor = plugin.extendEditor(getEditorPlugin(editor, plugin) as any);
@@ -145,8 +145,8 @@ export const resolvePlugins = (
       editor.meta.pluginCache.render.aboveEditable.push(plugin.key);
     }
 
-    if (plugin.render.aboveSlate) {
-      editor.meta.pluginCache.render.aboveSlate.push(plugin.key);
+    if (plugin.render.abovePlite) {
+      editor.meta.pluginCache.render.abovePlite.push(plugin.key);
     }
 
     if (plugin.render.afterEditable) {
@@ -212,7 +212,7 @@ export const resolvePlugins = (
 };
 
 const resolvePluginStores = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   createStore: PluginStoreFactory
 ) => {
   // Create zustand stores for each plugin
@@ -238,7 +238,7 @@ const resolvePluginStores = (
   });
 };
 
-const resolvePluginMethods = (editor: SlateEditor, plugin: any) => {
+const resolvePluginMethods = (editor: BasePlateEditor, plugin: any) => {
   const legacyTransforms = getCurrentRuntimeTransforms(editor);
   plugin.runtimeTransforms ??= {};
   const hasTransformExtensions = plugin.__apiExtensions?.some(
@@ -258,7 +258,10 @@ const resolvePluginMethods = (editor: SlateEditor, plugin: any) => {
   if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
     plugin.__apiExtensions.forEach(
       ({ extension, isOverride, isPluginSpecific, isTransform }: any) => {
-        const context = getEditorPlugin(editor, plugin) as any;
+        const context = {
+          ...(getEditorPlugin(editor, plugin) as any),
+          api: editor.api,
+        };
 
         if (isOverride || isTransform) {
           context.tf = legacyTransforms;
@@ -320,10 +323,10 @@ const resolvePluginMethods = (editor: SlateEditor, plugin: any) => {
   }
 };
 
-const resolvePluginShortcuts = (editor: SlateEditor) => {
+const resolvePluginShortcuts = (editor: BasePlateEditor) => {
   editor.meta.shortcuts = {} as Record<
     string,
-    SlatePlugin['shortcuts'][string]
+    EditorPlugin['shortcuts'][string]
   >; // Initialize with a more specific type
 
   editor.meta.pluginList.forEach((plugin) => {
@@ -335,12 +338,12 @@ const resolvePluginShortcuts = (editor: SlateEditor) => {
         delete (
           editor.meta.shortcuts as Record<
             string,
-            SlatePlugin['shortcuts'][string]
+            EditorPlugin['shortcuts'][string]
           >
         )[namespacedKey];
       } else if (hotkey && typeof hotkey === 'object') {
         const resolvedHotkey = { ...hotkey } as NonNullable<
-          SlatePlugin['shortcuts'][string]
+          EditorPlugin['shortcuts'][string]
         >;
 
         // If no custom handler is provided, route plugin commands through tx.
@@ -365,7 +368,7 @@ const resolvePluginShortcuts = (editor: SlateEditor) => {
         (
           editor.meta.shortcuts as Record<
             string,
-            SlatePlugin['shortcuts'][string]
+            EditorPlugin['shortcuts'][string]
           >
         )[namespacedKey] = resolvedHotkey;
       }
@@ -373,7 +376,7 @@ const resolvePluginShortcuts = (editor: SlateEditor) => {
   });
 };
 
-const resolvePluginInputRules = (editor: SlateEditor) => {
+const resolvePluginInputRules = (editor: BasePlateEditor) => {
   const resolvedMeta: ResolvedInputRulesMeta = {
     insertBreak: [],
     insertData: [],
@@ -457,7 +460,7 @@ const resolvePluginInputRules = (editor: SlateEditor) => {
   editor.meta.inputRules = resolvedMeta;
 };
 
-const validateRemovedRuntimePlugins = (editor: SlateEditor) => {
+const validateRemovedRuntimePlugins = (editor: BasePlateEditor) => {
   const hasAutoformatPlugin = !!editor.plugins.autoformat;
   const hasResolvedInputRules =
     editor.meta.inputRules.insertBreak.length > 0 ||
@@ -476,13 +479,13 @@ const validateRemovedRuntimePlugins = (editor: SlateEditor) => {
 };
 
 const flattenAndResolvePlugins = (
-  editor: SlateEditor,
-  plugins: SlatePlugins
-): Map<string, SlatePlugin> => {
-  const pluginMap = new Map<string, SlatePlugin>();
+  editor: BasePlateEditor,
+  plugins: EditorPlugins
+): Map<string, EditorPlugin> => {
+  const pluginMap = new Map<string, EditorPlugin>();
   const mergeDuplicatePlugin = (
-    existingPlugin: SlatePlugin,
-    resolvedPlugin: SlatePlugin
+    existingPlugin: EditorPlugin,
+    resolvedPlugin: EditorPlugin
   ) => {
     const mergedPlugin = mergePlugins(existingPlugin, resolvedPlugin);
 
@@ -502,7 +505,7 @@ const flattenAndResolvePlugins = (
     return mergedPlugin;
   };
 
-  const processPlugin = (plugin: SlatePlugin) => {
+  const processPlugin = (plugin: EditorPlugin) => {
     const resolvedPlugin = resolvePlugin(editor, plugin);
 
     if (resolvedPlugin.key) {
@@ -531,9 +534,9 @@ const flattenAndResolvePlugins = (
 };
 
 export const resolveAndSortPlugins = (
-  editor: SlateEditor,
-  plugins: SlatePlugins
-): SlatePlugins => {
+  editor: BasePlateEditor,
+  plugins: EditorPlugins
+): EditorPlugins => {
   // Step 1: Resolve, flatten, and merge all plugins
   const pluginMap = flattenAndResolvePlugins(editor, plugins);
 
@@ -546,10 +549,10 @@ export const resolveAndSortPlugins = (
   enabledPlugins.sort((a, b) => b.priority - a.priority);
 
   // Step 4: Reorder based on dependencies
-  const orderedPlugins: SlatePlugins = [];
+  const orderedPlugins: EditorPlugins = [];
   const visited = new Set<string>();
 
-  const visit = (plugin: SlatePlugin) => {
+  const visit = (plugin: EditorPlugin) => {
     if (visited.has(plugin.key)) return;
 
     visited.add(plugin.key);
@@ -576,8 +579,8 @@ export const resolveAndSortPlugins = (
 };
 
 export const applyPluginsToEditor = (
-  editor: SlateEditor,
-  plugins: SlatePlugins
+  editor: BasePlateEditor,
+  plugins: EditorPlugins
 ) => {
   editor.meta.pluginList = plugins;
   editor.plugins = Object.fromEntries(
@@ -585,8 +588,8 @@ export const applyPluginsToEditor = (
   );
 };
 
-export const resolvePluginOverrides = (editor: SlateEditor) => {
-  const applyOverrides = (plugins: SlatePlugin[]): SlatePlugin[] => {
+export const resolvePluginOverrides = (editor: BasePlateEditor) => {
+  const applyOverrides = (plugins: EditorPlugin[]): EditorPlugin[] => {
     let overriddenPlugins = [...plugins];
 
     const enabledOverrides: Record<string, boolean> = {};
@@ -594,7 +597,7 @@ export const resolvePluginOverrides = (editor: SlateEditor) => {
       string,
       { component: any; priority: number }
     > = {};
-    const pluginOverrides: Record<string, Partial<SlatePlugin>> = {};
+    const pluginOverrides: Record<string, Partial<EditorPlugin>> = {};
 
     // Collect all overrides
     for (const plugin of plugins) {

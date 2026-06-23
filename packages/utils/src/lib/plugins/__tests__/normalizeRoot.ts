@@ -1,19 +1,19 @@
-import { type AnySlatePlugin } from 'platejs';
+import type { AnyEditorPlugin } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
-import type { Selection, Value } from '@platejs/slate';
+import type { Selection, Value } from '@platejs/plite';
 
 export const normalizeRoot = ({
   plugins,
   selection,
   value,
 }: {
-  plugins: AnySlatePlugin[];
+  plugins: AnyEditorPlugin[];
   selection?: Selection;
   value: Value;
 }) => {
   const editor = createPlateEditor({
     plugins,
-    runtime: 'slate-v2',
+    runtime: 'plite',
     selection,
     ...(value.length > 0 ? { value } : {}),
   });

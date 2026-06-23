@@ -1,4 +1,4 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import {
   BaseFootnoteDefinitionPlugin,
@@ -8,7 +8,7 @@ import {
 
 describe('BaseFootnotePlugins', () => {
   it('configures footnote reference as an inline void element', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFootnoteReferencePlugin],
     } as any);
     const plugin = editor.getPlugin(BaseFootnoteReferencePlugin);
@@ -34,7 +34,7 @@ describe('BaseFootnotePlugins', () => {
   });
 
   it('configures footnote definition as a block element', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFootnoteDefinitionPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseFootnoteDefinitionPlugin);
@@ -46,7 +46,7 @@ describe('BaseFootnotePlugins', () => {
   });
 
   it('provides footnote api on the editor', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
     } as any);
     const api = (editor.api as any).footnote;

@@ -1,9 +1,9 @@
-import { createSlateEditor } from '../../editor';
+import { createBasePlateEditor } from '../../editor';
 import { ChunkingPlugin } from './ChunkingPlugin';
 
 describe('withChunking', () => {
   it('uses the current editor root as the default chunking ancestor', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [ChunkingPlugin],
     });
 
@@ -17,10 +17,10 @@ describe('withChunking', () => {
   });
 
   it('returns the configured chunk size only for matching ancestors', () => {
-    let editor: ReturnType<typeof createSlateEditor>;
+    let editor: ReturnType<typeof createBasePlateEditor>;
     const query = mock((ancestor: unknown) => ancestor === editor);
 
-    editor = createSlateEditor({
+    editor = createBasePlateEditor({
       plugins: [
         ChunkingPlugin.configure({
           options: {

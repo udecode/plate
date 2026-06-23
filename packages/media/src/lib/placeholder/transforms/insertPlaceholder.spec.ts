@@ -1,4 +1,4 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -13,7 +13,7 @@ import {
 const asPlaceholderEditor = (editor: {
   getType: (key: string) => string;
   update: (fn: (tx: any) => void) => void;
-}) => editor as unknown as SlateEditor;
+}) => editor as unknown as BasePlateEditor;
 
 describe('insertPlaceholder', () => {
   it('wraps placeholder insertion in withoutNormalizing', () => {

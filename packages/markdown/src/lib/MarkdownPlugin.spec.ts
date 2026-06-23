@@ -1,4 +1,4 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 import { MarkdownPlugin } from './MarkdownPlugin';
@@ -17,7 +17,7 @@ const createDataTransfer = ({
 
 describe('MarkdownPlugin', () => {
   it('exposes default options, bound markdown api, and text parser deserialization', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [MarkdownPlugin],
     });
     const plugin = editor.getPlugin(MarkdownPlugin);
@@ -41,10 +41,10 @@ describe('MarkdownPlugin', () => {
     ).toEqual(editor.api.markdown.deserialize('**bold**'));
   });
 
-  it('exposes the markdown api on the Slate v2 runtime route', () => {
+  it('exposes the markdown api on the Plite runtime route', () => {
     const editor = createPlateEditor({
       plugins: [MarkdownPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
     });
     const api = editor.api as typeof editor.api & {
       markdown: {
@@ -59,7 +59,7 @@ describe('MarkdownPlugin', () => {
   });
 
   it('skips plain-text parsing when html is present', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [MarkdownPlugin],
     });
 
@@ -74,7 +74,7 @@ describe('MarkdownPlugin', () => {
   });
 
   it('passes through URL-only clipboard text so link handling can own it', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [MarkdownPlugin],
     });
 
@@ -89,7 +89,7 @@ describe('MarkdownPlugin', () => {
   });
 
   it('parses plain text when the clipboard carries files', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [MarkdownPlugin],
     });
 
@@ -104,7 +104,7 @@ describe('MarkdownPlugin', () => {
   });
 
   it('parses non-url plain text by default', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [MarkdownPlugin],
     });
 

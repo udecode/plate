@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import type { SlateEditor } from '@platejs/core';
-import { createListClassicLegacyTestEditor as createSlateEditor } from '../__tests__/createListClassicLegacyTestEditor';
+import type { BasePlateEditor } from '@platejs/core';
+import { createListClassicLegacyTestEditor as createBasePlateEditor } from '../__tests__/createListClassicLegacyTestEditor';
 
 import { isListNested } from './isListNested';
 
@@ -28,10 +28,10 @@ describe('when the list is nested', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as SlateEditor;
+  ) as any as BasePlateEditor;
 
   it('returns true', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       selection: input.selection,
       value: input.children,
     });
@@ -51,10 +51,10 @@ describe('when the list is not nested', () => {
         </hli>
       </hul>
     </editor>
-  ) as any as SlateEditor;
+  ) as any as BasePlateEditor;
 
   it('returns false', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       selection: input.selection,
       value: input.children,
     });

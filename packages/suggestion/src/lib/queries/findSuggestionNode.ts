@@ -1,7 +1,7 @@
-import { type Path, TextApi } from '@platejs/slate';
-import { type SlateEditor, type TSuggestionText, KEYS } from 'platejs';
+import { type Path, TextApi } from '@platejs/plite';
+import { type BasePlateEditor, type TSuggestionText, KEYS } from 'platejs';
 
-type SuggestionNodeOptions<E extends SlateEditor> = NonNullable<
+type SuggestionNodeOptions<E extends BasePlateEditor> = NonNullable<
   Parameters<E['api']['nodes']>[0]
 >;
 
@@ -15,7 +15,7 @@ const matchesPredicateObject = (
     toArray(value).includes((node as Record<string, unknown>)[key])
   );
 
-const matchesSuggestionOptions = <E extends SlateEditor>(
+const matchesSuggestionOptions = <E extends BasePlateEditor>(
   editor: E,
   node: unknown,
   path: Path,
@@ -56,7 +56,7 @@ const matchesSuggestionOptions = <E extends SlateEditor>(
   return true;
 };
 
-export const findInlineSuggestionNode = <E extends SlateEditor>(
+export const findInlineSuggestionNode = <E extends BasePlateEditor>(
   editor: E,
   options: SuggestionNodeOptions<E> = {}
 ) =>

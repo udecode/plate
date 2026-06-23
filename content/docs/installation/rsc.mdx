@@ -105,7 +105,7 @@ of static React rendering.
 npm install platejs @platejs/basic-nodes @platejs/markdown
 ```
 
-That path uses `createSlateEditor` from `platejs` and does not need copied UI
+That path uses `createBasePlateEditor` from `platejs` and does not need copied UI
 components.
 
 </Steps>
@@ -121,7 +121,7 @@ components.
 
 <Callout type="info">
   `createStaticEditor` includes the static `ViewPlugin` before your plugins.
-  Use it for rendered output. Use `createSlateEditor` when the script only
+  Use it for rendered output. Use `createBasePlateEditor` when the script only
   reads or transforms a value.
 </Callout>
 

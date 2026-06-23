@@ -312,12 +312,12 @@ editor.update((tx) => tx.myPlugin.pluginCommand());
 editor.update((tx) => tx.insert.mention());
 ```
 
-## 将Slate插件转换为Plate插件
+## 将Plite插件转换为Plate插件
 
-要将类型化的Slate插件转换为Plate插件，可以使用`toPlatePlugin`：
+要将类型化的Plite插件转换为Plate插件，可以使用`toPlatePlugin`：
 
 ```ts
-const CodeBlockPlugin = toPlatePlugin(createSlatePlugin({ key: 'code_block' }), {
+const CodeBlockPlugin = toPlatePlugin(createEditorPlugin({ key: 'code_block' }), {
   handlers: {},
   options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
 });

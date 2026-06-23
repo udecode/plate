@@ -1,4 +1,4 @@
-import type { ElementEntry, SlateEditor } from 'platejs';
+import type { ElementEntry, BasePlateEditor } from 'platejs';
 
 import { deleteStartSpace } from './deleteStartSpace';
 
@@ -9,7 +9,7 @@ export type OutdentCodeLineOptions = {
 
 /** Outdent the code line. Remove 2 whitespace characters if any. */
 export const outdentCodeLine = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { codeBlock, codeLine }: OutdentCodeLineOptions
 ) => {
   const deleted = deleteStartSpace(editor, { codeBlock, codeLine });

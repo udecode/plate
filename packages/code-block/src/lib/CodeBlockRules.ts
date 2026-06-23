@@ -1,10 +1,10 @@
-import type { BlockFenceInputRuleMatch, SlateEditor } from 'platejs';
+import type { BlockFenceInputRuleMatch, BasePlateEditor } from 'platejs';
 
 import { createRuleFactory, KEYS } from 'platejs';
 
 import type { insertEmptyCodeBlock } from './transforms';
 
-const isCodeBlockInputBlocked = (editor: SlateEditor) =>
+const isCodeBlockInputBlocked = (editor: BasePlateEditor) =>
   editor.api.some({
     match: {
       type: [editor.getType(KEYS.codeBlock)],

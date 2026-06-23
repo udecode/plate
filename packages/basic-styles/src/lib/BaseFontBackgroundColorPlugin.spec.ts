@@ -1,4 +1,4 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import { BaseFontBackgroundColorPlugin } from './BaseFontBackgroundColorPlugin';
 
@@ -19,7 +19,7 @@ const runAddMarkTx = (value: string) => {
 
 describe('BaseFontBackgroundColorPlugin', () => {
   it('parses html background-color styles into leaf marks', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFontBackgroundColorPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseFontBackgroundColorPlugin);

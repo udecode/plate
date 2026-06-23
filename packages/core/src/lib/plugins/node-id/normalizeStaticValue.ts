@@ -1,4 +1,4 @@
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
 import type { NormalizeNodeIdOptions } from './NodeIdPlugin';
 

@@ -21,7 +21,7 @@ import {
   Editable,
   Plate,
   PlateContent,
-  Slate,
+  Plite,
   useSelected,
 } from 'platejs/react';
 import { createEditor as slateCreateEditor } from 'slate';
@@ -521,14 +521,14 @@ function EnginePane({
   const editable = rendering ? (
     <div>Rendering&hellip;</div>
   ) : engine === 'slate' ? (
-    <Slate editor={editor as any} initialValue={initialValue as any}>
+    <Plite editor={editor as any} initialValue={initialValue as any}>
       <Editable
         placeholder="Enter some text…"
         renderChunk={config.chunkDivs ? renderChunk : undefined}
         renderElement={renderElement}
         spellCheck
       />
-    </Slate>
+    </Plite>
   ) : (
     <Plate editor={editor as any}>
       <PlateContent
@@ -556,7 +556,7 @@ function EnginePane({
         minWidth: 0,
       }}
     >
-      <h2 style={{ margin: 0 }}>{engine === 'plate' ? 'Plate' : 'Slate'}</h2>
+      <h2 style={{ margin: 0 }}>{engine === 'plate' ? 'Plate' : 'Plite'}</h2>
 
       <div
         style={{
@@ -647,9 +647,9 @@ function PerformanceControls({
             }
             value={config.mountedEngines}
           >
-            <option value="both">Plate + Slate</option>
+            <option value="both">Plate + Plite</option>
             <option value="plate">Plate only</option>
-            <option value="slate">Slate only</option>
+            <option value="slate">Plite only</option>
           </select>
         </label>
       </p>
@@ -796,7 +796,7 @@ function PerformanceControls({
             <tr>
               <th align="left">Metric</th>
               <th align="right">Plate</th>
-              <th align="right">Slate</th>
+              <th align="right">Plite</th>
             </tr>
           </thead>
 
@@ -949,7 +949,7 @@ export default function HugeDocumentDemo() {
       }}
     >
       <p style={{ margin: 0 }}>
-        Slate huge-document controls, two isolated editors.
+        Plite huge-document controls, two isolated editors.
       </p>
 
       <PerformanceControls

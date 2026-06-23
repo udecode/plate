@@ -31,7 +31,7 @@ import {
 } from 'lucide-react';
 import {
   type NodeEntry,
-  type SlateEditor,
+  type BasePlateEditor,
   ElementApi,
   isHotkey,
   KEYS,
@@ -509,7 +509,7 @@ Start writing a new paragraph AFTER <Document> ONLY ONE SENTENCE`
       editor,
       input,
     }: {
-      aiEditor: SlateEditor;
+      aiEditor: BasePlateEditor;
       editor: PlateEditor;
       input: string;
     }) => void;

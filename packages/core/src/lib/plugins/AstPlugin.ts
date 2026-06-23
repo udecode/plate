@@ -1,13 +1,13 @@
-import { createSlatePlugin } from '../plugin';
+import { createEditorPlugin } from '../plugin';
 
 /**
- * Enables support for deserializing inserted content from Slate Ast format to
- * Slate format while apply a small bug fix.
+ * Enables support for deserializing inserted content from Plite Ast format to
+ * Plite format while apply a small bug fix.
  */
-export const AstPlugin = createSlatePlugin({
+export const AstPlugin = createEditorPlugin({
   key: 'ast',
   parser: {
-    format: 'application/x-slate-fragment',
+    format: 'application/x-plite-fragment',
     deserialize: ({ data }) => {
       const decoded = decodeURIComponent(window.atob(data));
       let parsed: any;

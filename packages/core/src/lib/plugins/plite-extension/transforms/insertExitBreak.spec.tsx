@@ -2,8 +2,8 @@
 
 import { jsxt } from '@platejs/test-utils';
 
-import { createPliteEditor } from '../../../editor';
-import { createPlitePlugin } from '../../../plugin/createPlitePlugin';
+import { createBasePlateEditor } from '../../../editor';
+import { createEditorPlugin } from '../../../plugin/createEditorPlugin';
 import { insertExitBreak } from './insertExitBreak';
 
 jsxt;
@@ -29,7 +29,7 @@ describe('exitBreak', () => {
         </editor>
       ) as any;
 
-      const editor = createPliteEditor({
+      const editor = createBasePlateEditor({
         selection: input.selection,
         value: input.children,
       });
@@ -59,7 +59,7 @@ describe('exitBreak', () => {
         </editor>
       ) as any;
 
-      const editor = createPliteEditor({
+      const editor = createBasePlateEditor({
         selection: input.selection,
         value: input.children,
       });
@@ -95,9 +95,9 @@ describe('exitBreak', () => {
         </editor>
       ) as any;
 
-      const editor = createPliteEditor({
+      const editor = createBasePlateEditor({
         plugins: [
-          createPlitePlugin({
+          createEditorPlugin({
             key: 'codeblock',
             node: {
               isElement: true,
@@ -105,7 +105,7 @@ describe('exitBreak', () => {
               type: 'codeblock',
             },
           }),
-          createPlitePlugin({
+          createEditorPlugin({
             key: 'codeline',
             node: { isElement: true, isStrictSiblings: true, type: 'codeline' },
           }),
@@ -147,17 +147,17 @@ describe('exitBreak', () => {
         </editor>
       ) as any;
 
-      const editor = createPliteEditor({
+      const editor = createBasePlateEditor({
         plugins: [
-          createPlitePlugin({
+          createEditorPlugin({
             key: 'table',
             node: { isElement: true, isStrictSiblings: false, type: 'table' },
           }),
-          createPlitePlugin({
+          createEditorPlugin({
             key: 'tr',
             node: { isElement: true, isStrictSiblings: true, type: 'tr' },
           }),
-          createPlitePlugin({
+          createEditorPlugin({
             key: 'td',
             node: { isElement: true, isStrictSiblings: true, type: 'td' },
           }),
@@ -203,9 +203,9 @@ describe('exitBreak', () => {
         </editor>
       ) as any;
 
-      const editor = createPliteEditor({
+      const editor = createBasePlateEditor({
         plugins: [
-          createPlitePlugin({
+          createEditorPlugin({
             key: 'column_group',
             node: {
               isElement: true,
@@ -213,11 +213,11 @@ describe('exitBreak', () => {
               type: 'column_group',
             },
           }),
-          createPlitePlugin({
+          createEditorPlugin({
             key: 'column',
             node: { isElement: true, isStrictSiblings: false, type: 'column' },
           }),
-          createPlitePlugin({
+          createEditorPlugin({
             key: 'codeblock',
             node: {
               isElement: true,
@@ -225,7 +225,7 @@ describe('exitBreak', () => {
               type: 'codeblock',
             },
           }),
-          createPlitePlugin({
+          createEditorPlugin({
             key: 'codeline',
             node: { isElement: true, isStrictSiblings: true, type: 'codeline' },
           }),
@@ -267,9 +267,9 @@ describe('exitBreak', () => {
         </editor>
       ) as any;
 
-      const editor = createPliteEditor({
+      const editor = createBasePlateEditor({
         plugins: [
-          createPlitePlugin({
+          createEditorPlugin({
             key: 'column_group',
             node: {
               isElement: true,
@@ -277,7 +277,7 @@ describe('exitBreak', () => {
               type: 'column_group',
             },
           }),
-          createPlitePlugin({
+          createEditorPlugin({
             key: 'column',
             node: { isElement: true, isStrictSiblings: true, type: 'column' },
           }),
@@ -301,7 +301,7 @@ describe('exitBreak', () => {
         </editor>
       ) as any;
 
-      const editor = createPliteEditor({
+      const editor = createBasePlateEditor({
         value: input.children,
       });
 
@@ -331,7 +331,7 @@ describe('exitBreak', () => {
         </editor>
       ) as any;
 
-      const editor = createPliteEditor({
+      const editor = createBasePlateEditor({
         selection: input.selection,
         value: input.children,
       });

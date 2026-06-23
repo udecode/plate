@@ -1,4 +1,4 @@
-import { type PluginConfig, createTSlatePlugin, KEYS } from 'platejs';
+import { type PluginConfig, createEditorPlugin, KEYS } from 'platejs';
 
 import type { TabbableEntry } from './types';
 
@@ -35,7 +35,7 @@ export type TabblableConfig = PluginConfig<
   }
 >;
 
-export const BaseTabbablePlugin = createTSlatePlugin<TabblableConfig>({
+export const BaseTabbablePlugin = createEditorPlugin<TabblableConfig>({
   key: KEYS.tabbable,
   options: {
     globalEventListener: false,

@@ -1,8 +1,8 @@
-import { PointApi, RangeApi } from '@platejs/slate';
+import { PointApi, RangeApi } from '@platejs/plite';
 
 import type { LegacyTransformOverride } from '../../../../internal/plugin/withLegacyTransformOverride';
 
-import { getPluginByType } from '../../../plugin/getSlatePlugin';
+import { getPluginByType } from '../../../plugin/getEditorPluginInstance';
 
 export const withDeleteRules: LegacyTransformOverride = (ctx) => {
   const { editor, tf } = ctx;
@@ -53,6 +53,21 @@ export const withDeleteRules: LegacyTransformOverride = (ctx) => {
       });
     }
     return false;
+  };
+  const isFullEditorRange = () => {
+    if (!editor.selection) return false;
+
+    const editorRange = editor.api.range([]);
+
+    if (!editorRange) return false;
+
+    const [selectionStart, selectionEnd] = RangeApi.edges(editor.selection);
+    const [editorStart, editorEnd] = RangeApi.edges(editorRange);
+
+    return (
+      PointApi.equals(selectionStart, editorStart) &&
+      PointApi.equals(selectionEnd, editorEnd)
+    );
   };
 
   return {
@@ -119,10 +134,7 @@ export const withDeleteRules: LegacyTransformOverride = (ctx) => {
       },
       deleteFragment(options) {
         // Default behavior: reset entire editor when deleting full selection
-        if (
-          editor.selection &&
-          RangeApi.equals(editor.selection, editor.api.range([])!)
-        ) {
+        if (isFullEditorRange()) {
           tf.reset({
             children: true,
             select: true,

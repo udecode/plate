@@ -11,14 +11,14 @@ export const enableCompositionKeyEvents = async (
 ) => {
   await surface.evaluate(() => {
     const target = window as Window & {
-      __SLATE_BROWSER_COMPOSITION_KEY_EVENTS__?: boolean;
+      __PLITE_BROWSER_COMPOSITION_KEY_EVENTS__?: boolean;
     };
 
-    if (target.__SLATE_BROWSER_COMPOSITION_KEY_EVENTS__) {
+    if (target.__PLITE_BROWSER_COMPOSITION_KEY_EVENTS__) {
       return;
     }
 
-    target.__SLATE_BROWSER_COMPOSITION_KEY_EVENTS__ = true;
+    target.__PLITE_BROWSER_COMPOSITION_KEY_EVENTS__ = true;
 
     window.addEventListener(
       'compositionstart',
@@ -85,10 +85,10 @@ export const commitSyntheticCompositionText = async (
       }
 
       const root =
-        active.closest<HTMLElement>('[data-slate-editor="true"]') ?? active;
+        active.closest<HTMLElement>('[data-plite-editor="true"]') ?? active;
       const handle = (
         root as HTMLElement & {
-          __slateBrowserHandle?: {
+          __pliteBrowserHandle?: {
             deleteFragment?: () => void;
             getSelection?: () => unknown;
             getText?: () => string;
@@ -96,7 +96,7 @@ export const commitSyntheticCompositionText = async (
             setNativeDOMSelection?: (selection: unknown) => boolean;
           };
         }
-      ).__slateBrowserHandle;
+      ).__pliteBrowserHandle;
 
       const modelSelection = handle?.getSelection?.();
       const isExpandedModelSelection = (selection: unknown) => {

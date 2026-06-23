@@ -1,16 +1,16 @@
 import { expect } from '@playwright/test';
 
 import type {
-  SlateBrowserIllegalKernelTransition,
-  SlateBrowserKernelTraceEntry,
-  SlateBrowserKernelTraceExpectation,
-  SlateBrowserScenarioResult,
+  PliteBrowserIllegalKernelTransition,
+  PliteBrowserKernelTraceEntry,
+  PliteBrowserKernelTraceExpectation,
+  PliteBrowserScenarioResult,
 } from './types';
 
 /** Return kernel trace transitions that violate the expected policy. */
 export const getIllegalKernelTransitions = (
-  result: SlateBrowserScenarioResult
-): SlateBrowserIllegalKernelTransition[] =>
+  result: PliteBrowserScenarioResult
+): PliteBrowserIllegalKernelTransition[] =>
   result.trace.flatMap((entry) =>
     entry.snapshot.kernelTrace.flatMap((kernelEntry) => {
       const { transition } = kernelEntry;
@@ -29,7 +29,7 @@ export const getIllegalKernelTransitions = (
 
 /** Assert that a kernel trace contains no illegal transitions. */
 export const assertNoIllegalKernelTransitions = (
-  result: SlateBrowserScenarioResult
+  result: PliteBrowserScenarioResult
 ) => {
   expect(getIllegalKernelTransitions(result)).toEqual([]);
 };
@@ -44,9 +44,9 @@ const matchesPartialObject = <T extends object>(
   );
 
 /** Return true when a kernel trace entry satisfies an expectation. */
-export const matchesSlateBrowserKernelTrace = (
-  entry: SlateBrowserKernelTraceEntry,
-  expected: SlateBrowserKernelTraceExpectation
+export const matchesPliteBrowserKernelTrace = (
+  entry: PliteBrowserKernelTraceEntry,
+  expected: PliteBrowserKernelTraceExpectation
 ) => {
   if (
     expected.eventFamily !== undefined &&
@@ -117,17 +117,17 @@ export const matchesSlateBrowserKernelTrace = (
 };
 
 /** Find the first kernel trace entry matching an expectation. */
-export const findSlateBrowserKernelTraceEntry = (
-  trace: readonly SlateBrowserKernelTraceEntry[],
-  expected: SlateBrowserKernelTraceExpectation
-) => trace.find((entry) => matchesSlateBrowserKernelTrace(entry, expected));
+export const findPliteBrowserKernelTraceEntry = (
+  trace: readonly PliteBrowserKernelTraceEntry[],
+  expected: PliteBrowserKernelTraceExpectation
+) => trace.find((entry) => matchesPliteBrowserKernelTrace(entry, expected));
 
 /** Assert that a kernel trace contains an expected entry. */
-export const assertSlateBrowserKernelTraceEntry = (
-  trace: readonly SlateBrowserKernelTraceEntry[],
-  expected: SlateBrowserKernelTraceExpectation
+export const assertPliteBrowserKernelTraceEntry = (
+  trace: readonly PliteBrowserKernelTraceEntry[],
+  expected: PliteBrowserKernelTraceExpectation
 ) => {
-  const entry = findSlateBrowserKernelTraceEntry(trace, expected);
+  const entry = findPliteBrowserKernelTraceEntry(trace, expected);
 
   if (!entry) {
     throw new Error(

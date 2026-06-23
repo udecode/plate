@@ -1,11 +1,11 @@
 # @platejs/browser
 
-Browser proof harness for Slate editor behavior.
+Browser proof harness for Plite editor behavior.
 
-`@platejs/browser` is the first-party Slate test harness for browser-visible
+`@platejs/browser` is the first-party Plite test harness for browser-visible
 editing behavior. Use it in Playwright, CI, generated stress replay, and release
 proof. Do not ship it in the editor runtime bundle; product code belongs in
-`slate`, `slate-dom`, `slate-react`, and application extensions.
+`plite`, `plite-dom`, `plite-react`, and application extensions.
 
 ## Install
 
@@ -24,14 +24,14 @@ The package is subpath-only. Import exactly the layer you need:
   - pure selection helpers: `serializePoint`, `serializeRange`, `isCollapsed`
   - IME and placeholder proof classifiers: `evaluateImeInput`,
     `evaluatePlaceholderInput`
-  - release-proof helpers: `assertSlateBrowserReleaseProof`,
-    `validateSlateBrowserReleaseProof`, `createReleaseDisciplineProofArtifact`,
+  - release-proof helpers: `assertPliteBrowserReleaseProof`,
+    `validatePliteBrowserReleaseProof`, `createReleaseDisciplineProofArtifact`,
     `createBrowserMobileReleaseProofArtifact`,
     `createPersistentBrowserSoakProofArtifact`
   - first-party parity contracts:
-    `assertSlateBrowserFirstPartyParityContracts`
-  - feature proof contracts: `defineSlateBrowserFeatureContract`,
-    `createSlateBrowserFeatureContractRegistry`
+    `assertPliteBrowserFirstPartyParityContracts`
+  - feature proof contracts: `definePliteBrowserFeatureContract`,
+    `createPliteBrowserFeatureContractRegistry`
   - debug snapshot parsers for agent-browser and Appium proof artifacts
 - `@platejs/browser/browser`
   - DOM selection snapshots: `takeDOMSelectionSnapshot`,
@@ -55,7 +55,7 @@ The package is subpath-only. Import exactly the layer you need:
   - snapshot helper for aggregated editor state
   - selection namespace for semantic selection actions and setup
   - DOM namespace for mounted text-path readiness and native caret setup
-  - bookmark/capture helpers backed by real Slate range refs
+  - bookmark/capture helpers backed by real Plite range refs
   - tolerant selection assertions
   - collapsed model/native DOM selection agreement assertions
   - double-highlight selection assertion
@@ -101,7 +101,7 @@ The package is subpath-only. Import exactly the layer you need:
 import { expect, test } from '@playwright/test'
 import { openExample } from '@platejs/browser/playwright'
 
-test('types through the Slate browser path', async ({ page }) => {
+test('types through the Plite browser path', async ({ page }) => {
   const editor = await openExample(page, 'plaintext', {
     ready: { editor: 'visible' },
   })
@@ -118,7 +118,7 @@ test('types through the Slate browser path', async ({ page }) => {
 ## Proof Style
 
 Use the `ready` contract for maintained callsites and examples.
-For editor surfaces, do not use Playwright `locator.fill()` as proof. Slate
+For editor surfaces, do not use Playwright `locator.fill()` as proof. Plite
 owns model input through `beforeinput`, selection import, and editor commands;
 `fill()` can bypass or mis-model that path, especially in Firefox. Use
 `editor.type(...)` or `page.keyboard.type(...)` when the claim is real keyboard
@@ -156,12 +156,12 @@ Example:
 
 ```ts
 import {
-  attachSlateBrowserJsonArtifact,
+  attachPliteBrowserJsonArtifact,
   attachPageScreenshot,
   openExample,
-  startSlateBrowserNativeEventTrace,
-  stopSlateBrowserNativeEventTrace,
-  takeSlateBrowserNativeEventTrace,
+  startPliteBrowserNativeEventTrace,
+  stopPliteBrowserNativeEventTrace,
+  takePliteBrowserNativeEventTrace,
 } from '@platejs/browser/playwright'
 
 const editor = await openExample(page, 'placeholder', {
@@ -172,7 +172,7 @@ const editor = await openExample(page, 'placeholder', {
 })
 
 await editor.focus()
-await editor.type('Hello Slate Browser')
+await editor.type('Hello Plite Browser')
 await editor.selection.select({
   anchor: { path: [0, 0], offset: 0 },
   focus: { path: [0, 0], offset: 5 },
@@ -180,22 +180,22 @@ await editor.selection.select({
 await editor.dom.waitForTextPath([0, 0])
 await editor.dom.collapseAtTextPath({ path: [0, 0], offset: 5 })
 
-await editor.assert.text('Hello Slate Browser')
-await editor.assert.blockTexts(['Hello Slate Browser'])
+await editor.assert.text('Hello Plite Browser')
+await editor.assert.blockTexts(['Hello Plite Browser'])
 expect(await editor.get.selectedText()).toBe('Hello')
 expect((await editor.selection.displayed()).source).toBe('native')
 await editor.assert.noDoubleSelectionHighlight()
 await attachPageScreenshot(page, testInfo, 'selection-proof.png')
 
-await startSlateBrowserNativeEventTrace(editor.root)
+await startPliteBrowserNativeEventTrace(editor.root)
 await editor.type('!')
-const nativeTrace = await takeSlateBrowserNativeEventTrace(editor.root)
+const nativeTrace = await takePliteBrowserNativeEventTrace(editor.root)
 expect(nativeTrace.entries.some((entry) => entry.type === 'beforeinput')).toBe(
   true
 )
-await stopSlateBrowserNativeEventTrace(editor.root)
+await stopPliteBrowserNativeEventTrace(editor.root)
 
-await editor.assert.htmlContains('data-slate-string="true"')
+await editor.assert.htmlContains('data-plite-string="true"')
 await editor.assert.selection({
   anchor: { path: [0, 0], offset: [0, 1] },
   focus: { path: [0, 0], offset: [4, 5] },
@@ -203,16 +203,16 @@ await editor.assert.selection({
 await editor.assert.collapsedModelDOMSelection({
   offset: [4, 5],
   path: [0, 0],
-  text: 'Hello Slate Browser',
+  text: 'Hello Plite Browser',
 })
 await editor.assert.htmlEquals(
-  '<div data-slate-node="element"><span data-slate-node="text"><span data-slate-leaf="true"><span data-slate-string="true">Hello Slate Browser</span></span></span></div>',
+  '<div data-plite-node="element"><span data-plite-node="text"><span data-plite-leaf="true"><span data-plite-string="true">Hello Plite Browser</span></span></span></div>',
   { ignoreClasses: true, ignoreInlineStyles: true, ignoreDir: true }
 )
 
 const snapshot = await editor.snapshot()
 expect(snapshot.selection).not.toBeNull()
-await attachSlateBrowserJsonArtifact(testInfo, 'editor-snapshot-proof', snapshot)
+await attachPliteBrowserJsonArtifact(testInfo, 'editor-snapshot-proof', snapshot)
 
 const secondBlock = editor.locator.block([1])
 await secondBlock.click({ clickCount: 3 })

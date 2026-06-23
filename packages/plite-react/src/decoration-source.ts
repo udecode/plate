@@ -1,4 +1,4 @@
-import type { Range, RuntimeId, Editor as PliteEditor } from '@platejs/plite';
+import type { Range, RuntimeId, Editor as EditorType } from '@platejs/plite';
 import { RangeApi } from '@platejs/plite';
 
 import {
@@ -25,7 +25,7 @@ export type PliteRangeDecoration<T = unknown> =
 
 export type PliteDecorationSourceReadContext =
   PliteProjectionSourceReadContext & {
-    editor: PliteEditor;
+    editor: EditorType;
   };
 
 export type PliteDecorationSourceOptions<T = unknown> = Omit<
@@ -174,7 +174,7 @@ export const toPliteRangeDecorations = <T>(
   });
 
 export const createDecorationSource = <T = unknown>(
-  editor: PliteEditor,
+  editor: EditorType,
   options: PliteDecorationSourceOptions<T>
 ): PliteDecorationSource<T> => {
   const store = createPliteProjectionStore<T>(
@@ -194,7 +194,7 @@ export const createDecorationSource = <T = unknown>(
 };
 
 export const createRangeDecorationSource = <T = unknown>(
-  editor: PliteEditor,
+  editor: EditorType,
   options: PliteRangeDecorationSourceOptions<T>
 ): PliteDecorationSource<T> => {
   const { data, read, ...sourceOptions } = options;

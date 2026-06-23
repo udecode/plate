@@ -2,14 +2,14 @@ name: PliteDepsSync
 
 on:
   schedule:
-    - cron: '0 6 * * *'
+    - cron: "0 6 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: slate-deps-sync
+  group: plite-deps-sync
   cancel-in-progress: false
 
 jobs:
@@ -42,7 +42,7 @@ jobs:
       - name: ⬆️ Update Plite manifests
         run: >
           npx npm-check-updates@latest
-          '/^(slate|plite-dom|slate-react|slate-hyperscript)$/'
+          '/^@platejs\/(plite|plite-dom|plite-react|plite-hyperscript)$/'
           --configFileName .ncurc.yml
           --configFilePath tooling/config
           --mergeConfig
@@ -54,10 +54,10 @@ jobs:
       - name: 📦 Install updated deps
         run: pnpm install --no-frozen-lockfile
         env:
-          HUSKY: '0'
+          HUSKY: "0"
 
       - name: 🔍 Detect Plite update changes
-        id: slate-changes
+        id: plite-changes
         run: |
           node <<'EOF'
           const { execFileSync } = require('node:child_process');
@@ -76,10 +76,10 @@ jobs:
             'optionalDependencies',
           ];
           const targets = [
-            'slate',
-            'plite-dom',
-            'plite-react',
-            'plite-hyperscript',
+            '@platejs/plite',
+            '@platejs/plite-dom',
+            '@platejs/plite-react',
+            '@platejs/plite-hyperscript',
           ];
           const changed = new Set();
 
@@ -127,10 +127,10 @@ jobs:
         env:
           CHANGED_PACKAGES_JSON: ${{ steps.plite-changes.outputs.packages_json }}
         run: |
-          if [ -f .changeset/slate.md ]; then
-            echo "Updating existing .changeset/slate.md"
+          if [ -f .changeset/plite.md ]; then
+            echo "Updating existing .changeset/plite.md"
           else
-            echo "Creating .changeset/slate.md"
+            echo "Creating .changeset/plite.md"
           fi
 
           node <<'EOF'
@@ -140,7 +140,7 @@ jobs:
           const message = `Updated ${packages.map((name) => `\`${name}\``).join(', ')}.`;
 
           writeFileSync(
-            '.changeset/slate.md',
+            '.changeset/plite.md',
             `---\n"@platejs/plite": patch\n---\n\n${message}\n`
           );
           EOF

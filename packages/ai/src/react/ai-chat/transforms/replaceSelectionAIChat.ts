@@ -2,10 +2,10 @@ import {
   type BlockSelectionConfig,
   BlockSelectionPlugin,
 } from '@platejs/selection/react';
-import type { Descendant, Element, NodeEntry } from '@platejs/slate';
-import { ElementApi, NodeApi, TextApi } from '@platejs/slate';
+import type { Descendant, Element, NodeEntry } from '@platejs/plite';
+import { ElementApi, NodeApi, TextApi } from '@platejs/plite';
 import cloneDeep from 'lodash/cloneDeep.js';
-import { type SlateEditor, KEYS } from 'platejs';
+import { type BasePlateEditor, KEYS } from 'platejs';
 
 import type { AIChatPlateEditor } from '../internal/editorTypes';
 
@@ -59,7 +59,7 @@ export const createFormattedBlocks = ({
 
 export const replaceSelectionAIChat = (
   editor: AIChatPlateEditor,
-  sourceEditor: SlateEditor,
+  sourceEditor: BasePlateEditor,
   { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
   if (!sourceEditor || sourceEditor.api.isEmpty()) return;

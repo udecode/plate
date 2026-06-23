@@ -34,12 +34,12 @@ const createCommentRuntimeEditor = ({
 }) =>
   createPlateEditor<Value, typeof BaseCommentPlugin>({
     plugins: [BaseCommentPlugin],
-    runtime: 'slate-v2',
+    runtime: 'plite',
     selection,
     value,
   });
 
-describe('BaseCommentPlugin Slate v2 runtime', () => {
+describe('BaseCommentPlugin Plite runtime', () => {
   it('finds comment nodes and ids through the runtime API', () => {
     const editor = createCommentRuntimeEditor({
       value: [

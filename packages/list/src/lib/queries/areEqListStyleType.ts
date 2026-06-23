@@ -1,12 +1,12 @@
-import type { Node, NodeEntry } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Node, NodeEntry } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 import { ListStyleType } from '../types';
 
 export const areEqListStyleType = (
-  _editor: SlateEditor,
+  _editor: BasePlateEditor,
   entries: NodeEntry<Node>[],
   {
     listStyleType = ListStyleType.Disc,

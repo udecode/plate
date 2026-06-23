@@ -1,6 +1,6 @@
-import type { SlateEditor } from '@platejs/core';
-import type { Element } from '@platejs/slate';
-import { ElementApi, PathApi, RangeApi } from '@platejs/slate';
+import type { BasePlateEditor } from '@platejs/core';
+import type { Element } from '@platejs/plite';
+import { ElementApi, PathApi, RangeApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
 
@@ -15,7 +15,7 @@ import { unwrapList } from './unwrapList';
 type ToggleListOptions = { type: string; checked?: boolean };
 
 const _toggleList = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { checked = false, type }: ToggleListOptions
 ) =>
   editor.update((tx) => {
@@ -175,17 +175,22 @@ const _toggleList = (
     });
   });
 
-export const toggleList = (editor: SlateEditor, { type }: { type: string }) =>
-  _toggleList(editor, { type });
+export const toggleList = (
+  editor: BasePlateEditor,
+  { type }: { type: string }
+) => _toggleList(editor, { type });
 
-export const toggleBulletedList = (editor: SlateEditor) =>
+export const toggleBulletedList = (editor: BasePlateEditor) =>
   toggleList(editor, { type: editor.getType(KEYS.ulClassic) });
 
-export const toggleTaskList = (editor: SlateEditor, defaultChecked = false) =>
+export const toggleTaskList = (
+  editor: BasePlateEditor,
+  defaultChecked = false
+) =>
   _toggleList(editor, {
     checked: defaultChecked,
     type: editor.getType(KEYS.taskList),
   });
 
-export const toggleNumberedList = (editor: SlateEditor) =>
+export const toggleNumberedList = (editor: BasePlateEditor) =>
   toggleList(editor, { type: editor.getType(KEYS.olClassic) });

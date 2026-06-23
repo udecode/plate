@@ -31,7 +31,7 @@ describe('NavigationFeedbackPlugin', () => {
     );
 
     const getHighlightedElement = () =>
-      getByText('one').closest('[data-slate-node="element"]') as HTMLElement;
+      getByText('one').closest('[data-plite-node="element"]') as HTMLElement;
 
     expect(
       getHighlightedElement().getAttribute('data-nav-highlight')

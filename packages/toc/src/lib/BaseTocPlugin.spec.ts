@@ -1,4 +1,4 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
 import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
@@ -28,7 +28,7 @@ describe('BaseTocPlugin', () => {
     editor.read((state) => state.selection.get());
 
   it('configures toc as a void element with the shipped defaults', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseTocPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseTocPlugin);

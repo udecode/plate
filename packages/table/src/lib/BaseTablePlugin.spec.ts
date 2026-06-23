@@ -1,4 +1,4 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import {
   BaseTableCellHeaderPlugin,
@@ -8,7 +8,7 @@ import {
 
 describe('BaseTablePlugin', () => {
   it('parses table cell background styles and attribute props', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseTablePlugin],
     } as any);
 
@@ -51,7 +51,7 @@ describe('BaseTablePlugin', () => {
   });
 
   it('uses cached selection overrides when they are present', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseTablePlugin],
     } as any);
 

@@ -4,8 +4,8 @@ import {
   type Descendant,
   defineEditorExtension,
   type Operation,
-  type Editor as SlateEditor,
-} from '@platejs/slate';
+  type Editor as BasePlateEditor,
+} from '@platejs/plite';
 
 import {
   clearYjsTrace,
@@ -27,7 +27,7 @@ const largeValue = (count = 32): Descendant[] =>
   );
 
 const recordRemoteImportCommits = (
-  editor: SlateEditor
+  editor: BasePlateEditor
 ): RecordedRemoteImportCommit[] => {
   const commits: RecordedRemoteImportCommit[] = [];
 

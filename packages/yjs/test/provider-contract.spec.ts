@@ -4,10 +4,10 @@ import {
   createEditor,
   type Descendant,
   type Range,
-  type Editor as SlateEditor,
-} from '@platejs/slate';
-import { Editor } from '@platejs/slate/internal';
-import { history } from '@platejs/slate-history';
+  type Editor as BasePlateEditor,
+} from '@platejs/plite';
+import { Editor } from '@platejs/plite/internal';
+import { history } from '@platejs/plite-history';
 import * as Y from 'yjs';
 
 import { createYjsExtension } from '../src';
@@ -35,7 +35,7 @@ type Cleanup = () => void;
 
 type ProviderEditor = {
   readonly cleanup: Cleanup;
-  readonly editor: SlateEditor;
+  readonly editor: BasePlateEditor;
 };
 
 const initialValue = (): Descendant[] => [
@@ -136,7 +136,7 @@ const createYjsUpdate = (children: readonly Descendant[]): Uint8Array => {
       createYjsExtension({
         clientId: 'seed',
         doc,
-        rootName: '@platejs/slate',
+        rootName: '@platejs/plite',
       }),
     ],
     initialValue: [...children],
@@ -160,7 +160,7 @@ const seedProviderDoc = (
   provider.emitSync(true);
 };
 
-const insertFirstBlockTextAtEnd = (editor: SlateEditor, text = '!'): void => {
+const insertFirstBlockTextAtEnd = (editor: BasePlateEditor, text = '!'): void => {
   editor.update((tx) => {
     tx.text.insert(text, {
       at: { path: [0, 0], offset: Editor.string(editor, [0]).length },
@@ -168,7 +168,7 @@ const insertFirstBlockTextAtEnd = (editor: SlateEditor, text = '!'): void => {
   });
 };
 
-const createInitialEditor = (): SlateEditor => {
+const createInitialEditor = (): BasePlateEditor => {
   const editor = createEditor();
 
   Editor.replace(editor, {
@@ -190,7 +190,7 @@ const createProviderEditor = (
     createYjsExtension({
       clientId: 'provider-peer',
       provider,
-      rootName: '@platejs/slate',
+      rootName: '@platejs/plite',
       ...options,
     })
   );
@@ -214,7 +214,7 @@ const createProviderEditorWithHistory = (
       createYjsExtension({
         clientId: `provider-peer-${order}`,
         provider,
-        rootName: '@platejs/slate',
+        rootName: '@platejs/plite',
       })
     )
   );
@@ -381,7 +381,7 @@ describe('@platejs/yjs provider contract', () => {
   it('does not seed a provider-owned document before provider sync', () => {
     const provider = new FakeProvider();
     const { cleanup, editor } = createProviderEditor(provider);
-    const root = provider.doc.get('@platejs/slate', Y.XmlElement);
+    const root = provider.doc.get('@platejs/plite', Y.XmlElement);
 
     assert.equal(root.length, 0);
 
@@ -400,7 +400,7 @@ describe('@platejs/yjs provider contract', () => {
   it('does not reconcile an unsafe empty provider doc before sync', () => {
     const provider = new FakeProvider();
     const { cleanup, editor } = createProviderEditor(provider);
-    const root = provider.doc.get('@platejs/slate', Y.XmlElement);
+    const root = provider.doc.get('@platejs/plite', Y.XmlElement);
 
     runEditorYjsUpdate(editor, (yjs) => {
       yjs.reconcile();
@@ -412,7 +412,7 @@ describe('@platejs/yjs provider contract', () => {
     cleanup();
   });
 
-  it('does not save rejected pre-sync provider edits in Slate history', async () => {
+  it('does not save rejected pre-sync provider edits in Plite history', async () => {
     for (const order of ['history-first', 'yjs-first'] as const) {
       const provider = new FakeProvider();
       const { cleanup, editor } = createProviderEditorWithHistory(
@@ -437,7 +437,7 @@ describe('@platejs/yjs provider contract', () => {
   it('exports local edits after remote content arrives before provider sync', () => {
     const provider = new FakeProvider();
     const { cleanup, editor } = createProviderEditor(provider);
-    const root = provider.doc.get('@platejs/slate', Y.XmlElement);
+    const root = provider.doc.get('@platejs/plite', Y.XmlElement);
 
     applyProviderDoc(provider, [paragraph('remote')]);
 
@@ -459,7 +459,7 @@ describe('@platejs/yjs provider contract', () => {
   it('seeds empty synced provider docs by default', () => {
     const provider = new FakeProvider();
     const { cleanup, editor } = createProviderEditor(provider);
-    const root = provider.doc.get('@platejs/slate', Y.XmlElement);
+    const root = provider.doc.get('@platejs/plite', Y.XmlElement);
 
     assert.equal(root.length, 0);
     provider.emitSync(true);
@@ -480,7 +480,7 @@ describe('@platejs/yjs provider contract', () => {
     const { cleanup, editor } = createProviderEditor(provider, {
       seedProviderOnSync: false,
     });
-    const root = provider.doc.get('@platejs/slate', Y.XmlElement);
+    const root = provider.doc.get('@platejs/plite', Y.XmlElement);
 
     provider.emitSync(true);
 
@@ -498,7 +498,7 @@ describe('@platejs/yjs provider contract', () => {
   it('rejects local edits before an empty provider doc syncs', () => {
     const provider = new FakeProvider();
     const { cleanup, editor } = createProviderEditor(provider);
-    const root = provider.doc.get('@platejs/slate', Y.XmlElement);
+    const root = provider.doc.get('@platejs/plite', Y.XmlElement);
 
     assert.equal(root.length, 0);
     assert.doesNotThrow(() => {
@@ -523,7 +523,7 @@ describe('@platejs/yjs provider contract', () => {
   it('keeps provider content authoritative after rejecting pre-sync edits', () => {
     const provider = new FakeProvider();
     const { cleanup, editor } = createProviderEditor(provider);
-    const root = provider.doc.get('@platejs/slate', Y.XmlElement);
+    const root = provider.doc.get('@platejs/plite', Y.XmlElement);
 
     insertFirstBlockTextAtEnd(editor);
 
@@ -546,7 +546,7 @@ describe('@platejs/yjs provider contract', () => {
   it('does not seed provider docs with unknown sync state by default', () => {
     const provider = new FakeProvider({ exposeSynced: false });
     const { cleanup, editor } = createProviderEditor(provider);
-    const root = provider.doc.get('@platejs/slate', Y.XmlElement);
+    const root = provider.doc.get('@platejs/plite', Y.XmlElement);
 
     assert.equal(root.length, 0);
 
@@ -563,7 +563,7 @@ describe('@platejs/yjs provider contract', () => {
     const { cleanup, editor } = createProviderEditor(provider, {
       seedProviderOnSync: true,
     });
-    const root = provider.doc.get('@platejs/slate', Y.XmlElement);
+    const root = provider.doc.get('@platejs/plite', Y.XmlElement);
 
     assert.equal(root.length, 0);
 
@@ -586,7 +586,7 @@ describe('@platejs/yjs provider contract', () => {
       doc: provider.doc,
       seedProviderOnSync: true,
     });
-    const root = provider.doc.get('@platejs/slate', Y.XmlElement);
+    const root = provider.doc.get('@platejs/plite', Y.XmlElement);
 
     assert.equal(root.length, 0);
 
@@ -610,7 +610,7 @@ describe('@platejs/yjs provider contract', () => {
       doc,
       seedProviderOnSync: true,
     });
-    const root = doc.get('@platejs/slate', Y.XmlElement);
+    const root = doc.get('@platejs/plite', Y.XmlElement);
 
     assert.equal(root.length, 0);
 
@@ -632,7 +632,7 @@ describe('@platejs/yjs provider contract', () => {
     const { cleanup, editor } = createProviderEditor(provider, {
       seedProviderOnSync: true,
     });
-    const root = provider.doc.get('@platejs/slate', Y.XmlElement);
+    const root = provider.doc.get('@platejs/plite', Y.XmlElement);
 
     assert.equal(root.length, 0);
     provider.emitSync(true);

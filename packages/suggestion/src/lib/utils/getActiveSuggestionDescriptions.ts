@@ -1,4 +1,4 @@
-import type { SlateEditor, TSuggestionText } from 'platejs';
+import type { BasePlateEditor, TSuggestionText } from 'platejs';
 
 import { getSuggestionKey } from './getSuggestionKeys';
 import { getSuggestionApi } from './getSuggestionApi';
@@ -46,7 +46,7 @@ const getInlineSuggestionType = (
  * suggestion.
  */
 export const getActiveSuggestionDescriptions = (
-  editor: SlateEditor
+  editor: BasePlateEditor
 ): TSuggestionDescription[] => {
   const suggestionApi = getSuggestionApi(editor);
   const aboveEntry = suggestionApi.node({

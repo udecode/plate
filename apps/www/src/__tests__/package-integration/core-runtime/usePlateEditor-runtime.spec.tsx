@@ -7,7 +7,7 @@ import {
   usePlateEditor,
 } from 'platejs/react';
 
-describe('usePlateEditor Slate v2 runtime route', () => {
+describe('usePlateEditor Plite runtime route', () => {
   it('exposes inferred plugin tx groups from public app imports', () => {
     const value: Value = [{ children: [{ text: 'runtime' }], type: 'p' }];
     const nextValue: Value = [
@@ -28,7 +28,7 @@ describe('usePlateEditor Slate v2 runtime route', () => {
     const Probe = () => {
       const editor = usePlateEditor({
         plugins: [TxPlugin],
-        runtime: 'slate-v2',
+        runtime: 'plite',
         value,
       });
       const assertTxInference = (
@@ -70,7 +70,7 @@ describe('usePlateEditor Slate v2 runtime route', () => {
 
     const editor = createPlateEditor({
       plugins: [TxPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value,
     });
     const assertTxInference = (

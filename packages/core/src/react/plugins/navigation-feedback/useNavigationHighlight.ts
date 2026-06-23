@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { type Element, type Path, PathApi, type Text } from '@platejs/slate';
+import { type Element, type Path, PathApi, type Text } from '@platejs/plite';
 
 import type {
   NavigationFeedbackActiveTarget,

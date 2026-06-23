@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -12,8 +12,8 @@ import { setTableRowSize } from './setTableRowSize';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: BasePlateEditor) =>
+  createBasePlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
@@ -47,7 +47,7 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input);
 
@@ -78,7 +78,7 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input);
 
@@ -119,7 +119,7 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input);
 
@@ -160,7 +160,7 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -186,7 +186,7 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input);
 
@@ -223,7 +223,7 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -252,7 +252,7 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input);
 
@@ -277,7 +277,7 @@ describe('table sizing and selection helpers', () => {
           </htable>
           <hp>after</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -294,7 +294,7 @@ describe('table sizing and selection helpers', () => {
             after
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input);
 
@@ -319,7 +319,7 @@ describe('table sizing and selection helpers', () => {
           </htable>
           <hp>after</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -336,7 +336,7 @@ describe('table sizing and selection helpers', () => {
           </htable>
           <hp>after</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input);
 
@@ -364,7 +364,7 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -384,7 +384,7 @@ describe('table sizing and selection helpers', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editor = createTableEditor(input);
 

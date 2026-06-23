@@ -1,6 +1,6 @@
 import type { TLinkElement } from 'platejs';
 
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseLinkPlugin, getLinkAttributes } from '../../lib';
 import type { LinkConfig } from '../LinkPlugin';
@@ -17,7 +17,7 @@ const defaultOptions: Partial<LinkConfig['options']> = {
 };
 
 const createEditor = (options: Partial<LinkConfig['options']> = {}) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: [
       BaseLinkPlugin.configure({
         options: {

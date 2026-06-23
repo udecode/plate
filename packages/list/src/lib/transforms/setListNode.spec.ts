@@ -1,10 +1,10 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { ListStyleType } from '../types';
 import { setIndentTodoNode, setListNode } from './setListNode';
 
 const createTransformEditor = (children: any[]) =>
-  createSlateEditor({
+  createBasePlateEditor({
     value: children,
   });
 

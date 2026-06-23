@@ -32,8 +32,8 @@
 
 'use client';
 
-import type { NodeComponents, PluginConfig, SlatePluginInput } from 'platejs';
-import { createSlateEditor, createTSlatePlugin } from 'platejs';
+import type { NodeComponents, PluginConfig, EditorPluginInput } from 'platejs';
+import { createBasePlateEditor, createEditorPlugin } from 'platejs';
 import type { PlateStaticProps, SerializeHtmlOptions } from 'platejs/static';
 import { serializeHtml } from 'platejs/static';
 
@@ -226,7 +226,7 @@ export type DocxExportPluginOptions = {
    *
    * This should match the plugins used in your editor for accurate serialization.
    */
-  editorPlugins?: SlatePluginInput[];
+  editorPlugins?: EditorPluginInput[];
 
   /**
    * The React component to use for static rendering.
@@ -322,7 +322,7 @@ type SerializeToHtmlInternalOptions = {
   /** Component overrides by plugin key */
   components?: NodeComponents;
   fontFamily?: string;
-  plugins?: SlatePluginInput[];
+  plugins?: EditorPluginInput[];
   value: DocxValue;
 };
 
@@ -338,7 +338,7 @@ async function serializeToHtml(
   const { EditorStaticComponent, components, fontFamily, plugins, value } =
     options;
 
-  const editorStatic = createSlateEditor({
+  const editorStatic = createBasePlateEditor({
     plugins: plugins ?? [],
     value,
   });
@@ -394,7 +394,7 @@ function wrapHtmlForDocx(bodyHtml: string, customStyles?: string): string {
 interface ExportToDocxInternalOptions extends DocxExportOperationOptions {
   /** Component overrides by plugin key */
   components?: NodeComponents;
-  editorPlugins?: SlatePluginInput[];
+  editorPlugins?: EditorPluginInput[];
   editorStaticComponent?: React.ComponentType<PlateStaticProps>;
   value: DocxValue;
 }
@@ -520,7 +520,7 @@ type PluginComponentOverrideSource = {
 };
 
 const getPluginComponentOverrides = (
-  plugin: SlatePluginInput
+  plugin: EditorPluginInput
 ): NodeComponents | undefined => {
   const source = plugin as unknown as PluginComponentOverrideSource;
   let override = source.override;
@@ -641,10 +641,10 @@ export async function exportEditorToDocx(
  * downloadDocx(blob, 'my-document.docx');
  * ```
  */
-export const DocxExportPlugin = createTSlatePlugin<DocxExportPluginConfig>({
+export const DocxExportPlugin = createEditorPlugin<DocxExportPluginConfig>({
   key: 'docxExport',
   options: {
-    editorPlugins: undefined as SlatePluginInput[] | undefined,
+    editorPlugins: undefined as EditorPluginInput[] | undefined,
     editorStaticComponent: undefined as
       | React.ComponentType<PlateStaticProps>
       | undefined,

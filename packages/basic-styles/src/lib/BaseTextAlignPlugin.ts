@@ -1,6 +1,6 @@
 import {
-  type SlateEditor,
-  createSlatePlugin,
+  type BasePlateEditor,
+  createEditorPlugin,
   getInjectMatch,
   KEYS,
 } from 'platejs';
@@ -14,7 +14,7 @@ export type Alignment =
   | 'start';
 
 /** Creates a plugin that adds alignment functionality to the editor. */
-export const BaseTextAlignPlugin = createSlatePlugin({
+export const BaseTextAlignPlugin = createEditorPlugin({
   key: KEYS.textAlign,
   inject: {
     isBlock: true,
@@ -24,7 +24,7 @@ export const BaseTextAlignPlugin = createSlatePlugin({
       validNodeValues: ['start', 'left', 'center', 'right', 'end', 'justify'],
     },
     targetPlugins: [KEYS.p],
-    targetPluginToInject: ({ editor }: { editor: SlateEditor }) => ({
+    targetPluginToInject: ({ editor }: { editor: BasePlateEditor }) => ({
       parsers: {
         html: {
           deserializer: {

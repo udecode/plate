@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { Element, Path } from '@platejs/slate';
+import type { Element, NodeEntry, Path } from '@platejs/plite';
 
 import { KEYS, PathApi } from 'platejs';
 import {
@@ -40,13 +40,9 @@ export const addOnContextMenu = (
   if (!enableContextMenu) return;
 
   if (editor.selection?.focus && disabledWhenFocused) {
-    const nodeEntry = editor.api.above<Element>();
+    const nodeEntry = editor.api.above() as NodeEntry<Element> | undefined;
 
-    if (
-      nodeEntry &&
-      path &&
-      PathApi.isCommon(path, nodeEntry[1])
-    ) {
+    if (nodeEntry && path && PathApi.isCommon(path, nodeEntry[1])) {
       const id = nodeEntry[0].id as string | undefined;
       const isSelected = editor.getOption(
         BlockSelectionPlugin,
@@ -93,7 +89,7 @@ export const useBlockSelectable = () => {
   return {
     props: api.blockSelection?.isSelectable(element, path)
       ? {
-          className: 'slate-selectable',
+          className: 'plite-selectable',
           onContextMenu: (
             event: React.MouseEvent<HTMLDivElement, MouseEvent>
           ) =>

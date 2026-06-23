@@ -38,7 +38,7 @@ describe('proof helpers', () => {
               domSelection: 'sushi@5|sushi@5',
               events: ['beforeinput:insertText:s'],
               placeholderShape: null,
-              slateSelection: '0.0:5|0.0:5',
+              pliteSelection: '0.0:5|0.0:5',
             }),
           },
           success: true,
@@ -51,7 +51,7 @@ describe('proof helpers', () => {
       domSelection: 'sushi@5|sushi@5',
       events: ['beforeinput:insertText:s'],
       placeholderShape: null,
-      slateSelection: '0.0:5|0.0:5',
+      pliteSelection: '0.0:5|0.0:5',
     });
   });
 
@@ -68,7 +68,7 @@ describe('proof helpers', () => {
             kind: 'n',
             text: '\uFEFF',
           },
-          slateSelection: 'none',
+          pliteSelection: 'none',
         }),
       })
     );
@@ -83,7 +83,7 @@ describe('proof helpers', () => {
         kind: 'n',
         text: '\uFEFF',
       },
-      slateSelection: 'none',
+      pliteSelection: 'none',
     });
   });
 
@@ -95,7 +95,7 @@ describe('proof helpers', () => {
           domSelection: 'sushi@5|sushi@5',
           events: [1],
           placeholderShape: null,
-          slateSelection: '0.0:5|0.0:5',
+          pliteSelection: '0.0:5|0.0:5',
         })
       )
     ).toThrow('Debug snapshot payload is not a recognized snapshot shape');
@@ -107,7 +107,7 @@ describe('proof helpers', () => {
       domSelection: 'sushi@5|sushi@5',
       events: ['beforeinput:insertText:s', 'mutation'],
       placeholderShape: null,
-      slateSelection: '0.0:5|0.0:5',
+      pliteSelection: '0.0:5|0.0:5',
     });
 
     expect(evaluation.ok).toBe(true);
@@ -120,7 +120,7 @@ describe('proof helpers', () => {
       domSelection: 'sushiType something@5|sushiType something@5',
       events: ['beforeinput:insertText:s'],
       placeholderShape: null,
-      slateSelection: '0.0:5|0.0:5',
+      pliteSelection: '0.0:5|0.0:5',
     });
 
     expect(evaluation.ok).toBe(false);
@@ -138,7 +138,7 @@ describe('proof helpers', () => {
         kind: 'n',
         text: '',
       },
-      slateSelection: '0.0:5|0.0:5',
+      pliteSelection: '0.0:5|0.0:5',
     });
 
     expect(evaluation.ok).toBe(false);
@@ -154,7 +154,7 @@ describe('proof helpers', () => {
         domSelection: 'すし@2|すし@2',
         events: ['beforeinput:insertCompositionText:す'],
         placeholderShape: null,
-        slateSelection: '0.0:2|0.0:2',
+        pliteSelection: '0.0:2|0.0:2',
       },
       'すし'
     );

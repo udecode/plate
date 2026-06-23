@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Path } from '@platejs/slate';
+import type { Path } from '@platejs/plite';
 import {
   useEditorPlugin,
   useEditorSelector,

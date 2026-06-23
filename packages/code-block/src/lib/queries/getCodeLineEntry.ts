@@ -1,9 +1,14 @@
-import { type NodeEntry, type SlateEditor, ElementApi, KEYS } from 'platejs';
-import type { Element, Location } from '@platejs/slate';
+import {
+  type NodeEntry,
+  type BasePlateEditor,
+  ElementApi,
+  KEYS,
+} from 'platejs';
+import type { Element, Location } from '@platejs/plite';
 
 /** If at (default = selection) is in ul>li>p, return li and ul node entries. */
 export const getCodeLineEntry = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ):
   | { codeBlock: NodeEntry<Element>; codeLine: NodeEntry<Element> }
@@ -22,10 +27,11 @@ export const getCodeLineEntry = (
     const [, parentPath] = selectionParent;
 
     const codeLine =
-      editor.api.above<Element>({
+      (editor.api.above({
         at,
         match: { type: editor.getType(KEYS.codeLine) },
-      }) || editor.api.parent<Element>(parentPath);
+      }) as NodeEntry<Element> | undefined) ||
+      (editor.api.parent(parentPath) as NodeEntry<Element> | undefined);
 
     if (!codeLine) return;
 
@@ -37,7 +43,9 @@ export const getCodeLineEntry = (
     )
       return;
 
-    const codeBlock = editor.api.parent<Element>(codeLinePath);
+    const codeBlock = editor.api.parent(codeLinePath) as
+      | NodeEntry<Element>
+      | undefined;
 
     if (!codeBlock) return;
 

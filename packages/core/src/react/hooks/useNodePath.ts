@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 
 import { findEditorPath } from '../../internal/utils/runtimeEditorQueries';
 import { useEditorRef } from '../stores';

@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import { ElementApi, type Element } from '@platejs/slate';
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { ElementApi, type Element } from '@platejs/plite';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -16,7 +16,7 @@ jsxt;
 // and then checks if the output matches the expected output.
 describe('setCellBackground', () => {
   const createEditorInstance = (input: any) =>
-    createSlateEditor({
+    createBasePlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins(),
       selection: input.selection,
@@ -51,7 +51,7 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -66,7 +66,7 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editorInstance = createEditorInstance(input);
       setCellBackground(editorInstance, { color: 'red' });
@@ -91,7 +91,7 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -106,7 +106,7 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editorInstance = createEditorInstance(input);
       setCellBackground(editorInstance, {
@@ -136,7 +136,7 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -151,7 +151,7 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editorInstance = createEditorInstance(input);
       setCellBackground(editorInstance, { color: null });
@@ -173,7 +173,7 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -188,7 +188,7 @@ describe('setCellBackground', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const editorInstance = createEditorInstance(input);
       setCellBackground(editorInstance, {

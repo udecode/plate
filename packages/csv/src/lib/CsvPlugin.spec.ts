@@ -1,4 +1,4 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
 import { deserializeCsv } from './deserializer/utils/deserializeCsv';
@@ -6,7 +6,7 @@ import { CsvPlugin } from './CsvPlugin';
 
 describe('CsvPlugin', () => {
   it('exposes the default options, bound csv api, and plain-text parser contract', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [CsvPlugin],
     });
     const plugin = editor.getPlugin(CsvPlugin);
@@ -30,10 +30,10 @@ describe('CsvPlugin', () => {
     );
   });
 
-  it('exposes the csv api on the Slate v2 runtime route', () => {
+  it('exposes the csv api on the Plite runtime route', () => {
     const editor = createPlateEditor({
       plugins: [CsvPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
     });
     const api = editor.api as typeof editor.api & {
       csv: {

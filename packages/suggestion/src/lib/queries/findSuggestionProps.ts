@@ -1,18 +1,18 @@
 import {
   ElementApi,
   type NodeEntry,
-  type SlateEditor,
+  type BasePlateEditor,
   type TSuggestionElement,
   type TSuggestionText,
   nanoid,
 } from 'platejs';
-import type { Element, Location, Point } from '@platejs/slate';
+import type { Element, Location, Point } from '@platejs/plite';
 
 import { getInlineSuggestionData, isCurrentUserSuggestion } from '../utils';
 import { getSuggestionApi } from '../utils/getSuggestionApi';
 
 export const findSuggestionProps = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { at, type }: { at: Location; type: 'insert' | 'remove' | 'update' }
 ): { id: string; createdAt: number } => {
   const defaultProps = {

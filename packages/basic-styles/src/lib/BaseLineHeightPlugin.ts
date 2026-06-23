@@ -1,6 +1,6 @@
 import {
-  type SlateEditor,
-  createSlatePlugin,
+  type BasePlateEditor,
+  createEditorPlugin,
   getInjectMatch,
   KEYS,
 } from 'platejs';
@@ -9,7 +9,7 @@ import {
  * Enables support for text alignment, useful to align your content to left,
  * right and center it.
  */
-export const BaseLineHeightPlugin = createSlatePlugin({
+export const BaseLineHeightPlugin = createEditorPlugin({
   key: KEYS.lineHeight,
   inject: {
     isBlock: true,
@@ -22,7 +22,7 @@ export const BaseLineHeightPlugin = createSlatePlugin({
       editor,
       plugin,
     }: {
-      editor: SlateEditor;
+      editor: BasePlateEditor;
       plugin: { key: string };
     }) => ({
       parsers: {

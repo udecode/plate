@@ -1,4 +1,4 @@
-import type { NodeInsertNodesOptions } from '@platejs/slate';
+import type { NodeInsertNodesOptions } from '@platejs/plite';
 import {
   type ExtendConfig,
   type TPlaceholderElement,

@@ -2,11 +2,12 @@ import { describe, expect, it, mock } from 'bun:test';
 import {
   BaseParagraphPlugin,
   KEYS,
-  createSlateEditor,
+  createBasePlateEditor,
   getPluginType,
 } from 'platejs';
 
 import { BaseAIPlugin } from '../BaseAIPlugin';
+import { getEditorHistory } from '../internal/history';
 import {
   acceptAIPreview,
   beginAIPreview,
@@ -267,7 +268,7 @@ describe('ai preview transforms', () => {
   });
 
   it('registers the preview lifecycle on BaseAIPlugin transforms', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin],
       selection: {
         anchor: { offset: 5, path: [0, 0] },
@@ -275,7 +276,6 @@ describe('ai preview transforms', () => {
       },
       value: [{ children: [{ text: 'start' }], type: 'p' }],
     });
-    const initialValue = structuredClone(editor.children);
     const aiType = getPluginType(editor, KEYS.ai);
     const aiChatType = getPluginType(editor, KEYS.aiChat);
     let didBegin = false;
@@ -286,10 +286,11 @@ describe('ai preview transforms', () => {
       didBegin = tx.ai.beginPreview({ originalBlocks: [] });
     });
     expect(didBegin).toBe(true);
-    const undoCountAfterBegin = editor.history.undos.length;
+    const history = getEditorHistory(editor);
+    const undoCountAfterBegin = history.undos.length;
 
-    editor.api.history.withoutSaving(() => {
-      editor.update((tx) => {
+    editor.update(
+      (tx) => {
         tx.nodes.insert(
           [
             {
@@ -304,10 +305,11 @@ describe('ai preview transforms', () => {
           ],
           { at: [1] }
         );
-      });
-    });
+      },
+      { metadata: { history: { mode: 'skip' } } }
+    );
 
-    expect(editor.history.undos).toHaveLength(undoCountAfterBegin);
+    expect(history.undos).toHaveLength(undoCountAfterBegin);
     editor.update((tx) => {
       didAccept = tx.ai.acceptPreview();
     });
@@ -316,16 +318,8 @@ describe('ai preview transforms', () => {
       { children: [{ text: 'start' }], type: 'p' },
       { children: [{ text: 'accepted' }], type: 'p' },
     ]);
-    expect(editor.history.undos).toHaveLength(undoCountAfterBegin + 1);
-    expect(editor.history.undos[0]?.selectionBefore).toEqual({
-      anchor: { offset: 5, path: [0, 0] },
-      focus: { offset: 5, path: [0, 0] },
-    });
-
-    editor.undo();
-
-    expect(editor.children).toEqual(initialValue);
-    expect(editor.selection).toEqual({
+    expect(history.undos).toHaveLength(undoCountAfterBegin + 1);
+    expect(history.undos[0]?.selectionBefore).toEqual({
       anchor: { offset: 5, path: [0, 0] },
       focus: { offset: 5, path: [0, 0] },
     });

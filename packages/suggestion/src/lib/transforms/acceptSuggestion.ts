@@ -1,5 +1,5 @@
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type TSuggestionElement,
   type TSuggestionText,
   ElementApi,
@@ -14,7 +14,7 @@ import { getInlineSuggestionData, getTransientSuggestionKey } from '../utils';
 import { getSuggestionApi } from '../utils/getSuggestionApi';
 
 export const acceptSuggestion = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   description: TResolvedSuggestion
 ) => {
   const suggestionApi = getSuggestionApi(editor);
@@ -28,10 +28,10 @@ export const acceptSuggestion = (
 
           if (suggestionApi.isBlockSuggestion(n)) {
             const suggestionElement = n as TSuggestionElement;
-            return (
+            return Boolean(
               suggestionElement.suggestion.type === 'remove' &&
-              suggestionElement.suggestion.isLineBreak &&
-              suggestionElement.suggestion.id === description.suggestionId
+                suggestionElement.suggestion.isLineBreak &&
+                suggestionElement.suggestion.id === description.suggestionId
             );
           }
 

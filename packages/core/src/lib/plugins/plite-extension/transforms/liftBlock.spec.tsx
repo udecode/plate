@@ -2,13 +2,13 @@
 
 import { jsxt } from '@platejs/test-utils';
 
-import { createPliteEditor } from '../../../editor';
-import { createPlitePlugin } from '../../../plugin/createPlitePlugin';
+import { createBasePlateEditor } from '../../../editor';
+import { createEditorPlugin } from '../../../plugin/createEditorPlugin';
 import { liftBlock } from './liftBlock';
 
 jsxt;
 
-const BlockquotePlugin = createPlitePlugin({
+const BlockquotePlugin = createEditorPlugin({
   key: 'blockquote',
   node: { isElement: true, type: 'blockquote' },
 });
@@ -35,7 +35,7 @@ describe('liftBlock', () => {
       </editor>
     ) as any;
 
-    const editor = createPliteEditor({
+    const editor = createBasePlateEditor({
       plugins: [BlockquotePlugin],
       selection: input.selection,
       value: input.children,
@@ -73,7 +73,7 @@ describe('liftBlock', () => {
       </editor>
     ) as any;
 
-    const editor = createPliteEditor({
+    const editor = createBasePlateEditor({
       plugins: [BlockquotePlugin],
       selection: input.selection,
       value: input.children,
@@ -111,7 +111,7 @@ describe('liftBlock', () => {
       </editor>
     ) as any;
 
-    const editor = createPliteEditor({
+    const editor = createBasePlateEditor({
       plugins: [BlockquotePlugin],
       selection: input.selection,
       value: input.children,
@@ -134,7 +134,7 @@ describe('liftBlock', () => {
       </editor>
     ) as any;
 
-    const editor = createPliteEditor({
+    const editor = createBasePlateEditor({
       plugins: [BlockquotePlugin],
       selection: input.selection,
       value: input.children,

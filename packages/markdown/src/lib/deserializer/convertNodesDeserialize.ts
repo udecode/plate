@@ -16,13 +16,13 @@ export const convertNodesDeserialize = (
   return nodes.reduce<Descendant[]>((acc, node) => {
     // Only process nodes that pass the filtering
     if (shouldIncludeNode(node, options)) {
-      acc.push(...buildSlateNode(node, deco, options));
+      acc.push(...buildPliteNode(node, deco, options));
     }
     return acc;
   }, []);
 };
 
-export const buildSlateNode = (
+export const buildPliteNode = (
   mdastNode: MdRootContent,
   deco: MdDecoration,
   options: DeserializeMdOptions

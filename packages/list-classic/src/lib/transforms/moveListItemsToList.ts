@@ -1,5 +1,5 @@
-import type { Element, ElementEntry, Path } from '@platejs/slate';
-import type { SlateEditor } from '@platejs/core';
+import type { Element, ElementEntry, Path } from '@platejs/plite';
+import type { BasePlateEditor } from '@platejs/core';
 import { getEditorDescendant } from '../internal/editorQueries';
 import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
 
@@ -36,7 +36,7 @@ export type MergeListItemIntoListOptions = {
  * `fromList` is defined).
  */
 export const moveListItemsToList = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     deleteFromList = true,
     fromList,

@@ -1,6 +1,6 @@
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
-import { createSlatePlugin } from 'platejs';
+import { createEditorPlugin } from 'platejs';
 
 import type { CodeDrawingData } from './types';
 
@@ -10,8 +10,8 @@ export interface CodeDrawingElement extends Element {
   data?: CodeDrawingData;
 }
 
-/** Enables support for code drawing (PlantUml, Graphviz, Flowchart, Mermaid) within a Slate document */
-export const BaseCodeDrawingPlugin = createSlatePlugin({
+/** Enables support for code drawing (PlantUml, Graphviz, Flowchart, Mermaid) within a Plite document */
+export const BaseCodeDrawingPlugin = createEditorPlugin({
   key: CODE_DRAWING_KEY,
   node: { isElement: true, isVoid: true },
 });

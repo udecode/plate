@@ -1,16 +1,14 @@
 import { type ComputeDiffOptions, computeDiff } from '@platejs/diff';
 import {
   type Descendant,
-  type SlateEditor,
+  type BasePlateEditor,
   type ValueOf,
   ElementApi,
   KEYS,
   TextApi,
 } from 'platejs';
 
-import {
-  type BaseSuggestionConfig,
-} from './BaseSuggestionPlugin';
+import type { BaseSuggestionConfig } from './BaseSuggestionPlugin';
 import { getSuggestionProps } from './transforms';
 import { getSuggestionKey } from './utils';
 import { getSuggestionApi } from './utils/getSuggestionApi';
@@ -19,7 +17,7 @@ type SuggestionDataNode = Parameters<
   BaseSuggestionConfig['api']['suggestion']['suggestionData']
 >[0];
 
-export function diffToSuggestions<E extends SlateEditor>(
+export function diffToSuggestions<E extends BasePlateEditor>(
   editor: E,
   doc0: Descendant[],
   doc1: Descendant[],
@@ -72,7 +70,7 @@ export function diffToSuggestions<E extends SlateEditor>(
  * and creation time from the remove suggestion. This allows the UI to treat
  * them as a single suggestion for display and interaction purposes.
  */
-function unifyAdjacentSuggestionIds<E extends SlateEditor>(
+function unifyAdjacentSuggestionIds<E extends BasePlateEditor>(
   node: Descendant,
   index: number,
   nodes: Descendant[],

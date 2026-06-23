@@ -1,4 +1,4 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
 import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
@@ -10,7 +10,7 @@ import { BaseMediaEmbedPlugin } from './media-embed/BaseMediaEmbedPlugin';
 
 describe('Base media plugin contracts', () => {
   it('configures file nodes as void elements', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFilePlugin],
     } as any);
 
@@ -21,7 +21,7 @@ describe('Base media plugin contracts', () => {
   });
 
   it('configures audio nodes as void elements', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseAudioPlugin],
     } as any);
 
@@ -32,7 +32,7 @@ describe('Base media plugin contracts', () => {
   });
 
   it('configures video nodes as void elements with width and height passthrough', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseVideoPlugin],
     } as any);
 

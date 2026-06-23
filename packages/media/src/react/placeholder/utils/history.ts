@@ -22,7 +22,11 @@ export const updateUploadHistory = (
   editor: PlateEditor,
   node: TMediaElement
 ) => {
-  const undos = editor.history.undos as unknown as UploadHistoryBatch[];
+  const history = editor.history as { undos?: UploadHistoryBatch[] };
+  const undos = history.undos;
+
+  if (!undos) return;
+
   const index = undos.findLastIndex((batch) =>
     batch.operations.some((operation) =>
       isPlaceholderInsertOperation(operation, node.placeholderId)

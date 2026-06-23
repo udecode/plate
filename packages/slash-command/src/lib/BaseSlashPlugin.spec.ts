@@ -1,10 +1,10 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { BaseSlashInputPlugin, BaseSlashPlugin } from './BaseSlashPlugin';
 
 describe('BaseSlashPlugin', () => {
   it('ships the slash trigger defaults and nested input plugin', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseSlashPlugin],
     });
     const plugin = editor.getPlugin(BaseSlashPlugin);

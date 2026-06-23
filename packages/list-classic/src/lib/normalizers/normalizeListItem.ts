@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@platejs/core';
+import type { BasePlateEditor } from '@platejs/core';
 import type {
   Descendant,
   Element,
@@ -6,8 +6,8 @@ import type {
   NodeEntry,
   Path,
   PathRef,
-} from '@platejs/slate';
-import { ElementApi, PathApi } from '@platejs/slate';
+} from '@platejs/plite';
+import { ElementApi, PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { ListConfig } from '../BaseListPlugin';
@@ -25,7 +25,7 @@ const getChildEntries = (node: Element, path: Path): NodeEntry<Descendant>[] =>
  * - Inline children except those at excludeDepth
  */
 export const getDeepInlineChildren = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     children,
   }: {
@@ -54,7 +54,7 @@ export const getDeepInlineChildren = (
  * move the children that are not valid to the list item container.
  */
 export const normalizeListItem = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     listItem,
     validLiChildrenTypes = [],

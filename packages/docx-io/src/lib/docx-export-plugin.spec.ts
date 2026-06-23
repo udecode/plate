@@ -1,4 +1,4 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import {
   DocxExportPlugin,
@@ -9,7 +9,7 @@ import {
 
 describe('DocxExportPlugin', () => {
   it('delegates exportAndDownload through the typed plugin API', async () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [DocxExportPlugin],
       value: [{ children: [{ text: 'Export me' }], type: 'p' }],
     });

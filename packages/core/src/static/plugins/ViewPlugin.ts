@@ -15,8 +15,8 @@ export const ViewPlugin = withLegacyTransformOverride(
   BaseViewPlugin,
   ({ editor, tf: { setFragmentData } }) => ({
     tf: {
-      setFragmentData(data, originEvent) {
-        if (originEvent !== 'copy') return setFragmentData(data, originEvent);
+      setFragmentData(data: DataTransfer, originEvent: string) {
+        if (originEvent !== 'copy') return setFragmentData?.(data, originEvent);
 
         const fragment = getSelectedDomFragment(editor);
         const html = getSelectedDomNode();
@@ -32,7 +32,7 @@ export const ViewPlugin = withLegacyTransformOverride(
           const string = JSON.stringify(fragment);
           const encoded = window.btoa(encodeURIComponent(string));
 
-          data.setData('application/x-slate-fragment', encoded);
+          data.setData('application/x-plite-fragment', encoded);
           data.setData('text/html', html.innerHTML);
           data.setData('text/plain', getPlainText(html));
         }

@@ -1,4 +1,4 @@
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 import type { DropTargetMonitor, XYCoord } from 'react-dnd';
 
 import type {

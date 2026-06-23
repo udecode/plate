@@ -1,4 +1,4 @@
-import type { Element, Path, Text } from '@platejs/slate';
+import type { Element, Path, Text } from '@platejs/plite';
 import type { AnyObject, Nullable } from '@udecode/utils';
 import type { Draft } from 'mutative';
 import type { TStateApi } from 'zustand-x';
@@ -143,16 +143,16 @@ export type BasePlugin<C extends AnyPluginConfig = PluginConfig> = {
   priority: number;
   render: Nullable<{
     /**
-     * Renders a component above the `Editable` component but within the `Slate`
+     * Renders a component above the `Editable` component but within the `Plite`
      * wrapper. Useful for adding UI elements that should appear above the
      * editable area.
      */
     aboveEditable?: React.FC<{ children: React.ReactNode }>;
     /**
-     * Renders a component above the `Slate` wrapper. This is the outermost
+     * Renders a component above the `Plite` wrapper. This is the outermost
      * render position in the editor structure.
      */
-    aboveSlate?: React.FC<{ children: React.ReactNode }>;
+    abovePlite?: React.FC<{ children: React.ReactNode }>;
     /**
      * Specifies the HTML tag name to use when rendering the node component.
      * Only used when no custom `component` is provided for the plugin.
@@ -460,7 +460,7 @@ export type SelectionRules = {
    *   apply the mark to new text.
    * - `hard`: Creates a 'hard' edge that requires two key presses to move across.
    *   Uses offset-based navigation.
-   * - `default`: Uses Slate's default behavior.
+   * - `default`: Uses Plite's default behavior.
    */
   affinity?: 'default' | 'directional' | 'hard' | 'outward';
 };
@@ -569,7 +569,7 @@ export type InferTxFromExtensions<ETx extends Record<PropertyKey, unknown>> = {
 };
 
 /**
- * Renders a component for Slate Nodes (elements if `isElement: true` or leaves
+ * Renders a component for Plite Nodes (elements if `isElement: true` or leaves
  * if `isLeaf: true`) that match this plugin's type. This is the primary render
  * method for plugin-specific node content.
  *

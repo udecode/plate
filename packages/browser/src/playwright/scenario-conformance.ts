@@ -1,11 +1,11 @@
 import type {
-  SlateBrowserMixedEditingConformanceGauntletOptions,
-  SlateBrowserScenarioStep,
-  SlateBrowserSemanticEditingConformanceGauntletOptions,
+  PliteBrowserMixedEditingConformanceGauntletOptions,
+  PliteBrowserScenarioStep,
+  PliteBrowserSemanticEditingConformanceGauntletOptions,
 } from './types';
 
 /** Create a mixed editing conformance scenario across text and structure. */
-export const createSlateBrowserMixedEditingConformanceGauntlet = ({
+export const createPliteBrowserMixedEditingConformanceGauntlet = ({
   deleteKey,
   domCaretAfterDelete,
   domCaretAfterFollowUp,
@@ -23,14 +23,14 @@ export const createSlateBrowserMixedEditingConformanceGauntlet = ({
   toolbarButtonTestId,
   toolbarSelection,
   toolbarSelectionAfterCommand,
-}: SlateBrowserMixedEditingConformanceGauntletOptions): SlateBrowserScenarioStep[] => [
+}: PliteBrowserMixedEditingConformanceGauntletOptions): PliteBrowserScenarioStep[] => [
   {
     kind: 'select',
     label: 'select-navigation-start',
     selection: startSelection,
   },
   ...navigationKeys.map(
-    (key, index): SlateBrowserScenarioStep => ({
+    (key, index): PliteBrowserScenarioStep => ({
       key,
       kind: 'press',
       label: `navigate-${index + 1}-${key}`,
@@ -194,7 +194,7 @@ export const createSlateBrowserMixedEditingConformanceGauntlet = ({
 ];
 
 /** Create a semantic editing conformance scenario. */
-export const createSlateBrowserSemanticEditingConformanceGauntlet = ({
+export const createPliteBrowserSemanticEditingConformanceGauntlet = ({
   insertedText,
   selectionAfterDelete,
   selectionAfterFollowUp,
@@ -206,7 +206,7 @@ export const createSlateBrowserSemanticEditingConformanceGauntlet = ({
   toolbarButtonTestId,
   toolbarSelection,
   toolbarSelectionAfterCommand,
-}: SlateBrowserSemanticEditingConformanceGauntletOptions): SlateBrowserScenarioStep[] => [
+}: PliteBrowserSemanticEditingConformanceGauntletOptions): PliteBrowserScenarioStep[] => [
   {
     kind: 'select',
     label: 'select-semantic-start',

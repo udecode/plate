@@ -2,7 +2,7 @@ import type { Value } from 'platejs';
 import { BaseParagraphPlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 import { createPlateEditor } from 'platejs/react';
-import { createListClassicRuntimeTestEditor as createSlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
+import { createListClassicRuntimeTestEditor as createBasePlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
 
 import { BaseTodoListPlugin } from './BaseTodoListPlugin';
 
@@ -12,7 +12,7 @@ describe('BaseTodoListPlugin', () => {
   });
 
   it('inserts a new todo item on line break inside a todo item', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseTodoListPlugin],
       selection: {
         anchor: { path: [0, 0], offset: 4 },
@@ -48,7 +48,7 @@ describe('BaseTodoListPlugin', () => {
   });
 
   it('falls back to the base insertBreak outside todo items', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseTodoListPlugin],
       selection: {
         anchor: { path: [0, 0], offset: 4 },
@@ -81,7 +81,7 @@ describe('BaseTodoListPlugin', () => {
       typeof BaseParagraphPlugin | typeof BaseTodoListPlugin
     >({
       plugins: [BaseParagraphPlugin, BaseTodoListPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
@@ -102,10 +102,10 @@ describe('BaseTodoListPlugin', () => {
     });
   });
 
-  it('routes todo line-end insertBreak through the Slate v2 runtime', () => {
+  it('routes todo line-end insertBreak through the Plite runtime', () => {
     const editor = createPlateEditor<Value, typeof BaseTodoListPlugin>({
       plugins: [BaseTodoListPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       selection: {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
@@ -138,13 +138,13 @@ describe('BaseTodoListPlugin', () => {
     });
   });
 
-  it('falls back to Slate v2 insertBreak outside classic todo items', () => {
+  it('falls back to Plite insertBreak outside classic todo items', () => {
     const editor = createPlateEditor<
       Value,
       typeof BaseParagraphPlugin | typeof BaseTodoListPlugin
     >({
       plugins: [BaseParagraphPlugin, BaseTodoListPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       selection: {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },

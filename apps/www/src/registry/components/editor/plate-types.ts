@@ -1,6 +1,6 @@
 'use client';
 
-import type { Element, Text } from '@platejs/slate';
+import type { Element, Text } from '@platejs/plite';
 import type {
   EmptyText,
   KEYS,

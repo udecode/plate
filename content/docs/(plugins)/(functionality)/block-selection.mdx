@@ -166,11 +166,11 @@ const handleClickOutside = (event: MouseEvent) => {
 
 ### Selection Area
 
-Style the selection area by targeting the `.slate-selection-area` class, which is added to the editor container.
+Style the selection area by targeting the `.plite-selection-area` class, which is added to the editor container.
 
 ```css
 /* Example using Tailwind CSS utility classes */
-'[&_.slate-selection-area]:border [&_.slate-selection-area]:border-primary [&_.slate-selection-area]:bg-primary/10'
+'[&_.plite-selection-area]:border [&_.plite-selection-area]:border-primary [&_.plite-selection-area]:bg-primary/10'
 ```
 
 ### Selected Element
@@ -182,7 +182,7 @@ Plate UI renders this component for all selectable blocks using `render.belowRoo
 ```tsx
 render: {
   belowRootNodes: (props) => {
-    if (!props.className?.includes('slate-selectable')) return null;
+    if (!props.className?.includes('plite-selectable')) return null;
 
     return <BlockSelection />;
   },
@@ -204,8 +204,8 @@ Plugin for block selection functionality.
 {
   boundaries: [`#${editor.meta.uid}`],
   container: [`#${editor.meta.uid}`],
-  selectables: [`#${editor.meta.uid} .slate-selectable`],
-  selectionAreaClass: 'slate-selection-area',
+  selectables: [`#${editor.meta.uid} .plite-selectable`],
+  selectionAreaClass: 'plite-selection-area',
 }
 ```
     
@@ -450,7 +450,7 @@ A hook that provides props for making a block element selectable, including cont
       <APISubList>
         <APISubListItem parent="props" name="className" type="string">
           Required class for selection functionality. - **Default:**
-          `'slate-selectable'`
+          `'plite-selectable'`
         </APISubListItem>
         <APISubListItem
           parent="props"

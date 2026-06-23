@@ -1,5 +1,5 @@
 import type {
-  SlateEditor,
+  BasePlateEditor,
   TTableCellElement,
   TTableElement,
   TTableRowElement,
@@ -19,7 +19,7 @@ import {
 import { findTableNodePath } from '../utils/findTableNodePath';
 import { deleteRowWhenExpanded } from './deleteRowWhenExpanded';
 
-export const deleteTableMergeRow = (editor: SlateEditor) => {
+export const deleteTableMergeRow = (editor: BasePlateEditor) => {
   const { api, type } = getEditorPlugin<TableConfig>(editor, {
     key: KEYS.table,
   });

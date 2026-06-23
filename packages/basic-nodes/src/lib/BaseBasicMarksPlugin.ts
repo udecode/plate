@@ -1,4 +1,4 @@
-import { createSlatePlugin } from 'platejs';
+import { createEditorPlugin } from 'platejs';
 
 import { BaseBoldPlugin } from './BaseBoldPlugin';
 import { BaseCodePlugin } from './BaseCodePlugin';
@@ -8,7 +8,7 @@ import { BaseSubscriptPlugin } from './BaseSubscriptPlugin';
 import { BaseSuperscriptPlugin } from './BaseSuperscriptPlugin';
 import { BaseUnderlinePlugin } from './BaseUnderlinePlugin';
 
-export const BaseBasicMarksPlugin = createSlatePlugin({
+export const BaseBasicMarksPlugin = createEditorPlugin({
   plugins: [
     BaseBoldPlugin,
     BaseCodePlugin,

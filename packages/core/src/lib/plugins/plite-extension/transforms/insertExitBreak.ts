@@ -1,9 +1,9 @@
 import { PathApi } from '@platejs/plite';
 
-import type { PliteEditor } from '../../../editor';
+import type { BasePlateEditor } from '../../../editor';
 
 import { getCurrentRuntimeTransforms } from '../../../../internal/currentRuntimeBridge';
-import { getPluginByType } from '../../../plugin/getSlatePlugin';
+import { getPluginByType } from '../../../plugin/getEditorPluginInstance';
 import { type PlateNodeMatch, combinePlateMatchOptions } from './matchOptions';
 
 export type InsertExitBreakOptions = {
@@ -26,7 +26,7 @@ export type InsertExitBreakOptions = {
  * - In `table > tr > td > p`, exits after `table`
  */
 export const insertExitBreak = (
-  editor: PliteEditor,
+  editor: BasePlateEditor,
   { match, reverse }: InsertExitBreakOptions = {}
 ) => {
   if (!editor.selection || !editor.api.isCollapsed()) return;

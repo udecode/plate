@@ -1,4 +1,4 @@
-import { createSlateEditor } from '../../editor';
+import { createBasePlateEditor } from '../../editor';
 
 describe('DOMPlugin', () => {
   afterEach(() => {
@@ -6,7 +6,7 @@ describe('DOMPlugin', () => {
   });
 
   it('scrolls enabled operations while auto-scrolling is active', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
@@ -35,14 +35,14 @@ describe('DOMPlugin', () => {
         { block: 'center', scrollMode: 'if-needed' },
       ],
       [
-        { offset: 0, path: [0, 0] },
+        { offset: 1, path: [0, 0] },
         { block: 'center', scrollMode: 'if-needed' },
       ],
     ]);
   });
 
   it('skips scrolling when the current operation type is disabled', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
@@ -66,7 +66,7 @@ describe('DOMPlugin', () => {
   });
 
   it('stores prevSelection and clears currentKeyboardEvent on set_selection', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },

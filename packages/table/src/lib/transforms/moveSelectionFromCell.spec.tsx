@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -9,8 +9,8 @@ import { moveSelectionFromCell } from './moveSelectionFromCell';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: BasePlateEditor) =>
+  createBasePlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
@@ -32,7 +32,7 @@ describe('moveSelectionFromCell', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
     const initialSelection = editor.selection;
@@ -58,7 +58,7 @@ describe('moveSelectionFromCell', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
 
@@ -90,7 +90,7 @@ describe('moveSelectionFromCell', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
 
@@ -122,7 +122,7 @@ describe('moveSelectionFromCell', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
 
@@ -149,7 +149,7 @@ describe('moveSelectionFromCell', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
     const initialSelection = editor.selection;

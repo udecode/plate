@@ -1,6 +1,6 @@
-import { type SlateEditor, KEYS } from 'platejs';
+import { type BasePlateEditor, KEYS } from 'platejs';
 
-export const deleteTable = (editor: SlateEditor) => {
+export const deleteTable = (editor: BasePlateEditor) => {
   if (
     editor.api.some({
       match: { type: editor.getType(KEYS.table) },

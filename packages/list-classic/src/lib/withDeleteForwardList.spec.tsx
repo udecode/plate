@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '@platejs/core';
-import { createListClassicRuntimeTestEditor as createSlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
+import type { BasePlateEditor } from '@platejs/core';
+import { createListClassicRuntimeTestEditor as createBasePlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -22,7 +22,7 @@ describe('p (empty) + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const expected = (
       <editor>
@@ -32,9 +32,9 @@ describe('p (empty) + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
@@ -60,15 +60,15 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const expected = (
       <editor>
         <hp>onetwo</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
@@ -95,7 +95,7 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const expected = (
       <editor>
@@ -106,9 +106,9 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
@@ -143,7 +143,7 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const expected = (
       <editor>
@@ -162,9 +162,9 @@ describe('p /w text + list when selection not in list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
@@ -200,7 +200,7 @@ describe('list + list when selection is at the end of the first list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const expected = (
       <editor>
@@ -219,9 +219,9 @@ describe('list + list when selection is at the end of the first list', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
@@ -252,7 +252,7 @@ describe('list where second item has multiple children', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const expected = (
       <editor>
@@ -268,9 +268,9 @@ describe('list where second item has multiple children', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,
@@ -308,7 +308,7 @@ describe('list + sublist where second item has multiple children', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const expected = (
       <editor>
@@ -329,9 +329,9 @@ describe('list + sublist where second item has multiple children', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,

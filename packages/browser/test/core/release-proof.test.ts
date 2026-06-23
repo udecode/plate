@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'bun:test';
 
 import {
-  assertSlateBrowserReleaseProof,
+  assertPliteBrowserReleaseProof,
   createBrowserMobileReleaseProofArtifact,
   createReleaseDisciplineProofArtifact,
-  SLATE_BROWSER_RELEASE_DISCIPLINE_GUARDS,
-  type SlateBrowserMobileDeviceProofArtifact,
-  validateSlateBrowserReleaseProof,
+  PLITE_BROWSER_RELEASE_DISCIPLINE_GUARDS,
+  type PliteBrowserMobileDeviceProofArtifact,
+  validatePliteBrowserReleaseProof,
 } from '../../src/core';
 
 describe('release proof helpers', () => {
@@ -23,13 +23,13 @@ describe('release proof helpers', () => {
         transport: 'appium-ios',
       }),
       createReleaseDisciplineProofArtifact({
-        guards: [...SLATE_BROWSER_RELEASE_DISCIPLINE_GUARDS],
+        guards: [...PLITE_BROWSER_RELEASE_DISCIPLINE_GUARDS],
         passed: true,
       }),
     ];
 
     expect(
-      validateSlateBrowserReleaseProof({
+      validatePliteBrowserReleaseProof({
         artifacts,
         claims: [
           'android-chrome-device-browser-text-input',
@@ -43,7 +43,7 @@ describe('release proof helpers', () => {
   });
 
   test('does not let semantic or proxy mobile proof satisfy raw device claims', () => {
-    const result = validateSlateBrowserReleaseProof({
+    const result = validatePliteBrowserReleaseProof({
       artifacts: [
         createBrowserMobileReleaseProofArtifact({
           passed: true,
@@ -61,7 +61,7 @@ describe('release proof helpers', () => {
   });
 
   test('does not let forged proxy mobile fields satisfy raw device claims', () => {
-    const result = validateSlateBrowserReleaseProof({
+    const result = validatePliteBrowserReleaseProof({
       artifacts: [
         {
           capabilities: [
@@ -75,7 +75,7 @@ describe('release proof helpers', () => {
           releaseGateCapable: true,
           scenario: 'placeholder-ime',
           transport: 'agent-browser-ios',
-        } satisfies SlateBrowserMobileDeviceProofArtifact,
+        } satisfies PliteBrowserMobileDeviceProofArtifact,
       ],
       claims: ['ios-safari-device-browser-ime-commit'],
     });
@@ -98,7 +98,7 @@ describe('release proof helpers', () => {
       transport: 'appium-ios',
     });
 
-    const result = validateSlateBrowserReleaseProof({
+    const result = validatePliteBrowserReleaseProof({
       artifacts: [android, ios],
       claims: ['native-mobile-clipboard'],
     });
@@ -111,7 +111,7 @@ describe('release proof helpers', () => {
   });
 
   test('requires all release discipline guards', () => {
-    const result = validateSlateBrowserReleaseProof({
+    const result = validatePliteBrowserReleaseProof({
       artifacts: [
         createReleaseDisciplineProofArtifact({
           guards: ['public-surface-contract'],
@@ -128,14 +128,14 @@ describe('release proof helpers', () => {
   });
 
   test('accepts a later complete release discipline artifact', () => {
-    const result = validateSlateBrowserReleaseProof({
+    const result = validatePliteBrowserReleaseProof({
       artifacts: [
         createReleaseDisciplineProofArtifact({
           guards: ['public-surface-contract'],
           passed: true,
         }),
         createReleaseDisciplineProofArtifact({
-          guards: [...SLATE_BROWSER_RELEASE_DISCIPLINE_GUARDS],
+          guards: [...PLITE_BROWSER_RELEASE_DISCIPLINE_GUARDS],
           passed: true,
         }),
       ],
@@ -147,7 +147,7 @@ describe('release proof helpers', () => {
 
   test('throws with actionable release proof failures', () => {
     expect(() =>
-      assertSlateBrowserReleaseProof({
+      assertPliteBrowserReleaseProof({
         artifacts: [
           {
             capabilities: ['device-browser-ime-commit'],
@@ -158,7 +158,7 @@ describe('release proof helpers', () => {
             releaseGateCapable: true,
             scenario: 'placeholder-ime',
             transport: 'appium-android',
-          } satisfies SlateBrowserMobileDeviceProofArtifact,
+          } satisfies PliteBrowserMobileDeviceProofArtifact,
         ],
         claims: ['android-chrome-device-browser-ime-commit'],
       })

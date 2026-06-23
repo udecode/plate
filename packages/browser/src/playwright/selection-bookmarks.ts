@@ -1,6 +1,6 @@
 import { expect, type Locator } from '@playwright/test';
 
-import { SLATE_BROWSER_HANDLE_KEY } from './constants';
+import { PLITE_BROWSER_HANDLE_KEY } from './constants';
 import type {
   RangeRefAffinity,
   SelectionBookmark,
@@ -21,7 +21,7 @@ export const captureSelectionBookmark = async (
 
       if (!handle) {
         throw new Error(
-          'This editor surface does not expose a Slate browser handle'
+          'This editor surface does not expose a Plite browser handle'
         );
       }
 
@@ -38,7 +38,7 @@ export const captureSelectionBookmark = async (
       };
     },
     {
-      key: SLATE_BROWSER_HANDLE_KEY,
+      key: PLITE_BROWSER_HANDLE_KEY,
       affinity: options.affinity,
     }
   );
@@ -53,14 +53,14 @@ export const resolveSelectionBookmark = async (
 
       if (!handle) {
         throw new Error(
-          'This editor surface does not expose a Slate browser handle'
+          'This editor surface does not expose a Plite browser handle'
         );
       }
 
       return handle.resolveRangeRef(id);
     },
     {
-      key: SLATE_BROWSER_HANDLE_KEY,
+      key: PLITE_BROWSER_HANDLE_KEY,
       id: bookmark.id,
     }
   );
@@ -75,7 +75,7 @@ export const restoreSelectionBookmark = async (
 
       if (!handle) {
         throw new Error(
-          'This editor surface does not expose a Slate browser handle'
+          'This editor surface does not expose a Plite browser handle'
         );
       }
 
@@ -88,7 +88,7 @@ export const restoreSelectionBookmark = async (
       handle.selectRange(range);
     },
     {
-      key: SLATE_BROWSER_HANDLE_KEY,
+      key: PLITE_BROWSER_HANDLE_KEY,
       id: bookmark.id,
     }
   );
@@ -104,14 +104,14 @@ export const unrefSelectionBookmark = async (
 
       if (!handle) {
         throw new Error(
-          'This editor surface does not expose a Slate browser handle'
+          'This editor surface does not expose a Plite browser handle'
         );
       }
 
       return handle.unrefRangeRef(id);
     },
     {
-      key: SLATE_BROWSER_HANDLE_KEY,
+      key: PLITE_BROWSER_HANDLE_KEY,
       id: bookmark.id,
     }
   );
@@ -149,7 +149,7 @@ export const handleSelectionMatches = async (
       );
     },
     {
-      key: SLATE_BROWSER_HANDLE_KEY,
+      key: PLITE_BROWSER_HANDLE_KEY,
       selection: expected,
     }
   );

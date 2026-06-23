@@ -1,6 +1,6 @@
 import type { PlateEditor } from 'platejs/react';
 
-import type { Element, Text } from '@platejs/slate';
+import type { Element, Text } from '@platejs/plite';
 
 import { isDefined, KEYS } from 'platejs';
 

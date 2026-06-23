@@ -1,5 +1,5 @@
-import type { EditorUpdateTransaction } from '@platejs/slate';
-import { type PluginConfig, createTSlatePlugin, KEYS } from 'platejs';
+import type { EditorUpdateTransaction } from '@platejs/plite';
+import { type PluginConfig, createEditorPlugin, KEYS } from 'platejs';
 
 import type { InsertCalloutOptions } from './transforms';
 
@@ -13,7 +13,7 @@ type CalloutTx = {
 
 export type CalloutConfig = PluginConfig<'callout', {}, {}, {}, {}, CalloutTx>;
 
-export const BaseCalloutPlugin = createTSlatePlugin<CalloutConfig>({
+export const BaseCalloutPlugin = createEditorPlugin<CalloutConfig>({
   key: KEYS.callout,
   node: {
     isElement: true,

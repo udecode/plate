@@ -1,6 +1,6 @@
-import type { Descendant, NodeOperation } from '@platejs/slate';
+import type { Descendant, NodeOperation } from '@platejs/plite';
 
-import type { SlateEditor } from '../editor/SlateEditor';
+import type { BasePlateEditor } from '../editor/BasePlateEditor';
 import type { AnyEditorPlugin } from '../plugin';
 import { getEditorPlugin } from '../plugin/getEditorPlugin';
 
@@ -9,7 +9,7 @@ type OnNodeChangeContext = Parameters<
 >[0];
 
 export const pipeOnNodeChange = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   node: Descendant,
   prevNode: Descendant,
   operation: NodeOperation

@@ -1,7 +1,7 @@
-import { type Path, type Point, type SlateEditor, PathApi } from 'platejs';
+import { type Path, type Point, type BasePlateEditor, PathApi } from 'platejs';
 
 export const isPointNextToNode = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options: {
     nodeType: string;
     at?: Point;

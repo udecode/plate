@@ -1,11 +1,11 @@
-import { type Descendant, ElementApi, TextApi } from '@platejs/slate';
+import { type Descendant, ElementApi, TextApi } from '@platejs/plite';
 
-import type { SlateEditor } from '../editor';
+import type { BasePlateEditor } from '../editor';
 import type { WithRequiredKey } from '../plugin';
 
 import { BaseParagraphPlugin } from '../plugins';
 
-const isInlineNode = (editor: SlateEditor) => (node: Descendant) =>
+const isInlineNode = (editor: BasePlateEditor) => (node: Descendant) =>
   TextApi.isText(node) ||
   (ElementApi.isElement(node) && editor.api.isInline(node));
 
@@ -114,7 +114,7 @@ const normalize = (
 
 /** Normalize the descendants to a valid document fragment. */
 export const normalizeDescendantsToDocumentFragment = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     defaultElementPlugin = BaseParagraphPlugin,
     descendants,

@@ -1,4 +1,4 @@
-import type { Descendant, Text } from '@platejs/slate';
+import type { Descendant, Text } from '@platejs/plite';
 
 import { NodeApi, TextApi } from 'platejs';
 

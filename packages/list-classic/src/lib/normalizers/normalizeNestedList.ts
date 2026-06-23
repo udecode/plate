@@ -1,6 +1,6 @@
-import type { SlateEditor } from '@platejs/core';
-import type { EditorUpdateTransaction, ElementEntry } from '@platejs/slate';
-import { ElementApi } from '@platejs/slate';
+import type { BasePlateEditor } from '@platejs/core';
+import type { EditorUpdateTransaction, ElementEntry } from '@platejs/plite';
+import { ElementApi } from '@platejs/plite';
 
 import { getListTypes, getPreviousSiblingPath } from '../queries/index';
 
@@ -12,7 +12,7 @@ type NormalizeNestedListTransaction = {
 // should be normalized to "ul -> li -> lic + ul".
 // In other words, a nested list as a direct children of a list should be moved into a previous list item sibling
 export const normalizeNestedList = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     nestedListItem,
     tx,

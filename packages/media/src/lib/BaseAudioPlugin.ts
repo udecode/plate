@@ -1,6 +1,6 @@
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
-export const BaseAudioPlugin = createSlatePlugin({
+export const BaseAudioPlugin = createEditorPlugin({
   key: KEYS.audio,
   node: { isElement: true, isVoid: true },
 });

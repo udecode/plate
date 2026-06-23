@@ -1,24 +1,24 @@
-import type { SlateEditor } from '../../../editor';
+import type { BasePlateEditor } from '../../../editor';
 import type { DeserializeHtmlChildren } from '../types';
 
-import { isSlateNode } from '../../../utils';
+import { isPliteNode } from '../../../utils';
 import { deserializeHtmlNode } from './deserializeHtmlNode';
 
 export const deserializeHtmlNodeChildren = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   node: ChildNode | HTMLElement,
-  isSlateParent = false
+  isPliteParent = false
 ): DeserializeHtmlChildren[] =>
   Array.from(node.childNodes).flatMap((child) => {
     if (
       child.nodeType === 1 &&
-      !isSlateNode(child as HTMLElement) &&
-      isSlateParent
+      !isPliteNode(child as HTMLElement) &&
+      isPliteParent
     ) {
       return deserializeHtmlNodeChildren(
         editor,
         child as HTMLElement,
-        isSlateParent
+        isPliteParent
       );
     }
 

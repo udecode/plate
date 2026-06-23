@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -9,8 +9,8 @@ import { getTableCellSize } from './getTableCellSize';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: BasePlateEditor) =>
+  createBasePlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     value: input.children,
@@ -24,7 +24,7 @@ describe('getTableCellSize', () => {
           <hp>orphan</hp>
         </htd>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
     const element = editor.children[0] as any;
@@ -49,7 +49,7 @@ describe('getTableCellSize', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
     const element = ((editor.children[0] as any).children[0] as any)
@@ -75,7 +75,7 @@ describe('getTableCellSize', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
     const element = ((editor.children[0] as any).children[0] as any)

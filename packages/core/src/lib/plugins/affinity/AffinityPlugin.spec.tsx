@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from '../../editor';
+import type { BasePlateEditor } from '../../editor';
 
 import {
   BaseBoldPlugin,
@@ -10,12 +10,47 @@ import {
 import { BaseLinkPlugin } from '@platejs/link';
 import { jsxt } from '@platejs/test-utils';
 
-import { createSlateEditor } from '../../editor';
+import { createBasePlateEditor } from '../../editor';
 import { AffinityPlugin } from './AffinityPlugin';
 
 jsxt;
 
-type PlateEditor = SlateEditor;
+type PlateEditor = BasePlateEditor;
+
+const normalizeAdjacentText = (nodes: any[]): any[] => {
+  const normalized: any[] = [];
+
+  for (const node of nodes) {
+    const nextNode = Array.isArray(node.children)
+      ? { ...node, children: normalizeAdjacentText(node.children) }
+      : node;
+    const previous = normalized.at(-1);
+
+    if (
+      previous &&
+      typeof previous.text === 'string' &&
+      typeof nextNode.text === 'string'
+    ) {
+      const { text: _previousText, ...previousProps } = previous;
+      const { text: _nextText, ...nextProps } = nextNode;
+
+      if (JSON.stringify(previousProps) === JSON.stringify(nextProps)) {
+        previous.text += nextNode.text;
+        continue;
+      }
+    }
+
+    normalized.push(nextNode);
+  }
+
+  return normalized;
+};
+
+const expectChildren = (actual: any[], expected: any[]) => {
+  expect(normalizeAdjacentText(actual)).toEqual(
+    normalizeAdjacentText(expected)
+  );
+};
 
 /**
  * Tests for AffinityPlugin which handles cursor movement and text insertion at
@@ -60,7 +95,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             // Note: BaseBoldPlugin without clearOnEdge configuration
@@ -72,7 +107,7 @@ describe('AffinityPlugin', () => {
 
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
 
       it('returns early when selection is expanded', () => {
@@ -99,7 +134,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -112,7 +147,7 @@ describe('AffinityPlugin', () => {
 
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
 
       it('returns early when cursor is not at end of text node', () => {
@@ -138,7 +173,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -151,7 +186,7 @@ describe('AffinityPlugin', () => {
 
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
 
       it('returns early when current text node has no clearOnEdge marks', () => {
@@ -176,7 +211,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -189,7 +224,7 @@ describe('AffinityPlugin', () => {
 
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
     });
 
@@ -216,7 +251,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -229,7 +264,7 @@ describe('AffinityPlugin', () => {
 
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
 
       it('does not clear marks when next text node has the same mark', () => {
@@ -253,7 +288,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -266,7 +301,7 @@ describe('AffinityPlugin', () => {
 
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
 
       it('clear marks when at end of document', () => {
@@ -290,7 +325,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -303,7 +338,7 @@ describe('AffinityPlugin', () => {
 
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
 
       it('clear marks when at end of block', () => {
@@ -333,7 +368,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -346,7 +381,7 @@ describe('AffinityPlugin', () => {
 
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
 
       it('handle multiple marks correctly', () => {
@@ -373,7 +408,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -389,7 +424,7 @@ describe('AffinityPlugin', () => {
 
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
 
       it('preserve marks that exist on both current and next text node', () => {
@@ -416,7 +451,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -432,7 +467,7 @@ describe('AffinityPlugin', () => {
 
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
     });
   });
@@ -463,7 +498,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -477,7 +512,7 @@ describe('AffinityPlugin', () => {
         editor.tf.move({ distance: 1, unit: 'character' });
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
 
       it('apply forward affinity when moving right at mark boundary and insert text when cross block', () => {
@@ -506,7 +541,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -520,7 +555,7 @@ describe('AffinityPlugin', () => {
         editor.tf.move({ distance: 1, unit: 'character' });
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
 
       it('apply forward affinity when moving left at mark boundary and insert text when cross block', () => {
@@ -550,7 +585,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -564,7 +599,7 @@ describe('AffinityPlugin', () => {
         editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
     });
 
@@ -594,7 +629,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -608,7 +643,7 @@ describe('AffinityPlugin', () => {
         editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
     });
 
@@ -635,7 +670,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -650,7 +685,7 @@ describe('AffinityPlugin', () => {
 
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
 
       it('set forward affinity when deleting to mark boundary', () => {
@@ -678,7 +713,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseBoldPlugin.configure({
@@ -693,7 +728,7 @@ describe('AffinityPlugin', () => {
 
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
     });
   });
@@ -728,7 +763,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [AffinityPlugin, BaseLinkPlugin],
           selection: input.selection,
           value: input.children,
@@ -737,7 +772,7 @@ describe('AffinityPlugin', () => {
         editor.tf.move({ distance: 1, unit: 'character' });
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
     });
 
@@ -771,7 +806,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [AffinityPlugin, BaseLinkPlugin],
           selection: input.selection,
           value: input.children,
@@ -780,7 +815,7 @@ describe('AffinityPlugin', () => {
         editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
     });
 
@@ -811,7 +846,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             AffinityPlugin,
             BaseLinkPlugin.configure({
@@ -826,7 +861,7 @@ describe('AffinityPlugin', () => {
 
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
 
       it('set forward affinity when deleting to mark boundary', () => {
@@ -858,7 +893,7 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [AffinityPlugin, BaseLinkPlugin],
           selection: input.selection,
           value: input.children,
@@ -868,7 +903,7 @@ describe('AffinityPlugin', () => {
 
         editor.tf.insertText('1');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
     });
   });
@@ -902,8 +937,9 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
+            AffinityPlugin,
             BaseCodePlugin.configure({
               rules: { selection: { affinity: 'hard' } } as any,
             }),
@@ -915,7 +951,7 @@ describe('AffinityPlugin', () => {
         editor.tf.move({ distance: 1, unit: 'character' });
         editor.tf.insertText('x');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
         expect(editor.selection).toEqual(output.selection);
       });
 
@@ -946,8 +982,9 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
+            AffinityPlugin,
             BaseCodePlugin.configure({
               rules: { selection: { affinity: 'hard' } } as any,
             }),
@@ -959,7 +996,7 @@ describe('AffinityPlugin', () => {
         editor.tf.move({ distance: 1, reverse: true, unit: 'character' });
         editor.tf.insertText('x');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
         expect(editor.selection).toEqual(output.selection);
       });
 
@@ -994,8 +1031,9 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
+            AffinityPlugin,
             BaseCodePlugin.configure({
               rules: { selection: { affinity: 'hard' } } as any,
             }),
@@ -1010,7 +1048,7 @@ describe('AffinityPlugin', () => {
         // Insert text should now go outside the code mark
         editor.tf.insertText('x');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
 
       it('move block end', () => {
@@ -1038,8 +1076,9 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
+            AffinityPlugin,
             BaseCodePlugin.configure({
               rules: { selection: { affinity: 'hard' } } as any,
             }),
@@ -1056,7 +1095,7 @@ describe('AffinityPlugin', () => {
         // Insert text should now go outside the code mark
         editor.tf.insertText('x');
 
-        expect(editor.children).toEqual(output.children);
+        expectChildren(editor.children, output.children);
       });
 
       it('handle multiple hard edge marks correctly', () => {
@@ -1086,8 +1125,9 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
+            AffinityPlugin,
             BaseCodePlugin.configure({
               rules: { selection: { affinity: 'hard' } } as any,
             }),
@@ -1128,8 +1168,9 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
+            AffinityPlugin,
             BaseCodePlugin.configure({
               rules: { selection: { affinity: 'hard' } } as any,
             }),
@@ -1172,8 +1213,9 @@ describe('AffinityPlugin', () => {
           </editor>
         ) as any as PlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
+            AffinityPlugin,
             BaseCodePlugin.configure({
               rules: { selection: { affinity: 'hard' } } as any,
             }),

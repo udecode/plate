@@ -1,10 +1,10 @@
 import { createPlatePlugin } from '../../react';
-import { createSlateEditor } from '../editor';
-import { createSlatePlugin } from '../plugin';
+import { createBasePlateEditor } from '../editor';
+import { createEditorPlugin } from '../plugin';
 
 describe('overrideEditor method', () => {
   it('override both api and transforms', () => {
-    const basePlugin = createSlatePlugin({
+    const basePlugin = createEditorPlugin({
       key: 'testPlugin',
     })
       .extendEditorApi(() => ({
@@ -24,7 +24,7 @@ describe('overrideEditor method', () => {
         },
       }));
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [basePlugin],
     });
 
@@ -33,7 +33,7 @@ describe('overrideEditor method', () => {
   });
 
   it('allow overriding only api or transforms', () => {
-    const basePlugin = createSlatePlugin({
+    const basePlugin = createEditorPlugin({
       key: 'testPlugin',
     })
       .extendEditorApi(() => ({
@@ -55,7 +55,7 @@ describe('overrideEditor method', () => {
         },
       }));
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [basePlugin],
     });
 
@@ -64,7 +64,7 @@ describe('overrideEditor method', () => {
   });
 
   it('maintain type safety for both api and transforms', () => {
-    const basePlugin = createSlatePlugin({
+    const basePlugin = createEditorPlugin({
       key: 'testPlugin',
     })
       .extendEditorApi(() => ({
@@ -84,7 +84,7 @@ describe('overrideEditor method', () => {
         },
       }));
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [basePlugin],
     });
 
@@ -93,7 +93,7 @@ describe('overrideEditor method', () => {
   });
 
   it('allow access to original methods in override', () => {
-    const basePlugin = createSlatePlugin({
+    const basePlugin = createEditorPlugin({
       key: 'testPlugin',
     })
       .extendEditorApi(() => ({
@@ -115,7 +115,7 @@ describe('overrideEditor method', () => {
         },
       }));
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [basePlugin],
     });
 
@@ -124,7 +124,7 @@ describe('overrideEditor method', () => {
   });
 
   it('handle nested methods correctly', () => {
-    const basePlugin = createSlatePlugin({
+    const basePlugin = createEditorPlugin({
       key: 'testPlugin',
     })
       .extendEditorApi(() => ({
@@ -154,7 +154,7 @@ describe('overrideEditor method', () => {
         },
       }));
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [basePlugin],
     });
 
@@ -165,7 +165,7 @@ describe('overrideEditor method', () => {
   });
 
   it('preserve non-overridden methods', () => {
-    const basePlugin = createSlatePlugin({
+    const basePlugin = createEditorPlugin({
       key: 'testPlugin',
     })
       .extendEditorApi(() => ({
@@ -197,7 +197,7 @@ describe('overrideEditor method', () => {
         },
       }));
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [basePlugin],
     });
 
@@ -232,7 +232,7 @@ describe('overrideEditor method', () => {
         },
       }));
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [basePlugin],
     });
 

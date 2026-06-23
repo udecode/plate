@@ -1,11 +1,11 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseEmojiPlugin } from '../BaseEmojiPlugin';
 import { insertEmoji } from './insertEmoji';
 
 describe('insertEmoji', () => {
   it('inserts the first native skin text by default', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseEmojiPlugin],
       selection: {
         anchor: { offset: 3, path: [0, 0] },
@@ -32,7 +32,7 @@ describe('insertEmoji', () => {
   });
 
   it('uses the configured createEmojiNode override', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseEmojiPlugin.configure({
           options: {

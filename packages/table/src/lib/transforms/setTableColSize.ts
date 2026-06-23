@@ -1,15 +1,15 @@
-import type { SlateEditor, TTableElement } from 'platejs';
+import type { BasePlateEditor, TTableElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 import { getTableColumnCount } from '../queries/getTableColumnCount';
 
 type TableNodeQueryOptions = NonNullable<
-  Parameters<SlateEditor['api']['node']>[0]
+  Parameters<BasePlateEditor['api']['node']>[0]
 >;
 
 export const setTableColSize = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { colIndex, width }: { colIndex: number; width: number },
   options: TableNodeQueryOptions = {}
 ) => {

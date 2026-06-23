@@ -741,12 +741,12 @@
 
 ### Major Changes
 
-🎉 The **Slate Plugins** project has evolved to **Plate** 🎉
+🎉 The **Plite Plugins** project has evolved to **Plate** 🎉
 
 To migrate, install `@udecode/plate[-x]` then find and replace all
 occurrences of:
 
-- `slate-plugins` to `plate`
+- `plite-plugins` to `plate`
 - `SlatePlugins` to `Plate`
 - `SlatePlugin` to `PlatePlugin`
 

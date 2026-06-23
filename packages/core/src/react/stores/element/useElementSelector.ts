@@ -1,5 +1,5 @@
 import React, { type DependencyList } from 'react';
-import type { Element, NodeEntry } from '@platejs/slate';
+import type { Element, NodeEntry } from '@platejs/plite';
 
 import { useElementStoreContext } from './useElementStore';
 

@@ -4,15 +4,14 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import { createSlatePlugin } from '../../lib';
+import { createEditorPlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
-import { PlateSlate } from '../components/PlateSlate';
+import { Plite } from '../components/Plite';
 import { createPlateEditor } from '../editor/withPlate';
 import { useElement } from '../stores/element/useElement';
 import { pluginRenderElement } from './pluginRenderElement';
 
-const createLegacyPlateEditor = (options: any) =>
-  createPlateEditor({ runtime: 'legacy', ...options } as any);
+const createTestPlateEditor = (options: any) => createPlateEditor(options);
 
 const createValue = () =>
   [
@@ -38,31 +37,31 @@ const renderPlugin = (editor: ReturnType<typeof createPlateEditor>) => {
 
   return render(
     <Plate editor={editor}>
-      <PlateSlate>
+      <Plite>
         <RenderProbe />
-      </PlateSlate>
+      </Plite>
     </Plate>
   );
 };
 
 describe('pluginRenderElement', () => {
   it('renders the default paragraph element with the paragraph plugin class', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       plugins: [],
       value: createValue(),
     });
 
     const { container } = renderPlugin(editor);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toBeInTheDocument();
-    expect(element).toHaveClass('slate-p');
+    expect(element).toHaveClass('plite-p');
   });
 
   it('keeps element context available for custom node components', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'p',
           node: {
             isElement: true,
@@ -93,10 +92,10 @@ describe('pluginRenderElement', () => {
     expect(getByTestId('paragraph')).toHaveAttribute('data-marker', 'yes');
   });
 
-  it('preserves Slate children for void render.as tags', () => {
-    const editor = createLegacyPlateEditor({
+  it('preserves Plite children for void render.as tags', () => {
+    const editor = createTestPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'hr',
           node: {
             isElement: true,
@@ -117,7 +116,7 @@ describe('pluginRenderElement', () => {
     });
 
     const { container } = renderPlugin(editor);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toBeInTheDocument();
     expect(element?.tagName).toBe('DIV');

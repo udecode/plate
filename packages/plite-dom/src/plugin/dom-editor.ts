@@ -5,7 +5,7 @@ import {
   type Point,
   type Range,
   RangeApi,
-  type Editor as PliteEditor,
+  type Editor as EditorType,
   TextApi,
   type Value,
 } from '@platejs/plite';
@@ -81,7 +81,7 @@ import {
  * A DOM-specific version of the `Editor` interface.
  */
 
-export interface DOMEditor<V extends Value = Value> extends PliteEditor<V> {
+export interface DOMEditor<V extends Value = Value> extends EditorType<V> {
   dom: DOMEditorCapability;
 }
 
@@ -225,12 +225,12 @@ export interface DOMEditorInterface {
   /**
    * Android text-repair internal: return pending text diffs.
    */
-  androidPendingDiffs: (editor: PliteEditor<any>) => TextDiff[] | undefined;
+  androidPendingDiffs: (editor: EditorType<any>) => TextDiff[] | undefined;
 
   /**
    * Android text-repair internal: flush pending diffs and end composition.
    */
-  androidScheduleFlush: (editor: PliteEditor<any>) => void;
+  androidScheduleFlush: (editor: EditorType<any>) => void;
 
   /**
    * Blur the editor.

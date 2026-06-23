@@ -1,4 +1,4 @@
-import { createSlateEditor } from '../../editor';
+import { createBasePlateEditor } from '../../editor';
 import { NavigationFeedbackPlugin } from './NavigationFeedbackPlugin';
 import { getCurrentRuntimeTransforms } from '../../../internal/currentRuntimeBridge';
 
@@ -15,7 +15,7 @@ describe('NavigationFeedbackPlugin', () => {
       timeoutCallback = callback;
       return 1;
     }) as typeof setTimeout);
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
     editor.update((tx) => {
@@ -53,7 +53,7 @@ describe('NavigationFeedbackPlugin', () => {
       timeoutId += 1;
       return timeoutId;
     }) as typeof setTimeout);
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
     editor.update((tx) => {
@@ -85,7 +85,7 @@ describe('NavigationFeedbackPlugin', () => {
   });
 
   it('navigate selects, focuses, scrolls, and flashes the target', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
@@ -136,7 +136,7 @@ describe('NavigationFeedbackPlugin', () => {
   });
 
   it('keeps the active target path synced when the target node moves', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
 
@@ -181,7 +181,7 @@ describe('NavigationFeedbackPlugin', () => {
   });
 
   it('clears the active target when the target node is removed', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
 
@@ -206,7 +206,7 @@ describe('NavigationFeedbackPlugin', () => {
   });
 
   it('uses the top-level navigationFeedback option to override duration', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       navigationFeedback: { duration: 1200 },
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
@@ -215,7 +215,7 @@ describe('NavigationFeedbackPlugin', () => {
   });
 
   it('can disable the navigation feedback plugin from editor options', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       navigationFeedback: false,
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);

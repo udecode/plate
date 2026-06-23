@@ -74,7 +74,7 @@
       ]
     },
     {
-      "name": "slate-to-html",
+      "name": "plite-to-html",
       "files": ["apps/www/src/registry/components/editor/slate-to-html.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
       "diagnostics": []
@@ -104,7 +104,7 @@
       "summary": "Sync registry blocks with the URL video rendering path.",
       "details": [],
       "migrationNotes": [],
-      "targets": ["editor-ai", "editor-basic", "slate-to-html"],
+      "targets": ["editor-ai", "editor-basic", "plite-to-html"],
       "source": {
         "line": 15,
         "row": 2,

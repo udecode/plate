@@ -1,12 +1,12 @@
-import { type Element, ElementApi, NodeApi, type Text } from '@platejs/slate';
+import { type Element, ElementApi, NodeApi, type Text } from '@platejs/plite';
 
-import type { SlateEditor } from '../../../editor';
+import type { BasePlateEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';
 
-import { getPluginByType } from '../../../plugin/getSlatePlugin';
+import { getPluginByType } from '../../../plugin/getEditorPluginInstance';
 
 export const isNodeAffinity = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   node: Element | Text,
   affinity: 'directional' | 'hard' | 'outward'
 ) => {
@@ -19,7 +19,7 @@ export const isNodeAffinity = (
 };
 
 export const isNodesAffinity = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   edgeNodes: EdgeNodes,
   affinity: 'directional' | 'hard' | 'outward'
 ) => {

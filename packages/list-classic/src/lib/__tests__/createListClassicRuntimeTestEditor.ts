@@ -1,5 +1,5 @@
-import type { SlateEditor } from '@platejs/core';
-import type { Value } from '@platejs/slate';
+import type { BasePlateEditor } from '@platejs/core';
+import type { Value } from '@platejs/plite';
 
 import {
   createPlateRuntimeEditor,
@@ -45,4 +45,4 @@ export const createListClassicRuntimeTestEditor = <
     ...options,
     initialSelection: selection,
     initialValue: value,
-  }) as unknown as SlateEditor;
+  }) as unknown as BasePlateEditor;

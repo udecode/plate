@@ -1,6 +1,6 @@
-import type { Editor as SlateV2Editor, Range } from '@platejs/slate';
+import type { Editor as SlateV2Editor, Range } from '@platejs/plite';
 
-import type { BlockFenceInputRuleMatch, SlateEditor } from 'platejs';
+import type { BlockFenceInputRuleMatch, BasePlateEditor } from 'platejs';
 
 import { createRuleFactory, KEYS, matchDelimitedInline } from 'platejs';
 
@@ -10,7 +10,7 @@ import type { InlineEquationConfig } from './BaseInlineEquationPlugin';
 const INLINE_BOUNDARY_RE = /[\s([{'"`]/;
 const INLINE_FOLLOW_RE = /[\s)\]}:;,.!?'"`]/;
 
-const isEquationInputBlocked = (editor: SlateEditor) =>
+const isEquationInputBlocked = (editor: BasePlateEditor) =>
   (editor as unknown as SlateV2Editor).read((state) => {
     const blockedTypes = new Set(
       [
@@ -60,7 +60,7 @@ export const MathRules = {
   markdown: createRuleFactory<
     { variant: '$' } | { on: 'break' | 'match'; variant: '$$' }
   >((options) => {
-    const enabled = (input: { editor: SlateEditor }) =>
+    const enabled = (input: { editor: BasePlateEditor }) =>
       !isEquationInputBlocked(input.editor) &&
       (typeof options.enabled !== 'function' ||
         options.enabled(input as never) !== false);

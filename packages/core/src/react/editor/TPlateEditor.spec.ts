@@ -1,19 +1,19 @@
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
-import type { InferPlugins } from '../../lib/editor/SlateEditor';
+import type { InferPlugins } from '../../lib/editor/BasePlateEditor';
 
-import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
+import { createEditorPlugin } from '../../lib/plugin/createEditorPlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { someHtmlElement } from '../../lib/plugins/html/utils/findHtmlElement';
 import { createPlateEditor, withPlate } from './withPlate';
 
 describe('TPlateEditor', () => {
-  const MyCustomPlugin = createSlatePlugin({
+  const MyCustomPlugin = createEditorPlugin({
     key: 'myCustom',
     api: { myCustomMethod: () => {} },
   });
 
-  const TextFormattingPlugin = createSlatePlugin({
+  const TextFormattingPlugin = createEditorPlugin({
     key: 'textFormatting',
     api: {
       bold: () => {},
@@ -22,14 +22,14 @@ describe('TPlateEditor', () => {
     },
   });
 
-  const ListPlugin = createSlatePlugin({
+  const ListPlugin = createEditorPlugin({
     key: 'list',
     api: {
       createBulletedList: () => {},
     },
   });
 
-  const TablePlugin = createSlatePlugin({
+  const TablePlugin = createEditorPlugin({
     key: 'table',
     api: {
       addRow: () => {},
@@ -37,7 +37,7 @@ describe('TPlateEditor', () => {
     },
   });
 
-  const ImagePlugin = createSlatePlugin({
+  const ImagePlugin = createEditorPlugin({
     key: 'image',
     api: {
       insertImage: () => {},
@@ -127,7 +127,7 @@ describe('TPlateEditor', () => {
     });
 
     it('merges overlapping api names on withPlate', () => {
-      const OverlappingPlugin = createSlatePlugin({
+      const OverlappingPlugin = createEditorPlugin({
         key: 'overlapping',
         api: {
           bold: (_: number) => {},
@@ -150,7 +150,7 @@ describe('TPlateEditor', () => {
   });
 
   describe('Plugin', () => {
-    const BoldPlugin = createSlatePlugin<'bold'>({
+    const BoldPlugin = createEditorPlugin<'bold'>({
       key: 'bold',
       node: { isLeaf: true },
       parsers: {

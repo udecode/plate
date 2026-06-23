@@ -1,13 +1,13 @@
-import { createSlateEditor } from '../editor';
-import { createSlatePlugin } from '../plugin';
+import { createBasePlateEditor } from '../editor';
+import { createEditorPlugin } from '../plugin';
 import { pipeOnNodeChange } from './pipeOnNodeChange';
 
 describe('pipeOnNodeChange', () => {
   it('skips handlers when the editor is read-only', () => {
     const onNodeChange = mock(() => true);
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           handlers: { onNodeChange },
           key: 'test',
         }),
@@ -36,17 +36,17 @@ describe('pipeOnNodeChange', () => {
     const prevNode = { text: 'prev' } as any;
     const operation = { type: 'insert_node' } as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           handlers: { onNodeChange: first },
           key: 'first',
         }),
-        createSlatePlugin({
+        createEditorPlugin({
           handlers: { onNodeChange: second },
           key: 'second',
         }),
-        createSlatePlugin({
+        createEditorPlugin({
           handlers: { onNodeChange: third },
           key: 'third',
         }),

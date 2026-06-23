@@ -34,7 +34,7 @@ export function PlateTest<E extends PlateRootEditor = PlateRootEditor>({
   return (
     <Plate {...props} editor={editor}>
       <PlateContent
-        data-testid="slate-content-editable"
+        data-testid="plite-content-editable"
         data-variant={variant}
         autoFocus
         {...editableProps}

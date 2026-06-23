@@ -6,51 +6,51 @@ import {
   type TextUnit,
   type Value,
   defineEditorExtension,
-} from "@platejs/slate";
+} from '@platejs/plite';
 import {
   type Descendant,
-  type SlateEditor,
+  type BasePlateEditor,
   type TSuggestionElement,
   ElementApi,
   KEYS,
   nanoid,
   PathApi,
   TextApi,
-} from "platejs";
+} from 'platejs';
 
 import {
   type BaseSuggestionConfig,
   BaseSuggestionPlugin,
-} from "./BaseSuggestionPlugin";
-import { findSuggestionProps } from "./queries";
-import { addMarkSuggestion } from "./transforms/addMarkSuggestion";
-import { deleteFragmentSuggestion } from "./transforms/deleteFragmentSuggestion";
-import { deleteSuggestion } from "./transforms/deleteSuggestion";
-import { insertFragmentSuggestion } from "./transforms/insertFragmentSuggestion";
-import { insertTextSuggestion } from "./transforms/insertTextSuggestion";
-import { removeMarkSuggestion } from "./transforms/removeMarkSuggestion";
-import { removeNodesSuggestion } from "./transforms/removeNodesSuggestion";
-import { getInlineSuggestionData, getSuggestionKeyId } from "./utils/index";
-import { getSuggestionApi } from "./utils/getSuggestionApi";
+} from './BaseSuggestionPlugin';
+import { findSuggestionProps } from './queries';
+import { addMarkSuggestion } from './transforms/addMarkSuggestion';
+import { deleteFragmentSuggestion } from './transforms/deleteFragmentSuggestion';
+import { deleteSuggestion } from './transforms/deleteSuggestion';
+import { insertFragmentSuggestion } from './transforms/insertFragmentSuggestion';
+import { insertTextSuggestion } from './transforms/insertTextSuggestion';
+import { removeMarkSuggestion } from './transforms/removeMarkSuggestion';
+import { removeNodesSuggestion } from './transforms/removeNodesSuggestion';
+import { getInlineSuggestionData, getSuggestionKeyId } from './utils/index';
+import { getSuggestionApi } from './utils/getSuggestionApi';
 
 type SuggestionExtensionOptions = Pick<
   Parameters<
-    NonNullable<BaseSuggestionConfig["api"]["suggestion"]["withoutSuggestions"]>
+    NonNullable<BaseSuggestionConfig['api']['suggestion']['withoutSuggestions']>
   >[0],
   never
 > & {
-  editor: SlateEditor;
-  getOptions: () => BaseSuggestionConfig["options"];
+  editor: BasePlateEditor;
+  getOptions: () => BaseSuggestionConfig['options'];
 };
 
 type InsertFragmentNext = (overrides?: {
   fragment?: Descendant[];
-  options?: EditorTransformMiddlewareArgs<Value>["insertFragment"]["options"];
+  options?: EditorTransformMiddlewareArgs<Value>['insertFragment']['options'];
 }) => boolean;
 
 const setLineBreakSuggestion = (
   tx: EditorUpdateTransaction,
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   id: string,
   createdAt: number,
   path: Path
@@ -61,7 +61,7 @@ const setLineBreakSuggestion = (
         id,
         createdAt,
         isLineBreak: true,
-        type: "insert",
+        type: 'insert',
         userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
       },
     },
@@ -70,22 +70,22 @@ const setLineBreakSuggestion = (
 };
 
 const isTextUnit = (unit: unknown): unit is TextUnit =>
-  unit === "character" ||
-  unit === "word" ||
-  unit === "line" ||
-  unit === "block";
+  unit === 'character' ||
+  unit === 'word' ||
+  unit === 'line' ||
+  unit === 'block';
 
 const toTextUnit = (unit: unknown): TextUnit => {
   if (isTextUnit(unit)) return unit;
 
   const optionUnit =
-    unit && typeof unit === "object" && "unit" in unit
+    unit && typeof unit === 'object' && 'unit' in unit
       ? (unit as { unit?: unknown }).unit
       : undefined;
 
   if (isTextUnit(optionUnit)) return optionUnit;
 
-  return "character";
+  return 'character';
 };
 
 export const createSuggestionExtension = ({
@@ -93,7 +93,7 @@ export const createSuggestionExtension = ({
   getOptions,
 }: SuggestionExtensionOptions): EditorExtensionInput =>
   defineEditorExtension({
-    name: "plate:suggestion",
+    name: 'plate:suggestion',
     normalizers: {
       node({ entry, next, tx }) {
         getSuggestionApi(editor).withoutSuggestions(() => {
@@ -109,7 +109,7 @@ export const createSuggestionExtension = ({
             inlineSuggestion &&
             !getSuggestionKeyId(node)
           ) {
-            tx.nodes.unset([KEYS.suggestion, "suggestionData"], { at: path });
+            tx.nodes.unset([KEYS.suggestion, 'suggestionData'], { at: path });
 
             return;
           }
@@ -119,7 +119,7 @@ export const createSuggestionExtension = ({
             inlineSuggestion &&
             !getInlineSuggestionData(node)?.userId
           ) {
-            if (getInlineSuggestionData(node)?.type === "remove") {
+            if (getInlineSuggestionData(node)?.type === 'remove') {
               tx.nodes.unset([KEYS.suggestion, getSuggestionKeyId(node)!], {
                 at: path,
               });
@@ -151,7 +151,7 @@ export const createSuggestionExtension = ({
           unit: resolvedUnit,
         });
 
-        if (!pointTarget && resolvedUnit === "line") {
+        if (!pointTarget && resolvedUnit === 'line') {
           pointTarget = {
             offset: 0,
             path: selection.anchor.path,
@@ -168,7 +168,7 @@ export const createSuggestionExtension = ({
           if (!pointTarget) return true;
 
           if (
-            resolvedUnit === "line" &&
+            resolvedUnit === 'line' &&
             PathApi.equals(selection.anchor.path, pointTarget.path)
           ) {
             deleteFragmentSuggestion(editor, {
@@ -213,7 +213,7 @@ export const createSuggestionExtension = ({
             unit: resolvedUnit,
           });
 
-          if (!pointTarget && resolvedUnit === "line") {
+          if (!pointTarget && resolvedUnit === 'line') {
             const [textNode] = editor.api.node(selection.focus.path) ?? [];
 
             if (TextApi.isText(textNode)) {
@@ -227,7 +227,7 @@ export const createSuggestionExtension = ({
           if (!pointTarget) return true;
 
           if (
-            resolvedUnit === "line" &&
+            resolvedUnit === 'line' &&
             PathApi.equals(selection.focus.path, pointTarget.path)
           ) {
             deleteFragmentSuggestion(editor, {
@@ -266,14 +266,14 @@ export const createSuggestionExtension = ({
           const [node, path] = editor.api.above()!;
 
           if (path.length > 1 || node.type !== editor.getType(KEYS.p)) {
-            insertTextSuggestion(editor, "\n", tx);
+            insertTextSuggestion(editor, '\n', tx);
 
             return true;
           }
 
           const { id, createdAt } = findSuggestionProps(editor, {
             at: editor.selection!,
-            type: "insert",
+            type: 'insert',
           });
 
           next();
@@ -305,7 +305,7 @@ export const createSuggestionExtension = ({
         if (getOptions().isSuggesting) {
           const nodesArray = Array.isArray(nodes) ? nodes : [nodes];
 
-          if (nodesArray.some((node) => node.type === "slash_input")) {
+          if (nodesArray.some((node) => node.type === 'slash_input')) {
             getSuggestionApi(editor).withoutSuggestions(() => {
               next({ nodes, options });
             });
@@ -318,7 +318,7 @@ export const createSuggestionExtension = ({
             [KEYS.suggestion]: {
               id: nanoid(),
               createdAt: Date.now(),
-              type: "insert",
+              type: 'insert',
               userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
             },
           }));
@@ -356,7 +356,7 @@ export const createSuggestionExtension = ({
         if (getOptions().isSuggesting) {
           const nodes = [...editor.api.nodes(options)];
 
-          if (nodes.some(([node]) => node.type === "slash_input")) {
+          if (nodes.some(([node]) => node.type === 'slash_input')) {
             getSuggestionApi(editor).withoutSuggestions(() => {
               next({ options });
             });

@@ -1,10 +1,10 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseTabbablePlugin } from './BaseTabbablePlugin';
 
 describe('BaseTabbablePlugin', () => {
   it('ships the default options and delegates tabbable checks to isVoid', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseTabbablePlugin],
     } as any);
     const plugin = editor.getPlugin(BaseTabbablePlugin);

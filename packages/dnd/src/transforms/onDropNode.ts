@@ -1,13 +1,19 @@
 import type { PlateEditor } from 'platejs/react';
 import type { DropTargetMonitor } from 'react-dnd';
-import type { Element, NodeEntry, Path } from '@platejs/slate';
+import type { Element, NodeEntry, Path } from '@platejs/plite';
 
-import { PathApi } from '@platejs/slate';
+import { PathApi } from '@platejs/plite';
 
 import type { UseDropNodeOptions } from '../hooks';
 import type { DragItemNode, ElementDragItemNode } from '../types';
 
 import { getHoverDirection } from '../utils';
+
+const getElementEntryById = (
+  editor: PlateEditor,
+  id: string
+): NodeEntry<Element> | undefined =>
+  editor.api.node({ at: [], id }) as NodeEntry<Element> | undefined;
 
 /** Callback called on drag and drop a node with id. */
 export const getDropPath = (
@@ -41,21 +47,15 @@ export const getDropPath = (
   let dropEntry: NodeEntry<Element> | undefined;
 
   if ('element' in dragItem) {
-    const dragPath = editor.api.node<Element>({
-      at: [],
-      id: dragItem.element.id as string,
-    })?.[1];
-    const hoveredPath = editor.api.node<Element>({
-      at: [],
-      id: element.id as string,
-    })?.[1];
+    const dragPath = getElementEntryById(editor, dragItem.element.id as string)?.[1];
+    const hoveredPath = getElementEntryById(editor, element.id as string)?.[1];
 
     if (!dragPath || !hoveredPath) return;
 
     dragEntry = [dragItem.element, dragPath];
     dropEntry = [element, hoveredPath];
   } else {
-    dropEntry = editor.api.node<Element>({ id: element.id as string, at: [] });
+    dropEntry = getElementEntryById(editor, element.id as string);
   }
   if (!dropEntry) return;
   if (
@@ -139,7 +139,7 @@ export const onDropNode = (
       const elements: Element[] = [];
 
       draggedIds.forEach((id) => {
-        const entry = editor.api.node<Element>({ id, at: [] });
+        const entry = getElementEntryById(editor, id);
         if (entry) {
           elements.push(entry[0]);
         }
@@ -177,7 +177,12 @@ export const onDropNode = (
           : [];
 
       const paths = draggedIds
-        .map((id) => sourceEditor.api.node<Element>({ id, at: [] }))
+        .map(
+          (id) =>
+            sourceEditor.api.node({ at: [], id }) as
+              | NodeEntry<Element>
+              | undefined
+        )
         .filter((entry): entry is NodeEntry<Element> => !!entry)
         .map(([, path]) => path)
         .sort((a, b) => PathApi.compare(b, a));

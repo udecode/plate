@@ -1,13 +1,13 @@
 import * as React from 'react';
 
-import type { Element as SlateElement } from '@platejs/slate';
+import type { Element as PliteElement } from '@platejs/plite';
 
 import { cva } from 'class-variance-authority';
 import type { TSuggestionText } from 'platejs';
-import type { SlateLeafProps } from 'platejs/static';
+import type { PliteLeafProps } from 'platejs/static';
 
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
-import { SlateLeaf } from 'platejs/static';
+import { PliteLeaf } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
 
@@ -41,9 +41,9 @@ export const voidRemoveSuggestionVariants = cva('', {
   },
 });
 
-export function isStaticVoidRemoveSuggestion(element: SlateElement) {
+export function isStaticVoidRemoveSuggestion(element: PliteElement) {
   return (
-    (element as SlateElement & { suggestion?: { type?: string } }).suggestion
+    (element as PliteElement & { suggestion?: { type?: string } }).suggestion
       ?.type === 'remove'
   );
 }
@@ -53,7 +53,7 @@ export function VoidRemoveSuggestionOverlayStatic({
   element,
 }: {
   editor: any;
-  element: SlateElement;
+  element: PliteElement;
 }) {
   const active =
     editor.api.isVoid(element) &&
@@ -71,7 +71,7 @@ export function VoidRemoveSuggestionOverlayStatic({
   );
 }
 
-export function SuggestionLeafStatic(props: SlateLeafProps<TSuggestionText>) {
+export function SuggestionLeafStatic(props: PliteLeafProps<TSuggestionText>) {
   const { editor, leaf } = props;
 
   const dataList = editor
@@ -85,7 +85,7 @@ export function SuggestionLeafStatic(props: SlateLeafProps<TSuggestionText>) {
   ];
 
   return (
-    <SlateLeaf
+    <PliteLeaf
       {...props}
       as={Component}
       className={cn(
@@ -95,6 +95,6 @@ export function SuggestionLeafStatic(props: SlateLeafProps<TSuggestionText>) {
       )}
     >
       {props.children}
-    </SlateLeaf>
+    </PliteLeaf>
   );
 }

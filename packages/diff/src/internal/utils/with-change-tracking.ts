@@ -21,8 +21,8 @@ import {
   RangeApi,
   TextApi,
   type Text,
-} from '@platejs/slate';
-import { Editor as EditorApi } from '@platejs/slate/internal';
+} from '@platejs/plite';
+import { Editor as EditorApi } from '@platejs/plite/internal';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 

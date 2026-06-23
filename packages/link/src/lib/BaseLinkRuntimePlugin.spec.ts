@@ -2,7 +2,7 @@ import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentR
 import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 
-describe('BaseLinkPlugin Slate v2 runtime', () => {
+describe('BaseLinkPlugin Plite runtime', () => {
   it('creates and selects a text leaf after a link when the cursor reaches the link end', () => {
     const editor = createPlateRuntimeEditor({
       initialSelection: {

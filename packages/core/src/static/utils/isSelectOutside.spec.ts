@@ -18,10 +18,10 @@ describe('isSelectOutside', () => {
   });
 
   describe('when HTML element is provided', () => {
-    it('returns true when element contains data-slate-editor attribute', () => {
+    it('returns true when element contains data-plite-editor attribute', () => {
       const mockDiv = document.createElement('div');
       const editorElement = document.createElement('div');
-      editorElement.dataset.slateEditor = 'true';
+      editorElement.dataset.pliteEditor = 'true';
       mockDiv.append(editorElement);
 
       const result = isSelectOutside(mockDiv);
@@ -30,7 +30,7 @@ describe('isSelectOutside', () => {
       expect(mockGetSelectedDomNode).not.toHaveBeenCalled();
     });
 
-    it('returns false when element does not contain data-slate-editor attribute', () => {
+    it('returns false when element does not contain data-plite-editor attribute', () => {
       const mockDiv = document.createElement('div');
       const innerElement = document.createElement('p');
       innerElement.textContent = 'Some text';
@@ -51,11 +51,11 @@ describe('isSelectOutside', () => {
       expect(mockGetSelectedDomNode).not.toHaveBeenCalled();
     });
 
-    it('check nested elements for data-slate-editor attribute', () => {
+    it('check nested elements for data-plite-editor attribute', () => {
       const mockDiv = document.createElement('div');
       const wrapper = document.createElement('div');
       const editorElement = document.createElement('div');
-      editorElement.dataset.slateEditor = 'true';
+      editorElement.dataset.pliteEditor = 'true';
       wrapper.append(editorElement);
       mockDiv.append(wrapper);
 
@@ -69,7 +69,7 @@ describe('isSelectOutside', () => {
     it('call getSelectedDomNode and return true if selection contains editor', () => {
       const mockDiv = document.createElement('div');
       const editorElement = document.createElement('div');
-      editorElement.dataset.slateEditor = 'true';
+      editorElement.dataset.pliteEditor = 'true';
       mockDiv.append(editorElement);
       mockGetSelectedDomNode.mockReturnValue(mockDiv);
       const result = isSelectOutside();
@@ -123,12 +123,12 @@ describe('isSelectOutside', () => {
       mockDiv.querySelector = originalQuerySelector;
     });
 
-    it('handle elements with data-slate-editor attribute', () => {
+    it('handle elements with data-plite-editor attribute', () => {
       const mockDiv = document.createElement('div');
       const editorElement = document.createElement('div');
-      // The querySelector in the source has a missing closing bracket: '[data-slate-editor="true"'
-      // This means it will match any element with data-slate-editor that starts with "true"
-      editorElement.dataset.slateEditor = 'true';
+      // The querySelector in the source has a missing closing bracket: '[data-plite-editor="true"'
+      // This means it will match any element with data-plite-editor that starts with "true"
+      editorElement.dataset.pliteEditor = 'true';
       mockDiv.append(editorElement);
 
       const result = isSelectOutside(mockDiv);
@@ -136,11 +136,11 @@ describe('isSelectOutside', () => {
       expect(result).toBe(true);
     });
 
-    it('does not match elements with data-slate-editor set to other values', () => {
+    it('does not match elements with data-plite-editor set to other values', () => {
       const mockDiv = document.createElement('div');
       const editorElement = document.createElement('div');
       // Due to the missing closing bracket, this won't match
-      editorElement.dataset.slateEditor = 'false';
+      editorElement.dataset.pliteEditor = 'false';
       mockDiv.append(editorElement);
 
       const result = isSelectOutside(mockDiv);
@@ -151,9 +151,9 @@ describe('isSelectOutside', () => {
     it('handle multiple editor elements', () => {
       const mockDiv = document.createElement('div');
       const editor1 = document.createElement('div');
-      editor1.dataset.slateEditor = 'true';
+      editor1.dataset.pliteEditor = 'true';
       const editor2 = document.createElement('div');
-      editor2.dataset.slateEditor = 'true';
+      editor2.dataset.pliteEditor = 'true';
       mockDiv.append(editor1);
       mockDiv.append(editor2);
 

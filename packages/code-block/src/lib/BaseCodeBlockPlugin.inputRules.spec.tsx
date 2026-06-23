@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
@@ -20,7 +20,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
       </fragment>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseCodeBlockPlugin.configure({
           inputRules: [CodeBlockRules.markdown({ on: 'match' })],
@@ -44,7 +44,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
   });
 
   it('replaces the fence paragraph instead of leaving the first two backticks behind', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseCodeBlockPlugin.configure({
           inputRules: [CodeBlockRules.markdown({ on: 'match' })],
@@ -82,7 +82,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
       </fragment>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseCodeBlockPlugin.configure({
           inputRules: [CodeBlockRules.markdown({ on: 'break' })],

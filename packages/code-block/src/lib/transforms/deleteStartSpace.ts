@@ -1,4 +1,4 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import type { OutdentCodeLineOptions } from './outdentCodeLine';
 
@@ -6,7 +6,7 @@ const whitespaceRegex = /\s/;
 
 /** If there is a whitespace character at the start of the code line, delete it. */
 export const deleteStartSpace = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { codeLine }: OutdentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;

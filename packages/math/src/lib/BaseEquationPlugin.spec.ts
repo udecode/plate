@@ -1,10 +1,10 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import { BaseEquationPlugin } from './BaseEquationPlugin';
 
 describe('BaseEquationPlugin', () => {
   it('configures equation as a void element and exposes tx.equation.insert', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseEquationPlugin],
     });
     const plugin = editor.getPlugin(BaseEquationPlugin);
@@ -19,7 +19,7 @@ describe('BaseEquationPlugin', () => {
   });
 
   it('deleteBackward from the next block selects the equation instead of deleting through it', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseEquationPlugin],
       selection: {
         anchor: { offset: 0, path: [1, 0] },
@@ -50,7 +50,7 @@ describe('BaseEquationPlugin', () => {
   });
 
   it('exposes an inferred equation transaction group', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseEquationPlugin],
       value: [{ children: [{ text: '' }], type: KEYS.p }],
     });

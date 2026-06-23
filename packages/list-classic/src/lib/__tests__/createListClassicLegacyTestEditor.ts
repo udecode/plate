@@ -1,1 +1,1 @@
-export { createSlateEditor as createListClassicLegacyTestEditor } from '@platejs/core';
+export { createBasePlateEditor as createListClassicLegacyTestEditor } from '@platejs/core';

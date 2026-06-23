@@ -218,7 +218,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
 ```ts title="app/api/ai/command/route.ts"
 import { createGateway } from '@ai-sdk/gateway';
 import { convertToCoreMessages, streamText } from 'ai';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
@@ -226,7 +226,7 @@ import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transfor
 export async function POST(req: Request) {
   const { apiKey, ctx, messages, model } = await req.json();
 
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: BaseEditorKit,
     selection: ctx.selection,
     value: ctx.children,
@@ -247,7 +247,7 @@ export async function POST(req: Request) {
 }
 ```
 
-- `ctx.children` 和 `ctx.selection` 被重新水合到 Slate 编辑器中，以便您可以构建丰富的提示（参见[提示模板](#提示模板)）。
+- `ctx.children` 和 `ctx.selection` 被重新水合到 Plite 编辑器中，以便您可以构建丰富的提示（参见[提示模板](#提示模板)）。
 - 通过 `chatOptions.body` 转发提供商设置（model、apiKey、temperature、gateway 标志等）；您添加的所有内容都会在 JSON 有效载荷中原样传递，可以在调用 `createGateway` 之前读取。
 - 始终从服务器读取密钥。客户端应仅发送不透明标识符或短期令牌。
 - 返回流式响应，以便 `useChat` 和 `useChatChunk` 可以增量处理令牌。
@@ -392,7 +392,7 @@ editor.setOption(aiChatPlugin, 'chatOptions', {
 
 <API name="useAIChatEditor">
 <APIParameters>
-  <APIItem name="editor" type="SlateEditor">专用于聊天预览的编辑器实例。</APIItem>
+  <APIItem name="editor" type="BasePlateEditor">专用于聊天预览的编辑器实例。</APIItem>
   <APIItem name="content" type="string">模型返回的 Markdown 内容。</APIItem>
   <APIItem name="options" type="DeserializeMdOptions" optional>传递 `parser` 以在反序列化之前过滤令牌。</APIItem>
 </APIParameters>
@@ -444,7 +444,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="withAIBatch">
 <APIParameters>
-  <APIItem name="editor" type="SlateEditor">目标编辑器。</APIItem>
+  <APIItem name="editor" type="BasePlateEditor">目标编辑器。</APIItem>
   <APIItem name="fn" type="() => void">要运行的操作。</APIItem>
   <APIItem name="options" type="{ split?: boolean }" optional>设置 `split: true` 以开始新的历史批次。</APIItem>
 </APIParameters>
@@ -456,7 +456,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="applyAISuggestions">
 <APIParameters>
-  <APIItem name="editor" type="SlateEditor">要应用建议的编辑器。</APIItem>
+  <APIItem name="editor" type="BasePlateEditor">要应用建议的编辑器。</APIItem>
   <APIItem name="content" type="string">来自模型的 Markdown 响应。</APIItem>
 </APIParameters>
 </API>
@@ -496,7 +496,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="getEditorPrompt">
 <APIParameters>
-  <APIItem name="editor" type="SlateEditor">提供上下文的编辑器。</APIItem>
+  <APIItem name="editor" type="BasePlateEditor">提供上下文的编辑器。</APIItem>
   <APIItem name="options" type="{ prompt?: EditorPrompt }">描述提示的字符串、配置或函数。</APIItem>
 </APIParameters>
 <APIReturns type="string">上下文化的提示字符串。</APIReturns>
@@ -508,7 +508,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="replacePlaceholders">
 <APIParameters>
-  <APIItem name="editor" type="SlateEditor">提供内容的编辑器。</APIItem>
+  <APIItem name="editor" type="BasePlateEditor">提供内容的编辑器。</APIItem>
   <APIItem name="text" type="string">模板文本。</APIItem>
   <APIItem name="options" type="{ prompt?: string }" optional>注入到 `{prompt}` 中的提示值。</APIItem>
 </APIParameters>
@@ -536,7 +536,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
   <APIOptions>
     <APIItem name="trigger" type="RegExp | string | string[]" optional>打开命令菜单的字符。默认为 `' '`。</APIItem>
     <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>触发器前字符必须匹配的模式。默认为 `/^\s?$/`。</APIItem>
-    <APIItem name="triggerQuery" type="(editor: SlateEditor) => boolean" optional>返回 `false` 以在特定上下文中取消打开。</APIItem>
+    <APIItem name="triggerQuery" type="(editor: BasePlateEditor) => boolean" optional>返回 `false` 以在特定上下文中取消打开。</APIItem>
     <APIItem name="chat" type="UseChatHelpers&lt;ChatMessage&gt;" optional>存储来自 `useChat` 的助手，以便 API 调用可以访问它们。</APIItem>
     <APIItem name="chatNodes" type="TIdElement[]" optional>用于差异编辑建议的节点快照（内部管理）。</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>提交提示前捕获的选择（内部管理）。</APIItem>
@@ -621,7 +621,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="insertBelow">
 <APIParameters>
-  <APIItem name="sourceEditor" type="SlateEditor">包含生成内容的编辑器。</APIItem>
+  <APIItem name="sourceEditor" type="BasePlateEditor">包含生成内容的编辑器。</APIItem>
   <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>从源选择复制格式。默认为 `'single'`。</APIItem>
 </APIParameters>
 </API>
@@ -632,7 +632,7 @@ useAIChatEditor(aiPreviewEditor, responseMarkdown, {
 
 <API name="replaceSelection">
 <APIParameters>
-  <APIItem name="sourceEditor" type="SlateEditor">包含生成内容的编辑器。</APIItem>
+  <APIItem name="sourceEditor" type="BasePlateEditor">包含生成内容的编辑器。</APIItem>
   <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>控制应应用原始选择的多少格式。</APIItem>
 </APIParameters>
 </API>

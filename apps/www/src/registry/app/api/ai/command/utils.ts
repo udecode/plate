@@ -4,7 +4,7 @@ import type { UIMessage } from 'ai';
 import { getMarkdown } from '@platejs/ai';
 import { serializeMd } from '@platejs/markdown';
 import dedent from 'dedent';
-import { type SlateEditor, KEYS, RangeApi } from 'platejs';
+import { type BasePlateEditor, KEYS, RangeApi } from 'platejs';
 
 /**
  * Tag content split by newlines
@@ -207,7 +207,7 @@ export function getLastUserInstruction(messages: ChatMessage[]): string {
 const SELECTION_START = '<Selection>';
 const SELECTION_END = '</Selection>';
 
-export const addSelection = (editor: SlateEditor) => {
+export const addSelection = (editor: BasePlateEditor) => {
   if (!editor.selection) return;
   if (editor.api.isExpanded()) {
     const [start, end] = RangeApi.edges(editor.selection);
@@ -224,7 +224,7 @@ export const addSelection = (editor: SlateEditor) => {
   }
 };
 
-const removeEscapeSelection = (editor: SlateEditor, text: string) => {
+const removeEscapeSelection = (editor: BasePlateEditor, text: string) => {
   let newText = text
     .replace(`\\${SELECTION_START}`, SELECTION_START)
     .replace(`\\${SELECTION_END}`, SELECTION_END);
@@ -255,18 +255,18 @@ const removeEscapeSelection = (editor: SlateEditor, text: string) => {
 };
 
 /** Check if the current selection fully covers all top-level blocks. */
-export const isMultiBlocks = (editor: SlateEditor) => {
+export const isMultiBlocks = (editor: BasePlateEditor) => {
   const blocks = editor.api.blocks({ mode: 'lowest' });
 
   return blocks.length > 1;
 };
 
 /** Get markdown with selection markers */
-export const getMarkdownWithSelection = (editor: SlateEditor) =>
+export const getMarkdownWithSelection = (editor: BasePlateEditor) =>
   removeEscapeSelection(editor, getMarkdown(editor, { type: 'block' }));
 
 /** Check if the current selection is inside a table cell */
-export const isSelectionInTable = (editor: SlateEditor): boolean => {
+export const isSelectionInTable = (editor: BasePlateEditor): boolean => {
   if (!editor.selection) return false;
 
   const tableEntry = editor.api.block({
@@ -278,7 +278,7 @@ export const isSelectionInTable = (editor: SlateEditor): boolean => {
 };
 
 /** Check if selection is within a single table cell */
-export const isSingleCellSelection = (editor: SlateEditor): boolean => {
+export const isSingleCellSelection = (editor: BasePlateEditor): boolean => {
   if (!editor.selection) return false;
 
   // Get all td blocks in selection

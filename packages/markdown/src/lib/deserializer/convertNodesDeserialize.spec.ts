@@ -4,7 +4,7 @@ import type { DeserializeMdOptions } from './deserializeMd';
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { defaultRules } from '../rules';
 import {
-  buildSlateNode,
+  buildPliteNode,
   convertNodesDeserialize,
 } from './convertNodesDeserialize';
 
@@ -206,7 +206,7 @@ describe('convertNodesDeserialize', () => {
 
   it('returns an empty array for unknown node types without a registered rule', () => {
     expect(
-      buildSlateNode(
+      buildPliteNode(
         {
           type: 'mysteryNode',
         } as any,

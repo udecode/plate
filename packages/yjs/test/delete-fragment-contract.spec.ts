@@ -5,8 +5,8 @@ import {
   type Descendant,
   type Operation,
   type Range,
-} from '@platejs/slate';
-import { Editor } from '@platejs/slate/internal';
+} from '@platejs/plite';
+import { Editor } from '@platejs/plite/internal';
 
 import {
   assertPeerTexts,

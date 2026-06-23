@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Descendant } from '@platejs/slate';
-import { Editor } from '@platejs/slate/internal';
+import type { Descendant } from '@platejs/plite';
+import { Editor } from '@platejs/plite/internal';
 import * as Y from 'yjs';
 
 import {
-  getSlateYjsElementType,
-  setSlateYjsAttribute,
+  getPliteYjsElementType,
+  setPliteYjsAttribute,
 } from '../src/core/attributes';
 import { createSplitElement } from '../src/core/replacement';
 import {
@@ -115,17 +115,17 @@ const insertTextSplitAndInsertRightText = (peer: Peer): void => {
 describe('@platejs/yjs split_node collaboration contract', () => {
   it('keeps the original element type when split properties carry a non-string type', () => {
     const doc = new Y.Doc();
-    const root = doc.get('@platejs/slate', Y.XmlElement);
+    const root = doc.get('@platejs/plite', Y.XmlElement);
     const original = new Y.XmlElement('paragraph');
 
     root.insert(0, [original]);
-    setSlateYjsAttribute(original, 'type', 'paragraph');
+    setPliteYjsAttribute(original, 'type', 'paragraph');
 
     const right = createSplitElement(original, { role: 'note', type: 123 }, []);
 
     root.insert(1, [right]);
 
-    assert.equal(getSlateYjsElementType(right), 'paragraph');
+    assert.equal(getPliteYjsElementType(right), 'paragraph');
     assert.equal(right.getAttribute('role'), 'note');
   });
 

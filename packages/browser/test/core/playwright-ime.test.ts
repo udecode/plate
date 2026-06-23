@@ -134,17 +134,17 @@ describe('playwright IME helpers', () => {
 
   test('creates a DOM composition fallback when beforeinput is handled without a model change', async () => {
     document.body.innerHTML =
-      '<div data-slate-editor="true" contenteditable="true">hello</div>';
+      '<div data-plite-editor="true" contenteditable="true">hello</div>';
 
     const active = document.querySelector('div')! as HTMLDivElement & {
-      __slateBrowserHandle?: { getText: () => string };
+      __pliteBrowserHandle?: { getText: () => string };
     };
     const text = active.firstChild as Text;
     const range = document.createRange();
     const selection = window.getSelection()!;
     const events: string[] = [];
 
-    active.__slateBrowserHandle = {
+    active.__pliteBrowserHandle = {
       getText: () => 'hello',
     };
     active.addEventListener('beforeinput', (event) => {
@@ -181,10 +181,10 @@ describe('playwright IME helpers', () => {
 
   test('dispatches input when desktop synthetic composition falls back to DOM repair', async () => {
     document.body.innerHTML =
-      '<div data-slate-editor="true" contenteditable="true">hello</div>';
+      '<div data-plite-editor="true" contenteditable="true">hello</div>';
 
     const active = document.querySelector('div')! as HTMLDivElement & {
-      __slateBrowserHandle?: {
+      __pliteBrowserHandle?: {
         getText: () => string;
         insertText: (text: string) => void;
       };
@@ -195,7 +195,7 @@ describe('playwright IME helpers', () => {
     const events: string[] = [];
     let insertedText: string | null = null;
 
-    active.__slateBrowserHandle = {
+    active.__pliteBrowserHandle = {
       getText: () => 'hello',
       insertText: (nextText: string) => {
         insertedText = nextText;
@@ -237,10 +237,10 @@ describe('playwright IME helpers', () => {
 
   test('projects model selection before synthetic composition fallback edits the DOM', async () => {
     document.body.innerHTML =
-      '<div data-slate-editor="true" contenteditable="true">This is editable rich</div>';
+      '<div data-plite-editor="true" contenteditable="true">This is editable rich</div>';
 
     const active = document.querySelector('div')! as HTMLDivElement & {
-      __slateBrowserHandle?: {
+      __pliteBrowserHandle?: {
         getSelection: () => unknown;
         getText: () => string;
         setNativeDOMSelection: (selection: unknown) => boolean;
@@ -251,7 +251,7 @@ describe('playwright IME helpers', () => {
     const selection = window.getSelection()!;
     let projected = false;
 
-    active.__slateBrowserHandle = {
+    active.__pliteBrowserHandle = {
       getSelection: () => ({
         anchor: { offset: 'This is '.length, path: [0, 0] },
         focus: { offset: 'This is '.length, path: [0, 0] },
@@ -287,9 +287,9 @@ describe('playwright IME helpers', () => {
     expect(projected).toBe(true);
   });
 
-  test('uses semantic fallback for mobile synthetic composition when a Slate handle is available', async () => {
+  test('uses semantic fallback for mobile synthetic composition when a Plite handle is available', async () => {
     document.body.innerHTML =
-      '<div data-slate-editor="true" contenteditable="true">This is editable rich</div>';
+      '<div data-plite-editor="true" contenteditable="true">This is editable rich</div>';
 
     const originalMaxTouchPoints = navigator.maxTouchPoints;
     Object.defineProperty(navigator, 'maxTouchPoints', {
@@ -299,7 +299,7 @@ describe('playwright IME helpers', () => {
 
     try {
       const active = document.querySelector('div')! as HTMLDivElement & {
-        __slateBrowserHandle?: {
+        __pliteBrowserHandle?: {
           getSelection: () => unknown;
           getText: () => string;
           insertText: (text: string) => void;
@@ -311,7 +311,7 @@ describe('playwright IME helpers', () => {
       const selection = window.getSelection()!;
       let insertedText: string | null = null;
 
-      active.__slateBrowserHandle = {
+      active.__pliteBrowserHandle = {
         getSelection: () => ({
           anchor: { offset: 'This is '.length, path: [0, 0] },
           focus: { offset: 'This is '.length, path: [0, 0] },
@@ -349,7 +349,7 @@ describe('playwright IME helpers', () => {
 
   test('keeps unhandled mobile synthetic composition on the DOM input path', async () => {
     document.body.innerHTML =
-      '<div data-slate-editor="true" contenteditable="true">hello</div>';
+      '<div data-plite-editor="true" contenteditable="true">hello</div>';
 
     const originalMaxTouchPoints = navigator.maxTouchPoints;
     Object.defineProperty(navigator, 'maxTouchPoints', {
@@ -359,7 +359,7 @@ describe('playwright IME helpers', () => {
 
     try {
       const active = document.querySelector('div')! as HTMLDivElement & {
-        __slateBrowserHandle?: {
+        __pliteBrowserHandle?: {
           getText: () => string;
           insertText: (text: string) => void;
         };
@@ -370,7 +370,7 @@ describe('playwright IME helpers', () => {
       const events: string[] = [];
       let insertedText: string | null = null;
 
-      active.__slateBrowserHandle = {
+      active.__pliteBrowserHandle = {
         getText: () => 'hello',
         insertText: (nextText: string) => {
           insertedText = nextText;
@@ -410,9 +410,9 @@ describe('playwright IME helpers', () => {
     }
   });
 
-  test('uses semantic fallback for unhandled mobile synthetic composition with a Slate selection handle', async () => {
+  test('uses semantic fallback for unhandled mobile synthetic composition with a Plite selection handle', async () => {
     document.body.innerHTML =
-      '<div data-slate-editor="true" contenteditable="true">This is editable rich</div>';
+      '<div data-plite-editor="true" contenteditable="true">This is editable rich</div>';
 
     const originalMaxTouchPoints = navigator.maxTouchPoints;
     Object.defineProperty(navigator, 'maxTouchPoints', {
@@ -422,7 +422,7 @@ describe('playwright IME helpers', () => {
 
     try {
       const active = document.querySelector('div')! as HTMLDivElement & {
-        __slateBrowserHandle?: {
+        __pliteBrowserHandle?: {
           getSelection: () => unknown;
           getText: () => string;
           insertText: (text: string) => void;
@@ -434,7 +434,7 @@ describe('playwright IME helpers', () => {
       const selection = window.getSelection()!;
       let insertedText: string | null = null;
 
-      active.__slateBrowserHandle = {
+      active.__pliteBrowserHandle = {
         getSelection: () => ({
           anchor: { offset: 'This is '.length, path: [0, 0] },
           focus: { offset: 'This is '.length, path: [0, 0] },
@@ -469,7 +469,7 @@ describe('playwright IME helpers', () => {
 
   test('uses semantic mobile fallback when model selection has no native DOM range', async () => {
     document.body.innerHTML =
-      '<div data-slate-editor="true" contenteditable="true">This is editable rich</div>';
+      '<div data-plite-editor="true" contenteditable="true">This is editable rich</div>';
 
     const originalMaxTouchPoints = navigator.maxTouchPoints;
     Object.defineProperty(navigator, 'maxTouchPoints', {
@@ -479,7 +479,7 @@ describe('playwright IME helpers', () => {
 
     try {
       const active = document.querySelector('div')! as HTMLDivElement & {
-        __slateBrowserHandle?: {
+        __pliteBrowserHandle?: {
           getSelection: () => unknown;
           getText: () => string;
           insertText: (text: string) => void;
@@ -489,7 +489,7 @@ describe('playwright IME helpers', () => {
       const selection = window.getSelection()!;
       let insertedText: string | null = null;
 
-      active.__slateBrowserHandle = {
+      active.__pliteBrowserHandle = {
         getSelection: () => ({
           anchor: { offset: 'This is '.length, path: [0, 0] },
           focus: { offset: 'This is '.length, path: [0, 0] },

@@ -1,7 +1,7 @@
-import type { Element, NodeEntry, Path } from '@platejs/slate';
+import type { Element, NodeEntry, Path } from '@platejs/plite';
 
-import { ElementApi, NodeApi, PathApi } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import { ElementApi, NodeApi, PathApi } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { isDefined, KEYS } from 'platejs';
 
@@ -14,7 +14,7 @@ const isPath = (value: NodeEntry<Element> | Path): value is Path =>
   typeof value[0] === 'number';
 
 const getElementEntry = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   path: Path
 ): NodeEntry<Element> | undefined => {
   const node = NodeApi.getIf(editor as any, path);
@@ -25,7 +25,7 @@ const getElementEntry = (
 };
 
 const getNextElementEntry = <N extends Element = Element>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   entry: NodeEntry<Element>,
   options?: Partial<GetSiblingListOptions<N>>
 ): NodeEntry<Element> | undefined => {
@@ -50,7 +50,7 @@ const isListCandidate = (node: Element) => {
 };
 
 export const normalizeListSequence = <N extends Element = Element>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   start: NodeEntry<Element> | Path,
   options?: Partial<GetSiblingListOptions<N>>
 ) => {

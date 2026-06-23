@@ -1,11 +1,10 @@
 import {
   type PluginConfig,
-  createPliteEditor,
-  createPlitePlugin,
-  createTSlatePlugin,
+  createBasePlateEditor,
+  createEditorPlugin,
 } from '@platejs/core';
 
-const BoldPlugin = createPlitePlugin({
+const BoldPlugin = createEditorPlugin({
   key: 'bold',
   options: {
     enabled: true as const,
@@ -26,7 +25,7 @@ type CalloutConfig = PluginConfig<
   }
 >;
 
-const CalloutPlugin = createTSlatePlugin<CalloutConfig>({
+const CalloutPlugin = createEditorPlugin<CalloutConfig>({
   key: 'callout',
   options: {
     dismissible: false,
@@ -48,21 +47,21 @@ const ConfiguredCalloutPlugin = CalloutPlugin.configure({
   },
 });
 
-const slateEditor = createPliteEditor({
+const basePlateEditor = createBasePlateEditor({
   plugins: [BoldPlugin, ConfiguredCalloutPlugin],
 });
 
-const boldHotkey: string = slateEditor.api.toggleBold();
-const boldEnabled: true = slateEditor.getOptions(BoldPlugin).enabled;
-const calloutVariant: 'info' | 'warning' = slateEditor.getOptions(
+const boldHotkey: string = basePlateEditor.api.toggleBold();
+const boldEnabled: true = basePlateEditor.getOptions(BoldPlugin).enabled;
+const calloutVariant: 'info' | 'warning' = basePlateEditor.getOptions(
   ConfiguredCalloutPlugin
 ).variant;
-const calloutDismissible: boolean | undefined = slateEditor.getOptions(
+const calloutDismissible: boolean | undefined = basePlateEditor.getOptions(
   ConfiguredCalloutPlugin
 ).dismissible;
 
-slateEditor.api.setVariant('info');
-slateEditor.api.setVariant('warning');
+basePlateEditor.api.setVariant('info');
+basePlateEditor.api.setVariant('warning');
 
 void boldEnabled;
 void boldHotkey;
@@ -73,10 +72,10 @@ void calloutVariant;
 CalloutPlugin.configure({ options: { variant: 'danger' } });
 
 // @ts-expect-error invalid merged editor api
-slateEditor.api.notReal();
+basePlateEditor.api.notReal();
 
 // @ts-expect-error wrong argument type for merged api
-slateEditor.api.setVariant('danger');
+basePlateEditor.api.setVariant('danger');
 
 // @ts-expect-error boolean option must stay boolean
-slateEditor.getOptions(BoldPlugin).enabled = 'yes';
+basePlateEditor.getOptions(BoldPlugin).enabled = 'yes';

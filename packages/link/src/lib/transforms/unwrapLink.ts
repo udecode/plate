@@ -1,6 +1,6 @@
-import type { EditorUpdateTransaction } from '@platejs/slate';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 
-import { type SlateEditor, ElementApi, PathApi } from 'platejs';
+import { type BasePlateEditor, ElementApi, PathApi } from 'platejs';
 import { KEYS } from 'platejs';
 
 type UnwrapNodesOptions = NonNullable<
@@ -9,7 +9,7 @@ type UnwrapNodesOptions = NonNullable<
 
 /** Unwrap link node. */
 export const unwrapLink = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options?: {
     split?: boolean;
   } & UnwrapNodesOptions

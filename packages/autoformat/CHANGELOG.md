@@ -12,7 +12,7 @@
 
   1. Remove `AutoformatPlugin` from your plugins and replace `@platejs/autoformat` after migrating rules.
   2. Replace each old `AutoformatRule` with the matching rule factory on the plugin that owns the feature. See the table below.
-  3. Replace symbol substitutions (arrows, fractions, smart quotes, legal, math operators) with `createTextSubstitutionInputRule` registered on a local `createSlatePlugin`.
+  3. Replace symbol substitutions (arrows, fractions, smart quotes, legal, math operators) with `createTextSubstitutionInputRule` registered on a local `createPlitePlugin`.
   4. Replace `rules[].query` with `enabled` on the rule factory call. Replace the global code-block guard with a per-plugin `enabled` check.
   5. Drop `enableUndoOnDelete` — undo-on-delete is the built-in behavior.
   6. Replace custom `AutoformatRule` definitions with `createRuleFactory` from `platejs`.
@@ -166,11 +166,11 @@
 
   #### Text substitutions (arrows, fractions, legal, math operators, smart quotes)
 
-  Move these to a local `createSlatePlugin` with `createTextSubstitutionInputRule`:
+  Move these to a local `createPlitePlugin` with `createTextSubstitutionInputRule`:
 
   ```tsx
   import {
-    createSlatePlugin,
+    createPlitePlugin,
     createTextSubstitutionInputRule,
     KEYS,
   } from "platejs";
@@ -178,7 +178,7 @@
   const isTextSubstitutionBlocked = (editor) =>
     editor.api.some({ match: { type: [editor.getType(KEYS.codeBlock)] } });
 
-  const ShortcutsPlugin = createSlatePlugin({
+  const ShortcutsPlugin = createPlitePlugin({
     key: "shortcuts",
     inputRules: [
       createTextSubstitutionInputRule({

@@ -1,6 +1,6 @@
-import type { Element, Node, Text } from '@platejs/slate';
+import type { Element, Node, Text } from '@platejs/plite';
 
-import { type SlateEditor, isDefined, KEYS } from 'platejs';
+import { type BasePlateEditor, isDefined, KEYS } from 'platejs';
 
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData } from './getSuggestionId';
@@ -42,7 +42,7 @@ export const getSuggestionUserId = (node: Node) =>
   getSuggestionUserIds(node)[0];
 
 export const isCurrentUserSuggestion = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   node: Element | Text
 ) => {
   const { currentUserId } = editor.getOptions(BaseSuggestionPlugin);

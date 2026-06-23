@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor, type SlateEditor } from 'platejs';
+import { createBasePlateEditor, type BasePlateEditor } from 'platejs';
 
 import { BlockSelectionPlugin } from '../../react';
 import { selectBlocks } from './selectBlocks';
@@ -9,10 +9,10 @@ import { selectBlocks } from './selectBlocks';
 jsxt;
 
 describe('selectBlocks', () => {
-  let editor: SlateEditor;
+  let editor: BasePlateEditor;
 
   beforeEach(() => {
-    editor = createSlateEditor({
+    editor = createBasePlateEditor({
       plugins: [BlockSelectionPlugin],
       selection: {
         anchor: { offset: 0, path: [0] },
@@ -77,7 +77,7 @@ describe('selectBlocks', () => {
 
   describe('with nested blocks', () => {
     beforeEach(() => {
-      editor = createSlateEditor({
+      editor = createBasePlateEditor({
         plugins: [BlockSelectionPlugin],
         selection: {
           anchor: { offset: 0, path: [0, 0] },
@@ -121,7 +121,7 @@ describe('selectBlocks', () => {
 
   describe('with non-selectable blocks', () => {
     beforeEach(() => {
-      editor = createSlateEditor({
+      editor = createBasePlateEditor({
         plugins: [BlockSelectionPlugin],
         selection: {
           anchor: { offset: 0, path: [0, 0, 0] },
@@ -159,7 +159,7 @@ describe('selectBlocks', () => {
 
   describe('with multi-level selection', () => {
     beforeEach(() => {
-      editor = createSlateEditor({
+      editor = createBasePlateEditor({
         plugins: [BlockSelectionPlugin],
         selection: {
           anchor: { offset: 0, path: [0, 0, 0] },

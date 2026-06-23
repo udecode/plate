@@ -41,7 +41,7 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/slate": "workspace:^"
+    "@platejs/plite": "workspace:^"
   },
   "publishConfig": {
     "access": "public"

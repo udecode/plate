@@ -1,10 +1,10 @@
 import {
   KEYS,
-  createSlateEditor,
+  createBasePlateEditor,
   type PlatePluginTxGroup,
-  type SlateEditor,
+  type BasePlateEditor,
 } from 'platejs';
-import type { EditorUpdateTransaction } from '@platejs/slate';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 
 import {
   BaseH1Plugin,
@@ -37,9 +37,15 @@ type HeadingPluginWithChildren = {
   plugins: HeadingChildPlugin[];
 };
 
-type HeadingTxPlugin = typeof BaseH1Plugin;
+type HeadingTxPlugin =
+  | typeof BaseH1Plugin
+  | typeof BaseH2Plugin
+  | typeof BaseH3Plugin
+  | typeof BaseH4Plugin
+  | typeof BaseH5Plugin
+  | typeof BaseH6Plugin;
 
-const getHeadingPlugin = (editor: SlateEditor) =>
+const getHeadingPlugin = (editor: BasePlateEditor) =>
   editor.getPlugin(BaseHeadingPlugin) as unknown as HeadingPluginWithChildren;
 
 const runBlockToggleTx = (
@@ -61,7 +67,7 @@ const runBlockToggleTx = (
     {
       nodes: { set, some, unwrap, wrap },
     } as unknown as EditorUpdateTransaction,
-    createSlateEditor() as SlateEditor,
+    createBasePlateEditor() as BasePlateEditor,
     { afterCommit: () => {} }
   ) as {
     toggle: () => void;
@@ -79,7 +85,7 @@ describe('BaseHeadingPlugin', () => {
 
   describe('when using default options', () => {
     it('creates plugins for all 6 heading levels', () => {
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [BaseHeadingPlugin],
       });
 
@@ -99,7 +105,7 @@ describe('BaseHeadingPlugin', () => {
 
   describe('when configuring custom levels', () => {
     it('creates plugins only for specified levels', () => {
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [
           BaseHeadingPlugin.configure({
             options: { levels: [1, 3, 5] },
@@ -120,7 +126,7 @@ describe('BaseHeadingPlugin', () => {
 
   describe('when using a single level', () => {
     it('creates plugins up to the configured level', () => {
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [
           BaseHeadingPlugin.configure({
             options: { levels: 2 },
@@ -135,7 +141,7 @@ describe('BaseHeadingPlugin', () => {
 
   describe('nested plugins', () => {
     it('preserves heading element metadata on nested plugins', () => {
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [BaseHeadingPlugin],
       });
 

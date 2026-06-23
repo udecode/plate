@@ -1,11 +1,11 @@
-import type { Descendant, Path } from '@platejs/slate';
+import type { Descendant, Path } from '@platejs/plite';
 import * as Y from 'yjs';
 
 import {
-  getSlateYjsElementType,
+  getPliteYjsElementType,
   getYjsAttributes,
   hasYjsAttributes,
-  SLATE_TYPE_ATTRIBUTE,
+  PLITE_TYPE_ATTRIBUTE,
   setYjsAttribute,
   setYjsAttributes,
   type YjsAttributeRecord,
@@ -18,16 +18,16 @@ import {
   isNonEmptyYjsTextDeltaPart,
 } from './text-delta';
 
-const HIDDEN_ATTRIBUTE = 'slate:yjs-hidden';
-const NODE_ID_ATTRIBUTE = 'slate:yjs-id';
-export const SPLIT_UNDO_TEXT_ATTRIBUTE = 'slate:yjs-split-undo-text';
-const VIRTUAL_CHILD_ID_ATTRIBUTE = 'slate:yjs-virtual-child-id';
-const VIRTUAL_PLACEHOLDER_ATTRIBUTE = 'slate:yjs-virtual-placeholder';
+const HIDDEN_ATTRIBUTE = 'plite:yjs-hidden';
+const NODE_ID_ATTRIBUTE = 'plite:yjs-id';
+export const SPLIT_UNDO_TEXT_ATTRIBUTE = 'plite:yjs-split-undo-text';
+const VIRTUAL_CHILD_ID_ATTRIBUTE = 'plite:yjs-virtual-child-id';
+const VIRTUAL_PLACEHOLDER_ATTRIBUTE = 'plite:yjs-virtual-placeholder';
 const VIRTUAL_YJS_CHILD_RAW_INDEX = -1;
 const INTERNAL_YJS_ATTRIBUTES = [
   HIDDEN_ATTRIBUTE,
   NODE_ID_ATTRIBUTE,
-  SLATE_TYPE_ATTRIBUTE,
+  PLITE_TYPE_ATTRIBUTE,
   SPLIT_UNDO_TEXT_ATTRIBUTE,
   VIRTUAL_CHILD_ID_ATTRIBUTE,
   VIRTUAL_PLACEHOLDER_ATTRIBUTE,
@@ -696,7 +696,7 @@ export const createYjsNode = (node: Descendant): YjsNode => {
   copyRecordAttributes(attributes, node, 'children', 'type');
 
   assertPublicYjsAttributesCanBeSet(attributes);
-  setYjsAttribute(element, SLATE_TYPE_ATTRIBUTE, elementType);
+  setYjsAttribute(element, PLITE_TYPE_ATTRIBUTE, elementType);
   setYjsAttributes(element, attributes);
 
   if (node.children.length > 0) {
@@ -716,7 +716,7 @@ export const createYjsNodes = (nodes: readonly Descendant[]): YjsNode[] => {
 
     if (node === undefined) {
       throw new Error(
-        'Cannot create Yjs nodes from a sparse Slate node array.'
+        'Cannot create Yjs nodes from a sparse Plite node array.'
       );
     }
 
@@ -744,7 +744,7 @@ export const replaceYjsChildren = (
   }
 };
 
-export const readSlateValueFromYjs = (root: Y.XmlElement): Descendant[] => {
+export const readPliteValueFromYjs = (root: Y.XmlElement): Descendant[] => {
   const resolveNodeById = createLazyYjsNodeIdResolver(root);
   const visibleChildren = getYjsVisibleChildrenWithResolver(
     root,
@@ -759,10 +759,10 @@ export const readSlateValueFromYjs = (root: Y.XmlElement): Descendant[] => {
     const node = visibleChildren[index];
 
     if (node === undefined) {
-      throw new Error('Cannot read Slate value from a sparse Yjs node array.');
+      throw new Error('Cannot read Plite value from a sparse Yjs node array.');
     }
 
-    children[index] = readSlateNodeFromYjs(root, node, resolveNodeById);
+    children[index] = readPliteNodeFromYjs(root, node, resolveNodeById);
     index++;
   }
 
@@ -869,7 +869,7 @@ const getPublicAttributes = (
   return publicAttributes;
 };
 
-const readYjsTextForSlate = (
+const readYjsTextForPlite = (
   node: Y.XmlText
 ): { readonly attributes: YjsAttributeRecord; readonly text: string } => {
   if (getYjsLength(node) === 0) {
@@ -917,30 +917,30 @@ const getPublicYjsElementAttributes = (
 ): YjsAttributeRecord => {
   const attributes = getPublicYjsAttributes(node);
 
-  delete attributes[SLATE_TYPE_ATTRIBUTE];
+  delete attributes[PLITE_TYPE_ATTRIBUTE];
 
   return attributes;
 };
 
-const readSlateNodeFromYjs = (
+const readPliteNodeFromYjs = (
   root: Y.XmlElement,
   node: YjsNode,
   resolveNodeById: YjsNodeIdResolver
 ): Descendant => {
   if (node instanceof Y.XmlText) {
     const attributes = getPublicYjsAttributes(node);
-    const readback = readYjsTextForSlate(node);
-    const slateText: YjsAttributeRecord = {};
+    const readback = readYjsTextForPlite(node);
+    const pliteText: YjsAttributeRecord = {};
 
-    copyRecordAttributes(slateText, attributes);
-    copyRecordAttributes(slateText, readback.attributes);
-    slateText.text = readback.text;
+    copyRecordAttributes(pliteText, attributes);
+    copyRecordAttributes(pliteText, readback.attributes);
+    pliteText.text = readback.text;
 
-    return slateText as Descendant;
+    return pliteText as Descendant;
   }
 
   const attributes = getPublicYjsElementAttributes(node);
-  const type = getSlateYjsElementType(node);
+  const type = getPliteYjsElementType(node);
   const visibleChildren = getYjsVisibleChildrenWithResolver(
     root,
     node,
@@ -955,21 +955,21 @@ const readSlateNodeFromYjs = (
 
     if (child === undefined) {
       throw new Error(
-        'Cannot read Slate element children from a sparse array.'
+        'Cannot read Plite element children from a sparse array.'
       );
     }
 
-    children[index] = readSlateNodeFromYjs(root, child, resolveNodeById);
+    children[index] = readPliteNodeFromYjs(root, child, resolveNodeById);
     index++;
   }
 
-  const slateElement: YjsAttributeRecord = {};
+  const pliteElement: YjsAttributeRecord = {};
 
-  copyRecordAttributes(slateElement, attributes);
-  slateElement.type = type;
-  slateElement.children = children.length > 0 ? children : [{ text: '' }];
+  copyRecordAttributes(pliteElement, attributes);
+  pliteElement.type = type;
+  pliteElement.children = children.length > 0 ? children : [{ text: '' }];
 
-  return slateElement as Descendant;
+  return pliteElement as Descendant;
 };
 
 const cloneYjsNodeWithRoot = (
@@ -1257,7 +1257,7 @@ export const createVirtualYjsMovePlaceholder = (
   target: YjsNode
 ): Y.XmlElement => {
   const nodeId = ensureYjsNodeId(target);
-  const placeholder = new Y.XmlElement('slate-yjs-virtual-placeholder');
+  const placeholder = new Y.XmlElement('plite-yjs-virtual-placeholder');
 
   hideYjsNode(target);
   setYjsAttribute(placeholder, VIRTUAL_CHILD_ID_ATTRIBUTE, nodeId);
@@ -1400,7 +1400,7 @@ export const removeYjsChild = (
   root: Y.XmlElement,
   parent: Y.XmlElement,
   index: number,
-  slateNode?: Descendant
+  pliteNode?: Descendant
 ): YjsChildRemovalMode => {
   const resolveNodeById = createLazyYjsNodeIdResolver(root);
   const rawChildren = getRawYjsChildren(parent);
@@ -1416,7 +1416,7 @@ export const removeYjsChild = (
     hiddenIndex ??= findHiddenYjsChildIndex(
       root,
       rawChildren,
-      slateNode,
+      pliteNode,
       resolveNodeById
     );
 
@@ -1426,8 +1426,8 @@ export const removeYjsChild = (
   if (visibleSlot !== undefined) {
     if (!hasRawYjsChildSlot(visibleSlot)) {
       if (
-        slateNode !== undefined &&
-        !matchesSlateNode(visibleSlot.node, slateNode)
+        pliteNode !== undefined &&
+        !matchesPliteNode(visibleSlot.node, pliteNode)
       ) {
         throw new Error('Cannot remove a virtual Yjs child from its parent.');
       }
@@ -1438,8 +1438,8 @@ export const removeYjsChild = (
     }
 
     if (
-      slateNode !== undefined &&
-      !matchesSlateNode(visibleSlot.node, slateNode) &&
+      pliteNode !== undefined &&
+      !matchesPliteNode(visibleSlot.node, pliteNode) &&
       getHiddenIndex() !== -1
     ) {
       parent.delete(getHiddenIndex(), 1);
@@ -1522,22 +1522,22 @@ const ensureYjsNodeId = (node: YjsNode): string => {
   }
 
   const scope = node.doc ? String(node.doc.clientID) : nodeIdScope;
-  const nextId = `slate-yjs-${scope}-${++nextNodeId}`;
+  const nextId = `plite-yjs-${scope}-${++nextNodeId}`;
 
   setYjsAttribute(node, NODE_ID_ATTRIBUTE, nextId);
 
   return nextId;
 };
 
-const matchesSlateNode = (
+const matchesPliteNode = (
   yjsNode: YjsNode,
-  slateNode?: Descendant
+  pliteNode?: Descendant
 ): boolean => {
-  if (slateNode === undefined) {
+  if (pliteNode === undefined) {
     return false;
   }
 
-  if ('text' in slateNode) {
+  if ('text' in pliteNode) {
     return yjsNode instanceof Y.XmlText;
   }
 
@@ -1546,22 +1546,22 @@ const matchesSlateNode = (
   }
 
   return (
-    getSlateYjsElementType(yjsNode) === String(slateNode.type ?? 'element')
+    getPliteYjsElementType(yjsNode) === String(pliteNode.type ?? 'element')
   );
 };
 
-const matchesSlateNodeContent = (
+const matchesPliteNodeContent = (
   root: Y.XmlElement,
   yjsNode: YjsNode,
-  slateNode: Descendant,
+  pliteNode: Descendant,
   resolveNodeById: YjsNodeIdResolver
 ): boolean => {
-  if (!matchesSlateNode(yjsNode, slateNode)) {
+  if (!matchesPliteNode(yjsNode, pliteNode)) {
     return false;
   }
 
-  if ('text' in slateNode) {
-    const text = String(slateNode.text);
+  if ('text' in pliteNode) {
+    const text = String(pliteNode.text);
 
     return (
       yjsNode instanceof Y.XmlText &&
@@ -1580,20 +1580,20 @@ const matchesSlateNodeContent = (
     resolveNodeById
   );
 
-  if (children.length !== slateNode.children.length) {
+  if (children.length !== pliteNode.children.length) {
     return false;
   }
 
   let index = 0;
 
-  while (index < slateNode.children.length) {
-    const child = slateNode.children[index];
+  while (index < pliteNode.children.length) {
+    const child = pliteNode.children[index];
     const yjsChild = children[index];
 
     if (
       child === undefined ||
       yjsChild === undefined ||
-      !matchesSlateNodeContent(root, yjsChild, child, resolveNodeById)
+      !matchesPliteNodeContent(root, yjsChild, child, resolveNodeById)
     ) {
       return false;
     }
@@ -1606,10 +1606,10 @@ const matchesSlateNodeContent = (
 const findHiddenYjsChildIndex = (
   root: Y.XmlElement,
   rawChildren: readonly YjsNode[],
-  slateNode: Descendant | undefined,
+  pliteNode: Descendant | undefined,
   resolveNodeById: YjsNodeIdResolver
 ): number => {
-  if (slateNode === undefined) {
+  if (pliteNode === undefined) {
     return -1;
   }
 
@@ -1626,12 +1626,12 @@ const findHiddenYjsChildIndex = (
       continue;
     }
 
-    if (!isHiddenYjsNode(child) || !matchesSlateNode(child, slateNode)) {
+    if (!isHiddenYjsNode(child) || !matchesPliteNode(child, pliteNode)) {
       index++;
       continue;
     }
 
-    if (matchesSlateNodeContent(root, child, slateNode, resolveNodeById)) {
+    if (matchesPliteNodeContent(root, child, pliteNode, resolveNodeById)) {
       return index;
     }
 

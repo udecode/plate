@@ -1,17 +1,17 @@
-import type { SlateEditor } from '../editor';
+import type { BasePlateEditor } from '../editor';
 import type { PluginConfig } from './BasePlugin';
-import type { AnySlatePlugin, SlatePluginContext } from './SlatePlugin';
+import type { AnyEditorPlugin, EditorPluginContext } from './EditorPlugin';
 
-import { createSlateEditor } from '../editor';
-import { createSlatePlugin, createTSlatePlugin } from './createSlatePlugin';
+import { createBasePlateEditor } from '../editor';
+import { createEditorPlugin } from './createEditorPlugin';
 import { getEditorPlugin } from './getEditorPlugin';
 
 describe('getEditorPlugin', () => {
-  let editor: SlateEditor;
-  let testPlugin: AnySlatePlugin;
+  let editor: BasePlateEditor;
+  let testPlugin: AnyEditorPlugin;
 
   beforeEach(() => {
-    testPlugin = createSlatePlugin({
+    testPlugin = createEditorPlugin({
       key: 'test',
       node: { type: 'test-type' },
       options: {
@@ -19,7 +19,7 @@ describe('getEditorPlugin', () => {
       },
     });
 
-    editor = createSlateEditor({
+    editor = createBasePlateEditor({
       plugins: [testPlugin],
     });
   });
@@ -49,7 +49,7 @@ describe('getEditorPlugin', () => {
         testOption: string;
       }
     >;
-    const plugin = createTSlatePlugin<Config>({
+    const plugin = createEditorPlugin<Config>({
       key: 'test',
       node: { type: 'test-type' },
       options: {
@@ -57,7 +57,7 @@ describe('getEditorPlugin', () => {
       },
     });
 
-    let a: SlatePluginContext<Config> = {} as any;
+    let a: EditorPluginContext<Config> = {} as any;
 
     const b = getEditorPlugin(editor, plugin);
     a = b;
@@ -81,7 +81,7 @@ describe('getEditorPlugin', () => {
   });
 
   it('resolve unresolved plugin', () => {
-    const unresolvedPlugin = createSlatePlugin({
+    const unresolvedPlugin = createEditorPlugin({
       key: 'unresolved',
       node: { type: 'unresolved-type' },
       options: {

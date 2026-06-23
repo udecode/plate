@@ -6,14 +6,14 @@ import {
   ElementApi,
   type Point,
   TextApi,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import {
-  createTSlatePlugin,
+  createEditorPlugin,
   KEYS,
   type NodeEntry,
   type PluginConfig,
-  type SlatePlugin,
-  type SlateEditor,
+  type EditorPlugin,
+  type BasePlateEditor,
 } from 'platejs';
 
 import { BaseFootnoteInputPlugin } from './BaseFootnoteInputPlugin';
@@ -34,7 +34,7 @@ import { getFootnoteReferences } from './queries/getFootnoteReferences';
 import { invalidateFootnoteRegistry } from './registry';
 
 const getDefinitionChildren = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   fragment?: Descendant[]
 ): Element[] => {
   const paragraphType = editor.getType(KEYS.p);
@@ -81,7 +81,7 @@ type FootnoteTx = {
 };
 
 const getFootnoteReferenceSelectionPoint = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   path: number[]
 ) => {
   const parentEntry = editor.api.parent(path);
@@ -144,8 +144,8 @@ export type FootnoteConfig = PluginConfig<
 >;
 
 /** Enables support for inline footnote references. */
-const BaseFootnoteReferencePluginBase: SlatePlugin<FootnoteConfig> =
-  createTSlatePlugin<FootnoteConfig>({
+const BaseFootnoteReferencePluginBase: EditorPlugin<FootnoteConfig> =
+  createEditorPlugin<FootnoteConfig>({
     key: KEYS.footnoteReference,
     options: {
       createComboboxInput: () => ({
@@ -163,239 +163,255 @@ const BaseFootnoteReferencePluginBase: SlatePlugin<FootnoteConfig> =
     plugins: [BaseFootnoteInputPlugin],
     render: { as: 'sup' },
   })
-  .extendEditorApi<FootnoteConfig['api']>(({ editor }) => ({
-    footnote: {
-      definition(options: { identifier: string }) {
-        return getFootnoteDefinition(editor, options);
-      },
-      definitions(options: { identifier: string }) {
-        return getFootnoteDefinitionsByIdentifier(editor, options);
-      },
-      definitionText(options: { identifier: string }) {
-        return getFootnoteDefinitionText(editor, options);
-      },
-      duplicateDefinitions(options: { identifier: string }) {
-        return getDuplicateFootnoteDefinitions(editor, options);
-      },
-      duplicateIdentifiers() {
-        return getDuplicateFootnoteIdentifiers(editor);
-      },
-      identifiers() {
-        return getFootnoteIdentifiers(editor);
-      },
-      hasDuplicateDefinitions(options: { identifier: string }) {
-        return hasDuplicateFootnoteDefinitions(editor, options);
-      },
-      isDuplicateDefinition(options: { path: number[] }) {
-        return isDuplicateFootnoteDefinition(editor, options);
-      },
-      isResolved(options: { identifier: string }) {
-        return isFootnoteResolved(editor, options);
-      },
-      nextId() {
-        return getNextFootnoteIdentifier(editor);
-      },
-      references(options: { identifier: string }) {
-        return getFootnoteReferences(editor, options);
-      },
-    },
-  }))
-  .extendTxGroup('footnote', ({ editor }) => (tx: EditorUpdateTransaction) => ({
-    createDefinition: ({
-      focus: shouldFocusDefinition = true,
-      identifier,
-    }: {
-      focus?: boolean;
-      identifier: string;
-    }) => {
-      const existingDefinition = getFootnoteDefinition(editor, { identifier });
-
-      if (existingDefinition) {
-        if (shouldFocusDefinition) {
-          const point = editor.api.start(existingDefinition[1].concat([0, 0]));
-
-          if (point) {
-            tx.selection.set({ anchor: point, focus: point });
-          }
-        }
-
-        return existingDefinition[1];
-      }
-
-      const definitionPath = [editor.children.length];
-
-      tx.nodes.insert<FootnoteElement>(
-        {
-          children: getDefinitionChildren(editor),
-          identifier,
-          type: editor.getType(KEYS.footnoteDefinition),
+    .extendEditorApi<FootnoteConfig['api']>(({ editor }) => ({
+      footnote: {
+        definition(options: { identifier: string }) {
+          return getFootnoteDefinition(editor, options);
         },
-        { at: definitionPath }
-      );
-      invalidateFootnoteRegistry(editor);
-
-      if (shouldFocusDefinition) {
-        const point = { offset: 0, path: definitionPath.concat([0, 0]) };
-
-        tx.selection.set({ anchor: point, focus: point });
-      }
-
-      return definitionPath;
-    },
-    focusDefinition: ({ identifier }: { identifier: string }) => {
-      const definition = getFootnoteDefinition(editor, { identifier });
-
-      if (!definition) return false;
-
-      const point = editor.api.start(definition[1].concat([0, 0]));
-
-      if (!point) return false;
-
-      tx.selection.set({ anchor: point, focus: point });
-
-      return true;
-    },
-    focusReference: ({
-      identifier,
-      index = 0,
-    }: {
-      identifier: string;
-      index?: number;
-    }) => {
-      const reference = getFootnoteReferences(editor, { identifier })[index];
-
-      if (!reference) return false;
-
-      const point = getFootnoteReferenceSelectionPoint(editor, reference[1]);
-
-      if (!point) return false;
-
-      tx.selection.set({ anchor: point, focus: point });
-
-      return true;
-    },
-    normalizeDuplicateDefinition: ({
-      identifier,
-      path,
-    }: {
-      identifier?: string;
-      path: number[];
-    }) => {
-      const entry = editor.api.node<FootnoteElement>(path);
-
-      if (!entry) return false;
-
-      const [node] = entry;
-      const definitionType = editor.getType(KEYS.footnoteDefinition);
-
-      if (node.type !== definitionType) return false;
-      if (!isDuplicateFootnoteDefinition(editor, { path })) return false;
-
-      const nextIdentifier = identifier ?? getNextFootnoteIdentifier(editor);
-
-      if (!nextIdentifier) return false;
-      if (
-        nextIdentifier !== node.identifier &&
-        getFootnoteDefinitionsByIdentifier(editor, {
-          identifier: nextIdentifier,
-        }).length > 0
-      ) {
-        return false;
-      }
-
-      tx.nodes.set<FootnoteElement>(
-        { identifier: nextIdentifier },
-        { at: path }
-      );
-      invalidateFootnoteRegistry(editor);
-
-      return nextIdentifier;
-    },
-  }))
-  .extendTxGroup('insert', ({ editor }) => (tx, _editor, context) => ({
-    footnote: ({
-      focusDefinition: shouldFocusDefinition = true,
-      identifier,
-      ...options
-    }: FootnoteInsertOptions = {}) => {
-      if (!editor.selection) return;
-
-      const selectionBefore = structuredClone(editor.selection);
-      const nextIdentifier = identifier ?? getNextFootnoteIdentifier(editor);
-      const fragment = editor.api.isExpanded()
-        ? (editor.api.fragment(editor.selection) as Descendant[])
-        : undefined;
-      const referenceType = editor.getType(KEYS.footnoteReference);
-      const existingDefinition = getFootnoteDefinition(editor, {
-        identifier: nextIdentifier,
-      });
-      const definitionPath = existingDefinition?.[1] ?? [
-        editor.children.length,
-      ];
-      const selectAfterCommit = (target: {
-        anchor: { offset: number; path: number[] };
-        focus: { offset: number; path: number[] };
-      }) => {
-        try {
-          context.afterCommit(() => {
-            editor.update((tx) => {
-              tx.selection.set(target);
+        definitions(options: { identifier: string }) {
+          return getFootnoteDefinitionsByIdentifier(editor, options);
+        },
+        definitionText(options: { identifier: string }) {
+          return getFootnoteDefinitionText(editor, options);
+        },
+        duplicateDefinitions(options: { identifier: string }) {
+          return getDuplicateFootnoteDefinitions(editor, options);
+        },
+        duplicateIdentifiers() {
+          return getDuplicateFootnoteIdentifiers(editor);
+        },
+        identifiers() {
+          return getFootnoteIdentifiers(editor);
+        },
+        hasDuplicateDefinitions(options: { identifier: string }) {
+          return hasDuplicateFootnoteDefinitions(editor, options);
+        },
+        isDuplicateDefinition(options: { path: number[] }) {
+          return isDuplicateFootnoteDefinition(editor, options);
+        },
+        isResolved(options: { identifier: string }) {
+          return isFootnoteResolved(editor, options);
+        },
+        nextId() {
+          return getNextFootnoteIdentifier(editor);
+        },
+        references(options: { identifier: string }) {
+          return getFootnoteReferences(editor, options);
+        },
+      },
+    }))
+    .extendTxGroup(
+      'footnote',
+      ({ editor }) =>
+        (tx: EditorUpdateTransaction) => ({
+          createDefinition: ({
+            focus: shouldFocusDefinition = true,
+            identifier,
+          }: {
+            focus?: boolean;
+            identifier: string;
+          }) => {
+            const existingDefinition = getFootnoteDefinition(editor, {
+              identifier,
             });
-          });
-        } catch {
-          tx.selection.set(target);
-        }
-      };
 
-      tx.nodes.insert(
-        {
-          children: [{ text: '' }],
+            if (existingDefinition) {
+              if (shouldFocusDefinition) {
+                const point = editor.api.start(
+                  existingDefinition[1].concat([0, 0])
+                );
+
+                if (point) {
+                  tx.selection.set({ anchor: point, focus: point });
+                }
+              }
+
+              return existingDefinition[1];
+            }
+
+            const definitionPath = [editor.children.length];
+
+            tx.nodes.insert<FootnoteElement>(
+              {
+                children: getDefinitionChildren(editor),
+                identifier,
+                type: editor.getType(KEYS.footnoteDefinition),
+              },
+              { at: definitionPath }
+            );
+            invalidateFootnoteRegistry(editor);
+
+            if (shouldFocusDefinition) {
+              const point = { offset: 0, path: definitionPath.concat([0, 0]) };
+
+              tx.selection.set({ anchor: point, focus: point });
+            }
+
+            return definitionPath;
+          },
+          focusDefinition: ({ identifier }: { identifier: string }) => {
+            const definition = getFootnoteDefinition(editor, { identifier });
+
+            if (!definition) return false;
+
+            const point = editor.api.start(definition[1].concat([0, 0]));
+
+            if (!point) return false;
+
+            tx.selection.set({ anchor: point, focus: point });
+
+            return true;
+          },
+          focusReference: ({
+            identifier,
+            index = 0,
+          }: {
+            identifier: string;
+            index?: number;
+          }) => {
+            const reference = getFootnoteReferences(editor, { identifier })[
+              index
+            ];
+
+            if (!reference) return false;
+
+            const point = getFootnoteReferenceSelectionPoint(
+              editor,
+              reference[1]
+            );
+
+            if (!point) return false;
+
+            tx.selection.set({ anchor: point, focus: point });
+
+            return true;
+          },
+          normalizeDuplicateDefinition: ({
+            identifier,
+            path,
+          }: {
+            identifier?: string;
+            path: number[];
+          }) => {
+            const entry = editor.api.node<FootnoteElement>(path);
+
+            if (!entry) return false;
+
+            const [node] = entry;
+            const definitionType = editor.getType(KEYS.footnoteDefinition);
+
+            if (node.type !== definitionType) return false;
+            if (!isDuplicateFootnoteDefinition(editor, { path })) return false;
+
+            const nextIdentifier =
+              identifier ?? getNextFootnoteIdentifier(editor);
+
+            if (!nextIdentifier) return false;
+            if (
+              nextIdentifier !== node.identifier &&
+              getFootnoteDefinitionsByIdentifier(editor, {
+                identifier: nextIdentifier,
+              }).length > 0
+            ) {
+              return false;
+            }
+
+            tx.nodes.set<FootnoteElement>(
+              { identifier: nextIdentifier },
+              { at: path }
+            );
+            invalidateFootnoteRegistry(editor);
+
+            return nextIdentifier;
+          },
+        })
+    )
+    .extendTxGroup('insert', ({ editor }) => (tx, _editor, context) => ({
+      footnote: ({
+        focusDefinition: shouldFocusDefinition = true,
+        identifier,
+        ...options
+      }: FootnoteInsertOptions = {}) => {
+        if (!editor.selection) return;
+
+        const selectionBefore = structuredClone(editor.selection);
+        const nextIdentifier = identifier ?? getNextFootnoteIdentifier(editor);
+        const fragment = editor.api.isExpanded()
+          ? (editor.api.fragment(editor.selection) as Descendant[])
+          : undefined;
+        const referenceType = editor.getType(KEYS.footnoteReference);
+        const existingDefinition = getFootnoteDefinition(editor, {
           identifier: nextIdentifier,
-          type: referenceType,
-        },
-        options as Parameters<typeof tx.nodes.insert>[1]
-      );
+        });
+        const definitionPath = existingDefinition?.[1] ?? [
+          editor.children.length,
+        ];
+        const selectAfterCommit = (target: {
+          anchor: { offset: number; path: number[] };
+          focus: { offset: number; path: number[] };
+        }) => {
+          try {
+            context.afterCommit(() => {
+              editor.update((tx) => {
+                tx.selection.set(target);
+              });
+            });
+          } catch {
+            tx.selection.set(target);
+          }
+        };
 
-      if (!existingDefinition) {
         tx.nodes.insert(
           {
-            children: getDefinitionChildren(editor, fragment),
+            children: [{ text: '' }],
             identifier: nextIdentifier,
-            type: editor.getType(KEYS.footnoteDefinition),
+            type: referenceType,
           },
-          { at: definitionPath }
+          options as Parameters<typeof tx.nodes.insert>[1]
         );
-      }
-      invalidateFootnoteRegistry(editor);
 
-      if (shouldFocusDefinition) {
-        const point = { offset: 0, path: definitionPath.concat([0, 0]) };
+        if (!existingDefinition) {
+          tx.nodes.insert(
+            {
+              children: getDefinitionChildren(editor, fragment),
+              identifier: nextIdentifier,
+              type: editor.getType(KEYS.footnoteDefinition),
+            },
+            { at: definitionPath }
+          );
+        }
+        invalidateFootnoteRegistry(editor);
+
+        if (shouldFocusDefinition) {
+          const point = { offset: 0, path: definitionPath.concat([0, 0]) };
+
+          selectAfterCommit({
+            anchor: point,
+            focus: point,
+          });
+
+          return;
+        }
+
+        const childIndex = selectionBefore?.anchor.path.at(-1);
+
+        if (childIndex === undefined) return;
+
+        const point = {
+          offset: 0,
+          path: selectionBefore.anchor.path
+            .slice(0, -1)
+            .concat([childIndex + 2]),
+        };
 
         selectAfterCommit({
           anchor: point,
           focus: point,
         });
+      },
+    }));
 
-        return;
-      }
-
-      const childIndex = selectionBefore?.anchor.path.at(-1);
-
-      if (childIndex === undefined) return;
-
-      const point = {
-        offset: 0,
-        path: selectionBefore.anchor.path.slice(0, -1).concat([childIndex + 2]),
-      };
-
-      selectAfterCommit({
-        anchor: point,
-        focus: point,
-      });
-    },
-  }));
-
-export const BaseFootnoteReferencePlugin: SlatePlugin<FootnoteConfig> & {
+export const BaseFootnoteReferencePlugin: EditorPlugin<FootnoteConfig> & {
   runtimeFootnote: boolean;
   runtimeTriggerCombobox: boolean;
 } = Object.assign(BaseFootnoteReferencePluginBase, {

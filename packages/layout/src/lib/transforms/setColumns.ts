@@ -1,4 +1,4 @@
-import type { Location, NodeEntry } from '@platejs/slate';
+import type { Location, NodeEntry } from '@platejs/plite';
 import type { TColumnElement, TColumnGroupElement } from 'platejs';
 import { KEYS } from 'platejs';
 

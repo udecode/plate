@@ -1,4 +1,4 @@
-import type { TIdElement } from 'platejs';
+import type { NodeEntry, TIdElement } from 'platejs';
 
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
@@ -15,11 +15,11 @@ export const moveSelection = (
   if (direction === 'up') {
     const [, topPath] = blocks[0];
 
-    const prevEntry = editor.api.previous<TIdElement>({
+    const prevEntry = editor.api.previous({
       at: topPath,
       from: 'parent',
       match: api.blockSelection.isSelectable,
-    });
+    }) as NodeEntry<TIdElement> | undefined;
 
     if (prevEntry) {
       const [prevNode] = prevEntry;
@@ -32,11 +32,11 @@ export const moveSelection = (
     // direction === 'down'
     const [, bottomPath] = blocks.at(-1)!;
 
-    const nextEntry = editor.api.next<TIdElement>({
+    const nextEntry = editor.api.next({
       at: bottomPath,
       from: 'child',
       match: api.blockSelection.isSelectable,
-    });
+    }) as NodeEntry<TIdElement> | undefined;
 
     if (nextEntry) {
       const [nextNode] = nextEntry;

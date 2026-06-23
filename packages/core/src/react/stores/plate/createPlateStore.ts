@@ -211,7 +211,7 @@ export const useEditorMounted = (id?: string): boolean =>
 
 /**
  * Whether the editor is read-only. You can also use `useReadOnly` from
- * `slate-react` in node components.
+ * `plite-react` in node components.
  */
 export const useEditorReadOnly = (id?: string): boolean =>
   !!useAtomStoreValue(usePlateStore(id), 'readOnly');
@@ -234,8 +234,9 @@ export const useEditorRef = <E extends PlateStoreEditor = PlateEditor>(
   id?: string
 ): E & { store: PlateStore } => {
   const store = usePlateStore(id);
-  const editor = ((useAtomStoreValue(store, 'editor') as E | undefined) ??
-    (createPlateFallbackEditor() as unknown as E)) as E & {
+  const editor = ((useAtomStoreValue(store, 'editor') as unknown as
+    | E
+    | undefined) ?? (createPlateFallbackEditor() as unknown as E)) as E & {
     store: PlateStore;
   };
 

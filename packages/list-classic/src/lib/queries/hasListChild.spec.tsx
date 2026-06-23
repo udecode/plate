@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createListClassicLegacyTestEditor as createSlateEditor } from '../__tests__/createListClassicLegacyTestEditor';
+import { createListClassicLegacyTestEditor as createBasePlateEditor } from '../__tests__/createListClassicLegacyTestEditor';
 
 import { hasListChild } from './hasListChild';
 
@@ -46,7 +46,7 @@ it.each([
     title: 'returns false when the list item has no nested list',
   },
 ])('$title', ({ expected, input }) => {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     selection: input.selection,
     value: input.children,
   });

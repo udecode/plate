@@ -3,7 +3,7 @@
 import * as React from 'react';
 
 import type { DropdownMenuProps } from '@radix-ui/react-dropdown-menu';
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
 import { DropdownMenuItemIndicator } from '@radix-ui/react-dropdown-menu';
 import { CheckIcon, ListIcon, ListOrderedIcon, SquareIcon } from 'lucide-react';

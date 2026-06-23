@@ -1,4 +1,4 @@
-import type { Node } from '@platejs/slate';
+import type { Node } from '@platejs/plite';
 
 import merge from 'lodash/merge.js';
 

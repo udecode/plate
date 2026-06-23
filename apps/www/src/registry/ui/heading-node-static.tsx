@@ -1,9 +1,9 @@
 import * as React from 'react';
 
-import type { SlateElementProps } from 'platejs/static';
+import type { PliteElementProps } from 'platejs/static';
 
 import { type VariantProps, cva } from 'class-variance-authority';
-import { SlateElement } from 'platejs/static';
+import { PliteElement } from 'platejs/static';
 
 const headingVariants = cva('relative mb-1', {
   variants: {
@@ -21,11 +21,11 @@ const headingVariants = cva('relative mb-1', {
 export function HeadingElementStatic({
   variant = 'h1',
   ...props
-}: SlateElementProps & VariantProps<typeof headingVariants>) {
+}: PliteElementProps & VariantProps<typeof headingVariants>) {
   const id = props.element.id as string | undefined;
 
   return (
-    <SlateElement
+    <PliteElement
       as={variant!}
       className={headingVariants({ variant })}
       {...props}
@@ -33,11 +33,11 @@ export function HeadingElementStatic({
       {/* Bookmark anchor for DOCX TOC internal links */}
       {id && <span id={id} />}
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }
 
-export function H1ElementStatic(props: SlateElementProps) {
+export function H1ElementStatic(props: PliteElementProps) {
   return <HeadingElementStatic variant="h1" {...props} />;
 }
 

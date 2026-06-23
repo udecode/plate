@@ -1,12 +1,12 @@
-import type { Element, NodeInsertNodesOptions } from '@platejs/slate';
+import type { Element, NodeInsertNodesOptions } from '@platejs/plite';
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 export type InsertTocOptions = NonNullable<NodeInsertNodesOptions<Element>>;
 
-export const insertToc = (editor: SlateEditor, options?: InsertTocOptions) => {
+export const insertToc = (editor: BasePlateEditor, options?: InsertTocOptions) => {
   editor.update((tx) => {
     tx.nodes.insert<Element>(
       {

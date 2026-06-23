@@ -1,13 +1,13 @@
-import type { SlateEditor, TTableElement, TTableRowElement } from 'platejs';
+import type { BasePlateEditor, TTableElement, TTableRowElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 type TableNodeQueryOptions = NonNullable<
-  Parameters<SlateEditor['api']['node']>[0]
+  Parameters<BasePlateEditor['api']['node']>[0]
 >;
 
 export const setTableRowSize = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { height, rowIndex }: { height: number; rowIndex: number },
   options: TableNodeQueryOptions = {}
 ) => {
@@ -22,9 +22,8 @@ export const setTableRowSize = (
   const tableRowPath = [...tablePath, rowIndex];
 
   editor.update((tx) => {
-    tx.nodes.set(
-      { size: height } satisfies Partial<TTableRowElement>,
-      { at: tableRowPath }
-    );
+    tx.nodes.set({ size: height } satisfies Partial<TTableRowElement>, {
+      at: tableRowPath,
+    });
   });
 };

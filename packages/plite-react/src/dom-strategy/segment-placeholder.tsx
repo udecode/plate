@@ -6,7 +6,7 @@ import type {
   Operation,
   Path,
   RuntimeId,
-  Editor as PliteEditor,
+  Editor as EditorType,
 } from '@platejs/plite';
 import type {
   DOMCoverageReason,
@@ -199,7 +199,7 @@ export const DOMStrategySegmentPlaceholder = React.memo(
     );
 
     const selectPreview = React.useCallback(
-      (editorValue: PliteEditor): SegmentPreview => {
+      (editorValue: EditorType): SegmentPreview => {
         const lines: string[] = [];
         const nodes: Descendant[] = [];
 

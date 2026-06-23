@@ -1,12 +1,12 @@
 import type { Locator, Page } from '@playwright/test';
 
-import { SLATE_BROWSER_HANDLE_KEY } from './constants';
+import { PLITE_BROWSER_HANDLE_KEY } from './constants';
 import type {
   SelectionPoint,
   SelectionSnapshot,
-  SlateBrowserDoubleClickDragTextRangeOptions,
-  SlateBrowserDragTextRangeOptions,
-  SlateBrowserScenarioStep,
+  PliteBrowserDoubleClickDragTextRangeOptions,
+  PliteBrowserDragTextRangeOptions,
+  PliteBrowserScenarioStep,
 } from './types';
 
 export const setSelection = async (
@@ -15,8 +15,8 @@ export const setSelection = async (
 ) => {
   await root.evaluate((element: HTMLElement, expected) => {
     const textNodes = Array.from(
-      element.querySelectorAll('[data-slate-node="text"]')
-    ).filter((node) => node.closest('[data-slate-editor="true"]') === element);
+      element.querySelectorAll('[data-plite-node="text"]')
+    ).filter((node) => node.closest('[data-plite-editor="true"]') === element);
 
     const comparePoint = (
       left: SelectionPoint,
@@ -43,16 +43,16 @@ export const setSelection = async (
 
     const resolvePoint = (point: SelectionPoint) => {
       if (point.path.length === 0) {
-        throw new Error('Cannot resolve an empty Slate path');
+        throw new Error('Cannot resolve an empty Plite path');
       }
 
       const owner = textNodes[point.path[0]];
 
       if (!owner) {
-        throw new Error(`Cannot resolve Slate path ${point.path.join('.')}`);
+        throw new Error(`Cannot resolve Plite path ${point.path.join('.')}`);
       }
 
-      const zeroWidthOwner = owner.querySelector('[data-slate-zero-width]');
+      const zeroWidthOwner = owner.querySelector('[data-plite-zero-width]');
 
       if (zeroWidthOwner && point.offset === 0) {
         const textLeaf = getTextLeaf(owner);
@@ -142,13 +142,13 @@ export const setDOMSelection = async (
 
       const selectionPointToDOMPoint = (point: SelectionPoint) => {
         const textElements = Array.from(
-          element.querySelectorAll('[data-slate-node="text"]')
+          element.querySelectorAll('[data-plite-node="text"]')
         ).filter(
-          (node) => node.closest('[data-slate-editor="true"]') === element
+          (node) => node.closest('[data-plite-editor="true"]') === element
         );
         const textElement = textElements.find(
           (node) =>
-            node.getAttribute('data-slate-path') === point.path.join(',')
+            node.getAttribute('data-plite-path') === point.path.join(',')
         );
 
         if (!textElement) {
@@ -157,7 +157,7 @@ export const setDOMSelection = async (
 
         const stringElements = Array.from(
           textElement?.querySelectorAll(
-            '[data-slate-string], [data-slate-zero-width]'
+            '[data-plite-string], [data-plite-zero-width]'
           ) ?? []
         );
         let start = 0;
@@ -175,7 +175,7 @@ export const setDOMSelection = async (
           }
 
           const length = textNode.textContent?.length ?? 0;
-          const attr = stringElement.getAttribute('data-slate-length');
+          const attr = stringElement.getAttribute('data-plite-length');
           const trueLength = attr == null ? length : Number.parseInt(attr, 10);
           const end = start + trueLength;
 
@@ -183,7 +183,7 @@ export const setDOMSelection = async (
           lastTextLength = length;
 
           if (
-            stringElement.hasAttribute('data-slate-zero-width') &&
+            stringElement.hasAttribute('data-plite-zero-width') &&
             point.offset === start &&
             length <= 1
           ) {
@@ -251,12 +251,12 @@ export const setDOMSelection = async (
 
       return domSelection.rangeCount > 0;
     },
-    { key: SLATE_BROWSER_HANDLE_KEY, selection }
+    { key: PLITE_BROWSER_HANDLE_KEY, selection }
   );
 
 export const dragTextSelection = async (
   page: Page,
-  step: Extract<SlateBrowserScenarioStep, { kind: 'dragTextSelection' }>
+  step: Extract<PliteBrowserScenarioStep, { kind: 'dragTextSelection' }>
 ) => {
   const locator = page.locator(step.selector).nth(step.index ?? 0);
 
@@ -296,7 +296,7 @@ export const dragTextRange = async (
     steps = 16,
     text,
     textNodeIndex = 0,
-  }: SlateBrowserDragTextRangeOptions
+  }: PliteBrowserDragTextRangeOptions
 ) => {
   await root
     .getByText(text, { exact: true })
@@ -321,9 +321,9 @@ export const dragTextRange = async (
         startOffset,
         text,
         textNodeIndex,
-      }: Omit<SlateBrowserDragTextRangeOptions, 'settleMs' | 'steps'> & {
+      }: Omit<PliteBrowserDragTextRangeOptions, 'settleMs' | 'steps'> & {
         endAffinity: NonNullable<
-          SlateBrowserDragTextRangeOptions['endAffinity']
+          PliteBrowserDragTextRangeOptions['endAffinity']
         >;
         textNodeIndex: number;
       }
@@ -490,7 +490,7 @@ export const doubleClickDragTextRange = async (
     steps = 16,
     text,
     textNodeIndex = 0,
-  }: SlateBrowserDoubleClickDragTextRangeOptions
+  }: PliteBrowserDoubleClickDragTextRangeOptions
 ) => {
   const points = await root.evaluate(
     (
@@ -502,7 +502,7 @@ export const doubleClickDragTextRange = async (
         textNodeIndex,
       }: Required<
         Pick<
-          SlateBrowserDoubleClickDragTextRangeOptions,
+          PliteBrowserDoubleClickDragTextRangeOptions,
           'doubleClickOffset' | 'endOffset' | 'text' | 'textNodeIndex'
         >
       >

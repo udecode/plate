@@ -11,7 +11,7 @@ import {
 describe('@platejs/yjs UndoManager adapter contract', () => {
   it('isolates the private Yjs stack access used by split history replay', () => {
     const doc = new Y.Doc();
-    const root = doc.get('@platejs/slate', Y.XmlElement);
+    const root = doc.get('@platejs/plite', Y.XmlElement);
     const origin = {};
     const undoManager = new Y.UndoManager(root, {
       trackedOrigins: new Set([origin]),
@@ -42,7 +42,7 @@ describe('@platejs/yjs UndoManager adapter contract', () => {
 
   it('rejects moving non-top private Yjs stack items', () => {
     const doc = new Y.Doc();
-    const root = doc.get('@platejs/slate', Y.XmlElement);
+    const root = doc.get('@platejs/plite', Y.XmlElement);
     const origin = {};
     const undoManager = new Y.UndoManager(root, {
       trackedOrigins: new Set([origin]),

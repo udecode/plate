@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { insertCodeLine } from './insertCodeLine';
@@ -19,7 +19,7 @@ describe('insert code line', () => {
           <hcodeline>line 2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -32,9 +32,9 @@ describe('insert code line', () => {
           <hcodeline>line 2</hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,

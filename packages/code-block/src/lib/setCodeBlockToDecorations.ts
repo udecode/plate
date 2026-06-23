@@ -1,12 +1,12 @@
 import {
   type DecoratedRange,
   type NodeEntry,
-  type SlateEditor,
+  type BasePlateEditor,
   type TCodeBlockElement,
   KEYS,
   NodeApi,
 } from 'platejs';
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 import { ensureStablePythonGrammar } from './ensureStablePythonGrammar';
@@ -108,7 +108,7 @@ function normalizeTokens(tokens: { classes: string[]; text: string }[]) {
 
 // Helper function to compute decorations for a code block
 export function codeBlockToDecorations(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   [block, blockPath]: NodeEntry<TCodeBlockElement>
 ): Map<Element, DecoratedRange[]> {
   const { defaultLanguage, ...options } =
@@ -201,7 +201,7 @@ export function codeBlockToDecorations(
 }
 
 export function setCodeBlockToDecorations(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   [block, blockPath]: NodeEntry<TCodeBlockElement>
 ) {
   const { defaultLanguage } = editor.getOptions(BaseCodeBlockPlugin);

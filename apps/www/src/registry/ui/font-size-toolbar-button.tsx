@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { Element } from '@platejs/slate';
+import type { Element } from 'platejs';
 
 import { toUnitLess } from '@platejs/basic-styles';
 import { FontSizePlugin } from '@platejs/basic-styles/react';

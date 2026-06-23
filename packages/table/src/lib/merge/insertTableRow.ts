@@ -1,7 +1,7 @@
 import cloneDeep from 'lodash/cloneDeep.js';
-import { PathApi, type Path } from '@platejs/slate';
+import { PathApi, type Path } from '@platejs/plite';
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
@@ -17,7 +17,7 @@ import { findCellByIndexes } from './findCellByIndexes';
 import { getCellPath } from './getCellPath';
 
 export const insertTableMergeRow = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     at,
     before,

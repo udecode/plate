@@ -1,5 +1,5 @@
-import { createSlateEditor } from '../editor';
-import { createSlatePlugin } from '../plugin';
+import { createBasePlateEditor } from '../editor';
+import { createEditorPlugin } from '../plugin';
 
 const createParagraph = (text: string) => ({
   children: [{ text }],
@@ -8,7 +8,7 @@ const createParagraph = (text: string) => ({
 
 describe('ParserPlugin', () => {
   it('pipes matching parser data into fragment insertion', () => {
-    const PlainPlugin = createSlatePlugin({
+    const PlainPlugin = createEditorPlugin({
       key: 'plain',
       parser: {
         format: 'plain',
@@ -21,7 +21,7 @@ describe('ParserPlugin', () => {
         ],
       },
     });
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [PlainPlugin],
     });
 
@@ -42,19 +42,19 @@ describe('ParserPlugin', () => {
 
   it('falls back to the previous insertData transform when no parser inserts', () => {
     const fallbackInsertData = mock();
-    const baseEditor = createSlateEditor();
+    const baseEditor = createBasePlateEditor();
 
     baseEditor.insertData = fallbackInsertData as any;
     baseEditor.tf.insertData = fallbackInsertData as any;
 
-    const PlainPlugin = createSlatePlugin({
+    const PlainPlugin = createEditorPlugin({
       key: 'plain',
       parser: {
         format: 'plain',
         deserialize: () => [],
       },
     });
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       editor: baseEditor,
       plugins: [PlainPlugin],
     });

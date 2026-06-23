@@ -8,7 +8,7 @@ import { classifyBrowserMobileTransportProof } from '../transports/contracts';
 import type { ProofEvidenceClass } from './proof';
 
 /** Browser proof claim that can block release-quality assertions. */
-export type SlateBrowserReleaseClaim =
+export type PliteBrowserReleaseClaim =
   | 'android-chrome-device-browser-text-input'
   | 'android-chrome-device-browser-ime-commit'
   | 'ios-safari-device-browser-text-input'
@@ -17,13 +17,13 @@ export type SlateBrowserReleaseClaim =
   | 'persistent-browser-caret-soak'
   | 'release-discipline-guards';
 
-export type SlateBrowserMobileReleaseCapability =
+export type PliteBrowserMobileReleaseCapability =
   | BrowserMobileSupportedClaim
   | BrowserMobileUnsupportedClaim;
 
 /** Raw-device browser proof artifact for mobile claims. */
-export type SlateBrowserMobileDeviceProofArtifact = {
-  capabilities: SlateBrowserMobileReleaseCapability[];
+export type PliteBrowserMobileDeviceProofArtifact = {
+  capabilities: PliteBrowserMobileReleaseCapability[];
   evidenceClass: ProofEvidenceClass;
   kind: 'mobile-device';
   passed: boolean;
@@ -34,7 +34,7 @@ export type SlateBrowserMobileDeviceProofArtifact = {
 };
 
 /** Persistent-profile browser soak proof artifact. */
-export type SlateBrowserPersistentSoakProofArtifact = {
+export type PliteBrowserPersistentSoakProofArtifact = {
   browserName: string;
   iterations: number;
   kind: 'persistent-browser-soak';
@@ -45,33 +45,33 @@ export type SlateBrowserPersistentSoakProofArtifact = {
 };
 
 /** Proof artifact for release-discipline guard coverage. */
-export type SlateBrowserReleaseDisciplineProofArtifact = {
+export type PliteBrowserReleaseDisciplineProofArtifact = {
   guards: string[];
   kind: 'release-discipline';
   passed: boolean;
 };
 
 /** Union of browser proof artifacts accepted by release proof validation. */
-export type SlateBrowserReleaseProofArtifact =
-  | SlateBrowserMobileDeviceProofArtifact
-  | SlateBrowserPersistentSoakProofArtifact
-  | SlateBrowserReleaseDisciplineProofArtifact;
+export type PliteBrowserReleaseProofArtifact =
+  | PliteBrowserMobileDeviceProofArtifact
+  | PliteBrowserPersistentSoakProofArtifact
+  | PliteBrowserReleaseDisciplineProofArtifact;
 
-export type SlateBrowserReleaseProofOptions = {
-  artifacts: readonly SlateBrowserReleaseProofArtifact[];
-  claims: readonly SlateBrowserReleaseClaim[];
+export type PliteBrowserReleaseProofOptions = {
+  artifacts: readonly PliteBrowserReleaseProofArtifact[];
+  claims: readonly PliteBrowserReleaseClaim[];
   requiredDisciplineGuards?: readonly string[];
   requiredSoakIterations?: number;
 };
 
 /** Result of validating browser release proof artifacts. */
-export type SlateBrowserReleaseProofResult = {
+export type PliteBrowserReleaseProofResult = {
   issues: string[];
   ok: boolean;
 };
 
 /** Required guard names for browser release-discipline proof. */
-export const SLATE_BROWSER_RELEASE_DISCIPLINE_GUARDS = [
+export const PLITE_BROWSER_RELEASE_DISCIPLINE_GUARDS = [
   'public-surface-contract',
   'public-field-hard-cut-contract',
   'escape-hatch-inventory-contract',
@@ -93,7 +93,7 @@ export const createBrowserMobileReleaseProofArtifact = ({
   passed: boolean;
   scenario: string;
   transport: BrowserMobileTransportId;
-}): SlateBrowserMobileDeviceProofArtifact => {
+}): PliteBrowserMobileDeviceProofArtifact => {
   const proof = classifyBrowserMobileTransportProof(transport);
 
   return {
@@ -117,9 +117,9 @@ export const createPersistentBrowserSoakProofArtifact = ({
   replayable,
   scenario,
 }: Omit<
-  SlateBrowserPersistentSoakProofArtifact,
+  PliteBrowserPersistentSoakProofArtifact,
   'kind'
->): SlateBrowserPersistentSoakProofArtifact => ({
+>): PliteBrowserPersistentSoakProofArtifact => ({
   browserName,
   iterations,
   kind: 'persistent-browser-soak',
@@ -134,18 +134,18 @@ export const createReleaseDisciplineProofArtifact = ({
   guards,
   passed,
 }: Omit<
-  SlateBrowserReleaseDisciplineProofArtifact,
+  PliteBrowserReleaseDisciplineProofArtifact,
   'kind'
->): SlateBrowserReleaseDisciplineProofArtifact => ({
+>): PliteBrowserReleaseDisciplineProofArtifact => ({
   guards: [...guards],
   kind: 'release-discipline',
   passed,
 });
 
 const hasDirectMobileProof = (
-  artifacts: readonly SlateBrowserReleaseProofArtifact[],
+  artifacts: readonly PliteBrowserReleaseProofArtifact[],
   platform: BrowserMobileProofPlatform,
-  capability: SlateBrowserMobileReleaseCapability
+  capability: PliteBrowserMobileReleaseCapability
 ) =>
   artifacts.some((artifact) => {
     if (artifact.kind !== 'mobile-device' || !artifact.passed) {
@@ -164,14 +164,14 @@ const hasDirectMobileProof = (
 
 const describeMobileClaim = (
   platform: BrowserMobileProofPlatform,
-  capability: SlateBrowserMobileReleaseCapability
+  capability: PliteBrowserMobileReleaseCapability
 ) => `${platform} ${capability}`;
 
 const validateMobileClaim = (
   issues: string[],
-  artifacts: readonly SlateBrowserReleaseProofArtifact[],
+  artifacts: readonly PliteBrowserReleaseProofArtifact[],
   platform: BrowserMobileProofPlatform,
-  capability: SlateBrowserMobileReleaseCapability
+  capability: PliteBrowserMobileReleaseCapability
 ) => {
   if (!hasDirectMobileProof(artifacts, platform, capability)) {
     issues.push(
@@ -185,7 +185,7 @@ const validateMobileClaim = (
 
 const validatePersistentSoak = (
   issues: string[],
-  artifacts: readonly SlateBrowserReleaseProofArtifact[],
+  artifacts: readonly PliteBrowserReleaseProofArtifact[],
   requiredSoakIterations: number
 ) => {
   const artifact = artifacts.find(
@@ -206,7 +206,7 @@ const validatePersistentSoak = (
 
 const validateReleaseDiscipline = (
   issues: string[],
-  artifacts: readonly SlateBrowserReleaseProofArtifact[],
+  artifacts: readonly PliteBrowserReleaseProofArtifact[],
   requiredDisciplineGuards: readonly string[]
 ) => {
   const artifact = artifacts.find(
@@ -241,12 +241,12 @@ const validateReleaseDiscipline = (
 };
 
 /** Validate browser proof artifacts against requested release claims. */
-export const validateSlateBrowserReleaseProof = ({
+export const validatePliteBrowserReleaseProof = ({
   artifacts,
   claims,
-  requiredDisciplineGuards = SLATE_BROWSER_RELEASE_DISCIPLINE_GUARDS,
+  requiredDisciplineGuards = PLITE_BROWSER_RELEASE_DISCIPLINE_GUARDS,
   requiredSoakIterations = 5,
-}: SlateBrowserReleaseProofOptions): SlateBrowserReleaseProofResult => {
+}: PliteBrowserReleaseProofOptions): PliteBrowserReleaseProofResult => {
   const issues: string[] = [];
 
   for (const claim of claims) {
@@ -313,14 +313,14 @@ export const validateSlateBrowserReleaseProof = ({
 };
 
 /** Throw when browser proof artifacts do not satisfy requested claims. */
-export const assertSlateBrowserReleaseProof = (
-  options: SlateBrowserReleaseProofOptions
+export const assertPliteBrowserReleaseProof = (
+  options: PliteBrowserReleaseProofOptions
 ) => {
-  const result = validateSlateBrowserReleaseProof(options);
+  const result = validatePliteBrowserReleaseProof(options);
 
   if (!result.ok) {
     throw new Error(
-      `Slate browser release proof failed:\n${result.issues
+      `Plite browser release proof failed:\n${result.issues
         .map((issue) => `- ${issue}`)
         .join('\n')}`
     );

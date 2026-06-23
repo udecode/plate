@@ -1,10 +1,10 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { BaseExcalidrawPlugin } from './BaseExcalidrawPlugin';
 
 describe('BaseExcalidrawPlugin', () => {
   it('registers excalidraw as a void element plugin', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseExcalidrawPlugin],
     });
     const plugin = editor.getPlugin(BaseExcalidrawPlugin);

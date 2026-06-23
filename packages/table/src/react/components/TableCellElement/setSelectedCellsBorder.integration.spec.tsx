@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
-import type { SlateEditor, TTableCellElement } from 'platejs';
-import { createSlateEditor } from 'platejs';
+import type { BasePlateEditor, TTableCellElement } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -15,8 +15,8 @@ import { setSelectedCellsBorder } from './getOnSelectTableBorderFactory';
 
 jsxt;
 
-const createTableEditor = (input: SlateEditor) =>
-  createSlateEditor({
+const createTableEditor = (input: BasePlateEditor) =>
+  createBasePlateEditor({
     nodeId: true,
     plugins: getTestTablePlugins(),
     selection: input.selection,
@@ -52,7 +52,7 @@ describe('setSelectedCellsBorder integration', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
     const cells = getSelectedCells(editor) as TTableCellElement[];
@@ -121,7 +121,7 @@ describe('setSelectedCellsBorder integration', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
     const cells = getSelectedCells(editor) as TTableCellElement[];
@@ -205,7 +205,7 @@ describe('setSelectedCellsBorder integration', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
 
@@ -265,7 +265,7 @@ describe('setSelectedCellsBorder integration', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
 
@@ -329,7 +329,7 @@ describe('setSelectedCellsBorder integration', () => {
           </htr>
         </htable>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const editor = createTableEditor(input);
     const table = editor.children[0] as any;

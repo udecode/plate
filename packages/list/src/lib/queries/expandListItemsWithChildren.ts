@@ -1,5 +1,5 @@
-import type { Element, NodeEntry } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Element, NodeEntry } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { isDefined, KEYS } from 'platejs';
 
@@ -14,7 +14,7 @@ import { getListChildren } from './getListChildren';
  *   children
  */
 export const expandListItemsWithChildren = <N extends Element = Element>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   entries: NodeEntry<N>[]
 ): NodeEntry<N>[] => {
   const expandedEntries: NodeEntry<N>[] = [];

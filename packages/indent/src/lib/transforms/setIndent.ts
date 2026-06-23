@@ -1,9 +1,9 @@
-import type { AnyObject, SlateEditor } from 'platejs';
+import type { AnyObject, BasePlateEditor, NodeEntry } from 'platejs';
 
 import { BaseIndentPlugin } from '../BaseIndentPlugin';
 
 export type IndentNodesOptions = NonNullable<
-  Parameters<SlateEditor['api']['nodes']>[0]
+  Parameters<BasePlateEditor['api']['nodes']>[0]
 >;
 
 export type SetIndentOptions = {
@@ -26,7 +26,7 @@ export type SetIndentOptions = {
 
 /** Add offset to the indentation of the selected blocks. */
 export const setIndent = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     getNodesOptions,
     offset = 1,
@@ -41,7 +41,7 @@ export const setIndent = (
     mode: 'lowest',
     ...getNodesOptions,
   });
-  const nodes = Array.from(_nodes);
+  const nodes = Array.from(_nodes) as NodeEntry<AnyObject>[];
 
   editor.update((tx) => {
     nodes.forEach(([node, path]) => {

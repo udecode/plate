@@ -1,10 +1,10 @@
 import type { LengthConfig } from '../getCorePlugins';
 
 import { withLegacyTransformOverride } from '../../../internal/plugin/withLegacyTransformOverride';
-import { createTSlatePlugin } from '../../plugin';
+import { createEditorPlugin } from '../../plugin';
 
 export const LengthPlugin = withLegacyTransformOverride(
-  createTSlatePlugin<LengthConfig>({
+  createEditorPlugin<LengthConfig>({
     key: 'length',
   }),
   ({ editor, getOptions, tf }) => {
@@ -12,7 +12,7 @@ export const LengthPlugin = withLegacyTransformOverride(
 
     return {
       tf: {
-        apply(operation) {
+        apply(operation: any) {
           withoutNormalizing(() => {
             apply(operation);
 

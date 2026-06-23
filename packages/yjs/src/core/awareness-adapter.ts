@@ -1,4 +1,4 @@
-import type { Editor, Range } from '@platejs/slate';
+import type { Editor, Range } from '@platejs/plite';
 import * as Y from 'yjs';
 
 import {

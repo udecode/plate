@@ -1,5 +1,5 @@
-import type { Element, NodeEntry } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Element, NodeEntry } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -12,7 +12,7 @@ import { setIndentTodoNodeTx, setListNodeTx } from './setListNode';
 
 /** Set indent list to entry + siblings. */
 export const setListSiblingNodes = <N extends Element = Element>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   entry: NodeEntry<Element>,
   {
     getSiblingListOptions,

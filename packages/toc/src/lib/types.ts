@@ -1,4 +1,4 @@
-import type { Path } from '@platejs/slate';
+import type { Path } from '@platejs/plite';
 
 export type Heading = {
   id: string;

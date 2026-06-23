@@ -2,13 +2,13 @@
 
 import React from 'react';
 
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
 import { act, render, waitFor } from '@testing-library/react';
 
 import { getCurrentRuntimeTransforms } from '../../internal/currentRuntimeBridge';
-import { SlateExtensionPlugin } from '../../lib';
-import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
+import { PliteExtensionPlugin } from '../../lib';
+import { createEditorPlugin } from '../../lib/plugin/createEditorPlugin';
 import { createPlateEditor } from '../editor';
 import {
   createPlateRuntimeEditor,
@@ -78,7 +78,7 @@ describe('PlateContent', () => {
     });
   });
 
-  it('syncs store node and text handlers into SlateExtensionPlugin options', async () => {
+  it('syncs store node and text handlers into PliteExtensionPlugin options', async () => {
     const editor = createPlateEditor({ value });
     const onNodeChange = mock();
     const onTextChange = mock();
@@ -94,10 +94,10 @@ describe('PlateContent', () => {
     );
 
     await waitFor(() => {
-      expect(editor.getOption(SlateExtensionPlugin, 'onNodeChange')).toBe(
+      expect(editor.getOption(PliteExtensionPlugin, 'onNodeChange')).toBe(
         onNodeChange
       );
-      expect(editor.getOption(SlateExtensionPlugin, 'onTextChange')).toBe(
+      expect(editor.getOption(PliteExtensionPlugin, 'onTextChange')).toBe(
         onTextChange
       );
     });
@@ -134,14 +134,14 @@ describe('PlateContent', () => {
   it('mounts state effects with the v2 Plate runtime content adapter', async () => {
     const onNodeChange = mock();
     const onTextChange = mock();
-    const RuntimeSlateExtensionPlugin = createSlatePlugin({
-      key: SlateExtensionPlugin.key,
+    const RuntimePliteExtensionPlugin = createEditorPlugin({
+      key: PliteExtensionPlugin.key,
       options: {},
     });
     const editor = createPlateRuntimeEditor({
       id: 'runtime-content-state',
       initialValue: value,
-      plugins: [RuntimeSlateExtensionPlugin],
+      plugins: [RuntimePliteExtensionPlugin],
       readOnly: true,
     });
     const runtimeTransforms = getCurrentRuntimeTransforms(editor);
@@ -175,10 +175,10 @@ describe('PlateContent', () => {
 
     await waitFor(() => {
       expect(getByTestId('read-only')).toHaveTextContent('true');
-      expect(editor.getOption(SlateExtensionPlugin, 'onNodeChange')).toBe(
+      expect(editor.getOption(PliteExtensionPlugin, 'onNodeChange')).toBe(
         onNodeChange
       );
-      expect(editor.getOption(SlateExtensionPlugin, 'onTextChange')).toBe(
+      expect(editor.getOption(PliteExtensionPlugin, 'onTextChange')).toBe(
         onTextChange
       );
     });
@@ -212,7 +212,7 @@ describe('PlateContent', () => {
     await waitFor(() => {
       expect(getByTestId('read-only')).toHaveTextContent('true');
       expect(
-        document.querySelector('[data-slate-editor="true"]')
+        document.querySelector('[data-plite-editor="true"]')
       ).toHaveAttribute('aria-readonly', 'true');
     });
   });
@@ -234,7 +234,7 @@ describe('PlateContent', () => {
     await waitFor(() => {
       expect(getByTestId('read-only')).toHaveTextContent('true');
       expect(getByTestId('runtime-editable')).toHaveAttribute(
-        'data-slate-editor',
+        'data-plite-editor',
         'true'
       );
       expect(getByTestId('runtime-editable')).toHaveAttribute(

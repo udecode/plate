@@ -3,7 +3,7 @@ title: Troubleshooting
 description: Diagnose common Plate setup and runtime issues.
 ---
 
-Most Plate issues come from version skew, duplicate React/Slate runtimes, or
+Most Plate issues come from version skew, duplicate React/Plite runtimes, or
 crossing the server/client import boundary. Start with package alignment, then
 check runtime ownership, then inspect plugin resolution with `DebugPlugin`.
 
@@ -50,18 +50,18 @@ pnpm dlx depset@latest platejs --latest --install --yes
 Then inspect what actually resolved.
 
 ```bash
-npm ls platejs @platejs/core @platejs/slate react react-dom slate slate-dom slate-react
+npm ls platejs @platejs/core @platejs/plite react react-dom slate plite-dom slate-react
 ```
 
 ```bash
 pnpm why platejs
 pnpm why @platejs/core
-pnpm why @platejs/slate
-pnpm why react react-dom slate slate-dom slate-react
+pnpm why @platejs/plite
+pnpm why react react-dom slate plite-dom slate-react
 ```
 
 If the tree shows multiple Plate majors, align the Plate packages first. If it
-shows multiple React or Slate copies, fix the package that pulls the extra copy
+shows multiple React or Plite copies, fix the package that pulls the extra copy
 instead of papering over the tree with a random override.
 
 ## Fix Runtime Boundaries
@@ -136,7 +136,7 @@ Use [Plugin](/docs/plugin#advanced-plugin-configuration) to check `dependencies`
 ## Reset The Install
 
 When the dependency tree looks correct but the runtime still behaves like two
-React or Slate copies are loaded, reinstall from the existing lockfile.
+React or Plite copies are loaded, reinstall from the existing lockfile.
 
 ```bash
 rm -rf node_modules
@@ -158,7 +158,7 @@ When you open an issue, include the smallest editor that reproduces the problem:
 - Package manager and lockfile type.
 - Output from the relevant `npm ls` or `pnpm why` commands.
 - The plugin list passed to `usePlateEditor`, `createPlateEditor`,
-  `createSlateEditor`, or `createStaticEditor`.
+  `createBasePlateEditor`, or `createStaticEditor`.
 - The failing value, if the issue depends on document content.
 - The exact error message from `DebugPlugin` or the browser console.
 

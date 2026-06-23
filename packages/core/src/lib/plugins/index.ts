@@ -17,4 +17,4 @@ export * from './navigation-feedback/index';
 export * from './node-id/index';
 export * from './override/index';
 export * from './paragraph/index';
-export * from './slate-extension/index';
+export * from './plite-extension/index';

@@ -1,6 +1,6 @@
 import type { Emoji } from '@emoji-mart/data';
 
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
 import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
@@ -10,7 +10,7 @@ import { DEFAULT_EMOJI_LIBRARY } from './constants';
 
 describe('BaseEmojiPlugin', () => {
   it('configures the emoji input plugin as an inline void edit-only node', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseEmojiPlugin],
     });
 
@@ -23,7 +23,7 @@ describe('BaseEmojiPlugin', () => {
   });
 
   it('ships the default trigger, library, and node builders', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseEmojiPlugin],
     });
 
@@ -57,14 +57,14 @@ describe('BaseEmojiPlugin', () => {
   });
 
   it('includes the nested emoji input plugin', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseEmojiPlugin],
     });
 
     expect(editor.getPlugin(BaseEmojiInputPlugin).key).toBe(KEYS.emojiInput);
   });
 
-  it('routes the emoji trigger through the Slate v2 runtime combobox path', () => {
+  it('routes the emoji trigger through the Plite runtime combobox path', () => {
     const editor = createPlateRuntimeEditor({
       initialSelection: {
         anchor: { offset: 6, path: [0, 0] },

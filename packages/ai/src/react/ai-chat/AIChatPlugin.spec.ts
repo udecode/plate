@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'bun:test';
 
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createBasePlateEditor } from 'platejs';
 
 import { BaseAIPlugin } from '../../lib/BaseAIPlugin';
 import { AIChatPlugin } from './AIChatPlugin';
 
 describe('AIChatPlugin', () => {
   it('clears internal streaming state when stop is called', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseAIPlugin, AIChatPlugin],
       value: [{ children: [{ text: 'x' }], type: 'p' }],
     });

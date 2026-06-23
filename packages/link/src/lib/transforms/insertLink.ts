@@ -1,6 +1,6 @@
-import type { NodeInsertNodesOptions, Text } from '@platejs/slate';
+import type { NodeInsertNodesOptions, Text } from '@platejs/plite';
 
-import type { SlateEditor, TLinkElement } from 'platejs';
+import type { BasePlateEditor, TLinkElement } from 'platejs';
 
 import { type CreateLinkNodeOptions, createLinkNode } from '../utils';
 
@@ -8,7 +8,7 @@ type InsertNodesOptions = NodeInsertNodesOptions<TLinkElement | Text>;
 
 /** Insert a link node. */
 export const insertLink = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   createLinkNodeOptions: CreateLinkNodeOptions,
   options?: InsertNodesOptions
 ) => {

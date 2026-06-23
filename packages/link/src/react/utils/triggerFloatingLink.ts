@@ -1,11 +1,11 @@
-import { type SlateEditor, getEditorPlugin } from 'platejs';
+import { type BasePlateEditor, getEditorPlugin } from 'platejs';
 
 import { LinkPlugin } from '../LinkPlugin';
 import { triggerFloatingLinkEdit } from './triggerFloatingLinkEdit';
 import { triggerFloatingLinkInsert } from './triggerFloatingLinkInsert';
 
 export const triggerFloatingLink = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     focused,
   }: {

@@ -1,7 +1,7 @@
 import {
   type PluginConfig,
-  type SlateEditor,
-  createTSlatePlugin,
+  type BasePlateEditor,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -12,11 +12,11 @@ export type TocConfig = PluginConfig<
   {
     isScroll: boolean;
     topOffset: number;
-    queryHeading?: (editor: SlateEditor) => Heading[];
+    queryHeading?: (editor: BasePlateEditor) => Heading[];
   }
 >;
 
-export const BaseTocPlugin = createTSlatePlugin<TocConfig>({
+export const BaseTocPlugin = createEditorPlugin<TocConfig>({
   key: KEYS.toc,
   node: { isElement: true, isVoid: true },
   options: {

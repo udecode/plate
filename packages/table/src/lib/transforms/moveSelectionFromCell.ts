@@ -1,12 +1,12 @@
-import type { Location } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Location } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { getTableGridAbove } from '../queries/getTableGridAbove';
 import { getCellTypes } from '../utils/getCellType';
 
 /** Move selection by cell unit. */
 export const moveSelectionFromCell = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     at,
     edge,

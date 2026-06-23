@@ -1,12 +1,12 @@
-import { createSlateEditor } from '../../editor';
-import { createSlatePlugin } from '../../plugin';
+import { createBasePlateEditor } from '../../editor';
+import { createEditorPlugin } from '../../plugin';
 import { createTextSubstitutionInputRule } from './createInputRules';
 
 const createEditor = (
   rule: ReturnType<typeof createTextSubstitutionInputRule>
 ) =>
-  createSlateEditor({
-    plugins: [createSlatePlugin({ key: 'shortcuts', inputRules: [rule] })],
+  createBasePlateEditor({
+    plugins: [createEditorPlugin({ key: 'shortcuts', inputRules: [rule] })],
     selection: {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },

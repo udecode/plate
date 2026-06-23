@@ -58,7 +58,7 @@ function isNavItemActive(item: SidebarNavItem, pathname: string): boolean {
     if (href === pathname) return true;
     if (
       href !== '/docs' &&
-      href !== '/docs/slate' &&
+      href !== '/docs/plite' &&
       pathname.startsWith(`${href}/`)
     ) {
       return true;

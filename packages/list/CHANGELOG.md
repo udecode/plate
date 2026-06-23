@@ -496,7 +496,7 @@
   - fix: tab / untab when composing with IME
   - update peerDeps:
     - `"slate": ">=0.78.0"`
-    - `"slate-react": ">=0.79.0"`
+    - `"plite-react": ">=0.79.0"`
 
 ## 11.1.0
 
@@ -756,7 +756,7 @@
 
 ### Patch Changes
 
-- [#918](https://github.com/udecode/plate/pull/918) [`7d045d8d`](https://github.com/udecode/plate/commit/7d045d8db39515d4574c5313cc97287486c5866b) Thanks [@zbeyens](https://github.com/zbeyens)! - add `slate-history` as a peerDep
+- [#918](https://github.com/udecode/plate/pull/918) [`7d045d8d`](https://github.com/udecode/plate/commit/7d045d8db39515d4574c5313cc97287486c5866b) Thanks [@zbeyens](https://github.com/zbeyens)! - add `plite-history` as a peerDep
 
 - Updated dependencies [[`7d045d8d`](https://github.com/udecode/plate/commit/7d045d8db39515d4574c5313cc97287486c5866b)]:
   - @udecode/plate-common@1.1.6
@@ -766,12 +766,12 @@
 
 ### Major Changes
 
-🎉 The **Slate Plugins** project has evolved to **Plate** 🎉
+🎉 The **Plite Plugins** project has evolved to **Plate** 🎉
 
 To migrate, install `@udecode/plate[-x]` then find and replace all
 occurrences of:
 
-- `slate-plugins` to `plate`
+- `plite-plugins` to `plate`
 - `SlatePlugins` to `Plate`
 - `SlatePlugin` to `PlatePlugin`
 

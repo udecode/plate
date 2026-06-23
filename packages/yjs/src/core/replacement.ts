@@ -1,11 +1,11 @@
-import type { Descendant, Operation } from '@platejs/slate';
+import type { Descendant, Operation } from '@platejs/plite';
 import * as Y from 'yjs';
 
 import {
   formatYjsTextAttributes,
-  getSlateYjsElementType,
-  removeSlateYjsAttribute,
-  setSlateYjsAttribute,
+  getPliteYjsElementType,
+  removePliteYjsAttribute,
+  setPliteYjsAttribute,
   type YjsAttributeRecord,
   type YjsNode,
 } from './attributes';
@@ -18,15 +18,15 @@ import {
 import { areJsonLikeValuesEqual } from './json-equality';
 import { isRecord } from './record';
 
-type SlateElementLike = {
+type PliteElementLike = {
   readonly children: readonly Descendant[];
 } & Readonly<Record<string, unknown>>;
 
-type SlateTextLike = {
+type PliteTextLike = {
   readonly text: string;
 } & Readonly<Record<string, unknown>>;
 
-export const isNoopSlateOperationForYjs = (operation: Operation): boolean => {
+export const isNoopPliteOperationForYjs = (operation: Operation): boolean => {
   switch (operation.type) {
     case 'replace_children':
     case 'replace_fragment':
@@ -36,13 +36,13 @@ export const isNoopSlateOperationForYjs = (operation: Operation): boolean => {
   }
 };
 
-const isSlateText = (node: unknown): node is SlateTextLike =>
+const isPliteText = (node: unknown): node is PliteTextLike =>
   isRecord(node) && typeof node.text === 'string';
 
-const isSlateElement = (node: unknown): node is SlateElementLike =>
+const isPliteElement = (node: unknown): node is PliteElementLike =>
   isRecord(node) && Array.isArray(node.children);
 
-const getTextAttributes = (node: SlateTextLike): YjsAttributeRecord => {
+const getTextAttributes = (node: PliteTextLike): YjsAttributeRecord => {
   const attributes: YjsAttributeRecord = {};
 
   for (const key in node) {
@@ -54,7 +54,7 @@ const getTextAttributes = (node: SlateTextLike): YjsAttributeRecord => {
   return attributes;
 };
 
-const getElementAttributes = (node: SlateElementLike): YjsAttributeRecord => {
+const getElementAttributes = (node: PliteElementLike): YjsAttributeRecord => {
   const attributes: YjsAttributeRecord = {};
 
   for (const key in node) {
@@ -121,7 +121,7 @@ export const setYjsNodeAttributes = (
         continue;
       }
 
-      removeSlateYjsAttribute(node, key);
+      removePliteYjsAttribute(node, key);
       if (textPatch !== null) {
         textPatch[key] = null;
         hasTextPatch = true;
@@ -133,7 +133,7 @@ export const setYjsNodeAttributes = (
       continue;
     }
 
-    setSlateYjsAttribute(node, key, value);
+    setPliteYjsAttribute(node, key, value);
 
     if (textPatch !== null) {
       textPatch[key] = value;
@@ -151,7 +151,7 @@ export const setYjsNodeAttributes = (
     }
     assertPublicYjsAttributeCanBeSet(key);
 
-    removeSlateYjsAttribute(node, key);
+    removePliteYjsAttribute(node, key);
 
     if (textPatch !== null) {
       textPatch[key] = null;
@@ -172,7 +172,7 @@ export const createSplitElement = (
   const elementType =
     typeof properties.type === 'string'
       ? properties.type
-      : getSlateYjsElementType(original);
+      : getPliteYjsElementType(original);
   const element = new Y.XmlElement(elementType);
 
   for (const key in properties) {
@@ -182,14 +182,14 @@ export const createSplitElement = (
 
     assertPublicYjsAttributeCanBeSet(key);
   }
-  setSlateYjsAttribute(element, 'type', elementType);
+  setPliteYjsAttribute(element, 'type', elementType);
 
   for (const key in properties) {
     if (!Object.hasOwn(properties, key) || key === 'type') {
       continue;
     }
 
-    setSlateYjsAttribute(element, key, properties[key]);
+    setPliteYjsAttribute(element, key, properties[key]);
   }
 
   if (children.length > 0) {
@@ -289,7 +289,7 @@ const canReplaceCompatibleYjsChildren = (
     }
 
     if (child instanceof Y.XmlText) {
-      if (!isSlateText(oldChild) || !isSlateText(newChild)) {
+      if (!isPliteText(oldChild) || !isPliteText(newChild)) {
         return false;
       }
       index++;
@@ -298,8 +298,8 @@ const canReplaceCompatibleYjsChildren = (
 
     if (
       child instanceof Y.XmlElement &&
-      isSlateElement(oldChild) &&
-      isSlateElement(newChild)
+      isPliteElement(oldChild) &&
+      isPliteElement(newChild)
     ) {
       if (
         !canReplaceCompatibleYjsChildren(
@@ -337,7 +337,7 @@ const applyCompatibleYjsChildrenReplacement = (
     const newChild = newChildren[index];
 
     if (child instanceof Y.XmlText) {
-      if (!isSlateText(oldChild) || !isSlateText(newChild)) {
+      if (!isPliteText(oldChild) || !isPliteText(newChild)) {
         index++;
         continue;
       }
@@ -353,8 +353,8 @@ const applyCompatibleYjsChildrenReplacement = (
 
     if (
       child instanceof Y.XmlElement &&
-      isSlateElement(oldChild) &&
-      isSlateElement(newChild)
+      isPliteElement(oldChild) &&
+      isPliteElement(newChild)
     ) {
       setYjsNodeAttributes(
         child,

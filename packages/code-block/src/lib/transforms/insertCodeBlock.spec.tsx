@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, BaseParagraphPlugin, KEYS } from 'platejs';
+import { type BasePlateEditor, BaseParagraphPlugin, KEYS } from 'platejs';
 
-import { createSlateEditor } from '../../../../core/src/lib/editor/withSlate';
+import { createBasePlateEditor } from '../../../../core/src/lib/editor/withPlite';
 import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { insertCodeBlock } from './insertCodeBlock';
@@ -22,7 +22,7 @@ describe('insert code block', () => {
           </hp>
           <hp>line 3</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -37,13 +37,13 @@ describe('insert code block', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
       });
 
-      insertCodeBlock(editor as unknown as SlateEditor);
+      insertCodeBlock(editor as unknown as BasePlateEditor);
 
       expect(editor.children).toEqual(output.children);
     });
@@ -60,7 +60,7 @@ describe('insert code block', () => {
           </hp>
           <hp>line 3</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -76,13 +76,13 @@ describe('insert code block', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
       });
 
-      insertCodeBlock(editor as unknown as SlateEditor);
+      insertCodeBlock(editor as unknown as BasePlateEditor);
 
       expect(editor.children).toEqual(output.children);
     });
@@ -101,7 +101,7 @@ describe('insert code block', () => {
           </hp>
           <hp>line 3</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -116,26 +116,26 @@ describe('insert code block', () => {
         </editor>
       ) as any;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
       });
 
-      insertCodeBlock(editor as unknown as SlateEditor);
+      insertCodeBlock(editor as unknown as BasePlateEditor);
 
       expect(editor.children).toEqual(output.children);
     });
   });
 
   it('does nothing when there is no selection', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       value: [{ type: KEYS.p, children: [{ text: 'line 1' }] }],
     });
     const update = spyOn(editor, 'update');
 
-    insertCodeBlock(editor as unknown as SlateEditor);
+    insertCodeBlock(editor as unknown as BasePlateEditor);
 
     expect(editor.children).toEqual([
       { type: KEYS.p, children: [{ text: 'line 1' }] },
@@ -153,8 +153,8 @@ describe('insert code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
-    const editor = createSlateEditor({
+    ) as any as BasePlateEditor;
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       selection: input.selection,
       value: input.children,
@@ -162,7 +162,7 @@ describe('insert code block', () => {
     const before = editor.children;
     const update = spyOn(editor, 'update');
 
-    insertCodeBlock(editor as unknown as SlateEditor);
+    insertCodeBlock(editor as unknown as BasePlateEditor);
 
     expect(editor.children).toBe(before);
     expect(update).not.toHaveBeenCalled();

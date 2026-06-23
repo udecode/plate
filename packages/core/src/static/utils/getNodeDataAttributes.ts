@@ -1,14 +1,14 @@
-import type { Element, Text } from '@platejs/slate';
+import type { Element, Text } from '@platejs/plite';
 
 import {
   type AnyEditorPlugin,
-  type SlateEditor,
+  type BasePlateEditor,
   getEditorPlugin,
   keyToDataAttribute,
 } from '../../lib';
 
 export const getNodeDataAttributes = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   node: Element | Text,
   {
     isElement,
@@ -48,7 +48,7 @@ export const getNodeDataAttributes = (
 };
 
 export const getPluginDataAttributes = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   plugin: AnyEditorPlugin,
   node: Element | Text
 ) => {

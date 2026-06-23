@@ -4,7 +4,7 @@ import {
   getTransientSuggestionKey,
   SkipSuggestionDeletes,
 } from '@platejs/suggestion';
-import type { Descendant, Element } from '@platejs/slate';
+import type { Descendant, Element } from '@platejs/plite';
 import {
   type NodeEntry,
   type TIdElement,
@@ -17,16 +17,16 @@ import {
 } from 'platejs';
 
 import { AIChatPlugin } from '../AIChatPlugin';
-import type { AIChatSlateEditor } from '../internal/editorTypes';
+import type { AIChatPliteEditor } from '../internal/editorTypes';
 import {
   getTableCellChildren as withoutTable,
   isSingleCellTable,
 } from './nestedContainerUtils';
 
-type NodesRangeInput = Parameters<AIChatSlateEditor['api']['nodesRange']>[0];
+type NodesRangeInput = Parameters<AIChatPliteEditor['api']['nodesRange']>[0];
 
 export const applyAISuggestions = (
-  editor: AIChatSlateEditor,
+  editor: AIChatPliteEditor,
   content: string
 ) => {
   /** Conflict with block selection */
@@ -188,7 +188,7 @@ export const withoutSuggestionAndComments = (
     return node;
   });
 
-const getDiffNodes = (editor: AIChatSlateEditor, aiContent: string) => {
+const getDiffNodes = (editor: AIChatPliteEditor, aiContent: string) => {
   /** Original document nodes */
   const rawChatNodes = editor.getOption(AIChatPlugin, 'chatNodes');
 

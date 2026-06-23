@@ -159,9 +159,9 @@ Use `BaseHeadingPlugin` when you want to install several heading levels without 
 
 ```tsx
 import { BaseHeadingPlugin } from '@platejs/basic-nodes';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
-export const editor = createSlateEditor({
+export const editor = createBasePlateEditor({
   plugins: [
     BaseHeadingPlugin.configure({
       options: {

@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@platejs/core": "workspace:^",
-    "@platejs/slate": "workspace:^",
+    "@platejs/plite": "workspace:^",
     "@platejs/utils": "workspace:^",
     "@udecode/utils": "workspace:^",
     "lodash": "^4.17.21",

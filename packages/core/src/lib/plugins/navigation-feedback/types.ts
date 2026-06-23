@@ -1,4 +1,4 @@
-import type { Path, PathRef, Point, Range } from '@platejs/slate';
+import type { Path, PathRef, Point, Range } from '@platejs/plite';
 
 import type { PluginConfig } from '../../plugin';
 

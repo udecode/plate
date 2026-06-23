@@ -10,7 +10,7 @@ import {
   type Selection,
   type Text,
   TextApi,
-} from '@platejs/slate';
+} from '@platejs/plite';
 
 import {
   AnchorToken,
@@ -217,12 +217,12 @@ export const createEditor =
 
     if (selection.anchor && !selection.focus) {
       throw new Error(
-        'Slate hyperscript ranges must have both `<anchor />` and `<focus />` defined if one is defined, but you only defined `<anchor />`. For collapsed selections, use `<cursor />` instead.'
+        'Plite hyperscript ranges must have both `<anchor />` and `<focus />` defined if one is defined, but you only defined `<anchor />`. For collapsed selections, use `<cursor />` instead.'
       );
     }
     if (!selection.anchor && selection.focus) {
       throw new Error(
-        'Slate hyperscript ranges must have both `<anchor />` and `<focus />` defined if one is defined, but you only defined `<focus />`. For collapsed selections, use `<cursor />` instead.'
+        'Plite hyperscript ranges must have both `<anchor />` and `<focus />` defined if one is defined, but you only defined `<focus />`. For collapsed selections, use `<cursor />` instead.'
       );
     }
     if (selectionChild != null) {

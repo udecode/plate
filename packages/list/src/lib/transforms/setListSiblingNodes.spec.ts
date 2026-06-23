@@ -1,4 +1,4 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import * as getListSiblingsModule from '../queries/getListSiblings';
 import { setListSiblingNodes } from './setListSiblingNodes';
@@ -9,7 +9,7 @@ describe('setListSiblingNodes', () => {
   });
 
   it('retypes sibling list items and clears todo metadata', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [
         { [KEYS.indent]: 2, children: [{ text: 'One' }], type: KEYS.p },
         { [KEYS.indent]: 3, children: [{ text: 'Two' }], type: KEYS.p },
@@ -36,7 +36,7 @@ describe('setListSiblingNodes', () => {
   });
 
   it('uses todo helpers when retyping sibling todo items', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [{ [KEYS.indent]: 4, children: [{ text: 'Todo' }], type: KEYS.p }],
     });
     spyOn(getListSiblingsModule, 'getListSiblings').mockReturnValue([

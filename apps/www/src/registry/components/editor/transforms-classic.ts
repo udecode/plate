@@ -1,7 +1,7 @@
 'use client';
 
 import type { PlateEditor } from 'platejs/react';
-import type { Element, NodeEntry, Path } from '@platejs/slate';
+import type { Element, NodeEntry, Path } from '@platejs/plite';
 
 import type { CalloutConfig } from '@platejs/callout';
 import { insertCodeBlock, toggleCodeBlock } from '@platejs/code-block';

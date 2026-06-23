@@ -1,11 +1,11 @@
-import type { Descendant, Element } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Descendant, Element } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 import type { GetSiblingListOptions } from '../queries/getSiblingList';
 
-const getHeadingType = (editor: SlateEditor, headingKey: string) => {
+const getHeadingType = (editor: BasePlateEditor, headingKey: string) => {
   const getType = (editor as any).getType;
 
   return typeof getType === 'function'
@@ -13,7 +13,7 @@ const getHeadingType = (editor: SlateEditor, headingKey: string) => {
     : headingKey;
 };
 
-const isHeadingListNode = (editor: SlateEditor, node: Descendant) => {
+const isHeadingListNode = (editor: BasePlateEditor, node: Descendant) => {
   const type = (node as any).type;
 
   return (
@@ -25,7 +25,7 @@ const isHeadingListNode = (editor: SlateEditor, node: Descendant) => {
 };
 
 export const isSameListSequence = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   siblingNode: Descendant,
   currentNode: Descendant
 ) =>
@@ -34,7 +34,7 @@ export const isSameListSequence = (
     isHeadingListNode(editor, currentNode);
 
 export const isListSequenceBoundary = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   siblingNode: Descendant,
   currentNode: Descendant
 ) => {
@@ -50,7 +50,7 @@ export const isListSequenceBoundary = (
 };
 
 export const getListSequenceSiblingOptions = <N extends Element = Element>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options?: Partial<GetSiblingListOptions<N>>
 ): Partial<GetSiblingListOptions<N>> => {
   const { breakQuery, query, ...rest } = options ?? {};

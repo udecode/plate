@@ -1,13 +1,13 @@
 export type * as unistLib from 'unist';
 
 import type { StrictExtract } from 'ts-essentials';
-import type { Element, Text } from '@platejs/slate';
+import type { Element, Text } from '@platejs/plite';
 
 import {
   type NodeMap,
   type NodeKey,
   type Nullable,
-  type SlateEditor,
+  type BasePlateEditor,
   getPluginKey,
 } from 'platejs';
 
@@ -326,7 +326,7 @@ const MDAST_TO_PLATE = {
  * the mdast type itself.
  */
 export const mdastToPlate = <T extends StrictMdType>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   mdastType: T
 ) => {
   const plateKey = MDAST_TO_PLATE[mdastType];

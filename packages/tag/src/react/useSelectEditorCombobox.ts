@@ -6,7 +6,7 @@ import type {
   Point,
   Range,
   Value,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import { TextApi, type TTagProps, isDefined } from 'platejs';
 import { useEditorRef, useEditorString } from 'platejs/react';
 

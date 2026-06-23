@@ -1,7 +1,7 @@
-import { type SlateEditor, type TTagElement, KEYS } from 'platejs';
+import { type BasePlateEditor, type TTagElement, KEYS } from 'platejs';
 import { useEditorSelector } from 'platejs/react';
 
-export const getSelectedItems = (editor: SlateEditor) => {
+export const getSelectedItems = (editor: BasePlateEditor) => {
   const options = editor.api.nodes<TTagElement>({
     at: [],
     match: { type: KEYS.tag },

@@ -1,6 +1,6 @@
 'use client';
 
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 import type {
   ExtendConfig,
   TInlineSuggestionData,
@@ -74,7 +74,7 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
     // unset active suggestion when clicking outside of suggestion
     onClick: ({ api, event, setOption, type }) => {
       const markTarget = getDiscussionClickTarget({
-        selector: `.slate-${type}`,
+        selector: `.plite-${type}`,
         target: event.target,
       });
       const blockTarget = markTarget

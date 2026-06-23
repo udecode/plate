@@ -8,15 +8,15 @@ import {
   type Operation,
   type Range,
   type Selection,
-  type Editor as SlateEditor,
-} from '@platejs/slate';
-import { Editor } from '@platejs/slate/internal';
-import type {} from '@platejs/slate-history';
+  type Editor as BasePlateEditor,
+} from '@platejs/plite';
+import { Editor } from '@platejs/plite/internal';
+import type {} from '@platejs/plite-history';
 import * as Y from 'yjs';
 
 import { createYjsExtension } from '../../src';
 import type { YjsNode } from '../../src/core/attributes';
-import { getYjsNode, readSlateValueFromYjs } from '../../src/core/document';
+import { getYjsNode, readPliteValueFromYjs } from '../../src/core/document';
 import { getEditorYjsState, getEditorYjsTx } from '../../src/core/editor-yjs';
 import type {
   YjsAwarenessLike,
@@ -36,7 +36,7 @@ type TestEditorDomApi = {
   readonly resolveRangeRect?: (range: Range) => unknown;
 };
 
-type TestEditor = SlateEditor & {
+type TestEditor = BasePlateEditor & {
   api?: {
     dom?: TestEditorDomApi;
   };
@@ -107,7 +107,7 @@ export const createYjsPeer = ({
       clientId,
       doc,
       provider,
-      rootName: '@platejs/slate',
+      rootName: '@platejs/plite',
     })
   );
 
@@ -224,8 +224,8 @@ export const subscribeYjsAwareness = (
   listener: () => void
 ): (() => void) => getYjsState(peer).subscribeAwareness(listener);
 
-export const readPeerSlateValue = (peer: Peer): Descendant[] =>
-  readSlateValueFromYjs(getYjsRoot(peer));
+export const readPeerPliteValue = (peer: Peer): Descendant[] =>
+  readPliteValueFromYjs(getYjsRoot(peer));
 
 export const runEditorYjsUpdate = (
   editor: TestEditor,

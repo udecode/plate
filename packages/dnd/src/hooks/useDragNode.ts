@@ -6,7 +6,7 @@ import {
   useDrag,
 } from 'react-dnd';
 
-import type { Element } from '@platejs/slate';
+import type { Element, NodeEntry } from '@platejs/plite';
 import type { PlateEditor } from 'platejs/react';
 
 import type { DragItemNode } from '../types';
@@ -80,7 +80,10 @@ export const useDragNode = (
         document.body.classList.add('dragging');
 
         const _item = typeof item === 'function' ? item(monitor) : item;
-        const [element] = editor.api.node<Element>({ id: elementId, at: [] })!;
+        const [element] = editor.api.node({
+          at: [],
+          id: elementId,
+        }) as NodeEntry<Element>;
 
         // Check if multiple nodes are selected
         const currentDraggingId = editor.getOption(DndPlugin, 'draggingId');

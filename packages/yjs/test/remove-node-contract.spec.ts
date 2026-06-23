@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 import * as Y from 'yjs';
 import {
   createVirtualYjsMovePlaceholder,
@@ -55,7 +55,7 @@ const insertRemoteText = (peer: Peer): void => {
 describe('@platejs/yjs remove_node collaboration contract', () => {
   it('matches hidden text removals by text content', () => {
     const doc = new Y.Doc();
-    const root = doc.get('@platejs/slate', Y.XmlElement);
+    const root = doc.get('@platejs/plite', Y.XmlElement);
     const parent = new Y.XmlElement('paragraph');
     const wrong = createYjsText('wrong', {});
     const right = createYjsText('right', {});
@@ -78,7 +78,7 @@ describe('@platejs/yjs remove_node collaboration contract', () => {
 
   it('matches hidden element removals by child content when candidates share a type', () => {
     const doc = new Y.Doc();
-    const root = doc.get('@platejs/slate', Y.XmlElement);
+    const root = doc.get('@platejs/plite', Y.XmlElement);
     const parent = new Y.XmlElement('root');
     const wrong = new Y.XmlElement('paragraph');
     const right = new Y.XmlElement('paragraph');
@@ -109,7 +109,7 @@ describe('@platejs/yjs remove_node collaboration contract', () => {
 
   it('matches hidden element removals through virtual placeholder content', () => {
     const doc = new Y.Doc();
-    const root = doc.get('@platejs/slate', Y.XmlElement);
+    const root = doc.get('@platejs/plite', Y.XmlElement);
     const parent = new Y.XmlElement('root');
     const movedText = createYjsText('right', {});
     const wrong = new Y.XmlElement('paragraph');

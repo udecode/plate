@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { Element as SlateElement } from '@platejs/slate';
+import type { Element as PliteElement } from '@platejs/plite';
 
 import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
 import { expandListItemsWithChildren } from '@platejs/list';
@@ -139,14 +139,14 @@ function Draggable(props: PlateElementProps) {
         <Gutter>
           <div
             className={cn(
-              'slate-blockToolbarWrapper',
+              'plite-blockToolbarWrapper',
               'flex h-[1.5em]',
               isInColumn && 'h-4'
             )}
           >
             <div
               className={cn(
-                'slate-blockToolbar relative w-4.5',
+                'plite-blockToolbar relative w-4.5',
                 'pointer-events-auto mr-1 flex items-center',
                 isInColumn && 'mr-1.5'
               )}
@@ -179,7 +179,7 @@ function Draggable(props: PlateElementProps) {
 
       <div
         ref={nodeRef}
-        className="slate-blockWrapper flow-root"
+        className="plite-blockWrapper flow-root"
         onContextMenu={(event) =>
           blockSelectionApi.addOnContextMenu({ element, event })
         }
@@ -208,7 +208,7 @@ function Gutter({
     <div
       {...props}
       className={cn(
-        'slate-gutterLeft',
+        'plite-gutterLeft',
         '-translate-x-full absolute top-0 z-50 flex h-full cursor-text hover:opacity-100 sm:opacity-0',
         getPluginByType(editor, element.type)?.node.isContainer
           ? 'group-hover/container:opacity-100'
@@ -355,7 +355,7 @@ const DropLine = React.memo(function DropLine({
     <div
       {...props}
       className={cn(
-        'slate-dropLine',
+        'plite-dropLine',
         'absolute inset-x-0 h-0.5 opacity-100 transition-opacity',
         'bg-brand/50',
         dropLine === 'top' && '-top-px',
@@ -368,7 +368,7 @@ const DropLine = React.memo(function DropLine({
 
 const createDragPreviewElements = (
   editor: PlateEditor,
-  blocks: SlateElement[]
+  blocks: PliteElement[]
 ): HTMLElement[] => {
   const elements: HTMLElement[] = [];
   const ids: string[] = [];
@@ -380,7 +380,7 @@ const createDragPreviewElements = (
   const removeDataAttributes = (element: HTMLElement) => {
     Array.from(element.attributes).forEach((attr) => {
       if (
-        attr.name.startsWith('data-slate') ||
+        attr.name.startsWith('data-plite') ||
         attr.name.startsWith('data-block-id')
       ) {
         element.removeAttribute(attr.name);
@@ -392,7 +392,7 @@ const createDragPreviewElements = (
     });
   };
 
-  const resolveElement = (node: SlateElement, index: number) => {
+  const resolveElement = (node: PliteElement, index: number) => {
     const domNode = editor.api.toDOMNode(node)!;
     const newDomNode = domNode.cloneNode(true) as HTMLElement;
 
@@ -472,8 +472,8 @@ const calculatePreviewTop = (
     blocks,
     element,
   }: {
-    blocks: SlateElement[];
-    element: SlateElement;
+    blocks: PliteElement[];
+    element: PliteElement;
   }
 ): number => {
   const child = editor.api.dom.resolveDOMNode(element)!;
@@ -516,7 +516,7 @@ const calculatePreviewTop = (
 
 const calcDragButtonTop = (
   editor: PlateEditor,
-  element: SlateElement
+  element: PliteElement
 ): number => {
   const child = editor.api.toDOMNode(element)!;
 

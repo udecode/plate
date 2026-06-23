@@ -1,4 +1,4 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import copyToClipboard from 'copy-to-clipboard';
 
@@ -8,7 +8,7 @@ import {
 } from '../BlockSelectionPlugin';
 
 const writeSelectedBlocksToDataTransfer = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   data: DataTransfer
 ) => {
   if (!data) return false;
@@ -77,13 +77,13 @@ const writeSelectedBlocksToDataTransfer = (
   // set slate fragment
   const selectedFragmentStr = JSON.stringify(selectedFragment);
   const encodedFragment = window.btoa(encodeURIComponent(selectedFragmentStr));
-  data.setData('application/x-slate-fragment', encodedFragment);
+  data.setData('application/x-plite-fragment', encodedFragment);
 
   return true;
 };
 
 export const copySelectedBlocks = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   dataTransfer?: DataTransfer
 ) => {
   if (dataTransfer) {

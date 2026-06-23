@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Descendant, Range } from '@platejs/slate';
+import type { Descendant, Range } from '@platejs/plite';
 
 import {
-  slatePointToYjsRelativePosition,
-  slateRangeToYjsRelativeRange,
-  yjsRelativePositionToSlatePoint,
-  yjsRelativeRangeToSlateRange,
+  plitePointToYjsRelativePosition,
+  pliteRangeToYjsRelativeRange,
+  yjsRelativePositionToPlitePoint,
+  yjsRelativeRangeToPliteRange,
 } from '../src';
 import {
   clearYjsTrace,
@@ -66,37 +66,37 @@ const removeFirstBlock = (peer: Peer): void => {
 };
 
 describe('@platejs/yjs selection relative-position contract', () => {
-  it('round trips a Slate point through a Yjs relative position', () => {
+  it('round trips a Plite point through a Yjs relative position', () => {
     const peer = createPeer('b');
     const point = { path: [0, 0], offset: 3 };
-    const relative = slatePointToYjsRelativePosition(getYjsRoot(peer), point);
+    const relative = plitePointToYjsRelativePosition(getYjsRoot(peer), point);
 
     assert.deepEqual(
-      yjsRelativePositionToSlatePoint(getYjsRoot(peer), relative),
+      yjsRelativePositionToPlitePoint(getYjsRoot(peer), relative),
       point
     );
   });
 
-  it('clamps Slate point offsets to text bounds before storing relative positions', () => {
+  it('clamps Plite point offsets to text bounds before storing relative positions', () => {
     const peer = createPeer('b');
-    const beforeStart = slatePointToYjsRelativePosition(getYjsRoot(peer), {
+    const beforeStart = plitePointToYjsRelativePosition(getYjsRoot(peer), {
       path: [0, 0],
       offset: -10,
     });
-    const afterEnd = slatePointToYjsRelativePosition(getYjsRoot(peer), {
+    const afterEnd = plitePointToYjsRelativePosition(getYjsRoot(peer), {
       path: [0, 0],
       offset: 99,
     });
 
     assert.deepEqual(
-      yjsRelativePositionToSlatePoint(getYjsRoot(peer), beforeStart),
+      yjsRelativePositionToPlitePoint(getYjsRoot(peer), beforeStart),
       {
         path: [0, 0],
         offset: 0,
       }
     );
     assert.deepEqual(
-      yjsRelativePositionToSlatePoint(getYjsRoot(peer), afterEnd),
+      yjsRelativePositionToPlitePoint(getYjsRoot(peer), afterEnd),
       {
         path: [0, 0],
         offset: 'alpha'.length,
@@ -104,16 +104,16 @@ describe('@platejs/yjs selection relative-position contract', () => {
     );
   });
 
-  it('round trips a Slate range without changing anchor/focus direction', () => {
+  it('round trips a Plite range without changing anchor/focus direction', () => {
     const peer = createPeer('b');
     const range: Range = {
       anchor: { path: [1, 0], offset: 4 },
       focus: { path: [0, 0], offset: 1 },
     };
-    const relative = slateRangeToYjsRelativeRange(getYjsRoot(peer), range);
+    const relative = pliteRangeToYjsRelativeRange(getYjsRoot(peer), range);
 
     assert.deepEqual(
-      yjsRelativeRangeToSlateRange(getYjsRoot(peer), relative),
+      yjsRelativeRangeToPliteRange(getYjsRoot(peer), relative),
       range
     );
   });
@@ -133,16 +133,16 @@ describe('@platejs/yjs selection relative-position contract', () => {
     const startOfRight = { path: [0, 1], offset: 0 };
 
     assert.deepEqual(
-      yjsRelativePositionToSlatePoint(
+      yjsRelativePositionToPlitePoint(
         getYjsRoot(peer),
-        slatePointToYjsRelativePosition(getYjsRoot(peer), endOfLeft)
+        plitePointToYjsRelativePosition(getYjsRoot(peer), endOfLeft)
       ),
       endOfLeft
     );
     assert.deepEqual(
-      yjsRelativePositionToSlatePoint(
+      yjsRelativePositionToPlitePoint(
         getYjsRoot(peer),
-        slatePointToYjsRelativePosition(getYjsRoot(peer), startOfRight)
+        plitePointToYjsRelativePosition(getYjsRoot(peer), startOfRight)
       ),
       startOfRight
     );
@@ -151,7 +151,7 @@ describe('@platejs/yjs selection relative-position contract', () => {
   it('rebases a stored point across a concurrent text insert', () => {
     const peers = createPeers(['a', 'b', 'c']);
     const [a, b] = peers;
-    const relative = slatePointToYjsRelativePosition(getYjsRoot(b), {
+    const relative = plitePointToYjsRelativePosition(getYjsRoot(b), {
       path: [0, 0],
       offset: 3,
     });
@@ -159,7 +159,7 @@ describe('@platejs/yjs selection relative-position contract', () => {
     insertInsideAlpha(a);
     syncConnectedPeers(peers);
 
-    assert.deepEqual(yjsRelativePositionToSlatePoint(getYjsRoot(b), relative), {
+    assert.deepEqual(yjsRelativePositionToPlitePoint(getYjsRoot(b), relative), {
       path: [0, 0],
       offset: 4,
     });
@@ -167,7 +167,7 @@ describe('@platejs/yjs selection relative-position contract', () => {
 
   it('resolves a stored point through virtual moved-node identity', () => {
     const peer = createPeer('b');
-    const relative = slatePointToYjsRelativePosition(getYjsRoot(peer), {
+    const relative = plitePointToYjsRelativePosition(getYjsRoot(peer), {
       path: [0, 0],
       offset: 2,
     });
@@ -175,7 +175,7 @@ describe('@platejs/yjs selection relative-position contract', () => {
     moveFirstBlockToEnd(peer);
 
     assert.deepEqual(
-      yjsRelativePositionToSlatePoint(getYjsRoot(peer), relative),
+      yjsRelativePositionToPlitePoint(getYjsRoot(peer), relative),
       {
         path: [2, 0],
         offset: 2,
@@ -185,7 +185,7 @@ describe('@platejs/yjs selection relative-position contract', () => {
 
   it('returns null when the relative position target is no longer visible', () => {
     const peer = createPeer('b');
-    const relative = slatePointToYjsRelativePosition(getYjsRoot(peer), {
+    const relative = plitePointToYjsRelativePosition(getYjsRoot(peer), {
       path: [0, 0],
       offset: 2,
     });
@@ -193,7 +193,7 @@ describe('@platejs/yjs selection relative-position contract', () => {
     removeFirstBlock(peer);
 
     assert.equal(
-      yjsRelativePositionToSlatePoint(getYjsRoot(peer), relative),
+      yjsRelativePositionToPlitePoint(getYjsRoot(peer), relative),
       null
     );
   });
@@ -202,7 +202,7 @@ describe('@platejs/yjs selection relative-position contract', () => {
     const peer = createPeer('b');
 
     clearYjsTrace(peer);
-    slateRangeToYjsRelativeRange(getYjsRoot(peer), {
+    pliteRangeToYjsRelativeRange(getYjsRoot(peer), {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 2 },
     });

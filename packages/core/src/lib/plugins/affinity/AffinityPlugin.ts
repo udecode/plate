@@ -4,14 +4,15 @@ import {
   type Path,
   TextApi,
   type Text,
-} from '@platejs/slate';
+} from '@platejs/plite';
 
 import type { PluginConfig } from '../../plugin/BasePlugin';
 import type { EdgeNodes } from './types';
 
+import { getCurrentRuntimeTransforms } from '../../../internal/currentRuntimeBridge';
 import { withLegacyTransformOverride } from '../../../internal/plugin/withLegacyTransformOverride';
-import { createTSlatePlugin } from '../../plugin/createSlatePlugin';
-import { getPluginByType } from '../../plugin/getSlatePlugin';
+import { createEditorPlugin } from '../../plugin/createEditorPlugin';
+import { getPluginByType } from '../../plugin/getEditorPluginInstance';
 import { getEdgeNodes } from './queries';
 import { getMarkBoundaryAffinity } from './queries/getMarkBoundaryAffinity';
 import { isNodesAffinity } from './queries/isNodeAffinity';
@@ -27,7 +28,7 @@ export type AffinityConfig = PluginConfig<'affinity'>;
 
 // REVIEW: performance
 export const AffinityPlugin = withLegacyTransformOverride(
-  createTSlatePlugin<AffinityConfig>({
+  createEditorPlugin<AffinityConfig>({
     key: 'affinity',
   }),
   ({ editor, tf }) => {
@@ -51,14 +52,27 @@ export const AffinityPlugin = withLegacyTransformOverride(
                   ? start[0].text
                   : NodeApi.string(start[0]));
 
+              if (start && ElementApi.isElement(start[0])) {
+                const beforeEnd = editor.api.end(start[1]);
+
+                if (beforeEnd) {
+                  getCurrentRuntimeTransforms(editor).setSelection({
+                    anchor: beforeEnd,
+                    focus: beforeEnd,
+                  });
+                  deleteBackward(unit);
+                  setAffinitySelection(editor, [start, null], 'backward');
+                  return true;
+                }
+              }
+
               deleteBackward(unit);
 
               const edgeNodes = getEdgeNodes(editor);
 
               if (
                 edgeNodes &&
-                isNodesAffinity(editor, edgeNodes, 'directional') &&
-                !hasElement(edgeNodes)
+                isNodesAffinity(editor, edgeNodes, 'directional')
               ) {
                 const affinity =
                   startText && startText.length > 1 ? 'backward' : 'forward';
@@ -80,7 +94,7 @@ export const AffinityPlugin = withLegacyTransformOverride(
             }
 
             const textPath = editor.selection.focus.path;
-            const textNode = editor.api.node<Text>(textPath)?.[0];
+            const textNode = editor.api.node(textPath)?.[0] as Text | undefined;
 
             if (!textNode) {
               return;
@@ -100,14 +114,16 @@ export const AffinityPlugin = withLegacyTransformOverride(
               return;
             }
 
-            const nextPoint = editor.api.start(textPath, { next: true });
+            const nextPoint = editor.api.after(textPath);
             const marksToRemove: string[] = [];
 
             // Get next text node once outside the loop
             let nextTextNode: Text | null = null;
             if (nextPoint) {
               const nextTextPath = nextPoint.path;
-              nextTextNode = editor.api.node<Text>(nextTextPath)?.[0] ?? null;
+              nextTextNode =
+                (editor.api.node(nextTextPath)?.[0] as Text | undefined) ??
+                null;
             }
 
             // Check each mark individually

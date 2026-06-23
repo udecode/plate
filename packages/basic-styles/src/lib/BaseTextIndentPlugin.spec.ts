@@ -1,10 +1,10 @@
-import { BaseParagraphPlugin, KEYS, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, KEYS, createBasePlateEditor } from 'platejs';
 
 import { BaseTextIndentPlugin } from './BaseTextIndentPlugin';
 
 describe('BaseTextIndentPlugin', () => {
   it('exposes the default injected block contract', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseTextIndentPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseTextIndentPlugin);
@@ -32,7 +32,7 @@ describe('BaseTextIndentPlugin', () => {
         unit: 'em',
       },
     });
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, TextIndentPlugin],
     } as any);
     const plugin = editor.getPlugin(TextIndentPlugin);
@@ -47,7 +47,7 @@ describe('BaseTextIndentPlugin', () => {
   });
 
   it('applies and clears text indent through node updates', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin, BaseTextIndentPlugin],
       value: [
         {

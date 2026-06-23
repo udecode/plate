@@ -11,14 +11,14 @@ import {
   ElementApi,
   RangeApi,
   TextApi,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import {
   isElementDecorationsEqual,
   isTextDecorationsEqual,
-} from '@platejs/slate-dom';
+} from '@platejs/plite-dom';
 import clsx from 'clsx';
 
-import type { EditableProps, SlateEditor } from '../../lib';
+import type { EditableProps, BasePlateEditor } from '../../lib';
 import type { SlateRenderElementProps } from '../types';
 
 import { pipeRenderElementStatic } from '../pipeRenderElementStatic';
@@ -35,7 +35,7 @@ function BaseElementStatic({
 }: {
   decorate: EditableProps['decorate'];
   decorations: DecoratedRange[];
-  editor: SlateEditor;
+  editor: BasePlateEditor;
   element: Element;
   path: Path;
   style?: React.CSSProperties;
@@ -43,7 +43,7 @@ function BaseElementStatic({
   const renderElement = pipeRenderElementStatic(editor);
 
   const attributes: SlateRenderElementProps['attributes'] = {
-    'data-slate-node': 'element',
+    'data-plite-node': 'element',
     ref: null,
   };
 
@@ -59,7 +59,7 @@ function BaseElementStatic({
   );
 
   if (editor.api.isVoid(element)) {
-    attributes['data-slate-void'] = true;
+    attributes['data-plite-void'] = true;
     children = (
       <span
         style={{
@@ -68,7 +68,7 @@ function BaseElementStatic({
           outline: 'none',
           position: 'absolute',
         }}
-        data-slate-spacer
+        data-plite-spacer
       >
         <Children
           decorate={decorate}
@@ -82,7 +82,7 @@ function BaseElementStatic({
     );
   }
   if (editor.api.isInline(element)) {
-    attributes['data-slate-inline'] = true;
+    attributes['data-plite-inline'] = true;
   }
 
   return <>{renderElement?.({ attributes, children, element, path })}</>;
@@ -104,7 +104,7 @@ function BaseLeafStatic({
   text = { text: '' },
 }: {
   decorations: DecoratedRange[];
-  editor: SlateEditor;
+  editor: BasePlateEditor;
   path: Path;
   text: Text;
 }) {
@@ -115,9 +115,9 @@ function BaseLeafStatic({
 
   const leafElements = decoratedLeaves.map(({ leaf, position }, index) => {
     const leafElement = renderLeaf({
-      attributes: { 'data-slate-leaf': true },
+      attributes: { 'data-plite-leaf': true },
       children: (
-        <span data-slate-string={true}>
+        <span data-plite-string={true}>
           {leaf.text === '' ? '\uFEFF' : leaf.text}
         </span>
       ),
@@ -131,7 +131,7 @@ function BaseLeafStatic({
   });
 
   return renderText({
-    attributes: { 'data-slate-node': 'text' as const, ref: null },
+    attributes: { 'data-plite-node': 'text' as const, ref: null },
     children: leafElements,
     path,
     text,
@@ -158,7 +158,7 @@ function Children({
   children: Descendant[];
   decorate: EditableProps['decorate'];
   decorations: DecoratedRange[];
-  editor: SlateEditor;
+  editor: BasePlateEditor;
   parentPath?: Path;
 }) {
   return (
@@ -207,7 +207,7 @@ function Children({
 
 export type PlateStaticProps = {
   /** Editor instance. */
-  editor: SlateEditor;
+  editor: BasePlateEditor;
   style?: React.CSSProperties;
   /** Controlled value. Alias to `editor.children`. */
   value?: Value;
@@ -255,9 +255,9 @@ export function PlateStatic(props: PlateStaticProps) {
 
   const content = (
     <div
-      className={clsx('slate-editor', className)}
-      data-slate-editor
-      data-slate-node="value"
+      className={clsx('plite-editor', className)}
+      data-plite-editor
+      data-plite-node="value"
       {...rest}
     >
       <Children decorate={decorate} decorations={[]} editor={editor}>

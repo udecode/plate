@@ -1,5 +1,5 @@
-import { type EditorUpdateTransaction, PathApi } from '@platejs/slate';
-import { type SlateEditor, KEYS } from 'platejs';
+import { type EditorUpdateTransaction, PathApi } from '@platejs/plite';
+import { type BasePlateEditor, KEYS } from 'platejs';
 
 import type { GetEmptyTableNodeOptions } from '../api/getEmptyTableNode';
 import type { TableConfig } from '../BaseTablePlugin';
@@ -13,7 +13,7 @@ type InsertTableOptions = NonNullable<
  * current table. Select start of new table.
  */
 export const insertTable = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
   { select: shouldSelect, ...options }: InsertTableOptions = {}
 ) => {

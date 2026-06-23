@@ -84,7 +84,7 @@ export const submitAIChat = (
     if (selectionBlocks.length > 1) {
       chatNodes = selectionBlocks.map((block) => block[0]);
     } else {
-      chatNodes = editor.api.fragment<TIdElement>();
+      chatNodes = editor.api.fragment() as TIdElement[];
     }
   }
 

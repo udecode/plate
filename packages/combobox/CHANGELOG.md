@@ -16,7 +16,7 @@
 
 - [#4792](https://github.com/udecode/plate/pull/4792) by [@felixfeng33](https://github.com/felixfeng33) – Add `userId` option to editor for collaborative features
 
-  - Add `userId` option to `usePlateEditor`/`createSlateEditor` options
+  - Add `userId` option to `usePlateEditor`/`createPliteEditor` options
   - Add `editor.meta.userId` for accessing the current user ID
   - **Breaking**: Remove `getUserId` option from `TriggerComboboxPluginOptions`. Use `editor.meta.userId` instead.
 
@@ -412,7 +412,7 @@
   - fix: tab / untab when composing with IME
   - update peerDeps:
     - `"slate": ">=0.78.0"`
-    - `"slate-react": ">=0.79.0"`
+    - `"plite-react": ">=0.79.0"`
 
 ## 11.1.0
 

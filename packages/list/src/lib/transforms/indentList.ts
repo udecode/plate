@@ -1,5 +1,5 @@
-import type { Location } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Location } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { setIndent } from '@platejs/indent';
 import { KEYS } from 'platejs';
@@ -15,7 +15,7 @@ export type ListOptions = {
 
 /** Increase the indentation of the selected blocks. */
 export const indentList = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { listStyleType = ListStyleType.Disc, ...options }: ListOptions = {}
 ) => {
   setIndent(editor, {
@@ -28,7 +28,7 @@ export const indentList = (
 };
 
 export const indentTodo = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { listStyleType = ListStyleType.Disc, ...options }: ListOptions = {}
 ) => {
   setIndent(editor, {

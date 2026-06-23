@@ -1,4 +1,4 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import * as outdentListModule from './outdentList';
 import { toggleListUnset } from './toggleListUnset';
@@ -13,7 +13,7 @@ describe('toggleListUnset', () => {
       outdentListModule,
       'outdentList'
     ).mockImplementation(() => {});
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [
         {
           [KEYS.listChecked]: false,
@@ -40,7 +40,7 @@ describe('toggleListUnset', () => {
       outdentListModule,
       'outdentList'
     ).mockImplementation(() => {});
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [
         { [KEYS.listType]: 'disc', children: [{ text: 'Item' }], type: KEYS.p },
       ],
@@ -63,7 +63,7 @@ describe('toggleListUnset', () => {
       outdentListModule,
       'outdentList'
     ).mockImplementation(() => {});
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [
         {
           [KEYS.listType]: 'circle',

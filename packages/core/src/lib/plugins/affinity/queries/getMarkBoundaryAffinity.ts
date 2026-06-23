@@ -1,12 +1,12 @@
-import { type Element, type Text, NodeApi } from '@platejs/slate';
-import { IS_FIREFOX } from '@platejs/slate-dom';
+import { type Element, type Text, NodeApi } from '@platejs/plite';
+import { IS_FIREFOX } from '@platejs/plite-dom';
 import isEqual from 'lodash/isEqual.js';
 
-import type { SlateEditor } from '../../../editor';
+import type { BasePlateEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';
 
 export const getMarkBoundaryAffinity = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   markBoundary: EdgeNodes
 ): 'backward' | 'forward' | undefined => {
   const { marks, selection } = editor;
@@ -15,7 +15,7 @@ export const getMarkBoundaryAffinity = (
   const marksMatchLeaf = (leaf: Element | Text) =>
     marks &&
     isEqual(NodeApi.extractProps(leaf), marks) &&
-    Object.keys(marks).length > 1;
+    Object.keys(marks).length > 0;
 
   const [backwardLeafEntry, forwardLeafEntry] = markBoundary;
 

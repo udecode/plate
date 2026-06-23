@@ -5,7 +5,7 @@ import type React from 'react';
 import type { DebouncedFunc } from 'lodash';
 
 import { serializeMd } from '@platejs/markdown';
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 import debounce from 'lodash/debounce.js';
 import {
   type OmitFirst,
@@ -171,7 +171,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
   },
 })
   .extend((ctx) => ({
-    slateExtensions: [createCopilotExtension(ctx)],
+    editorExtensions: [createCopilotExtension(ctx)],
   }))
   .extendSelectors<CopilotPluginConfig['selectors']>(({ getOptions }) => ({
     isSuggested: (id) => getOptions().suggestionNodeId === id,

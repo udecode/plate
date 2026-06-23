@@ -24,7 +24,7 @@ import {
   updateSyntheticComposition,
 } from './ime';
 import type { SurfaceTarget } from './surface';
-import type { SlateBrowserEditorHarness } from './types';
+import type { PliteBrowserEditorHarness } from './types';
 
 export const createEditorHarnessClipboard = ({
   getHarness,
@@ -32,11 +32,11 @@ export const createEditorHarnessClipboard = ({
   root,
   surface,
 }: {
-  getHarness: () => SlateBrowserEditorHarness;
+  getHarness: () => PliteBrowserEditorHarness;
   page: Page;
   root: Locator;
   surface: SurfaceTarget;
-}): SlateBrowserEditorHarness['clipboard'] => ({
+}): PliteBrowserEditorHarness['clipboard'] => ({
   copy: async () => {
     await withExclusiveClipboardAccess(async () => {
       await getHarness().selection.selectAll();
@@ -86,7 +86,7 @@ export const createEditorHarnessClipboard = ({
     }),
   pasteEventPayload: async (payload: {
     html?: string | null;
-    slateFragment?: string | null;
+    pliteFragment?: string | null;
     text: string;
   }) => {
     await pastePayloadThroughEvent(root, payload);
@@ -212,7 +212,7 @@ export const createEditorHarnessIme = ({
 }: {
   page: Page;
   surface: SurfaceTarget;
-}): SlateBrowserEditorHarness['ime'] => ({
+}): PliteBrowserEditorHarness['ime'] => ({
   enableKeyEvents: async () => {
     await enableCompositionKeyEvents(surface);
   },

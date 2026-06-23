@@ -58,9 +58,4 @@ export interface Editor<
   TExtensions extends readonly unknown[] = readonly [],
 > extends EditorType<V, TExtensions> {}
 
-export type PliteEditor<
-  V extends Value = any,
-  TExtensions extends readonly unknown[] = readonly [],
-> = EditorType<V, TExtensions>;
-
 export { Editor };

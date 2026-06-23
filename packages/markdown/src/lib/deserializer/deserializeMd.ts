@@ -1,9 +1,9 @@
 import type { Root } from 'mdast';
 import type { Plugin } from 'unified';
-import type { Descendant, Element } from '@platejs/slate';
+import type { Descendant, Element } from '@platejs/plite';
 
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type Value,
   getPluginKey,
   KEYS,
@@ -22,7 +22,7 @@ import {
   parseMarkdownBlocks,
 } from './utils';
 import { getMergedOptionsDeserialize } from './utils/getMergedOptionsDeserialize';
-import { markdownToSlateNodesSafely } from './utils/markdownToSlateNodesSafely';
+import { markdownToPliteNodesSafely } from './utils/markdownToPliteNodesSafely';
 
 // TODO: fixes tests
 
@@ -30,7 +30,7 @@ export type DeserializeMdOptions = {
   allowedNodes?: PlateType[] | null;
   allowNode?: AllowNodeConfig;
   disallowedNodes?: PlateType[] | null;
-  editor?: SlateEditor;
+  editor?: BasePlateEditor;
   memoize?: boolean;
   parser?: ParseMarkdownBlocksOptions;
   preserveEmptyParagraphs?: boolean;
@@ -42,7 +42,7 @@ export type DeserializeMdOptions = {
 };
 
 export const markdownToAstProcessor = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   data: string,
   options?: DeserializeMdOptions
 ) => {
@@ -54,8 +54,8 @@ export const markdownToAstProcessor = (
     .parse(data);
 };
 
-export const markdownToSlateNodes = (
-  editor: SlateEditor,
+export const markdownToPliteNodes = (
+  editor: BasePlateEditor,
   data: string,
   options?: Omit<DeserializeMdOptions, 'editor'>
 ): Descendant[] => {
@@ -63,7 +63,7 @@ export const markdownToSlateNodes = (
 
   const mergedOptions = getMergedOptionsDeserialize(editor, options);
 
-  const toSlateProcessor = unified()
+  const toPliteProcessor = unified()
     .use(remarkParse)
     .use(mergedOptions.remarkPlugins ?? [])
     .use(remarkToSlate, mergedOptions);
@@ -78,7 +78,7 @@ export const markdownToSlateNodes = (
           };
         }
 
-        return toSlateProcessor
+        return toPliteProcessor
           .processSync(token.raw)
           .result.map((result: any) => ({
             _memo: token.raw,
@@ -88,23 +88,23 @@ export const markdownToSlateNodes = (
     );
   }
 
-  return toSlateProcessor.processSync(processedData).result;
+  return toPliteProcessor.processSync(processedData).result;
 };
 
 export const deserializeMd = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   data: string,
   options?: Omit<DeserializeMdOptions, 'editor'>
 ): Value => {
   let output: Descendant[] | null = null;
 
   try {
-    output = markdownToSlateNodes(editor, data, options);
+    output = markdownToPliteNodes(editor, data, options);
   } catch (error) {
     options?.onError?.(error as Error);
 
     if (!options?.withoutMdx) {
-      output = markdownToSlateNodesSafely(editor, data, options);
+      output = markdownToPliteNodesSafely(editor, data, options);
     }
   }
 
@@ -123,7 +123,7 @@ export const deserializeMd = (
 
 declare module 'unified' {
   interface CompileResultMap {
-    remarkToSlateNode: Descendant[];
+    remarkToPliteNode: Descendant[];
   }
 }
 

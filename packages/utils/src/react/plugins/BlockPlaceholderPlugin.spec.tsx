@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import { createSlatePlugin } from '@platejs/core';
+import { createEditorPlugin } from '@platejs/core';
 import { createPlateEditor, PlateTest } from '@platejs/core/react';
 import { render } from '@testing-library/react';
 
@@ -97,7 +97,9 @@ describe('BlockPlaceholderPlugin', () => {
     });
     const { container } = renderPlaceholderEditor(editor);
 
-    expect(getPlaceholder(editor, editor.children[0] as any, [0])).toBeUndefined();
+    expect(
+      getPlaceholder(editor, editor.children[0] as any, [0])
+    ).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -109,7 +111,9 @@ describe('BlockPlaceholderPlugin', () => {
     });
     const { container } = renderPlaceholderEditor(editor);
 
-    expect(getPlaceholder(editor, editor.children[0] as any, [0])).toBeUndefined();
+    expect(
+      getPlaceholder(editor, editor.children[0] as any, [0])
+    ).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -136,7 +140,7 @@ describe('BlockPlaceholderPlugin', () => {
   });
 
   it('honors custom node metadata rules for pristine empty blocks', async () => {
-    const CustomMetadataPlugin = createSlatePlugin({
+    const CustomMetadataPlugin = createEditorPlugin({
       key: 'customMetadata',
     }).extend({
       node: {
@@ -160,7 +164,9 @@ describe('BlockPlaceholderPlugin', () => {
     });
     const { container } = renderPlaceholderEditor(editor);
 
-    expect(getPlaceholder(editor, editor.children[0] as any, [0])).toBeUndefined();
+    expect(
+      getPlaceholder(editor, editor.children[0] as any, [0])
+    ).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -171,7 +177,9 @@ describe('BlockPlaceholderPlugin', () => {
     });
     const { container } = renderPlaceholderEditor(editor);
 
-    expect(getPlaceholder(editor, editor.children[0] as any, [0])).toBeUndefined();
+    expect(
+      getPlaceholder(editor, editor.children[0] as any, [0])
+    ).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -182,7 +190,9 @@ describe('BlockPlaceholderPlugin', () => {
     });
     const { container } = renderPlaceholderEditor(editor);
 
-    expect(getPlaceholder(editor, editor.children[0] as any, [0])).toBeUndefined();
+    expect(
+      getPlaceholder(editor, editor.children[0] as any, [0])
+    ).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -196,7 +206,9 @@ describe('BlockPlaceholderPlugin', () => {
     });
     const { container } = renderPlaceholderEditor(editor);
 
-    expect(getPlaceholder(editor, editor.children[0] as any, [0])).toBeUndefined();
+    expect(
+      getPlaceholder(editor, editor.children[0] as any, [0])
+    ).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });

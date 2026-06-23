@@ -78,7 +78,7 @@ export const insertInlineMap = {
 | `date-node` | Registry UI | Renders the editable popover/calendar element and static element. |
 | `@platejs/markdown` | Package | Converts date MDX tags to canonical `date` or fallback `rawDate` values. |
 
-`BaseDatePlugin` is inline and void. The text child exists only to satisfy Slate's element shape.
+`BaseDatePlugin` is inline and void. The text child exists only to satisfy Plite's element shape.
 
 ## Manual Setup
 
@@ -161,7 +161,7 @@ const value = [
 | Field | Type | Notes |
 |-------|------|-------|
 | `type` | `'date'` | Plugin key and node type from `KEYS.date`. |
-| `children` | `[{ text: '' }]` | Required Slate child for the inline void element. |
+| `children` | `[{ text: '' }]` | Required Plite child for the inline void element. |
 | `date` | `string` | Canonical `YYYY-MM-DD` value. |
 | `rawDate` | `string` | Fallback for non-normalizable input. |
 

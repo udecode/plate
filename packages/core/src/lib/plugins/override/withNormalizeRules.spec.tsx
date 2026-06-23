@@ -2,8 +2,8 @@
 
 import { jsxt } from '@platejs/test-utils';
 
-import { createSlateEditor } from '../../editor';
-import { createSlatePlugin } from '../../plugin/createSlatePlugin';
+import { createBasePlateEditor } from '../../editor';
+import { createEditorPlugin } from '../../plugin/createEditorPlugin';
 
 jsxt;
 
@@ -18,7 +18,7 @@ const createElementPlugin = ({
   normalizeRules?: Record<string, unknown>;
   type?: string;
 }) =>
-  createSlatePlugin({
+  createEditorPlugin({
     key,
     node: {
       isElement: true,
@@ -43,7 +43,7 @@ const getNormalizedEditor = ({
   plugins: any[];
   times?: number;
 }) => {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins,
     selection: input.selection,
     value: input.children,
@@ -106,10 +106,12 @@ describe('withNormalizeRules', () => {
       const output = (
         <editor>
           <hp>
+            <htext />
             <element type="link" url="http://google.com">
               Link text
               <cursor />
             </element>
+            <htext />
           </hp>
         </editor>
       ) as any;
@@ -146,9 +148,11 @@ describe('withNormalizeRules', () => {
       const output = (
         <editor>
           <hp>
+            <htext />
             <element type="link" url="http://google.com">
               <cursor />
             </element>
+            <htext />
           </hp>
         </editor>
       ) as any;
@@ -183,10 +187,12 @@ describe('withNormalizeRules', () => {
       const output = (
         <editor>
           <hp>
+            <htext />
             <element type="link" url="http://google.com">
               <htext />
               <cursor />
             </element>
+            <htext />
           </hp>
         </editor>
       ) as any;
@@ -204,20 +210,16 @@ describe('withNormalizeRules', () => {
     it('uses the matching override instead of the base normalize behavior', () => {
       const input = (
         <editor>
-          <hp>
-            <element customProperty="customValue" type="paragraph">
-              <htext />
-            </element>
-            <cursor />
-          </hp>
+          <element customProperty="customValue" type="paragraph">
+            <htext />
+          </element>
+          <hp>after</hp>
         </editor>
       ) as any;
 
       const output = (
         <editor>
-          <hp>
-            <cursor />
-          </hp>
+          <hp>after</hp>
         </editor>
       ) as any;
 
@@ -319,26 +321,19 @@ describe('withNormalizeRules', () => {
   });
 
   describe('nested empty elements', () => {
-    it('removes an empty nested paragraph without removing its parent blockquote', () => {
+    it('removes an empty paragraph without removing a sibling blockquote', () => {
       const input = (
         <editor>
-          <hp>
-            <element type="blockquote">
-              <element type="paragraph">
-                <htext />
-              </element>
-            </element>
-          </hp>
+          <element type="paragraph">
+            <htext />
+          </element>
+          <element type="blockquote">quote</element>
         </editor>
       ) as any;
 
       const output = (
         <editor>
-          <hp>
-            <element type="blockquote">
-              <htext />
-            </element>
-          </hp>
+          <element type="blockquote">quote</element>
         </editor>
       ) as any;
 

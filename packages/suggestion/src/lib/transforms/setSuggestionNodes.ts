@@ -1,12 +1,12 @@
 import {
   type EditorUpdateTransaction,
-  type Node as SlateNode,
+  type Node as PliteNode,
   ElementApi,
   NodeApi,
   TextApi,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type TInlineSuggestionData,
   type TSuggestionText,
   KEYS,
@@ -17,7 +17,7 @@ import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils';
 
 type SuggestionNodesOptions = NonNullable<
-  Parameters<SlateEditor['api']['nodes']>[0]
+  Parameters<BasePlateEditor['api']['nodes']>[0]
 >;
 type SuggestionSetNodesOptions = NonNullable<
   Parameters<EditorUpdateTransaction['nodes']['set']>[1]
@@ -25,7 +25,7 @@ type SuggestionSetNodesOptions = NonNullable<
 
 type SetSuggestionNodesOptions = SuggestionNodesOptions &
   SuggestionSetNodesOptions & {
-    at?: SuggestionSetNodesOptions['at'] | SlateNode | null;
+    at?: SuggestionSetNodesOptions['at'] | PliteNode | null;
     createdAt?: number;
     includeInlineElements?: boolean;
     suggestionDeletion?: boolean;
@@ -34,8 +34,8 @@ type SetSuggestionNodesOptions = SuggestionNodesOptions &
   };
 
 const resolveSuggestionAt = <TAt>(
-  editor: SlateEditor,
-  at: SlateNode | TAt | null | undefined
+  editor: BasePlateEditor,
+  at: PliteNode | TAt | null | undefined
 ): TAt | undefined => {
   if (NodeApi.isNode(at)) {
     const entry = [
@@ -52,7 +52,7 @@ const resolveSuggestionAt = <TAt>(
 };
 
 export const setSuggestionNodes = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options?: SetSuggestionNodesOptions
 ) => {
   const {

@@ -1,10 +1,10 @@
-import { type Range, RangeApi } from '@platejs/slate';
-import type { SlateEditor } from '@platejs/core';
+import { type Element, type Range, RangeApi } from '@platejs/plite';
+import type { BasePlateEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 /** Is selection across blocks with list items */
 export const isAcrossListItems = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   at: Range | null = editor.selection
 ) => {
   if (!at || RangeApi.isCollapsed(at)) {
@@ -17,6 +17,6 @@ export const isAcrossListItems = (
 
   return editor.api.some({
     at,
-    match: (node) => node.type === editor.getType(KEYS.li),
+    match: (node: Element) => node.type === editor.getType(KEYS.li),
   });
 };

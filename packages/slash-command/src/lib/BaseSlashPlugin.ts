@@ -1,9 +1,8 @@
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 import {
   type PluginConfig,
-  type SlatePlugin,
-  createSlatePlugin,
-  createTSlatePlugin,
+  type EditorPlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -12,14 +11,14 @@ export type SlashConfig = PluginConfig<
   TriggerComboboxPluginOptions
 >;
 
-export const BaseSlashInputPlugin = createSlatePlugin({
+export const BaseSlashInputPlugin = createEditorPlugin({
   key: KEYS.slashInput,
   editOnly: true,
   node: { isElement: true, isInline: true, isVoid: true },
 });
 
-const BaseSlashPluginBase: SlatePlugin<SlashConfig> =
-  createTSlatePlugin<SlashConfig>({
+const BaseSlashPluginBase: EditorPlugin<SlashConfig> =
+  createEditorPlugin<SlashConfig>({
     key: KEYS.slashCommand,
     editOnly: true,
     options: {
@@ -33,7 +32,7 @@ const BaseSlashPluginBase: SlatePlugin<SlashConfig> =
     plugins: [BaseSlashInputPlugin],
   });
 
-export const BaseSlashPlugin: SlatePlugin<SlashConfig> & {
+export const BaseSlashPlugin: EditorPlugin<SlashConfig> & {
   runtimeTriggerCombobox: boolean;
 } = Object.assign(BaseSlashPluginBase, {
   runtimeTriggerCombobox: true,

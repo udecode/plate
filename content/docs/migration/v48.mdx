@@ -11,8 +11,8 @@ the current docs for the target API.
 
 <Callout type="info" title="Current release notes">
   Use [Releases](/docs/releases) for v49 and later. Use
-  [From Slate to Plate](/docs/migration/slate-to-plate) when the source editor
-  is plain Slate rather than an older Plate app.
+  [From Plite to Plate](/docs/migration/plite-to-plate) when the source editor
+  is plain Plite rather than an older Plate app.
 </Callout>
 
 # 48.0.0
@@ -186,7 +186,7 @@ the current docs for the target API.
   - Added default underline mark serialization as `<u>underline</u>`
   - Improved serialization process:
     - Now uses a two-step process: `slate nodes => MDAST nodes => markdown string`
-    - Previously: direct conversion from Slate nodes to markdown string
+    - Previously: direct conversion from Plite nodes to markdown string
     - Results in more reliable and robust serialization
   - New node filtering options:
     - `allowedNodes`: Whitelist specific nodes
@@ -503,7 +503,7 @@ No breaking changes. Upgraded all dependencies to the latest version.
 
   This was previously done in `extendEditor` using top-level methods, which still works but now throws a type error due to the move to `editor.tf/editor.api`. A workaround is to extend your editor with `LegacyEditorMethods`.
 
-  **Why?** Having all methods at the top-level (next to `children`, `marks`, etc.) would clutter the editor interface. Slate splits transforms in three places (`editor`, `Editor`, and `Transforms`), which is also confusing. Plate keeps editor reads/services under `api` and replayable document mutations under transaction groups.
+  **Why?** Having all methods at the top-level (next to `children`, `marks`, etc.) would clutter the editor interface. Plite splits transforms in three places (`editor`, `Editor`, and `Transforms`), which is also confusing. Plate keeps editor reads/services under `api` and replayable document mutations under transaction groups.
 
   Migration example:
 
@@ -537,7 +537,7 @@ No breaking changes. Upgraded all dependencies to the latest version.
     return editor;
   };
 
-  export const InlineVoidPlugin = createSlatePlugin({
+  export const InlineVoidPlugin = createEditorPlugin({
     key: 'inlineVoid',
     extendEditor: withInlineVoid,
   });
@@ -575,7 +575,7 @@ No breaking changes. Upgraded all dependencies to the latest version.
     };
   };
 
-  export const InlineVoidPlugin = createSlatePlugin({
+  export const InlineVoidPlugin = createEditorPlugin({
     key: 'inlineVoid',
   }).overrideEditor(withInlineVoid);
   ```
@@ -723,11 +723,11 @@ No breaking changes. Upgraded all dependencies to the latest version.
 
 - [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
 
-  - Remove `slate`, `slate-dom`, `slate-react`, `slate-history` and `slate-hyperscript` from your dependencies. It's now part of this package and `@udecode/plate`. All exports remain the same or have equivalents (see below).
+  - Remove `slate`, `plite-dom`, `plite-react`, `plite-history` and `plite-hyperscript` from your dependencies. It's now part of this package and `@udecode/plate`. All exports remain the same or have equivalents (see below).
   - Renamed `createTEditor` to `createEditor`.
-  - `createEditor` now returns an editor (`Editor`) with all queries under `editor.api` and transforms under `editor.tf`. You can see or override them at a glance. For example, we now use `editor.tf.setNodes` instead of importing `setNodes`. This marks the completion of generic typing and the removal of error throws from `slate`, `slate-dom`, and `slate-history` queries/transforms, without forking implementations. We’ve also reduced the number of queries/transforms by merging a bunch of them.
+  - `createEditor` now returns an editor (`Editor`) with all queries under `editor.api` and transforms under `editor.tf`. You can see or override them at a glance. For example, we now use `editor.tf.setNodes` instead of importing `setNodes`. This marks the completion of generic typing and the removal of error throws from `slate`, `plite-dom`, and `plite-history` queries/transforms, without forking implementations. We’ve also reduced the number of queries/transforms by merging a bunch of them.
 
-  The following interfaces from `slate` and `slate-dom` are now part of `Editor`:
+  The following interfaces from `slate` and `plite-dom` are now part of `Editor`:
 
   - `Editor`, `EditorInterface`
 
@@ -923,9 +923,9 @@ No breaking changes. Upgraded all dependencies to the latest version.
     - `toDOMPoint` -> `editor.api.toDOMPoint`
     - `toDOMRange` -> `editor.api.toDOMRange`
     - `toggleWrapNodes` -> `editor.tf.toggleBlock(type, { wrap: true })`
-    - `toSlateNode` -> `editor.api.toSlateNode`
-    - `toSlatePoint` -> `editor.api.toSlatePoint`
-    - `toSlateRange` -> `editor.api.toSlateRange`
+    - `toPliteNode` -> `editor.api.toPliteNode`
+    - `toPlitePoint` -> `editor.api.toPlitePoint`
+    - `toPliteRange` -> `editor.api.toPliteRange`
     - `unhangCharacterRange` -> `editor.api.unhangRange(range, { character: true })`
     - `unhangRange` -> `editor.api.unhangRange`
     - `unsetNodes` -> `editor.tf.unsetNodes`
@@ -1143,8 +1143,8 @@ No breaking changes. Upgraded all dependencies to the latest version.
 ## @udecode/slate-react@40.0.0
 
 - [#3744](https://github.com/udecode/plate/pull/3744) by [@zbeyens](https://github.com/zbeyens) –
-  - Add `slate-dom` as a peer dependency.
-  - Update `slate-react` peer dependency to `>=0.111.0`
+  - Add `plite-dom` as a peer dependency.
+  - Update `plite-react` peer dependency to `>=0.111.0`
 
 ## @udecode/plate-ai@40.0.0
 
@@ -1178,7 +1178,7 @@ No breaking changes. Upgraded all dependencies to the latest version.
 - [#3597](https://github.com/udecode/plate/pull/3597) by [@zbeyens](https://github.com/zbeyens) – The following changes were made to improve performance:
 
   - Removed `useHooksBlockSelection` in favor of `BlockSelectionAfterEditable`
-  - Removed `slate-selected` class from `BlockSelectable`. You can do it on your components using `useBlockSelected()` instead, or by using our new `block-selection.tsx` component.
+  - Removed `plite-selected` class from `BlockSelectable`. You can do it on your components using `useBlockSelected()` instead, or by using our new `block-selection.tsx` component.
   - Introduced `useBlockSelectableStore` for managing selectable state.
 
 # 38.0.1
@@ -1194,7 +1194,7 @@ No breaking changes. Upgraded all dependencies to the latest version.
   Before:
 
   ```ts
-  const plugin = createSlatePlugin({
+  const plugin = createEditorPlugin({
     key: 'test',
     options: { nested: { a: 1 } },
   }).extend({
@@ -1207,7 +1207,7 @@ No breaking changes. Upgraded all dependencies to the latest version.
   After:
 
   ```ts
-  const plugin = createSlatePlugin({
+  const plugin = createEditorPlugin({
     key: 'test',
     options: { nested: { a: 1 } },
   }).extend(({ getOptions }) => ({
@@ -1343,14 +1343,14 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   Decoupling React in all packages:
 
   - Split build into `@udecode/plate-core` and `@udecode/plate-core/react`
-  - NEW `SlatePlugin` as the foundation for all plugins
-  - `PlatePlugin` extends `SlatePlugin` with React-specific plugin features
+  - NEW `EditorPlugin` as the foundation for all plugins
+  - `PlatePlugin` extends `EditorPlugin` with React-specific plugin features
 
   **Plugin Creation**:
 
   - Remove `createPluginFactory`
-  - NEW `createSlatePlugin`: vanilla
-  - NEW `createTSlatePlugin`: vanilla explicitly typed
+  - NEW `createEditorPlugin`: vanilla
+  - NEW `createEditorPlugin`: vanilla explicitly typed
   - NEW `createPlatePlugin`: React
   - NEW `createTPlatePlugin`: React explicitly typed
   - NEW `toPlatePlugin`: extend a vanilla plugin into a React plugin
@@ -1371,7 +1371,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   After:
 
   ```typescript
-  const plugin = createSlatePlugin({
+  const plugin = createEditorPlugin({
     key: 'myPlugin',
     node: {
       isElement: true,
@@ -1427,7 +1427,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
   **Plugin Properties**:
 
-  Rename `SlatePlugin` / `PlatePlugin` properties:
+  Rename `EditorPlugin` / `PlatePlugin` properties:
 
   - `type` -> `node.type`
   - `isElement` -> `node.isElement`
@@ -1439,7 +1439,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   - `props` -> `node.props`
   - `overrideByKey` -> `override.plugins`
   - `renderAboveEditable` -> `render.aboveEditable`
-  - `renderAboveSlate` -> `render.aboveSlate`
+  - `renderAboveSlate` -> `render.abovePlite`
   - `renderAfterEditable` -> `render.afterEditable`
   - `renderBeforeEditable` -> `render.beforeEditable`
   - `inject.props` -> `inject.nodeProps`
@@ -1454,7 +1454,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   - `deserializeHtml.getNode` -> `parsers.html.deserializer.parse`
   - `serializeHtml` -> `parsers.htmlReact.serializer`
   - `withOverride` -> `extendEditor`
-  - All methods now have a single parameter: `SlatePluginContext<C>` or `PlatePluginContext<C>`, in addition to the method specific options. Some of the affected methods are:
+  - All methods now have a single parameter: `EditorPluginContext<C>` or `PlatePluginContext<C>`, in addition to the method specific options. Some of the affected methods are:
     - `decorate`
     - `handlers`, including `onChange`. Returns `({ event, ...ctx }) => void` instead of `(editor, plugin) => (event) => void`
     - `handlers.onChange`: `({ value, ...ctx }) => void` instead of `(editor, plugin) => (value) => void`
@@ -1469,7 +1469,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
     - `useHooks`
     - `withOverrides`
 
-  NEW `SlatePlugin` properties:
+  NEW `EditorPlugin` properties:
 
   - `api`: API methods provided by this plugin
   - `dependencies`: An array of plugin keys that this plugin depends on
@@ -1509,7 +1509,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   After:
 
   ```typescript
-  export const AlignPlugin = createSlatePlugin({
+  export const AlignPlugin = createEditorPlugin({
     inject: {
       nodeProps: {
         defaultNodeValue: 'start',
@@ -1573,7 +1573,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
   **Plugin Types**:
 
-  - Update `SlatePlugin`, `PlatePlugin` generics. `P, V, E` -> `C extends AnyPluginConfig = PluginConfig`
+  - Update `EditorPlugin`, `PlatePlugin` generics. `P, V, E` -> `C extends AnyPluginConfig = PluginConfig`
   - Remove `PluginOptions`
   - Remove `PlatePluginKey`
   - Remove `HotkeyPlugin`, `ToggleMarkPlugin` in favor of `plugin.shortcuts`
@@ -1652,7 +1652,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
   **Editor Creation**:
 
-  NEW `withSlate`:
+  NEW `withPlite`:
 
   - Extends an editor into a vanilla Plate editor
   - NEW `rootPlugin` option for configuring the root plugin
@@ -1660,10 +1660,10 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   NEW `withPlate`:
 
   - Extends an editor into a React Plate editor
-  - Now extends `withSlate` with React-specific enhancements
+  - Now extends `withPlite` with React-specific enhancements
   - NEW `useOptions` and `useOption` methods to the editor
 
-  NEW `createSlateEditor`:
+  NEW `createPliteEditor`:
 
   - Create a vanilla Plate editor with server-side support
 
@@ -1768,7 +1768,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   **Miscellaneous Changes**
 
   - `slate >=0.103.0` peer dependency
-  - `slate-react >=0.108.0` peer dependency
+  - `plite-react >=0.108.0` peer dependency
   - New dependency `@udecode/react-hotkeys`
   - Remove `ELEMENT_`, `MARK_` and `KEY_` constants. Use `NamePlugin.key` instead.
   - Replace `ELEMENT_DEFAULT` with `ParagraphPlugin.key`.
@@ -2038,7 +2038,7 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – `createTEditor`:
 
-  - Implement default methods for `slate-react` and `slate-history` in `createTEditor`
+  - Implement default methods for `plite-react` and `plite-history` in `createTEditor`
   - Add `noop` function to provide default implementations for unimplemented editor methods
 
   Types:
@@ -2467,7 +2467,7 @@ Migration:
 ## @udecode/plate-utils@22.0.0
 
 - [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Upgraded peer dependencies:
-  - `slate-react: >=0.95.0`
+  - `plite-react: >=0.95.0`
     Removed:
   - `useElementPrpos`
   - `useWrapElement`
@@ -2499,7 +2499,7 @@ Migration:
 
 ## @udecode/slate@21.0.0
 
-- [#2369](https://github.com/udecode/plate/pull/2369) by [@zbeyens](https://github.com/zbeyens) – Support `slate@0.94.0`, `slate-react@0.94.0` and `slate-history@0.93.0` by upgrading the peer dependencies.
+- [#2369](https://github.com/udecode/plate/pull/2369) by [@zbeyens](https://github.com/zbeyens) – Support `slate@0.94.0`, `plite-react@0.94.0` and `plite-history@0.93.0` by upgrading the peer dependencies.
 
 # 20.0.0
 
@@ -2509,7 +2509,7 @@ Migration:
   - This package has been split into multiple packages for separation of concerns and decoupled versioning:
     - `@udecode/utils` is a collection of miscellaneous utilities. Can be used by any project.
     - `@udecode/slate` is a collection of `slate` experimental features and bug fixes that may be moved into `slate` one day. It's essentially composed of the generic types. Can be used by vanilla `slate` consumers without plate.
-    - `@udecode/slate-react` is a collection of `slate-react` experimental features and bug fixes that that may be moved into `slate-react` one day. It's essentially composed of the generic types. Can be used by vanilla `slate-react` consumers without plate.
+    - `@udecode/slate-react` is a collection of `plite-react` experimental features and bug fixes that that may be moved into `plite-react` one day. It's essentially composed of the generic types. Can be used by vanilla `plite-react` consumers without plate.
     - `@udecode/plate-core` is the minimalistic core of plate. It essentially includes `Plate`, `PlateProvider` and their dependencies. Note this package is not dependent on the `*-utils` packages.
     - `@udecode/slate-utils` is a collection of utils depending on `@udecode/slate`. Can be used by vanilla `slate` consumers without plate.
     - `@udecode/plate-utils` is a collection of utils depending on `@udecode/slate-react` and `@udecode/plate-core`
@@ -2590,12 +2590,12 @@ Migration:
   ```json
   // from
   "slate": "0.78.0",
-  "slate-history": "0.66.0",
-  "slate-react": "0.79.0"
+  "plite-history": "0.66.0",
+  "plite-react": "0.79.0"
   // to
   "slate": "0.87.0",
-  "slate-history": "0.86.0",
-  "slate-react": "0.88.0"
+  "plite-history": "0.86.0",
+  "plite-react": "0.88.0"
   ```
 
 ## @udecode/plate@19.0.0
@@ -2612,12 +2612,12 @@ Migration:
   ```json
   // from
   "slate": ">=0.78.0",
-  "slate-history": ">=0.66.0",
-  "slate-react": ">=0.79.0"
+  "plite-history": ">=0.66.0",
+  "plite-react": ">=0.79.0"
   // to
   "slate": ">=0.87.0",
-  "slate-history": ">=0.86.0",
-  "slate-react": ">=0.88.0"
+  "plite-history": ">=0.86.0",
+  "plite-react": ">=0.88.0"
   ```
 
 # 18.0.0
@@ -2653,8 +2653,8 @@ Migration:
       - `const setOnChange = usePlateActions(id).onChange()`
       - `setOnChange({ fn: newOnChange })`
   - `Plate`
-    - if rendered below `PlateProvider`, it will render `PlateSlate > PlateEditable`
-    - if rendered without `PlateProvider`, it will render `PlateProvider > PlateSlate > PlateEditable`
+    - if rendered below `PlateProvider`, it will render `Plite > PlateEditable`
+    - if rendered without `PlateProvider`, it will render `PlateProvider > Plite > PlateEditable`
     - default `id` is no longer `main`, it's now `PLATE_SCOPE`
   - `PlateProvider`
     - Each provider has an optional `scope`, so you can have multiple providers in the same React tree and use the plate hooks with the corresponding `scope`.
@@ -2828,7 +2828,7 @@ Migration:
 
 ## @udecode/plate-core@13.1.0
 
-- `Plate` children are now rendered as last children of `Slate` (previously first children). To reproduce the previous behavior, move `children` to `firstChildren`
+- `Plate` children are now rendered as last children of `Plite` (previously first children). To reproduce the previous behavior, move `children` to `firstChildren`
 
 ## @udecode/plate@13.0.0
 
@@ -2890,7 +2890,7 @@ Migration:
 
   This release includes major changes to plate and slate types:
 
-  - Changing the `Editor` type to be `Editor<V>` where `V` represents the "value" being edited by Slate. In the most generic editor, `V` would be equivalent to `Element[]` (since that is what is accepted as children of the editor). But in a custom editor, you might have `Editor<Array<Paragraph | Quote>>`.
+  - Changing the `Editor` type to be `Editor<V>` where `V` represents the "value" being edited by Plite. In the most generic editor, `V` would be equivalent to `Element[]` (since that is what is accepted as children of the editor). But in a custom editor, you might have `Editor<Array<Paragraph | Quote>>`.
   - Other `Editor`-and-`Node`-related methods have been also made generic, so for example if you use `getLeafNode(editor, path)` it knows that the return value is a `Text` node. But more specifically, it knows that it is the text node of the type you've defined in your custom elements (with any marks you've defined).
   - This replaces the declaration merging approach, and provides some benefits. One of the drawbacks to declaration merging was that it was impossible to know whether you were dealing with an "unknown" or "known" element, since the underlying type was changed. Similarly, having two editors on the page with different schemas wasn't possible to represent. Hopefully this approach with generics will be able to smoothly replace the declaration merging approach. (While being easy to migrate to, since you can pass those same custom element definitions into `Editor` still.)
 
@@ -2898,9 +2898,9 @@ Migration:
 
 - Follow https://platejs.org/docs/typescript example.
 
-**Slate types**
+**Plite types**
 
-Those Slate types should be replaced by the new types:
+Those Plite types should be replaced by the new types:
 
 - `Editor` -> `Editor<V extends Value = Value>`
   - Note that `Editor` methods are not typed based on `Value` as it would introduce a circular dependency. You can use `getTEditor(editor)` to get the editor with typed methods.
@@ -2913,9 +2913,9 @@ Those Slate types should be replaced by the new types:
 - `NodeEntry` -> `NodeEntry`
 - `NodeProps` -> `TNodeProps`
 
-**Slate functions**
+**Plite functions**
 
-Those Slate functions should be replaced by the new typed ones:
+Those Plite functions should be replaced by the new typed ones:
 
 - As the new editor type is not matching the slate ones, all `Transforms`, `Editor`, `Node`, `Element`, `Text`, `HistoryEditor`, `ReactEditor` functions should be replaced: The whole API has been typed into Plate core. See https://github.com/udecode/plate/packages/core/src/slate
 - `createEditor` -> `createTEditor`
@@ -3409,7 +3409,7 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
   Updated deps:
 
   - `"slate": "0.70.0"`
-  - `"slate-react": "0.70.1"`
+  - `"plite-react": "0.70.1"`
 
   Removed deps (merged to core):
 

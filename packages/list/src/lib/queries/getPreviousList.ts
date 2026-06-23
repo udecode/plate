@@ -1,12 +1,12 @@
-import type { Element, NodeEntry } from '@platejs/slate';
-import { NodeApi, PathApi } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Element, NodeEntry } from '@platejs/plite';
+import { NodeApi, PathApi } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { type GetSiblingListOptions, getSiblingList } from './getSiblingList';
 
 /** Get the previous indent list node. */
 export const getPreviousList = <N extends Element = Element>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   entry: NodeEntry<Element>,
   options?: Partial<GetSiblingListOptions<N>>
 ): NodeEntry<N> | undefined =>

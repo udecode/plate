@@ -1,6 +1,6 @@
-import type { EditorStateView, Location, Range, Text } from '@platejs/slate';
+import type { EditorStateView, Location, Range, Text } from '@platejs/plite';
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import {
   createRuleFactory,
@@ -31,13 +31,14 @@ type LinkTextAutolinkMatch = {
   url: string;
 };
 
-type MatchBeforeOptions = {
+export type MatchBeforeOptions = {
   afterMatch?: boolean;
   matchBlockStart?: boolean;
   matchString?: string[] | string;
+  skipInvalid?: boolean;
 };
 
-type RuntimeReadableLinkEditor = SlateEditor & {
+type RuntimeReadableLinkEditor = BasePlateEditor & {
   read: <T>(fn: (state: EditorStateView) => T) => T;
 };
 
@@ -45,23 +46,27 @@ const LINK_AUTOMD_REGEX = /\[([^\]\n]+)]\((\S+)$/;
 const MARKDOWN_LINK_SOURCE_RE = /!?\[[^\]\n]*]\([^)\n]*$/;
 
 const readEditor = <T>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   fn: (state: EditorStateView) => T
 ) => (editor as RuntimeReadableLinkEditor).read(fn);
 
-const isCollapsed = (editor: SlateEditor) =>
+const isCollapsed = (editor: BasePlateEditor) =>
   !!editor.selection && RangeApi.isCollapsed(editor.selection);
 
 const isType = (types: string[]) => (node: unknown) =>
   ElementApi.isElement(node) && types.includes(node.type);
 
-const hasAncestorType = (editor: SlateEditor, types: string[]) =>
+const hasAncestorType = (editor: BasePlateEditor, types: string[]) =>
   !!editor.api.above({
     at: editor.selection ?? undefined,
     match: isType(types),
   });
 
-const hasTypeInRange = (editor: SlateEditor, range: Range, types: string[]) =>
+const hasTypeInRange = (
+  editor: BasePlateEditor,
+  range: Range,
+  types: string[]
+) =>
   Array.from(
     editor.api.nodes({
       at: range,
@@ -70,7 +75,7 @@ const hasTypeInRange = (editor: SlateEditor, range: Range, types: string[]) =>
   ).length > 0;
 
 const getBlockStartRange = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   location: Location
 ): Range | undefined => {
   const focus = RangeApi.isRange(location)
@@ -95,7 +100,7 @@ const getBlockStartRange = (
 };
 
 const getBeforeMatchRange = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   location: Location,
   options?: MatchBeforeOptions
 ): Range | undefined => {
@@ -144,7 +149,7 @@ const getBeforeMatchRange = (
 };
 
 const shouldAutoLinkPasteByDefault = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { textBefore }: { textBefore: string }
 ) => {
   if (hasAncestorType(editor, [editor.getType(KEYS.codeBlock)])) {
@@ -157,7 +162,7 @@ const shouldAutoLinkPasteByDefault = (
 };
 
 const getLinkAutomdMatch = (
-  editor: SlateEditor
+  editor: BasePlateEditor
 ): LinkAutomdMatch | undefined => {
   const { selection } = editor;
 
@@ -204,7 +209,7 @@ const getLinkAutomdMatch = (
 };
 
 const getAutolinkMatch = (
-  editor: SlateEditor
+  editor: BasePlateEditor
 ): LinkTextAutolinkMatch | undefined => {
   const { getUrlHref, isUrl, rangeBeforeOptions } =
     editor.getOptions(BaseLinkPlugin);
@@ -242,7 +247,7 @@ const getAutolinkMatch = (
 };
 
 const applyAutolinkMatch = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   match: LinkTextAutolinkMatch
 ) => {
   editor.update((tx) => {
@@ -262,7 +267,7 @@ const applyAutolinkMatch = (
   return true;
 };
 
-const moveSelectionAfterLink = (editor: SlateEditor) => {
+const moveSelectionAfterLink = (editor: BasePlateEditor) => {
   const { selection } = editor;
 
   if (!selection || !isCollapsed(editor)) return;

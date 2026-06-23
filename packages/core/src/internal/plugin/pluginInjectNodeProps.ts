@@ -1,12 +1,12 @@
-import type { Element, Path, Text } from '@platejs/slate';
+import type { Element, Path, Text } from '@platejs/plite';
 
 import { isDefined } from '@udecode/utils';
 
-import type { SlateEditor } from '../../lib/editor';
+import type { BasePlateEditor } from '../../lib/editor';
 import type {
   EditorPlugin,
   TransformOptions,
-} from '../../lib/plugin/SlatePlugin';
+} from '../../lib/plugin/EditorPlugin';
 
 import {
   type GetInjectNodePropsOptions,
@@ -23,7 +23,7 @@ import { getInjectMatch } from '../../lib/utils/getInjectMatch';
  * `[styleKey]: value`.
  */
 export const pluginInjectNodeProps = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   plugin: EditorPlugin,
   nodeProps: GetInjectNodePropsOptions,
   getElementPath: (node: Element | Text) => Path
@@ -105,7 +105,7 @@ export const pluginInjectNodeProps = (
   let newProps: GetInjectNodePropsReturnType = {};
 
   if (element && nodeKey && nodeValue) {
-    newProps.className = `slate-${nodeKey}-${nodeValue}`;
+    newProps.className = `plite-${nodeKey}-${nodeValue}`;
   }
   if (classNames?.[nodeValue] || transformClassName) {
     newProps.className =

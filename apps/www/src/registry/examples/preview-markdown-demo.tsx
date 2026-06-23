@@ -2,11 +2,11 @@
 
 import * as React from 'react';
 
-import type { Text } from '@platejs/slate';
+import type { Text } from '@platejs/plite';
 import {
   type Decorate,
   type RenderLeafProps,
-  createSlatePlugin,
+  createEditorPlugin,
   TextApi,
 } from 'platejs';
 import { Plate, usePlateEditor } from 'platejs/react';
@@ -100,7 +100,7 @@ export default function PreviewMdDemo() {
     {
       plugins: [
         ...BasicNodesKit,
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'preview-markdown',
           decorate: decoratePreview,
         }),

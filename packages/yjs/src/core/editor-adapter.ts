@@ -4,9 +4,9 @@ import type {
   Element,
   Operation,
   Range,
-} from '@platejs/slate';
-import { createEditor, NodeApi, OperationApi } from '@platejs/slate';
-import { Editor as EditorApi } from '@platejs/slate/internal';
+} from '@platejs/plite';
+import { createEditor, NodeApi, OperationApi } from '@platejs/plite';
+import { Editor as EditorApi } from '@platejs/plite/internal';
 
 export type YjsEditorAdapter = {
   readonly importing: () => boolean;
@@ -34,7 +34,7 @@ const remoteNormalizedImportOptions = {
   skipNormalize: true,
 } as const;
 
-const SELECTION_ROOT_TYPE = 'slate-yjs-selection-root';
+const SELECTION_ROOT_TYPE = 'plite-yjs-selection-root';
 
 const copyReadonlyArray = <T>(items: readonly T[]): T[] => {
   const copy = new Array<T>(items.length);

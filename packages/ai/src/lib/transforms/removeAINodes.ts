@@ -1,14 +1,27 @@
-import type { Path } from '@platejs/slate';
-import { type SlateEditor, TextApi } from 'platejs';
+import type { Path } from '@platejs/plite';
+import { type BasePlateEditor, PathApi, TextApi } from 'platejs';
 
 export const removeAINodes = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { at = [] }: { at?: Path } = {}
 ) => {
+  const paths = editor.read((state) =>
+    [
+      ...state.nodes.entries({
+        at,
+        match: (n: unknown) =>
+          TextApi.isText(n) && !!(n as Record<string, unknown>).ai,
+        mode: 'lowest',
+      }),
+    ]
+      .map(([, path]) => path)
+      .sort(PathApi.compare)
+      .reverse()
+  );
+
   editor.update((tx) => {
-    tx.nodes.remove({
-      at,
-      match: (n) => TextApi.isText(n) && !!(n as Record<string, unknown>).ai,
+    paths.forEach((path) => {
+      tx.nodes.remove({ at: path });
     });
   });
 };

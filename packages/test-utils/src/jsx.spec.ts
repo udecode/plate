@@ -3,7 +3,7 @@ import { describe, expect, it } from 'bun:test';
 import { hjsx, jsx, jsxt } from './jsx';
 
 describe('Plate test hyperscript helpers', () => {
-  it('creates Plate shorthand elements through Slate v2 primitives', () => {
+  it('creates Plate shorthand elements through Plite primitives', () => {
     expect(jsx('fragment', {}, jsx('hp', {}, 'Hello'))).toEqual([
       { children: [{ text: 'Hello' }], type: 'p' },
     ]);

@@ -1,7 +1,11 @@
-import type { EditorUpdateTransaction, Path } from '@platejs/slate';
-import type { SlateEditor, TTableCellBorder, TTableCellElement } from 'platejs';
+import type { EditorUpdateTransaction, Path } from '@platejs/plite';
+import type {
+  BasePlateEditor,
+  TTableCellBorder,
+  TTableCellElement,
+} from 'platejs';
 
-import { ElementApi } from '@platejs/slate';
+import { ElementApi } from '@platejs/plite';
 
 import type { BorderDirection } from '../types';
 
@@ -14,7 +18,7 @@ type TableSetNodesOptions = NonNullable<
 >;
 
 const setTableCellBorders = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   borders: TTableCellElement['borders'],
   options: TableSetNodesOptions
 ) => {
@@ -24,7 +28,7 @@ const setTableCellBorders = (
 };
 
 export const setBorderSize = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   size: number,
   {
     at,

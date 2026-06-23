@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Descendant, Operation } from '@platejs/slate';
+import type { Descendant, Operation } from '@platejs/plite';
 import {
   assertPeerTexts,
   clearYjsTrace,
@@ -17,7 +17,7 @@ import {
   paragraph,
   readPeerChildren,
   readPeerSelection,
-  readPeerSlateValue,
+  readPeerPliteValue,
   recordOperationTypes,
   redoYjsPeerAndSync,
   syncConnectedPeers,
@@ -137,7 +137,7 @@ describe('@platejs/yjs wrapNodes collaboration contract', () => {
         type: 'quote',
       },
     ]);
-    assert.deepEqual(readPeerSlateValue(peer), [
+    assert.deepEqual(readPeerPliteValue(peer), [
       {
         children: [paragraph('al'), paragraph('pha')],
         type: 'quote',

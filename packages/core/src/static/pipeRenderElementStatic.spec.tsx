@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import { createSlatePlugin } from '../lib';
+import { createEditorPlugin } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import { pipeRenderElementStatic } from './pipeRenderElementStatic';
 
@@ -11,7 +11,7 @@ describe('pipeRenderElementStatic', () => {
   });
 
   it('uses the element plugin renderer before the fallback renderElement prop', () => {
-    const ParagraphPlugin = createSlatePlugin({
+    const ParagraphPlugin = createEditorPlugin({
       key: 'p',
       node: { isElement: true, type: 'p' },
       render: { as: 'article' },
@@ -58,8 +58,8 @@ describe('pipeRenderElementStatic', () => {
     expect(result.props['data-kind']).toBe('fallback');
   });
 
-  it('renders belowRootNodes around the default SlateElement output', () => {
-    const RootPlugin = createSlatePlugin({
+  it('renders belowRootNodes around the default PliteElement output', () => {
+    const RootPlugin = createEditorPlugin({
       key: 'root-extra',
       render: {
         belowRootNodes: () => <aside data-role="root" />,

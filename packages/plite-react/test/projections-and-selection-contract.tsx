@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import {
   createEditorRuntime,
   createEditorView,
-  createEditor as createPliteEditor,
+  createEditor as createBaseEditor,
   type Descendant,
   NodeApi,
   type Path,
@@ -48,7 +48,7 @@ type RenderedProjectionEditor = RenderResult & {
   store: PliteDecorationSource<Record<string, unknown>>;
 };
 
-const createEditor = () => createReactEditor(createPliteEditor());
+const createEditor = () => createReactEditor(createBaseEditor());
 
 const renderSegment = (segment: SegmentLike, children: ReactNode) => {
   const decorations = segment.slices

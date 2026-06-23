@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { BaseParagraphPlugin, KEYS, createSlatePlugin } from 'platejs';
+import { BaseParagraphPlugin, KEYS, createEditorPlugin } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
 import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
@@ -12,7 +12,7 @@ import { MathRules } from './MathRules';
 
 jsxt;
 
-const CodeBlockPlugin = createSlatePlugin({
+const CodeBlockPlugin = createEditorPlugin({
   key: KEYS.codeBlock,
   node: { isElement: true },
 });

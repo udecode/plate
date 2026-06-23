@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { Location } from '@platejs/slate';
+import type { Location } from '@platejs/plite';
 import type { PlateEditor } from 'platejs/react';
 
 import { getBoundingClientRect } from './getBoundingClientRect';

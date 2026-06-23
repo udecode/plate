@@ -1,6 +1,6 @@
-import type { EditorUpdateTransaction } from '@platejs/slate';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 
-import { type SlateEditor, KEYS, PathApi } from 'platejs';
+import { type BasePlateEditor, KEYS, PathApi } from 'platejs';
 
 import { insertCodeBlock } from './insertCodeBlock';
 
@@ -18,7 +18,7 @@ export type CodeBlockInsertOptions = {
  * rather than awkwardly splitting the current selection.
  */
 export const insertEmptyCodeBlock = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     defaultType = editor.getType(KEYS.p),
     insertNodesOptions,

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { defineEditorExtension } from '@platejs/slate';
+import { defineEditorExtension } from '@platejs/plite';
 
 import { isPlateRuntimeEditor } from '../editor/createPlateRuntimeEditor';
 import { useEditorRef, useRedecorate } from '../stores';

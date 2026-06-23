@@ -1,4 +1,4 @@
-import { createSlateEditor, type SlateEditor } from 'platejs';
+import { createBasePlateEditor, type BasePlateEditor } from 'platejs';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { pasteSelectedBlocks } from './pasteSelectedBlocks';
@@ -11,10 +11,10 @@ describe('selection block utils', () => {
 
   describe('selectInsertedBlocks', () => {
     it('selects inserted block operations only', async () => {
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [BlockSelectionPlugin],
         value: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
-      }) as SlateEditor;
+      }) as BasePlateEditor;
 
       const platejs = await import('platejs');
       const setOption = mock();
@@ -23,24 +23,27 @@ describe('selection block utils', () => {
         setOption,
       } as any);
 
-      editor.operations = [
-        {
-          node: { children: [{ text: 'a' }], id: 'a', type: 'p' },
-          path: [0],
-          type: 'insert_node',
-        },
-        {
-          node: { text: 'x' },
-          offset: 0,
-          path: [0, 0],
-          type: 'insert_text',
-        },
-        {
-          node: { children: [{ text: 'b' }], id: 'b', type: 'p' },
-          path: [1],
-          type: 'insert_node',
-        },
-      ] as any;
+      Object.defineProperty(editor, 'operations', {
+        configurable: true,
+        value: [
+          {
+            node: { children: [{ text: 'a' }], id: 'a', type: 'p' },
+            path: [0],
+            type: 'insert_node',
+          },
+          {
+            node: { text: 'x' },
+            offset: 0,
+            path: [0, 0],
+            type: 'insert_text',
+          },
+          {
+            node: { children: [{ text: 'b' }], id: 'b', type: 'p' },
+            path: [1],
+            type: 'insert_node',
+          },
+        ],
+      });
 
       selectInsertedBlocks(editor);
 
@@ -53,10 +56,10 @@ describe('selection block utils', () => {
 
   describe('pasteSelectedBlocks', () => {
     it('inserts a spacer block after the last non-empty selected block and reselects inserted blocks', async () => {
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [BlockSelectionPlugin],
         value: [{ children: [{ text: 'one' }], id: 'p1', type: 'p' }],
-      }) as SlateEditor;
+      }) as BasePlateEditor;
 
       const selectedEntry = [
         { children: [{ text: 'one' }], id: 'p1', type: 'p' },

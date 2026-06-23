@@ -1,11 +1,11 @@
-import { type Descendant, type Value, ElementApi } from '@platejs/slate';
+import { type Descendant, type Value, ElementApi } from '@platejs/plite';
 import { nanoid } from 'nanoid';
 
 import type { PluginConfig } from '../../plugin/BasePlugin';
 
 import { getCurrentRuntimeTransforms } from '../../../internal/currentRuntimeBridge';
 import { withLegacyTransformOverride } from '../../../internal/plugin/withLegacyTransformOverride';
-import { createTSlatePlugin } from '../../plugin/createSlatePlugin';
+import { createEditorPlugin } from '../../plugin/createEditorPlugin';
 import { type QueryNodeOptions, queryNode } from '../../utils/queryNode';
 import { withNodeId } from './internal/withNodeId';
 
@@ -305,7 +305,7 @@ export type NodeIdConfig = PluginConfig<
 >;
 
 /** @see {@link withNodeId} */
-const BaseNodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
+const BaseNodeIdPlugin = createEditorPlugin<NodeIdConfig>({
   key: 'nodeId',
   options: {
     filterInline: true,

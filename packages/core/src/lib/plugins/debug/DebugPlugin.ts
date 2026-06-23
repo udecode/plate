@@ -1,6 +1,6 @@
 import type { DebugConfig } from '../getCorePlugins';
 
-import { createTSlatePlugin } from '../../plugin';
+import { createEditorPlugin } from '../../plugin';
 
 export type DebugErrorType =
   | (string & {})
@@ -24,7 +24,7 @@ export class PlateError extends Error {
   }
 }
 
-export const DebugPlugin = createTSlatePlugin<DebugConfig>({
+export const DebugPlugin = createEditorPlugin<DebugConfig>({
   key: 'debug',
   options: {
     isProduction: process.env.NODE_ENV === 'production',

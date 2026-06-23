@@ -1,5 +1,5 @@
-import type { ElementEntry, Path } from '@platejs/slate';
-import type { SlateEditor } from '@platejs/core';
+import type { ElementEntry, Path } from '@platejs/plite';
+import type { BasePlateEditor } from '@platejs/core';
 import { getEditorDescendant } from '../internal/editorQueries';
 import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
 
@@ -21,7 +21,7 @@ export type MoveListItemSublistItemsToListItemSublistOptions = {
  * there is no `toListItem` sublist, insert one.
  */
 export const moveListItemSublistItemsToListItemSublist = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     fromListItem,
     start,

@@ -13,7 +13,7 @@ export const PlateView = (props: PlateViewProps) => (
           e.clipboardData,
           'copy'
         );
-        if (e.clipboardData.getData('application/x-slate-fragment')) {
+        if (e.clipboardData.getData('application/x-plite-fragment')) {
           e.preventDefault();
         }
       },

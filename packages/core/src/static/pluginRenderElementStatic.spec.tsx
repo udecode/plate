@@ -1,18 +1,18 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import { createSlatePlugin } from '../lib';
+import { createEditorPlugin } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import { pluginRenderElementStatic } from './pluginRenderElementStatic';
 
 describe('pluginRenderElementStatic', () => {
   it('applies above/below wrappers and below-root renderers around the element output', () => {
-    const ParagraphPlugin = createSlatePlugin({
+    const ParagraphPlugin = createEditorPlugin({
       key: 'p',
       node: { isElement: true, type: 'p' },
       render: { as: 'article' },
     });
-    const AbovePlugin = createSlatePlugin({
+    const AbovePlugin = createEditorPlugin({
       key: 'above',
       render: {
         aboveNodes:
@@ -22,7 +22,7 @@ describe('pluginRenderElementStatic', () => {
           ),
       },
     });
-    const BelowPlugin = createSlatePlugin({
+    const BelowPlugin = createEditorPlugin({
       key: 'below',
       render: {
         belowNodes:
@@ -30,7 +30,7 @@ describe('pluginRenderElementStatic', () => {
           ({ children }: any) => <div data-role="below">{children}</div>,
       },
     });
-    const RootPlugin = createSlatePlugin({
+    const RootPlugin = createEditorPlugin({
       key: 'root-extra',
       render: {
         belowRootNodes: ({ element }: any) => (
@@ -61,6 +61,6 @@ describe('pluginRenderElementStatic', () => {
     expect(markup).toContain('data-role="root"');
     expect(markup).toContain('data-id="block-1"');
     expect(markup).toContain('data-block-id="block-1"');
-    expect(markup).toContain('class="slate-p"');
+    expect(markup).toContain('class="plite-p"');
   });
 });

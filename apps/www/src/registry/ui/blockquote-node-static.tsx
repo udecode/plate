@@ -1,10 +1,10 @@
 import * as React from 'react';
 
-import { type SlateElementProps, SlateElement } from 'platejs/static';
+import { type PliteElementProps, PliteElement } from 'platejs/static';
 
-export function BlockquoteElementStatic(props: SlateElementProps) {
+export function BlockquoteElementStatic(props: PliteElementProps) {
   return (
-    <SlateElement
+    <PliteElement
       as="blockquote"
       className="my-1 border-l-2 pl-6 italic"
       {...props}

@@ -19,12 +19,12 @@ export const locateBlock = (root: Locator, path: number[]) => {
   }
 
   let locator = root
-    .locator(':scope > [data-slate-node="element"]')
+    .locator(':scope > [data-plite-node="element"]')
     .nth(path[0]!);
 
   for (const segment of path.slice(1)) {
     locator = locator
-      .locator(':scope > [data-slate-node="element"]')
+      .locator(':scope > [data-plite-node="element"]')
       .nth(segment);
   }
 
@@ -40,5 +40,5 @@ export const locateText = (root: Locator, path: number[]) => {
   const parentPath = path.slice(0, -1);
   const parent = parentPath.length > 0 ? locateBlock(root, parentPath) : root;
 
-  return parent.locator('[data-slate-node="text"]').nth(textIndex);
+  return parent.locator('[data-plite-node="text"]').nth(textIndex);
 };

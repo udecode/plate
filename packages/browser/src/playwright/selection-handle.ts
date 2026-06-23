@@ -1,6 +1,6 @@
 import { expect, type Locator } from '@playwright/test';
 
-import { SLATE_BROWSER_HANDLE_KEY } from './constants';
+import { PLITE_BROWSER_HANDLE_KEY } from './constants';
 import { waitForSelectionSync } from './selection-snapshots';
 import type { SelectionSnapshot } from './types';
 
@@ -9,7 +9,7 @@ export const hasSelectionHandle = async (root: Locator) =>
     .evaluate(
       (element: HTMLElement, { key }: { key: string }) =>
         !!(element as Record<string, any>)[key]?.selectRange,
-      { key: SLATE_BROWSER_HANDLE_KEY }
+      { key: PLITE_BROWSER_HANDLE_KEY }
     )
     .catch(() => false);
 
@@ -42,7 +42,7 @@ export const waitForHandleFocus = async (root: Locator, timeout = 2000) => {
 
             return hasFocus && !!handle?.getSelection?.();
           },
-          { key: SLATE_BROWSER_HANDLE_KEY }
+          { key: PLITE_BROWSER_HANDLE_KEY }
         ),
       { timeout }
     )
@@ -119,7 +119,7 @@ export const setSelectionWithHandle = async (
       return true;
     },
     {
-      key: SLATE_BROWSER_HANDLE_KEY,
+      key: PLITE_BROWSER_HANDLE_KEY,
       nextSelection: selection,
     }
   );
@@ -136,7 +136,7 @@ export const selectAllWithHandle = async (root: Locator) =>
       handle.selectAll();
       return true;
     },
-    { key: SLATE_BROWSER_HANDLE_KEY }
+    { key: PLITE_BROWSER_HANDLE_KEY }
   );
 
 export const focusWithHandle = async (root: Locator) =>
@@ -151,7 +151,7 @@ export const focusWithHandle = async (root: Locator) =>
       handle.focus();
       return true;
     },
-    { key: SLATE_BROWSER_HANDLE_KEY }
+    { key: PLITE_BROWSER_HANDLE_KEY }
   );
 
 export const hasExpandedSelection = (selection: SelectionSnapshot | null) =>

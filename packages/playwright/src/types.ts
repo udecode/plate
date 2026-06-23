@@ -1,5 +1,5 @@
 import type { JSHandle } from '@playwright/test';
-import type { Path } from '@platejs/slate';
+import type { Path } from '@platejs/plite';
 import type { PlateEditor } from 'platejs/react';
 
 export type EditorHandle<E extends PlateEditor = PlateEditor> = JSHandle<E>;

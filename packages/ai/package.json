@@ -42,7 +42,7 @@
   "dependencies": {
     "@platejs/markdown": "workspace:^",
     "@platejs/selection": "workspace:^",
-    "@platejs/slate": "workspace:^",
+    "@platejs/plite": "workspace:^",
     "@platejs/suggestion": "workspace:^",
     "@platejs/table": "workspace:^",
     "fastest-levenshtein": "1.0.16",

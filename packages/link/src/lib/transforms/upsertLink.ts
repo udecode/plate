@@ -1,12 +1,13 @@
 import type {
   EditorStateView,
   EditorUpdateTransaction,
+  NodeEntry,
   NodeInsertNodesOptions,
-} from '@platejs/slate';
+} from '@platejs/plite';
 
 import {
   ElementApi,
-  type SlateEditor,
+  type BasePlateEditor,
   type TLinkElement,
   isDefined,
   NodeApi,
@@ -30,12 +31,12 @@ type WrapNodesOptions = NonNullable<
   Parameters<EditorUpdateTransaction['nodes']['wrap']>[1]
 >;
 
-type RuntimeReadableLinkEditor = SlateEditor & {
+type RuntimeReadableLinkEditor = BasePlateEditor & {
   read: <T>(fn: (state: EditorStateView) => T) => T;
 };
 
 const readEditor = <T>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   fn: (state: EditorStateView) => T
 ) => (editor as RuntimeReadableLinkEditor).read(fn);
 
@@ -56,7 +57,7 @@ export type UpsertLinkOptions = {
  * - Insert link node
  */
 export const upsertLink = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     insertNodesOptions,
     insertTextInLink,
@@ -73,10 +74,10 @@ export const upsertLink = (
   const linkType = editor.getType(KEYS.link);
   const matchLink = (node: unknown) =>
     ElementApi.isElement(node) && node.type === linkType;
-  const linkAbove = editor.api.above<TLinkElement>({
+  const linkAbove = editor.api.above({
     at,
     match: matchLink,
-  });
+  }) as NodeEntry<TLinkElement> | undefined;
 
   // anchor and focus in link -> insert text
   if (insertTextInLink && linkAbove) {
@@ -110,10 +111,10 @@ export const upsertLink = (
   }
 
   // selection contains at one edge edge or between the edges
-  const linkEntry = editor.api.node<TLinkElement>({
+  const linkEntry = editor.api.node({
     at,
     match: matchLink,
-  });
+  }) as NodeEntry<TLinkElement> | undefined;
 
   const [linkNode] = linkEntry ?? [];
 

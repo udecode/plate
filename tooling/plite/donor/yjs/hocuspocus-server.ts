@@ -201,7 +201,7 @@ const collabServer = new Server(
     debounce: YJS_DEBOUNCE,
     extensions,
     maxDebounce: YJS_MAX_DEBOUNCE,
-    name: 'slate-yjs-collab',
+    name: 'plite-yjs-collab',
     port: YJS_PORT,
     quiet: true,
     timeout: YJS_TIMEOUT,
@@ -254,13 +254,13 @@ collabServer
     const host = YJS_HOST === '0.0.0.0' ? '127.0.0.1' : YJS_HOST;
 
     console.log(
-      `[slate-yjs] Hocuspocus listening at ws://${host}:${YJS_PORT}${YJS_PATH}`
+      `[plite-yjs] Hocuspocus listening at ws://${host}:${YJS_PORT}${YJS_PATH}`
     );
-    console.log(`[slate-yjs] snapshots: ${YJS_STORAGE_DIR}`);
-    console.log(`[slate-yjs] redis: ${REDIS_ENABLED ? 'enabled' : 'disabled'}`);
+    console.log(`[plite-yjs] snapshots: ${YJS_STORAGE_DIR}`);
+    console.log(`[plite-yjs] redis: ${REDIS_ENABLED ? 'enabled' : 'disabled'}`);
   })
   .catch((error) => {
-    console.error('[slate-yjs] failed to start Hocuspocus server', error);
+    console.error('[plite-yjs] failed to start Hocuspocus server', error);
 
     throw error;
   });

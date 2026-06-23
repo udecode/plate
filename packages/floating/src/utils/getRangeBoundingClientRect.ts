@@ -1,5 +1,5 @@
 import type { ClientRectObject } from '@floating-ui/core';
-import type { Range } from '@platejs/slate';
+import type { Range } from '@platejs/plite';
 import type { PlateEditor } from 'platejs/react';
 
 import { getDefaultBoundingClientRect } from '../createVirtualElement';

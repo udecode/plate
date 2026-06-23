@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { type Descendant } from '@platejs/slate';
-import { Editor } from '@platejs/slate/internal';
+import { type Descendant } from '@platejs/plite';
+import { Editor } from '@platejs/plite/internal';
 
 import {
   clearYjsTrace,
@@ -12,7 +12,7 @@ import {
   type Peer,
   paragraph,
   readPeerChildren,
-  readPeerSlateValue,
+  readPeerPliteValue,
   syncConnectedPeers,
 } from './support/collaboration';
 
@@ -98,7 +98,7 @@ const assertNoLeakedVirtualPlaceholder = (
       continue;
     }
 
-    assert.notEqual(node.type, 'slate-yjs-virtual-placeholder');
+    assert.notEqual(node.type, 'plite-yjs-virtual-placeholder');
     assertNoLeakedVirtualPlaceholder(node.children);
   }
 };
@@ -130,7 +130,7 @@ describe('@platejs/yjs split and merge collaboration contract', () => {
       assert.deepEqual(getPeerTopLevelTexts(peer), ['Hello world!']);
       assertNoLeakedVirtualPlaceholder(snapshotChildren);
       assertNoNestedElements(snapshotChildren);
-      assert.deepEqual(readPeerSlateValue(peer), [paragraph('Hello world!')]);
+      assert.deepEqual(readPeerPliteValue(peer), [paragraph('Hello world!')]);
     }
   });
 
@@ -145,7 +145,7 @@ describe('@platejs/yjs split and merge collaboration contract', () => {
     assert.deepEqual(getPeerTopLevelTexts(peer), ['Hello world!']);
     assertNoLeakedVirtualPlaceholder(snapshotChildren);
     assertNoNestedElements(snapshotChildren);
-    assert.deepEqual(readPeerSlateValue(peer), [paragraph('Hello world!')]);
+    assert.deepEqual(readPeerPliteValue(peer), [paragraph('Hello world!')]);
   });
 
   it('keeps nested virtual placeholder content when splitting a parent element', () => {
@@ -157,7 +157,7 @@ describe('@platejs/yjs split and merge collaboration contract', () => {
       tx.nodes.merge({ at: [0, 2] });
     });
 
-    assert.deepEqual(readPeerSlateValue(peer), [
+    assert.deepEqual(readPeerPliteValue(peer), [
       quote([paragraph('intro'), paragraphParts('alpha', 'beta')]),
     ]);
 
@@ -172,7 +172,7 @@ describe('@platejs/yjs split and merge collaboration contract', () => {
       ]);
     });
 
-    assert.deepEqual(readPeerSlateValue(peer), [
+    assert.deepEqual(readPeerPliteValue(peer), [
       quote([paragraph('intro')]),
       quote([paragraphParts('alpha', 'beta')]),
     ]);
@@ -195,7 +195,7 @@ describe('@platejs/yjs split and merge collaboration contract', () => {
       ]);
     });
 
-    assert.deepEqual(readPeerSlateValue(peer), [
+    assert.deepEqual(readPeerPliteValue(peer), [
       quote([paragraph('left')]),
       quote([paragraph('moved')]),
     ]);
@@ -204,7 +204,7 @@ describe('@platejs/yjs split and merge collaboration contract', () => {
       tx.nodes.merge({ at: [1] });
     });
 
-    assert.deepEqual(readPeerSlateValue(peer), [
+    assert.deepEqual(readPeerPliteValue(peer), [
       quote([paragraph('left'), paragraph('moved')]),
     ]);
   });
@@ -225,7 +225,7 @@ describe('@platejs/yjs split and merge collaboration contract', () => {
       ]);
     });
 
-    assert.deepEqual(readPeerSlateValue(peer), [
+    assert.deepEqual(readPeerPliteValue(peer), [
       section([quote([paragraph('moved')]), paragraph('right')]),
     ]);
     const movedParagraph = getVisibleYjsNodeAt(peer, [0, 0, 0]);
@@ -241,7 +241,7 @@ describe('@platejs/yjs split and merge collaboration contract', () => {
       ]);
     });
 
-    assert.deepEqual(readPeerSlateValue(peer), [
+    assert.deepEqual(readPeerPliteValue(peer), [
       section([{ text: '' }]),
       section([quote([paragraph('moved')]), paragraph('right')]),
     ]);

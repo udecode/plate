@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
 import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
@@ -11,12 +11,12 @@ import { getInlineSuggestionData } from './utils';
 
 jsxt;
 
-const createSlateEditor = ({ selection, value, ...options }: any = {}) =>
+const createBasePlateEditor = ({ selection, value, ...options }: any = {}) =>
   createPlateRuntimeEditor({
     ...options,
     initialSelection: selection,
     initialValue: value,
-  }) as any as SlateEditor;
+  }) as any as BasePlateEditor;
 
 const suggestionPlugin = BaseSuggestionPlugin.configure({
   options: {
@@ -24,17 +24,17 @@ const suggestionPlugin = BaseSuggestionPlugin.configure({
   },
 });
 
-const MentionPlugin = createSlatePlugin({
+const MentionPlugin = createEditorPlugin({
   key: KEYS.mention,
   node: { isElement: true, isInline: true, isMarkableVoid: true, isVoid: true },
 });
 
-const DatePlugin = createSlatePlugin({
+const DatePlugin = createEditorPlugin({
   key: KEYS.date,
   node: { isElement: true, isInline: true, isSelectable: false, isVoid: true },
 });
 
-const TocPlugin = createSlatePlugin({
+const TocPlugin = createEditorPlugin({
   key: KEYS.toc,
   node: { isElement: true, isVoid: true },
 });
@@ -57,7 +57,7 @@ describe('SuggestionExtension', () => {
               <cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const output = (
           <editor>
@@ -66,9 +66,9 @@ describe('SuggestionExtension', () => {
               <cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [suggestionPlugin],
           selection: input.selection,
           value: input.children,
@@ -91,9 +91,9 @@ describe('SuggestionExtension', () => {
                 <cursor />
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
-          const editor = createSlateEditor({
+          const editor = createBasePlateEditor({
             plugins: [suggestionPlugin],
             selection: input.selection,
             value: input.children,
@@ -134,7 +134,7 @@ describe('SuggestionExtension', () => {
                 <cursor />
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -143,9 +143,9 @@ describe('SuggestionExtension', () => {
                 <cursor />
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
-          const editor = createSlateEditor({
+          const editor = createBasePlateEditor({
             plugins: [suggestionPlugin],
             selection: input.selection,
             value: input.children,
@@ -169,7 +169,7 @@ describe('SuggestionExtension', () => {
               </htext>
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const output = (
           <editor>
@@ -180,9 +180,9 @@ describe('SuggestionExtension', () => {
               </htext>
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [
             BaseSuggestionPlugin.configure({
               options: {
@@ -216,7 +216,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
               </htext>
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const output = (
           <editor>
@@ -227,9 +227,9 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
               </htext>
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [suggestionPlugin],
           selection: input.selection,
           value: input.children,
@@ -258,7 +258,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
               <cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const output = (
           <editor>
@@ -267,9 +267,9 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
               <cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           plugins: [suggestionPlugin],
           selection: input.selection,
           value: input.children,
@@ -296,7 +296,7 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
             </htext>
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -311,9 +311,9 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
             <htext />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [suggestionPlugin, MentionPlugin],
         selection: input.selection,
         value: input.children,
@@ -348,9 +348,9 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
             </htext>
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [suggestionPlugin, DatePlugin],
         selection: input.selection,
         value: input.children,
@@ -384,9 +384,9 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
             <htext />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [suggestionPlugin, DatePlugin],
         selection: input.selection,
         value: input.children,
@@ -420,9 +420,9 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
             </htext>
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [suggestionPlugin, DatePlugin],
         selection: input.selection,
         value: input.children,
@@ -456,9 +456,9 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
             test2
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [suggestionPlugin],
         selection: input.selection,
         value: input.children,
@@ -520,9 +520,9 @@ describe('when editor.getOptions(SuggestionPlugin).isSuggesting is true', () => 
             test2
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [suggestionPlugin, TocPlugin],
         selection: input.selection,
         value: input.children,
@@ -585,9 +585,9 @@ describe('when point before is not marked', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -620,9 +620,9 @@ describe('when point before is marked', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -652,9 +652,9 @@ describe('when delete line', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -683,9 +683,9 @@ describe('delete forward when editor.getOptions(SuggestionPlugin).isSuggesting i
           ne
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -715,9 +715,9 @@ describe('delete fragment when editor.getOptions(SuggestionPlugin).isSuggesting 
           <focus />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -757,9 +757,9 @@ describe('delete fragment when editor.getOptions(SuggestionPlugin).isSuggesting 
           </htext>
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin, MentionPlugin],
       selection: input.selection,
       value: input.children,
@@ -783,7 +783,7 @@ describe('delete fragment when editor.getOptions(SuggestionPlugin).isSuggesting 
           <htext>{' text'}</htext>
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     expect(editor.children[0].children).toHaveLength(
       output.children[0].children.length
@@ -833,7 +833,7 @@ describe('normalizeNode', () => {
             </htext>
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -842,9 +842,9 @@ describe('normalizeNode', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [BaseSuggestionPlugin],
         selection: input.selection,
         value: input.children,
@@ -878,14 +878,14 @@ describe('normalizeNode', () => {
             </htext>
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
       const output = (
         <editor>
           <hp>x</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [suggestionPlugin],
         value: input.children,
       });
@@ -915,7 +915,7 @@ describe('normalizeNode', () => {
             </htext>
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
       const output = (
         <editor>
           <hp>x</hp>
@@ -923,9 +923,9 @@ describe('normalizeNode', () => {
             <htext />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [suggestionPlugin],
         value: input.children,
       });
@@ -947,9 +947,9 @@ describe('insert text when cursor is expanded', () => {
           <focus />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -991,9 +991,9 @@ describe('insert text when cursor is expanded', () => {
           </htext>
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin, MentionPlugin],
       selection: input.selection,
       value: input.children,
@@ -1018,7 +1018,7 @@ describe('insert text when cursor is expanded', () => {
           <htext>{' text'}</htext>
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     expect(editor.children[0].children).toHaveLength(
       output.children[0].children.length
@@ -1074,9 +1074,9 @@ describe('insertBreak when editor.getOptions(SuggestionPlugin).isSuggesting is t
           </hp>
         </hblockquote>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -1105,9 +1105,9 @@ describe('insertNodes when editor.getOptions(SuggestionPlugin).isSuggesting is t
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -1135,9 +1135,9 @@ describe('insertNodes when editor.getOptions(SuggestionPlugin).isSuggesting is t
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -1172,9 +1172,9 @@ describe('removeNodes when editor.getOptions(SuggestionPlugin).isSuggesting is t
           <focus />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       selection: input.selection,
       value: input.children,
@@ -1198,7 +1198,7 @@ describe('removeNodes when editor.getOptions(SuggestionPlugin).isSuggesting is t
   });
 
   it('bypasses suggestions when removing slash_input nodes', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [suggestionPlugin],
       value: [
         {

@@ -1,10 +1,10 @@
-import type { Node } from "@platejs/slate";
+import type { Node } from '@platejs/plite';
 
-import { type SlateEditor, KEYS, nanoid, TextApi } from "platejs";
+import { type BasePlateEditor, KEYS, nanoid, TextApi } from 'platejs';
 
-import { getInlineSuggestionData, getSuggestionKey } from "../..";
-import { BaseSuggestionPlugin } from "../BaseSuggestionPlugin";
-import { getSuggestionApi } from "../utils/getSuggestionApi";
+import { getInlineSuggestionData, getSuggestionKey } from '../..';
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { getSuggestionApi } from '../utils/getSuggestionApi';
 
 const getRemoveMarkProps = () => {
   const defaultProps = {
@@ -16,7 +16,7 @@ const getRemoveMarkProps = () => {
 };
 
 // TODO remove mark when the text is already marked as a bold by suggestion
-export const removeMarkSuggestion = (editor: SlateEditor, key: string) => {
+export const removeMarkSuggestion = (editor: BasePlateEditor, key: string) => {
   getSuggestionApi(editor).withoutSuggestions(() => {
     const { id, createdAt } = getRemoveMarkProps();
 
@@ -26,7 +26,7 @@ export const removeMarkSuggestion = (editor: SlateEditor, key: string) => {
       if (n[KEYS.suggestion]) {
         const data = getInlineSuggestionData(n);
 
-        if (data?.type === "update") {
+        if (data?.type === 'update') {
           return true;
         }
 
@@ -49,7 +49,7 @@ export const removeMarkSuggestion = (editor: SlateEditor, key: string) => {
             properties: {
               [key]: undefined,
             },
-            type: "update",
+            type: 'update',
             userId: editor.getOptions(BaseSuggestionPlugin).currentUserId,
           },
           [KEYS.suggestion]: true,

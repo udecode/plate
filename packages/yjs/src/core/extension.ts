@@ -1,4 +1,4 @@
-import { defineEditorExtension } from '@platejs/slate';
+import { defineEditorExtension } from '@platejs/plite';
 
 import { YjsController } from './controller';
 import type { YjsExtensionOptions } from './types';

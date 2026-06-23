@@ -1,11 +1,11 @@
-import type { Element } from '@platejs/slate';
-import type { SlateEditor, TTableCellElement } from 'platejs';
+import type { Element } from '@platejs/plite';
+import type { BasePlateEditor, TTableCellElement } from 'platejs';
 
 import { getCellTypes } from '../utils/getCellType';
 import { findTableNodePath } from '../utils/findTableNodePath';
 
 export const setCellBackground = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options: {
     color: string | null;
     selectedCells?: Element[];

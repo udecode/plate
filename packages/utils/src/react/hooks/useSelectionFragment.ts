@@ -1,6 +1,6 @@
 import { getContainerTypes } from '@platejs/core';
 import { useEditorSelector } from '@platejs/core/react';
-import type { Descendant, Element } from '@platejs/slate';
+import type { Descendant, Element } from '@platejs/plite';
 
 type SelectionFragmentPropOptions = {
   defaultValue?: string;
@@ -22,9 +22,9 @@ export const useSelectionFragmentProp = (
   options: SelectionFragmentPropOptions = {}
 ) =>
   useEditorSelector((editor) => {
-    const fragment = editor.api.fragment<Element>(editor.selection, {
+    const fragment = editor.api.fragment(editor.selection, {
       unwrap: getContainerTypes(editor),
-    });
+    }) as Element[];
 
     return editor.api.prop({ nodes: fragment, ...options });
   }, []);

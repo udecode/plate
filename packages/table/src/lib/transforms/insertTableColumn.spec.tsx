@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -42,7 +42,7 @@ const makeTableWithCols = ({
         ))}
       </htable>
     </editor>
-  ) as unknown as SlateEditor;
+  ) as unknown as BasePlateEditor;
 
 describe('insertTableColumn', () => {
   describe('without initialTableWidth', () => {
@@ -68,7 +68,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -102,7 +102,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -135,7 +135,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -170,7 +170,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -210,7 +210,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -252,7 +252,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -292,7 +292,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -334,7 +334,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -374,7 +374,7 @@ describe('insertTableColumn', () => {
           ],
         });
 
-        const editor = createSlateEditor({
+        const editor = createBasePlateEditor({
           nodeId: true,
           plugins: getTestTablePlugins({
             disableMerge,
@@ -415,7 +415,7 @@ describe('insertTableColumn', () => {
         ],
       });
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({
           disableMerge,
@@ -463,9 +463,9 @@ describe('insertTableColumn', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,

@@ -1,7 +1,7 @@
 import type {
   NodeEntry,
   Path,
-  SlateEditor,
+  BasePlateEditor,
   TTableCellElement,
   TTableElement,
   TTableRowElement,
@@ -18,7 +18,7 @@ const adjacentTableCellLookup = new WeakMap<TTableElement, TableCellLookup>();
 const getLookupKey = (row: number, col: number) => `${row}:${col}`;
 
 const createTableCellLookup = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   tableEntry: NodeEntry<TTableElement>
 ) => {
   const [table, tablePath] = tableEntry;
@@ -54,7 +54,7 @@ const createTableCellLookup = (
 };
 
 export const getAdjacentTableCell = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     at,
     deltaCol = 0,

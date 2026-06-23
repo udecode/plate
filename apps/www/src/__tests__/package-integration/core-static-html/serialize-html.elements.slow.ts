@@ -67,7 +67,7 @@ describe('core static serializeHtml element rendering', () => {
     const html = await serializeHtml(editor);
 
     expect(html).toContain(decode('href="https://example.com/"'));
-    expect(html).toContain('slate-a');
+    expect(html).toContain('plite-a');
   });
 
   it('renders image src attributes', async () => {

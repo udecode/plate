@@ -1,5 +1,5 @@
 import type { DropTargetMonitor } from 'react-dnd';
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
 import { PathApi } from 'platejs';
 import type { PlateEditor } from 'platejs/react';
@@ -98,9 +98,9 @@ describe('onHoverNode', () => {
       to: [1],
     });
 
-    (editor.api.isExpanded as unknown as ReturnType<typeof mock>).mockReturnValue(
-      true
-    );
+    (
+      editor.api.isExpanded as unknown as ReturnType<typeof mock>
+    ).mockReturnValue(true);
 
     editor.selection = {
       anchor: { offset: 0, path: [0] },

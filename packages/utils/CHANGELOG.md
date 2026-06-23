@@ -24,7 +24,7 @@
 
 ### Patch Changes
 
-- Updated `@platejs/core`, `@platejs/slate`.
+- Updated `@platejs/core`, `@platejs/plite`.
 
 ## 53.0.6
 
@@ -36,7 +36,7 @@
 
 ### Patch Changes
 
-- Updated `@platejs/core`, `@platejs/slate`.
+- Updated `@platejs/core`, `@platejs/plite`.
 
 ## 53.0.3
 
@@ -54,7 +54,7 @@
 
 ### Patch Changes
 
-- Updated `@platejs/core`, `@platejs/slate`.
+- Updated `@platejs/core`, `@platejs/plite`.
 
 ## 52.3.16
 
@@ -350,7 +350,7 @@
 
 ### Patch Changes
 
-- [#3932](https://github.com/udecode/plate/pull/3932) by [@felixfeng33](https://github.com/felixfeng33) – Each `PlateElement` and `SlateElement` comes with a default `position: relative` style.
+- [#3932](https://github.com/udecode/plate/pull/3932) by [@felixfeng33](https://github.com/felixfeng33) – Each `PlateElement` and `PliteElement` comes with a default `position: relative` style.
   Remove `relative` className from all components
 
 ## 41.0.5
@@ -617,7 +617,7 @@
 ### Major Changes
 
 - [#2471](https://github.com/udecode/plate/pull/2471) by [@zbeyens](https://github.com/zbeyens) – Upgraded peer dependencies:
-  - `slate-react: >=0.95.0`
+  - `plite-react: >=0.95.0`
     Removed:
   - `useElementPrpos`
   - `useWrapElement`

@@ -1,17 +1,15 @@
 import {
   type PluginConfig,
-  type SlateEditor,
   type TLinkElement,
-  createTSlatePlugin,
+  createEditorPlugin,
   isUrl,
   KEYS,
 } from 'platejs';
 
+import type { MatchBeforeOptions } from './LinkRules';
 import { getLinkAttributes, validateUrl } from './utils/index';
 
-type RangeBeforeOptions = NonNullable<
-  Parameters<SlateEditor['api']['range']>[2]
->['before'];
+type RangeBeforeOptions = MatchBeforeOptions;
 
 export type BaseLinkConfig = PluginConfig<
   'a',
@@ -86,7 +84,7 @@ export type BaseLinkConfig = PluginConfig<
 >;
 
 /** Enables support for hyperlinks. */
-export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
+export const BaseLinkPlugin = createEditorPlugin<BaseLinkConfig>({
   key: KEYS.link,
   node: {
     dangerouslyAllowAttributes: ['target'],

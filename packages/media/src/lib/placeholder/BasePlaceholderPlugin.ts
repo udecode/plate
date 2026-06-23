@@ -1,8 +1,8 @@
-import type { EditorUpdateTransaction } from '@platejs/slate';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 import {
   type PluginConfig,
-  type SlatePlugin,
-  createTSlatePlugin,
+  type EditorPlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -34,8 +34,8 @@ export type PlaceholderRule = {
   mediaType: string;
 };
 
-export const BasePlaceholderPlugin: SlatePlugin<PlaceholderConfig> =
-  createTSlatePlugin<PlaceholderConfig>({
+export const BasePlaceholderPlugin: EditorPlugin<PlaceholderConfig> =
+  createEditorPlugin<PlaceholderConfig>({
     key: KEYS.placeholder,
     node: { isElement: true, isVoid: true },
   }).extendTx(({ type }) => (tx: EditorUpdateTransaction) => ({

@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { ElementEntry, SlateEditor } from 'platejs';
+import type { ElementEntry, BasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { outdentCodeLine } from './outdentCodeLine';
@@ -19,7 +19,7 @@ describe('outdent code line', () => {
             <hcodeline>{'    '}test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -27,9 +27,9 @@ describe('outdent code line', () => {
             <hcodeline>{'  '}test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
@@ -52,7 +52,7 @@ describe('outdent code line', () => {
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -60,9 +60,9 @@ describe('outdent code line', () => {
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [CodeBlockPlugin],
         selection: input.selection,
         value: input.children,

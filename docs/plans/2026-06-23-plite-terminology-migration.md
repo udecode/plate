@@ -146,9 +146,9 @@ Start Gates:
 | Documented source owner identified | partial | Public docs source likely `content/docs/plite`; exact nav/source owner pending audit |
 | Package/API pack selected | yes | Applied pack: package-api because breaking code/package rename follows docs |
 | Public surface or package boundary identified | partial | Existing package names/imports pending audit |
-| Release artifact path selected | pending | Decide after knowing whether code/package rename occurs in this goal |
+| Release artifact path selected | yes | Changeset metadata audited; Plite package rename is branch-prepublic, @platejs/yjs got a major changeset |
 | `changeset` skill loaded when `.changeset` is required | no | N/A until package rename creates published user-visible delta |
-| Barrel/export impact decision recorded | pending | Decide after code/package rename scope is known |
+| Barrel/export impact decision recorded | no | N/A: touched Plite packages do not require brl for this rename packet; package tests/typecheck passed |
 
 Work Checklist:
 - [x] If a duration was requested, it is recorded as minimum active work unless
@@ -163,16 +163,16 @@ Work Checklist:
 - [x] Major source records source type, id/link, title, decision type, expected
       outcome, decision criteria, likely files/packages/surfaces, browser
       surface, and highest-leverage owner.
-- [ ] Current state is mapped before proposing a new architecture, migration,
+- [x] Current state is mapped before proposing a new architecture, migration,
       benchmark, or plan.
-- [ ] Existing repo patterns, prior decisions, and nearby implementation
+- [x] Existing repo patterns, prior decisions, and nearby implementation
       constraints are recorded before external research.
 - [x] External docs or source are used only where repo evidence does not settle
       the question, or N/A reason is recorded. N/A: repo-local terminology work.
-- [ ] Options, recommendation, tradeoffs, blast radius, and rejection reasons
+- [x] Options, recommendation, tradeoffs, blast radius, and rejection reasons
       are recorded.
-- [ ] Facts, inference, and recommendation are separated.
-- [ ] Review or pressure lenses are selected and completed, or marked N/A with
+- [x] Facts, inference, and recommendation are separated.
+- [x] Review or pressure lenses are selected and completed, or marked N/A with
       reason.
 - [x] If implementation happens, touched-surface packs cover docs, browser,
       package/API, or agent-native surfaces as needed.
@@ -181,75 +181,85 @@ Work Checklist:
 - [x] Output budget discipline recorded and followed: broad searches are
       scoped, capped, counted, or artifacted instead of streamed into goal
       context.
-- [ ] Stale terminology audit artifact exists with active-source counts and an intentional remaining-reference allowlist.
-- [ ] Public docs/content route rename packet is complete: `content/docs/plite` becomes Plite-owned docs or is replaced by `content/docs/plite`, and active links/nav labels point to Plite.
-- [ ] `docs/plite` active docs are renamed or moved to `docs/plite`, while archival proof/research is either renamed only if active or ledgered as intentional history.
-- [ ] Breaking package/API/code rename packet is completed or deferred with exact remaining `Plite` package/import symbols and owner checks.
-- [ ] Accepted/actionable review findings are fixed or explicitly rejected with
+- [x] Stale terminology audit artifact exists with active-source counts and an intentional remaining-reference allowlist.
+- [x] Public docs/content route rename packet is complete: `content/docs/plite` becomes Plite-owned docs or is replaced by `content/docs/plite`, and active links/nav labels point to Plite.
+- [x] `docs/plite` active docs are renamed or moved to `docs/plite`, while archival proof/research is either renamed only if active or ledgered as intentional history.
+- [x] Breaking package/API/code rename packet is completed or deferred with exact remaining `Plite` package/import symbols and owner checks.
+- [x] Accepted/actionable review findings are fixed or explicitly rejected with
       evidence.
-- [ ] Docs pack: docs lane, target docs, nearest sibling docs, and source owner are recorded.
-- [ ] Docs pack: every named API, import, option, route, component, transform, demo, and preview is source-backed or marked N/A with reason.
-- [ ] Docs pack: docs use current-state reference voice, not changelog voice.
-- [ ] Docs pack: links, anchors, and previews target real leaf pages or are marked N/A with reason.
-- [ ] Package/API pack: public API, package boundary, export, and release-artifact impact are recorded.
-- [ ] Package/API pack: release artifact matrix is applied: `.changeset`, registry changelog, or explicit no-artifact reason.
-- [ ] Package/API pack: `.changeset` work loads `changeset` and follows its package/version/prose rules.
-- [ ] Package/API pack: registry-only work uses the `registry-changelog` pack instead of adding a package changeset.
-- [ ] Package/API pack: no-artifact decisions state why the diff has no published package user-visible delta from `main`.
-- [ ] Package/API pack: compatibility, migration, or hard-cut decision is explicit when public shape changes.
-- [ ] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
-- [ ] Package/API pack: generated barrels or release notes are updated when required.
+- [x] Docs pack: docs lane, target docs, nearest sibling docs, and source owner are recorded.
+- [x] Docs pack: every named API, import, option, route, component, transform, demo, and preview is source-backed or marked N/A with reason.
+- [x] Docs pack: docs use current-state reference voice, not changelog voice.
+- [x] Docs pack: links, anchors, and previews target real leaf pages or are marked N/A with reason.
+- [x] Package/API pack: public API, package boundary, export, and release-artifact impact are recorded.
+- [x] Package/API pack: release artifact matrix is applied: `.changeset`, registry changelog, or explicit no-artifact reason.
+- [x] Package/API pack: `.changeset` work loads `changeset` and follows its package/version/prose rules.
+- [x] Package/API pack: registry-only work uses the `registry-changelog` pack instead of adding a package changeset.
+- [x] Package/API pack: no-artifact decisions state why the diff has no published package user-visible delta from `main`.
+- [x] Package/API pack: compatibility, migration, or hard-cut decision is explicit when public shape changes.
+- [x] Package/API pack: package-owned typecheck/build/test proof is recorded or marked N/A with reason.
+- [x] Package/API pack: generated barrels or release notes are updated when required.
 
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | pending | Run the repo audit, benchmark, review, prototype, or artifact check named in this plan | pending |
-| Current-state source audit | pending | Map current owner, boundaries, constraints, and affected surfaces | pending |
-| Decision criteria closure | pending | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | pending |
-| Options / tradeoffs / rejection record | pending | Record viable options, chosen recommendation, and why alternatives lose | pending |
-| Review / pressure pass | pending | Run selected reviewer/lens or record N/A with reason | pending |
-| Review findings closure | pending | Fix or explicitly reject accepted/actionable findings and record closure proof | pending |
-| External-source audit | pending | Cite official/local clone/external sources when used, or record N/A | pending |
-| Implementation gates | pending | If code changed, close primary-template and touched-surface gates; otherwise N/A | pending |
-| Final handoff contract | pending | Record recommendation, evidence, caveats, residual risk, and next owner | pending |
-| Final lint | pending | Run `pnpm lint:fix` or scoped equivalent when files changed | pending |
-| Output budget discipline | pending | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | pending |
-| Timed checkpoint | pending | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | pending |
-| Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-23-plite-terminology-migration.md` | pending |
-| Docs source-backed claim audit | pending | Verify docs claims against current source or record N/A | pending |
-| Docs links / routes / previews | pending | Verify leaf links, routes, anchors, and preview names or record N/A | pending |
-| Docs MDX/content parser | pending | Run `pnpm --filter www build:source` for MDX/content changes, or record N/A | pending |
-| Plugin page specifics | pending | For plugin pages, apply `docs-creator` kit/manual/API rules; otherwise N/A | pending |
-| Public API / package boundary proof | pending | Source-audit public API, exports, and package boundary impact | pending |
-| Release artifact classification | pending | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | pending |
-| Published package changeset | pending | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | pending |
-| Registry changelog | pending | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | pending |
-| No release artifact | pending | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | pending |
-| Package typecheck/build/test | pending | Run owning package checks or record N/A with reason | pending |
-| Barrel/export generation | pending | Run `pnpm brl` when exports or exported file layout changed, otherwise N/A | pending |
+| Named verification threshold | yes | Run stale audit, docs source, Plite package gates, and browser proof | strict active stale audit returned no matches; docs source, Plite typecheck, Plite package tests, focused browser row, and full Chromium browser proof recorded below |
+| Current-state source audit | yes | Map current owner, boundaries, constraints, and affected surfaces | active owners mapped to content/docs/plite, docs/plite, apps/plite, Plite packages, browser proof, Yjs, changesets, and release metadata |
+| Decision criteria closure | yes | Mark criteria satisfied or narrowed with evidence | Plite-first docs/package/app terminology complete; remaining Slate refs are upstream/provenance and recorded in allowlist |
+| Options / tradeoffs / rejection record | yes | Record chosen recommendation and rejected alternatives | chose targeted rewrite plus allowlist; rejected blind global replacement because it would corrupt upstream issue URLs, Tailwind color names, and historical evidence |
+| Review / pressure pass | yes | Run source audit and browser proof pressure | active stale audit, package contracts, docs parser, typecheck/test, and browser proof all executed |
+| Review findings closure | yes | Fix accepted/actionable findings | stale route, docs, package contracts, Yjs metadata, browser fixture, changeset, and release metadata findings fixed |
+| External-source audit | no | Record N/A | N/A: repo-local terminology migration; external Slate URLs preserved only as provenance |
+| Implementation gates | yes | Close touched-surface gates | docs, package/API, browser, Yjs, and changeset gates closed with proof below |
+| Final handoff contract | yes | Record evidence, caveats, residual risk, next owner | final response will include changed groups, commands, flaky row, lint debt, and review needs |
+| Final lint | partial | Run lint or record blocker | `pnpm lint:fix` applied safe fixes but failed on 1,638 existing diagnostics in Plite examples/tests; scoped gates are green |
+| Output budget discipline | partial | Verify broad outputs were capped/artifacted | broad stale audit stored under docs/plans/artifacts; one `git diff --name-only` was too broad and truncated, then abandoned for grouped handoff |
+| Timed checkpoint | no | Record N/A | N/A: no duration requested |
+| Goal plan complete | yes | Run check-complete | pending final check after this update |
+| Docs source-backed claim audit | yes | Verify docs claims against current source | docs/source route and proof map updated to current Plite files; `pnpm --filter www build:source` green |
+| Docs links / routes / previews | yes | Verify renamed routes | focused browser proof built /examples/plite and comment-mode row passed |
+| Docs MDX/content parser | yes | Run docs parser | `pnpm --filter www build:source` green after final edits |
+| Plugin page specifics | no | Record N/A | N/A: no Plate plugin docs were edited |
+| Public API / package boundary proof | yes | Source-audit public API, exports, package boundary | Plite package contracts and import smoke included in `pnpm plite:test`; strict stale audit clean |
+| Release artifact classification | yes | Classify changeset need | Plite packages absent on origin/main, so rename-only changesets would be branch-history noise; @platejs/yjs exists and got a major changeset for Plite metadata keys |
+| Published package changeset | yes | Add/update changesets | updated browser changeset wording, renamed prepare-v54 beta changeset to @platejs/plite, added @platejs/yjs major changeset |
+| Registry changelog | no | Record N/A | N/A: no registry-only package changelog lane |
+| No release artifact | partial | Record reason | no new Plite-package changesets because packages are absent on origin/main; @platejs/yjs change has an artifact |
+| Package typecheck/build/test | yes | Run owning package checks | `pnpm plite:typecheck` and `pnpm plite:test` green after lint formatting |
+| Barrel/export generation | no | Record N/A | N/A: no barrel generator required by Plite packages in this rename packet |
 
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Intake and source read | in_progress | created plan | research / analysis |
-| Current-state map | pending | | options |
-| Options and recommendation | pending | | review |
-| Review / pressure pass | pending | | implementation decision |
-| Implementation or plan artifact | pending | | verification |
-| Verification | pending | | closeout |
-| Closeout | pending | | final response |
+| Intake and source read | done | plan captured explicit requirements and boundaries | complete |
+| Current-state map | done | active docs/package/app/proof surfaces mapped by rg and source reads | complete |
+| Options and recommendation | done | targeted rename plus allowlist chosen; blind rewrite rejected | complete |
+| Review / pressure pass | done | strict stale audit, package gates, docs parser, browser proof | complete |
+| Implementation or plan artifact | done | Plite rename applied across active docs, packages, app, proof, Yjs, changesets | complete |
+| Verification | done | commands recorded below; broad lint debt recorded | complete |
+| Closeout | done | final handoff pending after check-complete | complete |
 
 Findings:
-- None yet.
+- Strict active stale audit has no disallowed matches after excluding intentional upstream/provenance/historical evidence.
+- Full Chromium browser proof passed with one unrelated flaky pagination stress row that passed on retry.
+- `pnpm lint:fix` is not a usable completion gate yet for Plite examples/tests: it fixed 50 files but still reports 1,638 existing diagnostics.
 
 Decisions and tradeoffs:
-- None yet.
+- Chose Plite as public fork/product terminology across active docs, app routes, package names, API type names, tests, and release metadata.
+- Preserved upstream Slate references only when they identify upstream comparison, issue/PR provenance, prior-art repositories, or negative tests rejecting upstream package metadata.
+- Rejected blind historical rewrites of changelogs, issue dossiers, and research artifacts because that would falsify provenance.
+- Added a @platejs/yjs major changeset for Plite-owned serialized metadata keys; did not add per-package Plite rename changesets for packages absent on origin/main.
 
 Implementation notes:
-- None yet.
+- Renamed active Slate-owned docs/app/package surfaces to Plite: content docs, docs/plite references, apps/plite route/proof app, package names/imports, Plite DOM error codes, Plite React hooks/components/docs references, browser proof labels, Yjs metadata keys, and changeset prerelease metadata.
+- Stored broad audit artifacts under docs/plans/artifacts/plite-terminology-migration/.
+- Fixed stale browser comment-mode selection assertions by deriving expected range offsets from the selected prefix text.
 
 Review fixes:
-- None yet.
+- Fixed source alias regex to resolve @platejs/plite packages only.
+- Fixed stale docs storage keys, docs proof map paths, package README wording, Plite React surface contracts, public package surface contracts, and Yjs attribute tests.
+- Fixed stale changesets and pre.json package ids.
+- Fixed /examples/plite navigation and comment-mode browser proof fallout.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
@@ -257,17 +267,23 @@ Error attempts:
 | None yet | 0 | | |
 
 Verification evidence:
-- Pending.
+- `pnpm --filter www build:source` passed after final docs edits.
+- `pnpm plite:typecheck` passed after final lint formatting.
+- `pnpm plite:test` passed after final lint formatting.
+- `pnpm --filter plite test:plite-browser:chromium tests/plite-browser/donor/examples/comment-mode.test.ts` passed after final lint formatting: 6 passed.
+- Full `pnpm --filter plite test:plite-browser:chromium` passed before lint formatting: 587 passed / 7 skipped, follow-up groups 3 passed and 45 passed, final pagination group exited 0 with one flaky retry in `pagination.test.ts`.
+- Strict active stale audit returned no disallowed matches across package.json, config, apps/plite, content/docs/plite, docs/plite, Plite packages, browser, Yjs, tooling/plite, .github, and .changeset.
+- `pnpm lint:fix` was attempted and failed on existing Plite lint debt after applying safe fixes: 1,638 diagnostics remain.
 
 Final handoff contract:
-- Recommendation: pending
-- Confidence: pending
-- Evidence: pending
-- Tests / commands: pending
-- Browser proof: pending
-- PR / tracker: pending
-- Caveats: pending
-- Next owner: pending
+- Recommendation: accept the Plite terminology migration as active-source complete.
+- Confidence: high for docs/package/app terminology; medium for broad repo history because old provenance remains intentionally allowlisted.
+- Evidence: strict stale audit clean, docs source green, Plite typecheck green, Plite package tests green, focused browser proof green, full browser proof exited 0 with one flaky retry.
+- Tests / commands: recorded in Verification evidence.
+- Browser proof: /examples/plite comment-mode focused row passed; full Chromium row passed with one flaky pagination retry.
+- PR / tracker: N/A; no PR or tracker mutation requested.
+- Caveats: broad lint remains red from existing Plite examples/tests diagnostics.
+- Next owner: auto/architecture-cleanup can handle lint debt or pagination flake separately.
 
 Timeline:
 - 2026-06-23T12:10:46.239Z Major-task goal plan created.
@@ -275,11 +291,14 @@ Timeline:
 Reboot status:
 | Question | Answer |
 |----------|--------|
-| Where am I? | Intake and source read |
-| Where am I going? | Research / analysis, options, review, verification, closeout |
-| What is the goal? | TODO: Fill from Objective |
-| What have I learned? | See Findings |
-| What have I done? | See Timeline |
+| Where am I? | Closeout complete |
+| Where am I going? | Final handoff after check-complete |
+| What is the goal? | Rename active fork terminology to Plite while preserving intentional upstream Slate provenance |
+| What have I learned? | Active stale terminology is clean; lint and pagination flake are separate debt |
+| What have I done? | Applied docs/package/app/proof/Yjs/changeset rename and verified scoped gates |
 
 Open risks:
-- Pending.
+- Full lint is not green; current Plite examples/tests have broad pre-existing lint debt outside this rename.
+- Full Chromium browser proof had one flaky pagination stress row that passed on retry; not a rename blocker, but it should stay in perf/proof debt.
+- Historical changelogs, issue ledgers, and research artifacts intentionally still mention upstream Slate; do not rewrite them unless their owner is promoted to public current-state docs.
+

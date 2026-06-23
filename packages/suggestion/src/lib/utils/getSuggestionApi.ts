@@ -1,8 +1,9 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import type { BaseSuggestionConfig } from '../BaseSuggestionPlugin';
 
 export const getSuggestionApi = (
-  editor: SlateEditor
+  editor: BasePlateEditor
 ): BaseSuggestionConfig['api']['suggestion'] =>
-  (editor.api as SlateEditor['api'] & BaseSuggestionConfig['api']).suggestion;
+  (editor.api as BasePlateEditor['api'] & BaseSuggestionConfig['api'])
+    .suggestion;

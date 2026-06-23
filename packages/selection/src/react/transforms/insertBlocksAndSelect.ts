@@ -1,11 +1,16 @@
 import type { PlateEditor } from 'platejs/react';
 
-import { type Element, type Path, PathApi } from '@platejs/slate';
+import {
+  type Element,
+  type NodeEntry,
+  type Path,
+  PathApi,
+} from '@platejs/plite';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 
 const getInsertedElement = (editor: PlateEditor, path: Path) => {
-  const node = editor.api.node<Element>(path)?.[0];
+  const node = (editor.api.node(path) as NodeEntry<Element> | undefined)?.[0];
 
   if (!node) {
     throw new Error(

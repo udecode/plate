@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 
@@ -24,7 +24,7 @@ describe('insertTable', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -56,9 +56,9 @@ describe('insertTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -85,7 +85,7 @@ describe('insertTable', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -118,9 +118,9 @@ describe('insertTable', () => {
           <hp>test</hp>
           <hp>another</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -156,7 +156,7 @@ describe('insertTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -194,9 +194,9 @@ describe('insertTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -230,7 +230,7 @@ describe('insertTable', () => {
           </htable>
           <hp>after</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -270,9 +270,9 @@ describe('insertTable', () => {
           </htable>
           <hp>after</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,
@@ -308,7 +308,7 @@ describe('insertTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -346,9 +346,9 @@ describe('insertTable', () => {
             </htr>
           </htable>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         nodeId: true,
         plugins: getTestTablePlugins({ disableMerge }),
         selection: input.selection,

@@ -1,4 +1,4 @@
-import type { Operation } from '@platejs/slate';
+import type { Operation } from '@platejs/plite';
 import * as Y from 'yjs';
 
 import { toYjsAttributeRecord } from './attributes';
@@ -14,7 +14,7 @@ import {
   SPLIT_UNDO_TEXT_ATTRIBUTE,
   yjsTextContentEndsWith,
 } from './document';
-import { applySlateOperationToYjs } from './operations';
+import { applyPliteOperationToYjs } from './operations';
 import { nextPath, parentPath, pathsEqual } from './path';
 import {
   appendElementText,
@@ -246,8 +246,8 @@ export const createYjsSplitHistoryAdapter = ({
         redo.splitHistory.elementProperties
       );
 
-      applySlateOperationToYjs(root, textSplit);
-      applySlateOperationToYjs(root, elementSplit);
+      applyPliteOperationToYjs(root, textSplit);
+      applyPliteOperationToYjs(root, elementSplit);
     }, historyOrigin);
 
     undoManagerAdapter.moveRedoToUndo(redo.item);

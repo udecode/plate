@@ -1,10 +1,10 @@
 import type {
-  SlateBrowserDestructiveEditingGauntletOptions,
-  SlateBrowserScenarioStep,
+  PliteBrowserDestructiveEditingGauntletOptions,
+  PliteBrowserScenarioStep,
 } from './types';
 
 /** Create a destructive editing conformance scenario. */
-export const createSlateBrowserDestructiveEditingGauntlet = ({
+export const createPliteBrowserDestructiveEditingGauntlet = ({
   deleteAfterPasteKey = 'Backspace',
   domShape,
   followUpText,
@@ -20,7 +20,7 @@ export const createSlateBrowserDestructiveEditingGauntlet = ({
   wordDeleteIterations = 4,
   wordDeleteKey = 'Alt+Backspace',
   wordDeleteSelection,
-}: SlateBrowserDestructiveEditingGauntletOptions): SlateBrowserScenarioStep[] => [
+}: PliteBrowserDestructiveEditingGauntletOptions): PliteBrowserScenarioStep[] => [
   {
     kind: 'select',
     label: 'select-paste-range',
@@ -139,7 +139,7 @@ export const createSlateBrowserDestructiveEditingGauntlet = ({
   },
   ...Array.from(
     { length: Math.max(1, wordDeleteIterations) },
-    (_, index): SlateBrowserScenarioStep[] => [
+    (_, index): PliteBrowserScenarioStep[] => [
       {
         key: wordDeleteKey,
         kind: 'press',

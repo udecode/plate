@@ -1,7 +1,7 @@
-import { createSlateEditor } from '../editor';
+import { createBasePlateEditor } from '../editor';
 import { isType } from './isType';
 
-const editor = createSlateEditor({
+const editor = createBasePlateEditor({
   value: [{ children: [{ text: 'test' }], type: 'p' }],
 });
 

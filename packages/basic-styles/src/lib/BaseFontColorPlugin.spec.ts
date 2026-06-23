@@ -1,4 +1,4 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import { BaseFontColorPlugin } from './BaseFontColorPlugin';
 
@@ -19,7 +19,7 @@ const runAddMarkTx = (value: string) => {
 
 describe('BaseFontColorPlugin', () => {
   it('parses html color styles into leaf marks', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFontColorPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseFontColorPlugin);

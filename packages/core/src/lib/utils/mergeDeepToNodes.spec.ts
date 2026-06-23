@@ -1,4 +1,4 @@
-import { ElementApi, TextApi } from '@platejs/slate';
+import { ElementApi, TextApi } from '@platejs/plite';
 
 import { mergeDeepToNodes } from './mergeDeepToNodes';
 

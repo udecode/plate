@@ -4,9 +4,9 @@ import React from 'react';
 
 import { render } from '@testing-library/react';
 
-import { createSlatePlugin } from '../../lib';
+import { createEditorPlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
-import { PlateSlate } from '../components/PlateSlate';
+import { Plite } from '../components/Plite';
 import { createPlateEditor } from '../editor/withPlate';
 import { useElement, useElementSelector, usePath } from '../stores';
 import { pipeRenderElement } from './pipeRenderElement';
@@ -20,8 +20,7 @@ const createValue = (id?: string) =>
     },
   ] as any;
 
-const createLegacyPlateEditor = (options: any) =>
-  createPlateEditor({ runtime: 'legacy', ...options } as any);
+const createTestPlateEditor = (options: any) => createPlateEditor(options);
 
 const createFallbackValue = () =>
   [
@@ -44,9 +43,9 @@ const renderPipe = (editor: ReturnType<typeof createPlateEditor>) => {
 
   return render(
     <Plate editor={editor}>
-      <PlateSlate>
+      <Plite>
         <RenderProbe />
-      </PlateSlate>
+      </Plite>
     </Plate>
   );
 };
@@ -64,46 +63,41 @@ const renderPipeBare = (editor: ReturnType<typeof createPlateEditor>) => {
 
   return render(
     <Plate editor={editor}>
-      <PlateSlate>
+      <Plite>
         <RenderProbe />
-      </PlateSlate>
+      </Plite>
     </Plate>
   );
 };
 
 describe('pipeRenderElement', () => {
   it('renders the default paragraph element with the paragraph plugin class', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       navigationFeedback: false,
       plugins: [],
       value: createValue(),
     } as any);
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toBeInTheDocument();
-    expect(element).toHaveClass('slate-p');
+    expect(element).toHaveClass('plite-p');
     expect(element?.tagName).toBe('DIV');
   });
 
-  it('resolves the node path on the plain fast path without editor.findPath', () => {
-    const editor = createLegacyPlateEditor({
+  it('resolves the node path on the plain fast path', () => {
+    const editor = createTestPlateEditor({
       navigationFeedback: false,
       plugins: [],
       value: createValue(),
     } as any);
 
-    editor.api.findPath = () => {
-      throw new Error('unexpected findPath call');
-    };
-
     expect(() => renderPipeBare(editor)).not.toThrow();
-
   });
 
   it('keeps first-block composing state sync on the plain fast path', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       navigationFeedback: false,
       plugins: [],
       value: createValue(),
@@ -117,23 +111,18 @@ describe('pipeRenderElement', () => {
     expect(editor.store.get('composing')).toBe(false);
   });
 
-  it('resolves the node path on the block-id fast path without editor.findPath', () => {
-    const editor = createLegacyPlateEditor({
+  it('resolves the node path on the block-id fast path', () => {
+    const editor = createTestPlateEditor({
       navigationFeedback: false,
       plugins: [],
       value: createValue('block-1'),
     } as any);
 
-    editor.api.findPath = () => {
-      throw new Error('unexpected findPath call');
-    };
-
     expect(() => renderPipeBare(editor)).not.toThrow();
-
   });
 
   it('preserves non-string block ids on the block-id fast path', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       navigationFeedback: false,
       plugins: [],
       value: [
@@ -146,15 +135,15 @@ describe('pipeRenderElement', () => {
     } as any);
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toHaveAttribute('data-block-id', '123');
   });
 
   it('keeps plugin render.as behavior', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'p',
           node: {
             isElement: true,
@@ -169,7 +158,7 @@ describe('pipeRenderElement', () => {
     });
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element?.tagName).toBe('ARTICLE');
   });
@@ -184,9 +173,9 @@ describe('pipeRenderElement', () => {
         </section>
       );
     };
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'p',
           node: {
             isElement: true,
@@ -201,16 +190,16 @@ describe('pipeRenderElement', () => {
     });
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element?.tagName).toBe('SECTION');
     expect(element).toHaveAttribute('data-context-path', '0');
   });
 
-  it('preserves Slate children for void render.as tags on the fast path', () => {
-    const editor = createLegacyPlateEditor({
+  it('preserves Plite children for void render.as tags on the fast path', () => {
+    const editor = createTestPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'hr',
           node: {
             isElement: true,
@@ -242,12 +231,12 @@ describe('pipeRenderElement', () => {
 
     const { container } = render(
       <Plate editor={editor}>
-        <PlateSlate>
+        <Plite>
           <RenderProbe />
-        </PlateSlate>
+        </Plite>
       </Plate>
     );
-    const rendered = container.querySelector('[data-slate-node="element"]');
+    const rendered = container.querySelector('[data-plite-node="element"]');
 
     expect(rendered).toBeInTheDocument();
     expect(rendered?.tagName).toBe('DIV');
@@ -258,9 +247,9 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps global aboveNodes wrappers', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'above',
           render: {
             aboveNodes:
@@ -279,8 +268,8 @@ describe('pipeRenderElement', () => {
     expect(getByTestId('above')).toBeInTheDocument();
   });
 
-  it('passes the node path to renderElement fallback props without editor findPath', () => {
-    const editor = createLegacyPlateEditor({
+  it('passes the node path to renderElement fallback props', () => {
+    const editor = createTestPlateEditor({
       plugins: [],
       value: createFallbackValue(),
     });
@@ -302,9 +291,9 @@ describe('pipeRenderElement', () => {
 
     render(
       <Plate editor={editor}>
-        <PlateSlate>
+        <Plite>
           <RenderProbe />
-        </PlateSlate>
+        </Plite>
       </Plate>
     );
 
@@ -312,9 +301,9 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps plugin node.props behavior', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'p',
           node: {
             isElement: true,
@@ -329,16 +318,16 @@ describe('pipeRenderElement', () => {
     });
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toHaveAttribute('data-probe', 'yes');
   });
 
   it('runs inactive belowNodes wrappers under element context', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       navigationFeedback: false,
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'inactive-below',
           render: {
             belowNodes: ({ element }: any) => {
@@ -357,14 +346,14 @@ describe('pipeRenderElement', () => {
 
     const { container } = renderPipe(editor);
 
-    expect(container.querySelector('[data-slate-node="element"]')).toBeTruthy();
+    expect(container.querySelector('[data-plite-node="element"]')).toBeTruthy();
   });
 
   it('keeps plain fast-path markup for inject.nodeProps', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       navigationFeedback: false,
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -385,20 +374,16 @@ describe('pipeRenderElement', () => {
       ] as any,
     } as any);
 
-    editor.api.findPath = () => {
-      throw new Error('unexpected findPath call');
-    };
-
     const { container } = renderPipeBare(editor);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect((element as HTMLElement).style.listStyleType).toBe('disc');
   });
 
   it('keeps element context for inject.nodeProps transform hooks', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -431,16 +416,16 @@ describe('pipeRenderElement', () => {
     });
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toHaveAttribute('data-context-path', '0');
     expect(element).toHaveAttribute('data-context-type', 'p');
   });
 
   it('keeps element store context for inject.nodeProps transform hooks', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -473,15 +458,15 @@ describe('pipeRenderElement', () => {
     });
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toHaveAttribute('data-selected-type', 'p');
   });
 
   it('keeps pathless inject.nodeProps on the wrapped directional path', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -500,7 +485,7 @@ describe('pipeRenderElement', () => {
           },
           key: 'list',
         }),
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'p',
           node: {
             isElement: true,
@@ -523,7 +508,7 @@ describe('pipeRenderElement', () => {
     });
 
     const { container } = renderPipe(editor);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(element).toHaveAttribute('role', 'listitem');
     expect((element as HTMLElement).style.display).toBe('list-item');
@@ -531,9 +516,9 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps pathless inject.nodeProps when active belowNodes wrappers are present', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           inject: {
             nodeProps: {
               nodeKey: 'listStyleType',
@@ -552,7 +537,7 @@ describe('pipeRenderElement', () => {
           },
           key: 'list',
         }),
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'active-below',
           render: {
             belowNodes: ({ element }: any) => {
@@ -583,7 +568,7 @@ describe('pipeRenderElement', () => {
     });
 
     const { container, getByTestId } = renderPipe(editor);
-    const element = container.querySelector('[data-slate-node="element"]');
+    const element = container.querySelector('[data-plite-node="element"]');
 
     expect(getByTestId('active-below')).toBeInTheDocument();
     expect(getByTestId('active-below')).toHaveAttribute('data-path', '0');
@@ -593,9 +578,9 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps plugin selection affinity behavior on the plain fast path', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'p',
           node: {
             isElement: true,
@@ -619,9 +604,9 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps editOnly behavior on the plain fast path in read-only mode', () => {
-    const editor = createLegacyPlateEditor({
+    const editor = createTestPlateEditor({
       plugins: [
-        createSlatePlugin({
+        createEditorPlugin({
           editOnly: true,
           key: 'p',
           node: {
@@ -636,6 +621,6 @@ describe('pipeRenderElement', () => {
 
     const { container } = renderPipe(editor);
 
-    expect(container.querySelector('[data-slate-node="element"]')).toBeNull();
+    expect(container.querySelector('[data-plite-node="element"]')).toBeNull();
   });
 });

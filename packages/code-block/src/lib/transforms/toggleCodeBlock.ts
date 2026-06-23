@@ -1,8 +1,8 @@
-import type { ElementEntry, SlateEditor } from 'platejs';
+import type { ElementEntry, BasePlateEditor } from 'platejs';
 
 import { ElementApi, KEYS } from 'platejs';
 
-export const toggleCodeBlock = (editor: SlateEditor) => {
+export const toggleCodeBlock = (editor: BasePlateEditor) => {
   if (!editor.selection) return;
 
   const codeBlockType = editor.getType(KEYS.codeBlock);
@@ -14,7 +14,7 @@ export const toggleCodeBlock = (editor: SlateEditor) => {
   const codeBlockEntries = Array.from(
     editor.api.nodes({
       at: editor.selection,
-      match: (node) =>
+      match: (node: unknown) =>
         ElementApi.isElement(node) && node.type === codeBlockType,
     })
   ).reverse() as ElementEntry[];
@@ -29,7 +29,7 @@ export const toggleCodeBlock = (editor: SlateEditor) => {
       });
       tx.nodes.unwrap({
         at: codeBlockPath,
-        match: (node) =>
+        match: (node: unknown) =>
           ElementApi.isElement(node) && node.type === codeBlockType,
         split: true,
       });

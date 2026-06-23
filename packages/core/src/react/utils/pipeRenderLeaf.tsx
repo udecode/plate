@@ -74,7 +74,7 @@ export const pipeRenderLeaf = (
 
       if (canUseSimpleLeaf) {
         const entry = {
-          className: plugin.node.type ? `slate-${plugin.node.type}` : undefined,
+          className: plugin.node.type ? `plite-${plugin.node.type}` : undefined,
           editOnly: plugin.editOnly,
           key: leafKey,
           selectionAffinity: plugin.rules.selection?.affinity,

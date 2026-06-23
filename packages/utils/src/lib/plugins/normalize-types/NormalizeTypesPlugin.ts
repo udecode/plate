@@ -1,9 +1,9 @@
 import {
-  createTSlatePlugin,
+  createEditorPlugin,
   type PluginConfig,
-  type SlatePlugin,
+  type EditorPlugin,
 } from '@platejs/core';
-import type { Path } from '@platejs/slate';
+import type { Path } from '@platejs/plite';
 
 import { KEYS } from '../../plate-keys';
 
@@ -31,9 +31,9 @@ type Rule = {
   type?: string;
 };
 
-export const NormalizeTypesPlugin: SlatePlugin<NormalizeTypesConfig> =
+export const NormalizeTypesPlugin: EditorPlugin<NormalizeTypesConfig> =
   Object.assign(
-    createTSlatePlugin<NormalizeTypesConfig>({
+    createEditorPlugin<NormalizeTypesConfig>({
       key: KEYS.normalizeTypes,
       options: {
         rules: [],

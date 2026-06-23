@@ -1,5 +1,5 @@
 /** One browser behavior family owned by a feature area. */
-export type SlateBrowserFeatureContractRow = {
+export type PliteBrowserFeatureContractRow = {
   assertions: readonly string[];
   family: string;
   feature: string;
@@ -7,30 +7,30 @@ export type SlateBrowserFeatureContractRow = {
 };
 
 /** Declarative browser contract bundle for one feature area. */
-export type SlateBrowserFeatureContractDefinition = {
+export type PliteBrowserFeatureContractDefinition = {
   feature: string;
-  rows: readonly Omit<SlateBrowserFeatureContractRow, 'feature'>[];
+  rows: readonly Omit<PliteBrowserFeatureContractRow, 'feature'>[];
 };
 
 /** Indexed browser contract registry built from feature definitions. */
-export type SlateBrowserFeatureContractRegistry = {
-  rowByFamily: ReadonlyMap<string, SlateBrowserFeatureContractRow>;
-  rows: readonly SlateBrowserFeatureContractRow[];
+export type PliteBrowserFeatureContractRegistry = {
+  rowByFamily: ReadonlyMap<string, PliteBrowserFeatureContractRow>;
+  rows: readonly PliteBrowserFeatureContractRow[];
 };
 
 /** Preserve a feature contract definition with exact literal family names. */
-export const defineSlateBrowserFeatureContract = <
-  T extends SlateBrowserFeatureContractDefinition,
+export const definePliteBrowserFeatureContract = <
+  T extends PliteBrowserFeatureContractDefinition,
 >(
   contract: T
 ): T => contract;
 
 /** Build and validate a browser contract registry from feature definitions. */
-export const createSlateBrowserFeatureContractRegistry = (
-  definitions: readonly SlateBrowserFeatureContractDefinition[]
-): SlateBrowserFeatureContractRegistry => {
-  const rows: SlateBrowserFeatureContractRow[] = [];
-  const rowByFamily = new Map<string, SlateBrowserFeatureContractRow>();
+export const createPliteBrowserFeatureContractRegistry = (
+  definitions: readonly PliteBrowserFeatureContractDefinition[]
+): PliteBrowserFeatureContractRegistry => {
+  const rows: PliteBrowserFeatureContractRow[] = [];
+  const rowByFamily = new Map<string, PliteBrowserFeatureContractRow>();
 
   for (const definition of definitions) {
     if (!definition.feature) {

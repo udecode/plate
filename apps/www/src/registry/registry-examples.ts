@@ -153,11 +153,11 @@ export const examples: Registry['items'] = [
     dependencies: ['remark-emoji'],
     files: [
       {
-        path: 'examples/markdown-to-slate-demo.tsx',
+        path: 'examples/markdown-to-plite-demo.tsx',
         type: 'registry:example',
       },
     ],
-    name: 'markdown-to-slate-demo',
+    name: 'markdown-to-plite-demo',
     registryDependencies: ['@plate/editor-kit', '@plate/use-debounce'],
     type: 'registry:example',
   },
@@ -968,7 +968,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      description: 'Copy paste from CSV to Slate.',
+      description: 'Copy paste from CSV to Plite.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
         {
@@ -982,7 +982,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      description: 'Copy paste from DOCX to Slate.',
+      description: 'Copy paste from DOCX to Plite.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
         {
@@ -996,7 +996,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      description: 'Copy paste from HTML to Slate.',
+      description: 'Copy paste from HTML to Plite.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
         {
@@ -1010,7 +1010,7 @@ export const demoExamples: Registry['items'] = (
       type: 'registry:example',
     },
     {
-      description: 'Copy paste from Markdown to Slate.',
+      description: 'Copy paste from Markdown to Plite.',
       files: [
         { path: 'examples/demo.tsx', type: 'registry:example' },
         {

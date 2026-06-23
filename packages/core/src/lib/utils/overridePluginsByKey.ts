@@ -1,16 +1,16 @@
 import defaultsDeep from 'lodash/defaultsDeep.js';
 
-import type { AnySlatePlugin } from '../plugin/SlatePlugin';
+import type { AnyEditorPlugin } from '../plugin/EditorPlugin';
 
 /**
  * Recursive deep merge of each plugin from `override.plugins` into plugin with
  * same key (plugin > plugin.plugins).
  */
 export const overridePluginsByKey = (
-  plugin: AnySlatePlugin,
-  overrideByKey: Record<string, Partial<AnySlatePlugin>> = {},
+  plugin: AnyEditorPlugin,
+  overrideByKey: Record<string, Partial<AnyEditorPlugin>> = {},
   nested = false
-): AnySlatePlugin => {
+): AnyEditorPlugin => {
   if (overrideByKey[plugin.key]) {
     const {
       __extensions: pluginOverridesExtensions,

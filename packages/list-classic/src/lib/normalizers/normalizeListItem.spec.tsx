@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import type { SlateEditor } from '@platejs/core';
-import { createListClassicTestEditor as createSlateEditor } from '../__tests__/createListClassicTestEditor';
+import type { BasePlateEditor } from '@platejs/core';
+import { createListClassicTestEditor as createBasePlateEditor } from '../__tests__/createListClassicTestEditor';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 
@@ -22,7 +22,7 @@ describe('clean up list items', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -32,9 +32,9 @@ describe('clean up list items', () => {
           </hli>
         </hul>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseListPlugin],
       selection: input.selection,
       value: input.children,

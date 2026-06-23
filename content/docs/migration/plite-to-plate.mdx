@@ -199,12 +199,12 @@ if (editor.selection) {
 
 ## Headless Code
 
-Use `createPliteEditor` from `platejs` for non-React importers, serializers, transforms, and tests.
+Use `createBasePlateEditor` from `platejs` for non-React importers, serializers, transforms, and tests.
 
 ```ts title="lib/headless-editor.ts"
-import { createPliteEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
-export const editor = createPliteEditor({
+export const editor = createBasePlateEditor({
   value: [
     {
       children: [{ text: 'Headless document.' }],

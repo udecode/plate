@@ -1,6 +1,6 @@
-import type { Range, Value } from '@platejs/slate';
+import type { Range, Value } from '@platejs/plite';
 
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
 import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
@@ -30,7 +30,7 @@ describe('BaseMentionPlugin', () => {
     editor.read((state) => state.selection.get());
 
   it('configures mention defaults and inserts markable void mention nodes', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseMentionPlugin],
       selection: {
         anchor: { offset: 2, path: [0, 0] },
@@ -73,7 +73,7 @@ describe('BaseMentionPlugin', () => {
     expect(children[2]).toEqual({ text: 'llo' });
   });
 
-  it('routes the mention trigger through the Slate v2 runtime combobox path', () => {
+  it('routes the mention trigger through the Plite runtime combobox path', () => {
     const editor = createMentionRuntimeEditor({
       selection: {
         anchor: { offset: 6, path: [0, 0] },
@@ -249,7 +249,7 @@ describe('BaseMentionPlugin', () => {
   });
 
   it('exposes an inferred mention transaction group', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseMentionPlugin],
       value: [{ children: [{ text: 'hello' }], type: 'p' }],
     });

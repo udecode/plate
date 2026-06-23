@@ -1,7 +1,7 @@
-import type { Element } from '@platejs/slate';
-import { PathApi, type Path } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
+import { PathApi, type Path } from '@platejs/plite';
 import {
-  type SlateEditor,
+  type BasePlateEditor,
   type TTableElement,
   getEditorPlugin,
   KEYS,
@@ -12,7 +12,7 @@ import { insertTableMergeRow } from '../merge/insertTableRow';
 import { getCellTypes } from '../utils/index';
 
 export const insertTableRow = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options: {
     /**
      * Exact path of the row to insert the column at. Pass the table path to

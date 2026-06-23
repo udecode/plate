@@ -1,9 +1,6 @@
+import type { Element } from '@platejs/plite';
 import { type OmitFirst, bindFirst } from '@udecode/utils';
-import {
-  type PluginConfig,
-  createSlatePlugin,
-  createTSlatePlugin,
-} from '@platejs/core';
+import { type PluginConfig, createEditorPlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import {
@@ -38,7 +35,7 @@ export type ListConfig = PluginConfig<
   }
 >;
 
-export const BaseBulletedListPlugin = createSlatePlugin({
+export const BaseBulletedListPlugin = createEditorPlugin({
   key: KEYS.ulClassic,
   node: { isContainer: true, isElement: true },
   parsers: {
@@ -59,7 +56,7 @@ export const BaseBulletedListPlugin = createSlatePlugin({
   },
 }));
 
-export const BaseNumberedListPlugin = createSlatePlugin({
+export const BaseNumberedListPlugin = createEditorPlugin({
   key: KEYS.olClassic,
   node: { isContainer: true, isElement: true },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'OL' }] } } },
@@ -70,7 +67,7 @@ export const BaseNumberedListPlugin = createSlatePlugin({
   },
 }));
 
-export const BaseTaskListPlugin = createSlatePlugin({
+export const BaseTaskListPlugin = createEditorPlugin({
   key: KEYS.taskList,
   node: { isContainer: true, isElement: true },
   options: {
@@ -84,14 +81,14 @@ export const BaseTaskListPlugin = createSlatePlugin({
   },
 }));
 
-export const BaseListItemPlugin = createSlatePlugin({
+export const BaseListItemPlugin = createEditorPlugin({
   key: KEYS.li,
   inject: {
     plugins: {
       [KEYS.html]: {
         parser: {
           preInsert: ({ editor, type }) =>
-            editor.api.some({ match: (node) => node.type === type }),
+            editor.api.some({ match: (node: Element) => node.type === type }),
         },
       },
     },
@@ -101,7 +98,7 @@ export const BaseListItemPlugin = createSlatePlugin({
   render: { as: 'li' },
 });
 
-export const BaseListItemContentPlugin = createSlatePlugin({
+export const BaseListItemContentPlugin = createEditorPlugin({
   key: KEYS.lic,
   node: {
     isElement: true,
@@ -109,7 +106,7 @@ export const BaseListItemContentPlugin = createSlatePlugin({
 });
 
 /** Enables support for bulleted, numbered and to-do lists. */
-export const BaseListPlugin = createTSlatePlugin<ListConfig>({
+export const BaseListPlugin = createEditorPlugin<ListConfig>({
   key: KEYS.listClassic,
   plugins: [
     BaseBulletedListPlugin,
@@ -120,7 +117,7 @@ export const BaseListPlugin = createTSlatePlugin<ListConfig>({
   ],
 })
   .extend(({ editor, getOptions }) => ({
-    slateExtensions: [createListClassicExtension({ editor, getOptions })],
+    editorExtensions: [createListClassicExtension({ editor, getOptions })],
   }))
   .extendTxGroup('toggle', ({ editor }) => () => ({
     bulletedList: bindFirst(toggleBulletedList, editor),

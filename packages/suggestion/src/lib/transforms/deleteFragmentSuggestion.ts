@@ -1,7 +1,7 @@
 import {
   type EditorUpdateTransaction,
   type Range,
-  type SlateEditor,
+  type BasePlateEditor,
   RangeApi,
 } from 'platejs';
 
@@ -9,7 +9,7 @@ import { findSuggestionProps } from '../queries';
 import { setSuggestionNodes } from './setSuggestionNodes';
 
 export const deleteFragmentSuggestion = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     at,
     reverse,

@@ -1,12 +1,12 @@
-import { ElementApi, NodeApi, type Point } from '@platejs/slate';
+import { ElementApi, NodeApi, type Point } from '@platejs/plite';
 
-import type { SlateEditor } from '../../../editor';
+import type { BasePlateEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';
 
 import { getCurrentRuntimeTransforms } from '../../../../internal/currentRuntimeBridge';
 
 export const setAffinitySelection = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   edgeNodes: EdgeNodes,
   affinity: 'backward' | 'forward'
 ) => {
@@ -48,6 +48,19 @@ export const setAffinitySelection = (
 
   if (after === null) {
     setMarks({});
+    return;
+  }
+
+  if (ElementApi.isElement(before[0])) {
+    const afterStart = editor.api.start(after[1]);
+
+    if (afterStart) {
+      select(afterStart);
+    }
+
+    if (!ElementApi.isElement(after[0])) {
+      setMarks(NodeApi.extractProps(after[0]));
+    }
     return;
   }
 

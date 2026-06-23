@@ -1,15 +1,15 @@
 import {
   type Path,
-  type SlateEditor,
-  createSlatePlugin,
+  type BasePlateEditor,
+  createEditorPlugin,
   ElementApi,
   PathApi,
   KEYS,
 } from 'platejs';
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
 const isLiftableBlockquoteChild = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   node: Element,
   path: Path,
   blockquoteType: string
@@ -26,7 +26,7 @@ const isLiftableBlockquoteChild = (
 };
 
 const shouldLiftOnDeleteStart = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   node: Element,
   path: Path,
   blockquoteType: string
@@ -48,7 +48,7 @@ const shouldLiftOnDeleteStart = (
 };
 
 /** Enables support for block quotes, useful for quotations and passages. */
-export const BaseBlockquotePlugin = createSlatePlugin({
+export const BaseBlockquotePlugin = createEditorPlugin({
   key: KEYS.blockquote,
   node: {
     isElement: true,

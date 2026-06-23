@@ -1,4 +1,4 @@
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
 import { ULIST_STYLE_TYPES } from '../types';
 

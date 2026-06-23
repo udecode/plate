@@ -40,11 +40,11 @@ description: 一个支持 RSC/SSR 的最小化、记忆化、只读版本的 Pla
 ### 添加 Kit
 
 ```tsx
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { PlateStatic } from 'platejs/static';
 import { BaseEditorKit } from '@/components/editor/editor-base-kit';
 
-const editor = createSlateEditor({
+const editor = createBasePlateEditor({
   plugins: BaseEditorKit,
   value: [
     { type: 'h1', children: [{ text: 'Server-Rendered Title' }] },
@@ -62,7 +62,7 @@ export default function MyStaticPage() {
 
 查看完整的服务端静态渲染示例：
 
-<ComponentSource name="slate-to-html" />
+<ComponentSource name="plite-to-html" />
 
 </Steps>
 
@@ -70,16 +70,16 @@ export default function MyStaticPage() {
 
 <Steps>
 
-### 创建 Slate 编辑器
+### 创建 Plite 编辑器
 
-使用 `createSlateEditor` 初始化 Slate 编辑器实例，配置所需的插件和组件。这类似于为交互式 `<Plate>` 组件使用 `usePlateEditor`。
+使用 `createBasePlateEditor` 初始化 Plite 编辑器实例，配置所需的插件和组件。这类似于为交互式 `<Plate>` 组件使用 `usePlateEditor`。
 
 ```tsx title="lib/plate-static-editor.ts"
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 // Import your desired base plugins (e.g., BaseHeadingPlugin, MarkdownPlugin)
 // Ensure you are NOT importing from /react subpaths for server environments.
 
-const editor = createSlateEditor({
+const editor = createBasePlateEditor({
   plugins: [
     // Add your list of base plugins here
     // Example: BaseHeadingPlugin, MarkdownPlugin.configure({...})
@@ -99,13 +99,13 @@ const editor = createSlateEditor({
 
 ```tsx title="components/ui/paragraph-node-static.tsx"
 import React from 'react';
-import type { SlateElementProps } from 'platejs/static';
+import type { PliteElementProps } from 'platejs/static';
 
-export function ParagraphElementStatic(props: SlateElementProps) {
+export function ParagraphElementStatic(props: PliteElementProps) {
   return (
-    <SlateElement {...props}>
+    <PliteElement {...props}>
       {props.children}
-    </SlateElement>
+    </PliteElement>
   );
 }
 ```
@@ -132,7 +132,7 @@ export const staticComponents = {
 使用 `<PlateStatic>` 组件，提供配置了组件的 `editor` 实例。
 
 ```tsx title="app/my-static-page/page.tsx (RSC Example)"
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { PlateStatic } from 'platejs/static';
 // import { BaseHeadingPlugin, ... } from '@platejs/basic-nodes'; // etc.
 import { staticComponents } from '@/components/static-components';
@@ -144,7 +144,7 @@ export default async function MyStaticPage() {
     { type: 'p', children: [{ text: 'Content rendered statically.' }] },
   ];
 
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: [/* your base plugins */],
     components: staticComponents,
     value: initialValue,
@@ -267,7 +267,7 @@ export function InteractiveViewer({ value }) {
 在 Next.js App Router（或类似的 RSC 环境）中，`<PlateStatic>` 可以直接在服务器组件中使用：
 
 ```tsx title="app/preview/page.tsx (RSC)"
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { PlateStatic } from 'platejs/static';
 // Example base plugins (ensure non-/react imports)
 // import { BaseHeadingPlugin } from '@platejs/basic-nodes';
@@ -280,7 +280,7 @@ export default async function Page() {
     { type: 'p', children: [{ text: 'This content is static and server-rendered.' }] },
   ];
 
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     // plugins: [BaseHeadingPlugin, /* ...other base plugins */],
     plugins: [], // Add your base plugins
     components: staticComponents,
@@ -302,13 +302,13 @@ export default async function Page() {
 要生成完整的 HTML 字符串（例如用于电子邮件、PDF 或外部系统），请使用 `serializeHtml`。它内部使用了 `<PlateStatic>`。
 
 ```ts title="lib/html-serializer.ts"
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { serializeHtml } from 'platejs/static';
 import { staticComponents } from '@/components/static-components';
 // import { BaseHeadingPlugin, ... } from '@platejs/basic-nodes';
 
 async function getDocumentAsHtml(value: any[]) {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: [/* ...your base plugins... */],
     components: staticComponents,
     value,
@@ -339,7 +339,7 @@ import type { PlateEditor } from 'platejs/core'; // Adjust imports as per your s
 
 interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
   /**
-   * The Plate editor instance, created via `createSlateEditor`.
+   * The Plate editor instance, created via `createBasePlateEditor`.
    * Must include plugins and components relevant to the content being rendered.
    */
   editor: PlateEditor;
@@ -357,7 +357,7 @@ interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 ```
 
--   **`editor`**：使用 `createSlateEditor` 创建的 `PlateEditor` 实例，包含组件配置。
+-   **`editor`**：使用 `createBasePlateEditor` 创建的 `PlateEditor` 实例，包含组件配置。
 -   **`value`**：可选。如果提供，将渲染此 `Descendant` 节点数组，覆盖 `editor.children` 中的当前内容。
 
 ## 后续步骤

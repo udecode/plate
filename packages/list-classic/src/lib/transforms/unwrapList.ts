@@ -1,11 +1,14 @@
-import type { SlateEditor } from '@platejs/core';
-import { type Path, ElementApi, PathApi } from '@platejs/slate';
+import type { BasePlateEditor } from '@platejs/core';
+import { type Path, ElementApi, PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
 
 import { getListTypes } from '../queries/index';
 
-export const unwrapList = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
+export const unwrapList = (
+  editor: BasePlateEditor,
+  { at }: { at?: Path } = {}
+) => {
   const isElementOfType = (node: unknown, type: string) =>
     ElementApi.isElement(node) && node.type === type;
   const isElementOfTypes = (node: unknown, types: string[]) =>

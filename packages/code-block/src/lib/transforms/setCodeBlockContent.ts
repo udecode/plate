@@ -1,15 +1,15 @@
-import type { SlateEditor, TCodeBlockElement } from 'platejs';
+import type { BasePlateEditor, NodeEntry, TCodeBlockElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 export const setCodeBlockContent = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { code, element }: { code: string; element: TCodeBlockElement }
 ) => {
-  const entry = editor.api.node<TCodeBlockElement>({
+  const entry = editor.api.node({
     at: [],
-    match: (node) => node === element,
-  });
+    match: (node: unknown) => node === element,
+  }) as NodeEntry<TCodeBlockElement> | undefined;
 
   if (!entry) return;
 

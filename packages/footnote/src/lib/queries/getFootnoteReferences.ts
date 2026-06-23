@@ -1,10 +1,10 @@
-import type { NodeEntry, SlateEditor } from 'platejs';
+import type { NodeEntry, BasePlateEditor } from 'platejs';
 
 import { getRegistryReferences } from '../registry';
 import type { FootnoteElement } from '../types';
 
 export const getFootnoteReferences = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { identifier }: { identifier: string }
 ) =>
   getRegistryReferences(editor, {

@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import type { Location } from '@platejs/slate';
+import type { Location } from '@platejs/plite';
 
 import type { EditorHandle } from './types';
 

@@ -1,18 +1,18 @@
 export {
-  createSlateBrowserFeatureContractRegistry,
-  defineSlateBrowserFeatureContract,
-  type SlateBrowserFeatureContractDefinition,
-  type SlateBrowserFeatureContractRegistry,
-  type SlateBrowserFeatureContractRow,
+  createPliteBrowserFeatureContractRegistry,
+  definePliteBrowserFeatureContract,
+  type PliteBrowserFeatureContractDefinition,
+  type PliteBrowserFeatureContractRegistry,
+  type PliteBrowserFeatureContractRow,
 } from './feature-contracts';
 export {
-  assertSlateBrowserFirstPartyParityContracts,
-  SLATE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY,
-  SLATE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS,
-  SLATE_BROWSER_FIRST_PARTY_PARITY_FAMILIES,
-  type SlateBrowserFirstPartyParityContractResult,
-  type SlateBrowserFirstPartyParityFamily,
-  type SlateBrowserOperationFamilyContract,
+  assertPliteBrowserFirstPartyParityContracts,
+  PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY,
+  PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS,
+  PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES,
+  type PliteBrowserFirstPartyParityContractResult,
+  type PliteBrowserFirstPartyParityFamily,
+  type PliteBrowserOperationFamilyContract,
 } from './first-party-browser-contracts';
 export {
   type BrowserMobileScenarioId,
@@ -28,17 +28,17 @@ export {
   parseDebugSnapshot,
 } from './proof';
 export {
-  assertSlateBrowserReleaseProof,
+  assertPliteBrowserReleaseProof,
   createBrowserMobileReleaseProofArtifact,
   createPersistentBrowserSoakProofArtifact,
   createReleaseDisciplineProofArtifact,
-  SLATE_BROWSER_RELEASE_DISCIPLINE_GUARDS,
-  type SlateBrowserMobileDeviceProofArtifact,
-  type SlateBrowserReleaseClaim,
-  type SlateBrowserReleaseDisciplineProofArtifact,
-  type SlateBrowserReleaseProofArtifact,
-  type SlateBrowserReleaseProofResult,
-  validateSlateBrowserReleaseProof,
+  PLITE_BROWSER_RELEASE_DISCIPLINE_GUARDS,
+  type PliteBrowserMobileDeviceProofArtifact,
+  type PliteBrowserReleaseClaim,
+  type PliteBrowserReleaseDisciplineProofArtifact,
+  type PliteBrowserReleaseProofArtifact,
+  type PliteBrowserReleaseProofResult,
+  validatePliteBrowserReleaseProof,
 } from './release-proof';
 export {
   isCollapsed,

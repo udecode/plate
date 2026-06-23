@@ -1,10 +1,10 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { ensureFootnoteRegistry } from '../registry';
 
 const NUMERIC_IDENTIFIER_REGEX = /^\d+$/;
 
-export const getNextFootnoteIdentifier = (editor: SlateEditor) => {
+export const getNextFootnoteIdentifier = (editor: BasePlateEditor) => {
   const used = new Set<number>();
   const registry = ensureFootnoteRegistry(editor);
 

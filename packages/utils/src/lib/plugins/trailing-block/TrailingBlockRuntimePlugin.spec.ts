@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@platejs/core';
+import type { BasePlateEditor } from '@platejs/core';
 import { createPlateEditor } from 'platejs/react';
 
 import {
@@ -6,7 +6,7 @@ import {
   type TrailingBlockInsertOptions,
 } from './TrailingBlockPlugin';
 
-describe('TrailingBlockPlugin Slate v2 runtime', () => {
+describe('TrailingBlockPlugin Plite runtime', () => {
   it('appends a trailing block at the root when the last node is invalid', () => {
     const editor = createPlateEditor({
       plugins: [
@@ -14,7 +14,7 @@ describe('TrailingBlockPlugin Slate v2 runtime', () => {
           options: { level: 0, type: 'p' },
         }),
       ],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [
         { children: [{ text: 'one' }], type: 'h1' },
         { children: [{ text: 'two' }], type: 'h1' },
@@ -39,7 +39,7 @@ describe('TrailingBlockPlugin Slate v2 runtime', () => {
           options: { level: 1, type: 'p' },
         }),
       ],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [
         {
           children: [
@@ -74,7 +74,7 @@ describe('TrailingBlockPlugin Slate v2 runtime', () => {
           options: { exclude: ['h1'], level: 0, type: 'p' },
         }),
       ],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [{ children: [{ text: 'one' }], type: 'h1' }],
     });
 
@@ -90,7 +90,7 @@ describe('TrailingBlockPlugin Slate v2 runtime', () => {
   it('allows wrapping the provided trailing-block insert boundary', () => {
     const calls: Array<{ at: number[]; type: string }> = [];
     const insert = (
-      _editor: SlateEditor,
+      _editor: BasePlateEditor,
       { at, insert: runInsert, type }: TrailingBlockInsertOptions
     ) => {
       calls.push({ at, type });
@@ -102,7 +102,7 @@ describe('TrailingBlockPlugin Slate v2 runtime', () => {
           options: { insert, level: 0, type: 'p' },
         }),
       ],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [{ children: [{ text: 'one' }], type: 'h1' }],
     });
 

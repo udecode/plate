@@ -1,4 +1,4 @@
-import type { Element, Path } from '@platejs/slate';
+import type { Element, Path } from '@platejs/plite';
 import type React from 'react';
 import type { PlateEditor } from 'platejs/react';
 

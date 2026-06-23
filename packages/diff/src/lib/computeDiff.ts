@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { Descendant, Element } from '@platejs/slate';
+import type { Descendant, Element } from '@platejs/plite';
 
 import type { DiffProps } from './types';
 

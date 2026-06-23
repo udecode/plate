@@ -31,7 +31,7 @@ describe('SingleLinePlugin', () => {
   it('merge all blocks into the first block', () => {
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: input.children,
     });
 
@@ -39,9 +39,7 @@ describe('SingleLinePlugin', () => {
       tx.normalize({ force: true });
     });
 
-    expect(editor.read((state) => state.value.root())).toEqual(
-      output.children
-    );
+    expect(editor.read((state) => state.value.root())).toEqual(output.children);
   });
 
   it('filter out line break characters from text', () => {
@@ -62,7 +60,7 @@ describe('SingleLinePlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: inputWithLineBreaks.children,
     });
 
@@ -87,7 +85,7 @@ describe('SingleLinePlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       selection: singleLineInput.selection,
       value: singleLineInput.children,
     });
@@ -113,7 +111,7 @@ describe('SingleLinePlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       selection: singleLineInput.selection,
       value: singleLineInput.children,
     });
@@ -144,7 +142,7 @@ describe('SingleLinePlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: emptyBlocksInput.children,
     });
 

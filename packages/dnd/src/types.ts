@@ -1,5 +1,5 @@
-import type { Element } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Element } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 export type DragItemNode = ElementDragItemNode | FileDragItemNode;
 
@@ -13,7 +13,7 @@ export type ElementDragItemNode = {
   [key: string]: unknown;
   editorId: string;
   element: Element;
-  editor?: SlateEditor;
+  editor?: BasePlateEditor;
 };
 
 export type FileDragItemNode = {

@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { Element, PointRef } from '@platejs/slate';
+import type { Element, PointRef } from '@platejs/plite';
 
 import {
   type ComboboxItemProps,

@@ -1,4 +1,4 @@
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 import { isDefined } from '@udecode/utils';
 import cloneDeep from 'lodash/cloneDeep.js';
 
@@ -147,7 +147,7 @@ export const withNodeId: LegacyTransformOverride<NodeIdConfig> = ({
 
   return {
     tf: {
-      apply(operation) {
+      apply(operation: any) {
         const {
           allow,
           disableInsertOverrides,

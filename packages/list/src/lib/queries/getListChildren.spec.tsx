@@ -1,18 +1,17 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import type { Element } from '@platejs/slate';
-import type { Descendant } from '@platejs/slate';
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import type { Descendant, Element, NodeEntry } from '@platejs/plite';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { getListChildren } from './getListChildren';
 
 jsxt;
 
 const createListEditor = (input: Descendant[]) => {
-  const editor = (<editor>{input}</editor>) as any as SlateEditor;
+  const editor = (<editor>{input}</editor>) as any as BasePlateEditor;
 
-  return createSlateEditor({
+  return createBasePlateEditor({
     selection: editor.selection,
     value: editor.children,
   });
@@ -35,7 +34,7 @@ describe('getListChildren', () => {
 
       const editor = createListEditor(input);
 
-      const entry = editor.api.block<Element>();
+      const entry = editor.api.block() as NodeEntry<Element> | undefined;
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([]);
@@ -56,7 +55,7 @@ describe('getListChildren', () => {
 
       const editor = createListEditor(input);
 
-      const entry = editor.api.block<Element>();
+      const entry = editor.api.block() as NodeEntry<Element> | undefined;
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([]);
@@ -96,7 +95,7 @@ describe('getListChildren', () => {
 
       const editor = createListEditor(input);
 
-      const entry = editor.api.block<Element>();
+      const entry = editor.api.block() as NodeEntry<Element> | undefined;
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -143,7 +142,7 @@ describe('getListChildren', () => {
 
       const editor = createListEditor(input);
 
-      const entry = editor.api.block<Element>();
+      const entry = editor.api.block() as NodeEntry<Element> | undefined;
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -188,7 +187,7 @@ describe('getListChildren', () => {
 
       const editor = createListEditor(input);
 
-      const entry = editor.api.block<Element>();
+      const entry = editor.api.block() as NodeEntry<Element> | undefined;
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -232,7 +231,7 @@ describe('getListChildren', () => {
 
       const editor = createListEditor(input);
 
-      const entry = editor.api.block<Element>();
+      const entry = editor.api.block() as NodeEntry<Element> | undefined;
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -268,7 +267,7 @@ describe('getListChildren', () => {
 
       const editor = createListEditor(input);
 
-      const entry = editor.api.block<Element>();
+      const entry = editor.api.block() as NodeEntry<Element> | undefined;
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([[output[0], [1]]] as any);
@@ -289,7 +288,7 @@ describe('getListChildren', () => {
 
       const editor = createListEditor(input);
 
-      const entry = editor.api.block<Element>();
+      const entry = editor.api.block() as NodeEntry<Element> | undefined;
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([]);
@@ -310,7 +309,7 @@ describe('getListChildren', () => {
 
       const editor = createListEditor(input);
 
-      const entry = editor.api.block<Element>();
+      const entry = editor.api.block() as NodeEntry<Element> | undefined;
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([]);
@@ -354,7 +353,7 @@ describe('getListChildren', () => {
 
       const editor = createListEditor(input);
 
-      const entry = editor.api.block<Element>();
+      const entry = editor.api.block() as NodeEntry<Element> | undefined;
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([
@@ -396,7 +395,7 @@ describe('getListChildren', () => {
 
       const editor = createListEditor(input);
 
-      const entry = editor.api.block<Element>();
+      const entry = editor.api.block() as NodeEntry<Element> | undefined;
       const children = getListChildren(editor, entry!);
 
       expect(children).toEqual([

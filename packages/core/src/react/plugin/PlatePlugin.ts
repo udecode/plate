@@ -11,7 +11,7 @@ import type {
   TextOperation,
   Text,
   Value,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import type {
   HotkeysEvent,
   HotkeysOptions,
@@ -22,7 +22,7 @@ import type { TCreatedStoreType } from 'zustand-x';
 
 import type {
   AnyPluginConfig,
-  AnySlatePlugin,
+  AnyEditorPlugin,
   BaseDeserializer,
   BaseHtmlDeserializer,
   BaseInjectProps,
@@ -51,9 +51,9 @@ import type {
   PlatePluginTxGroups,
   PluginTx,
   PluginConfig,
-  SlatePlugin,
-  SlatePluginConfig,
-  SlatePluginContext,
+  EditorPlugin,
+  EditorPluginConfig,
+  EditorPluginContext,
   WithAnyKey,
 } from '../../lib';
 import type { CurrentRuntimeEditorApi as EditorApi } from '../../internal/currentRuntimeBridge';
@@ -145,7 +145,7 @@ export type HtmlSerializer<C extends AnyPluginConfig = PluginConfig> = {
 
 export type InferConfig<P> = P extends
   | PlatePlugin<infer C>
-  | SlatePlugin<infer C>
+  | EditorPlugin<infer C>
   ? C
   : never;
 
@@ -281,7 +281,7 @@ export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
   };
 };
 
-export type SlateExtensionFactory<C extends AnyPluginConfig = PluginConfig> = (
+export type EditorExtensionFactory<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C>
 ) => EditorExtensionInput | readonly EditorExtensionInput[] | undefined;
 
@@ -327,9 +327,9 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
       decorate?: Decorate<WithAnyKey<C>>;
       /** @see {@link ExtendEditor} */
       extendEditor?: ExtendEditor<WithAnyKey<C>>;
-      slateExtensions?:
+      editorExtensions?:
         | readonly EditorExtensionInput[]
-        | SlateExtensionFactory<WithAnyKey<C>>;
+        | EditorExtensionFactory<WithAnyKey<C>>;
       /** Transform the initial value before the editor is ready. */
       transformInitialValue?: TransformInitialValue<WithAnyKey<C>>;
       /** Normalize initial value before passing it into the editor. */
@@ -376,11 +376,11 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         ) => Partial<PlatePlugin<AnyPluginConfig>>;
       }>;
       node: {
-        /** Override `data-slate-leaf` element attributes */
+        /** Override `data-plite-leaf` element attributes */
         leafProps?: LeafNodeProps<WithAnyKey<C>>;
         /** Override node attributes */
         props?: NodeProps<WithAnyKey<C>>;
-        /** Override `data-slate-node="text"` element attributes */
+        /** Override `data-plite-node="text"` element attributes */
         textProps?: TextNodeProps<WithAnyKey<C>>;
       };
       override: {
@@ -409,7 +409,7 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
               serializer?: HtmlSerializer<WithAnyKey<C>>;
             }>;
             htmlReact?: Nullable<{
-              /** Function to deserialize HTML to Slate nodes using React. */
+              /** Function to deserialize HTML to Plite nodes using React. */
               serializer?: HtmlReactSerializer<WithAnyKey<C>>;
             }>;
           };
@@ -571,7 +571,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
           InferTx<C>
         >
   ) => PlatePlugin<C>;
-  configurePlugin: <P extends AnyPlatePlugin | AnySlatePlugin>(
+  configurePlugin: <P extends AnyPlatePlugin | AnyEditorPlugin>(
     plugin: Partial<P>,
     config:
       | (P extends AnyPlatePlugin
@@ -583,7 +583,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               InferSelectors<P>,
               InferTx<P>
             >
-          : SlatePluginConfig<
+          : EditorPluginConfig<
               any,
               InferOptions<P>,
               InferApi<P>,
@@ -594,7 +594,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       | ((
           ctx: P extends AnyPlatePlugin
             ? PlatePluginContext<P>
-            : SlatePluginContext<P>
+            : EditorPluginContext<P>
         ) => P extends AnyPlatePlugin
           ? PlatePluginConfig<
               any,
@@ -604,7 +604,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               InferSelectors<P>,
               InferTx<P>
             >
-          : SlatePluginConfig<
+          : EditorPluginConfig<
               any,
               InferOptions<P>,
               InferApi<P>,
@@ -722,7 +722,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
     >
   >;
   extendPlugin: <
-    P extends AnyPlatePlugin | AnySlatePlugin,
+    P extends AnyPlatePlugin | AnyEditorPlugin,
     EO = {},
     EA = {},
     ES = {},
@@ -741,7 +741,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               EA,
               ES
             >
-          : SlatePluginConfig<
+          : EditorPluginConfig<
               any,
               InferOptions<P>,
               InferApi<P>,
@@ -755,7 +755,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       | ((
           ctx: P extends AnyPlatePlugin
             ? PlatePluginContext<P>
-            : SlatePluginContext<P>
+            : EditorPluginContext<P>
         ) => P extends AnyPlatePlugin
           ? PlatePluginConfig<
               any,
@@ -768,7 +768,7 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               EA,
               ES
             >
-          : SlatePluginConfig<
+          : EditorPluginConfig<
               any,
               InferOptions<P>,
               InferApi<P>,

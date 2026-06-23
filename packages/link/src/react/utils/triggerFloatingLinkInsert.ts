@@ -1,4 +1,4 @@
-import { type SlateEditor, getEditorPlugin } from 'platejs';
+import { type BasePlateEditor, getEditorPlugin } from 'platejs';
 
 import { LinkPlugin } from '../LinkPlugin';
 
@@ -13,7 +13,7 @@ import { LinkPlugin } from '../LinkPlugin';
  * - Selection has a link node
  */
 export const triggerFloatingLinkInsert = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     focused,
   }: {

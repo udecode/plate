@@ -1,15 +1,15 @@
 import type {
   EditorUpdateTransaction,
   NodeInsertNodesOptions,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import type {
   PluginConfig,
-  SlatePlugin,
+  EditorPlugin,
   TTagElement,
   TTagProps,
 } from 'platejs';
 
-import { createTSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
 type TagInsertNode = TTagElement | { text: string };
 
@@ -32,8 +32,8 @@ const createTagNodes = (type: string, props: TTagProps): TagInsertNode[] => [
   { text: '' },
 ];
 
-export const BaseTagPlugin: SlatePlugin<TagConfig> =
-  createTSlatePlugin<TagConfig>({
+export const BaseTagPlugin: EditorPlugin<TagConfig> =
+  createEditorPlugin<TagConfig>({
     key: KEYS.tag,
     node: {
       isElement: true,

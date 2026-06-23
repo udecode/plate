@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { ParagraphPlugin } from '@platejs/core/react';
-import type { Selection, Value } from '@platejs/slate';
+import type { Selection, Value } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 
 import { normalizeRoot } from '../__tests__/normalizeRoot';

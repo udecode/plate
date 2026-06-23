@@ -17,7 +17,7 @@ export const getEditorHandle = async <E extends PlateEditor = PlateEditor>(
           'getEditorHandle: the given locator did not match any element'
         )
       : new Error(
-          'getEditorHandle: could not find a [data-slate-editor] on the page'
+          'getEditorHandle: could not find a [data-plite-editor] on the page'
         );
 
     throw error;
@@ -33,9 +33,9 @@ export const getEditorHandle = async <E extends PlateEditor = PlateEditor>(
 
     throw error;
   }
-  if ((await editableLocator.getAttribute('data-slate-editor')) === null) {
+  if ((await editableLocator.getAttribute('data-plite-editor')) === null) {
     throw new Error(
-      'getEditorHandle: the element matched by the given locator is not a [data-slate-editor]. Use getEditable to locate the editable element before passing it to getEditorHandle.'
+      'getEditorHandle: the element matched by the given locator is not a [data-plite-editor]. Use getEditable to locate the editable element before passing it to getEditorHandle.'
     );
   }
 

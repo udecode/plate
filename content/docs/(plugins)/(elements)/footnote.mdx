@@ -200,7 +200,7 @@ Inline void node rendered as `<sup>`. Owns the `[^` combobox trigger, identifier
   <APIItem name="createComboboxInput" type="(trigger: string) => Element" optional>
     Factory for the node inserted when the combobox opens. Defaults to a `footnoteInput` element.
   </APIItem>
-  <APIItem name="triggerQuery" type="(editor: SlateEditor) => boolean" optional>
+  <APIItem name="triggerQuery" type="(editor: BasePlateEditor) => boolean" optional>
     Extra predicate gating the combobox. Return `false` to suppress triggering at the current selection.
   </APIItem>
 </APIOptions>

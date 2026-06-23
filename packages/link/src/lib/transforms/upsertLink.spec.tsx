@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { type BaseLinkConfig, BaseLinkPlugin } from '../BaseLinkPlugin';
 import { upsertLink } from './upsertLink';
@@ -16,11 +16,11 @@ const createTestEditor = (
   options?: BaseLinkConfig['options']
 ) => {
   const { children, selection } = input as Pick<
-    SlateEditor,
+    BasePlateEditor,
     'children' | 'selection'
   >;
 
-  return createSlateEditor({
+  return createBasePlateEditor({
     plugins: [BaseLinkPlugin.configure({ options })],
     selection,
     value: children,
@@ -37,7 +37,7 @@ describe('upsertLink', () => {
             <cursor />.
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -67,7 +67,7 @@ describe('upsertLink', () => {
             <cursor />.
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -94,7 +94,7 @@ describe('upsertLink', () => {
             <cursor />.
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -124,7 +124,7 @@ describe('upsertLink', () => {
             .
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -154,7 +154,7 @@ describe('upsertLink', () => {
             .
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -185,7 +185,7 @@ describe('upsertLink', () => {
             .
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -217,7 +217,7 @@ describe('upsertLink', () => {
             .
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -250,7 +250,7 @@ describe('upsertLink', () => {
             .
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -280,7 +280,7 @@ describe('upsertLink', () => {
             .
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -310,7 +310,7 @@ describe('upsertLink', () => {
             <focus />.
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -338,7 +338,7 @@ describe('upsertLink', () => {
             <focus />.
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -370,7 +370,7 @@ describe('upsertLink', () => {
             .
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -398,7 +398,7 @@ describe('upsertLink', () => {
             <focus />.
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -425,7 +425,7 @@ describe('upsertLink', () => {
             <focus />.
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -455,7 +455,7 @@ describe('upsertLink', () => {
             .
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -486,7 +486,7 @@ describe('upsertLink', () => {
           <cursor />.
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -513,7 +513,7 @@ describe('upsertLink', () => {
           <cursor />.
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -541,7 +541,7 @@ describe('upsertLink', () => {
           <editor>
             <hp>plain text</hp>
           </editor>
-        ) as any as SlateEditor
+        ) as any as BasePlateEditor
       );
 
       editor.selection = null;
@@ -568,7 +568,7 @@ describe('upsertLink', () => {
           .
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>

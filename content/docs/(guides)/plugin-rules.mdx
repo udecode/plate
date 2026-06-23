@@ -14,7 +14,7 @@ This guide shows you how to use `rules.break`, `rules.delete`, `rules.merge`, `r
 
 Plugin rules use specific action names to define behavior:
 
-- **`'default'`**: Default Slate behavior.
+- **`'default'`**: Default Plite behavior.
 - **`'reset'`**: Changes the current block to a default paragraph, keeping content.
 - **`'exit'`**: Exits the current block, inserting a new paragraph after it. See [Exit Break](/docs/exit-break) to learn more about this behavior.
 - **`'lift'`**: Lifts the current block out of the nearest matching ancestor container, changing one structural level at a time.
@@ -23,7 +23,7 @@ Plugin rules use specific action names to define behavior:
 
 ### `default`
 
-Standard Slate behavior. For `rules.break`, splits the block. For `rules.delete`, merges with the previous block.
+Standard Plite behavior. For `rules.break`, splits the block. For `rules.delete`, merges with the previous block.
 
 ```tsx
 <p>
@@ -520,7 +520,7 @@ After (cell content merged, structure preserved):
 ```
 
 <Callout>
-Slate's default is `true` since the default block (paragraph) is first-class, while Plate plugins are likely used to define other node behaviors that shouldn't automatically remove empty predecessors.
+Plite's default is `true` since the default block (paragraph) is first-class, while Plate plugins are likely used to define other node behaviors that shouldn't automatically remove empty predecessors.
 </Callout>
 
 ## `rules.normalize`
@@ -797,7 +797,7 @@ The `affinity` property determines how the cursor behaves when positioned at the
 
 #### `default`
 
-Uses Slate's default behavior. For marks, the cursor has outward affinity at the start edge (typing before the mark doesn't apply it) and inward affinity at the end edge (typing after the mark extends it).
+Uses Plite's default behavior. For marks, the cursor has outward affinity at the start edge (typing before the mark doesn't apply it) and inward affinity at the end edge (typing after the mark extends it).
 
 **At end of mark (inward affinity):**
 ```tsx

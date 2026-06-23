@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { SLATE_BROWSER_HANDLE_KEY } from './constants';
+import { PLITE_BROWSER_HANDLE_KEY } from './constants';
 import { takeDisplayedSelectionSnapshotForRoot } from './displayed-selection';
 import { getEditable, locateBlock, locateText } from './dom-locators';
 import { getRenderedBlockDOMShapes } from './dom-shape';
@@ -10,7 +10,7 @@ import {
   collapseDOMAtTextPath,
   waitForPendingNativeTextInputRepair,
 } from './dom-text-actions';
-import { evaluateSlateBrowserHandle } from './handle';
+import { evaluatePliteBrowserHandle } from './handle';
 import { createEditorHarnessAssertions } from './harness-assertions';
 import {
   createEditorHarnessClipboard,
@@ -67,10 +67,10 @@ import type {
   SelectionCaptureOptions,
   SelectionPoint,
   SelectionSnapshot,
-  SlateBrowserDoubleClickDragTextRangeOptions,
-  SlateBrowserDragTextRangeOptions,
-  SlateBrowserEditorHarness,
-  SlateBrowserKernelTraceEntry,
+  PliteBrowserDoubleClickDragTextRangeOptions,
+  PliteBrowserDragTextRangeOptions,
+  PliteBrowserEditorHarness,
+  PliteBrowserKernelTraceEntry,
 } from './types';
 
 export const createEditorHarness = (
@@ -79,12 +79,12 @@ export const createEditorHarness = (
   surface: SurfaceTarget,
   surfaceOptions: EditorSurfaceOptions = {},
   explicitRoot?: Locator
-): SlateBrowserEditorHarness => {
+): PliteBrowserEditorHarness => {
   const root = explicitRoot ?? getEditable(surface, surfaceOptions);
   const activateNestedContentRootForDOMSelection = async () => {
     const isNestedContentRoot = await root
       .evaluate((element: HTMLElement) =>
-        Boolean(element.closest('[data-slate-content-root-slot]'))
+        Boolean(element.closest('[data-plite-content-root-slot]'))
       )
       .catch(() => false);
 
@@ -113,7 +113,7 @@ export const createEditorHarness = (
     await page.waitForTimeout(0);
   };
 
-  const harness: SlateBrowserEditorHarness = {
+  const harness: PliteBrowserEditorHarness = {
     name,
     page,
     root,
@@ -127,16 +127,16 @@ export const createEditorHarness = (
       ),
     get: {
       modelText: async () =>
-        evaluateSlateBrowserHandle<string>(root, 'getText'),
+        evaluatePliteBrowserHandle<string>(root, 'getText'),
       modelBlockText: async (index) =>
-        evaluateSlateBrowserHandle<string | null>(
+        evaluatePliteBrowserHandle<string | null>(
           root,
           'getBlockText',
           [index],
           'This editor surface does not expose getBlockText'
         ),
       modelBlockTexts: async () =>
-        evaluateSlateBrowserHandle<string[]>(
+        evaluatePliteBrowserHandle<string[]>(
           root,
           'getBlockTexts',
           [],
@@ -159,8 +159,8 @@ export const createEditorHarness = (
 
             return handle?.getKernelTrace ? handle.getKernelTrace() : [];
           },
-          { key: SLATE_BROWSER_HANDLE_KEY }
-        ) as Promise<SlateBrowserKernelTraceEntry[]>,
+          { key: PLITE_BROWSER_HANDLE_KEY }
+        ) as Promise<PliteBrowserKernelTraceEntry[]>,
       history: async () =>
         root.evaluate(
           (element: HTMLElement, { key }: { key: string }) => {
@@ -168,7 +168,7 @@ export const createEditorHarness = (
 
             return handle?.getHistory ? handle.getHistory() : null;
           },
-          { key: SLATE_BROWSER_HANDLE_KEY }
+          { key: PLITE_BROWSER_HANDLE_KEY }
         ),
       lastCommit: async () =>
         root.evaluate(
@@ -177,9 +177,9 @@ export const createEditorHarness = (
 
             return handle?.getLastCommit ? handle.getLastCommit() : null;
           },
-          { key: SLATE_BROWSER_HANDLE_KEY }
+          { key: PLITE_BROWSER_HANDLE_KEY }
         ),
-      placeholderShape: async (selector = '[data-slate-zero-width]') => {
+      placeholderShape: async (selector = '[data-plite-zero-width]') => {
         const count = await root.locator(selector).count();
 
         if (count === 0) {
@@ -192,7 +192,7 @@ export const createEditorHarness = (
           .evaluate((element: Element) => ({
             hasBr: !!element.querySelector('br'),
             hasFEFF: element.textContent?.includes('\uFEFF') ?? false,
-            kind: element.getAttribute('data-slate-zero-width'),
+            kind: element.getAttribute('data-plite-zero-width'),
           }));
       },
     },
@@ -283,7 +283,7 @@ export const createEditorHarness = (
 
               handle.importDOMSelection();
             },
-            { key: SLATE_BROWSER_HANDLE_KEY }
+            { key: PLITE_BROWSER_HANDLE_KEY }
           );
           await page.waitForTimeout(0);
           await root.evaluate(
@@ -296,7 +296,7 @@ export const createEditorHarness = (
 
               handle.importDOMSelection();
             },
-            { key: SLATE_BROWSER_HANDLE_KEY }
+            { key: PLITE_BROWSER_HANDLE_KEY }
           );
           if (!(await handleSelectionMatches(root, selection))) {
             await setSelectionWithHandle(root, selection);
@@ -316,17 +316,17 @@ export const createEditorHarness = (
 
                 handle.importDOMSelection();
               },
-              { key: SLATE_BROWSER_HANDLE_KEY }
+              { key: PLITE_BROWSER_HANDLE_KEY }
             );
           }
           await waitForHandleSelection(root, selection);
         }
       },
-      dragTextRange: async (options: SlateBrowserDragTextRangeOptions) => {
+      dragTextRange: async (options: PliteBrowserDragTextRangeOptions) => {
         await dragTextRange(root, options);
       },
       doubleClickDragTextRange: async (
-        options: SlateBrowserDoubleClickDragTextRangeOptions
+        options: PliteBrowserDoubleClickDragTextRangeOptions
       ) => {
         await doubleClickDragTextRange(root, options);
       },
@@ -368,7 +368,7 @@ export const createEditorHarness = (
       dom: async () => takeDOMSelectionSnapshotForRoot(root),
       location: async () => takeDOMSelectionLocationSnapshotForRoot(root),
       importDOM: async () =>
-        evaluateSlateBrowserHandle(
+        evaluatePliteBrowserHandle(
           root,
           'importDOMSelection',
           [],
@@ -428,7 +428,7 @@ export const createEditorHarness = (
             const handle = (element as Record<string, any>)[key];
             return handle?.getSelection ? handle.getSelection() : null;
           },
-          { key: SLATE_BROWSER_HANDLE_KEY }
+          { key: PLITE_BROWSER_HANDLE_KEY }
         );
 
       const selectionBeforeFocus = await readHandleSelection();
@@ -517,25 +517,25 @@ export const createEditorHarness = (
       await page.keyboard.press(key);
     },
     insertText: async (text: string) => {
-      await evaluateSlateBrowserHandle<void>(root, 'insertText', [text]);
+      await evaluatePliteBrowserHandle<void>(root, 'insertText', [text]);
     },
     insertBreak: async () => {
-      await evaluateSlateBrowserHandle<void>(root, 'insertBreak');
+      await evaluatePliteBrowserHandle<void>(root, 'insertBreak');
     },
     deleteFragment: async () => {
-      await evaluateSlateBrowserHandle<void>(root, 'deleteFragment');
+      await evaluatePliteBrowserHandle<void>(root, 'deleteFragment');
     },
     deleteBackward: async () => {
-      await evaluateSlateBrowserHandle<void>(root, 'deleteBackward');
+      await evaluatePliteBrowserHandle<void>(root, 'deleteBackward');
     },
     deleteForward: async () => {
-      await evaluateSlateBrowserHandle<void>(root, 'deleteForward');
+      await evaluatePliteBrowserHandle<void>(root, 'deleteForward');
     },
     undo: async () => {
-      await evaluateSlateBrowserHandle<void>(root, 'undo');
+      await evaluatePliteBrowserHandle<void>(root, 'undo');
     },
     redo: async () => {
-      await evaluateSlateBrowserHandle<void>(root, 'redo');
+      await evaluatePliteBrowserHandle<void>(root, 'redo');
     },
     selectAll: async () => {
       await harness.selection.selectAll();
@@ -567,7 +567,7 @@ export const createEditorHarness = (
       root,
       surface,
     }),
-    withExtension: <T>(extend: (editor: SlateBrowserEditorHarness) => T) =>
+    withExtension: <T>(extend: (editor: PliteBrowserEditorHarness) => T) =>
       extend(harness),
   };
 

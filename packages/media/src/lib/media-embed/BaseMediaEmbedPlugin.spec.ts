@@ -1,10 +1,10 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { BaseMediaEmbedPlugin } from './BaseMediaEmbedPlugin';
 
 describe('BaseMediaEmbedPlugin', () => {
   it('configures media embeds as void elements with iframe parsing', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseMediaEmbedPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseMediaEmbedPlugin);
@@ -42,7 +42,7 @@ describe('BaseMediaEmbedPlugin', () => {
 
   it('insert transform stores normalized embed metadata for supported providers', async () => {
     const { insertMediaEmbed } = await import('./transforms/insertMediaEmbed');
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseMediaEmbedPlugin],
       selection: {
         anchor: { offset: 0, path: [0, 0] },

@@ -1,5 +1,5 @@
-import type { Element, NodeEntry } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Element, NodeEntry } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { isDefined, KEYS } from 'platejs';
 
@@ -39,7 +39,7 @@ export const getListExpectedListStart = (
 };
 
 export const normalizeListStart = <N extends Element = Element>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   entry: NodeEntry<Element>,
   options?: Partial<GetSiblingListOptions<N>>
 ) =>

@@ -23,10 +23,10 @@ const BlockSelectionApiFixture = createTPlatePlugin<BlockSelectionConfig>({
 );
 
 describe('BlockMenuPlugin', () => {
-  it('exposes option-state api on the Slate v2 runtime route', () => {
+  it('exposes option-state api on the Plite runtime route', () => {
     const editor = createPlateEditor({
       plugins: [BlockSelectionApiFixture, BlockMenuPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
     });
     const api = editor.api as BlockMenuConfig['api'];
 

@@ -14,7 +14,7 @@ import {
 import { getCommentKey, getTransientCommentKey } from '@platejs/comment';
 import { deserializeMd } from '@platejs/markdown';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { type Node, NodeApi, TextApi } from '@platejs/slate';
+import { type Node, NodeApi, TextApi } from '@platejs/plite';
 import { type UIMessage, DefaultChatTransport } from 'ai';
 import { KEYS, nanoid } from 'platejs';
 import { type PlateEditor, useEditorRef, usePluginOption } from 'platejs/react';

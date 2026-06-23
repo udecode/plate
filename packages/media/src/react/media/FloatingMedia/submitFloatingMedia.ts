@@ -1,6 +1,6 @@
 import {
   type PluginConfig,
-  type SlateEditor,
+  type BasePlateEditor,
   type TMediaElement,
   type WithRequiredKey,
   isUrl,
@@ -14,7 +14,7 @@ import { parseVideoUrl } from '../../../lib/media-embed/parseVideoUrl';
 import { FloatingMediaStore } from './FloatingMediaStore';
 
 export const submitFloatingMedia = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     element,
     plugin,

@@ -1,13 +1,13 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 type TableBlockQueryOptions = NonNullable<
-  Parameters<SlateEditor['api']['block']>[0]
+  Parameters<BasePlateEditor['api']['block']>[0]
 >;
 
 export const getTableAbove = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options?: TableBlockQueryOptions
 ) =>
   editor.api.block({

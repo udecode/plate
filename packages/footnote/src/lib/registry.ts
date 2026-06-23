@@ -1,5 +1,5 @@
-import type { NodeEntry, PathRef, SlateEditor } from 'platejs';
-import type { Operation } from '@platejs/slate';
+import type { NodeEntry, PathRef, BasePlateEditor } from 'platejs';
+import type { Operation } from '@platejs/plite';
 
 import { KEYS, PathApi } from 'platejs';
 import type { FootnoteElement } from './types';
@@ -10,7 +10,7 @@ type FootnoteRegistry = {
   dirty: boolean;
 };
 
-const FOOTNOTE_REGISTRY = new WeakMap<SlateEditor, FootnoteRegistry>();
+const FOOTNOTE_REGISTRY = new WeakMap<BasePlateEditor, FootnoteRegistry>();
 
 const cleanupRegistry = (registry: FootnoteRegistry) => {
   for (const refs of registry.definitionsByIdentifier.values()) {
@@ -29,7 +29,7 @@ const cleanupRegistry = (registry: FootnoteRegistry) => {
   registry.referencesByIdentifier.clear();
 };
 
-const getRegistry = (editor: SlateEditor) => {
+const getRegistry = (editor: BasePlateEditor) => {
   let registry = FOOTNOTE_REGISTRY.get(editor);
 
   if (!registry) {
@@ -44,7 +44,7 @@ const getRegistry = (editor: SlateEditor) => {
   return registry;
 };
 
-const rebuildRegistry = (editor: SlateEditor, registry: FootnoteRegistry) => {
+const rebuildRegistry = (editor: BasePlateEditor, registry: FootnoteRegistry) => {
   cleanupRegistry(registry);
 
   const definitionType = editor.getType(KEYS.footnoteDefinition);
@@ -93,7 +93,7 @@ const rebuildRegistry = (editor: SlateEditor, registry: FootnoteRegistry) => {
   registry.dirty = false;
 };
 
-export const invalidateFootnoteRegistry = (editor: SlateEditor) => {
+export const invalidateFootnoteRegistry = (editor: BasePlateEditor) => {
   getRegistry(editor).dirty = true;
 };
 
@@ -112,7 +112,7 @@ const hasOperationIdentifier = (value: unknown) =>
   value.identifier !== undefined;
 
 export const shouldInvalidateFootnoteRegistry = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   operation: Operation
 ) => {
   const definitionType = editor.getType(KEYS.footnoteDefinition);
@@ -142,7 +142,7 @@ export const shouldInvalidateFootnoteRegistry = (
   return false;
 };
 
-export const ensureFootnoteRegistry = (editor: SlateEditor) => {
+export const ensureFootnoteRegistry = (editor: BasePlateEditor) => {
   const registry = getRegistry(editor);
 
   if (registry.dirty) {
@@ -153,7 +153,7 @@ export const ensureFootnoteRegistry = (editor: SlateEditor) => {
 };
 
 export const getRegistryDefinition = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { identifier }: { identifier: string }
 ) => {
   const definitions = getRegistryDefinitions(editor, { identifier });
@@ -162,7 +162,7 @@ export const getRegistryDefinition = (
 };
 
 export const getRegistryReferences = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { identifier }: { identifier: string }
 ) => {
   const registry = ensureFootnoteRegistry(editor);
@@ -196,7 +196,7 @@ export const getRegistryReferences = (
 };
 
 export const getRegistryDefinitions = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { identifier }: { identifier: string }
 ) => {
   const registry = ensureFootnoteRegistry(editor);
@@ -229,7 +229,7 @@ export const getRegistryDefinitions = (
   return liveEntries;
 };
 
-export const getRegistryIdentifiers = (editor: SlateEditor) => {
+export const getRegistryIdentifiers = (editor: BasePlateEditor) => {
   const registry = ensureFootnoteRegistry(editor);
 
   return [...registry.definitionsByIdentifier.keys()];

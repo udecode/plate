@@ -2,7 +2,7 @@
 
 import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
 import { BaseListPlugin } from './BaseListPlugin';
@@ -14,7 +14,7 @@ jsxt;
 
 describe('list input rules', () => {
   const createEditor = (text: string, offset = text.length) =>
-    createSlateEditor({
+    createBasePlateEditor({
       plugins: [
         BaseIndentPlugin,
         BaseListPlugin.configure({

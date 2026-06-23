@@ -3,7 +3,7 @@ title: Plate
 description: API reference for the platejs package.
 ---
 
-`platejs` is the umbrella package for Plate's base, React, and static APIs. It re-exports the core runtime, Slate runtime, utilities, React helpers, and static renderer through three public subpaths.
+`platejs` is the umbrella package for Plate's base, React, and static APIs. It re-exports the core runtime, Plite runtime, utilities, React helpers, and static renderer through three public subpaths.
 
 ## Installation
 
@@ -17,7 +17,7 @@ npm install platejs
 
 | Import | Re-exports | Use |
 | --- | --- | --- |
-| `platejs` | `@platejs/core`, `@platejs/slate`, `@platejs/utils`, `@udecode/utils` | Headless editor creation, Slate APIs, core types, and shared utilities. |
+| `platejs` | `@platejs/core`, `@platejs/plite`, `@platejs/utils`, `@udecode/utils` | Headless editor creation, Plite APIs, core types, and shared utilities. |
 | `platejs/react` | `@platejs/core/react`, `@platejs/utils/react`, `@udecode/react-hotkeys`, `@udecode/react-utils` | React editors, components, hooks, stores, plugins, and React utility hooks. |
 | `platejs/static` | `@platejs/core/static` | Static editor creation, static rendering, HTML serialization, and static node renderers. |
 
@@ -28,9 +28,9 @@ Use the umbrella imports in application code. Package code can import direct pac
 Use `platejs` for non-React editor work and shared types.
 
 ```ts title="lib/create-headless-editor.ts"
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
-export const editor = createSlateEditor({
+export const editor = createBasePlateEditor({
   value: [
     {
       type: 'p',
@@ -87,7 +87,7 @@ export const staticEditor = createStaticEditor({
 | Page | Covers |
 | --- | --- |
 | [Plate Core](/docs/api/core) | Editor creation, React runtime, plugins, stores, and render primitives. |
-| [Slate](/docs/api/slate) | Slate-compatible editor API, transforms, nodes, locations, operations, and refs. |
+| [Plite](/docs/api/plite) | Plite-compatible editor API, transforms, nodes, locations, operations, and refs. |
 | [Plate Utils](/docs/api/utils) | Shared non-React utilities. |
 | [React Utils](/docs/api/react-utils) | React utility hooks and helpers re-exported through `platejs/react`. |
 | [Plate Components](/docs/api/core/plate-components) | `Plate`, `PlateContent`, `PlateView`, and component primitives. |

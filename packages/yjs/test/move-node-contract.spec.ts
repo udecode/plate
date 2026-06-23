@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Descendant, Operation } from '@platejs/slate';
-import { Editor } from '@platejs/slate/internal';
+import type { Descendant, Operation } from '@platejs/plite';
+import { Editor } from '@platejs/plite/internal';
 
 import {
   connectYjsPeerAndSync,

@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 import { createPlateRuntimeEditor } from 'platejs/react';
 
@@ -10,7 +10,7 @@ jsxt;
 
 describe('BaseDatePlugin', () => {
   it('configure date as void inline element', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseDatePlugin],
     });
 
@@ -22,7 +22,7 @@ describe('BaseDatePlugin', () => {
   });
 
   it('does not force date elements to opt out of keyboard entry', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseDatePlugin],
     });
 
@@ -32,7 +32,7 @@ describe('BaseDatePlugin', () => {
   });
 
   it('provides a typed date transaction command', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseDatePlugin],
     });
 
@@ -43,7 +43,7 @@ describe('BaseDatePlugin', () => {
   });
 
   it('exposes an inferred date transaction group', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseDatePlugin],
       value: [
         {
@@ -71,7 +71,7 @@ describe('BaseDatePlugin', () => {
   });
 
   it('deleteBackward removes the adjacent date atom', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseDatePlugin],
       selection: {
         anchor: { offset: 0, path: [0, 2] },

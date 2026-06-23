@@ -1,5 +1,5 @@
-import type { Element, NodeEntry } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Element, NodeEntry } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { getInjectMatch, KEYS } from 'platejs';
 
@@ -21,7 +21,7 @@ import { toggleListUnset } from './toggleListUnset';
 
 /** Toggle indent list. */
 export const toggleList = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options: ListOptions,
   getSiblingListOptions?: GetSiblingListOptions<Element>
 ) => {
@@ -43,7 +43,7 @@ export const toggleList = (
    */
   const setList = ((): boolean | null => {
     if (editor.api.isCollapsed()) {
-      const entry = editor.api.block<Element>();
+      const entry = editor.api.block() as NodeEntry<Element> | undefined;
 
       if (!entry) return null;
       if (toggleListSet(editor, entry, options)) {
@@ -65,8 +65,8 @@ export const toggleList = (
         editor,
         editor.getPlugin({ key: KEYS.list })
       );
-      const _entries = editor.api.nodes<Element>({ block: true, match });
-      const entries = [..._entries];
+      const _entries = editor.api.nodes({ block: true, match });
+      const entries = [..._entries] as NodeEntry<Element>[];
 
       const eqListStyleType = areEqListStyleType(editor, entries, {
         listStyleType,

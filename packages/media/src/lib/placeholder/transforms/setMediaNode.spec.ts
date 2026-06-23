@@ -1,10 +1,10 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { setMediaNode } from './setMediaNode';
 
 describe('setMediaNode', () => {
   it('updates the media node through editor.update', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [
         {
           children: [{ text: '' }],

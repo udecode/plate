@@ -1,6 +1,6 @@
 import type {
   NodeInsertNodesOptions,
-  SlateEditor,
+  BasePlateEditor,
   TEquationElement,
 } from 'platejs';
 
@@ -19,7 +19,7 @@ export const createInlineEquationNode = (
 });
 
 export const insertInlineEquation = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   texExpression?: string,
   options?: InsertInlineEquationOptions
 ) => {

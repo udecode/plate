@@ -9,7 +9,7 @@ Use Plate in Node.js when you need to read, validate, transform, or serialize ed
 
 <Callout type="warning" title="Use base imports">
   Do not import from `platejs/react` or `@platejs/*/react` in Node.js scripts.
-  Use `createSlateEditor` from `platejs` and base plugins from `@platejs/*`
+  Use `createBasePlateEditor` from `platejs` and base plugins from `@platejs/*`
   packages.
 </Callout>
 
@@ -25,7 +25,7 @@ npm install platejs @platejs/basic-nodes @platejs/markdown
 
 | Package | Owns |
 | --- | --- |
-| `platejs` | `createSlateEditor`, core editor APIs, core paragraph behavior. |
+| `platejs` | `createBasePlateEditor`, core editor APIs, core paragraph behavior. |
 | `@platejs/basic-nodes` | Base headings, blockquotes, horizontal rules, and text marks. |
 | `@platejs/markdown` | Markdown serialization, deserialization, and the `MarkdownPlugin` API. |
 
@@ -41,7 +41,7 @@ import {
   BaseBasicBlocksPlugin,
   BaseBasicMarksPlugin,
 } from '@platejs/basic-nodes';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 const value: Value = [
   {
@@ -58,7 +58,7 @@ const value: Value = [
   },
 ];
 
-const editor = createSlateEditor({
+const editor = createBasePlateEditor({
   plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin],
   value,
 });
@@ -84,9 +84,9 @@ import {
   deserializeMd,
   serializeMd,
 } from '@platejs/markdown';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
-const editor = createSlateEditor({
+const editor = createBasePlateEditor({
   plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin, MarkdownPlugin],
 });
 
@@ -117,10 +117,10 @@ import {
   BaseBasicMarksPlugin,
 } from '@platejs/basic-nodes';
 import { MarkdownPlugin, serializeMd } from '@platejs/markdown';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 export function normalizeHeadings(value: Value) {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: [BaseBasicBlocksPlugin, BaseBasicMarksPlugin, MarkdownPlugin],
     value,
   });
@@ -166,7 +166,7 @@ export function normalizeHeadings(value: Value) {
 
 | API | Package | Notes |
 | --- | --- | --- |
-| `createSlateEditor` | `platejs` | Creates a non-React editor instance. |
+| `createBasePlateEditor` | `platejs` | Creates a non-React editor instance. |
 | `editor.api.string([])` | `platejs` | Reads text from the whole document. |
 | `editor.tf.setNodes` | `platejs` | Updates matching nodes. Use `at: []` for document-wide transforms. |
 | `editor.tf.insertNodes` | `platejs` | Inserts nodes at a path. |
@@ -180,8 +180,8 @@ export function normalizeHeadings(value: Value) {
 | Serialize to Markdown | [Markdown](/docs/markdown) |
 | Serialize to HTML | [HTML](/docs/html) |
 | Render read-only content | [Static Rendering](/docs/static) |
-| Query editor state | [Editor API](/docs/api/slate/editor-api) |
-| Apply transforms | [Editor Transforms](/docs/api/slate/editor-transforms) |
+| Query editor state | [Editor API](/docs/api/plite/editor-api) |
+| Apply transforms | [Editor Transforms](/docs/api/plite/editor-transforms) |
 
 Done. You now have a server-safe Plate runtime that can power migration scripts,
 validation jobs, and content serialization.

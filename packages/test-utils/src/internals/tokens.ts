@@ -1,4 +1,4 @@
-import type { Node, Path, Text } from '@platejs/slate';
+import type { Node, Path, Text } from '@platejs/plite';
 
 const ANCHOR = new WeakMap<Node, [number, AnchorToken]>();
 const FOCUS = new WeakMap<Node, [number, FocusToken]>();

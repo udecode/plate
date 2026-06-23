@@ -4,7 +4,7 @@ import type {
   CursorOverlayConfig,
 } from '@platejs/selection/react';
 import type { BaseSuggestionConfig } from '@platejs/suggestion';
-import type { InferApi, SlateEditor } from 'platejs';
+import type { InferApi, BasePlateEditor } from 'platejs';
 import type { PlateEditor } from 'platejs/react';
 
 import type { AIChatPluginConfig } from '../AIChatPlugin';
@@ -30,6 +30,6 @@ export type AIChatPlateEditor = PlateEditor & {
   api: PlateEditor['api'] & AIChatApi;
 };
 
-export type AIChatSlateEditor = SlateEditor & {
-  api: SlateEditor['api'] & AIChatApi;
+export type AIChatPliteEditor = BasePlateEditor & {
+  api: BasePlateEditor['api'] & AIChatApi;
 };

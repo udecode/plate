@@ -7,7 +7,7 @@ import type {
   Value,
   TextOperation,
   ValueOf,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import type { Nullable } from '@udecode/utils';
 
 import type { EditableProps } from '../../../lib';
@@ -89,7 +89,7 @@ export type PlateStoreState<E extends PlateStoreEditor = PlateEditor> =
     /** A reference to the editor container element. */
     containerRef: React.RefObject<HTMLDivElement | null>;
     /**
-     * Slate editor reference.
+     * Plite editor reference.
      *
      * @default createPlateFallbackEditor()
      */

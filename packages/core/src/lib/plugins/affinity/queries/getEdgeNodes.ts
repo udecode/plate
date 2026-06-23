@@ -5,9 +5,9 @@ import {
   ElementApi,
   PathApi,
   RangeApi,
-} from '@platejs/slate';
+} from '@platejs/plite';
 
-import type { SlateEditor } from '../../../editor';
+import type { BasePlateEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';
 
 import {
@@ -17,7 +17,7 @@ import {
   isEditorEnd,
   isEditorSelectionCollapsed,
 } from '../../../../internal/utils/runtimeEditorQueries';
-import { getPluginByType } from '../../../plugin/getSlatePlugin';
+import { getPluginByType } from '../../../plugin/getEditorPluginInstance';
 
 /**
  * When the cursor is at a mark edge, this function returns the inward node and
@@ -25,7 +25,7 @@ import { getPluginByType } from '../../../plugin/getSlatePlugin';
  * the node before the text is returned. If the cursor is at the end of the
  * text, then the node after the text is returned. Otherwise, null is returned.
  */
-export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
+export const getEdgeNodes = (editor: BasePlateEditor): EdgeNodes | null => {
   if (!isEditorSelectionCollapsed(editor)) return null;
 
   const cursor = editor.selection!.anchor;

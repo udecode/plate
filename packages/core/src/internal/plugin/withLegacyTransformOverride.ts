@@ -1,4 +1,4 @@
-import type { AnyPluginConfig, SlatePluginContext } from '../../lib';
+import type { AnyPluginConfig, EditorPluginContext } from '../../lib';
 import type { CurrentRuntimeEditorTransforms } from '../currentRuntimeBridge';
 
 import { getCurrentRuntimeTransforms } from '../currentRuntimeBridge';
@@ -9,7 +9,7 @@ type LegacyTransformRecord = CurrentRuntimeEditorTransforms &
 export type LegacyTransformOverride<
   C extends AnyPluginConfig = AnyPluginConfig,
 > = (
-  ctx: SlatePluginContext<C> & {
+  ctx: EditorPluginContext<C> & {
     tf: LegacyTransformRecord;
   }
 ) => {
@@ -24,7 +24,7 @@ export const withLegacyTransformOverride = <
   plugin: P,
   extension: LegacyTransformOverride<C>
 ): P => {
-  const wrappedExtension = (ctx: SlatePluginContext<C>) =>
+  const wrappedExtension = (ctx: EditorPluginContext<C>) =>
     extension({
       ...ctx,
       tf: getCurrentRuntimeTransforms(ctx.editor) as LegacyTransformRecord,

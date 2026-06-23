@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Descendant, Operation, Path } from '@platejs/slate';
+import type { Descendant, Operation, Path } from '@platejs/plite';
 import * as Y from 'yjs';
 
-import { applySlateOperationToYjs } from '../src/core/operations';
+import { applyPliteOperationToYjs } from '../src/core/operations';
 import type { Peer } from './support/collaboration';
 import {
   createSeededYjsPeers,
@@ -14,7 +14,7 @@ import {
   isYjsPeerConnected,
   paragraph,
   readPeerChildren,
-  readPeerSlateValue,
+  readPeerPliteValue,
   reconcileYjsPeer,
   redoYjsPeer,
   runYjsUpdate,
@@ -199,7 +199,7 @@ const assertFirstParagraphTextChildren = (
       JSON.stringify(editorValueOf(peer))
     );
     assert.deepEqual(
-      readPeerSlateValue(peer)[0]?.children.map((child) => child.text),
+      readPeerPliteValue(peer)[0]?.children.map((child) => child.text),
       expected
     );
   }
@@ -244,7 +244,7 @@ const assertNoNestedParagraphs = (peers: readonly Peer[]): void => {
       JSON.stringify(value)
     );
     assert.equal(
-      readPeerSlateValue(peer).some((node) => hasNestedParagraph(node)),
+      readPeerPliteValue(peer).some((node) => hasNestedParagraph(node)),
       false
     );
   }
@@ -274,7 +274,7 @@ const assertNoElementDescendantsInsideParagraphs = (
 ): void => {
   for (const peer of peers) {
     const value = editorValueOf(peer);
-    const yjsValue = readPeerSlateValue(peer);
+    const yjsValue = readPeerPliteValue(peer);
 
     assert.equal(
       value.some((node) => hasElementDescendantInsideParagraph(node)),
@@ -1034,7 +1034,7 @@ describe('@platejs/yjs structural soak contract', () => {
       type: 'move_node',
     };
 
-    assert.deepEqual(applySlateOperationToYjs(getYjsRoot(peer), operation), {
+    assert.deepEqual(applyPliteOperationToYjs(getYjsRoot(peer), operation), {
       fallback: 'missing-move-source-elided',
       mode: 'traceable-fallback',
       operationType: 'move_node',

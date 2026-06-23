@@ -7,7 +7,7 @@ import {
   PointApi,
   type Range,
   RangeApi,
-  type Editor as PliteEditor,
+  type Editor as EditorType,
 } from '@platejs/plite';
 import {
   Editor,
@@ -28,7 +28,7 @@ export type TextDiff = {
   diff: StringDiff;
 };
 
-const getPendingDiffRoot = (editor?: PliteEditor<any>) =>
+const getPendingDiffRoot = (editor?: EditorType<any>) =>
   editor?.read((state) => state.view.root()) ?? MAIN_ROOT_KEY;
 
 /**
@@ -36,7 +36,7 @@ const getPendingDiffRoot = (editor?: PliteEditor<any>) =>
  * recover the pending selection.
  */
 export function verifyDiffState(
-  editor: PliteEditor<any>,
+  editor: EditorType<any>,
   textDiff: TextDiff
 ): boolean {
   const { path, diff } = textDiff;
@@ -175,7 +175,7 @@ export function targetRange(textDiff: TextDiff): Range {
  * have a valid point inside the document
  */
 export function normalizePoint(
-  editor: PliteEditor<any>,
+  editor: EditorType<any>,
   point: Point
 ): Point | null {
   let { path, offset } = point;
@@ -215,7 +215,7 @@ export function normalizePoint(
  * Normalize a 'pending selection' to ensure it's valid in the current document state.
  */
 export function normalizeRange(
-  editor: PliteEditor<any>,
+  editor: EditorType<any>,
   range: Range
 ): Range | null {
   const anchor = normalizePoint(editor, range.anchor);
@@ -235,11 +235,11 @@ export function normalizeRange(
   return { anchor, focus };
 }
 
-const getPendingPointRoot = (editor: PliteEditor<any>, point: Point) =>
+const getPendingPointRoot = (editor: EditorType<any>, point: Point) =>
   point.root ?? editor.read((state) => state.view.root());
 
 const withPendingPointRoot = (
-  editor: PliteEditor<any>,
+  editor: EditorType<any>,
   point: Point
 ): Point => {
   const root = getPendingPointRoot(editor, point);
@@ -263,7 +263,7 @@ const stripImplicitPendingPointRoot = (
 };
 
 export function transformPendingPoint(
-  editor: PliteEditor<any>,
+  editor: EditorType<any>,
   point: Point,
   op: Operation
 ): Point | null {
@@ -336,7 +336,7 @@ export function transformPendingPoint(
 }
 
 export function transformPendingRange(
-  editor: PliteEditor<any>,
+  editor: EditorType<any>,
   range: Range,
   op: Operation
 ): Range | null {
@@ -360,7 +360,7 @@ export function transformPendingRange(
 export function transformTextDiff(
   textDiff: TextDiff,
   op: Operation,
-  editor?: PliteEditor<any>
+  editor?: EditorType<any>
 ): TextDiff | null {
   const { path, diff, id } = textDiff;
   const root = getPendingDiffRoot(editor);

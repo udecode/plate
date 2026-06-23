@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { createSlatePlugin } from '../lib';
+import { createEditorPlugin } from '../lib';
 import { createStaticEditor } from './editor/withStatic';
 import {
   pipeRenderLeafStatic,
@@ -8,7 +8,7 @@ import {
 } from './pluginRenderLeafStatic';
 
 describe('pluginRenderLeafStatic', () => {
-  const HighlightPlugin = createSlatePlugin({
+  const HighlightPlugin = createEditorPlugin({
     key: 'highlight',
     node: {
       isLeaf: true,

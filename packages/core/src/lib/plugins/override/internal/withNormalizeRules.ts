@@ -1,9 +1,9 @@
-import { ElementApi } from '@platejs/slate';
+import { ElementApi } from '@platejs/plite';
 
 import type { LegacyTransformOverride } from '../../../../internal/plugin/withLegacyTransformOverride';
 import type { NormalizeRules } from '../../../plugin/BasePlugin';
 
-import { getPluginByType } from '../../../plugin/getSlatePlugin';
+import { getPluginByType } from '../../../plugin/getEditorPluginInstance';
 
 export const withNormalizeRules: LegacyTransformOverride = (ctx) => {
   const { editor, tf } = ctx;
@@ -34,7 +34,7 @@ export const withNormalizeRules: LegacyTransformOverride = (ctx) => {
 
   return {
     tf: {
-      normalizeNode([node, path]) {
+      normalizeNode([node, path]: [any, any]) {
         if (ElementApi.isElement(node) && node.type) {
           const plugin = getPluginByType(editor, node.type);
           const normalizeRules = plugin?.rules.normalize;
@@ -50,7 +50,7 @@ export const withNormalizeRules: LegacyTransformOverride = (ctx) => {
 
           if (
             effectivenormalizeRules?.removeEmpty &&
-            editor.api.isEmpty(node)
+            editor.api.string(path).length === 0
           ) {
             tf.removeNodes({ at: path });
             return;

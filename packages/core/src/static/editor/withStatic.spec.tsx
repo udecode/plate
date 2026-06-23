@@ -1,9 +1,9 @@
 /** @jsx jsxt */
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 import { jsxt } from '@platejs/test-utils';
 
-import { createSlatePlugin, DOMPlugin } from '../../lib';
-import { createSlateEditor } from '../../lib/editor';
+import { createEditorPlugin, DOMPlugin } from '../../lib';
+import { createBasePlateEditor } from '../../lib/editor';
 import { ViewPlugin } from '../plugins/ViewPlugin';
 import { createStaticEditor } from './withStatic';
 
@@ -40,7 +40,7 @@ describe('withStatic', () => {
 
   describe('when plugins are provided', () => {
     it('add custom plugins after static plugins', () => {
-      const customPlugin = createSlatePlugin({ key: 'custom' });
+      const customPlugin = createEditorPlugin({ key: 'custom' });
       const editor = createStaticEditor({
         plugins: [customPlugin],
       });
@@ -56,8 +56,8 @@ describe('withStatic', () => {
     });
 
     it('allow multiple custom plugins', () => {
-      const plugin1 = createSlatePlugin({ key: 'plugin1' });
-      const plugin2 = createSlatePlugin({ key: 'plugin2' });
+      const plugin1 = createEditorPlugin({ key: 'plugin1' });
+      const plugin2 = createEditorPlugin({ key: 'plugin2' });
 
       const editor = createStaticEditor({
         plugins: [plugin1, plugin2],
@@ -171,7 +171,7 @@ describe('withStatic', () => {
 
   describe('when using an existing editor', () => {
     it('enhance existing editor with static plugins', () => {
-      const existingEditor = createSlateEditor();
+      const existingEditor = createBasePlateEditor();
       existingEditor.id = 'existing';
 
       const editor = createStaticEditor({
@@ -183,7 +183,7 @@ describe('withStatic', () => {
     });
 
     it('override existing editor id when new id is provided', () => {
-      const existingEditor = createSlateEditor();
+      const existingEditor = createBasePlateEditor();
       existingEditor.id = 'old';
 
       const editor = createStaticEditor({
@@ -195,18 +195,18 @@ describe('withStatic', () => {
     });
   });
 
-  describe('integration with withSlate', () => {
+  describe('integration with withPlite', () => {
     it('properly integrate static plugins with core plugins', () => {
       const editor = createStaticEditor();
 
-      // Should have both core plugins from withSlate and static plugins
+      // Should have both core plugins from withPlite and static plugins
       expect(editor.history).toBeDefined(); // from HistoryPlugin
       expect(editor.dom).toBeDefined(); // from DOMPlugin
       expect(editor.getPlugin(ViewPlugin)).toBeDefined(); // static plugin
     });
 
     it('maintain plugin order with static plugins first', () => {
-      const customPlugin = createSlatePlugin({ key: 'custom' });
+      const customPlugin = createEditorPlugin({ key: 'custom' });
       const editor = createStaticEditor({
         plugins: [customPlugin],
       });
@@ -259,7 +259,7 @@ describe('withStatic', () => {
       expect(typeof editor.tf.setFragmentData).toBe('function');
     });
 
-    it('preserve other withSlate options', () => {
+    it('preserve other withPlite options', () => {
       const editor = createStaticEditor({
         shouldNormalizeEditor: true,
         value: [],

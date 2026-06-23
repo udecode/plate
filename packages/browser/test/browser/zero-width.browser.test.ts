@@ -4,11 +4,11 @@ import { inspectZeroWidthPlaceholder } from '../../src/browser/zero-width';
 
 it('reads a FEFF-backed zero-width placeholder shape in a real browser', () => {
   document.body.innerHTML =
-    '<span data-slate-zero-width="n">\uFEFF<br /></span>';
+    '<span data-plite-zero-width="n">\uFEFF<br /></span>';
 
   expect(
     inspectZeroWidthPlaceholder(
-      document.querySelector('[data-slate-zero-width="n"]')
+      document.querySelector('[data-plite-zero-width="n"]')
     )
   ).toEqual({
     hasBr: true,
@@ -18,11 +18,11 @@ it('reads a FEFF-backed zero-width placeholder shape in a real browser', () => {
 });
 
 it('reads a line-break zero-width placeholder shape in a real browser', () => {
-  document.body.innerHTML = '<span data-slate-zero-width="n"><br /></span>';
+  document.body.innerHTML = '<span data-plite-zero-width="n"><br /></span>';
 
   expect(
     inspectZeroWidthPlaceholder(
-      document.querySelector('[data-slate-zero-width="n"]')
+      document.querySelector('[data-plite-zero-width="n"]')
     )
   ).toEqual({
     hasBr: true,

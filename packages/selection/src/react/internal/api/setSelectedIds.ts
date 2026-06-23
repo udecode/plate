@@ -1,4 +1,4 @@
-import { type SlateEditor, getEditorPlugin, KEYS } from 'platejs';
+import { type BasePlateEditor, getEditorPlugin, KEYS } from 'platejs';
 
 import type { BlockSelectionConfig } from '../../BlockSelectionPlugin';
 
@@ -6,7 +6,7 @@ import { querySelectorSelectable } from '../../../lib';
 import { extractSelectableIds } from '../../../lib/extractSelectableIds';
 
 export const setSelectedIds = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     added,
     ids,
@@ -52,7 +52,7 @@ export const setSelectedIds = (
 };
 
 export const addSelectedRow = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   id: string,
   options: { clear?: boolean; delay?: number } = {}
 ) => {

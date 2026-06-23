@@ -265,7 +265,7 @@ const CustomNormalizerPlugin = createPlatePlugin({
 ```
 
 <Callout type="info" title="extendEditor与overrideEditor的区别">
-- 当集成需要直接编辑器变异的传统Slate插件（如`withYjs`）时使用`extendEditor`。每个插件只有一个`extendEditor`。
+- 当集成需要直接编辑器变异的传统Plite插件（如`withYjs`）时使用`extendEditor`。每个插件只有一个`extendEditor`。
 - 修改编辑器行为时优先使用`overrideEditor`，因为它具有单一职责和更好的类型安全性。可以多次调用以分层不同的重写。
 </Callout>
 

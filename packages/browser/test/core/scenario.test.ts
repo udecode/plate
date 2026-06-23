@@ -2,35 +2,35 @@ import { describe, expect, test } from 'bun:test';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import {
-  assertSlateBrowserFirstPartyParityContracts,
-  SLATE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY,
-  SLATE_BROWSER_FIRST_PARTY_PARITY_FAMILIES,
+  assertPliteBrowserFirstPartyParityContracts,
+  PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY,
+  PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES,
 } from '../../src/core';
 import {
   classifyScenarioTransportClaim,
   createScenarioReductionCandidates,
   createScenarioReplay,
-  createSlateBrowserCompositionGauntlet,
-  createSlateBrowserDestructiveEditingGauntlet,
-  createSlateBrowserFeatureContractRegistry,
-  createSlateBrowserInlineCutTypingGauntlet,
-  createSlateBrowserInternalControlGauntlet,
-  createSlateBrowserMixedEditingConformanceGauntlet,
-  createSlateBrowserSemanticEditingConformanceGauntlet,
-  createSlateBrowserShellActivationGauntlet,
-  createSlateBrowserToolbarMarkClickTypingGauntlet,
-  createSlateBrowserWarmLoopSteps,
-  createSlateBrowserWarmToolbarArrowGauntlet,
-  defineSlateBrowserFeatureContract,
+  createPliteBrowserCompositionGauntlet,
+  createPliteBrowserDestructiveEditingGauntlet,
+  createPliteBrowserFeatureContractRegistry,
+  createPliteBrowserInlineCutTypingGauntlet,
+  createPliteBrowserInternalControlGauntlet,
+  createPliteBrowserMixedEditingConformanceGauntlet,
+  createPliteBrowserSemanticEditingConformanceGauntlet,
+  createPliteBrowserShellActivationGauntlet,
+  createPliteBrowserToolbarMarkClickTypingGauntlet,
+  createPliteBrowserWarmLoopSteps,
+  createPliteBrowserWarmToolbarArrowGauntlet,
+  definePliteBrowserFeatureContract,
   normalizeScenarioMetadata,
-  type SlateBrowserScenarioStep,
+  type PliteBrowserScenarioStep,
   serializeScenarioStepForReplay,
   summarizeScenarioReductionCandidate,
 } from '../../src/playwright';
 
 describe('scenario helpers', () => {
   test('creates prefix, suffix, and single-step reduction candidates', () => {
-    const steps: SlateBrowserScenarioStep[] = [
+    const steps: PliteBrowserScenarioStep[] = [
       { kind: 'focus', label: 'focus' },
       {
         kind: 'select',
@@ -63,7 +63,7 @@ describe('scenario helpers', () => {
   });
 
   test('does not return empty scenario candidates', () => {
-    const steps: SlateBrowserScenarioStep[] = [
+    const steps: PliteBrowserScenarioStep[] = [
       { kind: 'snapshot', label: 'only-step' },
     ];
 
@@ -71,8 +71,8 @@ describe('scenario helpers', () => {
   });
 
   test('registers first-party feature browser contract rows', () => {
-    const registry = createSlateBrowserFeatureContractRegistry([
-      defineSlateBrowserFeatureContract({
+    const registry = createPliteBrowserFeatureContractRegistry([
+      definePliteBrowserFeatureContract({
         feature: 'media',
         rows: [
           {
@@ -85,7 +85,7 @@ describe('scenario helpers', () => {
           },
         ],
       }),
-      defineSlateBrowserFeatureContract({
+      definePliteBrowserFeatureContract({
         feature: 'table',
         rows: [
           {
@@ -109,8 +109,8 @@ describe('scenario helpers', () => {
       routes: ['images', 'embeds'],
     });
     expect(() =>
-      createSlateBrowserFeatureContractRegistry([
-        defineSlateBrowserFeatureContract({
+      createPliteBrowserFeatureContractRegistry([
+        definePliteBrowserFeatureContract({
           feature: 'first',
           rows: [
             {
@@ -120,7 +120,7 @@ describe('scenario helpers', () => {
             },
           ],
         }),
-        defineSlateBrowserFeatureContract({
+        definePliteBrowserFeatureContract({
           feature: 'second',
           rows: [
             {
@@ -135,8 +135,8 @@ describe('scenario helpers', () => {
   });
 
   test('locks the first-party parity slice into a fast contract guard', () => {
-    const result = assertSlateBrowserFirstPartyParityContracts();
-    const parityFamilies = SLATE_BROWSER_FIRST_PARTY_PARITY_FAMILIES.map(
+    const result = assertPliteBrowserFirstPartyParityContracts();
+    const parityFamilies = PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES.map(
       (family) => family.family
     );
 
@@ -149,7 +149,7 @@ describe('scenario helpers', () => {
       'table-cell-boundary-navigation',
     ]);
     expect(
-      SLATE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY.rows.map((row) => [
+      PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY.rows.map((row) => [
         row.feature,
         row.family,
         row.routes,
@@ -204,11 +204,11 @@ describe('scenario helpers', () => {
     expect(scripts.check).not.toContain('test:stress');
     expect(scripts.check).not.toContain('test:integration-local');
     expect(scripts.check).not.toContain('check:full');
-    expect(scripts['slate:browser:test']).toContain('@platejs/browser test');
-    expect(scripts['slate:browser:test:proof']).toContain(
+    expect(scripts['plite:browser:test']).toContain('@platejs/browser test');
+    expect(scripts['plite:browser:test:proof']).toContain(
       '@platejs/browser test:proof'
     );
-    expect(scripts['slate:browser:test:selection']).toContain(
+    expect(scripts['plite:browser:test:selection']).toContain(
       '@platejs/browser test:selection'
     );
   });
@@ -232,9 +232,9 @@ describe('scenario helpers', () => {
       readFileSync(contributingPath, 'utf8'),
     ];
 
-    expect(scripts.check).not.toContain('slate:browser:test:proof');
+    expect(scripts.check).not.toContain('plite:browser:test:proof');
     expect(scripts.e2e).toContain('playwright test');
-    expect(scripts['slate:browser:test:proof']).toContain(
+    expect(scripts['plite:browser:test:proof']).toContain(
       '@platejs/browser test:proof'
     );
     for (const doc of docs) {
@@ -242,7 +242,7 @@ describe('scenario helpers', () => {
     }
   });
 
-  test('builds slate-browser before public-export Playwright integration', () => {
+  test('builds plite-browser before public-export Playwright integration', () => {
     const packageJsonPath = fileURLToPath(
       new URL('../../../../package.json', import.meta.url)
     );
@@ -252,21 +252,21 @@ describe('scenario helpers', () => {
     const scripts = packageJson.scripts;
 
     if (!scripts.playwright) {
-      expect(scripts['slate:packages:build']).toContain('./packages/browser');
-      expect(scripts['slate:browser:test:proof']).toContain(
+      expect(scripts['plite:packages:build']).toContain('./packages/browser');
+      expect(scripts['plite:browser:test:proof']).toContain(
         '@platejs/browser test:proof'
       );
-      expect(scripts['slate:browser:test:selection']).toContain(
+      expect(scripts['plite:browser:test:selection']).toContain(
         '@platejs/browser test:selection'
       );
       return;
     }
 
-    expect(scripts.playwright).toContain('bun --filter slate-browser build');
+    expect(scripts.playwright).toContain('bun --filter plite-browser build');
     expect(scripts['test:integration']).toContain('bun run playwright');
     expect(scripts['test:integration-local']).toContain('bun run playwright');
     expect(scripts['test:stress']).toContain(
-      'bun --filter slate-browser build'
+      'bun --filter plite-browser build'
     );
     expect(scripts['test:stress']).toContain('playwright test');
     expect(scripts['test:stress:audit']).toContain(
@@ -310,7 +310,7 @@ describe('scenario helpers', () => {
       "getEnvAssignment(candidate.replayCommand, 'STRESS_REDUCTION')"
     );
     expect(scripts['test:stress:desktop']).toContain(
-      'bun --filter slate-browser build'
+      'bun --filter plite-browser build'
     );
     expect(scripts['test:stress:desktop']).toContain(
       'scripts/stress/project-args.mjs desktop'
@@ -338,11 +338,11 @@ describe('scenario helpers', () => {
     expect(stressDesktopProjectsSource).toContain("os.type() === 'Darwin'");
     expect(scripts['test:stress:desktop']).toContain('playwright test');
     expect(scripts['test:stress:replay']).toContain(
-      'bun --filter slate-browser build'
+      'bun --filter plite-browser build'
     );
     expect(scripts['test:stress:replay']).toContain('playwright test');
     expect(scripts['test:stress:replay:desktop']).toContain(
-      'bun --filter slate-browser build'
+      'bun --filter plite-browser build'
     );
     expect(scripts['test:stress:replay:desktop']).toContain(
       'scripts/stress/project-args.mjs desktop'
@@ -421,7 +421,7 @@ describe('scenario helpers', () => {
   });
 
   test('summarizes reduction candidates without serializing step functions', () => {
-    const steps: SlateBrowserScenarioStep[] = [
+    const steps: PliteBrowserScenarioStep[] = [
       {
         kind: 'custom',
         label: 'custom-step',
@@ -458,7 +458,7 @@ describe('scenario helpers', () => {
   });
 
   test('serializes replayable scenario steps with action payloads', () => {
-    const step: SlateBrowserScenarioStep = {
+    const step: PliteBrowserScenarioStep = {
       iteration: 2,
       kind: 'select',
       label: 'select-word',
@@ -490,7 +490,7 @@ describe('scenario helpers', () => {
   });
 
   test('serializes DOM text mutation steps for replay', () => {
-    const step: SlateBrowserScenarioStep = {
+    const step: PliteBrowserScenarioStep = {
       data: 'imported',
       inputType: 'insertText',
       kind: 'mutateTextDOM',
@@ -520,7 +520,7 @@ describe('scenario helpers', () => {
   });
 
   test('serializes rendered DOM shape assertions for replay', () => {
-    const step: SlateBrowserScenarioStep = {
+    const step: PliteBrowserScenarioStep = {
       kind: 'assertRenderedDOMShape',
       label: 'assert-first-block-dom-shape',
       shape: {
@@ -562,11 +562,11 @@ describe('scenario helpers', () => {
   });
 
   test('serializes replayable browser stress assertion steps', () => {
-    const steps: SlateBrowserScenarioStep[] = [
+    const steps: PliteBrowserScenarioStep[] = [
       {
         kind: 'dragTextSelection',
         label: 'drag-toolbar-target',
-        selector: 'span[data-slate-string="true"]',
+        selector: 'span[data-plite-string="true"]',
         steps: 12,
       },
       {
@@ -596,7 +596,7 @@ describe('scenario helpers', () => {
         label: 'assert-image-offset',
         max: 1,
         min: 0,
-        selector: '[data-slate-path="1"]',
+        selector: '[data-plite-path="1"]',
       },
       {
         kind: 'assertModelSelectionExpanded',
@@ -747,7 +747,7 @@ describe('scenario helpers', () => {
 
   test('creates replayable warm toolbar arrow gauntlet steps', () => {
     const replay = createScenarioReplay(
-      createSlateBrowserWarmToolbarArrowGauntlet({
+      createPliteBrowserWarmToolbarArrowGauntlet({
         domCaretAfterInsert: {
           offset: 9,
           text: 'editableW',
@@ -825,14 +825,14 @@ describe('scenario helpers', () => {
     };
     const point = { path: [0, 0], offset: 2 };
     const helpers = [
-      createSlateBrowserInternalControlGauntlet({
+      createPliteBrowserInternalControlGauntlet({
         controlSelector: '[data-testid="internal-control"]',
         controlValue: 'inner',
         followUpText: 'Z',
         outerSelection: collapsed,
         textAfterFollowUp: 'textZ',
       }),
-      createSlateBrowserCompositionGauntlet({
+      createPliteBrowserCompositionGauntlet({
         committedText: 'é',
         selection: collapsed,
         steps: ['e', 'é'],
@@ -840,11 +840,11 @@ describe('scenario helpers', () => {
         textAfterComposition: 'texté',
         transport: 'synthetic',
       }),
-      createSlateBrowserShellActivationGauntlet({
+      createPliteBrowserShellActivationGauntlet({
         buttonName: 'Open editor',
         expectedSelection: collapsed,
       }),
-      createSlateBrowserInlineCutTypingGauntlet({
+      createPliteBrowserInlineCutTypingGauntlet({
         domShape: {
           afterCut: {
             blockIndex: 0,
@@ -860,7 +860,7 @@ describe('scenario helpers', () => {
         selection: selected,
         textAfterTyping: 'textZ',
       }),
-      createSlateBrowserToolbarMarkClickTypingGauntlet({
+      createPliteBrowserToolbarMarkClickTypingGauntlet({
         clickPoint: point,
         insertedText: 'Z',
         markButtonTestId: 'mark-button-bold',
@@ -868,7 +868,7 @@ describe('scenario helpers', () => {
         selectionAfterInsert: collapsed,
         textAfterInsert: 'textZ',
       }),
-      createSlateBrowserMixedEditingConformanceGauntlet({
+      createPliteBrowserMixedEditingConformanceGauntlet({
         deleteKey: 'Backspace',
         domShape: {
           afterDelete: {
@@ -901,7 +901,7 @@ describe('scenario helpers', () => {
         toolbarSelection: selected,
         toolbarSelectionAfterCommand: selected,
       }),
-      createSlateBrowserSemanticEditingConformanceGauntlet({
+      createPliteBrowserSemanticEditingConformanceGauntlet({
         insertedText: 'Z',
         selectionAfterDelete: collapsed,
         selectionAfterFollowUp: collapsed,
@@ -922,7 +922,7 @@ describe('scenario helpers', () => {
   });
 
   test('creates replayable generated destructive editing gauntlet steps', () => {
-    const steps = createSlateBrowserDestructiveEditingGauntlet({
+    const steps = createPliteBrowserDestructiveEditingGauntlet({
       domShape: {
         afterDeleteAfterPaste: {
           blockIndex: 0,
@@ -1009,7 +1009,7 @@ describe('scenario helpers', () => {
   });
 
   test('creates generated warm loop steps with iteration labels', () => {
-    const steps = createSlateBrowserWarmLoopSteps({
+    const steps = createPliteBrowserWarmLoopSteps({
       createIteration: (iteration) => [
         { kind: 'focus', label: `focus-${iteration}` },
         { kind: 'type', label: `type-${iteration}`, text: `${iteration}` },
@@ -1038,7 +1038,7 @@ describe('scenario helpers', () => {
   });
 
   test('creates iteration-level reduction candidates for warm loops', () => {
-    const steps = createSlateBrowserWarmLoopSteps({
+    const steps = createPliteBrowserWarmLoopSteps({
       createIteration: (iteration) => [
         { kind: 'focus', label: `focus-${iteration}` },
         { kind: 'type', label: `type-${iteration}`, text: `${iteration}` },

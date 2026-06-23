@@ -3,7 +3,7 @@ import {
   PointApi,
   type Range,
   type RuntimeId,
-  type Editor as PliteEditor,
+  type Editor as EditorType,
 } from '@platejs/plite';
 import type {
   PliteAnnotationStore,
@@ -152,7 +152,7 @@ const countMappedListeners = (
 const shouldRecomputeForEditorChange = <T extends Record<string, unknown>>(
   widgets: readonly PliteWidget<T>[],
   change: EditorCommit | undefined,
-  editor: PliteEditor
+  editor: EditorType
 ) => {
   if (!change) {
     return true;
@@ -188,7 +188,7 @@ const buildWidgetSnapshot = <
 >(
   previous: PliteWidgetSnapshot<T, TAnnotation>,
   widgets: readonly PliteWidget<T>[],
-  editor: PliteEditor,
+  editor: EditorType,
   annotationStore?: PliteAnnotationStore<TAnnotation> | null
 ) => {
   const editorSnapshot = Editor.getSnapshot(editor);
@@ -294,7 +294,7 @@ export const createPliteWidgetStore = <
   T extends Record<string, unknown>,
   TAnnotation extends Record<string, unknown>,
 >(
-  editor: PliteEditor,
+  editor: EditorType,
   getWidgets: () => readonly PliteWidget<T>[],
   annotationStore?: PliteAnnotationStore<TAnnotation> | null
 ): PliteWidgetStore<T, TAnnotation> => {

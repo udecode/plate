@@ -11,7 +11,7 @@ import {
   assertRenderedDOMShape,
 } from './dom-shape';
 import { getBlockTexts, normalizeHtml } from './dom-text';
-import { findSlateBrowserKernelTraceEntry } from './scenario-kernel-trace';
+import { findPliteBrowserKernelTraceEntry } from './scenario-kernel-trace';
 import { getFocusOwnerSnapshot } from './selection-geometry';
 import {
   assertCollapsedModelDOMSelectionExpectation,
@@ -28,17 +28,17 @@ import type {
   HtmlNormalizationOptions,
   RenderedDOMShapeExpectation,
   SelectionSnapshotExpectation,
-  SlateBrowserEditorHarness,
-  SlateBrowserKernelTraceExpectation,
+  PliteBrowserEditorHarness,
+  PliteBrowserKernelTraceExpectation,
 } from './types';
 
 export const createEditorHarnessAssertions = ({
   getHarness,
   root,
 }: {
-  getHarness: () => SlateBrowserEditorHarness;
+  getHarness: () => PliteBrowserEditorHarness;
   root: Locator;
-}): SlateBrowserEditorHarness['assert'] => ({
+}): PliteBrowserEditorHarness['assert'] => ({
   text: async (text: RegExp | string) => {
     await expect(root).toContainText(text);
   },
@@ -85,11 +85,11 @@ export const createEditorHarnessAssertions = ({
       .poll(async () => (await getFocusOwnerSnapshot(root)).kind)
       .toBe(expected);
   },
-  kernelTrace: async (expected: SlateBrowserKernelTraceExpectation) => {
+  kernelTrace: async (expected: PliteBrowserKernelTraceExpectation) => {
     await expect
       .poll(async () =>
         Boolean(
-          findSlateBrowserKernelTraceEntry(
+          findPliteBrowserKernelTraceEntry(
             await getHarness().get.kernelTrace(),
             expected
           )
@@ -138,7 +138,7 @@ export const createEditorHarnessAssertions = ({
   },
   placeholderShape: async (
     expected: PlaceholderShape,
-    selector = '[data-slate-zero-width]'
+    selector = '[data-plite-zero-width]'
   ) => {
     await expect
       .poll(() =>
@@ -148,13 +148,13 @@ export const createEditorHarnessAssertions = ({
           .evaluate((element: Element) => ({
             hasBr: !!element.querySelector('br'),
             hasFEFF: element.textContent?.includes('\uFEFF') ?? false,
-            kind: element.getAttribute('data-slate-zero-width'),
+            kind: element.getAttribute('data-plite-zero-width'),
           }))
       )
       .toEqual(expected);
   },
   placeholderVisible: async (visible = true) => {
-    const placeholder = root.locator('[data-slate-placeholder="true"]');
+    const placeholder = root.locator('[data-plite-placeholder="true"]');
 
     if (visible) {
       await expect(placeholder).toBeVisible();

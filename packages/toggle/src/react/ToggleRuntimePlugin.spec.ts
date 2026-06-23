@@ -32,7 +32,7 @@ const createToggleRuntimeEditor = ({
     plugins: [BaseTogglePlugin],
   });
 
-describe('TogglePlugin Slate v2 runtime', () => {
+describe('TogglePlugin Plite runtime', () => {
   it('marks children inside closed toggles as not selectable', () => {
     const editor = createToggleRuntimeEditor({
       value: [
@@ -133,9 +133,9 @@ describe('TogglePlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(
-      getToggleRuntimeTransforms(editor).deleteBackward('character')
-    ).toBe(true);
+    expect(getToggleRuntimeTransforms(editor).deleteBackward('character')).toBe(
+      true
+    );
     expect(editor.read((state) => state.value.root())).toMatchObject([
       {
         children: [{ text: 'Toggleafter' }],
@@ -165,9 +165,9 @@ describe('TogglePlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(
-      getToggleRuntimeTransforms(editor).deleteForward('character')
-    ).toBe(true);
+    expect(getToggleRuntimeTransforms(editor).deleteForward('character')).toBe(
+      true
+    );
     expect(editor.read((state) => state.value.root())).toMatchObject([
       {
         children: [{ text: 'beforeToggle' }],

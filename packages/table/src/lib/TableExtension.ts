@@ -7,10 +7,10 @@ import type {
   Operation,
   Path,
   Range,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import type {
-  SlateEditor,
-  SlatePluginContext,
+  BasePlateEditor,
+  EditorPluginContext,
   TTableCellElement,
   TTableElement,
   TTableRowElement,
@@ -22,7 +22,7 @@ import {
   PathApi,
   RangeApi,
   TextApi,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import cloneDeep from 'lodash/cloneDeep.js';
 import { KEYS } from 'platejs';
 
@@ -44,7 +44,7 @@ import {
 import { computeCellIndices, getCellTypes } from './utils/index';
 
 type TableExtensionContext = Pick<
-  SlatePluginContext<TableConfig>,
+  EditorPluginContext<TableConfig>,
   'api' | 'editor' | 'getOption' | 'getOptions' | 'plugin' | 'type'
 >;
 
@@ -102,7 +102,7 @@ const matchesObject = (
   });
 
 const getPlateTransformMatch = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options?: TableSetNodesOptions
 ): TableSetNodesPredicate | undefined => {
   const { block, empty, id, match, text } = options ?? {};
@@ -145,7 +145,7 @@ const getPlateTransformMatch = (
 };
 
 const combinePlateTransformMatchOptions = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   match: TableSetNodesPredicate,
   options?: TableSetNodesOptions
 ): TableSetNodesPredicate => {
@@ -167,7 +167,7 @@ const combinePlateTransformMatchOptions = (
 };
 
 const isTargetingSelectedCell = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   target: TableSetNodesTarget,
   cellPaths: Path[]
 ) => {
@@ -193,7 +193,7 @@ const isTargetingSelectedCell = (
 };
 
 const replaceChildrenAtPath = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   tx: TableNodeTransaction,
   path: Path,
   children: Descendant[]
@@ -211,7 +211,7 @@ const replaceChildrenAtPath = (
 };
 
 const createTableCellBlock = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options: { children?: Descendant[] } = {}
 ): Element => {
   const createBlock = (
@@ -356,7 +356,7 @@ const updateTableSelectionOperation = ({
   operation,
   tableType,
 }: {
-  editor: SlateEditor;
+  editor: BasePlateEditor;
   operation: Operation;
   tableType: string;
 }) => {
@@ -475,7 +475,7 @@ const updateTableCellIndices = ({
   }
 };
 
-const getSelectedTableMarks = (editor: SlateEditor) => {
+const getSelectedTableMarks = (editor: BasePlateEditor) => {
   const { selection } = editor;
 
   if (!selection || editor.api.isCollapsed()) return;
@@ -519,7 +519,7 @@ const getSelectedTableMarks = (editor: SlateEditor) => {
 };
 
 const moveTableSelectionLine = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options: { reverse?: boolean }
 ) => {
   if (!editor.api.isCollapsed()) return false;
@@ -554,7 +554,7 @@ const moveTableSelectionLine = (
   });
 };
 
-export const selectAllTable = (editor: SlateEditor, type = KEYS.table) => {
+export const selectAllTable = (editor: BasePlateEditor, type = KEYS.table) => {
   const table = editor.api.above<Element>({
     match: (node) => isElementOfType(node, type),
   });
@@ -588,7 +588,7 @@ export const selectAllTable = (editor: SlateEditor, type = KEYS.table) => {
 };
 
 export const tabTable = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options: { reverse?: boolean } = {}
 ) => {
   if (editor.selection && editor.api.isExpanded()) {

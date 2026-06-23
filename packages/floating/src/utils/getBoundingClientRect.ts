@@ -1,4 +1,4 @@
-import type { Location, Range } from '@platejs/slate';
+import type { Location, Range } from '@platejs/plite';
 import type { PlateEditor } from 'platejs/react';
 
 import { PathApi } from 'platejs';
@@ -18,7 +18,9 @@ export const getBoundingClientRect = (
   })();
 
   const clientRects = atRanges
-    .map((range) => editor.api.dom.resolveDOMRange(range)?.getBoundingClientRect())
+    .map((range) =>
+      editor.api.dom.resolveDOMRange(range)?.getBoundingClientRect()
+    )
     .filter(Boolean) as DOMRect[];
 
   if (clientRects.length === 0) return;

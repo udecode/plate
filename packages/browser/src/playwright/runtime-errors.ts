@@ -1,8 +1,8 @@
 import { type ConsoleMessage, expect, type Page } from '@playwright/test';
 
 const DEFAULT_RUNTIME_ERROR_PATTERNS = [
-  'Unable to find the path for Slate node',
-  'Cannot resolve a Slate node',
+  'Unable to find the path for Plite node',
+  'Cannot resolve a Plite node',
   'Cannot resolve a DOM point',
   'Cannot resolve a DOM range',
 ];
@@ -11,7 +11,7 @@ const NEXT_DATA_ACCESS_CONTROL_ERROR =
   /Fetch API cannot load http:\/\/(?:localhost|127\.0\.0\.1):\d+\/_next\/data\//;
 
 /** Recorder returned by runtime-error capture helpers. */
-export type SlateBrowserRuntimeErrorRecorder = {
+export type PliteBrowserRuntimeErrorRecorder = {
   assertNone: () => void;
   errors: string[];
   stop: () => void;
@@ -26,12 +26,12 @@ const isIgnoredRuntimeError = (text: string) =>
     text.includes('https://player.vimeo.com'));
 
 /** Start recording browser runtime errors for a Playwright page. */
-export const recordSlateBrowserRuntimeErrors = (
+export const recordPliteBrowserRuntimeErrors = (
   page: Page,
   options: {
     patterns?: readonly string[];
   } = {}
-): SlateBrowserRuntimeErrorRecorder => {
+): PliteBrowserRuntimeErrorRecorder => {
   const patterns = options.patterns ?? DEFAULT_RUNTIME_ERROR_PATTERNS;
   const errors: string[] = [];
   const onPageError = (error: Error) => {

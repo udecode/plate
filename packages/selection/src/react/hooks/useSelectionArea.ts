@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Element } from '@platejs/slate';
+import type { Element, NodeEntry } from '@platejs/plite';
 
 import { KEYS } from 'platejs';
 import { useEditorPlugin } from 'platejs/react';
@@ -45,8 +45,8 @@ export const useSelectionArea = () => {
       boundaries: `#${editor.meta.uid}`,
       container: `#${editor.meta.uid}`,
       document: window.document,
-      selectables: `#${editor.meta.uid} .slate-selectable`,
-      selectionAreaClass: 'slate-selection-area',
+      selectables: `#${editor.meta.uid} .plite-selectable`,
+      selectionAreaClass: 'plite-selection-area',
       ...areaOptions,
     })
       .on('beforestart', () => {
@@ -75,11 +75,14 @@ export const useSelectionArea = () => {
           });
 
           const added = new Set(extractSelectableIds(changed.added));
-          added.forEach((id) => {
-            const block = editor.api.block({
+          const getBlockById = (id: string) =>
+            editor.api.block({
               at: [],
-              match: (n) => !!n.id && n.id === id,
-            });
+              match: (n: Element) => !!n.id && n.id === id,
+            }) as NodeEntry<Element> | undefined;
+
+          added.forEach((id) => {
+            const block = getBlockById(id);
 
             if (!block) return;
             if (block[0].type === KEYS.table) return;
@@ -94,8 +97,9 @@ export const useSelectionArea = () => {
             const hasAncestor = editor.api.block({
               above: true,
               at: block[1],
-              match: (n) => !!n.id && areaRef.current.ids.has(n.id as string),
-            });
+              match: (n: Element) =>
+                !!n.id && areaRef.current.ids.has(n.id as string),
+            }) as NodeEntry<Element> | undefined;
 
             if (!hasAncestor) {
               next.add(id);
@@ -123,8 +127,8 @@ export const useSelectionArea = () => {
           const getBlockById = (id: string) =>
             editor.api.block({
               at: [],
-              match: (n) => !!n.id && n.id === id,
-            });
+              match: (n: Element) => !!n.id && n.id === id,
+            }) as NodeEntry<Element> | undefined;
 
           const isTableOnlySelection = ids.every((id) => {
             const block = getBlockById(id);
@@ -157,11 +161,11 @@ export const useSelectionArea = () => {
               const table = editor.api.block({
                 above: true,
                 at: block[1],
-              });
+              }) as NodeEntry<Element> | undefined;
               if (!table) return false;
 
               const tableRowIds = table[0].children.map(
-                (tr) => tr.id as string
+                (tr) => (tr as Element).id as string
               );
 
               next.add(table[0].id as string);

@@ -3,43 +3,43 @@ title: Plate Editor
 description: API reference for the Plate editor runtime.
 ---
 
-`PlateEditor` is the React editor type returned by `createPlateEditor`, `usePlateEditor`, and `withPlate`. It extends the base Slate editor with plugin registries, typed `api` and `tf` surfaces, DOM state, metadata, and plugin option helpers.
+`PlateEditor` is the React editor type returned by `createPlateEditor`, `usePlateEditor`, and `withPlate`. It extends the base Plite editor with plugin registries, typed `api` and `tf` surfaces, DOM state, metadata, and plugin option helpers.
 
 ## Ownership
 
 | Surface | Owner | Notes |
 | --- | --- | --- |
 | `PlateEditor` | `@platejs/core/react` | React editor type with Plate plugin APIs, transforms, handlers, renders, and hooks. |
-| `SlateEditor` | `@platejs/core` | Non-React editor type used by server-side and static editor paths. |
-| Slate primitives | `@platejs/slate` | `children`, `selection`, `operations`, core `api`, and core `tf` transforms. |
+| `BasePlateEditor` | `@platejs/core` | Non-React editor type used by server-side and static editor paths. |
+| Plite primitives | `@platejs/plite` | `children`, `selection`, `operations`, core `api`, and core `tf` transforms. |
 | Core plugins | `@platejs/core` | Debugging, HTML parsing, parser pipeline, length, node id, history, input rules, and base paragraph behavior. |
 | React core plugins | `@platejs/core/react` | React extension, DOM integration, event editor, navigation feedback, and React paragraph plugin. |
 
-Use `PlateEditor` when a page or component runs inside React. Use `SlateEditor` when you need the headless editor from `createSlateEditor`.
+Use `PlateEditor` when a page or component runs inside React. Use `BasePlateEditor` when you need the headless editor from `createBasePlateEditor`.
 
 ## Editor Shape
 
-The editor is still a Slate editor. Plate adds typed plugin access, plugin metadata, DOM state, and option stores on top of that shape.
+The editor is still a Plite editor. Plate adds typed plugin access, plugin metadata, DOM state, and option stores on top of that shape.
 
 <API name="PlateEditor">
 <APIAttributes>
   <APIItem name="id" type="string">
-    Unique editor instance id. `withSlate` uses the provided `id`, an existing editor id, or `nanoid()`.
+    Unique editor instance id. `withPlite` uses the provided `id`, an existing editor id, or `nanoid()`.
   </APIItem>
   <APIItem name="children" type="Value">
     Current document value.
   </APIItem>
   <APIItem name="selection" type="Range | null">
-    Current Slate selection.
+    Current Plite selection.
   </APIItem>
   <APIItem name="operations" type="Operation[]">
-    Operations applied since Slate last flushed the editor.
+    Operations applied since Plite last flushed the editor.
   </APIItem>
   <APIItem name="api" type="PlateEditor['api'] & CorePluginApi">
-    Core Slate APIs plus APIs contributed by resolved Plate plugins.
+    Core Plite APIs plus APIs contributed by resolved Plate plugins.
   </APIItem>
   <APIItem name="tf" type="PlateEditor['tf'] & CorePluginTransforms">
-    Core Slate transforms plus transforms contributed by resolved Plate plugins.
+    Core Plite transforms plus transforms contributed by resolved Plate plugins.
   </APIItem>
   <APIItem name="plugins" type="Record<string, AnyEditorPlatePlugin>">
     Resolved plugin map keyed by plugin key.
@@ -60,16 +60,16 @@ The editor is still a Slate editor. Plate adds typed plugin access, plugin metad
 | Field | Type | Set by |
 | --- | --- | --- |
 | `composing` | `boolean` | Composition handlers. |
-| `currentKeyboardEvent` | `KeyboardEventLike \| null` | `SlateReactExtensionPlugin` while handling keyboard shortcuts. |
+| `currentKeyboardEvent` | `KeyboardEventLike \| null` | `PliteReactExtensionPlugin` while handling keyboard shortcuts. |
 | `focused` | `boolean` | DOM focus integration. |
 | `prevSelection` | `Range \| null` | Selection tracking. |
-| `readOnly` | `boolean` | `withSlate({ readOnly })`, then React read-only state. |
+| `readOnly` | `boolean` | `withPlite({ readOnly })`, then React read-only state. |
 
 `editor.meta` carries plugin resolution output. Most application code reads this indirectly through helpers like `getPlugin`, `getOptions`, and render utilities.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `key` | `string` | Internal editor key. `withSlate` creates one with `nanoid()` when missing. |
+| `key` | `string` | Internal editor key. `withPlite` creates one with `nanoid()` when missing. |
 | `uid` | `string \| undefined` | Stable id used by Plate containers across RSC and client hydration. |
 | `userId` | `string \| null \| undefined` | Collaborative identity passed through editor options. |
 | `components` | `NodeComponents` | Resolved node components keyed by plugin key. |
@@ -107,7 +107,7 @@ export function ParagraphType() {
 
 ## Initialization
 
-`withPlate` wraps `withSlate` with React defaults. It uses `createZustandStore` for plugin option stores and prepends the React core plugins before user plugins.
+`withPlate` wraps `withPlite` with React defaults. It uses `createZustandStore` for plugin option stores and prepends the React core plugins before user plugins.
 
 ```tsx title="Create a typed editor"
 import { usePlateEditor } from 'platejs/react';
@@ -126,7 +126,7 @@ export function useBasicEditor() {
 }
 ```
 
-`withSlate` does the lower-level setup:
+`withPlite` does the lower-level setup:
 
 | Step | Behavior |
 | --- | --- |
@@ -213,14 +213,14 @@ Core transforms live on `editor.tf` and `editor.transforms`. Plugin docs normall
 
 ## Plugin Pipeline Effects
 
-Some core behavior is exposed by overriding existing Slate transforms rather than by adding named methods.
+Some core behavior is exposed by overriding existing Plite transforms rather than by adding named methods.
 
 | Plugin | Effect |
 | --- | --- |
 | `ParserPlugin` | Overrides `insertData` and scans plugin parsers in reverse plugin order. Matching parsers transform data, deserialize a fragment, transform the fragment, and insert it. |
 | `LengthPlugin` | Wraps `apply` in `withoutNormalizing` and trims overflow when `maxLength` is configured. |
-| `SlateExtensionPlugin` | Wraps `apply` so `onNodeChange` and `onTextChange` handlers can receive previous and next node or text state. |
-| `SlateReactExtensionPlugin` | Handles line movement, tab, untab, select-all, escape, `currentKeyboardEvent`, focus-preserving reset, and `_memo` cleanup during normalization. |
+| `PliteExtensionPlugin` | Wraps `apply` so `onNodeChange` and `onTextChange` handlers can receive previous and next node or text state. |
+| `PliteReactExtensionPlugin` | Handles line movement, tab, untab, select-all, escape, `currentKeyboardEvent`, focus-preserving reset, and `_memo` cleanup during normalization. |
 | `HtmlPlugin` | Registers the `text/html` parser path and delegates HTML elements to `editor.api.html.deserialize`. |
 | `BaseParagraphPlugin` | Registers the default paragraph element under key `p` and maps HTML `<p>` elements, excluding code-font paragraphs. |
 

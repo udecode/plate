@@ -2,7 +2,7 @@ import {
   type OmitFirst,
   type PluginConfig,
   bindFirst,
-  createTSlatePlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -38,7 +38,7 @@ export type ImageConfig = PluginConfig<
 >;
 
 /** Enables support for images. */
-export const BaseImagePlugin = createTSlatePlugin<ImageConfig>({
+export const BaseImagePlugin = createEditorPlugin<ImageConfig>({
   key: KEYS.img,
   node: {
     dangerouslyAllowAttributes: ['alt', 'width', 'height'],

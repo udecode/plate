@@ -32,7 +32,7 @@ describe('SingleBlockPlugin', () => {
   it('merge all blocks into the first block with soft breaks', () => {
     const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       selection: input.selection,
       value: input.children,
     });
@@ -41,9 +41,7 @@ describe('SingleBlockPlugin', () => {
       tx.normalize({ force: true });
     });
 
-    expect(editor.read((state) => state.value.root())).toEqual(
-      output.children
-    );
+    expect(editor.read((state) => state.value.root())).toEqual(output.children);
   });
 
   it('convert hard breaks to soft breaks', () => {
@@ -57,7 +55,7 @@ describe('SingleBlockPlugin', () => {
     );
     const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       selection: input.selection,
       value: input.children,
     });
@@ -80,7 +78,7 @@ describe('SingleBlockPlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: singleBlockInput.children,
     });
 
@@ -111,7 +109,7 @@ describe('SingleBlockPlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: inputWithLineBreaks.children,
     });
 
@@ -144,7 +142,7 @@ describe('SingleBlockPlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: emptyBlocksInput.children,
     });
 

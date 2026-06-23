@@ -1,5 +1,5 @@
-import type { EditorUpdateTransaction } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { EditorUpdateTransaction } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 type SetNodesOptions = Parameters<EditorUpdateTransaction['nodes']['set']>[1];
 
@@ -16,7 +16,7 @@ type props = {
 };
 
 export const setMediaNode = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   props: props,
   options?: SetNodesOptions
 ) => {

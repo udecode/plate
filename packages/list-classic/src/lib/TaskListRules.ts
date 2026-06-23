@@ -1,11 +1,11 @@
-import type { SlateEditor } from '@platejs/core';
+import type { BasePlateEditor } from '@platejs/core';
 
 import { createRuleFactory } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { toggleTaskList } from './transforms';
 
-const isListInputBlocked = (editor: SlateEditor) =>
+const isListInputBlocked = (editor: BasePlateEditor) =>
   editor.api.some({
     match: {
       type: [editor.getType(KEYS.codeBlock)],

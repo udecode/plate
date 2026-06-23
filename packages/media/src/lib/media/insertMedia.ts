@@ -1,5 +1,5 @@
-import type { NodeInsertNodesOptions } from '@platejs/slate';
-import type { SlateEditor, TImageElement } from 'platejs';
+import type { NodeInsertNodesOptions } from '@platejs/plite';
+import type { BasePlateEditor, TImageElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -19,7 +19,7 @@ export interface InsertMediaOptions extends InsertNodesOptions {
   getUrl?: () => Promise<string>;
 }
 
-export const insertMedia = async <E extends SlateEditor>(
+export const insertMedia = async <E extends BasePlateEditor>(
   editor: E,
   {
     getUrl,

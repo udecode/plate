@@ -1,4 +1,4 @@
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 import type { PlateEditor } from 'platejs/react';
 
 export const getListNode = (editor: PlateEditor, node: Element): Element => {

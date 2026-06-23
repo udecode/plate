@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 
-/** Render-profiler event categories emitted by Slate React. */
-export type SlateReactRenderKind =
+/** Render-profiler event categories emitted by Plite React. */
+export type PliteReactRenderKind =
   | 'core-time'
   | 'dom-text-sync'
   | 'editable'
@@ -14,35 +14,35 @@ export type SlateReactRenderKind =
   | 'text'
   | 'void';
 
-/** One Slate React render-profiler event. */
-export type SlateReactRenderProfilerEvent = {
-  kind: SlateReactRenderKind;
+/** One Plite React render-profiler event. */
+export type PliteReactRenderProfilerEvent = {
+  kind: PliteReactRenderKind;
   id?: string | null;
   runtimeId?: string | null;
 };
 
-/** Collected Slate React render profiler events and counters. */
-/** Snapshot returned by the Slate React render profiler. */
-export type SlateReactRenderProfilerSnapshot = {
+/** Collected Plite React render profiler events and counters. */
+/** Snapshot returned by the Plite React render profiler. */
+export type PliteReactRenderProfilerSnapshot = {
   byKey: Record<string, number>;
-  byKind: Partial<Record<SlateReactRenderKind, number>>;
-  events: SlateReactRenderProfilerEvent[];
+  byKind: Partial<Record<PliteReactRenderKind, number>>;
+  events: PliteReactRenderProfilerEvent[];
   total: number;
 };
 
-const installSlateReactRenderProfilerScript = () => {
+const installPliteReactRenderProfilerScript = () => {
   const target = window as Window & {
-    __SLATE_REACT_RENDER_PROFILER__?: {
-      record: (event: SlateReactRenderProfilerEvent) => void;
+    __PLITE_REACT_RENDER_PROFILER__?: {
+      record: (event: PliteReactRenderProfilerEvent) => void;
     };
-    __SLATE_REACT_RENDER_PROFILER_RESET__?: () => void;
-    __SLATE_REACT_RENDER_PROFILER_SNAPSHOT__?: () => SlateReactRenderProfilerSnapshot;
+    __PLITE_REACT_RENDER_PROFILER_RESET__?: () => void;
+    __PLITE_REACT_RENDER_PROFILER_SNAPSHOT__?: () => PliteReactRenderProfilerSnapshot;
   };
-  const events: SlateReactRenderProfilerEvent[] = [];
-  const snapshot = (): SlateReactRenderProfilerSnapshot => {
+  const events: PliteReactRenderProfilerEvent[] = [];
+  const snapshot = (): PliteReactRenderProfilerSnapshot => {
     const byKey: Record<string, number> = {};
-    const byKind: Partial<Record<SlateReactRenderKind, number>> = {};
-    const isRenderEvent = (event: SlateReactRenderProfilerEvent) =>
+    const byKind: Partial<Record<PliteReactRenderKind, number>> = {};
+    const isRenderEvent = (event: PliteReactRenderProfilerEvent) =>
       event.kind !== 'core-time' &&
       event.kind !== 'dom-text-sync' &&
       event.kind !== 'runtime-time' &&
@@ -63,45 +63,45 @@ const installSlateReactRenderProfilerScript = () => {
     };
   };
 
-  target.__SLATE_REACT_RENDER_PROFILER__ = {
+  target.__PLITE_REACT_RENDER_PROFILER__ = {
     record(event) {
       events.push({ ...event });
     },
   };
-  target.__SLATE_REACT_RENDER_PROFILER_RESET__ = () => {
+  target.__PLITE_REACT_RENDER_PROFILER_RESET__ = () => {
     events.length = 0;
   };
-  target.__SLATE_REACT_RENDER_PROFILER_SNAPSHOT__ = snapshot;
+  target.__PLITE_REACT_RENDER_PROFILER_SNAPSHOT__ = snapshot;
 };
 
-/** Install the Slate React render profiler bridge in a Playwright page. */
-export const installSlateReactRenderProfiler = async (page: Page) => {
-  await page.addInitScript(installSlateReactRenderProfilerScript);
-  await page.evaluate(installSlateReactRenderProfilerScript).catch(() => {});
+/** Install the Plite React render profiler bridge in a Playwright page. */
+export const installPliteReactRenderProfiler = async (page: Page) => {
+  await page.addInitScript(installPliteReactRenderProfilerScript);
+  await page.evaluate(installPliteReactRenderProfilerScript).catch(() => {});
 };
 
-/** Reset collected Slate React render profiler events in the page. */
-export const resetSlateReactRenderProfiler = async (page: Page) => {
+/** Reset collected Plite React render profiler events in the page. */
+export const resetPliteReactRenderProfiler = async (page: Page) => {
   await page.evaluate(() => {
     const target = window as Window & {
-      __SLATE_REACT_RENDER_PROFILER_RESET__?: () => void;
+      __PLITE_REACT_RENDER_PROFILER_RESET__?: () => void;
     };
 
-    target.__SLATE_REACT_RENDER_PROFILER_RESET__?.();
+    target.__PLITE_REACT_RENDER_PROFILER_RESET__?.();
   });
 };
 
-/** Read the current Slate React render profiler snapshot from the page. */
-export const getSlateReactRenderProfilerSnapshot = async (
+/** Read the current Plite React render profiler snapshot from the page. */
+export const getPliteReactRenderProfilerSnapshot = async (
   page: Page
-): Promise<SlateReactRenderProfilerSnapshot> =>
+): Promise<PliteReactRenderProfilerSnapshot> =>
   page.evaluate(() => {
     const target = window as Window & {
-      __SLATE_REACT_RENDER_PROFILER_SNAPSHOT__?: () => SlateReactRenderProfilerSnapshot;
+      __PLITE_REACT_RENDER_PROFILER_SNAPSHOT__?: () => PliteReactRenderProfilerSnapshot;
     };
 
     return (
-      target.__SLATE_REACT_RENDER_PROFILER_SNAPSHOT__?.() ?? {
+      target.__PLITE_REACT_RENDER_PROFILER_SNAPSHOT__?.() ?? {
         byKey: {},
         byKind: {},
         events: [],

@@ -86,7 +86,7 @@ export const useComboboxInput = ({
 
   /**
    * Using autoFocus on the input element causes an error: Cannot resolve a
-   * Slate node from DOM node: [object HTMLSpanElement]
+   * Plite node from DOM node: [object HTMLSpanElement]
    */
   useEffect(() => {
     if (autoFocus) {
@@ -144,8 +144,12 @@ export const useComboboxInput = ({
           cancelInput('arrowRight', true);
         }
 
-        const isUndo = Hotkeys.isUndo(event) && editor.history.undos.length > 0;
-        const isRedo = Hotkeys.isRedo(event) && editor.history.redos.length > 0;
+        const history = editor.history as {
+          redos: unknown[];
+          undos: unknown[];
+        };
+        const isUndo = Hotkeys.isUndo(event) && history.undos.length > 0;
+        const isRedo = Hotkeys.isRedo(event) && history.redos.length > 0;
 
         if (forwardUndoRedoToEditor && (isUndo || isRedo)) {
           event.preventDefault();

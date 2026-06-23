@@ -1,4 +1,4 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import {
   BaseCodeDrawingPlugin,
@@ -7,7 +7,7 @@ import {
 
 describe('BaseCodeDrawingPlugin', () => {
   it('configures code drawing as a void element node', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseCodeDrawingPlugin],
     } as any);
 

@@ -1,11 +1,9 @@
-import type { PlateEditor } from 'platejs/react';
-
 import { serializeInlineMd } from '@platejs/markdown';
 import {
   type EditorExtensionInput,
   type Operation,
   type Range,
-  type SlateEditor,
+  type BasePlateEditor,
   defineEditorExtension,
   Editor as EditorApi,
   RangeApi,
@@ -14,13 +12,18 @@ import type { PlatePluginContext } from 'platejs/react';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
 
+import {
+  type EditorHistoryBatch,
+  getEditorHistory,
+} from '../../lib/internal/history';
+
 import { withoutAbort } from './utils/withoutAbort';
 
-type CopilotBatch = PlateEditor['history']['undos'][number] & {
+type CopilotBatch = EditorHistoryBatch & {
   shouldAbort: boolean;
 };
 
-const getPatchString = (editor: SlateEditor, operations: Operation[]) => {
+const getPatchString = (editor: BasePlateEditor, operations: Operation[]) => {
   let string = '';
 
   for (const operation of operations) {
@@ -47,6 +50,7 @@ export const createCopilotExtension = ({
   setOption,
 }: PlatePluginContext<CopilotPluginConfig>): EditorExtensionInput => {
   let prevSelection: Range | null = null;
+  const history = getEditorHistory(editor);
 
   return defineEditorExtension({
     name: 'plate:copilot',
@@ -68,7 +72,7 @@ export const createCopilotExtension = ({
         (_context, next) => {
           if (!getOptions().suggestionText) return next();
 
-          const topRedo = editor.history.redos.at(-1) as CopilotBatch;
+          const topRedo = history.redos.at(-1) as CopilotBatch;
           const prevSuggestion = getOptions().suggestionText;
 
           if (topRedo && topRedo.shouldAbort === false && prevSuggestion) {
@@ -100,7 +104,7 @@ export const createCopilotExtension = ({
         (_context, next) => {
           if (!getOptions().suggestionText) return next();
 
-          const lastUndos = editor.history.undos.at(-1) as CopilotBatch;
+          const lastUndos = history.undos.at(-1) as CopilotBatch;
           const oldText = getOptions().suggestionText;
 
           if (lastUndos && lastUndos.shouldAbort === false && oldText) {
@@ -134,9 +138,7 @@ export const createCopilotExtension = ({
         onCommit() {
           if (getOptions().isLoading) return;
 
-          const lastBatch = editor.history.undos.at(-1) as
-            | CopilotBatch
-            | undefined;
+          const lastBatch = history.undos.at(-1) as CopilotBatch | undefined;
 
           if (lastBatch && lastBatch.shouldAbort === undefined) {
             lastBatch.shouldAbort = getOptions().shouldAbort ?? true;

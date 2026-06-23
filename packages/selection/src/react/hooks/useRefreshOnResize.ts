@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Range } from '@platejs/slate';
+import type { Range } from '@platejs/plite';
 
 import type { SelectionRect } from '../types';
 

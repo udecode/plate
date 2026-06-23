@@ -11,7 +11,7 @@ import type {
   RenderElementProps,
   RenderLeafProps,
   RenderTextProps,
-  SlatePluginContext,
+  EditorPluginContext,
 } from '../../lib';
 
 export const useNodeAttributes = (props: any, ref?: any) => ({
@@ -45,7 +45,7 @@ type DeprecatedNodeProps = {
 };
 
 export type PliteNodeProps<C extends AnyPluginConfig = PluginConfig> =
-  SlatePluginContext<C> & {
+  EditorPluginContext<C> & {
     /**
      * Optional ref to be merged with `attributes.ref`
      *

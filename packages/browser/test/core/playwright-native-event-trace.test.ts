@@ -2,10 +2,10 @@ import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
 import { GlobalRegistrator } from '@happy-dom/global-registrator';
 
 import {
-  resetSlateBrowserNativeEventTrace,
-  startSlateBrowserNativeEventTrace,
-  stopSlateBrowserNativeEventTrace,
-  takeSlateBrowserNativeEventTrace,
+  resetPliteBrowserNativeEventTrace,
+  startPliteBrowserNativeEventTrace,
+  stopPliteBrowserNativeEventTrace,
+  takePliteBrowserNativeEventTrace,
 } from '../../src/playwright';
 
 const createRootLocator = (root: HTMLElement) =>
@@ -14,19 +14,19 @@ const createRootLocator = (root: HTMLElement) =>
       callback: (root: HTMLElement, arg: A) => T,
       arg: A
     ) => callback(root, arg),
-  }) as Parameters<typeof startSlateBrowserNativeEventTrace>[0];
+  }) as Parameters<typeof startPliteBrowserNativeEventTrace>[0];
 
 const installEditorDOM = () => {
   document.body.innerHTML = `
-    <div data-slate-editor="true">
-      <span data-slate-node="text" data-slate-path="0,0">
-        <span data-slate-string="true">hello</span>
+    <div data-plite-editor="true">
+      <span data-plite-node="text" data-plite-path="0,0">
+        <span data-plite-string="true">hello</span>
       </span>
     </div>
   `;
 
-  const root = document.querySelector<HTMLElement>('[data-slate-editor]')!;
-  const text = document.querySelector('[data-slate-string]')!
+  const root = document.querySelector<HTMLElement>('[data-plite-editor]')!;
+  const text = document.querySelector('[data-plite-string]')!
     .firstChild as Text;
 
   return { root, text };
@@ -80,7 +80,7 @@ describe('playwright native event trace', () => {
     const { root, text } = installEditorDOM();
     const locator = createRootLocator(root);
 
-    await startSlateBrowserNativeEventTrace(locator, {
+    await startPliteBrowserNativeEventTrace(locator, {
       events: ['beforeinput', 'input'],
     });
 
@@ -106,7 +106,7 @@ describe('playwright native event trace', () => {
       inputType: 'insertText',
     });
 
-    const trace = await takeSlateBrowserNativeEventTrace(locator);
+    const trace = await takePliteBrowserNativeEventTrace(locator);
 
     expect(trace.anomalies).toEqual([]);
     expect(trace.entries.map((entry) => entry.type)).toEqual([
@@ -131,7 +131,7 @@ describe('playwright native event trace', () => {
     const { root, text } = installEditorDOM();
     const locator = createRootLocator(root);
 
-    await startSlateBrowserNativeEventTrace(locator, {
+    await startPliteBrowserNativeEventTrace(locator, {
       events: ['beforeinput', 'input'],
     });
 
@@ -142,7 +142,7 @@ describe('playwright native event trace', () => {
       inputType: 'insertText',
     });
 
-    const trace = await takeSlateBrowserNativeEventTrace(locator);
+    const trace = await takePliteBrowserNativeEventTrace(locator);
 
     expect(trace.entries.map((entry) => entry.type)).toEqual(['input']);
     expect(trace.anomalies).toEqual([
@@ -157,7 +157,7 @@ describe('playwright native event trace', () => {
     const { root } = installEditorDOM();
     const locator = createRootLocator(root);
 
-    await startSlateBrowserNativeEventTrace(locator, {
+    await startPliteBrowserNativeEventTrace(locator, {
       events: ['beforeinput', 'input'],
     });
     dispatchInputEvent(root, 'beforeinput', {
@@ -166,21 +166,21 @@ describe('playwright native event trace', () => {
     });
 
     expect(
-      (await takeSlateBrowserNativeEventTrace(locator)).entries
+      (await takePliteBrowserNativeEventTrace(locator)).entries
     ).toHaveLength(1);
 
-    await resetSlateBrowserNativeEventTrace(locator);
-    expect((await takeSlateBrowserNativeEventTrace(locator)).entries).toEqual(
+    await resetPliteBrowserNativeEventTrace(locator);
+    expect((await takePliteBrowserNativeEventTrace(locator)).entries).toEqual(
       []
     );
 
-    await stopSlateBrowserNativeEventTrace(locator);
+    await stopPliteBrowserNativeEventTrace(locator);
     dispatchInputEvent(root, 'beforeinput', {
       data: 'x',
       inputType: 'insertText',
     });
 
-    expect((await takeSlateBrowserNativeEventTrace(locator)).entries).toEqual(
+    expect((await takePliteBrowserNativeEventTrace(locator)).entries).toEqual(
       []
     );
   });

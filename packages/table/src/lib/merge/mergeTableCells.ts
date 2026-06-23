@@ -1,5 +1,5 @@
-import type { Descendant } from '@platejs/slate';
-import type { NodeEntry, SlateEditor, TTableCellElement } from 'platejs';
+import type { Descendant } from '@platejs/plite';
+import type { NodeEntry, BasePlateEditor, TTableCellElement } from 'platejs';
 
 import cloneDeep from 'lodash/cloneDeep.js';
 import { getEditorPlugin, KEYS } from 'platejs';
@@ -9,7 +9,7 @@ import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
 
 /** Merges multiple selected cells into one. */
-export const mergeTableCells = (editor: SlateEditor) => {
+export const mergeTableCells = (editor: BasePlateEditor) => {
   const { api } = getEditorPlugin(editor, BaseTablePlugin);
 
   const cellEntries = getTableGridAbove(editor, {

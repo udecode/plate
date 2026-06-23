@@ -1,4 +1,4 @@
-import type { Path } from '@platejs/slate';
+import type { Path } from '@platejs/plite';
 import * as Y from 'yjs';
 
 import {
@@ -31,7 +31,7 @@ export type PendingTextSplitHistory = Omit<
   'elementPosition' | 'elementProperties'
 >;
 
-export const SPLIT_HISTORY_META = 'slate-yjs:split-history';
+export const SPLIT_HISTORY_META = 'plite-yjs:split-history';
 
 export type SplitUndoTextRepair = {
   readonly hasRemoteSplitBoundary: boolean;
@@ -46,10 +46,10 @@ type TrailingSplitUndoText = {
   readonly value: string;
 };
 
-const isSlateIndex = (value: unknown): value is number =>
+const isPliteIndex = (value: unknown): value is number =>
   typeof value === 'number' && Number.isInteger(value) && value >= 0;
 
-const isSlatePath = (value: unknown): value is Path => {
+const isPlitePath = (value: unknown): value is Path => {
   if (!Array.isArray(value)) {
     return false;
   }
@@ -59,7 +59,7 @@ const isSlatePath = (value: unknown): value is Path => {
   while (index < value.length) {
     const pathIndex = value[index];
 
-    if (!isSlateIndex(pathIndex)) {
+    if (!isPliteIndex(pathIndex)) {
       return false;
     }
     index++;
@@ -436,10 +436,10 @@ export const isSplitHistory = (value: unknown): value is SplitHistory => {
   }
 
   return (
-    isSlatePath(value.elementPath) &&
-    isSlatePath(value.textPath) &&
+    isPlitePath(value.elementPath) &&
+    isPlitePath(value.textPath) &&
     typeof value.rightText === 'string' &&
-    isSlateIndex(value.elementPosition) &&
+    isPliteIndex(value.elementPosition) &&
     isRecord(value.elementProperties) &&
     isRecord(value.textProperties) &&
     isOptionalBoolean(value.absorbedRemoteSplit) &&

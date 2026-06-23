@@ -1,5 +1,5 @@
-import type { Element, NodeInsertNodesOptions } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Element, NodeInsertNodesOptions } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -38,7 +38,7 @@ export const createDateNodes = (
 };
 
 export const insertDate = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { date, ...options }: InsertDateOptions = {}
 ) => {
   editor.update((tx) => {

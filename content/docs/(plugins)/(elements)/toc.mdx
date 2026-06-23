@@ -177,7 +177,7 @@ Plugin for generating table of contents.
     Top offset when scrolling to heading.
     - **Default:** `80`
   </APIItem>
-  <APIItem name="queryHeading" type="(editor: SlateEditor) => Heading[]" optional>
+  <APIItem name="queryHeading" type="(editor: BasePlateEditor) => Heading[]" optional>
     Custom function to query headings.
   </APIItem>
 </APIOptions>
@@ -190,7 +190,7 @@ Plugin for generating table of contents.
 Insert table of contents element.
 
 <API name="insertToc">
-<APIOptions type="object<SlateEditor>">
+<APIOptions type="object<BasePlateEditor>">
     Node insertion options.
 </APIOptions>
 </API>

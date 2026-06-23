@@ -1,5 +1,5 @@
 import { createDataTransfer } from '@platejs/test-utils';
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 
 import { createStaticEditor } from '../editor/withStatic';
 import * as getSelectedDomFragmentModule from '../utils/getSelectedDomFragment';
@@ -211,7 +211,7 @@ describe('ViewPlugin', () => {
       editor.tf.setFragmentData(mockData, 'copy');
 
       expect(mockData.setData).toHaveBeenCalledWith(
-        'application/x-slate-fragment',
+        'application/x-plite-fragment',
         expect.any(String)
       );
       expect(mockData.setData).toHaveBeenCalledWith(

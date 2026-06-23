@@ -1,14 +1,13 @@
-import { createSlateEditor } from '../editor';
+import { createBasePlateEditor } from '../editor';
 import {
   type PluginConfig,
-  createSlatePlugin,
-  createTSlatePlugin,
-  getSlatePlugin,
+  createEditorPlugin,
+  getEditorPlugin,
 } from '../plugin';
 
 const createPluginEditor = (
-  plugins: Parameters<typeof createSlateEditor>[0]['plugins']
-) => createSlateEditor({ plugins });
+  plugins: Parameters<typeof createBasePlateEditor>[0]['plugins']
+) => createBasePlateEditor({ plugins });
 
 describe('extendEditorApi method', () => {
   it('maintain editor and plugin API reference while extending', () => {
@@ -16,7 +15,7 @@ describe('extendEditorApi method', () => {
     let pluginApi1: any;
 
     const editor = createPluginEditor([
-      createSlatePlugin({
+      createEditorPlugin({
         key: 'testPlugin',
       })
         .extendEditorApi(({ editor, plugin }) => {
@@ -44,7 +43,7 @@ describe('extendEditorApi method', () => {
       { multiply: (factor: number) => number }
     >;
 
-    const customPlugin = createTSlatePlugin<CustomConfig>({
+    const customPlugin = createEditorPlugin<CustomConfig>({
       key: 'customPlugin',
       options: {
         baseValue: 5,
@@ -76,7 +75,7 @@ describe('extendEditorApi method', () => {
   });
 
   it('correctly handle api extensions through extend, extendEditorApi, and configure', () => {
-    const basePlugin = createSlatePlugin({
+    const basePlugin = createEditorPlugin({
       key: 'testPlugin',
       options: {
         baseValue: 10,
@@ -109,7 +108,7 @@ describe('extendEditorApi method', () => {
   });
 
   it('allow multiple extendEditorApi calls', () => {
-    const basePlugin = createSlatePlugin({
+    const basePlugin = createEditorPlugin({
       key: 'testPlugin',
       options: {
         baseValue: 10,
@@ -135,7 +134,7 @@ describe('extendEditorApi method', () => {
   });
 
   it('allow plugin api', () => {
-    const testPlugin = createSlatePlugin({
+    const testPlugin = createEditorPlugin({
       key: 'testPlugin',
       options: {
         baseValue: 10,
@@ -153,7 +152,7 @@ describe('extendEditorApi method', () => {
 
     const editor = createPluginEditor([
       testPlugin,
-      createSlatePlugin({
+      createEditorPlugin({
         key: 'another',
       }).extendEditorApi(({ editor }) => ({
         method4: () =>
@@ -169,7 +168,7 @@ describe('extendEditorApi method', () => {
   });
 
   it('allow stable plugin api', () => {
-    const testPlugin = createSlatePlugin({
+    const testPlugin = createEditorPlugin({
       key: 'testPlugin',
       options: { baseValue: 10 },
     })
@@ -181,7 +180,7 @@ describe('extendEditorApi method', () => {
 
     const editor = createPluginEditor([
       testPlugin,
-      createSlatePlugin({ key: 'another' }).extendEditorApi(({ editor }) => {
+      createEditorPlugin({ key: 'another' }).extendEditorApi(({ editor }) => {
         const api = editor.api as typeof editor.api & {
           method3: () => number;
         };
@@ -196,13 +195,13 @@ describe('extendEditorApi method', () => {
   });
 
   it('allow overriding plugin APIs', () => {
-    const basePlugin = createSlatePlugin({
+    const basePlugin = createEditorPlugin({
       key: 'basePlugin',
     }).extendEditorApi(() => ({
       method: () => 'base',
     }));
 
-    const overridePlugin = createSlatePlugin({
+    const overridePlugin = createEditorPlugin({
       key: 'overridePlugin',
     }).extendEditorApi(({ editor }) => {
       const { method } = editor.api as typeof editor.api & {
@@ -220,7 +219,7 @@ describe('extendEditorApi method', () => {
   });
 
   it('merge nested API properties', () => {
-    const basePlugin = createSlatePlugin({ key: 'nestedPlugin' })
+    const basePlugin = createEditorPlugin({ key: 'nestedPlugin' })
       .extendEditorApi(() => ({
         cloud: {
           a: () => 'a',
@@ -239,7 +238,7 @@ describe('extendEditorApi method', () => {
   });
 
   it('distinguish between editor.api and plugin.api', () => {
-    const plugin1 = createSlatePlugin({
+    const plugin1 = createEditorPlugin({
       key: 'plugin1',
     })
       .extendEditorApi(() => ({
@@ -262,7 +261,7 @@ describe('extendEditorApi method', () => {
         };
       });
 
-    const plugin3 = createSlatePlugin({
+    const plugin3 = createEditorPlugin({
       key: 'plugin3',
     }).extendEditorApi(() => ({
       method: () => 'plugin3',
@@ -271,12 +270,12 @@ describe('extendEditorApi method', () => {
     const editor = createPluginEditor([plugin1, plugin3]);
 
     expect(editor.api.method()).toBe('plugin3'); // Overridden by plugin2
-    expect(getSlatePlugin(editor, plugin1).api.scoped()).toBe('scoped2'); // From plugin1, not overridden
+    expect(getEditorPlugin(editor, plugin1).api.scoped()).toBe('scoped2'); // From plugin1, not overridden
     expect(editor.api.testMethod()).toBe('plugin3-scoped1');
   });
 
   it('comprehensively handles nested and overridden editor APIs', () => {
-    const basePlugin = createSlatePlugin({
+    const basePlugin = createEditorPlugin({
       key: 'testPlugin',
       options: {
         baseValue: 10,
@@ -299,7 +298,7 @@ describe('extendEditorApi method', () => {
         combined: () => api.level1.method3() + getOptions().baseValue,
       }));
 
-    const overridePlugin = createSlatePlugin({
+    const overridePlugin = createEditorPlugin({
       key: 'overridePlugin',
     }).extendEditorApi(({ editor }) => {
       const baseApi = editor.api as typeof editor.api & {
@@ -323,7 +322,7 @@ describe('extendEditorApi method', () => {
 
     expect(editor.api.override()).toBe('overridden: base' as any);
 
-    const plugin = getSlatePlugin(editor, basePlugin);
+    const plugin = editor.getPlugin(basePlugin);
     expect(plugin.api.level1.method1()).toBe(10);
 
     plugin.api.level1.method1 = () => 100;
@@ -337,7 +336,7 @@ describe('extendEditorApi method', () => {
 
 describe('extendApi method', () => {
   it('extend plugin-specific API without affecting global API', () => {
-    const testPlugin = createSlatePlugin({
+    const testPlugin = createEditorPlugin({
       key: 'testPlugin',
     })
       .extendEditorApi(() => ({
@@ -357,7 +356,7 @@ describe('extendApi method', () => {
   });
 
   it('allow multiple extendApi calls', () => {
-    const testPlugin = createSlatePlugin({
+    const testPlugin = createEditorPlugin({
       key: 'testPlugin',
     })
       .extendApi(() => ({
@@ -378,7 +377,7 @@ describe('extendApi method', () => {
   });
 
   it('allow access to plugin options in extendApi', () => {
-    const testPlugin = createSlatePlugin({
+    const testPlugin = createEditorPlugin({
       key: 'testPlugin',
       options: {
         baseValue: 10,
@@ -393,7 +392,7 @@ describe('extendApi method', () => {
   });
 
   it('allow interaction between global and plugin-specific APIs', () => {
-    const testPlugin = createSlatePlugin({
+    const testPlugin = createEditorPlugin({
       key: 'testPlugin',
     })
       .extendEditorApi(() => ({
@@ -409,13 +408,13 @@ describe('extendApi method', () => {
   });
 
   it('maintain separate contexts for different plugins', () => {
-    const plugin1 = createSlatePlugin({
+    const plugin1 = createEditorPlugin({
       key: 'plugin1',
     }).extendApi(() => ({
       method: () => 'plugin1',
     }));
 
-    const plugin2 = createSlatePlugin({
+    const plugin2 = createEditorPlugin({
       key: 'plugin2',
     }).extendApi(() => ({
       method: () => 'plugin2',
@@ -428,13 +427,13 @@ describe('extendApi method', () => {
   });
 
   it('allow overriding plugin-specific APIs', () => {
-    const basePlugin = createSlatePlugin({
+    const basePlugin = createEditorPlugin({
       key: 'basePlugin',
     }).extendApi(() => ({
       method: () => 'base',
     }));
 
-    const overridePlugin = createSlatePlugin({
+    const overridePlugin = createEditorPlugin({
       key: 'overridePlugin',
     }).extendApi(({ editor }) => {
       const baseApi = editor.api as typeof editor.api & {
@@ -453,7 +452,7 @@ describe('extendApi method', () => {
   });
 
   it('handle complex scenarios with both extendEditorApi and extendApi', () => {
-    const testPlugin = createSlatePlugin({
+    const testPlugin = createEditorPlugin({
       key: 'testPlugin',
       options: {
         baseValue: 5,

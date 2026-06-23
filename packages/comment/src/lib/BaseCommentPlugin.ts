@@ -1,13 +1,13 @@
 import {
   type NodeEntry,
   type PluginConfig,
-  type SlateEditor,
+  type BasePlateEditor,
   type TCommentText,
-  createTSlatePlugin,
+  createEditorPlugin,
   KEYS,
   TextApi,
 } from 'platejs';
-import type { EditorUpdateTransaction } from '@platejs/slate';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 
 import {
   getCommentCount,
@@ -21,7 +21,7 @@ import {
 } from './utils';
 
 type CommentNodeOptions = NonNullable<
-  Parameters<SlateEditor['api']['nodes']>[0]
+  Parameters<BasePlateEditor['api']['nodes']>[0]
 >;
 type CommentSetNodesOptions = NonNullable<
   Parameters<EditorUpdateTransaction['nodes']['set']>[1]
@@ -57,7 +57,7 @@ export type BaseCommentConfig = PluginConfig<
   }
 >;
 
-export const BaseCommentPlugin = createTSlatePlugin<BaseCommentConfig>({
+export const BaseCommentPlugin = createEditorPlugin<BaseCommentConfig>({
   key: KEYS.comment,
   node: {
     isLeaf: true,
@@ -76,14 +76,21 @@ export const BaseCommentPlugin = createTSlatePlugin<BaseCommentConfig>({
     node: (options = {}) => {
       const { id, isDraft, ...rest } = options;
 
-      return editor.api.node<TCommentText>({
-        ...rest,
-        match: (n) => {
-          if (isDraft) return n[type] && n[getDraftCommentKey()];
+      return editor.read((state) =>
+        state.nodes.find<TCommentText>({
+          ...rest,
+          match: (n: unknown) => {
+            if (!TextApi.isText(n)) return false;
+            const text = n as TCommentText;
 
-          return id ? isCommentNodeById(n, id) : n[type];
-        },
-      });
+            if (isDraft) {
+              return Boolean(text[type] && text[getDraftCommentKey()]);
+            }
+
+            return id ? isCommentNodeById(text, id) : Boolean(text[type]);
+          },
+        } as any)
+      );
     },
     nodeId: (leaf) => {
       const ids: string[] = [];
@@ -105,16 +112,24 @@ export const BaseCommentPlugin = createTSlatePlugin<BaseCommentConfig>({
     nodes: (options = {}) => {
       const { id, isDraft, transient, ...rest } = options;
 
-      return [
-        ...editor.api.nodes<TCommentText>({
+      return editor.read((state) => [
+        ...state.nodes.entries<TCommentText>({
           ...rest,
-          match: (n) => {
-            if (isDraft) return n[type] && n[getDraftCommentKey()];
-            if (transient) return n[type] && n[getTransientCommentKey()];
-            return id ? isCommentNodeById(n, id) : n[type];
+          match: (n: unknown) => {
+            if (!TextApi.isText(n)) return false;
+            const text = n as TCommentText;
+
+            if (isDraft) {
+              return Boolean(text[type] && text[getDraftCommentKey()]);
+            }
+            if (transient) {
+              return Boolean(text[type] && text[getTransientCommentKey()]);
+            }
+
+            return id ? isCommentNodeById(text, id) : Boolean(text[type]);
           },
-        }),
-      ];
+        } as any),
+      ]);
     },
   }))
   .extendTx(({ api, type }) => (tx: EditorUpdateTransaction) => ({

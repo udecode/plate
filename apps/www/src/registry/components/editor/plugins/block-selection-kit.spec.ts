@@ -7,7 +7,7 @@ describe('hasSelectableClass', () => {
     expect(
       hasSelectableClass({
         attributes: {},
-        className: 'slate-h2 slate-selectable',
+        className: 'plite-h2 slate-selectable',
       })
     ).toBe(true);
   });
@@ -15,7 +15,7 @@ describe('hasSelectableClass', () => {
   it('returns true when slate-selectable is on attributes.className', () => {
     expect(
       hasSelectableClass({
-        attributes: { className: 'slate-selectable' },
+        attributes: { className: 'plite-selectable' },
       })
     ).toBe(true);
   });
@@ -23,7 +23,7 @@ describe('hasSelectableClass', () => {
   it('returns false when neither class source is selectable', () => {
     expect(
       hasSelectableClass({
-        attributes: { className: 'slate-h2' },
+        attributes: { className: 'plite-h2' },
         className: 'font-semibold',
       })
     ).toBe(false);

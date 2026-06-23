@@ -1,7 +1,7 @@
 import { deserializeMd } from '@platejs/markdown';
 import { diffToSuggestions } from '@platejs/suggestion';
-import type { Descendant, Element, Value } from '@platejs/slate';
-import { type SlateEditor, ElementApi } from 'platejs';
+import type { Descendant, Element, Value } from '@platejs/plite';
+import { type BasePlateEditor, ElementApi } from 'platejs';
 
 import {
   withoutSuggestionAndComments,
@@ -44,7 +44,7 @@ const replaceChildrenAtPath = (
  * the cell's children with suggestion-marked nodes.
  */
 export const applyTableCellSuggestion = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   cellUpdate: TableCellUpdate
 ) => {
   const { content, id } = cellUpdate;

@@ -1,12 +1,12 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
 import {
   BaseParagraphPlugin,
-  createSlateEditor,
-  createSlatePlugin,
+  createBasePlateEditor,
+  createEditorPlugin,
 } from 'platejs';
 
 import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
@@ -26,7 +26,7 @@ describe('code block deserialization', () => {
             </hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -34,13 +34,13 @@ describe('code block deserialization', () => {
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [
           BaseParagraphPlugin,
           CodeBlockPlugin,
-          createSlatePlugin({
+          createEditorPlugin({
             key: 'a',
             parser: {
               format: 'text/plain',
@@ -70,7 +70,7 @@ describe('code block deserialization', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -78,9 +78,9 @@ describe('code block deserialization', () => {
             <hcodeline>test</hcodeline>
           </hcodeblock>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
@@ -107,7 +107,7 @@ describe('code block deserialization', () => {
           </hcodeblock>
           <hp>Line 3</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const output = (
         <editor>
@@ -119,15 +119,15 @@ describe('code block deserialization', () => {
           </hcodeblock>
           <hp>Line 3</hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
         selection: input.selection,
         value: input.children,
       });
 
-      getCurrentRuntimeTransforms(editor).deleteBackward();
+      getCurrentRuntimeTransforms(editor).deleteBackward('character');
       expect(editor.children).toEqual(output.children);
     });
   });

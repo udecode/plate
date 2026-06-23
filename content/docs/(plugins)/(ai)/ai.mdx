@@ -218,7 +218,7 @@ Handle `api.aiChat.submit` requests on the server. Each request includes the cha
 ```ts title="app/api/ai/command/route.ts"
 import { createGateway } from '@ai-sdk/gateway';
 import { convertToCoreMessages, streamText } from 'ai';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
 import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transform';
@@ -226,7 +226,7 @@ import { markdownJoinerTransform } from '@/registry/lib/markdown-joiner-transfor
 export async function POST(req: Request) {
   const { apiKey, ctx, messages, model } = await req.json();
 
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: BaseEditorKit,
     selection: ctx.selection,
     value: ctx.children,
@@ -247,7 +247,7 @@ export async function POST(req: Request) {
 }
 ```
 
-- `ctx.children` and `ctx.selection` are rehydrated into a Slate editor so you can build rich prompts (see [Prompt Templates](#prompt-templates)).
+- `ctx.children` and `ctx.selection` are rehydrated into a Plite editor so you can build rich prompts (see [Prompt Templates](#prompt-templates)).
 - Forward provider settings (model, apiKey, temperature, gateway flags, etc.) through `chatOptions.body`; everything you add is passed verbatim in the JSON payload and can be read before calling `createGateway`.
 - Always read secrets from the server. The client should only send opaque identifiers or short-lived tokens.
 - Return a streaming response so `useChat` and `useChatChunk` can process tokens incrementally.
@@ -405,7 +405,7 @@ Main plugin that powers the AI menu, chat state, and transforms.
   <APIOptions>
     <APIItem name="trigger" type="RegExp | string | string[]" optional>Character(s) that open the command menu. Defaults to `' '`.</APIItem>
     <APIItem name="triggerPreviousCharPattern" type="RegExp" optional>Pattern that must match the character before the trigger. Defaults to `/^\s?$/`.</APIItem>
-    <APIItem name="triggerQuery" type="(editor: SlateEditor) => boolean" optional>Return `false` to cancel opening in specific contexts.</APIItem>
+    <APIItem name="triggerQuery" type="(editor: BasePlateEditor) => boolean" optional>Return `false` to cancel opening in specific contexts.</APIItem>
     <APIItem name="chat" type="UseChatHelpers&lt;ChatMessage&gt;" optional>Store helpers from `useChat` so API calls can access them.</APIItem>
     <APIItem name="chatNodes" type="TIdElement[]" optional>Snapshot of nodes used to diff edit suggestions (managed internally).</APIItem>
     <APIItem name="chatSelection" type="Range | null" optional>Selection captured before submitting a prompt (managed internally).</APIItem>
@@ -486,7 +486,7 @@ Inserts the chat preview (`sourceEditor`) below the current selection or block s
 
 <API name="insertBelow">
 <APIParameters>
-  <APIItem name="sourceEditor" type="SlateEditor">Editor containing the generated content.</APIItem>
+  <APIItem name="sourceEditor" type="BasePlateEditor">Editor containing the generated content.</APIItem>
   <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>Copy formatting from the source selection. Defaults to `'single'`.</APIItem>
 </APIParameters>
 </API>
@@ -497,7 +497,7 @@ Replaces the current selection or block selection with the chat preview.
 
 <API name="replaceSelection">
 <APIParameters>
-  <APIItem name="sourceEditor" type="SlateEditor">Editor containing the generated content.</APIItem>
+  <APIItem name="sourceEditor" type="BasePlateEditor">Editor containing the generated content.</APIItem>
   <APIItem name="options" type="{ format?: 'all' | 'none' | 'single' }" optional>Controls how much formatting from the original selection should be applied.</APIItem>
 </APIParameters>
 </API>
@@ -577,7 +577,7 @@ Registers an auxiliary editor for chat previews and deserializes Markdown with b
 
 <API name="useAIChatEditor">
 <APIParameters>
-  <APIItem name="editor" type="SlateEditor">Editor instance dedicated to the chat preview.</APIItem>
+  <APIItem name="editor" type="BasePlateEditor">Editor instance dedicated to the chat preview.</APIItem>
   <APIItem name="content" type="string">Markdown content returned by the model.</APIItem>
   <APIItem name="options" type="DeserializeMdOptions" optional>Pass `parser` to filter tokens before deserialization.</APIItem>
 </APIParameters>
@@ -627,7 +627,7 @@ Groups editor operations into a single history batch and flags it as AI-generate
 
 <API name="withAIBatch">
 <APIParameters>
-  <APIItem name="editor" type="SlateEditor">Target editor.</APIItem>
+  <APIItem name="editor" type="BasePlateEditor">Target editor.</APIItem>
   <APIItem name="fn" type="() => void">Operations to run.</APIItem>
   <APIItem name="options" type="{ split?: boolean }" optional>Set `split: true` to start a new history batch.</APIItem>
 </APIParameters>
@@ -639,7 +639,7 @@ Diffs AI output against stored `chatNodes` and writes transient suggestion nodes
 
 <API name="applyAISuggestions">
 <APIParameters>
-  <APIItem name="editor" type="SlateEditor">Editor to apply suggestions to.</APIItem>
+  <APIItem name="editor" type="BasePlateEditor">Editor to apply suggestions to.</APIItem>
   <APIItem name="content" type="string">Markdown response from the model.</APIItem>
 </APIParameters>
 </API>
@@ -679,7 +679,7 @@ Generates prompts that respect cursor, selection, or block selection states.
 
 <API name="getEditorPrompt">
 <APIParameters>
-  <APIItem name="editor" type="SlateEditor">Editor providing context.</APIItem>
+  <APIItem name="editor" type="BasePlateEditor">Editor providing context.</APIItem>
   <APIItem name="options" type="{ prompt?: EditorPrompt }">String, config, or function describing the prompt.</APIItem>
 </APIParameters>
 <APIReturns type="string">Contextualized prompt string.</APIReturns>
@@ -691,7 +691,7 @@ Replaces placeholders like `{editor}`, `{blockSelection}`, and `{prompt}` with s
 
 <API name="replacePlaceholders">
 <APIParameters>
-  <APIItem name="editor" type="SlateEditor">Editor providing content.</APIItem>
+  <APIItem name="editor" type="BasePlateEditor">Editor providing content.</APIItem>
   <APIItem name="text" type="string">Template text.</APIItem>
   <APIItem name="options" type="{ prompt?: string }" optional>Prompt value injected into `{prompt}`.</APIItem>
 </APIParameters>

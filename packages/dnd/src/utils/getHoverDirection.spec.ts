@@ -1,4 +1,4 @@
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 import type { DropTargetMonitor } from 'react-dnd';
 
 import type { DragItemNode } from '../types';

@@ -1,7 +1,7 @@
-import type { Element } from '@platejs/slate';
-import { NodeApi } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
+import { NodeApi } from '@platejs/plite';
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import type { Heading } from '../lib/types';
 
@@ -17,7 +17,7 @@ const headingDepth: Record<string, number> = {
   h6: 6,
 };
 
-export const getHeadingList = (editor: SlateEditor) => {
+export const getHeadingList = (editor: BasePlateEditor) => {
   const options = editor.getOptions(BaseTocPlugin);
 
   if (options.queryHeading) {

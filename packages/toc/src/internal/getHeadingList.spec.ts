@@ -1,11 +1,11 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseTocPlugin } from '../lib/BaseTocPlugin';
 import { getHeadingList } from './getHeadingList';
 
 describe('getHeadingList', () => {
   it('returns titled headings with depth, path, and id', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseTocPlugin],
       value: [
         {
@@ -62,7 +62,7 @@ describe('getHeadingList', () => {
           },
         ] as any
     ) as any;
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseTocPlugin.configure({ options: { queryHeading } })],
       value: [
         {

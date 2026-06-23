@@ -1,7 +1,7 @@
 import type { Selection } from '@platejs/plite';
 
-import { createPliteEditor } from '../../../editor';
-import { createPlitePlugin } from '../../../plugin/createPlitePlugin';
+import { createBasePlateEditor } from '../../../editor';
+import { createEditorPlugin } from '../../../plugin/createEditorPlugin';
 import { init } from './init';
 import * as pipeTransformModule from '../../../../internal/plugin/pipeTransformInitialValue';
 
@@ -18,8 +18,8 @@ describe('init', () => {
       'pipeTransformInitialValue'
     ).mockImplementation(mockPipeTransformInitialValue);
 
-    editor = createPliteEditor({
-      plugins: [createPlitePlugin({ key: 'test' })],
+    editor = createBasePlateEditor({
+      plugins: [createEditorPlugin({ key: 'test' })],
     });
 
     // Mock editor methods

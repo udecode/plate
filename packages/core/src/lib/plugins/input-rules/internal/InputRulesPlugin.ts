@@ -1,4 +1,4 @@
-import { createTSlatePlugin } from '../../../plugin';
+import { createEditorPlugin } from '../../../plugin';
 import { withLegacyTransformOverride } from '../../../../internal/plugin/withLegacyTransformOverride';
 import {
   getEditorBlock,
@@ -101,7 +101,7 @@ const isTriggerMatch = (trigger: readonly string[] | string, text: string) =>
   Array.isArray(trigger) ? trigger.includes(text) : trigger === text;
 
 export const InputRulesPlugin = withLegacyTransformOverride(
-  createTSlatePlugin({
+  createEditorPlugin({
     editOnly: true,
     key: 'inputRules',
   }),
@@ -133,7 +133,7 @@ export const InputRulesPlugin = withLegacyTransformOverride(
 
         insertBreak();
       },
-      insertData(data) {
+      insertData(data: DataTransfer) {
         const text = data.getData('text/plain') || null;
         const selectionContext = createSelectionContext({ editor });
         let handled = false;

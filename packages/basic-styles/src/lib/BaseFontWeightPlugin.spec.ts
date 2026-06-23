@@ -1,4 +1,4 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import { BaseFontWeightPlugin } from './BaseFontWeightPlugin';
 
@@ -19,7 +19,7 @@ const runAddMarkTx = (value: string) => {
 
 describe('BaseFontWeightPlugin', () => {
   it('parses html font-weight styles into leaf marks', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseFontWeightPlugin],
     } as any);
     const plugin = editor.getPlugin(BaseFontWeightPlugin);

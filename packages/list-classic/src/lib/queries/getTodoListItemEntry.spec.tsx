@@ -1,5 +1,5 @@
 import { KEYS } from '@platejs/utils';
-import { createListClassicLegacyTestEditor as createSlateEditor } from '../__tests__/createListClassicLegacyTestEditor';
+import { createListClassicLegacyTestEditor as createBasePlateEditor } from '../__tests__/createListClassicLegacyTestEditor';
 
 import { getTodoListItemEntry } from './getTodoListItemEntry';
 
@@ -30,7 +30,7 @@ const createTodoEditor = ({
   at?: any;
   value?: any[];
 } = {}) =>
-  createSlateEditor({
+  createBasePlateEditor({
     selection: at,
     value,
   });

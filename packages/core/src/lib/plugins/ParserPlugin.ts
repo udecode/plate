@@ -2,12 +2,12 @@ import { pipeInsertFragment } from '../../internal/plugin/pipeInsertFragment';
 import { pipeTransformData } from '../../internal/plugin/pipeTransformData';
 import { pipeTransformFragment } from '../../internal/plugin/pipeTransformFragment';
 import { withLegacyTransformOverride } from '../../internal/plugin/withLegacyTransformOverride';
-import { type Parser, createSlatePlugin, getEditorPlugin } from '../plugin';
+import { type Parser, createEditorPlugin, getEditorPlugin } from '../plugin';
 import { getInjectedPlugins } from '../utils';
 import { pipeInsertDataQuery } from '../utils/pipeInsertDataQuery';
 
 export const ParserPlugin = withLegacyTransformOverride(
-  createSlatePlugin({
+  createEditorPlugin({
     key: 'parser',
   }),
   ({ editor, tf: { insertData } }) => ({

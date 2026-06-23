@@ -99,7 +99,7 @@ Generates a new instance of a `PlateEditor`, initialized with a set of plugins a
     </APISubList>
   </APIItem>
   <APIItem name="chunking" type="object | boolean" optional>
-    Configure Slate's chunking optimization, which reduces latency while typing. Set to `false` to disable. [Learn more about chunking.](https://docs.slatejs.org/walkthroughs/09-performance)
+    Configure Plite's chunking optimization, which reduces latency while typing. Set to `false` to disable. [Learn more about chunking.](https://docs.slatejs.org/walkthroughs/09-performance)
     <APISubList>
       <APISubListItem parent="chunking" name="chunkSize" type="number" optional>
         The number of blocks per chunk.
@@ -219,12 +219,12 @@ Explicitly typed version of `createPlatePlugin`.
 
 ### `toPlatePlugin`
 
-Extends a SlatePlugin to create a React PlatePlugin.
+Extends a EditorPlugin to create a React PlatePlugin.
 
 <API name="toPlatePlugin">
 <APIParameters>
-  <APIItem name="basePlugin" type="SlatePlugin">
-    The base SlatePlugin to be extended.
+  <APIItem name="basePlugin" type="EditorPlugin">
+    The base EditorPlugin to be extended.
   </APIItem>
   <APIItem name="extendConfig" type="PlatePluginConfig | ((ctx: PlatePluginContext<C>) => PlatePluginConfig)" optional>
     A function or object that provides the extension configuration. If a function, it receives the plugin context and should return a partial PlatePlugin. If an object, it should be a partial PlatePlugin configuration.
@@ -232,7 +232,7 @@ Extends a SlatePlugin to create a React PlatePlugin.
 </APIParameters>
 
 <APIReturns type="PlatePlugin">
-  A new plugin instance that combines the base SlatePlugin functionality with React-specific features defined in the extension configuration.
+  A new plugin instance that combines the base EditorPlugin functionality with React-specific features defined in the extension configuration.
 </APIReturns>
 </API>
 
@@ -242,8 +242,8 @@ Explicitly typed version of `toPlatePlugin`.
 
 <API name="toTPlatePlugin">
 <APIParameters>
-  <APIItem name="basePlugin" type="SlatePlugin<TContext>">
-    The base SlatePlugin to be extended.
+  <APIItem name="basePlugin" type="EditorPlugin<TContext>">
+    The base EditorPlugin to be extended.
   </APIItem>
   <APIItem name="extendConfig" type="ExtendPluginConfig<C> | ((ctx: PlatePluginContext<TContext>) => ExtendPluginConfig<C>)" optional>
     A function or object that provides the extension configuration. This version requires explicit type parameters for both the base plugin configuration (`TContext`) and the extension configuration (`C`).
@@ -705,10 +705,10 @@ Provides debugging capabilities with configurable log levels and error handling.
 
 See [Debugging](/docs/debugging) for more details.
 
-### `SlateExtensionPlugin & SlateReactExtensionPlugin`
+### `PliteExtensionPlugin & PliteReactExtensionPlugin`
 Extend core apis and improve default functionality.
 
-`SlateExtensionPlugin` exposes `editor.api.isElementStateEmpty(element)`. It
+`PliteExtensionPlugin` exposes `editor.api.isElementStateEmpty(element)`. It
 checks the element's own props, not its text content. By default, only `type`
 and props claimed by plugins through `node.isMetadataProp` are ignored; any other
 prop means the element carries state. `NodeIdPlugin` uses `node.isMetadataProp` for
@@ -726,7 +726,7 @@ editor.api.isElementStateEmpty({
   type: 'p',
 }); // false
 
-const CustomMetadataPlugin = createSlatePlugin({
+const CustomMetadataPlugin = createEditorPlugin({
   key: 'customMetadata',
   node: {
     isMetadataProp: ({ key }) => key === 'customId',
@@ -809,11 +809,11 @@ Generic component for rendering an element.
   <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
     Attributes of the element to be spread on the top-level element.
     <APISubList>
-      <APISubListItem parent="attributes" name="data-slate-node" type="'element'">
+      <APISubListItem parent="attributes" name="data-plite-node" type="'element'">
         Always set to `'element'`.
       </APISubListItem>
-      <APISubListItem parent="attributes" name="data-slate-inline" type="boolean" optional />
-      <APISubListItem parent="attributes" name="data-slate-void" type="boolean" optional />
+      <APISubListItem parent="attributes" name="data-plite-inline" type="boolean" optional />
+      <APISubListItem parent="attributes" name="data-plite-void" type="boolean" optional />
       <APISubListItem parent="attributes" name="dir" type="string" optional />
       <APISubListItem parent="attributes" name="ref" type="any">
         The reference to the element. If using your own reference, merge it with this one.
@@ -854,7 +854,7 @@ Generic component for rendering a leaf.
   <APIItem name="attributes" type="HTMLAttributes<HTMLElement>">
     Attributes of the leaf to be spread on the top-level element.
     <APISubList>
-      <APISubListItem parent="attributes" name="data-slate-leaf" type="true">
+      <APISubListItem parent="attributes" name="data-plite-leaf" type="true">
         Always set to `true`.
       </APISubListItem>
     </APISubList>

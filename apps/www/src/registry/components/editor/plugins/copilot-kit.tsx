@@ -1,6 +1,6 @@
 'use client';
 
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
 import { faker } from '@faker-js/faker';
 import { CopilotPlugin } from '@platejs/ai/react';

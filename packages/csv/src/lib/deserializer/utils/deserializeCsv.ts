@@ -1,4 +1,4 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import Papa from 'papaparse';
 import { KEYS } from 'platejs';
@@ -57,14 +57,14 @@ const isValidCsv = (
 };
 
 export const deserializeCsv = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     data,
     ...parseOptions
   }: {
     data: string;
   } & CsvParseOptions
-): SlateEditor['children'] | undefined => {
+): BasePlateEditor['children'] | undefined => {
   const { errorTolerance, parseOptions: pluginParseOptions } =
     editor.getOptions(CsvPlugin);
 

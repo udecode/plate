@@ -1,31 +1,31 @@
 import {
-  createSlateBrowserFeatureContractRegistry,
-  defineSlateBrowserFeatureContract,
-  type SlateBrowserFeatureContractRow,
+  createPliteBrowserFeatureContractRegistry,
+  definePliteBrowserFeatureContract,
+  type PliteBrowserFeatureContractRow,
 } from './feature-contracts';
 
 /** First-party browser behavior row without its owning feature label. */
-export type SlateBrowserOperationFamilyContract = Omit<
-  SlateBrowserFeatureContractRow,
+export type PliteBrowserOperationFamilyContract = Omit<
+  PliteBrowserFeatureContractRow,
   'feature'
 >;
 
 /** Small cross-route parity slice used to keep canonical examples aligned. */
-export type SlateBrowserFirstPartyParityFamily = {
+export type PliteBrowserFirstPartyParityFamily = {
   assertions: readonly string[];
   family: string;
   routes: readonly string[];
 };
 
 /** Summary returned after first-party browser contract validation. */
-export type SlateBrowserFirstPartyParityContractResult = {
+export type PliteBrowserFirstPartyParityContractResult = {
   operationFamilyCount: number;
   parityFamilies: string[];
   registryRowCount: number;
 };
 
-/** Canonical first-party browser behavior families Slate v2 must preserve. */
-export const SLATE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS = [
+/** Canonical first-party browser behavior families Plite must preserve. */
+export const PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS = [
   {
     assertions: [
       'model selection lands on the next inline void from both sides',
@@ -156,7 +156,7 @@ export const SLATE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS = [
       'real mouse drag creates native and model selections',
       'hovering toolbar becomes visible',
       'focus remains editor-owned',
-      'selection movement does not rerender Slate nodes',
+      'selection movement does not rerender Plite nodes',
     ],
     family: 'mouse-selection-toolbar',
     routes: ['hovering-toolbar'],
@@ -272,10 +272,10 @@ export const SLATE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS = [
     family: 'ime-composition-undo',
     routes: ['richtext'],
   },
-] satisfies readonly SlateBrowserOperationFamilyContract[];
+] satisfies readonly PliteBrowserOperationFamilyContract[];
 
 /** Focused parity families that compare the same invariant across routes. */
-export const SLATE_BROWSER_FIRST_PARTY_PARITY_FAMILIES = [
+export const PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES = [
   {
     assertions: [
       'model selection lands on the next inline void from both sides',
@@ -316,24 +316,24 @@ export const SLATE_BROWSER_FIRST_PARTY_PARITY_FAMILIES = [
     family: 'table-cell-boundary-navigation',
     routes: ['tables'],
   },
-] satisfies readonly SlateBrowserFirstPartyParityFamily[];
+] satisfies readonly PliteBrowserFirstPartyParityFamily[];
 
 const rowsByFamily = (families: readonly string[]) =>
-  SLATE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS.filter((contract) =>
+  PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS.filter((contract) =>
     families.includes(contract.family)
   );
 
 /** Feature-indexed registry built from the first-party behavior families. */
-export const SLATE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY =
-  createSlateBrowserFeatureContractRegistry([
-    defineSlateBrowserFeatureContract({
+export const PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY =
+  createPliteBrowserFeatureContractRegistry([
+    definePliteBrowserFeatureContract({
       feature: 'mentions',
       rows: rowsByFamily([
         'inline-void-boundary-navigation',
         'markable-inline-void-formatting',
       ]),
     }),
-    defineSlateBrowserFeatureContract({
+    definePliteBrowserFeatureContract({
       feature: 'media',
       rows: rowsByFamily([
         'block-void-navigation',
@@ -341,22 +341,22 @@ export const SLATE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY =
         'stale-target-remote-rebase',
       ]),
     }),
-    defineSlateBrowserFeatureContract({
+    definePliteBrowserFeatureContract({
       feature: 'editable-island',
       rows: rowsByFamily(['editable-island-native-focus']),
     }),
-    defineSlateBrowserFeatureContract({
+    definePliteBrowserFeatureContract({
       feature: 'table',
       rows: rowsByFamily(['table-cell-boundary-navigation']),
     }),
-    defineSlateBrowserFeatureContract({
+    definePliteBrowserFeatureContract({
       feature: 'external-decorations',
       rows: rowsByFamily([
         'external-decoration-refresh',
         'overlay-many-decoration-sources',
       ]),
     }),
-    defineSlateBrowserFeatureContract({
+    definePliteBrowserFeatureContract({
       feature: 'annotations',
       rows: rowsByFamily([
         'overlay-annotation-metadata-only',
@@ -365,11 +365,11 @@ export const SLATE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY =
         'overlay-mixed-update',
       ]),
     }),
-    defineSlateBrowserFeatureContract({
+    definePliteBrowserFeatureContract({
       feature: 'selection-ui',
       rows: rowsByFamily(['mouse-selection-toolbar']),
     }),
-    defineSlateBrowserFeatureContract({
+    definePliteBrowserFeatureContract({
       feature: 'core-editing',
       rows: rowsByFamily([
         'huge-document-projected-vertical-selection',
@@ -384,27 +384,27 @@ export const SLATE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY =
         'ime-composition-undo',
       ]),
     }),
-    defineSlateBrowserFeatureContract({
+    definePliteBrowserFeatureContract({
       feature: 'inline-void-ime',
       rows: rowsByFamily(['ime-composition-inline-void-boundary']),
     }),
   ]);
 
 /** Assert that first-party behavior and parity contract registries agree. */
-export const assertSlateBrowserFirstPartyParityContracts =
-  (): SlateBrowserFirstPartyParityContractResult => {
-    const registry = SLATE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY;
+export const assertPliteBrowserFirstPartyParityContracts =
+  (): PliteBrowserFirstPartyParityContractResult => {
+    const registry = PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY;
 
     if (
       registry.rows.length !==
-      SLATE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS.length
+      PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS.length
     ) {
       throw new Error(
         'Feature browser contract registry is missing stress rows.'
       );
     }
 
-    for (const contract of SLATE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS) {
+    for (const contract of PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS) {
       const row = registry.rowByFamily.get(contract.family);
 
       if (!row) {
@@ -419,7 +419,7 @@ export const assertSlateBrowserFirstPartyParityContracts =
       }
     }
 
-    for (const parityFamily of SLATE_BROWSER_FIRST_PARTY_PARITY_FAMILIES) {
+    for (const parityFamily of PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES) {
       const row = registry.rowByFamily.get(parityFamily.family);
 
       if (!row) {
@@ -447,8 +447,8 @@ export const assertSlateBrowserFirstPartyParityContracts =
 
     return {
       operationFamilyCount:
-        SLATE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS.length,
-      parityFamilies: SLATE_BROWSER_FIRST_PARTY_PARITY_FAMILIES.map(
+        PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS.length,
+      parityFamilies: PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES.map(
         (family) => family.family
       ),
       registryRowCount: registry.rows.length,

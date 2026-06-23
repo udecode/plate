@@ -22,12 +22,12 @@ const createFootnoteRuntimeEditor = ({
     typeof BaseFootnoteReferencePlugin | typeof BaseFootnoteDefinitionPlugin
   >({
     plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
-    runtime: 'slate-v2',
+    runtime: 'plite',
     selection,
     value,
   });
 
-describe('BaseFootnoteReferencePlugin Slate v2 runtime', () => {
+describe('BaseFootnoteReferencePlugin Plite runtime', () => {
   it('exposes footnote registry api from the runtime document', () => {
     const editor = createFootnoteRuntimeEditor({
       value: [

@@ -3,12 +3,11 @@ import type { createLowlight } from 'lowlight';
 import {
   type PluginConfig,
   type TCodeBlockElement,
-  createSlatePlugin,
-  createTSlatePlugin,
+  createEditorPlugin,
   ElementApi,
   KEYS,
 } from 'platejs';
-import type { EditorUpdateTransaction, Element } from '@platejs/slate';
+import type { EditorUpdateTransaction, Element } from '@platejs/plite';
 
 import { htmlDeserializerCodeBlock } from './deserializer/htmlDeserializerCodeBlock';
 import { isCodeBlockEmpty } from './queries';
@@ -40,17 +39,17 @@ const isElementOfType = (node: unknown, type: string) =>
   'children' in node &&
   (node as { type?: unknown }).type === type;
 
-export const BaseCodeLinePlugin = createTSlatePlugin({
+export const BaseCodeLinePlugin = createEditorPlugin({
   key: KEYS.codeLine,
   node: { isElement: true, isStrictSiblings: true },
 });
 
-export const BaseCodeSyntaxPlugin = createSlatePlugin({
+export const BaseCodeSyntaxPlugin = createEditorPlugin({
   key: KEYS.codeSyntax,
   node: { isLeaf: true },
 });
 
-export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
+export const BaseCodeBlockPlugin = createEditorPlugin<CodeBlockConfig>({
   key: KEYS.codeBlock,
   inject: {
     plugins: {

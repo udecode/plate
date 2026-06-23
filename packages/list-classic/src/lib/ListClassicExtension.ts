@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@platejs/core';
+import type { BasePlateEditor } from '@platejs/core';
 import type {
   Ancestor,
   AncestorEntry,
@@ -15,7 +15,7 @@ import type {
   Range,
   Text,
   TextUnit,
-} from '@platejs/slate';
+} from '@platejs/plite';
 
 import { runWithoutNormalizing } from './internal/runWithoutNormalizing';
 import {
@@ -26,7 +26,7 @@ import {
   PointApi,
   RangeApi,
   TextApi,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import type { ListConfig } from './BaseListPlugin';
@@ -55,7 +55,7 @@ import {
 } from './transforms';
 
 type ListClassicExtensionOptions = {
-  editor: SlateEditor;
+  editor: BasePlateEditor;
   getOptions: () => ListConfig['options'];
 };
 
@@ -70,7 +70,7 @@ const getElementChildren = (node: Element, path: Path): ElementEntry[] =>
   );
 
 const getElementAtPath = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   path: Path
 ): Element | undefined =>
   (
@@ -85,7 +85,7 @@ const getElementAtPath = (
     ? editor.api.node<Element>(path)?.[0]
     : undefined;
 
-const getLiStart = (editor: SlateEditor) => {
+const getLiStart = (editor: BasePlateEditor) => {
   const start = editor.api.start(editor.selection as Range);
 
   return editor.api.above({
@@ -129,7 +129,7 @@ const getFirstAncestorOfType = (
 };
 
 const findListItemsWithContent = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   first: Descendant
 ): Descendant[] => {
   const listItemType = editor.getType(KEYS.li);
@@ -149,7 +149,7 @@ const findListItemsWithContent = (
   return prev ? (prev.children as Descendant[]) : [node];
 };
 
-const trimList = (editor: SlateEditor, listRoot: Descendant): Element[] => {
+const trimList = (editor: BasePlateEditor, listRoot: Descendant): Element[] => {
   const listItemType = editor.getType(KEYS.li);
 
   if (!isListRoot(editor, listRoot)) {
@@ -186,7 +186,7 @@ const trimList = (editor: SlateEditor, listRoot: Descendant): Element[] => {
 };
 
 const wrapNodeIntoListItem = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   node: Descendant,
   props?: Record<string, unknown>
 ): Element =>
@@ -198,7 +198,7 @@ const wrapNodeIntoListItem = (
         type: editor.getType(KEYS.li),
       } as Element);
 
-const isSingleLic = (editor: SlateEditor, fragment: Descendant[]) => {
+const isSingleLic = (editor: BasePlateEditor, fragment: Descendant[]) => {
   const isFragmentOnlyListRoot =
     fragment.length === 1 && isListRoot(editor, fragment[0]);
   const fragmentRoot = createFragmentRoot(fragment);
@@ -212,7 +212,7 @@ const isSingleLic = (editor: SlateEditor, fragment: Descendant[]) => {
 };
 
 const getTextAndListItemNodes = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   tx: EditorUpdateTransaction,
   fragment: Descendant[],
   liEntry: ElementEntry,
@@ -285,14 +285,14 @@ const getTextAndListItemNodes = (
   return { listItemNodes, textNode };
 };
 
-const resetClassicListItem = (editor: SlateEditor, at: Path) => {
+const resetClassicListItem = (editor: BasePlateEditor, at: Path) => {
   unwrapList(editor, { at: at.concat(0) });
 
   return true;
 };
 
 const handleSelectionOutsideListDeleteForward = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   tx: EditorUpdateTransaction
 ): boolean => {
   const pointAfterSelection = editor.api.after(editor.selection!.focus);
@@ -327,7 +327,7 @@ const handleSelectionOutsideListDeleteForward = (
 };
 
 const handleSelectionInListDeleteForward = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   tx: EditorUpdateTransaction,
   res: { list: ElementEntry; listItem: ElementEntry },
   next: EditorTransformNext<{ unit: TextUnit }>,

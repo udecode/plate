@@ -8,7 +8,7 @@ export const deserializeHtmlValue: any = (
   <fragment>
     <hh2>HTML</hh2>
     <hp>
-      默认情况下，当您将内容粘贴到 Slate 编辑器中时，它会使用剪贴板的{' '}
+      默认情况下，当您将内容粘贴到 Plite 编辑器中时，它会使用剪贴板的{' '}
       <htext code>'text/plain'</htext>
       数据。虽然这适用于某些场景，但有时您希望用户能够在粘贴内容时保留其格式。
       为了实现这一点，您的编辑器应该能够处理 <htext code>'text/html'</htext>

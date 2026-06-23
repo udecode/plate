@@ -1,7 +1,7 @@
-import type { Element, Range } from '@platejs/slate';
+import type { Element, Range } from '@platejs/plite';
 import {
   type ElementEntry,
-  type SlateEditor,
+  type BasePlateEditor,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
@@ -43,7 +43,7 @@ type TableGridEntries = {
  * valid table grid.
  */
 export const getTableMergeGridByRange = <T extends FormatType>(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { at, format }: GetTableGridByRangeOptions<T>
 ): GetTableGridReturnType<T> => {
   const { api, type } = getEditorPlugin(editor, BaseTablePlugin);

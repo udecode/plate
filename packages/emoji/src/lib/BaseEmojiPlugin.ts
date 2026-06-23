@@ -3,9 +3,8 @@ import type { Emoji, EmojiMartData } from '@emoji-mart/data';
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 import {
   type PluginConfig,
-  type SlatePlugin,
-  createSlatePlugin,
-  createTSlatePlugin,
+  type EditorPlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -25,14 +24,14 @@ export type EmojiInputConfig = PluginConfig<
   } & TriggerComboboxPluginOptions
 >;
 
-export const BaseEmojiInputPlugin = createSlatePlugin({
+export const BaseEmojiInputPlugin = createEditorPlugin({
   key: KEYS.emojiInput,
   editOnly: true,
   node: { isElement: true, isInline: true, isVoid: true },
 });
 
-const BaseEmojiPluginBase: SlatePlugin<EmojiInputConfig> =
-  createTSlatePlugin<EmojiInputConfig>({
+const BaseEmojiPluginBase: EditorPlugin<EmojiInputConfig> =
+  createEditorPlugin<EmojiInputConfig>({
     key: KEYS.emoji,
     editOnly: true,
     options: {
@@ -48,7 +47,7 @@ const BaseEmojiPluginBase: SlatePlugin<EmojiInputConfig> =
     plugins: [BaseEmojiInputPlugin],
   });
 
-export const BaseEmojiPlugin: SlatePlugin<EmojiInputConfig> & {
+export const BaseEmojiPlugin: EditorPlugin<EmojiInputConfig> & {
   runtimeTriggerCombobox: boolean;
 } = Object.assign(BaseEmojiPluginBase, {
   runtimeTriggerCombobox: true,

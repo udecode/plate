@@ -1,4 +1,4 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BaseCalloutPlugin } from './BaseCalloutPlugin';
 import { CALLOUT_STORAGE_KEY } from './transforms/calloutNode';
@@ -7,7 +7,7 @@ describe('BaseCalloutPlugin', () => {
   it('exposes callout break/delete rules and inserts bound callout nodes', () => {
     localStorage.setItem(CALLOUT_STORAGE_KEY, '🔥');
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseCalloutPlugin],
       value: [{ children: [{ text: '' }], type: 'p' }],
     });
@@ -35,7 +35,7 @@ describe('BaseCalloutPlugin', () => {
   });
 
   it('exposes an inferred callout transaction group', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseCalloutPlugin],
       value: [{ children: [{ text: '' }], type: 'p' }],
     });

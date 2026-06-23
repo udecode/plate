@@ -238,8 +238,8 @@ function FastIntrinsicElementBody({
   }
 
   const fastElementProps = {
-    'data-slate-inline': injectedAttributes['data-slate-inline'],
-    'data-slate-node': 'element',
+    'data-plite-inline': injectedAttributes['data-plite-inline'],
+    'data-plite-node': 'element',
     ...injectedAttributes,
     ref,
     style: {

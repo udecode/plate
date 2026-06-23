@@ -6,7 +6,7 @@ import type {
   NodeEntry,
   Path,
   Point,
-} from '@platejs/slate';
+} from '@platejs/plite';
 
 export type ColumnEditor = {
   api: {

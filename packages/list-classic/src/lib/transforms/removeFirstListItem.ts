@@ -1,13 +1,13 @@
-import type { ElementEntry } from '@platejs/slate';
-import { PathApi } from '@platejs/slate';
-import type { SlateEditor } from '@platejs/core';
+import type { ElementEntry } from '@platejs/plite';
+import { PathApi } from '@platejs/plite';
+import type { BasePlateEditor } from '@platejs/core';
 
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';
 
 /** If list is not nested and if li is not the first child, move li up. */
 export const removeFirstListItem = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     list,
     listItem,

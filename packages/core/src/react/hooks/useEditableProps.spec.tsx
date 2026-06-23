@@ -2,7 +2,7 @@ import React from 'react';
 
 import { renderHook } from '@testing-library/react';
 
-import { createSlatePlugin } from '../../lib';
+import { createEditorPlugin } from '../../lib';
 import { TestPlate as Plate } from '../__tests__/TestPlate';
 import { createPlateEditor } from '../editor';
 import { useEditableProps } from './useEditableProps';
@@ -14,7 +14,7 @@ describe('useEditableProps', () => {
 
       const editor = createPlateEditor({
         plugins: [
-          createSlatePlugin({
+          createEditorPlugin({
             key: 'a',
             decorate: () => {
               decorate();

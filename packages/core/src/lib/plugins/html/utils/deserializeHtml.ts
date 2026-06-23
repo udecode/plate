@@ -1,6 +1,6 @@
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 
-import type { SlateEditor } from '../../../editor';
+import type { BasePlateEditor } from '../../../editor';
 import type { WithRequiredKey } from '../../../plugin';
 
 import { normalizeDescendantsToDocumentFragment } from '../../../utils/normalizeDescendantsToDocumentFragment';
@@ -10,7 +10,7 @@ import { htmlStringToDOMNode } from './htmlStringToDOMNode';
 
 /** Deserialize HTML element to a valid document fragment. */
 export const deserializeHtml = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     collapseWhiteSpace: shouldCollapseWhiteSpace = true,
     defaultElementPlugin,

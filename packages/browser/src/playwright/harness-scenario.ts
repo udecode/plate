@@ -1,15 +1,15 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { expect, type Locator, type Page } from '@playwright/test';
-import { SLATE_BROWSER_HANDLE_KEY } from './constants';
+import { PLITE_BROWSER_HANDLE_KEY } from './constants';
 import { dropHtml } from './dom-text';
 import { clickTextOffset, mutateTextDOM } from './dom-text-actions';
 import {
-  getSlateReactRenderProfilerSnapshot,
-  resetSlateReactRenderProfiler,
-  type SlateReactRenderKind,
+  getPliteReactRenderProfilerSnapshot,
+  resetPliteReactRenderProfiler,
+  type PliteReactRenderKind,
 } from './render-profiler';
-import { recordSlateBrowserRuntimeErrors } from './runtime-errors';
+import { recordPliteBrowserRuntimeErrors } from './runtime-errors';
 import {
   createScenarioReductionCandidates,
   createScenarioReplay,
@@ -17,13 +17,13 @@ import {
   summarizeScenarioReductionCandidate,
 } from './scenario-replay';
 import { dragTextSelection } from './selection-actions';
-import { assertSlateBrowserSelectionContract } from './selection-contract';
+import { assertPliteBrowserSelectionContract } from './selection-contract';
 import { hasExpandedSelection } from './selection-handle';
 import { assertDOMCaretExpectation } from './selection-snapshots';
 import type { SurfaceTarget } from './surface';
 import type {
-  SlateBrowserEditorHarness,
-  SlateBrowserTraceEntry,
+  PliteBrowserEditorHarness,
+  PliteBrowserTraceEntry,
 } from './types';
 
 const assertNumberBudget = (
@@ -53,18 +53,18 @@ export const createEditorHarnessScenario = ({
   root,
   surface,
 }: {
-  getHarness: () => SlateBrowserEditorHarness;
+  getHarness: () => PliteBrowserEditorHarness;
   page: Page;
   root: Locator;
   surface: SurfaceTarget;
-}): SlateBrowserEditorHarness['scenario'] => ({
+}): PliteBrowserEditorHarness['scenario'] => ({
   run: async (scenarioName, steps, options = {}) => {
-    const trace: SlateBrowserTraceEntry[] = [];
+    const trace: PliteBrowserTraceEntry[] = [];
     const capturedRuntimeIds = new Map<string, string>();
     const runtimeErrors =
       options.runtimeErrors === false
         ? null
-        : recordSlateBrowserRuntimeErrors(page, options.runtimeErrors);
+        : recordPliteBrowserRuntimeErrors(page, options.runtimeErrors);
 
     try {
       for (const [stepIndex, step] of steps.entries()) {
@@ -94,7 +94,7 @@ export const createEditorHarnessScenario = ({
                 handle.applyOperations(operations, { tag });
               },
               {
-                key: SLATE_BROWSER_HANDLE_KEY,
+                key: PLITE_BROWSER_HANDLE_KEY,
                 operations: step.operations,
                 tag: step.tag,
               }
@@ -117,7 +117,7 @@ export const createEditorHarnessScenario = ({
 
                     return handle?.getSelection ? handle.getSelection() : null;
                   },
-                  { key: SLATE_BROWSER_HANDLE_KEY }
+                  { key: PLITE_BROWSER_HANDLE_KEY }
                 )
               )
               .toEqual(step.expectedSelection);
@@ -255,14 +255,14 @@ export const createEditorHarnessScenario = ({
 
                     return handle.getPathByRuntimeId(runtimeId);
                   },
-                  { key: SLATE_BROWSER_HANDLE_KEY, runtimeId }
+                  { key: PLITE_BROWSER_HANDLE_KEY, runtimeId }
                 )
               )
               .toEqual(step.path);
             break;
           }
           case 'assertRenderBudget': {
-            const snapshot = await getSlateReactRenderProfilerSnapshot(page);
+            const snapshot = await getPliteReactRenderProfilerSnapshot(page);
             const budgetLabel = (label: string) =>
               `${label} ${JSON.stringify({
                 byKey: snapshot.byKey,
@@ -281,7 +281,7 @@ export const createEditorHarnessScenario = ({
             for (const [kind, expected] of Object.entries(
               step.budget.byKind ?? {}
             ) as [
-              SlateReactRenderKind,
+              PliteReactRenderKind,
               { exact?: number; max?: number; min?: number } | number,
             ][]) {
               assertNumberBudget(
@@ -329,7 +329,7 @@ export const createEditorHarnessScenario = ({
 
                       return handle?.getInputState?.() ?? null;
                     },
-                    { key: SLATE_BROWSER_HANDLE_KEY }
+                    { key: PLITE_BROWSER_HANDLE_KEY }
                   ),
                   kernelTrace: await getHarness().get.kernelTrace(),
                   selection: await getHarness().selection.get(),
@@ -398,7 +398,7 @@ export const createEditorHarnessScenario = ({
             await getHarness().assert.selection(step.selection);
             break;
           case 'assertSelectionContract':
-            await assertSlateBrowserSelectionContract(
+            await assertPliteBrowserSelectionContract(
               getHarness(),
               step.expectation
             );
@@ -438,7 +438,7 @@ export const createEditorHarnessScenario = ({
 
                 return handle.getRuntimeId(path);
               },
-              { key: SLATE_BROWSER_HANDLE_KEY, path: step.path }
+              { key: PLITE_BROWSER_HANDLE_KEY, path: step.path }
             );
 
             if (!runtimeId) {
@@ -570,7 +570,7 @@ export const createEditorHarnessScenario = ({
             await root.dispatchEvent('mousedown');
             break;
           case 'resetRenderProfiler':
-            await resetSlateReactRenderProfiler(page);
+            await resetPliteReactRenderProfiler(page);
             break;
           case 'select':
             await getHarness().selection.select(step.selection);

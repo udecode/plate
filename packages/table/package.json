@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@platejs/resizable": "workspace:^",
-    "@platejs/slate": "workspace:^",
+    "@platejs/plite": "workspace:^",
     "lodash": "^4.17.21",
     "react-compiler-runtime": "^1.0.0"
   },

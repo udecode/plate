@@ -1,4 +1,4 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
 import type { TableConfig } from '../BaseTablePlugin';
@@ -12,7 +12,7 @@ describe('deleteRowWhenExpanded', () => {
   });
 
   it('removes every carried row when a selected row includes a rowspan cell', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       nodeId: true,
       plugins: getTestTablePlugins({ disableMerge: true }),
       value: [

@@ -1,17 +1,17 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import type { Descendant } from '@platejs/slate';
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import type { Descendant } from '@platejs/plite';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { expandListItemsWithChildren } from './expandListItemsWithChildren';
 
 jsxt;
 
 const createListEditor = (input: Descendant[]) => {
-  const editor = (<editor>{input}</editor>) as any as SlateEditor;
+  const editor = (<editor>{input}</editor>) as any as BasePlateEditor;
 
-  return createSlateEditor({
+  return createBasePlateEditor({
     selection: editor.selection,
     value: editor.children,
   });

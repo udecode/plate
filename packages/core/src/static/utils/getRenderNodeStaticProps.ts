@@ -1,4 +1,4 @@
-import type { Element, Path, Text } from '@platejs/slate';
+import type { Element, Path, Text } from '@platejs/plite';
 import type { AnyObject } from '@udecode/utils';
 
 import clsx from 'clsx';
@@ -9,7 +9,7 @@ import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { findEditorPath } from '../../internal/utils/runtimeEditorQueries';
 import {
   type AnyEditorPlugin,
-  type SlateEditor,
+  type BasePlateEditor,
   getEditorPlugin,
   getPluginNodeProps,
   getSlateClass,
@@ -23,7 +23,7 @@ export const getRenderNodeStaticProps = ({
   plugin,
   props,
 }: {
-  editor: SlateEditor;
+  editor: BasePlateEditor;
   props: SlateRenderNodeProps;
   attributes?: AnyObject;
   node?: Element | Text;

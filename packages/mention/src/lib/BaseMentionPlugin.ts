@@ -1,11 +1,10 @@
 import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
-import type { EditorUpdateTransaction } from '@platejs/slate';
+import type { EditorUpdateTransaction } from '@platejs/plite';
 import {
   type PluginConfig,
-  type SlatePlugin,
+  type EditorPlugin,
   type TMentionElement,
-  createSlatePlugin,
-  createTSlatePlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -37,7 +36,7 @@ export type MentionConfig = PluginConfig<
   MentionTx
 >;
 
-export const BaseMentionInputPlugin = createSlatePlugin({
+export const BaseMentionInputPlugin = createEditorPlugin({
   key: KEYS.mentionInput,
   node: { isElement: true, isInline: true, isVoid: true },
 });
@@ -53,8 +52,8 @@ const createMentionNode = (
 });
 
 /** Enables support for autocompleting @mentions. */
-const BaseMentionPluginBase: SlatePlugin<MentionConfig> =
-  createTSlatePlugin<MentionConfig>({
+const BaseMentionPluginBase: EditorPlugin<MentionConfig> =
+  createEditorPlugin<MentionConfig>({
     key: KEYS.mention,
     node: {
       isElement: true,
@@ -81,7 +80,7 @@ const BaseMentionPluginBase: SlatePlugin<MentionConfig> =
     },
   }));
 
-export const BaseMentionPlugin: SlatePlugin<MentionConfig> & {
+export const BaseMentionPlugin: EditorPlugin<MentionConfig> & {
   runtimeTriggerCombobox: boolean;
 } = Object.assign(BaseMentionPluginBase, {
   runtimeTriggerCombobox: true,

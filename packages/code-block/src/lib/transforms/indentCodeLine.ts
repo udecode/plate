@@ -1,4 +1,4 @@
-import type { ElementEntry, SlateEditor } from 'platejs';
+import type { ElementEntry, BasePlateEditor } from 'platejs';
 
 const nonWhitespaceRegex = /\S/;
 
@@ -16,7 +16,7 @@ export type IndentCodeLineOptions = {
  *   spaces.
  */
 export const indentCodeLine = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { codeLine, indentDepth = 2 }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;

@@ -20,7 +20,7 @@ const createColumnRuntimeEditor = ({
     plugins: [BaseColumnPlugin],
   });
 
-describe('BaseColumnPlugin Slate v2 runtime', () => {
+describe('BaseColumnPlugin Plite runtime', () => {
   it('unwraps a single-column group back to plain blocks', () => {
     const editor = createColumnRuntimeEditor({
       value: [

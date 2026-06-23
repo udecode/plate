@@ -1,6 +1,6 @@
-import type { SlateEditor } from '@platejs/core';
-import type { Element, ElementEntry, Location, Path } from '@platejs/slate';
-import { RangeApi } from '@platejs/slate';
+import type { BasePlateEditor } from '@platejs/core';
+import type { Element, ElementEntry, Location, Path } from '@platejs/plite';
+import { RangeApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 /**
@@ -8,7 +8,7 @@ import { KEYS } from '@platejs/utils';
  * (default = selection)
  */
 export const getListItemEntry = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { at = editor.selection }: { at?: Location | null } = {}
 ): { list: ElementEntry; listItem: ElementEntry } | undefined => {
   const liType = editor.getType(KEYS.li);

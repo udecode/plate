@@ -1,4 +1,4 @@
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 import type { TTableCellElement } from 'platejs';
 
 import { getColSpan } from '../queries';

@@ -1,4 +1,4 @@
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
 import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
 import { BaseTablePlugin } from './BaseTablePlugin';
@@ -24,7 +24,7 @@ const createTableEditor = ({
     plugins: [tablePlugin],
   });
 
-describe('BaseTablePlugin Slate v2 runtime extension', () => {
+describe('BaseTablePlugin Plite runtime extension', () => {
   it('applies marks across a multi-cell selection', () => {
     const editor = createTableEditor({
       selection: {

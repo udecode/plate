@@ -1,6 +1,6 @@
-import type { SlateEditor } from '@platejs/core';
-import type { Element, ElementEntry, Path } from '@platejs/slate';
-import { PathApi } from '@platejs/slate';
+import type { BasePlateEditor } from '@platejs/core';
+import type { Element, ElementEntry, Path } from '@platejs/plite';
+import { PathApi } from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
 
@@ -13,7 +13,7 @@ export type MoveListItemUpOptions = {
   listItem: ElementEntry;
 };
 
-const isLastChild = (editor: SlateEditor, path: Path) => {
+const isLastChild = (editor: BasePlateEditor, path: Path) => {
   const index = path.at(-1);
 
   if (index == null) return false;
@@ -43,7 +43,7 @@ const getNextListPath = (listPath: Path, listItemPath: Path) => {
 
 /** Move a list item up. */
 export const moveListItemUp = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { list, listItem }: MoveListItemUpOptions
 ) => {
   const move = () => {

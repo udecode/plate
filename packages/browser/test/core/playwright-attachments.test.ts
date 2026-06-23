@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import {
   attachPageScreenshot,
-  attachSlateBrowserSelectionScreenshot,
+  attachPliteBrowserSelectionScreenshot,
 } from '../../src/playwright';
 
 describe('playwright attachments', () => {
@@ -68,15 +68,15 @@ describe('playwright attachments', () => {
           screenshotCalls.push(options);
         },
       },
-    } as Parameters<typeof attachSlateBrowserSelectionScreenshot>[0];
+    } as Parameters<typeof attachPliteBrowserSelectionScreenshot>[0];
     const testInfo = {
       attach: async (name: string, options: unknown) => {
         attachCalls.push({ name, options });
       },
       outputPath: (name: string) => `/tmp/${name}`,
-    } as Parameters<typeof attachSlateBrowserSelectionScreenshot>[1];
+    } as Parameters<typeof attachPliteBrowserSelectionScreenshot>[1];
 
-    const path = await attachSlateBrowserSelectionScreenshot(
+    const path = await attachPliteBrowserSelectionScreenshot(
       editor,
       testInfo,
       'selection.png'

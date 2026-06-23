@@ -39,7 +39,7 @@
     "typecheck": "plate-pkg p:typecheck"
   },
   "dependencies": {
-    "@platejs/slate": "workspace:^",
+    "@platejs/plite": "workspace:^",
     "lodash": "^4.17.21",
     "raf": "^3.4.1",
     "react-compiler-runtime": "^1.0.0"

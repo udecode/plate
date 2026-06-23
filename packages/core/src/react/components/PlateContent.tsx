@@ -25,7 +25,7 @@ import {
   PlateContentStateEffect,
 } from './PlateContentEffects';
 import { EditorMethodsEffect } from './EditorMethodsEffect';
-import { PlateSlate } from './PlateSlate';
+import { Plite } from './Plite';
 
 type LegacyEditableComponentProps = React.ComponentProps<typeof Editable>;
 type RuntimeEditableProps = NonNullable<
@@ -61,7 +61,7 @@ const getRuntimeEditableProps = ({
     ...props,
     'aria-disabled': disabled,
     className: clsx(
-      'slate-editor',
+      'plite-editor',
       'ignore-click-outside/toolbar',
       props.className
     ),
@@ -220,7 +220,7 @@ const PlateLegacyContentBranch = React.forwardRef<
     });
 
     return (
-      <PlateSlate id={id}>
+      <Plite id={id}>
         <PlateContentStateEffect
           id={id}
           disabled={props.disabled}
@@ -232,7 +232,7 @@ const PlateLegacyContentBranch = React.forwardRef<
         {beforeEditable}
         {aboveEditable}
         {afterEditable}
-      </PlateSlate>
+      </Plite>
     );
   }
 );

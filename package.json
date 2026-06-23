@@ -147,7 +147,6 @@
     "@platejs/plite-history": "workspace:^",
     "@platejs/plite-hyperscript": "workspace:^",
     "@platejs/plite-layout": "workspace:^",
-    "@platejs/slate-legacy": "workspace:^",
     "@platejs/plite-react": "workspace:^",
     "@platejs/suggestion": "workspace:^",
     "@platejs/table": "workspace:^",

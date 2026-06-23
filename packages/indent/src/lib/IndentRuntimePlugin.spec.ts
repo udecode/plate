@@ -6,7 +6,7 @@ import { BaseIndentPlugin } from './BaseIndentPlugin';
 
 type IndentRuntimePlugin = typeof BaseIndentPlugin | typeof BaseParagraphPlugin;
 
-describe('BaseIndentPlugin Slate v2 runtime', () => {
+describe('BaseIndentPlugin Plite runtime', () => {
   it('caps matching block indent during normalization', () => {
     const editor = createPlateEditor<Value, IndentRuntimePlugin>({
       plugins: [
@@ -15,7 +15,7 @@ describe('BaseIndentPlugin Slate v2 runtime', () => {
           options: { indentMax: 2 },
         }),
       ],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [{ children: [{ text: 'One' }], indent: 4, type: 'p' }],
     });
 
@@ -31,7 +31,7 @@ describe('BaseIndentPlugin Slate v2 runtime', () => {
   it('unsets indent when the block no longer matches target types', () => {
     const editor = createPlateEditor<Value, IndentRuntimePlugin>({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [{ children: [{ text: 'One' }], indent: 2, type: 'quote' }],
     });
 
@@ -43,5 +43,4 @@ describe('BaseIndentPlugin Slate v2 runtime', () => {
       { children: [{ text: 'One' }], type: 'quote' },
     ]);
   });
-
 });

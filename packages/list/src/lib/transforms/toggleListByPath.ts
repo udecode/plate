@@ -1,10 +1,10 @@
-import type { Element, NodeEntry } from '@platejs/slate';
-import { type SlateEditor, KEYS } from 'platejs';
+import type { Element, NodeEntry } from '@platejs/plite';
+import { type BasePlateEditor, KEYS } from 'platejs';
 
 import { normalizeListSequence } from '../normalizers/normalizeListSequence';
 
 export const toggleListByPath = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   [node, path]: NodeEntry<Element>,
   listStyleType: string
 ) => {
@@ -29,7 +29,7 @@ export const toggleListByPath = (
 };
 
 export const toggleListByPathUnSet = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   entry: NodeEntry<Element>
 ) => {
   const [node, path] = entry;

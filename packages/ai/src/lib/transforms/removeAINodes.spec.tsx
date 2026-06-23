@@ -1,10 +1,10 @@
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createBasePlateEditor } from 'platejs';
 
 import { removeAINodes } from './removeAINodes';
 
 describe('removeAINodes', () => {
   it('removes only text nodes marked with ai', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin],
       value: [
         {
@@ -25,7 +25,7 @@ describe('removeAINodes', () => {
   });
 
   it('respects the at filter and leaves ai nodes outside it untouched', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseParagraphPlugin],
       value: [
         { type: 'p', children: [{ ai: true, text: 'one' }] },

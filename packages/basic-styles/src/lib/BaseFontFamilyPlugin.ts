@@ -1,6 +1,6 @@
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
-export const BaseFontFamilyPlugin = createSlatePlugin({
+export const BaseFontFamilyPlugin = createEditorPlugin({
   key: KEYS.fontFamily,
   inject: {
     nodeProps: {

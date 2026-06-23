@@ -1,4 +1,4 @@
-import type { Descendant, SlateEditor } from 'platejs';
+import type { Descendant, BasePlateEditor } from 'platejs';
 
 import { ElementApi, KEYS, nanoid } from 'platejs';
 
@@ -6,7 +6,7 @@ import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey, getTransientSuggestionKey } from '../utils/index';
 
 export const getSuggestionProps = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   node: Descendant,
   {
     id = nanoid(),

@@ -2,7 +2,7 @@
 
 import { jsx } from '@platejs/test-utils';
 import * as copyToClipboardModule from 'copy-to-clipboard';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { copySelectedBlocks } from './copySelectedBlocks';
@@ -33,7 +33,7 @@ describe('copySelectedBlocks', () => {
 
   describe('when copying blocks with empty content', () => {
     beforeEach(() => {
-      editor = createSlateEditor({
+      editor = createBasePlateEditor({
         plugins: [BlockSelectionPlugin],
         value: [
           {
@@ -132,7 +132,7 @@ describe('copySelectedBlocks', () => {
       expect(htmlContent).toContain('<p></p>');
 
       expect(mockDataTransfer.setData).toHaveBeenCalledWith(
-        'application/x-slate-fragment',
+        'application/x-plite-fragment',
         expect.any(String)
       );
     });
@@ -140,7 +140,7 @@ describe('copySelectedBlocks', () => {
 
   describe('when copying blocks with content', () => {
     beforeEach(() => {
-      editor = createSlateEditor({
+      editor = createBasePlateEditor({
         plugins: [BlockSelectionPlugin],
         value: [
           {
@@ -215,7 +215,7 @@ describe('copySelectedBlocks', () => {
         expect.any(String)
       );
       expect(mockDataTransfer.setData).toHaveBeenCalledWith(
-        'application/x-slate-fragment',
+        'application/x-plite-fragment',
         expect.any(String)
       );
     });
@@ -265,7 +265,7 @@ describe('copySelectedBlocks', () => {
         expect.any(String)
       );
       expect(mockDataTransfer.setData).toHaveBeenCalledWith(
-        'application/x-slate-fragment',
+        'application/x-plite-fragment',
         expect.any(String)
       );
     });

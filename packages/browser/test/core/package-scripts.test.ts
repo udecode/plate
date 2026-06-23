@@ -2,29 +2,29 @@ import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import * as SlateBrowserBrowser from '../../src/browser';
-import * as SlateBrowserCore from '../../src/core';
-import * as SlateBrowserPlaywright from '../../src/playwright';
-import * as SlateBrowserTransports from '../../src/transports';
+import * as PliteBrowserBrowser from '../../src/browser';
+import * as PliteBrowserCore from '../../src/core';
+import * as PliteBrowserPlaywright from '../../src/playwright';
+import * as PliteBrowserTransports from '../../src/transports';
 
-const expectedSlateBrowserRuntimeSubpathExports = {
+const expectedPliteBrowserRuntimeSubpathExports = {
   browser: [
     'inspectZeroWidthPlaceholder',
     'takeDOMSelectionSnapshot',
     'takeEditorSelectionSnapshot',
   ],
   core: [
-    'SLATE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY',
-    'SLATE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS',
-    'SLATE_BROWSER_FIRST_PARTY_PARITY_FAMILIES',
-    'SLATE_BROWSER_RELEASE_DISCIPLINE_GUARDS',
-    'assertSlateBrowserFirstPartyParityContracts',
-    'assertSlateBrowserReleaseProof',
+    'PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY',
+    'PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS',
+    'PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES',
+    'PLITE_BROWSER_RELEASE_DISCIPLINE_GUARDS',
+    'assertPliteBrowserFirstPartyParityContracts',
+    'assertPliteBrowserReleaseProof',
     'createBrowserMobileReleaseProofArtifact',
     'createPersistentBrowserSoakProofArtifact',
     'createReleaseDisciplineProofArtifact',
-    'createSlateBrowserFeatureContractRegistry',
-    'defineSlateBrowserFeatureContract',
+    'createPliteBrowserFeatureContractRegistry',
+    'definePliteBrowserFeatureContract',
     'evaluateImeInput',
     'evaluatePlaceholderInput',
     'extractAgentBrowserDebugSnapshot',
@@ -34,59 +34,59 @@ const expectedSlateBrowserRuntimeSubpathExports = {
     'parseDebugSnapshot',
     'serializePoint',
     'serializeRange',
-    'validateSlateBrowserReleaseProof',
+    'validatePliteBrowserReleaseProof',
   ],
   playwright: [
     'assertNoIllegalKernelTransitions',
-    'assertSlateBrowserCaretVisibleInScrollableParent',
-    'assertSlateBrowserKernelTraceEntry',
-    'assertSlateBrowserSelectionContract',
+    'assertPliteBrowserCaretVisibleInScrollableParent',
+    'assertPliteBrowserKernelTraceEntry',
+    'assertPliteBrowserSelectionContract',
     'attachPageScreenshot',
-    'attachSlateBrowserJsonArtifact',
-    'attachSlateBrowserSelectionScreenshot',
+    'attachPliteBrowserJsonArtifact',
+    'attachPliteBrowserSelectionScreenshot',
     'classifyScenarioTransportClaim',
     'createScenarioReductionCandidates',
     'createScenarioReplay',
-    'createSlateBrowserClipboardPasteGauntlet',
-    'createSlateBrowserCompositionGauntlet',
-    'createSlateBrowserDestructiveEditingGauntlet',
-    'createSlateBrowserDropDataGauntlet',
-    'createSlateBrowserEditorHarness',
-    'createSlateBrowserFeatureContractRegistry',
-    'createSlateBrowserInlineCutTypingGauntlet',
-    'createSlateBrowserInternalControlGauntlet',
-    'createSlateBrowserMarkClickTypingGauntlet',
-    'createSlateBrowserMarkTypingGauntlet',
-    'createSlateBrowserMixedEditingConformanceGauntlet',
-    'createSlateBrowserNavigationTypingGauntlet',
-    'createSlateBrowserSemanticEditingConformanceGauntlet',
-    'createSlateBrowserShellActivationGauntlet',
-    'createSlateBrowserTextInsertionGauntlet',
-    'createSlateBrowserToolbarMarkClickTypingGauntlet',
-    'createSlateBrowserWarmLoopSteps',
-    'createSlateBrowserWarmToolbarArrowGauntlet',
-    'defineSlateBrowserFeatureContract',
-    'findSlateBrowserKernelTraceEntry',
+    'createPliteBrowserClipboardPasteGauntlet',
+    'createPliteBrowserCompositionGauntlet',
+    'createPliteBrowserDestructiveEditingGauntlet',
+    'createPliteBrowserDropDataGauntlet',
+    'createPliteBrowserEditorHarness',
+    'createPliteBrowserFeatureContractRegistry',
+    'createPliteBrowserInlineCutTypingGauntlet',
+    'createPliteBrowserInternalControlGauntlet',
+    'createPliteBrowserMarkClickTypingGauntlet',
+    'createPliteBrowserMarkTypingGauntlet',
+    'createPliteBrowserMixedEditingConformanceGauntlet',
+    'createPliteBrowserNavigationTypingGauntlet',
+    'createPliteBrowserSemanticEditingConformanceGauntlet',
+    'createPliteBrowserShellActivationGauntlet',
+    'createPliteBrowserTextInsertionGauntlet',
+    'createPliteBrowserToolbarMarkClickTypingGauntlet',
+    'createPliteBrowserWarmLoopSteps',
+    'createPliteBrowserWarmToolbarArrowGauntlet',
+    'definePliteBrowserFeatureContract',
+    'findPliteBrowserKernelTraceEntry',
     'getIllegalKernelTransitions',
-    'getSlateReactRenderProfilerSnapshot',
-    'installSlateReactRenderProfiler',
-    'matchesSlateBrowserKernelTrace',
+    'getPliteReactRenderProfilerSnapshot',
+    'installPliteReactRenderProfiler',
+    'matchesPliteBrowserKernelTrace',
     'normalizeScenarioMetadata',
     'openExample',
     'openExampleWithOptions',
-    'recordSlateBrowserRuntimeErrors',
-    'resetSlateBrowserNativeEventTrace',
-    'resetSlateReactRenderProfiler',
+    'recordPliteBrowserRuntimeErrors',
+    'resetPliteBrowserNativeEventTrace',
+    'resetPliteReactRenderProfiler',
     'serializeScenarioStepForReplay',
-    'startSlateBrowserNativeEventTrace',
-    'stopSlateBrowserNativeEventTrace',
+    'startPliteBrowserNativeEventTrace',
+    'stopPliteBrowserNativeEventTrace',
     'summarizeScenarioReductionCandidate',
     'summarizeScenarioStep',
     'takeDOMSelectionSnapshot',
     'takeDisplayedSelectionSnapshotForRoot',
     'takeSelectionSnapshot',
-    'takeSlateBrowserNativeEventTrace',
-    'takeSlateBrowserRenderStateSnapshot',
+    'takePliteBrowserNativeEventTrace',
+    'takePliteBrowserRenderStateSnapshot',
     'withExclusiveClipboardAccess',
   ],
   transports: [
@@ -117,11 +117,16 @@ const transportSourceFiles = [
 describe('package scripts', () => {
   test('keeps public subpath runtime values exact', () => {
     expect({
-      browser: Object.keys(SlateBrowserBrowser).sort(),
-      core: Object.keys(SlateBrowserCore).sort(),
-      playwright: Object.keys(SlateBrowserPlaywright).sort(),
-      transports: Object.keys(SlateBrowserTransports).sort(),
-    }).toEqual(expectedSlateBrowserRuntimeSubpathExports);
+      browser: Object.keys(PliteBrowserBrowser).sort(),
+      core: Object.keys(PliteBrowserCore).sort(),
+      playwright: Object.keys(PliteBrowserPlaywright).sort(),
+      transports: Object.keys(PliteBrowserTransports).sort(),
+    }).toEqual({
+      browser: expectedPliteBrowserRuntimeSubpathExports.browser.toSorted(),
+      core: expectedPliteBrowserRuntimeSubpathExports.core.toSorted(),
+      playwright: expectedPliteBrowserRuntimeSubpathExports.playwright.toSorted(),
+      transports: expectedPliteBrowserRuntimeSubpathExports.transports.toSorted(),
+    });
   });
 
   test('keeps public subpath exports documented in source', () => {
@@ -294,7 +299,7 @@ describe('package scripts', () => {
     expect(coreIndex).not.toContain('parseDebugSnapshotProof');
   });
 
-  test('keeps slate-browser metadata public-ready and subpath-only', () => {
+  test('keeps plite-browser metadata public-ready and subpath-only', () => {
     const packageJsonPath = fileURLToPath(
       new URL('../../package.json', import.meta.url)
     );
@@ -319,7 +324,7 @@ describe('package scripts', () => {
     ).toBe(true);
   });
 
-  test('keeps slate-browser public entrypoints on owned subpaths', () => {
+  test('keeps plite-browser public entrypoints on owned subpaths', () => {
     const packageJsonPath = fileURLToPath(
       new URL('../../package.json', import.meta.url)
     );
@@ -368,14 +373,14 @@ describe('package scripts', () => {
       'serializeRange',
       'evaluateImeInput',
       'evaluatePlaceholderInput',
-      'assertSlateBrowserReleaseProof',
-      'validateSlateBrowserReleaseProof',
+      'assertPliteBrowserReleaseProof',
+      'validatePliteBrowserReleaseProof',
       'createReleaseDisciplineProofArtifact',
       'createBrowserMobileReleaseProofArtifact',
       'createPersistentBrowserSoakProofArtifact',
-      'assertSlateBrowserFirstPartyParityContracts',
-      'defineSlateBrowserFeatureContract',
-      'createSlateBrowserFeatureContractRegistry',
+      'assertPliteBrowserFirstPartyParityContracts',
+      'definePliteBrowserFeatureContract',
+      'createPliteBrowserFeatureContractRegistry',
       'debug snapshot parsers',
       '@platejs/browser/browser',
       'takeDOMSelectionSnapshot',

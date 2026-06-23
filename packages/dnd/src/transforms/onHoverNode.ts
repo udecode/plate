@@ -1,6 +1,6 @@
-import type { Element } from '@platejs/slate';
+import type { Element, NodeEntry } from '@platejs/plite';
 
-import { PathApi } from '@platejs/slate';
+import { PathApi } from '@platejs/plite';
 import type { PlateEditor } from 'platejs/react';
 import type { DropTargetMonitor } from 'react-dnd';
 
@@ -63,10 +63,11 @@ export const onHoverNode = (
     }
 
     if (newDropTarget.line === 'top') {
-      const elementPath = editor.api.node<Element>({
+      const elementEntry = editor.api.node({
         at: [],
         id: element.id as string,
-      })?.[1];
+      }) as NodeEntry<Element> | undefined;
+      const elementPath = elementEntry?.[1];
       const previousPath =
         elementPath && PathApi.hasPrevious(elementPath)
           ? PathApi.previous(elementPath)
@@ -76,7 +77,9 @@ export const onHoverNode = (
         return editor.setOption(DndPlugin, 'dropTarget', newDropTarget);
       }
 
-      const nextNode = editor.api.node<Element>(previousPath)?.[0];
+      const nextNode = (
+        editor.api.node(previousPath) as NodeEntry<Element> | undefined
+      )?.[0];
 
       editor.setOption(DndPlugin, 'dropTarget', {
         id: nextNode?.id as string,

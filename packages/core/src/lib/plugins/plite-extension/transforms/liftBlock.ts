@@ -1,6 +1,6 @@
 import type { Location } from '@platejs/plite';
 
-import type { PliteEditor } from '../../../editor';
+import type { BasePlateEditor } from '../../../editor';
 import { getCurrentRuntimeTransforms } from '../../../../internal/currentRuntimeBridge';
 import { type PlateNodeMatch, combinePlateMatchOptions } from './matchOptions';
 
@@ -17,7 +17,7 @@ export type LiftBlockOptions = {
  * whole container.
  */
 export const liftBlock = (
-  editor: PliteEditor,
+  editor: BasePlateEditor,
   { at, match }: LiftBlockOptions = {}
 ) => {
   const block = editor.api.block({ at });
@@ -25,19 +25,20 @@ export const liftBlock = (
   if (!block || !match) return;
 
   const [, blockPath] = block;
+  const ancestorMatch = combinePlateMatchOptions(
+    (_node, path) => path.length < blockPath.length,
+    match
+  );
   const ancestor = editor.api.above({
     at: blockPath,
-    match: combinePlateMatchOptions(
-      (_node, path) => path.length < blockPath.length,
-      match
-    ),
+    match: ancestorMatch,
   });
 
   if (!ancestor) return;
 
   getCurrentRuntimeTransforms(editor).unwrapNodes({
     at: blockPath,
-    match,
+    match: ancestorMatch,
     split: true,
   });
 

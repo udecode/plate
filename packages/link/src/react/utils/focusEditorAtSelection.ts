@@ -1,6 +1,6 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
-export const focusEditorAtSelection = (editor: SlateEditor) => {
+export const focusEditorAtSelection = (editor: BasePlateEditor) => {
   if (editor.selection) {
     editor.update((tx) => {
       tx.selection.set(editor.selection!);

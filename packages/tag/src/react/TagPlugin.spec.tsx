@@ -4,10 +4,10 @@ import { createPlateEditor } from 'platejs/react';
 import { MultiSelectPlugin } from './TagPlugin';
 
 describe('MultiSelectPlugin', () => {
-  it('routes duplicate tag cleanup through the Slate v2 runtime', () => {
+  it('routes duplicate tag cleanup through the Plite runtime', () => {
     const editor = createPlateEditor({
       plugins: [MultiSelectPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [
         {
           children: [
@@ -38,10 +38,10 @@ describe('MultiSelectPlugin', () => {
     expect(nonEmptyTexts).toEqual([]);
   });
 
-  it('keeps selected Slate v2 search text and trims leading whitespace', () => {
+  it('keeps selected Plite search text and trims leading whitespace', () => {
     const editor = createPlateEditor({
       plugins: [MultiSelectPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 7, path: [0, 0] },

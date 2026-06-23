@@ -1,6 +1,6 @@
-import type { Text } from '@platejs/slate';
+import type { Text } from '@platejs/plite';
 
-import type { SlateEditor, TLinkElement } from 'platejs';
+import type { BasePlateEditor, TLinkElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -12,7 +12,7 @@ export type CreateLinkNodeOptions = {
 };
 
 export const createLinkNode = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { children, target, text = '', url }: CreateLinkNodeOptions
 ): TLinkElement => {
   const type = editor.getType(KEYS.link);

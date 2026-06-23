@@ -1,9 +1,9 @@
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { TogglePlugin } from '../TogglePlugin';
 
 export function getEnclosingToggleIds(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   elementId: string
 ): string[] {
   return editor.getOptions(TogglePlugin).toggleIndex?.get(elementId) || [];

@@ -1,4 +1,4 @@
-import type { Descendant, Element, Text } from '@platejs/slate';
+import type { Descendant, Element, Text } from '@platejs/plite';
 import type { UnknownObject } from '@udecode/utils';
 
 // ─────────────────────────────────────────────────────────────────────────────

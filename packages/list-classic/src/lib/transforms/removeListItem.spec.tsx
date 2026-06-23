@@ -1,8 +1,8 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import type { SlateEditor } from '@platejs/core';
-import { createListClassicTestEditor as createSlateEditor } from '../__tests__/createListClassicTestEditor';
+import type { BasePlateEditor } from '@platejs/core';
+import { createListClassicTestEditor as createBasePlateEditor } from '../__tests__/createListClassicTestEditor';
 
 import { removeListItem } from './removeListItem';
 
@@ -46,7 +46,7 @@ const input = (
       </hli>
     </hul>
   </editor>
-) as any as SlateEditor;
+) as any as BasePlateEditor;
 
 const output = (
   <editor>
@@ -87,7 +87,7 @@ const output = (
 ) as any;
 
 it('moves the removed item children into the previous sublist', () => {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     selection: input.selection,
     value: input.children,
   });

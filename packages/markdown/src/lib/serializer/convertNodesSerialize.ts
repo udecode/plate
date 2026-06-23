@@ -1,9 +1,10 @@
 import {
   type Descendant,
   type Element,
+  ElementApi,
   type Text,
   TextApi,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import { getPluginKey, getPluginType, KEYS } from 'platejs';
 
 import type { unistLib } from '../types';
@@ -30,7 +31,10 @@ export const convertNodesSerialize = (
 
     if (n && TextApi.isText(n)) {
       // Only add text nodes that pass the filtering
-      if (shouldIncludeText(n, options)) {
+      if (
+        shouldIncludeText(n, options) &&
+        !isInlineBoundaryZeroWidthText(n, nodes, i, options)
+      ) {
         textQueue.push(n);
       }
     } else {
@@ -163,6 +167,33 @@ const shouldIncludeText = (
   }
 
   return true;
+};
+
+const isInlineBoundaryZeroWidthText = (
+  text: Text,
+  nodes: Descendant[],
+  index: number,
+  options: SerializeMdOptions
+): boolean => {
+  if (
+    text.text !== '\u200B' ||
+    !Object.keys(text).every((key) => key === 'text')
+  ) {
+    return false;
+  }
+
+  const isInlineAdjacentElement = (node: Descendant | undefined) =>
+    ElementApi.isElement(node) &&
+    Boolean(
+      options.editor?.read(
+        (state) => state.schema.isInline(node) || state.schema.isVoid(node)
+      )
+    );
+
+  return (
+    isInlineAdjacentElement(nodes[index - 1]) ||
+    isInlineAdjacentElement(nodes[index + 1])
+  );
 };
 
 const shouldIncludeNode = (

@@ -1,16 +1,16 @@
 import React from 'react';
 import type {
   EditorUpdateTransaction,
-  Element as SlateElement,
+  Element as PliteElement,
   Path,
   Value,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import {
-  Slate,
+  Plite,
   useEditor,
   useEditorReadOnly,
   useEditorState,
-} from '@platejs/slate-react';
+} from '@platejs/plite-react';
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import * as reactHotkeysModule from '@udecode/react-hotkeys';
 
@@ -19,7 +19,7 @@ import {
   type LegacyTransformOverride,
   withLegacyTransformOverride,
 } from '../../internal/plugin/withLegacyTransformOverride';
-import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
+import { createEditorPlugin } from '../../lib/plugin/createEditorPlugin';
 import { AffinityPlugin } from '../../lib/plugins/affinity/AffinityPlugin';
 import { ChunkingPlugin } from '../../lib/plugins/chunking/ChunkingPlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
@@ -35,10 +35,10 @@ import { withDeleteRules } from '../../lib/plugins/override/internal/withDeleteR
 import { withMergeRules } from '../../lib/plugins/override/internal/withMergeRules';
 import { withNormalizeRules } from '../../lib/plugins/override/internal/withNormalizeRules';
 import { withOverrides } from '../../lib/plugins/override/OverridePlugin';
-import { SlateExtensionPlugin } from '../../lib/plugins/slate-extension/SlateExtensionPlugin';
+import { PliteExtensionPlugin } from '../../lib/plugins/plite-extension/PliteExtensionPlugin';
 import { NavigationFeedbackPlugin } from '../plugins/navigation-feedback/NavigationFeedbackPlugin';
 import { ReactPlugin } from '../plugins/react/ReactPlugin';
-import { SlateReactExtensionPlugin } from '../plugins/SlateReactExtensionPlugin';
+import { PliteReactExtensionPlugin } from '../plugins/PliteReactExtensionPlugin';
 import {
   createPlateRuntimeEditor,
   isPlateRuntimeEditor,
@@ -128,7 +128,7 @@ describe('createPlateRuntimeEditor', () => {
   const createRuntimeOverridePlugin = (
     ...overrides: LegacyTransformOverride[]
   ) => {
-    let plugin = createSlatePlugin({ key: 'override' }).overrideEditor(
+    let plugin = createEditorPlugin({ key: 'override' }).overrideEditor(
       withOverrides
     );
 
@@ -141,7 +141,7 @@ describe('createPlateRuntimeEditor', () => {
 
   const createRuntimeBlockquotePlugin = () =>
     withLegacyTransformOverride(
-      createSlatePlugin({
+      createEditorPlugin({
         key: 'blockquote',
         node: { isElement: true, type: 'blockquote' },
       }),
@@ -152,7 +152,7 @@ describe('createPlateRuntimeEditor', () => {
 
   const createRuntimeCaptionPlugin = () =>
     withLegacyTransformOverride(
-      createSlatePlugin({
+      createEditorPlugin({
         key: 'caption',
         options: {
           focusEndPath: null,
@@ -168,7 +168,7 @@ describe('createPlateRuntimeEditor', () => {
 
   const createRuntimeMultiSelectPlugin = () =>
     withLegacyTransformOverride(
-      createSlatePlugin({
+      createEditorPlugin({
         key: 'tag',
         node: {
           isElement: true,
@@ -183,12 +183,12 @@ describe('createPlateRuntimeEditor', () => {
       })
     );
 
-  const MediaPlugin = createSlatePlugin({
+  const MediaPlugin = createEditorPlugin({
     key: 'media',
     node: { isElement: true, type: 'media' },
   });
 
-  it('creates a Slate v2 React editor with Plate runtime identity state', () => {
+  it('creates a Plite React editor with Plate runtime identity state', () => {
     const editor = createPlateRuntimeEditor({
       id: 'plate-runtime',
       initialValue: value,
@@ -391,7 +391,7 @@ describe('createPlateRuntimeEditor', () => {
 
   it('routes createPlateEditor opt-in through the v2 runtime', () => {
     const editor = createPlateEditor({
-      runtime: 'slate-v2',
+      runtime: 'plite',
       nodeId: {
         idCreator: createIdFactory(),
         initialValueIds: false,
@@ -403,7 +403,7 @@ describe('createPlateRuntimeEditor', () => {
     expect(editor.api.react).toBeDefined();
     expect(editor.plugins.dom).toBeDefined();
     expect(editor.plugins.nodeId).toBeDefined();
-    expect(editor.plugins.slateExtension).toBeDefined();
+    expect(editor.plugins.pliteExtension).toBeDefined();
 
     editor.update((tx) => {
       tx.nodes.insert(
@@ -419,12 +419,12 @@ describe('createPlateRuntimeEditor', () => {
     expect(ids).toEqual(['taken', 'id-1']);
   });
 
-  it('routes createPlateEditor slate-v2 root initialization options', () => {
+  it('routes createPlateEditor plite root initialization options', () => {
     const onReady = mock();
     const editor = createPlateEditor({
       autoSelect: 'end',
       onReady,
-      runtime: 'slate-v2',
+      runtime: 'plite',
       shouldNormalizeEditor: true,
       transformInitialValue: ({ value: initialValue }) =>
         initialValue.map((node) => ({
@@ -451,12 +451,12 @@ describe('createPlateRuntimeEditor', () => {
     });
   });
 
-  it('composes createPlateEditor slate-v2 root, plugin, and editable decorations', async () => {
+  it('composes createPlateEditor plite root, plugin, and editable decorations', async () => {
     const decorateStart = (path: Path) => ({
       anchor: { offset: 0, path },
       focus: { offset: 3, path },
     });
-    const RuntimePlugin = createSlatePlugin({
+    const RuntimePlugin = createEditorPlugin({
       key: 'runtimeDecorate',
       decorate: ({ entry, plugin }) => {
         const [node, path] = entry;
@@ -485,7 +485,7 @@ describe('createPlateRuntimeEditor', () => {
         ];
       },
       plugins: [RuntimePlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [{ children: [{ text: 'runtime' }], type: 'decorated' }],
     });
     const { container } = render(
@@ -538,13 +538,13 @@ describe('createPlateRuntimeEditor', () => {
     });
   });
 
-  it('routes createPlateEditor slate-v2 root and plugin inject nodeProps', async () => {
-    const RuntimeBlockPlugin = createSlatePlugin({
+  it('routes createPlateEditor plite root and plugin inject nodeProps', async () => {
+    const RuntimeBlockPlugin = createEditorPlugin({
       key: 'runtimeBlock',
       node: { isElement: true, type: 'runtime_block' },
       render: { as: 'section' },
     });
-    const AlignInjectPlugin = createSlatePlugin({
+    const AlignInjectPlugin = createEditorPlugin({
       inject: {
         nodeProps: {
           classNames: { center: 'align-center' },
@@ -566,7 +566,7 @@ describe('createPlateRuntimeEditor', () => {
         targetPlugins: [RuntimeBlockPlugin.key],
       },
       plugins: [RuntimeBlockPlugin, AlignInjectPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [
         {
           align: 'center',
@@ -582,7 +582,7 @@ describe('createPlateRuntimeEditor', () => {
 
     await waitFor(() => {
       const element = container.querySelector(
-        'section[data-slate-node="element"]'
+        'section[data-plite-node="element"]'
       ) as HTMLElement | null;
 
       expect(element?.className).toContain('align-center');
@@ -592,9 +592,9 @@ describe('createPlateRuntimeEditor', () => {
     });
   });
 
-  it('runs hook-backed createPlateEditor slate-v2 inject transformProps', async () => {
+  it('runs hook-backed createPlateEditor plite inject transformProps', async () => {
     const editor = createPlateEditor({
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [{ children: [{ text: 'target' }], type: 'p' }],
     });
     const navigationTf =
@@ -622,7 +622,7 @@ describe('createPlateRuntimeEditor', () => {
     });
   });
 
-  it('routes createPlateEditor slate-v2 root options and useHooks', async () => {
+  it('routes createPlateEditor plite root options and useHooks', async () => {
     const hookCalls: Array<{
       answer: unknown;
       editorId: string;
@@ -630,7 +630,7 @@ describe('createPlateRuntimeEditor', () => {
     }> = [];
     const editor = createPlateEditor({
       options: { answer: 42 },
-      runtime: 'slate-v2',
+      runtime: 'plite',
       useHooks: ({ editor: runtimeEditor, getOption, plugin }) => {
         hookCalls.push({
           answer: getOption('answer'),
@@ -654,7 +654,7 @@ describe('createPlateRuntimeEditor', () => {
     });
   });
 
-  it('routes createPlateEditor slate-v2 root shortcuts through runtime hotkeys', async () => {
+  it('routes createPlateEditor plite root shortcuts through runtime hotkeys', async () => {
     const setHotkeyRef = mock();
     const shortcutHandler = mock();
     const useHotkeysSpy = spyOn(
@@ -664,7 +664,7 @@ describe('createPlateRuntimeEditor', () => {
 
     try {
       const editor = createPlateEditor({
-        runtime: 'slate-v2',
+        runtime: 'plite',
         shortcuts: {
           jump: {
             handler: shortcutHandler,
@@ -692,7 +692,7 @@ describe('createPlateRuntimeEditor', () => {
         expect(container.contains(hotkeyTarget as Node)).toBe(true);
         expect((hotkeyTarget as HTMLElement).isContentEditable).toBe(true);
         expect(
-          (hotkeyTarget as HTMLElement).closest('[data-slate-editor="true"]')
+          (hotkeyTarget as HTMLElement).closest('[data-plite-editor="true"]')
         ).toBeTruthy();
       });
 
@@ -714,7 +714,7 @@ describe('createPlateRuntimeEditor', () => {
     }
   });
 
-  it('routes createPlateEditor slate-v2 root render wrappers', () => {
+  it('routes createPlateEditor plite root render wrappers', () => {
     const AboveSlate = ({ children }: { children?: React.ReactNode }) =>
       React.createElement(
         'section',
@@ -743,11 +743,11 @@ describe('createPlateRuntimeEditor', () => {
       id: 'root-render-runtime',
       render: {
         aboveEditable: AboveEditable,
-        aboveSlate: AboveSlate,
+        abovePlite: AboveSlate,
         afterEditable: AfterEditable,
         beforeEditable: BeforeEditable,
       },
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value,
     });
 
@@ -762,8 +762,8 @@ describe('createPlateRuntimeEditor', () => {
     expect(container.querySelector('[contenteditable="true"]')).toBeDefined();
   });
 
-  it('routes createPlateEditor slate-v2 root node wrappers', () => {
-    const RuntimePlugin = createSlatePlugin({
+  it('routes createPlateEditor plite root node wrappers', () => {
+    const RuntimePlugin = createEditorPlugin({
       key: 'runtimeElement',
       node: { isElement: true, type: 'runtime_element' },
       render: { as: 'section' },
@@ -808,7 +808,7 @@ describe('createPlateRuntimeEditor', () => {
             String(element.type)
           ),
       },
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [
         { children: [{ text: 'wrapped text' }], type: 'runtime_element' },
       ],
@@ -832,8 +832,8 @@ describe('createPlateRuntimeEditor', () => {
     expect(aboveNode.textContent).toContain('wrapped text');
   });
 
-  it('routes createPlateEditor slate-v2 root component overrides', () => {
-    const RuntimePlugin = createSlatePlugin({
+  it('routes createPlateEditor plite root component overrides', () => {
+    const RuntimePlugin = createEditorPlugin({
       key: 'runtimeElement',
       node: { isElement: true, type: 'runtime_element' },
       render: { as: 'section' },
@@ -864,7 +864,7 @@ describe('createPlateRuntimeEditor', () => {
     const editor = createPlateEditor({
       components: { runtimeElement: OverrideElement },
       plugins: [RuntimePlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [
         { children: [{ text: 'override text' }], type: 'runtime_element' },
       ],
@@ -881,15 +881,15 @@ describe('createPlateRuntimeEditor', () => {
     expect(element.textContent).toBe('override text');
   });
 
-  it('routes createPlateEditor slate-v2 root enabled overrides', () => {
-    const RuntimePlugin = createSlatePlugin({
+  it('routes createPlateEditor plite root enabled overrides', () => {
+    const RuntimePlugin = createEditorPlugin({
       key: 'runtimeElement',
       node: { isElement: true, type: 'runtime_element' },
     });
     const editor = createPlateEditor({
       override: { enabled: { runtimeElement: false } },
       plugins: [RuntimePlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [
         { children: [{ text: 'override text' }], type: 'runtime_element' },
       ],
@@ -901,7 +901,7 @@ describe('createPlateRuntimeEditor', () => {
   it('pipes runtime plugin onChange handlers through the v2 provider', async () => {
     const handledValues: Value[] = [];
     const propsOnChange = mock();
-    const RuntimePlugin = createSlatePlugin({
+    const RuntimePlugin = createEditorPlugin({
       handlers: {
         onChange: ({ editor: runtimeEditor, value: currentValue }) => {
           expect((runtimeEditor as PlateRuntimeEditor).id).toBe(
@@ -941,7 +941,7 @@ describe('createPlateRuntimeEditor', () => {
     expect(propsOnChange).not.toHaveBeenCalled();
   });
 
-  it('routes createPlateEditor slate-v2 root onChange handlers', async () => {
+  it('routes createPlateEditor plite root onChange handlers', async () => {
     const handledValues: Value[] = [];
     const editor = createPlateEditor({
       handlers: {
@@ -951,7 +951,7 @@ describe('createPlateRuntimeEditor', () => {
           return true;
         },
       },
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value,
     });
 
@@ -974,7 +974,7 @@ describe('createPlateRuntimeEditor', () => {
     const nextValue: Value = [
       { children: [{ text: 'hook runtime tx' }], type: 'p' },
     ];
-    const TxPlugin = createSlatePlugin({
+    const TxPlugin = createEditorPlugin({
       key: 'txPlugin',
     }).extendTx(() => (tx: EditorUpdateTransaction<Value>) => ({
       replace: () => tx.value.replace({ children: nextValue }),
@@ -989,7 +989,7 @@ describe('createPlateRuntimeEditor', () => {
     const Probe = () => {
       const editor = usePlateEditor<Value, typeof TxPlugin>({
         plugins: [TxPlugin],
-        runtime: 'slate-v2',
+        runtime: 'plite',
         value,
       });
       const assertHookTxInference = (
@@ -1019,8 +1019,8 @@ describe('createPlateRuntimeEditor', () => {
     expect(readRoot()).toEqual(nextValue);
   });
 
-  it('routes createPlateEditor slate-v2 rootPlugin configuration', () => {
-    const RuntimePlugin = createSlatePlugin({
+  it('routes createPlateEditor plite rootPlugin configuration', () => {
+    const RuntimePlugin = createEditorPlugin({
       key: 'runtimeElement',
       node: { isElement: true, type: 'runtime_element' },
       render: { as: 'section' },
@@ -1035,7 +1035,7 @@ describe('createPlateRuntimeEditor', () => {
           .configurePlugin(RuntimePlugin, {
             render: { as: 'article' },
           }),
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [{ children: [{ text: 'configured' }], type: 'runtime_element' }],
     });
 
@@ -1043,9 +1043,9 @@ describe('createPlateRuntimeEditor', () => {
     expect(editor.getPlugin(RuntimePlugin).render?.as).toBe('article');
   });
 
-  it('rejects unsupported createPlateEditor slate-v2 root plugin mutations', () => {
+  it('rejects unsupported createPlateEditor plite root plugin mutations', () => {
     const unsupportedOptions = {
-      runtime: 'slate-v2' as const,
+      runtime: 'plite' as const,
       rootPlugin: (plugin) =>
         plugin.configure({
           extendEditor: () => ({}),
@@ -1061,12 +1061,12 @@ describe('createPlateRuntimeEditor', () => {
     expect(() =>
       createPlateEditor({
         api: { root: { command: () => null } },
-        runtime: 'slate-v2',
+        runtime: 'plite',
         tf: { root: { command: () => null } },
         value,
       } as never)
     ).toThrow(
-      "[Plate] createPlateEditor({ runtime: 'slate-v2' }) does not support these options yet: api."
+      "[Plate] createPlateEditor({ runtime: 'plite' }) does not support these options yet: api."
     );
   });
 
@@ -1097,7 +1097,7 @@ describe('createPlateRuntimeEditor', () => {
     });
   });
 
-  it('mounts under the Slate v2 React provider without the legacy Slate facade', async () => {
+  it('mounts under the Plite React provider without the legacy Plite facade', async () => {
     const nextValue: Value = [
       { children: [{ text: 'changed through provider' }], type: 'p' },
     ];
@@ -1130,7 +1130,7 @@ describe('createPlateRuntimeEditor', () => {
 
     const { getByTestId } = render(
       React.createElement(
-        Slate,
+        Plite,
         {
           editor,
           onValueChange: (currentValue: Value) => values.push(currentValue),
@@ -1158,7 +1158,7 @@ describe('createPlateRuntimeEditor', () => {
     expect(values.at(-1)).toEqual(nextValue);
   });
 
-  it('mounts through the Plate runtime Slate adapter with aboveSlate wrappers', async () => {
+  it('mounts through the Plate runtime Plite adapter with abovePlite wrappers', async () => {
     const nextValue: Value = [
       { children: [{ text: 'changed through adapter' }], type: 'p' },
     ];
@@ -1169,9 +1169,9 @@ describe('createPlateRuntimeEditor', () => {
         { 'data-testid': 'above-slate' },
         children
       );
-    const RuntimePlugin = createSlatePlugin({
+    const RuntimePlugin = createEditorPlugin({
       key: 'runtimeWrapper',
-      render: { aboveSlate: AboveSlate },
+      render: { abovePlite: AboveSlate },
     });
     const editor = createPlateRuntimeEditor({
       initialValue: value,
@@ -1250,7 +1250,7 @@ describe('createPlateRuntimeEditor', () => {
         children
       );
     const hookReadOnlyStates: boolean[] = [];
-    const RuntimePlugin = createSlatePlugin({
+    const RuntimePlugin = createEditorPlugin({
       key: 'editableWrapper',
       render: {
         aboveEditable: AboveEditable,
@@ -1306,7 +1306,7 @@ describe('createPlateRuntimeEditor', () => {
       };
       children?: React.ReactNode;
       editor: PlateRuntimeEditor;
-      element: SlateElement;
+      element: PliteElement;
       path: Path;
       plugin: { key: string };
     }) =>
@@ -1322,7 +1322,7 @@ describe('createPlateRuntimeEditor', () => {
         },
         children
       );
-    const RuntimePlugin = createSlatePlugin({
+    const RuntimePlugin = createEditorPlugin({
       key: 'runtimeElement',
       node: { isElement: true, type: 'runtime_element' },
       render: { node: RuntimeElement },
@@ -1378,11 +1378,11 @@ describe('createPlateRuntimeEditor', () => {
         { 'data-testid': 'content-after-editable' },
         editor.id
       );
-    const RuntimePlugin = createSlatePlugin({
+    const RuntimePlugin = createEditorPlugin({
       key: 'contentWrapper',
       render: {
         aboveEditable: AboveEditable,
-        aboveSlate: AboveSlate,
+        abovePlite: AboveSlate,
         afterEditable: AfterEditable,
         beforeEditable: BeforeEditable,
       },
@@ -1439,10 +1439,10 @@ describe('createPlateRuntimeEditor', () => {
     expect(editor.meta.inputRules.insertText.byTrigger).toEqual({});
   });
 
-  it('resolves plugin metadata without mutating the Slate v2 api proxy', () => {
+  it('resolves plugin metadata without mutating the Plite api proxy', () => {
     const Leaf = () => null;
     const Toolbar = ({ children }: { children: React.ReactNode }) => children;
-    const RuntimePlugin = createSlatePlugin({
+    const RuntimePlugin = createEditorPlugin({
       key: 'runtimePlugin',
       api: { runtimeMethod: () => 'runtime' },
       handlers: { onChange: () => {} },
@@ -1507,19 +1507,19 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('orders dependencies and applies plugin overrides', () => {
-    const FirstPlugin = createSlatePlugin({
+    const FirstPlugin = createEditorPlugin({
       key: 'first',
       priority: 10,
     });
-    const SecondPlugin = createSlatePlugin({
+    const SecondPlugin = createEditorPlugin({
       key: 'second',
       dependencies: ['first'],
       priority: 100,
     });
-    const HiddenPlugin = createSlatePlugin({
+    const HiddenPlugin = createEditorPlugin({
       key: 'hidden',
     });
-    const OverridePlugin = createSlatePlugin({
+    const OverridePlugin = createEditorPlugin({
       key: 'override',
       override: {
         enabled: { hidden: false },
@@ -1543,16 +1543,16 @@ describe('createPlateRuntimeEditor', () => {
     expect(editor.getType('first')).toBe('first_override');
   });
 
-  it('installs plugin node flags as Slate v2 element specs', () => {
-    const InlinePlugin = createSlatePlugin({
+  it('installs plugin node flags as Plite element specs', () => {
+    const InlinePlugin = createEditorPlugin({
       key: 'mention',
       node: { isElement: true, isInline: true, type: 'mention' },
     });
-    const VoidPlugin = createSlatePlugin({
+    const VoidPlugin = createEditorPlugin({
       key: 'image',
       node: { isElement: true, isVoid: true, type: 'image' },
     });
-    const MarkableVoidPlugin = createSlatePlugin({
+    const MarkableVoidPlugin = createEditorPlugin({
       key: 'emoji',
       node: {
         isElement: true,
@@ -1562,7 +1562,7 @@ describe('createPlateRuntimeEditor', () => {
         type: 'emoji',
       },
     });
-    const NonSelectablePlugin = createSlatePlugin({
+    const NonSelectablePlugin = createEditorPlugin({
       key: 'caption',
       node: { isElement: true, isSelectable: false, type: 'caption' },
     });
@@ -1578,13 +1578,13 @@ describe('createPlateRuntimeEditor', () => {
     const mention = {
       children: [{ text: '' }],
       type: 'mention',
-    } as SlateElement;
-    const image = { children: [{ text: '' }], type: 'image' } as SlateElement;
-    const emoji = { children: [{ text: '' }], type: 'emoji' } as SlateElement;
+    } as PliteElement;
+    const image = { children: [{ text: '' }], type: 'image' } as PliteElement;
+    const emoji = { children: [{ text: '' }], type: 'emoji' } as PliteElement;
     const caption = {
       children: [{ text: '' }],
       type: 'caption',
-    } as SlateElement;
+    } as PliteElement;
 
     expect(editor.read((state) => state.schema.isInline(mention))).toBe(true);
     expect(editor.read((state) => state.schema.isVoid(image))).toBe(true);
@@ -1598,7 +1598,7 @@ describe('createPlateRuntimeEditor', () => {
 
   it('resolves configure and functional extension metadata', () => {
     const configuredRule = { target: 'insertText', trigger: '!' };
-    const ExtendedPlugin = createSlatePlugin({
+    const ExtendedPlugin = createEditorPlugin({
       key: 'extended',
       node: { type: 'default_type' },
       options: { count: 1 },
@@ -1650,11 +1650,11 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('lets later plugin config read earlier runtime plugin options', () => {
-    const SourcePlugin = createSlatePlugin({
+    const SourcePlugin = createEditorPlugin({
       key: 'source',
       options: { currentUserId: 'alice' },
     });
-    const DependentPlugin = createSlatePlugin({
+    const DependentPlugin = createEditorPlugin({
       key: 'dependent',
       options: { currentUserId: null as string | null },
     }).configure(({ editor }) => ({
@@ -1673,7 +1673,7 @@ describe('createPlateRuntimeEditor', () => {
 
   it('routes InputRulesPlugin insert transforms through runtime rule buckets', () => {
     const calls: string[] = [];
-    const RulePlugin = createSlatePlugin({
+    const RulePlugin = createEditorPlugin({
       key: 'runtimeRules',
       inputRules: [
         {
@@ -1759,7 +1759,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes AffinityPlugin outward insertText marks through v2 transactions', () => {
-    const BoldPlugin = createSlatePlugin({
+    const BoldPlugin = createEditorPlugin({
       key: 'bold',
       node: { isLeaf: true, type: 'bold' },
       rules: { selection: { affinity: 'outward' } },
@@ -1792,7 +1792,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes AffinityPlugin directional deleteBackward marks through v2 transactions', () => {
-    const BoldPlugin = createSlatePlugin({
+    const BoldPlugin = createEditorPlugin({
       key: 'bold',
       node: { isLeaf: true, type: 'bold' },
       rules: { selection: { affinity: 'directional' } },
@@ -1822,7 +1822,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes AffinityPlugin directional move marks through v2 transactions', () => {
-    const BoldPlugin = createSlatePlugin({
+    const BoldPlugin = createEditorPlugin({
       key: 'bold',
       node: { isLeaf: true, type: 'bold' },
       rules: { selection: { affinity: 'directional' } },
@@ -1854,7 +1854,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('registers plugin api capabilities without legacy api mutation', () => {
-    const ApiPlugin = createSlatePlugin({
+    const ApiPlugin = createEditorPlugin({
       key: 'apiPlugin',
       options: { answer: 42 },
       node: { type: 'api-node' },
@@ -1895,8 +1895,8 @@ describe('createPlateRuntimeEditor', () => {
     ]);
   });
 
-  it('registers global editor api capabilities through Slate v2 extensions', () => {
-    const DebugPlugin = createSlatePlugin({
+  it('registers global editor api capabilities through Plite extensions', () => {
+    const DebugPlugin = createEditorPlugin({
       key: 'debugRuntime',
       options: { prefix: 'runtime' },
     }).extendEditorApi(({ getOption }) => ({
@@ -1938,7 +1938,7 @@ describe('createPlateRuntimeEditor', () => {
     );
   });
 
-  it('uses Slate v2 history for the legacy Plate history plugin route', () => {
+  it('uses Plite history for the legacy Plate history plugin route', () => {
     const editor = createPlateRuntimeEditor({
       initialValue: value,
       plugins: [HistoryPlugin],
@@ -2019,11 +2019,11 @@ describe('createPlateRuntimeEditor', () => {
     expect(editor.dom.currentKeyboardEvent).toBeNull();
   });
 
-  it('pipes SlateReactExtension keyboard handlers through the runtime editable route', async () => {
+  it('pipes PliteReactExtension keyboard handlers through the runtime editable route', async () => {
     const moveLine = mock().mockReturnValue(true);
     const editor = createPlateRuntimeEditor({
       initialValue: value,
-      plugins: [SlateReactExtensionPlugin],
+      plugins: [PliteReactExtensionPlugin],
     });
 
     getRuntimeTransforms(editor).moveLine = moveLine;
@@ -2047,7 +2047,7 @@ describe('createPlateRuntimeEditor', () => {
   it('keeps runtime reset as a v2 value replacement without legacy transform metadata', () => {
     const editor = createPlateRuntimeEditor({
       initialValue: [{ children: [{ text: 'custom' }], type: 'heading' }],
-      plugins: [SlateReactExtensionPlugin],
+      plugins: [PliteReactExtensionPlugin],
     });
 
     act(() => {
@@ -2060,12 +2060,12 @@ describe('createPlateRuntimeEditor', () => {
     expect(editor.read((state) => state.selection.get())).toBeNull();
   });
 
-  it('cleans SlateReactExtension _memo markers through a v2 normalizer', () => {
+  it('cleans PliteReactExtension _memo markers through a v2 normalizer', () => {
     const editor = createPlateRuntimeEditor({
       initialValue: [
         { _memo: 'cached', children: [{ text: 'memoized' }], type: 'p' },
       ],
-      plugins: [SlateReactExtensionPlugin],
+      plugins: [PliteReactExtensionPlugin],
     });
 
     editor.update((tx) => {
@@ -2077,12 +2077,12 @@ describe('createPlateRuntimeEditor', () => {
     ]);
   });
 
-  it('pipes SlateExtension node-change callbacks through v2 operations', () => {
+  it('pipes PliteExtension node-change callbacks through v2 operations', () => {
     const onNodeChange = mock();
     const editor = createPlateRuntimeEditor({
       initialValue: [{ children: [{ text: 'runtime' }], type: 'p' }],
       plugins: [
-        SlateExtensionPlugin.configure({
+        PliteExtensionPlugin.configure({
           options: { onNodeChange },
         }),
       ],
@@ -2100,12 +2100,12 @@ describe('createPlateRuntimeEditor', () => {
     });
   });
 
-  it('pipes SlateExtension text-change callbacks through v2 operations', () => {
+  it('pipes PliteExtension text-change callbacks through v2 operations', () => {
     const onTextChange = mock();
     const editor = createPlateRuntimeEditor({
       initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
       plugins: [
-        SlateExtensionPlugin.configure({
+        PliteExtensionPlugin.configure({
           options: { onTextChange },
         }),
       ],
@@ -2127,7 +2127,7 @@ describe('createPlateRuntimeEditor', () => {
   it('keeps runtime setValue as a v2 value replacement', () => {
     const editor = createPlateRuntimeEditor({
       initialValue: [{ children: [{ text: 'old' }], type: 'p' }],
-      plugins: [SlateExtensionPlugin],
+      plugins: [PliteExtensionPlugin],
     });
 
     getRuntimeTransforms(editor).setValue([
@@ -2155,7 +2155,7 @@ describe('createPlateRuntimeEditor', () => {
           type: 'heading',
         },
       ],
-      plugins: [SlateExtensionPlugin],
+      plugins: [PliteExtensionPlugin],
     });
 
     expect(getRuntimeTransforms(editor).resetBlock({ at: [0] })).toBe(true);
@@ -2182,7 +2182,7 @@ describe('createPlateRuntimeEditor', () => {
           type: 'blockquote',
         },
       ],
-      plugins: [SlateExtensionPlugin],
+      plugins: [PliteExtensionPlugin],
     });
 
     editor.update((tx) => {
@@ -2304,12 +2304,12 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes trigger-combobox plugins through v2 insertText', () => {
-    const TriggerInputPlugin = createSlatePlugin({
+    const TriggerInputPlugin = createEditorPlugin({
       key: 'trigger_input',
       node: { isElement: true, isInline: true, isVoid: true },
     });
     const TriggerComboboxPlugin = Object.assign(
-      createSlatePlugin({
+      createEditorPlugin({
         key: 'triggerCombobox',
         options: {
           trigger: '@',
@@ -2357,7 +2357,7 @@ describe('createPlateRuntimeEditor', () => {
 
   it('falls back to plain text when trigger-combobox gates reject input', () => {
     const TriggerComboboxPlugin = Object.assign(
-      createSlatePlugin({
+      createEditorPlugin({
         key: 'triggerCombobox',
         options: {
           trigger: '@',
@@ -2367,7 +2367,7 @@ describe('createPlateRuntimeEditor', () => {
       { runtimeTriggerCombobox: true }
     );
     const QueryComboboxPlugin = Object.assign(
-      createSlatePlugin({
+      createEditorPlugin({
         key: 'queryCombobox',
         options: {
           trigger: '@',
@@ -2516,7 +2516,7 @@ describe('createPlateRuntimeEditor', () => {
   it('keeps runtime insertExitBreak as a v2 insert transaction', () => {
     const editor = createPlateRuntimeEditor({
       initialValue: [{ children: [{ text: 'test' }], type: 'p' }],
-      plugins: [SlateExtensionPlugin],
+      plugins: [PliteExtensionPlugin],
     });
 
     editor.update((tx) => {
@@ -2537,7 +2537,7 @@ describe('createPlateRuntimeEditor', () => {
   it('keeps runtime insertExitBreak reverse insertion', () => {
     const editor = createPlateRuntimeEditor({
       initialValue: [{ children: [{ text: 'test' }], type: 'p' }],
-      plugins: [SlateExtensionPlugin],
+      plugins: [PliteExtensionPlugin],
     });
 
     editor.update((tx) => {
@@ -2571,8 +2571,8 @@ describe('createPlateRuntimeEditor', () => {
         },
       ],
       plugins: [
-        SlateExtensionPlugin,
-        createSlatePlugin({
+        PliteExtensionPlugin,
+        createEditorPlugin({
           key: 'codeblock',
           node: {
             isElement: true,
@@ -2580,7 +2580,7 @@ describe('createPlateRuntimeEditor', () => {
             type: 'codeblock',
           },
         }),
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'codeline',
           node: {
             isElement: true,
@@ -2610,7 +2610,7 @@ describe('createPlateRuntimeEditor', () => {
     ]);
   });
 
-  it('keeps runtime insertBreak as a Slate v2 break transaction', () => {
+  it('keeps runtime insertBreak as a Plite break transaction', () => {
     const editor = createPlateRuntimeEditor({
       initialValue: [{ children: [{ text: 'runtime' }], type: 'p' }],
     });
@@ -2633,7 +2633,7 @@ describe('createPlateRuntimeEditor', () => {
   it('routes OverridePlugin empty break reset through runtime node transactions', () => {
     const RuntimeOverrideBreakPlugin =
       createRuntimeOverridePlugin(withBreakRules);
-    const HeadingPlugin = createSlatePlugin({
+    const HeadingPlugin = createEditorPlugin({
       key: 'heading',
       node: { isElement: true, type: 'heading' },
       rules: { break: { empty: 'reset' } },
@@ -2656,7 +2656,7 @@ describe('createPlateRuntimeEditor', () => {
   it('preserves Plate lineBreak rules as newline insertion', () => {
     const RuntimeOverrideBreakPlugin =
       createRuntimeOverridePlugin(withBreakRules);
-    const CalloutPlugin = createSlatePlugin({
+    const CalloutPlugin = createEditorPlugin({
       key: 'callout',
       node: { isElement: true, type: 'callout' },
       rules: { break: { default: 'lineBreak' } },
@@ -2683,7 +2683,7 @@ describe('createPlateRuntimeEditor', () => {
   it('routes emptyLineEnd deleteExit break rules through v2 delete and insert transactions', () => {
     const RuntimeOverrideBreakPlugin =
       createRuntimeOverridePlugin(withBreakRules);
-    const CalloutPlugin = createSlatePlugin({
+    const CalloutPlugin = createEditorPlugin({
       key: 'callout',
       node: { isElement: true, type: 'callout' },
       rules: { break: { emptyLineEnd: 'deleteExit' } },
@@ -2711,7 +2711,7 @@ describe('createPlateRuntimeEditor', () => {
   it('resets splitReset continuations after the v2 break transaction', () => {
     const RuntimeOverrideBreakPlugin =
       createRuntimeOverridePlugin(withBreakRules);
-    const HeadingPlugin = createSlatePlugin({
+    const HeadingPlugin = createEditorPlugin({
       key: 'heading',
       node: { isElement: true, type: 'heading' },
       rules: { break: { splitReset: true } },
@@ -2737,7 +2737,7 @@ describe('createPlateRuntimeEditor', () => {
       withBreakRules,
       withDeleteRules
     );
-    const CalloutPlugin = createSlatePlugin({
+    const CalloutPlugin = createEditorPlugin({
       key: 'callout',
       node: { isElement: true, type: 'callout' },
       rules: { delete: { start: 'reset' } },
@@ -2762,7 +2762,7 @@ describe('createPlateRuntimeEditor', () => {
       withBreakRules,
       withDeleteRules
     );
-    const EmptyPlugin = createSlatePlugin({
+    const EmptyPlugin = createEditorPlugin({
       key: 'emptyBlock',
       node: { isElement: true, type: 'emptyBlock' },
       rules: { delete: { empty: 'reset' } },
@@ -2787,7 +2787,7 @@ describe('createPlateRuntimeEditor', () => {
       withBreakRules,
       withDeleteRules
     );
-    const BlockquotePlugin = createSlatePlugin({
+    const BlockquotePlugin = createEditorPlugin({
       key: 'blockquote',
       node: { isElement: true, type: 'blockquote' },
       rules: {
@@ -2831,7 +2831,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('selects the previous keyboard-selectable block void before backward deletion removes it', () => {
-    const VoidBlockPlugin = createSlatePlugin({
+    const VoidBlockPlugin = createEditorPlugin({
       key: 'voidBlock',
       node: { isElement: true, isVoid: true, type: 'voidBlock' },
     });
@@ -2863,7 +2863,7 @@ describe('createPlateRuntimeEditor', () => {
       withBreakRules,
       withDeleteRules
     );
-    const HeadingPlugin = createSlatePlugin({
+    const HeadingPlugin = createEditorPlugin({
       key: 'heading',
       node: { isElement: true, type: 'heading' },
       rules: { delete: { start: 'reset' } },
@@ -2912,10 +2912,10 @@ describe('createPlateRuntimeEditor', () => {
     });
   });
 
-  it('routes OverridePlugin merge removeEmpty rules through the Slate v2 merge query', () => {
+  it('routes OverridePlugin merge removeEmpty rules through the Plite merge query', () => {
     const RuntimeOverrideMergePlugin =
       createRuntimeOverridePlugin(withMergeRules);
-    const ParagraphPlugin = createSlatePlugin({
+    const ParagraphPlugin = createEditorPlugin({
       key: 'paragraph',
       node: { isElement: true, type: 'p' },
       rules: { merge: { removeEmpty: true } },
@@ -2945,7 +2945,7 @@ describe('createPlateRuntimeEditor', () => {
   it('keeps empty custom merge targets by default in the runtime merge query', () => {
     const RuntimeOverrideMergePlugin =
       createRuntimeOverridePlugin(withMergeRules);
-    const CustomPlugin = createSlatePlugin({
+    const CustomPlugin = createEditorPlugin({
       key: 'custom',
       node: { isElement: true, type: 'custom' },
     });
@@ -2974,12 +2974,12 @@ describe('createPlateRuntimeEditor', () => {
   it('lets match override rules veto runtime empty-target merge removal', () => {
     const RuntimeOverrideMergePlugin =
       createRuntimeOverridePlugin(withMergeRules);
-    const ParagraphPlugin = createSlatePlugin({
+    const ParagraphPlugin = createEditorPlugin({
       key: 'paragraph',
       node: { isElement: true, type: 'p' },
       rules: { merge: { removeEmpty: true } },
     });
-    const MatchOverridePlugin = createSlatePlugin({
+    const MatchOverridePlugin = createEditorPlugin({
       key: 'matchOverride',
       node: { isElement: true, type: 'matchOverride' },
       rules: {
@@ -3028,7 +3028,7 @@ describe('createPlateRuntimeEditor', () => {
   it('routes OverridePlugin normalize removeEmpty rules through v2 node normalizers', () => {
     const RuntimeOverrideNormalizePlugin =
       createRuntimeOverridePlugin(withNormalizeRules);
-    const EmptyBlockPlugin = createSlatePlugin({
+    const EmptyBlockPlugin = createEditorPlugin({
       key: 'emptyBlock',
       node: { isElement: true, type: 'emptyBlock' },
       rules: { normalize: { removeEmpty: true } },
@@ -3053,7 +3053,7 @@ describe('createPlateRuntimeEditor', () => {
   it('keeps empty normalized targets by default on the runtime route', () => {
     const RuntimeOverrideNormalizePlugin =
       createRuntimeOverridePlugin(withNormalizeRules);
-    const EmptyBlockPlugin = createSlatePlugin({
+    const EmptyBlockPlugin = createEditorPlugin({
       key: 'emptyBlock',
       node: { isElement: true, type: 'emptyBlock' },
     });
@@ -3078,11 +3078,11 @@ describe('createPlateRuntimeEditor', () => {
   it('lets match override rules force runtime empty-target normalization', () => {
     const RuntimeOverrideNormalizePlugin =
       createRuntimeOverridePlugin(withNormalizeRules);
-    const ParagraphPlugin = createSlatePlugin({
+    const ParagraphPlugin = createEditorPlugin({
       key: 'paragraph',
       node: { isElement: true, type: 'paragraph' },
     });
-    const MatchOverridePlugin = createSlatePlugin({
+    const MatchOverridePlugin = createEditorPlugin({
       key: 'matchOverride',
       node: { isElement: true, type: 'matchOverride' },
       rules: {
@@ -3118,12 +3118,12 @@ describe('createPlateRuntimeEditor', () => {
   it('lets match override rules veto runtime empty-target normalization', () => {
     const RuntimeOverrideNormalizePlugin =
       createRuntimeOverridePlugin(withNormalizeRules);
-    const ParagraphPlugin = createSlatePlugin({
+    const ParagraphPlugin = createEditorPlugin({
       key: 'paragraph',
       node: { isElement: true, type: 'paragraph' },
       rules: { normalize: { removeEmpty: true } },
     });
-    const MatchOverridePlugin = createSlatePlugin({
+    const MatchOverridePlugin = createEditorPlugin({
       key: 'matchOverride',
       node: { isElement: true, type: 'matchOverride' },
       rules: {
@@ -3215,11 +3215,11 @@ describe('createPlateRuntimeEditor', () => {
 
   it('routes ParserPlugin insertData through parser hooks and v2 fragment insertion', () => {
     const preInsert = mock(() => false);
-    const createParagraph = (text: string): SlateElement => ({
+    const createParagraph = (text: string): PliteElement => ({
       children: [{ text }],
       type: 'p',
     });
-    const PlainPlugin = createSlatePlugin({
+    const PlainPlugin = createEditorPlugin({
       key: 'plain',
       parser: {
         format: 'plain',
@@ -3227,7 +3227,7 @@ describe('createPlateRuntimeEditor', () => {
         deserialize: ({ data }) => [createParagraph(data)],
       },
     });
-    const InjectedParserPlugin = createSlatePlugin({
+    const InjectedParserPlugin = createEditorPlugin({
       key: 'plainInjector',
       inject: {
         plugins: {
@@ -3269,7 +3269,7 @@ describe('createPlateRuntimeEditor', () => {
     const nextValue: Value = [
       { children: [{ text: 'changed through tx' }], type: 'p' },
     ];
-    const TxPlugin = createSlatePlugin({
+    const TxPlugin = createEditorPlugin({
       key: 'txPlugin',
     }).extendTx(() => (tx: EditorUpdateTransaction<Value>) => ({
       replace: () => tx.value.replace({ children: nextValue }),
@@ -3312,7 +3312,7 @@ describe('createPlateRuntimeEditor', () => {
 
     const publicEditor = createPlateEditor<Value, typeof TxPlugin>({
       plugins: [TxPlugin],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value,
     });
     const assertPublicTxInference = (
@@ -3343,13 +3343,13 @@ describe('createPlateRuntimeEditor', () => {
     expect(directEditor.read((state) => state.value.root())).toEqual(nextValue);
   });
 
-  it('aggregates shared Plate plugin tx groups into one Slate runtime group', () => {
-    const FirstPlugin = createSlatePlugin({
+  it('aggregates shared Plate plugin tx groups into one Plite runtime group', () => {
+    const FirstPlugin = createEditorPlugin({
       key: 'firstTx',
     }).extendTxGroup('insert', () => () => ({
       first: () => 'first',
     }));
-    const SecondPlugin = createSlatePlugin({
+    const SecondPlugin = createEditorPlugin({
       key: 'secondTx',
     }).extendTxGroup('insert', () => () => ({
       second: () => 'second',
@@ -3369,11 +3369,11 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('resolves nested configurePlugin metadata', () => {
-    const ChildPlugin = createSlatePlugin({
+    const ChildPlugin = createEditorPlugin({
       key: 'child',
       options: { count: 1, label: 'child' },
     });
-    const ParentPlugin = createSlatePlugin({
+    const ParentPlugin = createEditorPlugin({
       key: 'parent',
       plugins: [ChildPlugin],
     }).configurePlugin(ChildPlugin, {
@@ -3392,7 +3392,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('applies runtime transformInitialValue plugins in plugin order', () => {
-    const FirstPlugin = createSlatePlugin({
+    const FirstPlugin = createEditorPlugin({
       key: 'firstInitialValue',
       transformInitialValue: ({ value: initialValue }) =>
         initialValue.map((node) => ({
@@ -3400,7 +3400,7 @@ describe('createPlateRuntimeEditor', () => {
           count: ((node as { count?: number }).count ?? 0) + 1,
         })),
     });
-    const SecondPlugin = createSlatePlugin({
+    const SecondPlugin = createEditorPlugin({
       key: 'secondInitialValue',
       transformInitialValue: ({ value: initialValue }) =>
         initialValue.map((node) => ({
@@ -3420,7 +3420,7 @@ describe('createPlateRuntimeEditor', () => {
 
   it('skips runtime transformInitialValue for read-only editOnly plugins', () => {
     const callCount = mock();
-    const RuntimePlugin = createSlatePlugin({
+    const RuntimePlugin = createEditorPlugin({
       key: 'skipInitialValue',
       editOnly: { transformInitialValue: true },
       transformInitialValue: ({ value: initialValue }) => {
@@ -3445,7 +3445,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('throws when a runtime transformInitialValue plugin returns undefined', () => {
-    const RuntimePlugin = createSlatePlugin({
+    const RuntimePlugin = createEditorPlugin({
       key: 'badInitialValue',
       transformInitialValue: (() => {}) as never,
     });
@@ -3460,7 +3460,7 @@ describe('createPlateRuntimeEditor', () => {
 
   it('keeps runtime init as a v2 lifecycle value replacement', () => {
     const onReady = mock();
-    const RuntimePlugin = createSlatePlugin({
+    const RuntimePlugin = createEditorPlugin({
       key: 'runtimeInitValue',
       transformInitialValue: ({ value: initialValue }) =>
         initialValue.map((node) => ({
@@ -3470,7 +3470,7 @@ describe('createPlateRuntimeEditor', () => {
     });
     const editor = createPlateRuntimeEditor({
       initialValue: [{ children: [{ text: 'seed' }], type: 'p' }],
-      plugins: [SlateExtensionPlugin, RuntimePlugin],
+      plugins: [PliteExtensionPlugin, RuntimePlugin],
     });
 
     expect(
@@ -3507,7 +3507,7 @@ describe('createPlateRuntimeEditor', () => {
     const nextValue = [{ children: [{ text: 'async' }], type: 'p' }];
     const editor = createPlateRuntimeEditor({
       initialValue: [{ children: [{ text: 'seed' }], type: 'p' }],
-      plugins: [SlateExtensionPlugin],
+      plugins: [PliteExtensionPlugin],
     });
 
     expect(
@@ -3531,7 +3531,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('rejects plugins that need global command-surface packets', () => {
-    const CommandPlugin = createSlatePlugin({
+    const CommandPlugin = createEditorPlugin({
       key: 'command',
     });
     CommandPlugin.__apiExtensions.push({
@@ -3549,7 +3549,7 @@ describe('createPlateRuntimeEditor', () => {
       })
     ).toThrow('extends editor api/transforms');
 
-    const ExtensionPlugin = createSlatePlugin({
+    const ExtensionPlugin = createEditorPlugin({
       key: 'extension',
     }).extend(() => ({
       extendEditor: (editor: unknown) => editor,
@@ -3562,7 +3562,7 @@ describe('createPlateRuntimeEditor', () => {
       })
     ).toThrow('uses extendEditor');
 
-    const TxPlugin = createSlatePlugin({
+    const TxPlugin = createEditorPlugin({
       key: 'transform',
     }).extendTx(() => (tx) => ({
       replace: () =>
@@ -3584,7 +3584,7 @@ describe('createPlateRuntimeEditor', () => {
 
   it('lets plugin-specific transform facades wrap tx groups', () => {
     let wrapped = false;
-    const FacadePlugin = createSlatePlugin({
+    const FacadePlugin = createEditorPlugin({
       key: 'facade',
     })
       .extendTx(() => (tx) => ({

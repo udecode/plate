@@ -138,12 +138,12 @@ When `true`, indicates that the plugin's elements are primarily containers for o
 <APISubListItem parent="rules" name="selection.affinity" type="'default' | 'directional' | 'outward' | 'hard'" optional>
 Defines the selection behavior at the boundaries of nodes. See [Plugin Rules](/docs/plugin-rules#rulesselection).
 
-- `'default'`: Uses Slate's default behavior
+- `'default'`: Uses Plite's default behavior
 - `'directional'`: Selection affinity is determined by the direction of cursor movement. Maintains inward or outward affinity based on approach
 - `'outward'`: Forces outward affinity. Typing at the edge of a mark will not apply the mark to new text
 - `'hard'`: Creates a 'hard' edge that requires two key presses to move across. Uses offset-based navigation
 
-- **Default:** `undefined` (Slate's default behavior)
+- **Default:** `undefined` (Plite's default behavior)
 </APISubListItem>
 <APISubListItem parent="node" name="isMarkableVoid" type="boolean" optional>
 Indicates if this plugin's void elements should be markable.
@@ -232,13 +232,13 @@ Specifies the type identifier for this plugin's nodes.
 React component used to render this plugin's nodes.
 </APISubListItem>
 <APISubListItem parent="node" name="leafProps" type="LeafNodeProps<WithAnyKey<C>>" optional>
-Override `data-slate-leaf` element attributes.
+Override `data-plite-leaf` element attributes.
 </APISubListItem>
 <APISubListItem parent="node" name="props" type="NodeProps<WithAnyKey<C>>" optional>
 Override node attributes.
 </APISubListItem>
 <APISubListItem parent="node" name="textProps" type="TextNodeProps<WithAnyKey<C>>" optional>
-Override `data-slate-node="text"` element attributes.
+Override `data-plite-node="text"` element attributes.
 </APISubListItem>
 </APISubList>
 </APIItem>
@@ -281,13 +281,13 @@ Defines how the plugin renders components.
 
 <APISubList>
 <APISubListItem parent="render" name="aboveEditable" type="Component" optional>
-Component rendered above the Editable component but inside the Slate wrapper.
+Component rendered above the Editable component but inside the Plite wrapper.
 </APISubListItem>
 <APISubListItem parent="render" name="aboveNodes" type="RenderNodeWrapper<WithAnyKey<C>>" optional>
 Create a function that generates a parent React node for all other plugins' node components.
 </APISubListItem>
-<APISubListItem parent="render" name="aboveSlate" type="Component" optional>
-Component rendered above the Slate wrapper.
+<APISubListItem parent="render" name="abovePlite" type="Component" optional>
+Component rendered above the Plite wrapper.
 </APISubListItem>
 <APISubListItem parent="render" name="afterEditable" type="EditableSiblingComponent" optional>
 Renders a component after the Editable component.
@@ -350,11 +350,11 @@ Property used by Plate to decorate editor ranges.
 </APIItem>
 
 <APIItem name="extendEditor" type="ExtendEditor<WithAnyKey<C>>" optional>
-Function to extend the editor instance. Used primarily for integrating legacy Slate plugins that need direct editor mutation. Only one `extendEditor` is allowed per plugin.
+Function to extend the editor instance. Used primarily for integrating legacy Plite plugins that need direct editor mutation. Only one `extendEditor` is allowed per plugin.
 
 ```ts
 extendEditor: ({ editor }) => {
-  // Example: Integrating a legacy Slate plugin
+  // Example: Integrating a legacy Plite plugin
   return withYjs(editor);
 }
 ```

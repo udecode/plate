@@ -26,11 +26,14 @@ export const useCaptionTextareaFocus = (
   const focusCaptionPath = usePluginOption(CaptionPlugin, 'focusEndPath');
 
   React.useEffect(() => {
-    if (focusCaptionPath && path && textareaRef.current) {
-      if (PathApi.equals(path, focusCaptionPath)) {
-        textareaRef.current.focus();
-        editor.setOption(CaptionPlugin, 'focusEndPath', null);
-      }
+    if (
+      focusCaptionPath &&
+      path &&
+      textareaRef.current &&
+      PathApi.equals(path, focusCaptionPath)
+    ) {
+      textareaRef.current.focus();
+      editor.setOption(CaptionPlugin, 'focusEndPath', null);
     }
   }, [editor, focusCaptionPath, path, textareaRef]);
 };

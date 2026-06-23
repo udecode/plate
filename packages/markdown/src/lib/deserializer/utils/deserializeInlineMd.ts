@@ -1,4 +1,4 @@
-import { type Descendant, type SlateEditor, ElementApi } from 'platejs';
+import { type Descendant, type BasePlateEditor, ElementApi } from 'platejs';
 
 import type { DeserializeMdOptions } from '../deserializeMd';
 import type { MarkdownConfig } from '../../MarkdownPlugin';
@@ -9,7 +9,7 @@ const LEADING_SPACES_REGEX = /^\s*/;
 const TRAILING_SPACES_REGEX = /\s*$/;
 
 export const deserializeInlineMd = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   text: string,
   options?: DeserializeMdOptions
 ) => {

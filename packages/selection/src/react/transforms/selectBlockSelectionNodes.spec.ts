@@ -1,11 +1,11 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { selectBlockSelectionNodes } from './selectBlockSelectionNodes';
 
 describe('selectBlockSelectionNodes', () => {
   it('sets the editor selection through the editor update transaction', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BlockSelectionPlugin],
       value: [
         {

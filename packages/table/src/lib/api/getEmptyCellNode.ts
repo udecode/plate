@@ -1,12 +1,12 @@
-import type { Element } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Element } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 import type { CreateCellOptions } from '../types';
 
 export const getEmptyCellNode = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { children, header, row }: CreateCellOptions = {}
 ) => {
   const createBlock = (

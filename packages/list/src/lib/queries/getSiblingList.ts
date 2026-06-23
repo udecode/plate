@@ -1,5 +1,5 @@
-import type { Element, NodeEntry, Text } from '@platejs/slate';
-import type { SlateEditor } from 'platejs';
+import type { Element, NodeEntry, Text } from '@platejs/plite';
+import type { BasePlateEditor } from 'platejs';
 
 import { isDefined, KEYS } from 'platejs';
 
@@ -33,7 +33,7 @@ export type GetSiblingListOptions<N extends Element = Element> = {
  * have the same listStyleType.
  */
 export const getSiblingList = <N extends Element = Element>(
-  _editor: SlateEditor,
+  _editor: BasePlateEditor,
   [node, path]: NodeEntry<Element>,
   {
     breakOnEqIndentNeqListStyleType = true,

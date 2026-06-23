@@ -1,6 +1,6 @@
 import { type Path, NodeApi } from '@platejs/plite';
 
-import type { PliteEditor } from '../../../editor';
+import type { BasePlateEditor } from '../../../editor';
 
 import { getCurrentRuntimeTransforms } from '../../../../internal/currentRuntimeBridge';
 import { NodeIdPlugin } from '../../node-id/NodeIdPlugin';
@@ -10,7 +10,10 @@ import { BaseParagraphPlugin } from '../../paragraph';
  * Reset the current block to a paragraph, removing all properties except the
  * configured node id key and type.
  */
-export const resetBlock = (editor: PliteEditor, { at }: { at?: Path } = {}) => {
+export const resetBlock = (
+  editor: BasePlateEditor,
+  { at }: { at?: Path } = {}
+) => {
   const entry = editor.api.block({ at });
   if (!entry?.[0]) return;
 

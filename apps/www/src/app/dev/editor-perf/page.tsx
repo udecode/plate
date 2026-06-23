@@ -25,7 +25,7 @@ import {
   SuperscriptPlugin,
   UnderlinePlugin,
 } from '@platejs/basic-nodes/react';
-import type { Element as SlateElement } from '@platejs/slate';
+import type { Element as PliteElement } from '@platejs/plite';
 import {
   ChunkingPlugin,
   normalizeNodeId,
@@ -42,8 +42,8 @@ import {
   PlateContent,
   PlateElement,
   PlateLeaf,
-  PlateSlate,
-  Slate,
+  Plite,
+  Plite,
   createAtomStore,
   createZustandStore,
   createPlateEditor,
@@ -388,7 +388,7 @@ type PluginCensusEntryMetrics = Record<
 type CoreMountCaseId =
   | 'provider-only'
   | 'provider-only-plain-context'
-  | 'slate-only'
+  | 'plite-only'
   | 'editable-props-only'
   | 'editable-static'
   | 'editable-element-benchmark-plate-element-no-block-id'
@@ -492,8 +492,8 @@ type BenchmarkEditorHandle = {
 };
 
 type BenchElementStoreState = {
-  element: SlateElement | null;
-  entry: [SlateElement, Path] | null;
+  element: PliteElement | null;
+  entry: [PliteElement, Path] | null;
   path: Path | null;
 };
 
@@ -504,8 +504,8 @@ const CHUNK_SIZE_OPTIONS = Array.from(
 const FANOUT_SUBSCRIBER_OPTIONS = [0, 25, 100, 250, 500, 1000];
 const BenchElementContext = React.createContext<any>(null);
 const BenchZustandContext = React.createContext<any>(null);
-const benchJotaiElementAtom = createJotaiAtom<SlateElement | null>(null);
-const benchJotaiEntryAtom = createJotaiAtom<[SlateElement, Path] | null>(null);
+const benchJotaiElementAtom = createJotaiAtom<PliteElement | null>(null);
+const benchJotaiEntryAtom = createJotaiAtom<[PliteElement, Path] | null>(null);
 const benchJotaiPathAtom = createJotaiAtom<Path | null>(null);
 const benchJotaiAtoms = {
   element: benchJotaiElementAtom,
@@ -528,10 +528,10 @@ const { BenchElementNoEffectProvider } = createAtomStore(
 const SCENARIOS: Scenario[] = [
   {
     description:
-      'Bare Slate React editor with the same document and chunking knobs.',
+      'Bare Plite React editor with the same document and chunking knobs.',
     id: 'slate',
     kind: 'slate',
-    label: 'Slate baseline',
+    label: 'Plite baseline',
     plugins: 'none',
   },
   {
@@ -726,8 +726,8 @@ function BenchElementProviderPropEffect({
   path,
   scope,
 }: React.PropsWithChildren<{
-  element: SlateElement;
-  entry: [SlateElement, Path];
+  element: PliteElement;
+  entry: [PliteElement, Path];
   path: Path;
   scope?: string;
 }>) {
@@ -933,7 +933,7 @@ function BenchRenderNodeHookElementFromProvider({
   attributes: Record<string, unknown>;
   children: React.ReactNode;
 }) {
-  const element = useElement<SlateElement>();
+  const element = useElement<PliteElement>();
   const path = usePath();
   const pathDepth = path.length;
 
@@ -1145,25 +1145,25 @@ function BenchRenderNodeSelectorElement({
 const CORE_MOUNT_CASES: CoreMountCase[] = [
   {
     description:
-      'Plate provider and jotai-x store hydration only. No Slate tree or editable hook work.',
+      'Plate provider and jotai-x store hydration only. No Plite tree or editable hook work.',
     id: 'provider-only',
     label: 'Provider only',
   },
   {
     description:
-      'Provider plus PlateSlate and useSlateProps. No Editable or editable-props hook.',
-    id: 'slate-only',
-    label: 'PlateSlate only',
+      'Provider plus Plite and usePliteProps. No Editable or editable-props hook.',
+    id: 'plite-only',
+    label: 'Plite only',
   },
   {
     description:
-      'Provider plus useEditableProps only. This isolates the editable-props hook stack without Slate or Editable mount.',
+      'Provider plus useEditableProps only. This isolates the editable-props hook stack without Plite or Editable mount.',
     id: 'editable-props-only',
     label: 'useEditableProps only',
   },
   {
     description:
-      'Provider plus PlateSlate and Editable with direct static props. No useEditableProps and no PlateContent effect stack.',
+      'Provider plus Plite and Editable with direct static props. No useEditableProps and no PlateContent effect stack.',
     id: 'editable-static',
     label: 'Editable static props',
   },
@@ -1199,13 +1199,13 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
   },
   {
     description:
-      'PlateElement with just the resolved plugin ref and Slate class injection, but no full getEditorPlugin context and no getRenderNodeProps. This isolates whether the plugin object alone is enough for the plain fast path.',
+      'PlateElement with just the resolved plugin ref and Plite class injection, but no full getEditorPlugin context and no getRenderNodeProps. This isolates whether the plugin object alone is enough for the plain fast path.',
     id: 'editable-element-plate-element-plugin-only-no-provider',
     label: 'Editable + PlateElement + plugin',
   },
   {
     description:
-      'PlateElement with cached plugin context and Slate class injection, but still no ElementProvider or getRenderNodeProps. This isolates plugin-context prop weight without node-prop composition.',
+      'PlateElement with cached plugin context and Plite class injection, but still no ElementProvider or getRenderNodeProps. This isolates plugin-context prop weight without node-prop composition.',
     id: 'editable-element-plate-element-plugin-context-no-provider',
     label: 'Editable + PlateElement + plugin ctx',
   },
@@ -1223,7 +1223,7 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
   },
   {
     description:
-      'A bare plain-element lower bound for paragraph nodes: direct tag output with Slate class and no hook-driven path or readOnly plumbing. This isolates the remaining dispatch tax in the real fast path.',
+      'A bare plain-element lower bound for paragraph nodes: direct tag output with Plite class and no hook-driven path or readOnly plumbing. This isolates the remaining dispatch tax in the real fast path.',
     id: 'editable-element-pipe-bare-plain-fast-path',
     label: 'Editable + bare plain fast path',
   },
@@ -1576,7 +1576,7 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
   },
   {
     description:
-      'Provider plus PlateSlate, useSlateProps, useEditableProps, and Editable mount. No PlateContent effect stack.',
+      'Provider plus Plite, usePliteProps, useEditableProps, and Editable mount. No PlateContent effect stack.',
     id: 'minimal-editable',
     label: 'Minimal editable',
   },
@@ -1589,14 +1589,14 @@ const CORE_MOUNT_CASES: CoreMountCase[] = [
 ];
 
 function buildElementPathMap(value: Value) {
-  const pathMap = new WeakMap<SlateElement, number[]>();
+  const pathMap = new WeakMap<PliteElement, number[]>();
 
   const visit = (nodes: Descendant[], parentPath: number[] = []) => {
     nodes.forEach((node, index) => {
       if (!('type' in node)) return;
 
       const path = [...parentPath, index];
-      const element = node as SlateElement;
+      const element = node as PliteElement;
 
       pathMap.set(element, path);
       visit(element.children as Descendant[], path);
@@ -2016,7 +2016,7 @@ function BenchmarkElement({
     contentVisibility: elementContentVisibility ? ('auto' as const) : undefined,
   };
 
-  switch ((element as SlateElement).type) {
+  switch ((element as PliteElement).type) {
     case 'h1':
       return (
         <h1
@@ -2046,7 +2046,7 @@ function BenchmarkPlateElement({
   attributes: Record<string, unknown>;
   children: React.ReactNode;
   editor: any;
-  element: SlateElement;
+  element: PliteElement;
   includeBlockId?: boolean;
 }) {
   const blockId =
@@ -2056,8 +2056,8 @@ function BenchmarkPlateElement({
 
   return (
     <div
-      data-slate-node="element"
-      data-slate-inline={(attributes as any)['data-slate-inline']}
+      data-plite-node="element"
+      data-plite-inline={(attributes as any)['data-plite-inline']}
       data-block-id={blockId}
       {...attributes}
       style={
@@ -2081,7 +2081,7 @@ function BenchmarkPlateElementNodeAttributes({
   attributes: Record<string, unknown>;
   children: React.ReactNode;
   editor: any;
-  element: SlateElement;
+  element: PliteElement;
 }) {
   const attributes = useNodeAttributes({
     attributes: rawAttributes,
@@ -2091,8 +2091,8 @@ function BenchmarkPlateElementNodeAttributes({
 
   return (
     <div
-      data-slate-node="element"
-      data-slate-inline={(attributes as any)['data-slate-inline']}
+      data-plite-node="element"
+      data-plite-inline={(attributes as any)['data-plite-inline']}
       data-block-id={blockId}
       {...attributes}
       style={
@@ -2120,8 +2120,8 @@ function BenchmarkMountedBlockElement({
 
   return (
     <div
-      data-slate-node="element"
-      data-slate-inline={(attributes as any)['data-slate-inline']}
+      data-plite-node="element"
+      data-plite-inline={(attributes as any)['data-plite-inline']}
       data-block-id={mounted ? blockId : undefined}
       {...attributes}
       style={
@@ -2241,14 +2241,14 @@ function SlateScenarioEditor({
 
   return (
     <div ref={containerRef} className="h-full overflow-auto p-4">
-      <Slate editor={editor as any} initialValue={value} onChange={() => {}}>
+      <Plite editor={editor as any} initialValue={value} onChange={() => {}}>
         <Editable
           className="min-h-[70vh] outline-none"
           renderChunk={renderChunk as any}
           renderElement={renderElement as any}
           spellCheck={false}
         />
-      </Slate>
+      </Plite>
     </div>
   );
 }
@@ -2344,7 +2344,7 @@ function PrebuiltScenarioEditor({
   if (scenario.kind === 'slate') {
     return (
       <div className="h-full overflow-auto p-4">
-        <Slate
+        <Plite
           editor={editor as any}
           initialValue={(editor.children ?? []) as any}
           onChange={() => {}}
@@ -2355,7 +2355,7 @@ function PrebuiltScenarioEditor({
             renderElement={renderElement as any}
             spellCheck={false}
           />
-        </Slate>
+        </Plite>
       </div>
     );
   }
@@ -2404,7 +2404,7 @@ function PluginCensusEditorSurface({
   if (scenarioId === 'slate') {
     return (
       <div className="h-full overflow-auto p-4">
-        <Slate
+        <Plite
           editor={editor as any}
           initialValue={(editor.children ?? []) as any}
           onChange={() => {}}
@@ -2415,7 +2415,7 @@ function PluginCensusEditorSurface({
             renderElement={renderElement as any}
             spellCheck={false}
           />
-        </Slate>
+        </Plite>
       </div>
     );
   }
@@ -2700,12 +2700,12 @@ function MinimalEditableMount({
   }
 
   return (
-    <PlateSlate id={id}>
+    <Plite id={id}>
       <Editable
         className="min-h-[70vh] outline-none"
         {...(editableProps as any)}
       />
-    </PlateSlate>
+    </Plite>
   );
 }
 
@@ -2917,14 +2917,14 @@ function BenchmarkEditableMount({
     if (!elementBenchmarkMode) return;
 
     return (props: RenderElementProps) => {
-      const element = props.element as SlateElement;
+      const element = props.element as PliteElement;
       const path =
         pathMap.get(element) ?? ((editor as any).api.findPath(element) as any);
       const elementType = element.type as string | undefined;
       const elementPlugin = elementType
         ? editor.getPlugin({ key: elementType as any })
         : undefined;
-      const elementClassName = elementType ? `slate-${elementType}` : undefined;
+      const elementClassName = elementType ? `plite-${elementType}` : undefined;
       const baseAttributes = {
         ...(props.attributes as any),
         className:
@@ -3091,7 +3091,7 @@ function BenchmarkEditableMount({
       if (elementBenchmarkMode === 'pipe-bare-plain-fast-path') {
         if (elementPlugin?.node.isElement) {
           const typeClass = elementPlugin.node.type
-            ? `slate-${elementPlugin.node.type}`
+            ? `plite-${elementPlugin.node.type}`
             : undefined;
           const attributes = {
             ...baseAttributes,
@@ -3104,8 +3104,8 @@ function BenchmarkEditableMount({
 
           return (
             <Tag
-              data-slate-inline={attributes['data-slate-inline']}
-              data-slate-node="element"
+              data-plite-inline={attributes['data-plite-inline']}
+              data-plite-node="element"
               {...attributes}
               style={
                 {
@@ -3171,8 +3171,8 @@ function BenchmarkEditableMount({
 
         return (
           <Tag
-            data-slate-inline={(baseAttributes as any)['data-slate-inline']}
-            data-slate-node="element"
+            data-plite-inline={(baseAttributes as any)['data-plite-inline']}
+            data-plite-node="element"
             {...(baseAttributes as any)}
             style={
               {
@@ -3860,7 +3860,7 @@ function BenchmarkEditableMount({
     );
 
     return (props: RenderElementProps) => {
-      const element = props.element as SlateElement;
+      const element = props.element as PliteElement;
 
       if (element.type !== paragraphPlugin.node.type) {
         return renderElement(props);
@@ -3974,7 +3974,7 @@ function BenchmarkEditableMount({
   );
 
   return (
-    <PlateSlate id={id}>
+    <Plite id={id}>
       <Editable
         className="min-h-[70vh] outline-none"
         readOnly={false}
@@ -3984,7 +3984,7 @@ function BenchmarkEditableMount({
         renderText={finalRenderText as any}
         spellCheck={false}
       />
-    </PlateSlate>
+    </Plite>
   );
 }
 
@@ -4004,10 +4004,10 @@ function CoreMountSurface({
       <Plate editor={editor as any}>
         {caseId === 'provider-only' ? (
           <div className="min-h-[70vh]" />
-        ) : caseId === 'slate-only' ? (
-          <PlateSlate id={id}>
+        ) : caseId === 'plite-only' ? (
+          <Plite id={id}>
             <div />
-          </PlateSlate>
+          </Plite>
         ) : caseId === 'editable-props-only' ? (
           <EditablePropsProbe config={config} />
         ) : caseId === 'editable-static' ? (
@@ -4643,7 +4643,7 @@ function PluginCensusCard({
             <div className="mb-2 font-medium capitalize">{lane}</div>
             <div className="space-y-1 font-mono text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Slate</span>
+                <span className="text-muted-foreground">Plite</span>
                 <span>
                   {metrics[lane].slate
                     ? `${metrics[lane].slate.mean.toFixed(2)} ms`
@@ -5279,10 +5279,10 @@ export default function EditorPerfPage() {
           ? createScenarioMountedEditor({
               config,
               scenario: {
-                description: 'Slate baseline for plugin census.',
+                description: 'Plite baseline for plugin census.',
                 id: 'slate',
                 kind: 'slate',
-                label: 'Slate',
+                label: 'Plite',
                 plugins: 'none',
               },
               value,
@@ -6144,7 +6144,7 @@ export default function EditorPerfPage() {
   return (
     <main className="container mx-auto space-y-6 p-8">
       <section className="space-y-3">
-        <h1 className="font-bold text-3xl">Plate vs Slate Editor Perf</h1>
+        <h1 className="font-bold text-3xl">Plate vs Plite Editor Perf</h1>
         <p className="max-w-4xl text-muted-foreground">
           One scenario is mounted at a time. That is intentional. Mounting four
           huge editors at once would make the numbers useless.
@@ -6599,7 +6599,7 @@ export default function EditorPerfPage() {
           <div className="rounded-xl border bg-background p-4">
             <h2 className="font-semibold">Plate core mount dissection</h2>
             <p className="mt-2 text-muted-foreground text-sm">
-              This lane peels Plate mount cost stage by stage: provider, Slate
+              This lane peels Plate mount cost stage by stage: provider, Plite
               wrapper, editable-props hook stack, minimal editable mount, then
               full <code>PlateContent</code>. If <code>jotai-x</code> were the
               whole story, the provider-only step would already be ugly.

@@ -14,78 +14,78 @@
     "[Node.js](/docs/installation/node)",
     "[Local Docs](/docs/installation/docs)",
     "[MCP](/docs/installation/mcp)",
-    "---Slate---",
-    "[Overview](/docs/slate)",
-    "[Examples](/examples/slate/richtext)",
-    "[Bookmark API](/docs/slate/api/locations/bookmark)",
-    "[Location API](/docs/slate/api/locations/location)",
-    "[PathRef API](/docs/slate/api/locations/path-ref)",
-    "[Path API](/docs/slate/api/locations/path)",
-    "[PointEntry API](/docs/slate/api/locations/point-entry)",
-    "[PointRef API](/docs/slate/api/locations/point-ref)",
-    "[Point API](/docs/slate/api/locations/point)",
-    "[RangeRef API](/docs/slate/api/locations/range-ref)",
-    "[Range API](/docs/slate/api/locations/range)",
-    "[Location Types APIs](/docs/slate/api/locations)",
-    "[Span API](/docs/slate/api/locations/span)",
-    "[Editor](/docs/slate/api/nodes/editor)",
-    "[Element API](/docs/slate/api/nodes/element)",
-    "[NodeEntry API](/docs/slate/api/nodes/node-entry)",
-    "[Node API](/docs/slate/api/nodes/node)",
-    "[Node Types APIs](/docs/slate/api/nodes)",
-    "[Text API](/docs/slate/api/nodes/text)",
-    "[Operation API](/docs/slate/api/operations/operation)",
-    "[Operation Types](/docs/slate/api/operations)",
-    "[Debug Value Scrubbing](/docs/slate/api/scrubber)",
-    "[Transforms API](/docs/slate/api/transforms)",
-    "[Interfaces](/docs/slate/concepts/01-interfaces)",
-    "[Nodes](/docs/slate/concepts/02-nodes)",
-    "[Locations](/docs/slate/concepts/03-locations)",
-    "[Transforms](/docs/slate/concepts/04-transforms)",
-    "[Operations](/docs/slate/concepts/05-operations)",
-    "[Commands](/docs/slate/concepts/06-commands)",
-    "[Editor](/docs/slate/concepts/07-editor)",
-    "[Extensions](/docs/slate/concepts/08-extensions)",
-    "[Rendering](/docs/slate/concepts/09-rendering)",
-    "[Serializing](/docs/slate/concepts/10-serializing)",
-    "[Normalizing](/docs/slate/concepts/11-normalizing)",
-    "[Using TypeScript](/docs/slate/concepts/12-typescript)",
-    "[Roots](/docs/slate/concepts/13-roots)",
-    "[Document State](/docs/slate/concepts/14-document-state)",
-    "[Contributing](/docs/slate/general/contributing)",
-    "[Docs Proof Map](/docs/slate/general/docs-proof-map)",
-    "[FAQ](/docs/slate/general/faq)",
-    "[Resources](/docs/slate/general/resources)",
-    "[Slate Browser](/docs/slate/libraries/slate-browser)",
-    "[Slate DOM](/docs/slate/libraries/slate-dom)",
-    "[History Editor API](/docs/slate/libraries/slate-history/history-editor)",
-    "[History Extension Setup](/docs/slate/libraries/slate-history/history-extension-setup)",
-    "[History](/docs/slate/libraries/slate-history/history)",
-    "[Slate History](/docs/slate/libraries/slate-history)",
-    "[Slate Hyperscript](/docs/slate/libraries/slate-hyperscript)",
-    "[Slate Layout](/docs/slate/libraries/slate-layout)",
-    "[Annotations](/docs/slate/libraries/slate-react/annotations)",
-    "[DOM Coverage Boundaries](/docs/slate/libraries/slate-react/dom-coverage-boundaries)",
-    "[Editable Component](/docs/slate/libraries/slate-react/editable)",
-    "[Slate React Event Handling](/docs/slate/libraries/slate-react/event-handling)",
-    "[Virtualized Rendering](/docs/slate/libraries/slate-react/experimental-virtualized-rendering)",
-    "[Slate React Hooks](/docs/slate/libraries/slate-react/hooks)",
-    "[React Editor Setup](/docs/slate/libraries/slate-react/react-editor-setup)",
-    "[React Editor](/docs/slate/libraries/slate-react/react-editor)",
-    "[Slate React](/docs/slate/libraries/slate-react)",
-    "[Slate Component](/docs/slate/libraries/slate-react/slate)",
-    "[Slate Yjs](/docs/slate/libraries/slate-yjs)",
-    "[Slate](/docs/slate/libraries/slate)",
-    "[Why This Fork](/docs/slate/why-this-fork)",
-    "[Migration](/docs/slate/migration)",
-    "[Installing Slate](/docs/slate/walkthroughs/01-installing-slate)",
-    "[Adding Event Handlers](/docs/slate/walkthroughs/02-adding-event-handlers)",
-    "[Defining Custom Elements](/docs/slate/walkthroughs/03-defining-custom-elements)",
-    "[Applying Custom Formatting](/docs/slate/walkthroughs/04-applying-custom-formatting)",
-    "[Executing Commands](/docs/slate/walkthroughs/05-executing-commands)",
-    "[Saving to a Database](/docs/slate/walkthroughs/06-saving-to-a-database)",
-    "[Operation Replay Substrate](/docs/slate/walkthroughs/07-operation-replay-substrate)",
-    "[Improving Performance](/docs/slate/walkthroughs/09-performance)",
+    "---Plite---",
+    "[Overview](/docs/plite)",
+    "[Examples](/examples/plite/richtext)",
+    "[Bookmark API](/docs/plite/api/locations/bookmark)",
+    "[Location API](/docs/plite/api/locations/location)",
+    "[PathRef API](/docs/plite/api/locations/path-ref)",
+    "[Path API](/docs/plite/api/locations/path)",
+    "[PointEntry API](/docs/plite/api/locations/point-entry)",
+    "[PointRef API](/docs/plite/api/locations/point-ref)",
+    "[Point API](/docs/plite/api/locations/point)",
+    "[RangeRef API](/docs/plite/api/locations/range-ref)",
+    "[Range API](/docs/plite/api/locations/range)",
+    "[Location Types APIs](/docs/plite/api/locations)",
+    "[Span API](/docs/plite/api/locations/span)",
+    "[Editor](/docs/plite/api/nodes/editor)",
+    "[Element API](/docs/plite/api/nodes/element)",
+    "[NodeEntry API](/docs/plite/api/nodes/node-entry)",
+    "[Node API](/docs/plite/api/nodes/node)",
+    "[Node Types APIs](/docs/plite/api/nodes)",
+    "[Text API](/docs/plite/api/nodes/text)",
+    "[Operation API](/docs/plite/api/operations/operation)",
+    "[Operation Types](/docs/plite/api/operations)",
+    "[Debug Value Scrubbing](/docs/plite/api/scrubber)",
+    "[Transforms API](/docs/plite/api/transforms)",
+    "[Interfaces](/docs/plite/concepts/01-interfaces)",
+    "[Nodes](/docs/plite/concepts/02-nodes)",
+    "[Locations](/docs/plite/concepts/03-locations)",
+    "[Transforms](/docs/plite/concepts/04-transforms)",
+    "[Operations](/docs/plite/concepts/05-operations)",
+    "[Commands](/docs/plite/concepts/06-commands)",
+    "[Editor](/docs/plite/concepts/07-editor)",
+    "[Extensions](/docs/plite/concepts/08-extensions)",
+    "[Rendering](/docs/plite/concepts/09-rendering)",
+    "[Serializing](/docs/plite/concepts/10-serializing)",
+    "[Normalizing](/docs/plite/concepts/11-normalizing)",
+    "[Using TypeScript](/docs/plite/concepts/12-typescript)",
+    "[Roots](/docs/plite/concepts/13-roots)",
+    "[Document State](/docs/plite/concepts/14-document-state)",
+    "[Contributing](/docs/plite/general/contributing)",
+    "[Docs Proof Map](/docs/plite/general/docs-proof-map)",
+    "[FAQ](/docs/plite/general/faq)",
+    "[Resources](/docs/plite/general/resources)",
+    "[Plite Browser](/docs/plite/libraries/plite-browser)",
+    "[Plite DOM](/docs/plite/libraries/plite-dom)",
+    "[History Editor API](/docs/plite/libraries/plite-history/history-editor)",
+    "[History Extension Setup](/docs/plite/libraries/plite-history/history-extension-setup)",
+    "[History](/docs/plite/libraries/plite-history/history)",
+    "[Plite History](/docs/plite/libraries/plite-history)",
+    "[Plite Hyperscript](/docs/plite/libraries/plite-hyperscript)",
+    "[Plite Layout](/docs/plite/libraries/plite-layout)",
+    "[Annotations](/docs/plite/libraries/plite-react/annotations)",
+    "[DOM Coverage Boundaries](/docs/plite/libraries/plite-react/dom-coverage-boundaries)",
+    "[Editable Component](/docs/plite/libraries/plite-react/editable)",
+    "[Plite React Event Handling](/docs/plite/libraries/plite-react/event-handling)",
+    "[Virtualized Rendering](/docs/plite/libraries/plite-react/experimental-virtualized-rendering)",
+    "[Plite React Hooks](/docs/plite/libraries/plite-react/hooks)",
+    "[React Editor Setup](/docs/plite/libraries/plite-react/react-editor-setup)",
+    "[React Editor](/docs/plite/libraries/plite-react/react-editor)",
+    "[Plite React](/docs/plite/libraries/plite-react)",
+    "[Plite Component](/docs/plite/libraries/plite-react/plite)",
+    "[Plite Yjs](/docs/plite/libraries/plite-yjs)",
+    "[Plite](/docs/plite/libraries/plite)",
+    "[Why This Fork](/docs/plite/why-this-fork)",
+    "[Migration](/docs/plite/migration)",
+    "[Installing Plite](/docs/plite/walkthroughs/01-installing-plite)",
+    "[Adding Event Handlers](/docs/plite/walkthroughs/02-adding-event-handlers)",
+    "[Defining Custom Elements](/docs/plite/walkthroughs/03-defining-custom-elements)",
+    "[Applying Custom Formatting](/docs/plite/walkthroughs/04-applying-custom-formatting)",
+    "[Executing Commands](/docs/plite/walkthroughs/05-executing-commands)",
+    "[Saving to a Database](/docs/plite/walkthroughs/06-saving-to-a-database)",
+    "[Operation Replay Substrate](/docs/plite/walkthroughs/07-operation-replay-substrate)",
+    "[Improving Performance](/docs/plite/walkthroughs/09-performance)",
     "---Guides---",
     "[Feature Kits](/docs/feature-kits)",
     "[Plugin](/docs/plugin)",
@@ -259,7 +259,7 @@
     "[Toggle Element](/docs/components/toggle-node)",
     "---Examples---",
     "[Overview](/docs/examples)",
-    "[Slate to HTML](/docs/examples/slate-to-html)",
+    "[Plite to HTML](/docs/examples/plite-to-html)",
     "[Export](/docs/examples/export)",
     "[Server-Side](/docs/examples/server-side)",
     "[Version History](/docs/examples/version-history)",
@@ -311,22 +311,22 @@
     "[Table of Contents Demo](/docs/examples/toc)",
     "[Toggle Demo](/docs/examples/toggle)",
     "---Migrations---",
-    "[From Slate to Plate](/docs/migration/slate-to-plate)",
+    "[From Plite to Plate](/docs/migration/plite-to-plate)",
     "---API---",
     "[Overview](/docs/api)",
     "[Plate](/docs/api/plate)",
-    "[Slate](/docs/api/slate)",
-    "[Editor API](/docs/api/slate/editor-api)",
-    "[Editor Transforms](/docs/api/slate/editor-transforms)",
-    "[Node](/docs/api/slate/node)",
-    "[Element](/docs/api/slate/element)",
-    "[Text](/docs/api/slate/text)",
-    "[Path](/docs/api/slate/path)",
-    "[Point](/docs/api/slate/point)",
-    "[Range](/docs/api/slate/range)",
-    "[Location](/docs/api/slate/location)",
-    "[Location Ref](/docs/api/slate/location-ref)",
-    "[Operation](/docs/api/slate/operation)",
+    "[Plite](/docs/api/plite)",
+    "[Editor API](/docs/api/plite/editor-api)",
+    "[Editor Transforms](/docs/api/plite/editor-transforms)",
+    "[Node](/docs/api/plite/node)",
+    "[Element](/docs/api/plite/element)",
+    "[Text](/docs/api/plite/text)",
+    "[Path](/docs/api/plite/path)",
+    "[Point](/docs/api/plite/point)",
+    "[Range](/docs/api/plite/range)",
+    "[Location](/docs/api/plite/location)",
+    "[Location Ref](/docs/api/plite/location-ref)",
+    "[Operation](/docs/api/plite/operation)",
     "[Plate Core](/docs/api/core)",
     "[Plate Components](/docs/api/core/plate-components)",
     "[Plate Editor](/docs/api/core/plate-editor)",
@@ -351,58 +351,58 @@
               "title": "Plate"
             },
             {
-              "description": "Slate API.",
+              "description": "Plite API.",
               "headings": [],
-              "href": "/docs/api/slate",
+              "href": "/docs/api/plite",
               "items": [
                 {
-                  "href": "/docs/api/slate/editor-api",
+                  "href": "/docs/api/plite/editor-api",
                   "title": "Editor API",
                   "titleCn": "编辑器 API"
                 },
                 {
-                  "href": "/docs/api/slate/editor-transforms",
+                  "href": "/docs/api/plite/editor-transforms",
                   "title": "Editor Transforms"
                 },
                 {
-                  "href": "/docs/api/slate/node",
+                  "href": "/docs/api/plite/node",
                   "title": "Node"
                 },
                 {
-                  "href": "/docs/api/slate/element",
+                  "href": "/docs/api/plite/element",
                   "title": "Element"
                 },
                 {
-                  "href": "/docs/api/slate/text",
+                  "href": "/docs/api/plite/text",
                   "title": "Text"
                 },
                 {
-                  "href": "/docs/api/slate/path",
+                  "href": "/docs/api/plite/path",
                   "title": "Path"
                 },
                 {
-                  "href": "/docs/api/slate/point",
+                  "href": "/docs/api/plite/point",
                   "title": "Point"
                 },
                 {
-                  "href": "/docs/api/slate/range",
+                  "href": "/docs/api/plite/range",
                   "title": "Range"
                 },
                 {
-                  "href": "/docs/api/slate/location",
+                  "href": "/docs/api/plite/location",
                   "title": "Location"
                 },
                 {
-                  "href": "/docs/api/slate/location-ref",
+                  "href": "/docs/api/plite/location-ref",
                   "title": "Location Ref"
                 },
                 {
-                  "href": "/docs/api/slate/operation",
+                  "href": "/docs/api/plite/operation",
                   "title": "Operation"
                 }
               ],
               "label": "v42",
-              "title": "Slate"
+              "title": "Plite"
             },
             {
               "description": "Core utilities for Plate.",
@@ -416,7 +416,7 @@
                 "createInlineVoidPlugin",
                 "createInsertDataPlugin",
                 "createPlateEditor",
-                "createSlatePlugin",
+                "createEditorPlugin",
                 "createPrevSelectionPlugin",
                 "createPlatePlugin",
                 "getPlugin",
@@ -486,7 +486,7 @@
                     "deserialize",
                     "ReactPlugin",
                     "reset",
-                    "SlateReactExtensionPlugin",
+                    "PliteReactExtensionPlugin",
                     "redecorate",
                     "setValue"
                   ],
@@ -539,7 +539,7 @@
                     "render",
                     "aboveEditable",
                     "aboveNodes",
-                    "aboveSlate",
+                    "abovePlite",
                     "afterEditable",
                     "beforeEditable",
                     "belowNodes",
@@ -1175,10 +1175,10 @@
         {
           "items": [
             {
-              "description": "Slate to HTML",
-              "href": "/docs/examples/slate-to-html",
-              "title": "Slate to HTML",
-              "titleCn": "Slate 转 HTML"
+              "description": "Plite to HTML",
+              "href": "/docs/examples/plite-to-html",
+              "title": "Plite to HTML",
+              "titleCn": "Plite 转 HTML"
             },
             {
               "description": "Export a Plate document to a file.",
@@ -1205,7 +1205,7 @@
               "titleCn": "可编辑的空节点"
             },
             {
-              "description": "Compare Plate and Slate on a large document.",
+              "description": "Compare Plate and Plite on a large document.",
               "href": "/docs/examples/huge-document",
               "title": "Huge Document",
               "titleCn": "大型文档"
@@ -1425,25 +1425,25 @@
               "titleCn": "Block Placeholder"
             },
             {
-              "description": "Copy paste from CSV to Slate.",
+              "description": "Copy paste from CSV to Plite.",
               "href": "/docs/examples/csv",
               "title": "Serializing CSV Demo",
               "titleCn": "Serializing CSV"
             },
             {
-              "description": "Copy paste from DOCX to Slate.",
+              "description": "Copy paste from DOCX to Plite.",
               "href": "/docs/examples/docx",
               "title": "Serializing Docx Demo",
               "titleCn": "Serializing Docx"
             },
             {
-              "description": "Copy paste from HTML to Slate.",
+              "description": "Copy paste from HTML to Plite.",
               "href": "/docs/examples/html",
               "title": "Serializing HTML Demo",
               "titleCn": "Serializing HTML"
             },
             {
-              "description": "Copy paste from Markdown to Slate.",
+              "description": "Copy paste from Markdown to Plite.",
               "href": "/docs/examples/markdown",
               "title": "Serializing Markdown Demo",
               "titleCn": "Serializing Markdown"
@@ -1680,9 +1680,9 @@
         {
           "items": [
             {
-              "href": "/docs/migration/slate-to-plate",
-              "title": "From Slate to Plate",
-              "titleCn": "从 Slate 到 Plate"
+              "href": "/docs/migration/plite-to-plate",
+              "title": "From Plite to Plate",
+              "titleCn": "从 Plite 到 Plate"
             }
           ],
           "title": "Migration",
@@ -2091,13 +2091,13 @@
             {
               "items": [
                 {
-                  "description": "Copy paste from CSV to Slate.",
+                  "description": "Copy paste from CSV to Plite.",
                   "href": "/docs/csv",
                   "title": "CSV",
                   "titleCn": "CSV"
                 },
                 {
-                  "description": "Copy paste from DOCX to Slate.",
+                  "description": "Copy paste from DOCX to Plite.",
                   "href": "/docs/docx",
                   "title": "DOCX",
                   "titleCn": "DOCX"
@@ -2109,13 +2109,13 @@
                   "titleCn": "DOCX 导入/导出"
                 },
                 {
-                  "description": "Copy paste from HTML to Slate.",
+                  "description": "Copy paste from HTML to Plite.",
                   "href": "/docs/html",
                   "title": "HTML",
                   "titleCn": "HTML"
                 },
                 {
-                  "description": "Copy paste from Markdown to Slate.",
+                  "description": "Copy paste from Markdown to Plite.",
                   "href": "/docs/markdown",
                   "title": "Markdown",
                   "titleCn": "Markdown"
@@ -2279,12 +2279,12 @@
         "titleCn": "性能"
       },
       "/docs/html": {
-        "description": "Copy paste from HTML to Slate.",
+        "description": "Copy paste from HTML to Plite.",
         "title": "HTML",
         "titleCn": "HTML"
       },
       "/docs/markdown": {
-        "description": "Copy paste from Markdown to Slate.",
+        "description": "Copy paste from Markdown to Plite.",
         "title": "Markdown",
         "titleCn": "Markdown"
       },
@@ -2611,12 +2611,12 @@
         "titleCn": "Multi Select"
       },
       "/docs/csv": {
-        "description": "Copy paste from CSV to Slate.",
+        "description": "Copy paste from CSV to Plite.",
         "title": "CSV",
         "titleCn": "CSV"
       },
       "/docs/docx": {
-        "description": "Copy paste from DOCX to Slate.",
+        "description": "Copy paste from DOCX to Plite.",
         "title": "DOCX",
         "titleCn": "DOCX"
       },
@@ -3061,10 +3061,10 @@
         "title": "Overview",
         "titleCn": "概览"
       },
-      "/docs/examples/slate-to-html": {
-        "description": "Slate to HTML",
-        "title": "Slate to HTML",
-        "titleCn": "Slate 转 HTML"
+      "/docs/examples/plite-to-html": {
+        "description": "Plite to HTML",
+        "title": "Plite to HTML",
+        "titleCn": "Plite 转 HTML"
       },
       "/docs/examples/export": {
         "description": "Export a Plate document to a file.",
@@ -3086,7 +3086,7 @@
         "titleCn": "Editable Voids"
       },
       "/docs/examples/huge-document": {
-        "description": "Compare Plate and Slate on a large document.",
+        "description": "Compare Plate and Plite on a large document.",
         "title": "Huge Document",
         "titleCn": "大型文档"
       },
@@ -3269,22 +3269,22 @@
         "titleCn": "Block Placeholder"
       },
       "/docs/examples/csv": {
-        "description": "Copy paste from CSV to Slate.",
+        "description": "Copy paste from CSV to Plite.",
         "title": "Serializing CSV Demo",
         "titleCn": "Serializing CSV"
       },
       "/docs/examples/docx": {
-        "description": "Copy paste from DOCX to Slate.",
+        "description": "Copy paste from DOCX to Plite.",
         "title": "Serializing Docx Demo",
         "titleCn": "Serializing Docx"
       },
       "/docs/examples/html": {
-        "description": "Copy paste from HTML to Slate.",
+        "description": "Copy paste from HTML to Plite.",
         "title": "Serializing HTML Demo",
         "titleCn": "Serializing HTML"
       },
       "/docs/examples/markdown": {
-        "description": "Copy paste from Markdown to Slate.",
+        "description": "Copy paste from Markdown to Plite.",
         "title": "Serializing Markdown Demo",
         "titleCn": "Serializing Markdown"
       },
@@ -3317,9 +3317,9 @@
         "title": "v48",
         "titleCn": "v48"
       },
-      "/docs/migration/slate-to-plate": {
-        "title": "From Slate to Plate",
-        "titleCn": "从 Slate 到 Plate"
+      "/docs/migration/plite-to-plate": {
+        "title": "From Plite to Plate",
+        "titleCn": "从 Plite 到 Plate"
       },
       "/docs/api": {
         "title": "Overview",
@@ -3329,43 +3329,43 @@
         "description": "Plate API.",
         "title": "Plate"
       },
-      "/docs/api/slate": {
-        "description": "Slate API.",
+      "/docs/api/plite": {
+        "description": "Plite API.",
         "label": "v42",
-        "title": "Slate"
+        "title": "Plite"
       },
-      "/docs/api/slate/editor-api": {
+      "/docs/api/plite/editor-api": {
         "title": "Editor API",
         "titleCn": "编辑器 API"
       },
-      "/docs/api/slate/editor-transforms": {
+      "/docs/api/plite/editor-transforms": {
         "title": "Editor Transforms"
       },
-      "/docs/api/slate/node": {
+      "/docs/api/plite/node": {
         "title": "Node"
       },
-      "/docs/api/slate/element": {
+      "/docs/api/plite/element": {
         "title": "Element"
       },
-      "/docs/api/slate/text": {
+      "/docs/api/plite/text": {
         "title": "Text"
       },
-      "/docs/api/slate/path": {
+      "/docs/api/plite/path": {
         "title": "Path"
       },
-      "/docs/api/slate/point": {
+      "/docs/api/plite/point": {
         "title": "Point"
       },
-      "/docs/api/slate/range": {
+      "/docs/api/plite/range": {
         "title": "Range"
       },
-      "/docs/api/slate/location": {
+      "/docs/api/plite/location": {
         "title": "Location"
       },
-      "/docs/api/slate/location-ref": {
+      "/docs/api/plite/location-ref": {
         "title": "Location Ref"
       },
-      "/docs/api/slate/operation": {
+      "/docs/api/plite/operation": {
         "title": "Operation"
       },
       "/docs/api/core": {

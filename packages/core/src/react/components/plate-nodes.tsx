@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Element, Path, Text } from '@platejs/slate';
+import type { Element, Path, Text } from '@platejs/plite';
 import type { UnknownObject } from '@udecode/utils';
 
 import { useComposedRef } from '@udecode/react-utils';
@@ -180,8 +180,8 @@ function PlateElementBody({
       {inset && <NonBreakingSpace />}
       {isVoidTag ? (
         <div
-          data-slate-node="element"
-          data-slate-inline={attributes['data-slate-inline']}
+          data-plite-node="element"
+          data-plite-inline={attributes['data-plite-inline']}
           {...attributes}
           style={
             {
@@ -195,8 +195,8 @@ function PlateElementBody({
         </div>
       ) : (
         <Tag
-          data-slate-node="element"
-          data-slate-inline={attributes['data-slate-inline']}
+          data-plite-node="element"
+          data-plite-inline={attributes['data-plite-inline']}
           {...attributes}
           style={
             {

@@ -1,11 +1,11 @@
-import { createSlateEditor, type SlateEditor } from 'platejs';
+import { createBasePlateEditor, type BasePlateEditor } from 'platejs';
 
 import * as domUtils from '../../../lib';
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
 import { addSelectedRow, setSelectedIds } from './setSelectedIds';
 
 const createTestEditor = () =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: [BlockSelectionPlugin],
     value: [
       {
@@ -31,13 +31,13 @@ const createSelectableElement = (id?: string) =>
     dataset: id ? { blockId: id } : {},
   }) as unknown as Element;
 
-const getSelectedIds = (editor: SlateEditor) =>
+const getSelectedIds = (editor: BasePlateEditor) =>
   Array.from(
     editor.getOption(BlockSelectionPlugin, 'selectedIds') ?? []
   ).sort();
 
 describe('setSelectedIds', () => {
-  let editor: SlateEditor;
+  let editor: BasePlateEditor;
 
   beforeEach(() => {
     editor = createTestEditor();
@@ -74,7 +74,7 @@ describe('setSelectedIds', () => {
 });
 
 describe('addSelectedRow', () => {
-  let editor: SlateEditor;
+  let editor: BasePlateEditor;
   let querySelectorSelectableSpy: ReturnType<typeof spyOn> | undefined;
   let setTimeoutSpy: ReturnType<typeof spyOn> | undefined;
 

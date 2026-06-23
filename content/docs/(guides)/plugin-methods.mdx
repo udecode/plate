@@ -15,7 +15,7 @@ Plugin methods return new plugin instances, so you can keep a base plugin stable
 - [API And Transforms](#api-and-transforms)
 - [Override Editor Methods](#override-editor-methods)
 - [Components](#components)
-- [Convert Slate Plugins](#convert-slate-plugins)
+- [Convert Plite Plugins](#convert-slate-plugins)
 - [API Reference](#api-reference)
 
 ## Method Map
@@ -314,17 +314,17 @@ export const AppParagraphPlugin =
 
 Use `.withComponent()` for the common one-component case. Use `.extend()` when the same plugin also needs render wrappers, handlers, options, or rules.
 
-## Convert Slate Plugins
+## Convert Plite Plugins
 
-Use `toPlatePlugin()` when you have a headless Slate plugin and need to add React-only fields such as `render`, `handlers`, or `useHooks`.
+Use `toPlatePlugin()` when you have a headless Plite plugin and need to add React-only fields such as `render`, `handlers`, or `useHooks`.
 
 ```tsx title="mention-plugin.tsx" showLineNumbers
-import { createTSlatePlugin } from 'platejs';
+import { createEditorPlugin } from 'platejs';
 import { toPlatePlugin } from 'platejs/react';
 
 import { MentionElement } from '@/components/ui/mention-node';
 
-const BaseMentionPlugin = createTSlatePlugin({
+const BaseMentionPlugin = createEditorPlugin({
   key: 'mention',
   node: {
     isElement: true,

@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Range, Value } from '@platejs/slate';
+import type { Range, Value } from '@platejs/plite';
 
 import { act, renderHook } from '@testing-library/react';
 

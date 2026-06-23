@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import type { TabbableEntry } from './types';
 
@@ -30,30 +30,30 @@ describe('findTabDestination', () => {
       </element>
       <hp>Line 4</hp>
     </editor>
-  ) as any as SlateEditor;
-  const editor = createSlateEditor({
+  ) as any as BasePlateEditor;
+  const editor = createBasePlateEditor({
     selection: e.selection,
     value: e.children,
   });
 
   const voidPath1 = [1];
-  const voidSlateNode1 = (editor.children[1] as any)!;
+  const voidPliteNode1 = (editor.children[1] as any)!;
   const voidDOMNode1 = document.createElement('div') as HTMLElement;
 
   const voidPath2 = [4];
-  const voidSlateNode2 = (editor.children[4] as any)!;
+  const voidPliteNode2 = (editor.children[4] as any)!;
   const voidDOMNode2a = document.createElement('div') as HTMLElement;
   const voidDOMNode2b = document.createElement('div') as HTMLElement;
 
   const voidPath3 = [5];
-  const voidSlateNode3 = (editor.children[5] as any)!;
+  const voidPliteNode3 = (editor.children[5] as any)!;
   const voidDOMNode3 = document.createElement('div') as HTMLElement;
 
   const tabbableEntries = [
-    { domNode: voidDOMNode1, path: voidPath1, slateNode: voidSlateNode1 },
-    { domNode: voidDOMNode2a, path: voidPath2, slateNode: voidSlateNode2 },
-    { domNode: voidDOMNode2b, path: voidPath2, slateNode: voidSlateNode2 },
-    { domNode: voidDOMNode3, path: voidPath3, slateNode: voidSlateNode3 },
+    { domNode: voidDOMNode1, path: voidPath1, slateNode: voidPliteNode1 },
+    { domNode: voidDOMNode2a, path: voidPath2, slateNode: voidPliteNode2 },
+    { domNode: voidDOMNode2b, path: voidPath2, slateNode: voidPliteNode2 },
+    { domNode: voidDOMNode3, path: voidPath3, slateNode: voidPliteNode3 },
   ] as TabbableEntry[];
 
   const defaultOptions = {
@@ -148,7 +148,7 @@ describe('findTabDestination', () => {
           anchor: { offset: 0, path: [2, 0] },
           focus: { offset: 0, path: [2, 0] },
         },
-      } as SlateEditor;
+      } as BasePlateEditor;
 
       describe('when direction is forward', () => {
         const directionOverride = {} as any;
@@ -192,7 +192,7 @@ describe('findTabDestination', () => {
           anchor: { offset: 0, path: [0, 0] },
           focus: { offset: 0, path: [0, 0] },
         },
-      } as SlateEditor;
+      } as BasePlateEditor;
 
       describe('when direction is backward', () => {
         const directionOverride = { direction: 'backward' } as any;
@@ -216,7 +216,7 @@ describe('findTabDestination', () => {
           anchor: { offset: 0, path: [6, 0] },
           focus: { offset: 0, path: [6, 0] },
         },
-      } as SlateEditor;
+      } as BasePlateEditor;
 
       describe('when direction is forward', () => {
         const directionOverride = {} as any;

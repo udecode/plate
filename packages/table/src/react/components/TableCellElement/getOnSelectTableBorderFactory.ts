@@ -1,5 +1,5 @@
-import type { Element } from '@platejs/slate';
-import type { Path, SlateEditor, TTableCellElement } from 'platejs';
+import type { Element } from '@platejs/plite';
+import type { Path, BasePlateEditor, TTableCellElement } from 'platejs';
 
 import {
   type BorderDirection,
@@ -19,7 +19,7 @@ import { findTableNodePath } from '../../../lib/utils/findTableNodePath';
 
 /** Helper: sets one cell's specific border(s) to `size`. */
 function setCellBorderSize(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   at: Path | null,
   directions: BorderDirection[] | 'all',
   size: number
@@ -45,7 +45,7 @@ type SelectedCellBorderTarget = {
 };
 
 const getSelectedCellBorderTargets = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   cells: TTableCellElement[]
 ): SelectedCellBorderTarget[] =>
   cells.map((cell) => {
@@ -74,7 +74,7 @@ const getSelectedCellBorderTargets = (
  * that side of the bounding rect.
  */
 export function setSelectedCellsBorder(
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     border,
     cells,
@@ -199,7 +199,7 @@ export function setSelectedCellsBorder(
  * rectangle, then decide which edges to flip on/off.
  */
 export const getOnSelectTableBorderFactory =
-  (editor: SlateEditor) =>
+  (editor: BasePlateEditor) =>
   (border: BorderDirection | 'none' | 'outer') =>
   () => {
     let cells = (

@@ -1,4 +1,4 @@
-import type { Text } from '@platejs/slate';
+import type { Text } from '@platejs/plite';
 
 import { createTestEditor } from '../__tests__/createTestEditor';
 import { defaultRules } from '../rules';

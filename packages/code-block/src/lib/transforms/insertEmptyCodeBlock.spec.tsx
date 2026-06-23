@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
-import type { SlateEditor } from 'platejs';
+import type { BasePlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { insertEmptyCodeBlock } from './insertEmptyCodeBlock';
@@ -18,7 +18,7 @@ describe('insert empty code block', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -28,9 +28,9 @@ describe('insert empty code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
@@ -51,7 +51,7 @@ describe('insert empty code block', () => {
           <cursor />
         </hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -62,9 +62,9 @@ describe('insert empty code block', () => {
           </hcodeline>
         </hcodeblock>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,
@@ -90,7 +90,7 @@ describe('insert empty code block', () => {
         </hp>
         <hp>line 5</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
     const output = (
       <editor>
@@ -105,9 +105,9 @@ describe('insert empty code block', () => {
         </hcodeblock>
         <hp>line 5</hp>
       </editor>
-    ) as any as SlateEditor;
+    ) as any as BasePlateEditor;
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [CodeBlockPlugin],
       selection: input.selection,
       value: input.children,

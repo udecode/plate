@@ -34,7 +34,9 @@ it('use custom hotkey for bold', async () => {
         handlers: {
           onKeyDown: ({ editor, event }) => {
             if (event.key === 'b' && event.ctrlKey) {
-              editor.tf.toggleMark('bold');
+              editor.update((tx) => {
+                tx.marks.toggle('bold');
+              });
             }
           },
         },

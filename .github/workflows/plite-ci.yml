@@ -6,50 +6,50 @@ on:
       - main
       - next
     paths:
-      - 'packages/browser/**'
-      - 'packages/plite/**'
-      - 'packages/plite-dom/**'
-      - 'packages/plite-history/**'
-      - 'packages/plite-hyperscript/**'
-      - 'packages/plite-layout/**'
-      - 'packages/plite-react/**'
-      - 'packages/yjs/**'
-      - 'apps/plite/**'
-      - 'apps/www/src/app/(app)/examples/plite/**'
-      - 'apps/plite/tests/plite-browser/**'
-      - 'content/docs/plite/**'
-      - 'tooling/scripts/bench-targets.mjs'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - 'turbo.json'
-      - '.github/actions/pnpm-install/**'
-      - '.github/workflows/slate-ci.yml'
+      - "packages/browser/**"
+      - "packages/plite/**"
+      - "packages/plite-dom/**"
+      - "packages/plite-history/**"
+      - "packages/plite-hyperscript/**"
+      - "packages/plite-layout/**"
+      - "packages/plite-react/**"
+      - "packages/yjs/**"
+      - "apps/plite/**"
+      - "apps/www/src/app/(app)/examples/plite/**"
+      - "apps/plite/tests/plite-browser/**"
+      - "content/docs/plite/**"
+      - "tooling/scripts/bench-targets.mjs"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+      - ".github/actions/pnpm-install/**"
+      - ".github/workflows/plite-ci.yml"
   pull_request:
     types:
       - opened
       - synchronize
       - reopened
     paths:
-      - 'packages/browser/**'
-      - 'packages/plite/**'
-      - 'packages/plite-dom/**'
-      - 'packages/plite-history/**'
-      - 'packages/plite-hyperscript/**'
-      - 'packages/plite-layout/**'
-      - 'packages/plite-react/**'
-      - 'packages/yjs/**'
-      - 'apps/plite/**'
-      - 'apps/www/src/app/(app)/examples/plite/**'
-      - 'apps/plite/tests/plite-browser/**'
-      - 'content/docs/plite/**'
-      - 'tooling/scripts/bench-targets.mjs'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'pnpm-workspace.yaml'
-      - 'turbo.json'
-      - '.github/actions/pnpm-install/**'
-      - '.github/workflows/slate-ci.yml'
+      - "packages/browser/**"
+      - "packages/plite/**"
+      - "packages/plite-dom/**"
+      - "packages/plite-history/**"
+      - "packages/plite-hyperscript/**"
+      - "packages/plite-layout/**"
+      - "packages/plite-react/**"
+      - "packages/yjs/**"
+      - "apps/plite/**"
+      - "apps/www/src/app/(app)/examples/plite/**"
+      - "apps/plite/tests/plite-browser/**"
+      - "content/docs/plite/**"
+      - "tooling/scripts/bench-targets.mjs"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+      - ".github/actions/pnpm-install/**"
+      - ".github/workflows/plite-ci.yml"
   workflow_dispatch:
 
 permissions:

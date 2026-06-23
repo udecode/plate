@@ -1,8 +1,8 @@
 /** @jsx jsx */
 
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
-import { type SlateEditor, createSlateEditor } from 'platejs';
+import { type BasePlateEditor, createBasePlateEditor } from 'platejs';
 
 import { jsx } from '@platejs/test-utils';
 
@@ -52,10 +52,10 @@ const mockEditor = (
       </htr>
     </htable>
   </editor>
-) as any as SlateEditor;
+) as any as BasePlateEditor;
 
 describe('getSelectedCellsBoundingBox', () => {
-  let editor: SlateEditor;
+  let editor: BasePlateEditor;
   let getCellIndicesSpy: ReturnType<typeof spyOn>;
   let getColSpanSpy: ReturnType<typeof spyOn>;
   let getRowSpanSpy: ReturnType<typeof spyOn>;
@@ -100,7 +100,10 @@ describe('getSelectedCellsBoundingBox', () => {
       getRowSpanMock as any
     );
 
-    editor = createSlateEditor({ nodeId: true, value: mockEditor.children });
+    editor = createBasePlateEditor({
+      nodeId: true,
+      value: mockEditor.children,
+    });
   });
 
   afterEach(() => {

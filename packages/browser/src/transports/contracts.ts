@@ -134,17 +134,17 @@ export const createBrowserMobileUrl = (
 
 const collapseToLeadingTextSelectionScript = `
 (() => {
-  const owner = document.querySelector('[data-slate-node="text"]');
+  const owner = document.querySelector('[data-plite-node="text"]');
 
   if (!owner) {
-    throw new Error('Missing Slate text owner');
+    throw new Error('Missing Plite text owner');
   }
 
   const walker = document.createTreeWalker(owner, NodeFilter.SHOW_TEXT);
   const textLeaf = walker.nextNode();
 
   if (!textLeaf) {
-    throw new Error('Missing Slate text leaf');
+    throw new Error('Missing Plite text leaf');
   }
 
   const selection = document.getSelection();
@@ -168,11 +168,11 @@ export const resolveBrowserMobileSurface = (
     case 'android-split-join':
       return {
         debugJsonSelector: '#android-split-join-debug-json',
-        editorSelector: '[data-slate-editor="true"]',
+        editorSelector: '[data-plite-editor="true"]',
         selectionPrepScript: `
 (() => {
   const owners = Array.from(
-    document.querySelectorAll('#android-split-join [data-slate-node="text"]')
+    document.querySelectorAll('#android-split-join [data-plite-node="text"]')
   );
   const owner = owners.find((node) => node.textContent?.includes('middle'));
 
@@ -203,12 +203,12 @@ export const resolveBrowserMobileSurface = (
     case 'android-empty-rebuild':
       return {
         debugJsonSelector: '#android-empty-rebuild-debug-json',
-        editorSelector: '[data-slate-editor="true"]',
+        editorSelector: '[data-plite-editor="true"]',
       };
     case 'android-remove-range':
       return {
         debugJsonSelector: '#android-remove-range-debug-json',
-        editorSelector: '[data-slate-editor="true"]',
+        editorSelector: '[data-plite-editor="true"]',
         selectionPrepScript: `
 (() => {
   const button = document.querySelector('[data-test-id="prepare-remove-range"]');

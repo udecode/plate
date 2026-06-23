@@ -1,5 +1,5 @@
-import type { NodeInsertNodesOptions } from '@platejs/slate';
-import type { SlateEditor, TImageElement } from 'platejs';
+import type { NodeInsertNodesOptions } from '@platejs/plite';
+import type { BasePlateEditor, TImageElement } from 'platejs';
 
 import { KEYS, PathApi } from 'platejs';
 
@@ -8,7 +8,7 @@ type InsertNodesOptions = NodeInsertNodesOptions<TImageElement> & {
 };
 
 const getNextBlockInsertLocation = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   at: InsertNodesOptions['at']
 ) => {
   const location = at ?? editor.selection;
@@ -22,7 +22,7 @@ const getNextBlockInsertLocation = (
 };
 
 export const insertImage = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   url: ArrayBuffer | string,
   options: InsertNodesOptions = {}
 ) => {

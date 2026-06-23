@@ -1,6 +1,6 @@
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
-export const BaseHorizontalRulePlugin = createSlatePlugin({
+export const BaseHorizontalRulePlugin = createEditorPlugin({
   key: KEYS.hr,
   node: { isElement: true, isVoid: true },
   parsers: {

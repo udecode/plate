@@ -1,7 +1,7 @@
 import type {
   EditorCoreStateView,
   EditorCoreUpdateTransaction,
-} from '@platejs/slate';
+} from '@platejs/plite';
 
 import type { YjsState, YjsTx } from './types';
 

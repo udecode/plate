@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 
-import type { Element } from '@platejs/slate';
+import type { Element, NodeEntry } from '@platejs/plite';
 
 import { KEYS } from 'platejs';
 import { type PlateEditor, useEditorRef, usePluginOption } from 'platejs/react';
@@ -18,10 +18,10 @@ export function useBlockSelectionNodes() {
 
   return useMemo(
     () =>
-      editor.api.blocks<Element>({
+      editor.api.blocks({
         at: [],
-        match: (n) => !!n.id && selectedIds?.has(n.id as string),
-      }),
+        match: (n: Element) => !!n.id && selectedIds?.has(n.id as string),
+      }) as NodeEntry<Element>[],
     [editor, selectedIds]
   );
 }

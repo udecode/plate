@@ -1,4 +1,4 @@
-import type { Editor, Operation } from '@platejs/slate';
+import type { Editor, Operation } from '@platejs/plite';
 
 import { areJsonLikeValuesEqual } from './json-equality';
 import { isRecord } from './record';

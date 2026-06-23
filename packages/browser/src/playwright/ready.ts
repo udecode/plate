@@ -6,10 +6,10 @@ import {
   waitForSelectionIfPresent,
 } from './selection-handle';
 import type { SurfaceTarget } from './surface';
-import type { ReadyOptions, SlateBrowserEditorHarness } from './types';
+import type { ReadyOptions, PliteBrowserEditorHarness } from './types';
 
 export const waitForReady = async (
-  editor: SlateBrowserEditorHarness,
+  editor: PliteBrowserEditorHarness,
   surface: SurfaceTarget,
   { editor: editorState, placeholder, selector, text, selection }: ReadyOptions
 ) => {

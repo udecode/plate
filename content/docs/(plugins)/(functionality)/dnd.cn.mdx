@@ -82,7 +82,7 @@ import { DndPlugin } from '@platejs/dnd';
 
 DndPlugin.configure({
   render: {
-    aboveSlate: ({ children }) => (
+    abovePlite: ({ children }) => (
       <DndProvider backend={HTML5Backend}>{children}</DndProvider>
     ),
   },
@@ -90,7 +90,7 @@ DndPlugin.configure({
 ```
 
 - `render.aboveNodes`: 分配 [`BlockDraggable`](/docs/components/block-draggable) 组件在区块上方渲染拖拽手柄
-- `render.aboveSlate`: 用 `DndProvider` 包裹编辑器。如果React树中已有 `DndProvider` 可移除此配置
+- `render.abovePlite`: 用 `DndProvider` 包裹编辑器。如果React树中已有 `DndProvider` 可移除此配置
 
 ### 高级配置
 
@@ -111,7 +111,7 @@ DndPlugin.configure({
   },
   render: {
     aboveNodes: BlockDraggable,
-    aboveSlate: ({ children }) => (
+    abovePlite: ({ children }) => (
       <DndProvider backend={HTML5Backend}>{children}</DndProvider>
     ),
   },

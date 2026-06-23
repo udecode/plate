@@ -1,17 +1,17 @@
 import type {
   EditorUpdateTransaction,
-  SlateEditor,
+  BasePlateEditor,
   TSuggestionText,
-} from "platejs";
+} from 'platejs';
 
-import { BaseSuggestionPlugin } from "../BaseSuggestionPlugin";
-import { findSuggestionProps } from "../queries";
-import { getSuggestionKey } from "../utils";
-import { getSuggestionApi } from "../utils/getSuggestionApi";
-import { deleteFragmentSuggestion } from "./deleteFragmentSuggestion";
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { findSuggestionProps } from '../queries';
+import { getSuggestionKey } from '../utils';
+import { getSuggestionApi } from '../utils/getSuggestionApi';
+import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
 
 export const insertTextSuggestion = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   text: string,
   activeTx?: EditorUpdateTransaction
 ) => {
@@ -19,7 +19,7 @@ export const insertTextSuggestion = (
     let resId: string | undefined;
     const { id, createdAt } = findSuggestionProps(editor, {
       at: editor.selection!,
-      type: "insert",
+      type: 'insert',
     });
 
     if (editor.api.isExpanded()) {
@@ -32,7 +32,7 @@ export const insertTextSuggestion = (
           [getSuggestionKey(resId ?? id)]: {
             id: resId ?? id,
             createdAt,
-            type: "insert",
+            type: 'insert',
             userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
           },
           suggestion: true,

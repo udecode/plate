@@ -1,5 +1,5 @@
 import { type Descendant, NodeApi, type Range, type Text } from '../interfaces';
-import type { Editor as PliteEditor } from '../interfaces/editor';
+import type { Editor as EditorType } from '../interfaces/editor';
 
 export type TextMarks = Record<string, unknown>;
 
@@ -33,7 +33,7 @@ const collectNonEmptyTextMarks = (
 };
 
 export const getConsistentRangeTextMarks = (
-  editor: PliteEditor,
+  editor: EditorType,
   range: Range
 ): TextMarks | null => {
   const textMarks: TextMarks[] = [];

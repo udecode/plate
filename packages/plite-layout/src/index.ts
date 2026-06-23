@@ -17,7 +17,7 @@ import {
   type Point,
   type Range,
   type RootKey,
-  type Editor as PliteEditor,
+  type Editor as EditorType,
   type Text,
   type Value,
 } from '@platejs/plite';
@@ -659,7 +659,7 @@ export const createPlitePageBreakSnapshot = ({
 };
 
 const readPlitePageBreakSnapshot = (
-  editor: PliteEditor<Value>,
+  editor: EditorType<Value>,
   source: PlitePageBreakSnapshotSource
 ) => {
   if (!source) {
@@ -1640,7 +1640,7 @@ const resolveNodeLayoutPlan = (
 };
 
 const extractLayoutBlocks = (
-  editor: PliteEditor<Value>,
+  editor: EditorType<Value>,
   root: RootKey,
   settings: PlitePageSettings,
   measurementProfile: PlitePageLayoutMeasurementProfile,
@@ -1712,7 +1712,7 @@ const isPlitePageSettings = <TSettings extends PlitePageSettings>(
 ): source is TSettings => 'margins' in source && 'preset' in source;
 
 const readLayoutSettings = <TSettings extends PlitePageSettings>(
-  editor: PliteEditor<Value>,
+  editor: EditorType<Value>,
   source: PlitePageSettingsSource<TSettings> | null | undefined
 ): PlitePageSettings => {
   if (!source) {
@@ -1896,7 +1896,7 @@ export const getPlitePageLayoutFragments = (
 };
 
 const readLayoutRoot = <TSettings extends PlitePageSettings>(
-  editor: PliteEditor<Value>,
+  editor: EditorType<Value>,
   options: PlitePageLayoutOptions<TSettings>
 ): RootKey => {
   assertPublicRootKey(options.root);
@@ -2893,7 +2893,7 @@ export const paginatePlitePageLayoutBlocks = ({
 export const createPlitePageLayout = <
   TSettings extends PlitePageSettings = PlitePageSettings,
 >(
-  editor: PliteEditor<Value>,
+  editor: EditorType<Value>,
   getOptions: () => PlitePageLayoutOptions<TSettings>
 ): PlitePageLayout => {
   let snapshot = createEmptyLayoutSnapshot(DEFAULT_SETTINGS, 0);
@@ -3200,7 +3200,7 @@ export const createPlitePageLayout = <
 export const createPliteLayout = <
   TSettings extends PlitePageSettings = PlitePageSettings,
 >(
-  editor: PliteEditor<Value>,
+  editor: EditorType<Value>,
   getOptions: () => PliteLayoutOptions<TSettings>
 ): PlitePageLayout => {
   const fallbackEngine = canUseCanvasTextMeasurement()

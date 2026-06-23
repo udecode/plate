@@ -3,4 +3,4 @@
  */
 
 export * from './PlateStatic';
-export * from './slate-nodes';
+export * from './plite-nodes';

@@ -1,7 +1,7 @@
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
 import type { AnyPlatePlugin } from '../plugin';
-import type { EventEditorPlugin, SlateReactExtensionPlugin } from '../plugins';
+import type { EventEditorPlugin, PliteReactExtensionPlugin } from '../plugins';
 import type { PlateEditor, TPlateEditor } from './PlateEditor';
 import { createPlatePlugin } from '../plugin/createPlatePlugin';
 import {
@@ -16,7 +16,7 @@ import {
   getCorePlugins,
   type InferPlugins,
   type WithSlateOptions,
-  withSlate,
+  withPlite,
 } from '../../lib';
 import {
   createPlateRuntimeEditor,
@@ -29,7 +29,7 @@ import { getPlateCorePlugins } from './getPlateCorePlugins';
 export type PlateCorePlugin =
   | CorePlugin
   | typeof EventEditorPlugin
-  | typeof SlateReactExtensionPlugin;
+  | typeof PliteReactExtensionPlugin;
 
 export type WithPlateOptions<
   V extends Value = Value,
@@ -78,7 +78,7 @@ export type WithPlateOptions<
  *   event handlers, and React hooks integration.
  * @see {@link createPlateEditor} for a higher-level React editor creation function.
  * @see {@link usePlateEditor} for a memoized version in React components.
- * @see {@link withSlate} for the non-React version of editor enhancement.
+ * @see {@link withPlite} for the non-React version of editor enhancement.
  */
 export const withPlate = <
   V extends Value = Value,
@@ -94,7 +94,7 @@ export const withPlate = <
     ...rest
   } = options;
 
-  const editor = withSlate<V, PlateCorePlugin | P>(e, {
+  const editor = withPlite<V, PlateCorePlugin | P>(e, {
     navigationFeedback,
     ...rest,
     optionsStoreFactory: optionsStoreFactory ?? createZustandStore,
@@ -156,7 +156,7 @@ export type CreatePlateEditorRuntimeOptions<
   override?: AnyPlatePlugin['override'];
   render?: AnyPlatePlugin['render'];
   rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
-  runtime?: 'slate-v2';
+  runtime?: 'plite';
   shortcuts?: AnyPlatePlugin['shortcuts'];
   transformInitialValue?: AnyPlatePlugin['transformInitialValue'];
   useHooks?: AnyPlatePlugin['useHooks'];
@@ -191,7 +191,7 @@ const assertSupportedPlateRuntimeOptions = (
 
   if (unsupportedKeys.length > 0) {
     throw new Error(
-      `[Plate] createPlateEditor({ runtime: 'slate-v2' }) does not support these options yet: ${unsupportedKeys.join(', ')}.`
+      `[Plate] createPlateEditor({ runtime: 'plite' }) does not support these options yet: ${unsupportedKeys.join(', ')}.`
     );
   }
 
@@ -200,7 +200,7 @@ const assertSupportedPlateRuntimeOptions = (
     typeof options.value === 'string'
   ) {
     throw new Error(
-      "[Plate] createPlateEditor({ runtime: 'slate-v2' }) currently accepts only array values or null."
+      "[Plate] createPlateEditor({ runtime: 'plite' }) currently accepts only array values or null."
     );
   }
 };
@@ -359,7 +359,7 @@ const applyPlateRuntimeInitializationOptions = <
  * });
  * ```
  *
- * @see {@link createSlateEditor} for a non-React version of editor creation.
+ * @see {@link createBasePlateEditor} for a non-React version of editor creation.
  * @see {@link usePlateEditor} for a memoized version in React components.
  * @see {@link withPlate} for the underlying function that applies Plate enhancements to an editor.
  */

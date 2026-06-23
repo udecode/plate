@@ -1,5 +1,5 @@
-import type { NodeInsertNodesOptions } from '@platejs/slate';
-import type { SlateEditor, TPlaceholderElement } from 'platejs';
+import type { NodeInsertNodesOptions } from '@platejs/plite';
+import type { BasePlateEditor, TPlaceholderElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -16,7 +16,7 @@ export const createPlaceholderNode = (
 });
 
 export const insertPlaceholder = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   mediaType: string,
   options?: InsertPlaceholderOptions
 ) => {
@@ -31,21 +31,21 @@ export const insertPlaceholder = (
 };
 
 export const insertImagePlaceholder = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options?: InsertPlaceholderOptions
 ) => insertPlaceholder(editor, KEYS.img, options);
 
 export const insertVideoPlaceholder = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options?: InsertPlaceholderOptions
 ) => insertPlaceholder(editor, KEYS.video, options);
 
 export const insertAudioPlaceholder = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options?: InsertPlaceholderOptions
 ) => insertPlaceholder(editor, KEYS.audio, options);
 
 export const insertFilePlaceholder = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options?: InsertPlaceholderOptions
 ) => insertPlaceholder(editor, KEYS.file, options);

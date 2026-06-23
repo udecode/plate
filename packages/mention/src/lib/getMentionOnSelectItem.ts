@@ -1,25 +1,25 @@
 import {
   type Editor as SlateV2Editor,
-  type Element as SlateElement,
+  type Element as PliteElement,
   ElementApi,
   PointApi,
-} from '@platejs/slate';
-import { type SlateEditor, KEYS } from 'platejs';
+} from '@platejs/plite';
+import { type BasePlateEditor, KEYS } from 'platejs';
 
 import type { MentionConfig } from './BaseMentionPlugin';
 import type { TMentionItemBase } from './types';
 
 export type MentionOnSelectItem<
   TItem extends TMentionItemBase = TMentionItemBase,
-> = (editor: SlateEditor, item: TItem, search?: string) => void;
+> = (editor: BasePlateEditor, item: TItem, search?: string) => void;
 
-const isSelectionAtBlockEnd = (editor: SlateEditor) =>
+const isSelectionAtBlockEnd = (editor: BasePlateEditor) =>
   (editor as unknown as SlateV2Editor).read((state) => {
     const selection = state.selection.get();
 
     if (!selection) return false;
 
-    const block = state.nodes.above<SlateElement>({
+    const block = state.nodes.above<PliteElement>({
       match: (node) => ElementApi.isElement(node) && state.nodes.isBlock(node),
     });
 

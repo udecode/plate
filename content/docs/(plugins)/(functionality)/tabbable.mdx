@@ -124,11 +124,11 @@ query: (event) => !!editor.api.some({
 }),
 ```
 
-### Non-void Slate Nodes
+### Non-void Plite Nodes
 
 One `TabbableEntry` will be created for each tabbable DOM element in the editor, as determined using the [tabbable](https://www.npmjs.com/package/tabbable) NPM package. The list of tabbables is then filtered using `isTabbable`.
 
-By default, `isTabbable` only returns true for entries inside void Slate nodes. You can override `isTabbable` to add support for DOM elements contained in other types of Slate node:
+By default, `isTabbable` only returns true for entries inside void Plite nodes. You can override `isTabbable` to add support for DOM elements contained in other types of Plite node:
 
 ```tsx
 // Enable tabbable DOM elements inside CUSTOM_ELEMENT
@@ -142,7 +142,7 @@ isTabbable: (tabbableEntry) => (
 
 In some circumstances, you may want to allow users to tab from the editor to a DOM element rendered outside the editor, such as an interactive popover.
 
-To do this, override `insertTabbableEntries` to return an array of `TabbableEntry` objects, one for each DOM element outside the editor that you want to include in the tabbable list. The `slateNode` and `path` of the `TabbableEntry` should refer to the Slate node the user's cursor will be inside when the DOM element should be tabbable to.
+To do this, override `insertTabbableEntries` to return an array of `TabbableEntry` objects, one for each DOM element outside the editor that you want to include in the tabbable list. The `slateNode` and `path` of the `TabbableEntry` should refer to the Plite node the user's cursor will be inside when the DOM element should be tabbable to.
 
 Set the `globalEventListener` option to `true` to make sure the Tabbable plugin is able to return the user's focus to the editor.
 
@@ -203,10 +203,10 @@ Defines the properties of a tabbable entry.
     HTML element representing tabbable entry.
   </APIItem>
   <APIItem name="slateNode" type="Node">
-    Corresponding Slate node.
+    Corresponding Plite node.
   </APIItem>
   <APIItem name="path" type="Path">
-    Path to Slate node in document.
+    Path to Plite node in document.
   </APIItem>
 </APIAttributes>
 </API>

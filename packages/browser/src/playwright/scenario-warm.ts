@@ -1,10 +1,10 @@
 import type {
-  SlateBrowserScenarioStep,
-  SlateBrowserWarmLoopOptions,
-  SlateBrowserWarmToolbarArrowGauntletOptions,
+  PliteBrowserScenarioStep,
+  PliteBrowserWarmLoopOptions,
+  PliteBrowserWarmToolbarArrowGauntletOptions,
 } from './types';
 
-const createWarmTimingWaitStep = (label: string): SlateBrowserScenarioStep => ({
+const createWarmTimingWaitStep = (label: string): PliteBrowserScenarioStep => ({
   kind: 'settle',
   label,
   timeoutMs: 25,
@@ -13,18 +13,18 @@ const createWarmTimingWaitStep = (label: string): SlateBrowserScenarioStep => ({
 const createToolbarMarkClickStep = (
   label: string,
   markButtonTestId: string
-): SlateBrowserScenarioStep => ({
+): PliteBrowserScenarioStep => ({
   kind: 'clickTestId',
   label,
   testId: markButtonTestId,
 });
 
 /** Create repeated warm-up steps for a scenario packet. */
-export const createSlateBrowserWarmLoopSteps = ({
+export const createPliteBrowserWarmLoopSteps = ({
   createIteration,
   iterations = 1,
   label = 'warm-loop',
-}: SlateBrowserWarmLoopOptions): SlateBrowserScenarioStep[] => {
+}: PliteBrowserWarmLoopOptions): PliteBrowserScenarioStep[] => {
   const count = Math.max(1, iterations);
 
   return Array.from({ length: count }, (_, index) =>
@@ -45,14 +45,14 @@ const createWarmToolbarArrowIteration = ({
   selectionAfterArrowLeft,
   selectionAfterCollapse,
 }: Omit<
-  SlateBrowserWarmToolbarArrowGauntletOptions,
+  PliteBrowserWarmToolbarArrowGauntletOptions,
   | 'domCaretAfterInsert'
   | 'insertedText'
   | 'selectionAfterInsert'
   | 'textAfterInsert'
 > & {
   iteration: number;
-}): SlateBrowserScenarioStep[] => [
+}): PliteBrowserScenarioStep[] => [
   {
     kind: 'selectDOM',
     label: `warm-select-word-${iteration}`,
@@ -126,7 +126,7 @@ const createWarmToolbarArrowIteration = ({
 ];
 
 /** Create a warm toolbar and arrow-navigation scenario. */
-export const createSlateBrowserWarmToolbarArrowGauntlet = ({
+export const createPliteBrowserWarmToolbarArrowGauntlet = ({
   domCaretAfterInsert,
   insertedText,
   markDOMSelection,
@@ -139,12 +139,12 @@ export const createSlateBrowserWarmToolbarArrowGauntlet = ({
   textAfterInsert,
   warmIterationOverrides,
   warmIterations = 1,
-}: SlateBrowserWarmToolbarArrowGauntletOptions): SlateBrowserScenarioStep[] => [
+}: PliteBrowserWarmToolbarArrowGauntletOptions): PliteBrowserScenarioStep[] => [
   {
     kind: 'rootMouseDown',
     label: 'activate-editor-before-warm-selection',
   },
-  ...createSlateBrowserWarmLoopSteps({
+  ...createPliteBrowserWarmLoopSteps({
     createIteration: (iteration) =>
       createWarmToolbarArrowIteration({
         iteration,

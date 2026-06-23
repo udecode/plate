@@ -1,4 +1,4 @@
-import type { SlateEditor } from '@platejs/core';
+import type { BasePlateEditor } from '@platejs/core';
 import {
   type Element,
   type ElementEntry,
@@ -7,7 +7,7 @@ import {
   type PathRef,
   type Span,
   PathApi,
-} from '@platejs/slate';
+} from '@platejs/plite';
 import { KEYS } from '@platejs/utils';
 
 import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
@@ -23,16 +23,17 @@ export type MoveListItemsOptions = {
 };
 
 export const moveListItems = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     at = editor.selection ?? undefined,
     enableResetOnShiftTab,
     increase = true,
   }: MoveListItemsOptions = {}
 ) => {
+  const queryAt = at as Location | undefined;
   const _nodes = editor.api.nodes({
-    at,
-    match: (node) => node.type === editor.getType(KEYS.lic),
+    at: queryAt,
+    match: (node: Element) => node.type === editor.getType(KEYS.lic),
   });
 
   // Get the selected lic
@@ -69,7 +70,7 @@ export const moveListItems = (
   editor.update((tx) => {
     runWithoutNormalizing(tx, () => {
       const getParentElementEntry = (path: Path): ElementEntry | undefined =>
-        editor.api.parent<Element>(path);
+        editor.api.parent(path) as ElementEntry | undefined;
 
       licPathRefsToMove.forEach((licPathRef) => {
         const licPath = licPathRef.unref();

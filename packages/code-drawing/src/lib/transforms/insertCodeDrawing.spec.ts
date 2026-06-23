@@ -1,4 +1,4 @@
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 
 import {
   BaseCodeDrawingPlugin,
@@ -8,7 +8,7 @@ import { insertCodeDrawing } from './insertCodeDrawing';
 
 describe('insertCodeDrawing', () => {
   it('inserts the default code drawing node shape', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BaseCodeDrawingPlugin],
       selection: {
         anchor: { offset: 2, path: [0, 0] },
@@ -42,7 +42,7 @@ describe('insertCodeDrawing', () => {
   });
 
   it('merges custom data and respects the configured node type', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         BaseCodeDrawingPlugin.configure({
           node: { type: 'custom-code-drawing' },

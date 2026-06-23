@@ -5,7 +5,7 @@ import {
   useDrop,
 } from 'react-dnd';
 
-import type { Element } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 import type { NodeEntry } from 'platejs';
 import type { PlateEditor } from 'platejs/react';
 

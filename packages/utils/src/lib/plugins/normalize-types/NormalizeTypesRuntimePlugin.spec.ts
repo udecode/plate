@@ -3,7 +3,7 @@ import { createPlateEditor } from 'platejs/react';
 
 import { NormalizeTypesPlugin } from './NormalizeTypesPlugin';
 
-describe('NormalizeTypesPlugin Slate v2 runtime', () => {
+describe('NormalizeTypesPlugin Plite runtime', () => {
   it('inserts missing configured nodes', () => {
     const editor = createPlateEditor({
       plugins: [
@@ -16,7 +16,7 @@ describe('NormalizeTypesPlugin Slate v2 runtime', () => {
           },
         }),
       ],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [{ children: [], type: 'element' }],
     });
 
@@ -44,7 +44,7 @@ describe('NormalizeTypesPlugin Slate v2 runtime', () => {
           },
         }),
       ],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [{ children: [{ text: 'title' }], type: 'h2' }],
     });
 
@@ -71,7 +71,7 @@ describe('NormalizeTypesPlugin Slate v2 runtime', () => {
           },
         }),
       ],
-      runtime: 'slate-v2',
+      runtime: 'plite',
       value: [{ children: [{ text: 'x' }], type: 'p' }],
     });
 

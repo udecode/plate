@@ -2,14 +2,14 @@ import { statSync, unlinkSync, writeFileSync } from 'node:fs';
 
 import type { Locator } from '@playwright/test';
 
-import { SLATE_BROWSER_HANDLE_KEY } from './constants';
+import { PLITE_BROWSER_HANDLE_KEY } from './constants';
 import type { SurfaceTarget } from './surface';
 import type { ClipboardPayloadSnapshot } from './types';
 
-const CLIPBOARD_LOCK_PATH = `${process.cwd()}/.slate-browser-clipboard.lock`;
+const CLIPBOARD_LOCK_PATH = `${process.cwd()}/.plite-browser-clipboard.lock`;
 const CLIPBOARD_LOCK_RETRY_MS = 50;
 const CLIPBOARD_LOCK_TIMEOUT_MS = Number(
-  process.env.SLATE_BROWSER_CLIPBOARD_LOCK_TIMEOUT_MS ?? 30_000
+  process.env.PLITE_BROWSER_CLIPBOARD_LOCK_TIMEOUT_MS ?? 30_000
 );
 
 const sleep = (ms: number) =>
@@ -162,7 +162,7 @@ export const copyPayloadThroughEvent = async (
 
     return {
       html: data.getData('text/html') || null,
-      slateFragment: data.getData('application/x-slate-fragment') || null,
+      pliteFragment: data.getData('application/x-plite-fragment') || null,
       text: data.getData('text/plain'),
       types: Array.from(data.types),
     };
@@ -186,7 +186,7 @@ export const cutPayloadThroughEvent = async (
 
     return {
       html: data.getData('text/html') || null,
-      slateFragment: data.getData('application/x-slate-fragment') || null,
+      pliteFragment: data.getData('application/x-plite-fragment') || null,
       text: data.getData('text/plain'),
       types: Array.from(data.types),
     };
@@ -194,7 +194,7 @@ export const cutPayloadThroughEvent = async (
 
 export const pastePayloadThroughEvent = async (
   root: Locator,
-  payload: { html?: string | null; slateFragment?: string | null; text: string }
+  payload: { html?: string | null; pliteFragment?: string | null; text: string }
 ) =>
   root.evaluate(
     async (
@@ -202,7 +202,7 @@ export const pastePayloadThroughEvent = async (
       nextPayload: {
         html?: string | null;
         key: string;
-        slateFragment?: string | null;
+        pliteFragment?: string | null;
         text: string;
       }
     ) => {
@@ -215,8 +215,8 @@ export const pastePayloadThroughEvent = async (
       if (nextPayload.html) {
         data.setData('text/html', nextPayload.html);
       }
-      if (nextPayload.slateFragment) {
-        data.setData('application/x-slate-fragment', nextPayload.slateFragment);
+      if (nextPayload.pliteFragment) {
+        data.setData('application/x-plite-fragment', nextPayload.pliteFragment);
       }
       data.setData('text/plain', nextPayload.text);
 
@@ -246,17 +246,17 @@ export const pastePayloadThroughEvent = async (
 
         handle.insertData({
           html: nextPayload.html ?? undefined,
-          slateFragment: nextPayload.slateFragment ?? undefined,
+          pliteFragment: nextPayload.pliteFragment ?? undefined,
           text: nextPayload.text,
         });
       }
     },
-    { ...payload, key: SLATE_BROWSER_HANDLE_KEY }
+    { ...payload, key: PLITE_BROWSER_HANDLE_KEY }
   );
 
 export const insertDataThroughHandle = async (
   root: Locator,
-  payload: { html?: string | null; slateFragment?: string | null; text: string }
+  payload: { html?: string | null; pliteFragment?: string | null; text: string }
 ) =>
   root.evaluate(
     (
@@ -264,7 +264,7 @@ export const insertDataThroughHandle = async (
       nextPayload: {
         html?: string | null;
         key: string;
-        slateFragment?: string | null;
+        pliteFragment?: string | null;
         text: string;
       }
     ) => {
@@ -276,9 +276,9 @@ export const insertDataThroughHandle = async (
 
       handle.insertData({
         html: nextPayload.html ?? undefined,
-        slateFragment: nextPayload.slateFragment ?? undefined,
+        pliteFragment: nextPayload.pliteFragment ?? undefined,
         text: nextPayload.text,
       });
     },
-    { ...payload, key: SLATE_BROWSER_HANDLE_KEY }
+    { ...payload, key: PLITE_BROWSER_HANDLE_KEY }
   );

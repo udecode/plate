@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
 import { BasicBlocksKit } from '@/registry/components/editor/plugins/basic-blocks-kit';
@@ -18,7 +18,7 @@ const createEditor = ({
   text?: string;
   value?: any[];
 }) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: BasicBlocksKit,
     selection: {
       anchor: { offset, path },

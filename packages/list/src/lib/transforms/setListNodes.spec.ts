@@ -1,10 +1,10 @@
-import { KEYS, createSlateEditor } from 'platejs';
+import { KEYS, createBasePlateEditor } from 'platejs';
 
 import { setListNodes } from './setListNodes';
 
 describe('setListNodes', () => {
   it('increments indent for non-list blocks before applying list metadata', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [{ [KEYS.indent]: 1, children: [{ text: 'Item' }], type: KEYS.p }],
     });
 
@@ -20,7 +20,7 @@ describe('setListNodes', () => {
   });
 
   it('uses todo helpers when the target style is todo', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       value: [
         {
           [KEYS.indent]: 3,

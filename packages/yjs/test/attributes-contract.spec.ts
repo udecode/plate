@@ -1,32 +1,32 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import type { Descendant } from '@platejs/slate';
+import type { Descendant } from '@platejs/plite';
 import * as Y from 'yjs';
 
 import {
   getYjsAttributes,
-  setSlateYjsAttribute,
+  setPliteYjsAttribute,
   setYjsAttribute,
 } from '../src/core/attributes';
-import { createYjsNodes, readSlateValueFromYjs } from '../src/core/document';
+import { createYjsNodes, readPliteValueFromYjs } from '../src/core/document';
 import {
   createSplitElement,
   setYjsNodeAttributes,
 } from '../src/core/replacement';
 
 const internalYjsAttributeKeys = [
-  'slate:yjs-hidden',
-  'slate:yjs-id',
-  'slate:type',
-  'slate:yjs-split-undo-text',
-  'slate:yjs-virtual-child-id',
-  'slate:yjs-virtual-placeholder',
+  'plite:yjs-hidden',
+  'plite:yjs-id',
+  'plite:type',
+  'plite:yjs-split-undo-text',
+  'plite:yjs-virtual-child-id',
+  'plite:yjs-virtual-placeholder',
 ] as const;
 
 describe('@platejs/yjs attribute contract', () => {
   it('writes non-string Yjs attributes through the interop boundary', () => {
     const doc = new Y.Doc();
-    const root = doc.get('@platejs/slate', Y.XmlElement);
+    const root = doc.get('@platejs/plite', Y.XmlElement);
     const text = new Y.XmlText();
 
     root.insert(0, [text]);
@@ -41,11 +41,11 @@ describe('@platejs/yjs attribute contract', () => {
 
   it('preserves uniform object text attributes across separate Yjs delta parts', () => {
     const doc = new Y.Doc();
-    const root = doc.get('@platejs/slate', Y.XmlElement);
+    const root = doc.get('@platejs/plite', Y.XmlElement);
     const paragraph = new Y.XmlElement('paragraph');
     const text = new Y.XmlText();
 
-    setSlateYjsAttribute(paragraph, 'type', 'paragraph');
+    setPliteYjsAttribute(paragraph, 'type', 'paragraph');
     root.insert(0, [paragraph]);
     paragraph.insert(0, [text]);
     text.applyDelta(
@@ -56,7 +56,7 @@ describe('@platejs/yjs attribute contract', () => {
       { sanitize: false }
     );
 
-    assert.deepEqual(readSlateValueFromYjs(root), [
+    assert.deepEqual(readPliteValueFromYjs(root), [
       {
         children: [{ style: { color: 'red' }, text: 'ab' }],
         type: 'paragraph',
@@ -66,16 +66,16 @@ describe('@platejs/yjs attribute contract', () => {
 
   it('preserves attributes on empty Yjs text nodes', () => {
     const doc = new Y.Doc();
-    const root = doc.get('@platejs/slate', Y.XmlElement);
+    const root = doc.get('@platejs/plite', Y.XmlElement);
     const paragraph = new Y.XmlElement('paragraph');
     const text = new Y.XmlText();
 
-    setSlateYjsAttribute(paragraph, 'type', 'paragraph');
+    setPliteYjsAttribute(paragraph, 'type', 'paragraph');
     setYjsAttribute(text, 'bold', true);
     root.insert(0, [paragraph]);
     paragraph.insert(0, [text]);
 
-    assert.deepEqual(readSlateValueFromYjs(root), [
+    assert.deepEqual(readPliteValueFromYjs(root), [
       {
         children: [{ bold: true, text: '' }],
         type: 'paragraph',
@@ -85,22 +85,22 @@ describe('@platejs/yjs attribute contract', () => {
 
   it('preserves null-valued text attributes through readback', () => {
     const doc = new Y.Doc();
-    const root = doc.get('@platejs/slate', Y.XmlElement);
+    const root = doc.get('@platejs/plite', Y.XmlElement);
     const paragraph = new Y.XmlElement('paragraph');
     const [text] = createYjsNodes([{ color: null, text: 'alpha' }]);
 
-    setSlateYjsAttribute(paragraph, 'type', 'paragraph');
+    setPliteYjsAttribute(paragraph, 'type', 'paragraph');
     root.insert(0, [paragraph]);
     paragraph.insert(0, [text]);
 
-    assert.deepEqual(readSlateValueFromYjs(root), [
+    assert.deepEqual(readPliteValueFromYjs(root), [
       { children: [{ color: null, text: 'alpha' }], type: 'paragraph' },
     ]);
   });
 
   it('does not rewrite semantically unchanged object attributes', () => {
     const doc = new Y.Doc();
-    const root = doc.get('@platejs/slate', Y.XmlElement);
+    const root = doc.get('@platejs/plite', Y.XmlElement);
     const [text] = createYjsNodes([{ style: { color: 'red' }, text: 'alpha' }]);
     let updates = 0;
 
@@ -119,7 +119,7 @@ describe('@platejs/yjs attribute contract', () => {
     assert.equal(updates, 0);
   });
 
-  it('rejects Slate-authored attributes reserved for internal Yjs state', () => {
+  it('rejects Plite-authored attributes reserved for internal Yjs state', () => {
     for (const key of internalYjsAttributeKeys) {
       const element = {
         children: [{ text: 'alpha' }],
@@ -146,10 +146,10 @@ describe('@platejs/yjs attribute contract', () => {
       () =>
         createSplitElement(
           original,
-          { 'slate:yjs-hidden': true, type: 'paragraph' },
+          { 'plite:yjs-hidden': true, type: 'paragraph' },
           []
         ),
-      /Cannot set internal Yjs attribute "slate:yjs-hidden"/
+      /Cannot set internal Yjs attribute "plite:yjs-hidden"/
     );
   });
 });

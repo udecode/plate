@@ -1,5 +1,5 @@
-import { createSlateEditor } from '../../editor';
-import { createSlatePlugin } from '../../plugin';
+import { createBasePlateEditor } from '../../editor';
+import { createEditorPlugin } from '../../plugin';
 import { DebugPlugin, PlateError } from './DebugPlugin';
 
 describe('DebugPlugin', () => {
@@ -9,7 +9,7 @@ describe('DebugPlugin', () => {
 
   it('create an editor with combined plugin APIs', () => {
     const mockLogger = mock();
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         DebugPlugin.configure({
           options: {
@@ -19,7 +19,7 @@ describe('DebugPlugin', () => {
             logLevel: 'log',
           },
         }),
-        createSlatePlugin({
+        createEditorPlugin({
           key: 'sample',
           api: {
             sampleMethod: () => {},
@@ -44,7 +44,7 @@ describe('DebugPlugin', () => {
     const warnLogger = mock();
     const logLogger = mock();
     const infoLogger = mock();
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         DebugPlugin.configure({
           options: {
@@ -69,7 +69,7 @@ describe('DebugPlugin', () => {
   });
 
   it('throw errors when throwErrors is true', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [DebugPlugin],
     });
 
@@ -89,7 +89,7 @@ describe('DebugPlugin', () => {
   it('does not throw errors when throwErrors is false', () => {
     const errorLogger = mock();
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         DebugPlugin.configure({
           options: {
@@ -114,7 +114,7 @@ describe('DebugPlugin', () => {
 
   it('does not log in production mode', () => {
     const mockLogger = mock();
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         DebugPlugin.configure({
           options: {
@@ -138,7 +138,7 @@ describe('DebugPlugin', () => {
     const infoSpy = spyOn(console, 'info').mockImplementation(() => {});
     const logSpy = spyOn(console, 'log').mockImplementation(() => {});
     const warnSpy = spyOn(console, 'warn').mockImplementation(() => {});
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         DebugPlugin.configure({
           options: {

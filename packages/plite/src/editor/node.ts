@@ -1,13 +1,13 @@
 import {
   Editor,
   type EditorNodeOptions,
-  type Editor as PliteEditor,
+  type Editor as EditorType,
 } from '../interfaces/editor';
 import type { Location } from '../interfaces/location';
 import { NodeApi, type NodeEntry } from '../interfaces/node';
 
 export const node = (
-  editor: PliteEditor,
+  editor: EditorType,
   at: Location,
   options: EditorNodeOptions = {}
 ): NodeEntry => {

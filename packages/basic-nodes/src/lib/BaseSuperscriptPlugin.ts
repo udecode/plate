@@ -1,7 +1,7 @@
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
 /** Enables support for superscript formatting. */
-export const BaseSuperscriptPlugin = createSlatePlugin({
+export const BaseSuperscriptPlugin = createEditorPlugin({
   key: KEYS.sup,
   node: { isLeaf: true },
   parsers: {
@@ -16,10 +16,9 @@ export const BaseSuperscriptPlugin = createSlatePlugin({
   },
   render: { as: 'sup' },
   rules: { selection: { affinity: 'directional' } },
-})
-  .extendTx(({ type }) => (tx) => ({
-    toggle: () => {
-      tx.marks.remove(KEYS.sub);
-      tx.marks.toggle(type);
-    },
-  }));
+}).extendTx(({ type }) => (tx) => ({
+  toggle: () => {
+    tx.marks.remove(KEYS.sub);
+    tx.marks.toggle(type);
+  },
+}));

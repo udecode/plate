@@ -20,7 +20,7 @@ export const DndKit = [
     },
     render: {
       aboveNodes: BlockDraggable,
-      aboveSlate: ({ children }) => (
+      abovePlite: ({ children }) => (
         <DndProvider backend={HTML5Backend}>{children}</DndProvider>
       ),
     },

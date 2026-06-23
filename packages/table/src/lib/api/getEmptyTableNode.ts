@@ -1,4 +1,4 @@
-import type { SlateEditor, TTableElement } from 'platejs';
+import type { BasePlateEditor, TTableElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -10,7 +10,7 @@ export interface GetEmptyTableNodeOptions extends GetEmptyRowNodeOptions {
 }
 
 export const getEmptyTableNode = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     colCount,
     header,

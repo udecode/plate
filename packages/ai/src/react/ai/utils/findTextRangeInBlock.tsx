@@ -86,7 +86,7 @@ export function findTextRangeInBlock({
 
   if (matchStart === -1) return null;
 
-  // Convert character offsets to Slate paths and offsets
+  // Convert character offsets to Plite paths and offsets
   const findPoint = (
     charOffset: number,
     isEnd = false

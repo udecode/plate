@@ -427,13 +427,13 @@ The helper takes a `patterns` array and builds a single `insertText` rule. Each 
 
 ```tsx showLineNumbers
 import {
-  createSlatePlugin,
+  createEditorPlugin,
   createTextSubstitutionInputRule,
   KEYS,
-  type SlateEditor,
+  type BasePlateEditor,
 } from 'platejs';
 
-const isInCodeBlock = (editor: SlateEditor) =>
+const isInCodeBlock = (editor: BasePlateEditor) =>
   editor.api.some({
     match: { type: [editor.getType(KEYS.codeBlock)] },
   });
@@ -448,7 +448,7 @@ const arrowsRule = createTextSubstitutionInputRule({
   ],
 });
 
-export const ArrowsShortcutsPlugin = createSlatePlugin({
+export const ArrowsShortcutsPlugin = createEditorPlugin({
   key: 'arrowsShortcuts',
   inputRules: [arrowsRule],
 });
@@ -470,13 +470,13 @@ your app and edit the patterns.
 
 ```tsx showLineNumbers title="autoformat-kit.tsx"
 import {
-  createSlatePlugin,
+  createEditorPlugin,
   createTextSubstitutionInputRule,
   KEYS,
-  type SlateEditor,
+  type BasePlateEditor,
 } from 'platejs';
 
-const isTextSubstitutionBlocked = (editor: SlateEditor) =>
+const isTextSubstitutionBlocked = (editor: BasePlateEditor) =>
   editor.api.some({
     match: { type: [editor.getType(KEYS.codeBlock)] },
   });
@@ -506,7 +506,7 @@ const smartQuotesRule = createAutoformatTextSubstitutionRule({
   ],
 });
 
-const AutoformatShortcutsPlugin = createSlatePlugin({
+const AutoformatShortcutsPlugin = createEditorPlugin({
   key: 'autoformatShortcuts',
   inputRules: [legalRule, smartQuotesRule],
 });
@@ -585,9 +585,9 @@ receives a `rule` builder. Use this form when your rules depend on plugin-local
 state or when you want your rule wiring to live next to the plugin's types.
 
 ```tsx showLineNumbers
-import { createSlatePlugin, KEYS } from 'platejs';
+import { createEditorPlugin, KEYS } from 'platejs';
 
-const CustomPlugin = createSlatePlugin({
+const CustomPlugin = createEditorPlugin({
   key: 'custom',
   inputRules: ({ rule }) => [
     rule.mark({
@@ -701,7 +701,7 @@ Every `enabled`, `resolve`, and `apply` call receives a context object with the 
 
 | Field | Returns |
 | ----- | ------- |
-| `editor` | The current `SlateEditor` |
+| `editor` | The current `BasePlateEditor` |
 | `isCollapsed` | Whether the selection is collapsed |
 | `pluginKey` | The key of the plugin the rule is attached to |
 | `getBlockEntry()` | The current block's `NodeEntry`, or `undefined` |
@@ -729,7 +729,7 @@ For each transform call, the runtime walks rules in priority order (highest firs
    treats the rule as not consumed and continues; any other return value
    consumes the input and short-circuits the rest of the walk.
 
-If no rule consumes the input, the default Slate transform runs as normal.
+If no rule consumes the input, the default Plite transform runs as normal.
 
 | Field | Purpose |
 | ----- | ------- |

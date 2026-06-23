@@ -1,12 +1,12 @@
 import { expect, type Locator } from '@playwright/test';
 
-import { READY_TIMEOUT_MS, SLATE_BROWSER_HANDLE_KEY } from './constants';
-import type { SlateBrowserDOMPathOptions } from './types';
+import { READY_TIMEOUT_MS, PLITE_BROWSER_HANDLE_KEY } from './constants';
+import type { PliteBrowserDOMPathOptions } from './types';
 
 export const scrollTextPathIntoViewAndCheckMaterialized = async (
   root: Locator,
   path: number[],
-  options: SlateBrowserDOMPathOptions = {}
+  options: PliteBrowserDOMPathOptions = {}
 ) =>
   root.evaluate(
     (
@@ -16,7 +16,7 @@ export const scrollTextPathIntoViewAndCheckMaterialized = async (
         key,
         path,
       }: {
-        align: SlateBrowserDOMPathOptions['align'];
+        align: PliteBrowserDOMPathOptions['align'];
         key: string;
         path: number[];
       }
@@ -26,16 +26,16 @@ export const scrollTextPathIntoViewAndCheckMaterialized = async (
       handle?.scrollPathIntoView?.(path, align ?? 'center');
 
       return !!element.querySelector(
-        `[data-slate-node="text"][data-slate-path="${path.join(',')}"]`
+        `[data-plite-node="text"][data-plite-path="${path.join(',')}"]`
       );
     },
-    { align: options.align, key: SLATE_BROWSER_HANDLE_KEY, path }
+    { align: options.align, key: PLITE_BROWSER_HANDLE_KEY, path }
   );
 
 export const waitForTextPathMaterialized = async (
   root: Locator,
   path: number[],
-  options: SlateBrowserDOMPathOptions = {}
+  options: PliteBrowserDOMPathOptions = {}
 ) => {
   await expect
     .poll(

@@ -1,6 +1,6 @@
 import type React from 'react';
 
-import type { Path, Text } from '@platejs/slate';
+import type { Path, Text } from '@platejs/plite';
 
 export type RenderTextFn = (props: RenderTextProps) => React.ReactElement<any>;
 export type RenderTextProps<N extends Text = Text> = {
@@ -12,10 +12,10 @@ export type RenderTextProps<N extends Text = Text> = {
   children: any;
   /**
    * HTML attributes to be spread onto the rendered container element. Includes
-   * `data-slate-node="text"` and `ref`.
+   * `data-plite-node="text"` and `ref`.
    */
   attributes: {
-    'data-slate-node': 'text';
+    'data-plite-node': 'text';
     ref: any;
     className?: string;
     style?: React.CSSProperties;

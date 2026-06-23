@@ -3,31 +3,32 @@ import {
   type Element,
   type Point,
   type Range,
-  type SlateEditor,
+  type BasePlateEditor,
+  type NodeEntry,
   type TSuggestionElement,
   ElementApi,
   KEYS,
   PathApi,
   PointApi,
   TextApi,
-} from "platejs";
+} from 'platejs';
 
-import { BaseSuggestionPlugin } from "../BaseSuggestionPlugin";
-import { findSuggestionProps } from "../queries/";
+import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { findSuggestionProps } from '../queries/';
 import {
   getInlineSuggestionData,
   getSuggestionKey,
   isCurrentUserSuggestion,
-} from "../utils";
-import { getSuggestionApi } from "../utils/getSuggestionApi";
-import { setSuggestionNodes } from "./setSuggestionNodes";
+} from '../utils';
+import { getSuggestionApi } from '../utils/getSuggestionApi';
+import { setSuggestionNodes } from './setSuggestionNodes';
 
 /**
  * Suggest deletion one character at a time until target point is reached.
  * Suggest additions are safely deleted.
  */
 export const deleteSuggestion = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   at: Range,
   {
     reverse,
@@ -96,7 +97,7 @@ export const deleteSuggestion = (
 
     const { id, createdAt } = findSuggestionProps(editor, {
       at: from,
-      type: "remove",
+      type: 'remove',
     });
 
     resId = id;
@@ -134,7 +135,8 @@ export const deleteSuggestion = (
         const str = editor.api.string(inlineRange);
         const hasInlineNode = editor.api.some({
           at: inlineRange,
-          match: (n) => ElementApi.isElement(n) && editor.api.isInline(n),
+          match: (n: Element) =>
+            ElementApi.isElement(n) && editor.api.isInline(n),
         });
 
         if (str.length === 0 && !hasInlineNode) break;
@@ -143,7 +145,7 @@ export const deleteSuggestion = (
       const getPoint = reverse ? editor.api.before : editor.api.after;
 
       const pointNext: Point | undefined = getPoint(pointCurrent, {
-        unit: "character",
+        unit: 'character',
       });
 
       if (!pointNext) break;
@@ -197,7 +199,7 @@ export const deleteSuggestion = (
             [getSuggestionKey(id)]: {
               id,
               createdAt,
-              type: "remove",
+              type: 'remove',
               userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
             },
             [KEYS.suggestion]: true,
@@ -241,15 +243,17 @@ export const deleteSuggestion = (
       }
 
       // if the current point is in block addition suggestion, delete block
-      const entryBlock = editor.api.node<Element>({
+      const entryBlock = editor.api.node({
         at: pointCurrent,
         block: true,
-        match: (n) =>
-          n[KEYS.suggestion] &&
-          TextApi.isText(n) &&
-          getInlineSuggestionData(n)?.type === "insert" &&
-          isCurrentUserSuggestion(editor, n),
-      });
+        match: (n: Element) =>
+          Boolean(
+            n[KEYS.suggestion] &&
+              TextApi.isText(n) &&
+              getInlineSuggestionData(n)?.type === 'insert' &&
+              isCurrentUserSuggestion(editor, n)
+          ),
+      }) as NodeEntry<Element> | undefined;
 
       if (
         entryBlock &&
@@ -276,7 +280,7 @@ export const deleteSuggestion = (
           if (isBlockSuggestion) {
             const node = previousAboveNode[0] as TSuggestionElement;
 
-            if (node.suggestion.type === "insert") {
+            if (node.suggestion.type === 'insert') {
               suggestionApi.withoutSuggestions(() => {
                 tx.nodes.unset([KEYS.suggestion], {
                   at: previousAboveNode[1],
@@ -287,10 +291,10 @@ export const deleteSuggestion = (
                 tx.normalize({ force: true });
               });
             }
-            if (node.suggestion.type === "remove") {
+            if (node.suggestion.type === 'remove') {
               tx.selection.move({
                 reverse,
-                unit: "character",
+                unit: 'character',
               });
             }
             break;
@@ -306,7 +310,7 @@ export const deleteSuggestion = (
                 [KEYS.suggestion]: {
                   id,
                   createdAt,
-                  type: "remove",
+                  type: 'remove',
                   userId:
                     editor.getOptions(BaseSuggestionPlugin).currentUserId!,
                   ...(isPreviousBlockVoid ? {} : { isLineBreak: true }),
@@ -316,7 +320,7 @@ export const deleteSuggestion = (
             );
             tx.selection.move({
               reverse,
-              unit: "character",
+              unit: 'character',
             });
             break;
           }
@@ -328,7 +332,7 @@ export const deleteSuggestion = (
       if (PointApi.equals(pointCurrent, editor.selection!.anchor)) {
         tx.selection.move({
           reverse,
-          unit: "character",
+          unit: 'character',
         });
       }
 
@@ -338,12 +342,12 @@ export const deleteSuggestion = (
         isText: true,
         match: (n) =>
           TextApi.isText(n) &&
-          getInlineSuggestionData(n)?.type === "insert" &&
+          getInlineSuggestionData(n)?.type === 'insert' &&
           isCurrentUserSuggestion(editor, n),
       });
 
       if (entryText) {
-        tx.text.delete({ at: range, unit: "character" });
+        tx.text.delete({ at: range, unit: 'character' });
 
         continue;
       }

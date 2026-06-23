@@ -3,14 +3,14 @@
 import * as React from 'react';
 
 import { Redo2Icon, Undo2Icon } from 'lucide-react';
-import { useSlateHistory } from 'platejs/react';
+import { usePliteHistory } from 'platejs/react';
 
 import { ToolbarButton } from './toolbar';
 
 export function RedoToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
 ) {
-  const { canRedo, redo } = useSlateHistory();
+  const { canRedo, redo } = usePliteHistory();
 
   return (
     <ToolbarButton
@@ -28,7 +28,7 @@ export function RedoToolbarButton(
 export function UndoToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>
 ) {
-  const { canUndo, undo } = useSlateHistory();
+  const { canUndo, undo } = usePliteHistory();
 
   return (
     <ToolbarButton

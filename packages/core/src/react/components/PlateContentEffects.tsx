@@ -1,13 +1,13 @@
 import React from 'react';
 
-import type { Editor } from '@platejs/slate';
+import type { Editor } from '@platejs/plite';
 import { isDefined } from '@udecode/utils';
 import { useAtomStoreValue } from 'jotai-x';
 
 import type { PlateStoreState } from '../stores';
 
 import { getCurrentRuntimeTransforms } from '../../internal/currentRuntimeBridge';
-import { SlateExtensionPlugin } from '../../lib';
+import { PliteExtensionPlugin } from '../../lib';
 import { usePlateStore } from '../stores';
 import { EditorHotkeysEffect } from './EditorHotkeysEffect';
 import { EditorMethodsEffect } from './EditorMethodsEffect';
@@ -67,23 +67,23 @@ export function PlateContentStateEffect({
     }
   }, [disabled, readOnly, store]);
 
-  // Sync onNodeChange from store to SlateExtensionPlugin
+  // Sync onNodeChange from store to PliteExtensionPlugin
   const onNodeChange = useAtomStoreValue(store, 'onNodeChange') as NonNullable<
     PlateStoreState['onNodeChange']
   > | null;
   React.useLayoutEffect(() => {
     if (onNodeChange) {
-      editor.setOption(SlateExtensionPlugin, 'onNodeChange', onNodeChange);
+      editor.setOption(PliteExtensionPlugin, 'onNodeChange', onNodeChange);
     }
   }, [editor, onNodeChange]);
 
-  // Sync onTextChange from store to SlateExtensionPlugin
+  // Sync onTextChange from store to PliteExtensionPlugin
   const onTextChange = useAtomStoreValue(store, 'onTextChange') as NonNullable<
     PlateStoreState['onTextChange']
   > | null;
   React.useLayoutEffect(() => {
     if (onTextChange) {
-      editor.setOption(SlateExtensionPlugin, 'onTextChange', onTextChange);
+      editor.setOption(PliteExtensionPlugin, 'onTextChange', onTextChange);
     }
   }, [editor, onTextChange]);
 

@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { type SlatePlugin, createSlateEditor } from 'platejs';
+import { type EditorPlugin, createBasePlateEditor } from 'platejs';
 import { TextAlignPlugin } from '@platejs/basic-styles/react';
 import { BasicBlocksPlugin } from '@platejs/basic-nodes/react';
 import { BasicMarksPlugin } from '@platejs/basic-nodes/react';
@@ -49,11 +49,11 @@ export const testDocxDeserializer = ({
   expected: any;
   filename: string;
   input?: any;
-  overridePlugins?: SlatePlugin['override']['plugins'];
+  overridePlugins?: EditorPlugin['override']['plugins'];
   plugins?: any[];
 }) => {
   it('deserialize', () => {
-    const actual = createSlateEditor({
+    const actual = createBasePlateEditor({
       override: {
         plugins: overridePlugins,
       },

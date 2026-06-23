@@ -1,4 +1,4 @@
-import type { Node } from '@platejs/slate';
+import type { Node } from '@platejs/plite';
 
 import defaults from 'lodash/defaults.js';
 

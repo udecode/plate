@@ -1,8 +1,8 @@
 import type { Locator } from '@playwright/test';
 
-import { SLATE_BROWSER_HANDLE_KEY } from './constants';
+import { PLITE_BROWSER_HANDLE_KEY } from './constants';
 
-export const evaluateSlateBrowserHandle = async <T>(
+export const evaluatePliteBrowserHandle = async <T>(
   root: Locator,
   method: string,
   args: readonly unknown[] = [],
@@ -32,5 +32,5 @@ export const evaluateSlateBrowserHandle = async <T>(
 
       return fn(...args);
     },
-    { args, errorMessage, key: SLATE_BROWSER_HANDLE_KEY, method }
+    { args, errorMessage, key: PLITE_BROWSER_HANDLE_KEY, method }
   ) as Promise<T>;

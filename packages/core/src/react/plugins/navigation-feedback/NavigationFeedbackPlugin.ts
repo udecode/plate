@@ -1,4 +1,4 @@
-import { PathApi } from '@platejs/slate';
+import { PathApi } from '@platejs/plite';
 
 import { NavigationFeedbackPlugin as NavigationFeedbackBasePlugin } from '../../../lib/plugins/navigation-feedback/NavigationFeedbackPlugin';
 import { toTPlatePlugin } from '../../plugin';

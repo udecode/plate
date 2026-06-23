@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
 import {
-  type SlateEditor,
-  createSlateEditor,
-  createTSlatePlugin,
+  type BasePlateEditor,
+  createBasePlateEditor,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -18,7 +18,7 @@ jsxt;
 
 const CUSTOM_H1 = 'heading-one';
 
-const H1Plugin = createTSlatePlugin({
+const H1Plugin = createEditorPlugin({
   key: KEYS.h1,
 });
 
@@ -26,7 +26,7 @@ const CustomH1Plugin = H1Plugin.extend({
   node: { type: CUSTOM_H1 },
 });
 
-const BlockquotePlugin = createTSlatePlugin({
+const BlockquotePlugin = createEditorPlugin({
   key: KEYS.blockquote,
 });
 
@@ -65,11 +65,11 @@ const getToggledEditor = ({
   options,
   plugins = [BaseListPlugin, BaseIndentPlugin],
 }: {
-  input: SlateEditor;
+  input: BasePlateEditor;
   options: Parameters<typeof toggleList>[1];
   plugins?: any[];
 }) => {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins,
     selection: input.selection,
     value: input.children,
@@ -90,7 +90,7 @@ describe('toggleList', () => {
               1<cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const output = (
           <editor>
@@ -98,7 +98,7 @@ describe('toggleList', () => {
               1<cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const editor = getToggledEditor({
           input,
@@ -116,7 +116,7 @@ describe('toggleList', () => {
                 1<cursor />
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -124,7 +124,7 @@ describe('toggleList', () => {
                 1<cursor />
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const editor = getToggledEditor({
             input,
@@ -144,7 +144,7 @@ describe('toggleList', () => {
               1<cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const output = (
           <editor>
@@ -152,7 +152,7 @@ describe('toggleList', () => {
               1<cursor />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const editor = getToggledEditor({
           input,
@@ -196,7 +196,7 @@ describe('toggleList', () => {
               21
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const output = (
           <editor>
@@ -229,7 +229,7 @@ describe('toggleList', () => {
               21
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const editor = getToggledEditor({
           input,
@@ -254,7 +254,7 @@ describe('toggleList', () => {
               <cursor />3
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const output = (
           <editor>
@@ -273,7 +273,7 @@ describe('toggleList', () => {
               3
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const editor = getToggledEditor({
           input,
@@ -293,7 +293,7 @@ describe('toggleList', () => {
                 <cursor />1
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -306,7 +306,7 @@ describe('toggleList', () => {
                 1
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const editor = getToggledEditor({
             input,
@@ -337,7 +337,7 @@ describe('toggleList', () => {
                 <cursor />3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -361,7 +361,7 @@ describe('toggleList', () => {
                 3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const editor = getToggledEditor({
             input,
@@ -388,7 +388,7 @@ describe('toggleList', () => {
                 <cursor />3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -407,7 +407,7 @@ describe('toggleList', () => {
                 3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const editor = getToggledEditor({
             input,
@@ -439,7 +439,7 @@ describe('toggleList', () => {
                 <cursor />3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -463,7 +463,7 @@ describe('toggleList', () => {
                 3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const editor = getToggledEditor({
             input,
@@ -492,7 +492,7 @@ describe('toggleList', () => {
                 <cursor />3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -506,7 +506,7 @@ describe('toggleList', () => {
                 3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const editor = getToggledEditor({
             input,
@@ -532,7 +532,7 @@ describe('toggleList', () => {
                 <cursor />2
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -546,7 +546,7 @@ describe('toggleList', () => {
                 2
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const editor = getToggledEditor({
             input,
@@ -576,7 +576,7 @@ describe('toggleList', () => {
                 <cursor />2
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -593,7 +593,7 @@ describe('toggleList', () => {
                 2
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const editor = getToggledEditor({
             input,
@@ -617,7 +617,7 @@ describe('toggleList', () => {
                 <cursor />2
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -628,7 +628,7 @@ describe('toggleList', () => {
                 2
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const editor = getToggledEditor({
             input,
@@ -660,7 +660,7 @@ describe('toggleList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const output = (
           <editor>
@@ -676,7 +676,7 @@ describe('toggleList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const editor = getToggledEditor({
           input,
@@ -701,7 +701,7 @@ describe('toggleList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const output = (
           <editor>
@@ -717,7 +717,7 @@ describe('toggleList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const editor = getToggledEditor({
           input,
@@ -744,7 +744,7 @@ describe('toggleList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const output = (
           <editor>
@@ -758,7 +758,7 @@ describe('toggleList', () => {
               <focus />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const editor = getToggledEditor({
           input,
@@ -785,7 +785,7 @@ describe('toggleList', () => {
               </hp>
             </element>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const output = (
           <editor>
@@ -801,7 +801,7 @@ describe('toggleList', () => {
               </hp>
             </element>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const editor = getToggledEditor({
           input,
@@ -831,7 +831,7 @@ describe('toggleList', () => {
               5<focus />
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const output = (
           <editor>
@@ -856,7 +856,7 @@ describe('toggleList', () => {
               5
             </hp>
           </editor>
-        ) as any as SlateEditor;
+        ) as any as BasePlateEditor;
 
         const editor = getToggledEditor({
           input,
@@ -880,7 +880,7 @@ describe('toggleList', () => {
                 3<focus />
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -899,7 +899,7 @@ describe('toggleList', () => {
                 3
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const editor = getToggledEditor({
             input,
@@ -931,7 +931,7 @@ describe('toggleList', () => {
                 5<focus />
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const output = (
             <editor>
@@ -951,7 +951,7 @@ describe('toggleList', () => {
                 5
               </hp>
             </editor>
-          ) as any as SlateEditor;
+          ) as any as BasePlateEditor;
 
           const editor = getToggledEditor({
             input,

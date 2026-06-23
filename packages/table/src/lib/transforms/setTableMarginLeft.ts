@@ -1,13 +1,13 @@
-import type { SlateEditor, TTableElement } from 'platejs';
+import type { BasePlateEditor, TTableElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 type TableNodeQueryOptions = NonNullable<
-  Parameters<SlateEditor['api']['node']>[0]
+  Parameters<BasePlateEditor['api']['node']>[0]
 >;
 
 export const setTableMarginLeft = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { marginLeft }: { marginLeft: number },
   options: TableNodeQueryOptions = {}
 ) => {

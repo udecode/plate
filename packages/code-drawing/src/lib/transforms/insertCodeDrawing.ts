@@ -1,4 +1,4 @@
-import type { NodeInsertNodesOptions, NodeProps, SlateEditor } from 'platejs';
+import type { NodeInsertNodesOptions, NodeProps, BasePlateEditor } from 'platejs';
 import { PathApi } from 'platejs';
 
 import type { CodeDrawingElement } from '../BaseCodeDrawingPlugin';
@@ -9,7 +9,7 @@ export type InsertCodeDrawingOptions = NonNullable<
 >;
 
 export const insertCodeDrawing = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   props: NodeProps<CodeDrawingElement> = {},
   options: InsertCodeDrawingOptions = {}
 ): void => {

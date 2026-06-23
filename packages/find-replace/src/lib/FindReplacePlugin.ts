@@ -1,4 +1,4 @@
-import { type PluginConfig, createTSlatePlugin, KEYS } from 'platejs';
+import { type PluginConfig, createEditorPlugin, KEYS } from 'platejs';
 
 import { decorateFindReplace } from './decorateFindReplace';
 
@@ -10,7 +10,7 @@ export type FindReplaceConfig = PluginConfig<
   }
 >;
 
-export const FindReplacePlugin = createTSlatePlugin<FindReplaceConfig>({
+export const FindReplacePlugin = createEditorPlugin<FindReplaceConfig>({
   key: KEYS.searchHighlight,
   decorate: decorateFindReplace,
   node: { isLeaf: true },

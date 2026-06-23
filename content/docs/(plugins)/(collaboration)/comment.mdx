@@ -69,7 +69,7 @@ npm install @platejs/comment
 Create the comment plugin with extended configuration for state management:
 
 ```tsx
-import { type ExtendConfig, type Path, isSlateString } from 'platejs';
+import { type ExtendConfig, type Path, isPliteString } from 'platejs';
 import {
   type BaseCommentConfig,
   BaseCommentPlugin,
@@ -126,10 +126,10 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
           isSet = true;
         };
 
-        if (!isSlateString(leaf)) unsetActiveComment();
+        if (!isPliteString(leaf)) unsetActiveComment();
 
         while (leaf.parentElement) {
-          if (leaf.classList.contains(`slate-${type}`)) {
+          if (leaf.classList.contains(`plite-${type}`)) {
             const commentsEntry = api.comment.node();
 
             if (!commentsEntry) {

@@ -22,9 +22,9 @@ export const siteConfig = {
       labelCn: 'Plate',
     },
     {
-      href: '/docs/slate',
-      label: 'Slate',
-      labelCn: 'Slate',
+      href: '/docs/plite',
+      label: 'Plite',
+      labelCn: 'Plite',
     },
     {
       href: '/editors',

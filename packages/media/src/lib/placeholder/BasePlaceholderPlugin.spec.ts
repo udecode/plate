@@ -1,4 +1,4 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { createBasePlateEditor, KEYS } from 'platejs';
 
 import { BasePlaceholderPlugin } from './BasePlaceholderPlugin';
 
@@ -9,7 +9,7 @@ describe('BasePlaceholderPlugin', () => {
     ['imagePlaceholder', KEYS.img],
     ['videoPlaceholder', KEYS.video],
   ] as const)('configures %s and inserts %s placeholders', (_label, mediaType) => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BasePlaceholderPlugin],
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
@@ -29,7 +29,7 @@ describe('BasePlaceholderPlugin', () => {
   });
 
   it('exposes an inferred placeholder transaction group', () => {
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [BasePlaceholderPlugin],
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });

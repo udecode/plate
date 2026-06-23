@@ -1,8 +1,8 @@
-import type { Operation, Path } from '@platejs/slate';
+import type { Operation, Path } from '@platejs/plite';
 import * as Y from 'yjs';
 
 import {
-  getSlateYjsElementType,
+  getPliteYjsElementType,
   hasYjsAttributes,
   toYjsAttributeRecord,
   type YjsNode,
@@ -37,13 +37,13 @@ import { lastPathIndex, parentPath, pathsEqual } from './path';
 import { isRecord } from './record';
 import {
   createSplitElement,
-  isNoopSlateOperationForYjs as isNoopOperationForYjs,
+  isNoopPliteOperationForYjs as isNoopOperationForYjs,
   replaceCompatibleYjsChildren,
   setYjsNodeAttributes,
 } from './replacement';
 import type { YjsTraceEntry, YjsTraceFallback } from './types';
 
-export { isNoopSlateOperationForYjs } from './replacement';
+export { isNoopPliteOperationForYjs } from './replacement';
 
 const materializeEmptyYjsText = (
   root: Y.XmlElement,
@@ -200,7 +200,7 @@ const canMergeYjsElements = (
   previousChildren: readonly YjsNode[],
   targetChildren: readonly YjsNode[]
 ): boolean => {
-  if (getSlateYjsElementType(previous) !== getSlateYjsElementType(target)) {
+  if (getPliteYjsElementType(previous) !== getPliteYjsElementType(target)) {
     return false;
   }
 
@@ -263,7 +263,7 @@ const getYjsElementOperationTarget = (
   return target;
 };
 
-export const applySlateOperationToYjs = (
+export const applyPliteOperationToYjs = (
   root: Y.XmlElement,
   operation: Operation
 ): YjsTraceEntry | null => {

@@ -5,8 +5,8 @@ import { BaseBlockquotePlugin, BaseH1Plugin } from '@platejs/basic-nodes';
 import { BaseIndentPlugin } from '@platejs/indent';
 import { BaseListPlugin } from '@platejs/list';
 
-import { createSlateEditor } from '../../editor';
-import { createSlatePlugin } from '../../plugin/createSlatePlugin';
+import { createBasePlateEditor } from '../../editor';
+import { createEditorPlugin } from '../../plugin/createEditorPlugin';
 
 jsxt;
 
@@ -21,7 +21,7 @@ const createElementPlugin = ({
   match?: ({ node }: any) => boolean;
   type?: string;
 }) =>
-  createSlatePlugin({
+  createEditorPlugin({
     key,
     node: {
       isElement: true,
@@ -49,11 +49,11 @@ const getEditorAfterAction = ({
   input,
   plugins = [],
 }: {
-  action: (editor: ReturnType<typeof createSlateEditor>) => void;
+  action: (editor: ReturnType<typeof createBasePlateEditor>) => void;
   input: any;
   plugins?: any[];
 }) => {
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins,
     selection: input.selection,
     value: input.children,
@@ -845,7 +845,7 @@ describe('withDeleteRules', () => {
     it.each([
       ['without delete rules', undefined],
       ['with an empty delete rule object', {}],
-    ])('%s keeps Slate default delete behavior', (_label, deleteRules) => {
+    ])('%s keeps Plite default delete behavior', (_label, deleteRules) => {
       const input = (
         <editor>
           <hp>

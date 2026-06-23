@@ -6,13 +6,13 @@ import {
   createYjsNode,
   getYjsNode,
   getYjsParent,
-  readSlateValueFromYjs,
+  readPliteValueFromYjs,
 } from '../src/core/document';
 
 describe('@platejs/yjs document id contract', () => {
   it('resolves empty paths to the Yjs root', () => {
     const doc = new Y.Doc();
-    const root = doc.get('@platejs/slate', Y.XmlElement);
+    const root = doc.get('@platejs/plite', Y.XmlElement);
     const node = createYjsNode({ children: [{ text: 'plain' }] });
 
     root.insert(0, [node]);
@@ -28,14 +28,14 @@ describe('@platejs/yjs document id contract', () => {
 
   it('uses the fallback element type consistently for typeless elements', () => {
     const doc = new Y.Doc();
-    const root = doc.get('@platejs/slate', Y.XmlElement);
+    const root = doc.get('@platejs/plite', Y.XmlElement);
     const node = createYjsNode({ children: [{ text: 'plain' }] });
 
     root.insert(0, [node]);
 
-    assert.equal(node.getAttribute('slate:type'), 'element');
+    assert.equal(node.getAttribute('plite:type'), 'element');
 
-    assert.deepEqual(readSlateValueFromYjs(root), [
+    assert.deepEqual(readPliteValueFromYjs(root), [
       { children: [{ text: 'plain' }], type: 'element' },
     ]);
   });
@@ -47,7 +47,7 @@ describe('@platejs/yjs document id contract', () => {
 
     const firstDoc = new Y.Doc();
     firstDoc.clientID = 101;
-    const firstRoot = firstDoc.get('@platejs/slate', Y.XmlElement);
+    const firstRoot = firstDoc.get('@platejs/plite', Y.XmlElement);
     const firstText = new Y.XmlText();
 
     firstRoot.insert(0, [firstText]);
@@ -55,7 +55,7 @@ describe('@platejs/yjs document id contract', () => {
 
     const secondDoc = new Y.Doc();
     secondDoc.clientID = 202;
-    const secondRoot = secondDoc.get('@platejs/slate', Y.XmlElement);
+    const secondRoot = secondDoc.get('@platejs/plite', Y.XmlElement);
     const secondParagraph = new Y.XmlElement('paragraph');
     const secondWrapper = new Y.XmlElement('block-quote');
 
@@ -63,8 +63,8 @@ describe('@platejs/yjs document id contract', () => {
     second.setVirtualYjsMove(secondRoot, secondParagraph, secondWrapper);
 
     assert.notEqual(
-      firstText.getAttribute('slate:yjs-id'),
-      secondParagraph.getAttribute('slate:yjs-id')
+      firstText.getAttribute('plite:yjs-id'),
+      secondParagraph.getAttribute('plite:yjs-id')
     );
   });
 });

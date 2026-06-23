@@ -1,5 +1,5 @@
-import { ElementApi, type Path, PathApi } from '@platejs/slate';
-import type { SlateEditor } from '@platejs/core';
+import { ElementApi, type Path, PathApi } from '@platejs/plite';
+import type { BasePlateEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 
 import { getListTypes } from './getListTypes';
@@ -13,7 +13,7 @@ import { getListTypes } from './getListTypes';
  * - Its path is not equals to diffListPath.
  */
 export const getHighestEmptyList = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     diffListPath,
     liPath,

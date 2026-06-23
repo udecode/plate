@@ -35,7 +35,9 @@ export const useMarkToolbarButton = (
               ? [state.clear]
               : [];
 
-          clearMarks.forEach((mark) => tx.marks.remove(mark));
+          clearMarks.forEach((mark) => {
+            tx.marks.remove(mark);
+          });
           tx.marks.toggle(state.nodeType);
         });
         editor.api.dom.focus();

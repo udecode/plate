@@ -1,11 +1,15 @@
-import { type SlateEditor, isUrl as defaultIsUrl, sanitizeUrl } from 'platejs';
+import {
+  type BasePlateEditor,
+  isUrl as defaultIsUrl,
+  sanitizeUrl,
+} from 'platejs';
 
 import { BaseLinkPlugin } from '../BaseLinkPlugin';
 
 // Markdown headings have a space after the # symbols
 const MARKDOWN_HEADING_PATTERN = /^#{1,6}\s+/;
 
-export const validateUrl = (editor: SlateEditor, url: string): boolean => {
+export const validateUrl = (editor: BasePlateEditor, url: string): boolean => {
   const { allowedSchemes, dangerouslySkipSanitization, isUrl } =
     editor.getOptions(BaseLinkPlugin);
   const customIsUrl = isUrl && isUrl !== defaultIsUrl ? isUrl : undefined;

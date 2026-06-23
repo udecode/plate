@@ -1,7 +1,7 @@
 import {
   type HtmlDeserializer,
-  type SlatePlugin,
-  createSlatePlugin,
+  type EditorPlugin,
+  createEditorPlugin,
   KEYS,
 } from 'platejs';
 
@@ -49,7 +49,7 @@ const parse: HtmlDeserializer['parse'] = (options: any) => {
   return node;
 };
 
-export const DocxPlugin = createSlatePlugin({
+export const DocxPlugin = createEditorPlugin({
   key: KEYS.docx,
   editOnly: true,
   inject: {
@@ -84,7 +84,7 @@ export const DocxPlugin = createSlatePlugin({
                 },
               },
             },
-          } satisfies Partial<SlatePlugin>,
+          } satisfies Partial<EditorPlugin>,
         ])
       ),
       img: {

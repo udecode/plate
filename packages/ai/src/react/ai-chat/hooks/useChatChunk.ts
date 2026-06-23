@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-import type { Text } from '@platejs/slate';
+import type { Text } from '@platejs/plite';
 
 import { KEYS } from 'platejs';
 import { usePluginOption } from 'platejs/react';

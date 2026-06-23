@@ -239,8 +239,8 @@ describe('@platejs/yjs package config contract', () => {
     const fastScriptNames = [
       'check',
       'test',
-      'slate:test',
-      'slate:browser:test',
+      'plite:test',
+      'plite:browser:test',
     ];
     const forbiddenFastCheckFragments = [
       'test:integration',
@@ -268,7 +268,7 @@ describe('@platejs/yjs package config contract', () => {
       }
     }
 
-    assert.equal(typeof scripts['slate:browser:test:proof'], 'string');
+    assert.equal(typeof scripts['plite:browser:test:proof'], 'string');
   });
 
   it('keeps Yjs collaboration benchmark phase metrics explicit', () => {
@@ -281,15 +281,15 @@ describe('@platejs/yjs package config contract', () => {
 
     if (!existsSync(benchmarkUrl)) {
       assert.equal(
-        scripts['slate:bench:targets:check'],
+        scripts['plite:bench:targets:check'],
         'node tooling/scripts/bench-targets.mjs check'
       );
       assert.equal(
-        scripts['slate:bench:targets:list'],
+        scripts['plite:bench:targets:list'],
         'node tooling/scripts/bench-targets.mjs list'
       );
       assert.equal(
-        scripts['slate:bench:targets:run'],
+        scripts['plite:bench:targets:run'],
         'node tooling/scripts/bench-targets.mjs run'
       );
       assert.equal(scripts['bench:core:yjs-collaboration:local'], undefined);
@@ -336,8 +336,8 @@ describe('@platejs/yjs package config contract', () => {
       const rootPackage = readPackageJson('../../../package.json');
       const scripts = rootPackage.scripts ?? {};
 
-      assert.equal(typeof scripts['slate:bench:targets:check'], 'string');
-      assert.equal(typeof scripts['slate:bench:targets:run'], 'string');
+      assert.equal(typeof scripts['plite:bench:targets:check'], 'string');
+      assert.equal(typeof scripts['plite:bench:targets:run'], 'string');
       return;
     }
 
@@ -364,7 +364,7 @@ describe('@platejs/yjs package config contract', () => {
     assert.match(benchmarkSource, /repeatRunsRequiredBeforeEnforcement:\s*3/);
     assert.match(
       benchmarkSource,
-      /tmp\/slate-yjs-collaboration-benchmark\.json/
+      /tmp\/plite-yjs-collaboration-benchmark\.json/
     );
   });
 

@@ -1,4 +1,4 @@
-import type { Descendant, Element } from '@platejs/slate';
+import type { Descendant, Element } from '@platejs/plite';
 import {
   KEYS,
   type TTableCellElement,

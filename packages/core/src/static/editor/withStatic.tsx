@@ -1,4 +1,4 @@
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
 import {
   createCurrentRuntimeEditor,
@@ -8,18 +8,18 @@ import type { AnyPluginConfig } from '../../lib/plugin';
 import type { CorePlugin } from '../../lib/plugins';
 
 import {
-  type CreateSlateEditorOptions,
+  type CreateBasePlateEditorOptions,
   type InferPlugins,
-  type SlatePluginInput,
+  type EditorPluginInput,
   type WithSlateOptions,
-  withSlate,
+  withPlite,
 } from '../../lib/editor';
 import { getStaticPlugins } from '../plugins/getStaticPlugins';
 
 type CreateStaticEditorOptions<
   V extends Value = Value,
-  P extends readonly SlatePluginInput[] = readonly CorePlugin[],
-> = CreateSlateEditorOptions<V, P> & {};
+  P extends readonly EditorPluginInput[] = readonly CorePlugin[],
+> = CreateBasePlateEditorOptions<V, P> & {};
 
 type WithStaticOptions<
   V extends Value = Value,
@@ -39,12 +39,12 @@ const withStatic = <
 
   options.plugins = [...staticPlugins, ...plugins];
 
-  return withSlate<V, P>(editor, options);
+  return withPlite<V, P>(editor, options);
 };
 
 export const createStaticEditor = <
   V extends Value = Value,
-  const P extends readonly SlatePluginInput[] = readonly CorePlugin[],
+  const P extends readonly EditorPluginInput[] = readonly CorePlugin[],
 >({
   editor = createCurrentRuntimeEditor(),
   ...options

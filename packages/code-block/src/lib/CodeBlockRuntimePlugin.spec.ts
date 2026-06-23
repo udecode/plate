@@ -1,7 +1,7 @@
-import type { Value } from '@platejs/slate';
+import type { Value } from '@platejs/plite';
 
 import { BaseLinkPlugin } from '@platejs/link';
-import { defineEditorExtension } from '@platejs/slate';
+import { defineEditorExtension } from '@platejs/plite';
 import { createDataTransfer } from '@platejs/test-utils';
 import { createLowlight } from 'lowlight';
 import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
@@ -44,7 +44,7 @@ const installRedecorateProbe = (editor: unknown, redecorate: () => void) => {
   );
 };
 
-describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
+describe('BaseCodeBlockPlugin Plite runtime', () => {
   it('splits an indented code line on insertBreak', () => {
     const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],

@@ -1,5 +1,5 @@
-import type { Point } from '@platejs/slate';
-import type { SlateEditor } from '../../editor';
+import type { Point } from '@platejs/plite';
+import type { BasePlateEditor } from '../../editor';
 
 import {
   deleteEditorText,
@@ -32,7 +32,7 @@ import { defineInputRule } from './defineInputRule';
 
 const noWhiteSpaceRegex = /\S+/;
 
-const isPreviousCharacterEmpty = (editor: SlateEditor, at: Point) => {
+const isPreviousCharacterEmpty = (editor: BasePlateEditor, at: Point) => {
   const range = getEditorRange(editor, 'before', at);
 
   if (!range) return true;
@@ -42,14 +42,14 @@ const isPreviousCharacterEmpty = (editor: SlateEditor, at: Point) => {
   return text ? !noWhiteSpaceRegex.exec(text) : true;
 };
 
-const selectEditor = (editor: SlateEditor, target: unknown) => {
+const selectEditor = (editor: BasePlateEditor, target: unknown) => {
   editor.update((tx) => {
     tx.selection.set(target as never);
   });
 };
 
 const collapseEditor = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   options: { edge?: 'anchor' | 'end' | 'focus' | 'start' }
 ) => {
   editor.update((tx) => {
@@ -58,7 +58,7 @@ const collapseEditor = (
 };
 
 const insertEditorText = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   text: string,
   options?: { at?: unknown }
 ) => {
@@ -68,7 +68,7 @@ const insertEditorText = (
 };
 
 const setEditorNodes = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   props: Record<string, unknown>,
   options?: Record<string, unknown>
 ) => {
@@ -77,7 +77,7 @@ const setEditorNodes = (
   });
 };
 
-const toggleEditorBlock = (editor: SlateEditor, type: string) => {
+const toggleEditorBlock = (editor: BasePlateEditor, type: string) => {
   setEditorNodes(
     editor,
     { type },
@@ -88,7 +88,7 @@ const toggleEditorBlock = (editor: SlateEditor, type: string) => {
 };
 
 const getMarkMatch = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   {
     end = '',
     start,
@@ -521,7 +521,7 @@ const getTextSubstitutionMatchRange = ({
 };
 
 const getTextSubstitutionMatchPoints = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   { end, start }: { end: string; start: string }
 ): TextSubstitutionMatch['points'] | undefined => {
   const { selection } = editor;
@@ -616,7 +616,7 @@ const resolveTextSubstitution = ({
   editor,
 }: {
   candidates: CompiledPattern[];
-  editor: SlateEditor;
+  editor: BasePlateEditor;
 }): TextSubstitutionMatch | undefined => {
   for (const { end, pattern, start } of candidates) {
     const points = getTextSubstitutionMatchPoints(editor, { end, start });
@@ -632,7 +632,7 @@ const resolveTextSubstitution = ({
 };
 
 const applyTextSubstitution = (
-  editor: SlateEditor,
+  editor: BasePlateEditor,
   match: TextSubstitutionMatch | undefined
 ) => {
   const selection = editor.selection;
