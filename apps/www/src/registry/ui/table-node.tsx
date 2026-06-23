@@ -817,7 +817,7 @@ function TableFloatingToolbar({
 function ExpandedSelectionTableFloatingToolbarContent(
   props: React.ComponentProps<typeof PopoverContent>
 ) {
-  const { tf } = useEditorPlugin(TablePlugin);
+  const { editor } = useEditorPlugin(TablePlugin);
   const { canMerge, canSplit } = useTableMergeState();
 
   if (!canMerge && !canSplit) return null;
@@ -826,8 +826,8 @@ function ExpandedSelectionTableFloatingToolbarContent(
     <TableFloatingToolbarContent
       canMerge={canMerge}
       canSplit={canSplit}
-      onMerge={() => tf.table.merge()}
-      onSplit={() => tf.table.split()}
+      onMerge={() => editor.getTransforms(TablePlugin).table.merge()}
+      onSplit={() => editor.getTransforms(TablePlugin).table.split()}
       {...props}
     />
   );
@@ -836,10 +836,14 @@ function ExpandedSelectionTableFloatingToolbarContent(
 function CollapsedTableFloatingToolbarContent(
   props: React.ComponentProps<typeof PopoverContent>
 ) {
-  const { tf } = useEditorPlugin(TablePlugin);
+  const { editor } = useEditorPlugin(TablePlugin);
   const element = useElement<TTableElement>();
   const { props: buttonProps } = useRemoveNodeButton({ element });
   const { canSplit } = useTableMergeState();
+  const getTableTransforms = React.useCallback(
+    () => editor.getTransforms(TablePlugin),
+    [editor]
+  );
 
   return (
     <TableFloatingToolbarContent
@@ -847,24 +851,24 @@ function CollapsedTableFloatingToolbarContent(
       canSplit={canSplit}
       collapsedInside
       onDeleteColumn={() => {
-        tf.remove.tableColumn();
+        getTableTransforms().remove.tableColumn();
       }}
       onDeleteRow={() => {
-        tf.remove.tableRow();
+        getTableTransforms().remove.tableRow();
       }}
       onInsertColumnAfter={() => {
-        tf.insert.tableColumn();
+        getTableTransforms().insert.tableColumn();
       }}
       onInsertColumnBefore={() => {
-        tf.insert.tableColumn({ before: true });
+        getTableTransforms().insert.tableColumn({ before: true });
       }}
       onInsertRowAfter={() => {
-        tf.insert.tableRow();
+        getTableTransforms().insert.tableRow();
       }}
       onInsertRowBefore={() => {
-        tf.insert.tableRow({ before: true });
+        getTableTransforms().insert.tableRow({ before: true });
       }}
-      onSplit={() => tf.table.split()}
+      onSplit={() => getTableTransforms().table.split()}
       {...props}
     />
   );
