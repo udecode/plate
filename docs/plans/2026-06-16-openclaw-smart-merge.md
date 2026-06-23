@@ -9,7 +9,7 @@ docs/plans/2026-06-16-openclaw-smart-merge.md
 Task source:
 - type: local agent workflow sync
 - id / link: /Users/zbeyens/.agents/skills/openclaw-sync/SKILL.md
-- title: OpenClaw smart merge into Plate/Slate agent setup
+- title: OpenClaw smart merge into Plate/Plite agent setup
 - acceptance criteria: run the OpenClaw report, inspect high-signal source files, classify candidates, patch only accepted local owners, sync generated skill mirrors when needed, and verify the plan.
 
 First checkpoint:
@@ -184,7 +184,7 @@ Findings:
 - Accepted OpenClaw AGENTS/VISION maintainer proof doctrine into `docs/vision/common.md`: live-state-first, duplicate/owner guard, source-backed skill topology.
 - Accepted explicit skill topology authority into global `openclaw-sync`: update/create skills only after source-backed owner classification.
 - Accepted repo routing into `.agents/AGENTS.md` and fixed the broken `clawsweeper` bullet text.
-- Rejected `control-ui-e2e` as product-specific; local Browser/slate-browser proof owners already cover the reusable visual-proof invariant.
+- Rejected `control-ui-e2e` as product-specific; local Browser/plite-browser proof owners already cover the reusable visual-proof invariant.
 - Rejected `technical-documentation` as overlapping with local `docs-creator`, `sync-vision`, and AGENTS/VISION doctrine; imported only the governance-doc audit idea through current workflow.
 - Rejected `agent-transcript` for now: useful for PR provenance, but PR creation/update was out of scope and no local owner was requested.
 - Rejected `clawsweeper` direct copy: local `.agents/rules/clawsweeper.mdc` already contains archive-first, duplicate-proof, small-fix, and live-state bars.
@@ -211,7 +211,7 @@ Error attempts:
 Verification evidence:
 - OpenClaw report: `node "$HOME/.agents/skills/openclaw-sync/scripts/openclaw-sync-report.mjs" --openclaw-root "$HOME/git/openclaw" --target "$PWD" --global-skills "$HOME/.agents/skills" --refresh --max 300 --out .tmp/openclaw-sync/report.md --json .tmp/openclaw-sync/report.json` passed.
 - `pnpm install` passed and ran Skiller successfully.
-- Source/generated audit passed: `rg -n "openclaw-sync|Skill Topology Authority|Maintainer Automation Loop|Maintainer automation is live-state-first|clawsweeper for Slate|f\\[text\\]" ...` found expected new text and no broken `f[text]` typo.
+- Source/generated audit passed: `rg -n "openclaw-sync|Skill Topology Authority|Maintainer Automation Loop|Maintainer automation is live-state-first|clawsweeper for Plite|f\\[text\\]" ...` found expected new text and no broken `f[text]` typo.
 - `node .agents/rules/sync-vision/scripts/collect-vision-diff.mjs --dry-run` passed and did not advance the baseline.
 - Focused diff/source audit read changed local and global workflow files.
 

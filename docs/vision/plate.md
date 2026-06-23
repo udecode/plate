@@ -2,14 +2,14 @@
 
 Plate is the editor framework that ships in apps. It owns plugins, wrappers,
 components, kits, app-facing docs, product ergonomics, and opinionated UX built
-on top of Slate-first primitives.
+on top of Plite-first primitives.
 
 Root `VISION.md` is the mandatory first read. This file carries the fuller
 Plate doctrine after the lane is selected.
 
 ## Direction
 
-Plate started as a way to make Slate-based editors practical to build and
+Plate started as a way to make Plite-based editors practical to build and
 maintain in real products.
 
 The goal: a rich-text editor framework that is composable, production-ready,
@@ -21,7 +21,7 @@ Current priorities:
 - docs, setup reliability, and first-run UX;
 - performance on real editor workloads;
 - better plugin and component ergonomics;
-- better migration from Slate and a clearer Slate boundary;
+- better migration from Plite and a clearer Plite boundary;
 - serialization, import, and export reliability;
 - stronger registry, templates, and docs coverage;
 - collaboration, AI, and advanced workflows where they fit cleanly;
@@ -77,7 +77,7 @@ Owner map:
 | Concern | Owner |
 | --- | --- |
 | public GitHub issue/PR/security queue control plane | `maintainer` |
-| internal Plate/Slate long quality loops | `auto` |
+| internal Plate/Plite long quality loops | `auto` |
 | post-merge/current-tree until-clean closure | `autoclosure` |
 | reusable architecture doctrine | root `VISION.md` and `docs/vision/*.md` |
 | public API shape decisions | root `VISION.md` and `docs/vision/*.md` |
@@ -108,18 +108,18 @@ insertion, or any semantic transform owned by a feature package.
 Core owns matcher primitives and shared input-state access. Feature packages
 own semantic apply behavior.
 
-## Slate Boundary
+## Plite Boundary
 
-Plate is built on top of Slate.
+Plate is built on top of Plite.
 
-Migration from Slate to Plate should be straightforward, and Plate can
-re-export Slate surface where it improves DX. But Plate is not a dumping ground
-for bugs that reproduce in plain Slate. If the same issue happens in plain
-Slate without Plate-specific code, it belongs there.
+Migration from Plite to Plate should be straightforward, and Plate can
+re-export Plite surface where it improves DX. But Plate is not a dumping ground
+for bugs that reproduce in plain Plite. If the same issue happens in plain
+Plite without Plate-specific code, it belongs there.
 
-When Plate API names or runtime habits conflict with Slate v2, Slate v2 wins.
-Break Plate instead of bending Slate or hiding the conflict behind aliases.
-If a Plate public API collides with Slate v2 runtime names such as `api`,
+When Plate API names or runtime habits conflict with Plite, Plite wins.
+Break Plate instead of bending Plite or hiding the conflict behind aliases.
+If a Plate public API collides with Plite runtime names such as `api`,
 `getApi`, `state`, or `tx`, cut or rename the Plate API.
 
 ## Security
@@ -154,7 +154,7 @@ convenience wrappers that hide critical editor decisions from users.
 ## What We Will Not Merge For Now
 
 - Refactor-only PRs with no concrete user, API, or docs value.
-- Fixes for bugs that reproduce in plain Slate without Plate-specific code.
+- Fixes for bugs that reproduce in plain Plite without Plate-specific code.
 - Public PRs that change user-visible behavior without real behavior proof.
 - Issues or PRs that are too incomplete for a local maintainer Codex run to
   reproduce, route, or review from public context.
@@ -164,7 +164,7 @@ convenience wrappers that hide critical editor decisions from users.
   code.
 - Convenience abstractions that hide editor ownership, schema design, or trust
   boundaries.
-- Large framework detours that dilute the Plate-on-Slate model.
+- Large framework detours that dilute the Plate-on-Plite model.
 - Heavy AI-specific orchestration in core when the existing plugin/package
   surface is enough.
 - Full-doc translation sets beyond English and Chinese for now.

@@ -2,7 +2,7 @@
 title: Shell-backed large-document selection must fail closed in DOM and run broad ops through the model
 date: 2026-04-11
 category: docs/solutions/performance-issues
-module: Slate v2 React runtime
+module: Plite React runtime
 problem_type: performance_issue
 component: frontend_stimulus
 symptoms:
@@ -13,7 +13,7 @@ root_cause: logic_error
 resolution_type: code_fix
 severity: critical
 tags:
-  - slate-v2
+  - plite
   - slate-react
   - performance
   - huge-document
@@ -36,7 +36,7 @@ That breaks the default assumptions behind `Ctrl+A`, selection sync, and paste.
 
 - `Ctrl+A` on a shell-backed document would otherwise select only the mounted
   editable DOM
-- DOM selection sync would keep trying to project a Slate range through
+- DOM selection sync would keep trying to project a Plite range through
   unmounted islands
 - browser-default paste on a shell-backed selection would be wrong even if the
   model selection was right
@@ -52,7 +52,7 @@ That breaks the default assumptions behind `Ctrl+A`, selection sync, and paste.
 ## Solution
 
 In
-[editable.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable.tsx):
+[editable.tsx](/Users/zbeyens/git/plite/packages/plite-react/src/components/editable.tsx):
 
 - intercept `Ctrl+A` in large-document mode
 - map it directly to the full-document model range
@@ -91,5 +91,5 @@ That keeps shells cheap while preserving correct editor behavior.
 
 ## Related Issues
 
-- [2026-04-11-slate-v2-large-document-broad-ops-batch.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-slate-v2-large-document-broad-ops-batch.md)
-- [2026-04-11-slate-v2-proof-first-large-document-layer-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-slate-v2-proof-first-large-document-layer-plan.md)
+- [2026-04-11-plite-large-document-broad-ops-batch.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-plite-large-document-broad-ops-batch.md)
+- [2026-04-11-plite-proof-first-large-document-layer-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-plite-proof-first-large-document-layer-plan.md)

@@ -1,7 +1,7 @@
 # lexical all issues closure
 
 Objective:
-Close the Lexical all-issues Slate v2 closure ledger issue-by-issue with exact
+Close the Lexical all-issues Plite closure ledger issue-by-issue with exact
 proof for every relevant row.
 
 Goal plan:
@@ -19,7 +19,7 @@ Applied packs:
 - agent-native (docs/plans/templates/packs/agent-native.md)
 
 Task source:
-- type: user-invoked `slate-automation` full issue-harvest closure loop
+- type: user-invoked `plite-automation` full issue-harvest closure loop
 - id / link: `.tmp/editor-issue-harvester/lexical/full/issue-closure-ledger.tsv`
 - title: Lexical all-issues closure ledger, issue-by-issue
 - acceptance criteria: process ledger rows in ascending issue number order until
@@ -51,7 +51,7 @@ Verification surface:
 - Primary artifact: `.tmp/editor-issue-harvester/lexical/full/issue-closure-ledger.tsv`.
 - Closure source: `.tmp/editor-issue-harvester/lexical/full/issue-closure-overrides.json`.
 - Regenerator: `node .tmp/editor-issue-harvester/lexical/full/build-closure-ledger.mjs` from `/Users/zbeyens/git/plate-2`.
-- Local proof examples: `bun test ./packages/<package>/test/<file> --test-name-pattern "<pattern>"` from `.tmp/slate-v2`; `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright <spec> --project=<browser> --grep "<pattern>"` from `.tmp/slate-v2`.
+- Local proof examples: `bun test ./packages/<package>/test/<file> --test-name-pattern "<pattern>"` from `.tmp/plite`; `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright <spec> --project=<browser> --grep "<pattern>"` from `.tmp/plite`.
 
 Constraints:
 - Preserve existing user-facing behavior outside the task scope.
@@ -62,9 +62,9 @@ Constraints:
 
 Boundaries:
 - Source of truth: ledger TSV, issue bodies JSON, generated closure ledger MD,
-  Slate v2 source/tests under `.tmp/slate-v2`, and `vision` for
+  Plite source/tests under `.tmp/plite`, and `vision` for
   taste/routing.
-- Allowed edit scope: issue-harvest scratch artifacts, local Slate v2 tests and
+- Allowed edit scope: issue-harvest scratch artifacts, local Plite tests and
   runtime fixes when a relevant issue exposes a real gap, and `.agents/rules/**`
   only for workflow misses. Plate-owned rows are deferred with owner, not
   patched.
@@ -100,7 +100,7 @@ Current verdict:
 - verdict: active
 - confidence: high on process, per-row proof required before closure
 - next owner: next unchecked relevant row after #175
-- reason: #175 is checked with Slate-v2 browser native cross-block selection
+- reason: #175 is checked with Plite-v2 browser native cross-block selection
   proof that excludes zero-width ghost text.
 
 Completion rule:
@@ -116,12 +116,12 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | User requested ascending full issue-by-issue loop; hard rule: one checkmark per relevant issue; per-row steps and final handoff sections copied into this plan. |
-| Skill analysis before edits | yes | Read `slate-automation`, `vision`, `autogoal`, and `docs/slate-v2/agent-start.md`. |
+| Skill analysis before edits | yes | Read `plite-automation`, `vision`, `autogoal`, and `docs/plite/agent-start.md`. |
 | Active goal checked or created | yes | `create_goal` active for closing the Lexical closure ledger. |
-| Source of truth read before edits | yes | Read `issue-closure-ledger.tsv`, issue #3 body, `vision`, and Slate v2 agent start. |
+| Source of truth read before edits | yes | Read `issue-closure-ledger.tsv`, issue #3 body, `vision`, and Plite agent start. |
 | Tracker comments and attachments read | N/A | External Lexical issues are local corpus input; no GitHub posting/sync requested. |
 | Video transcript evidence required | N/A | No local video is part of this prompt; issue videos are external links in corpus only unless a row specifically needs visual reproduction. |
-| `docs/solutions` checked for non-trivial existing-code work | pending | Check targeted solution docs only when a row maps to a matching Plate/Slate package. |
+| `docs/solutions` checked for non-trivial existing-code work | pending | Check targeted solution docs only when a row maps to a matching Plate/Plite package. |
 | TDD decision before behavior change or bug fix | yes | Relevant rows require existing exact test or smallest new verified test before checkmark. |
 | Branch decision for code-changing task | N/A | User wants stay on current v2 flow; do not create branch. |
 | Release artifact decision | yes | N/A: continuous private alpha and test/scratch workflow; no release/publish/PR. |
@@ -133,13 +133,13 @@ Start Gates:
 | Browser route / app surface identified | pending | Per issue row; #3 is Plate-owned mention/combobox candidate, not yet assigned to a browser route. |
 | Browser tool decision recorded | yes | Prefer route Playwright for repeatable behavior; Browser only for live visual proof when route is named/needed. |
 | Console/network caveat policy recorded | yes | Console/network checked only for browser-route proof rows. |
-| Package/API pack selected | yes | Applies because row closures may add Slate v2/Plate package tests. |
+| Package/API pack selected | yes | Applies because row closures may add Plite/Plate package tests. |
 | Public surface or package boundary identified | pending | Per issue row. |
 | Release artifact path selected | yes | N/A: no published user-visible delta in this closure loop unless a row creates package behavior change, then reassess. |
 | `changeset` skill loaded when `.changeset` is required | N/A | No changeset currently required. |
 | Barrel/export impact decision recorded | yes | N/A unless a row changes exports or exported file layout. |
 | Agent-native pack selected | yes | Applies because workflow/skill rules and generated mirrors may be repaired. |
-| Agent-facing action surface identified | yes | `slate-automation`, `editor-test-harvester`, and `vision` are the agent-facing workflow surfaces. |
+| Agent-facing action surface identified | yes | `plite-automation`, `editor-test-harvester`, and `vision` are the agent-facing workflow surfaces. |
 | Source rule versus generated mirror boundary identified | yes | Edit `.agents/rules/**`; run `pnpm install`; verify generated `.agents/skills/**` mirrors. |
 | `agent-native-reviewer` loaded or waiver recorded | pending | Required before completion if agent workflow edits remain in the current diff. |
 
@@ -229,7 +229,7 @@ Completion Gates:
 | Browser final proof artifact | pending | Record screenshot/trace/route proof or exact caveat | pending |
 | Public API / package boundary proof | pending | Source-audit public API, exports, and package boundary impact | pending |
 | Release artifact classification | pending | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | pending |
-| Published package changeset | pending | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | pending |
+| Published package changeset | pending | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | pending |
 | Registry changelog | pending | If the change is registry-only under `apps/www/src/registry/**`, update `docs/components/changelog.mdx` and do not add a package changeset | pending |
 | No release artifact | pending | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | pending |
 | Package typecheck/build/test | pending | Run owning package checks or record N/A with reason | pending |
@@ -256,7 +256,7 @@ Findings:
 - #60 is checked as `test-written` with verified richtext browser proof that
   collapsed italic hotkey typing leaves exactly one block.
 - #65 is checked as `covered-by-existing-test` with verified browser paste and
-  slate-dom clipboard boundary proof bundle.
+  plite-dom clipboard boundary proof bundle.
 - #66 is checked as `test-written` with verified word-delete tab-preservation
   contract.
 - #71 is checked as `covered-by-existing-test` with verified package/browser
@@ -266,11 +266,11 @@ Findings:
 - #123 is checked as `test-written` with verified selection reconciler stale
   DOM offset clamp contract.
 - #136 is checked as `deferred-with-owner` because the ledger classifies it
-  Plate-owned and this run is Slate-v2-only.
-- #141 is checked as `test-written` with a Slate DOM clipboard fallback
+  Plate-owned and this run is Plite-v2-only.
+- #141 is checked as `test-written` with a Plite DOM clipboard fallback
   contract that keeps a single pasted tab inside one text node through follow-up
   insert/delete editing.
-- #146 is checked as `test-written` with a Slate DOM internal fragment
+- #146 is checked as `test-written` with a Plite DOM internal fragment
   copy/paste contract that rejects stray empty text leaves after full
   multi-block paste.
 - #147 is checked as `covered-by-existing-test` with verified paste-html browser
@@ -283,7 +283,7 @@ Findings:
   model/DOM caret sync proof. OS text-cursor indicator itself is not
   inspectable, so DOM caret is the portable proof.
 - #170 and #172 are checked as `invalid-skip` false positives because emoji
-  shortcut/autocorrect conversion is product/plugin behavior, not raw Slate-v2.
+  shortcut/autocorrect conversion is product/plugin behavior, not raw Plite-v2.
 - #171 is checked as `test-written` with verified custom-placeholder
   dictation-style `insertText` beforeinput proof.
 - #175 is checked as `test-written` with verified plaintext browser
@@ -294,8 +294,8 @@ Decisions and tradeoffs:
 - Process rows in ascending issue number order.
 - Cluster/matrix rows are routing only. They cannot close an issue.
 - Plate-owned rows close as `deferred-with-owner` with a concrete Plate owner
-  and reason. User clarified this loop is Slate-v2 only.
-- For raw portable Slate gaps, write or link the smallest exact local test and
+  and reason. User clarified this loop is Plite-v2 only.
+- For raw portable Plite gaps, write or link the smallest exact local test and
   run the focused verification command.
 
 Implementation notes:
@@ -314,31 +314,31 @@ Error attempts:
 | Broad `rg` over generic mention/@ terms streamed excessive package/changelog output | 1 | Use issue-specific `jq`, targeted package/test paths, or redirect broad discovery to scratch artifacts | Recorded as workflow slowdown; avoid this command shape for future rows |
 
 Verification evidence:
-- `bun test ./packages/slate/test/text-units-contract.ts --test-name-pattern "moves word selection across whitespace-padded soft line boundaries"` from `.tmp/slate-v2`: pass for Lexical #7.
-- `bun test ./packages/slate/test/text-units-contract.ts` from `.tmp/slate-v2`: 11 pass.
-- `cd packages/slate-react && bun test:vitest test/model-input-strategy-contract.test.ts -t "deletes the current hard line backward without touching the previous block"` from `.tmp/slate-v2`: pass for Lexical #36.
-- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=webkit --grep "supports WebKit hard-line backward delete without command errors"` from `.tmp/slate-v2`: pass for Lexical #37.
-- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "applies deleteSoftLineBackward target ranges exactly"` from `.tmp/slate-v2`: failed before runtime fix, then passed for Lexical #40.
-- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "keeps browser line-end movement within the current block|moves ArrowRight out of an empty leading block|moves word forward out of an empty leading block|applies deleteSoftLineBackward target ranges exactly"` from `.tmp/slate-v2`: 4 pass for Lexical #46 umbrella.
-- `bun test ./packages/slate/test/text-units-contract.ts --test-name-pattern "moves word selection across|portable Lexical #7163 Unicode rows by Slate character units"` from `.tmp/slate-v2`: 4 pass for Lexical #46 umbrella.
-- `bun test ./packages/slate/test/delete-contract.ts --test-name-pattern "deletes forward over Unicode whitespace before the next word|deletes backward by word at the start of the next word without clearing the line"` from `.tmp/slate-v2`: 2 pass for Lexical #46 umbrella.
-- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "applies mark hotkeys to inserted rich text and clears active marks"` from `.tmp/slate-v2`: pass for Lexical #59.
-- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "does not create an orphan block when typing with a collapsed italic hotkey"` from `.tmp/slate-v2`: pass for Lexical #60.
-- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/paste-html.test.ts --project=chromium --grep "pasted bold text uses <strong>|pastes copied rendered Slate content as an internal fragment before HTML import|runs generated clipboard paste gauntlet without illegal kernel transitions"` from `.tmp/slate-v2`: 3 pass for Lexical #65.
-- `cd packages/slate-dom && bun test ./test/clipboard-boundary.test.ts --test-name-pattern "round-trips a selected fragment|falls back to plain text when no fragment payload exists|pastes multiline plain text as separate blocks|exports decorated multi-leaf text"` from `.tmp/slate-v2`: 4 pass for Lexical #65.
-- `bun test ./packages/slate/test/delete-contract.ts --test-name-pattern "deletes forward by word before a tab without expanding the tab"` from `.tmp/slate-v2`: pass for Lexical #66.
-- `cd packages/slate-react && bun test:vitest test/editable-behavior.test.tsx -t "applies visible root defaults as CSS"` from `.tmp/slate-v2`: pass for Lexical #71.
-- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "inserts text when typed"` from `.tmp/slate-v2`: pass for Lexical #71.
-- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "creates a new plain text block on Enter before follow-up typing"` from `.tmp/slate-v2`: pass for Lexical #72.
-- `cd packages/slate-react && bun test:vitest test/selection-reconciler-contract.test.tsx -t "selection reconciler clamps stale DOM range offsets after text shortening|selection reconciler clears the updating guard when DOM export throws"` from `.tmp/slate-v2`: 2 pass for Lexical #123.
-- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "applies deleteSoftLineBackward target ranges exactly"` from `.tmp/slate-v2`: pass after #123 selection reconciler change.
-- `cd packages/slate-dom && bun test ./test/clipboard-boundary.test.ts --test-name-pattern "keeps a single pasted tab inside one text node through follow-up editing"` from `.tmp/slate-v2`: pass for Lexical #141.
-- `cd packages/slate-dom && bun test ./test/clipboard-boundary.test.ts --test-name-pattern "does not add empty text leaves when pasting a full multi-block fragment"` from `.tmp/slate-v2`: pass for Lexical #146.
-- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/paste-html.test.ts --project=chromium --grep "pasted bold text uses <strong>|pasted code uses <code>|imports Lexical core HTML block shape: plain DOM text node|preserves Google Docs BIU formatting from rich HTML paste"` from `.tmp/slate-v2`: 4 pass for Lexical #147.
-- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "applies deleteWord target ranges over tab whitespace exactly"` from `.tmp/slate-v2`: pass for Lexical #148.
-- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "keeps DOM caret synced after ArrowUp across paragraphs"` from `.tmp/slate-v2`: pass for Lexical #158.
-- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/placeholder.test.ts --project=chromium --grep "commits dictation-style insertText beforeinput from the custom placeholder empty state"` from `.tmp/slate-v2`: pass for Lexical #171.
-- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "keeps Shift\\+ArrowRight cross-block selection on real text"` from `.tmp/slate-v2`: pass for Lexical #175.
+- `bun test ./packages/plite/test/text-units-contract.ts --test-name-pattern "moves word selection across whitespace-padded soft line boundaries"` from `.tmp/plite`: pass for Lexical #7.
+- `bun test ./packages/plite/test/text-units-contract.ts` from `.tmp/plite`: 11 pass.
+- `cd packages/plite-react && bun test:vitest test/model-input-strategy-contract.test.ts -t "deletes the current hard line backward without touching the previous block"` from `.tmp/plite`: pass for Lexical #36.
+- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=webkit --grep "supports WebKit hard-line backward delete without command errors"` from `.tmp/plite`: pass for Lexical #37.
+- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "applies deleteSoftLineBackward target ranges exactly"` from `.tmp/plite`: failed before runtime fix, then passed for Lexical #40.
+- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "keeps browser line-end movement within the current block|moves ArrowRight out of an empty leading block|moves word forward out of an empty leading block|applies deleteSoftLineBackward target ranges exactly"` from `.tmp/plite`: 4 pass for Lexical #46 umbrella.
+- `bun test ./packages/plite/test/text-units-contract.ts --test-name-pattern "moves word selection across|portable Lexical #7163 Unicode rows by Plite character units"` from `.tmp/plite`: 4 pass for Lexical #46 umbrella.
+- `bun test ./packages/plite/test/delete-contract.ts --test-name-pattern "deletes forward over Unicode whitespace before the next word|deletes backward by word at the start of the next word without clearing the line"` from `.tmp/plite`: 2 pass for Lexical #46 umbrella.
+- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "applies mark hotkeys to inserted rich text and clears active marks"` from `.tmp/plite`: pass for Lexical #59.
+- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "does not create an orphan block when typing with a collapsed italic hotkey"` from `.tmp/plite`: pass for Lexical #60.
+- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/paste-html.test.ts --project=chromium --grep "pasted bold text uses <strong>|pastes copied rendered Plite content as an internal fragment before HTML import|runs generated clipboard paste gauntlet without illegal kernel transitions"` from `.tmp/plite`: 3 pass for Lexical #65.
+- `cd packages/plite-dom && bun test ./test/clipboard-boundary.test.ts --test-name-pattern "round-trips a selected fragment|falls back to plain text when no fragment payload exists|pastes multiline plain text as separate blocks|exports decorated multi-leaf text"` from `.tmp/plite`: 4 pass for Lexical #65.
+- `bun test ./packages/plite/test/delete-contract.ts --test-name-pattern "deletes forward by word before a tab without expanding the tab"` from `.tmp/plite`: pass for Lexical #66.
+- `cd packages/plite-react && bun test:vitest test/editable-behavior.test.tsx -t "applies visible root defaults as CSS"` from `.tmp/plite`: pass for Lexical #71.
+- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "inserts text when typed"` from `.tmp/plite`: pass for Lexical #71.
+- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "creates a new plain text block on Enter before follow-up typing"` from `.tmp/plite`: pass for Lexical #72.
+- `cd packages/plite-react && bun test:vitest test/selection-reconciler-contract.test.tsx -t "selection reconciler clamps stale DOM range offsets after text shortening|selection reconciler clears the updating guard when DOM export throws"` from `.tmp/plite`: 2 pass for Lexical #123.
+- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "applies deleteSoftLineBackward target ranges exactly"` from `.tmp/plite`: pass after #123 selection reconciler change.
+- `cd packages/plite-dom && bun test ./test/clipboard-boundary.test.ts --test-name-pattern "keeps a single pasted tab inside one text node through follow-up editing"` from `.tmp/plite`: pass for Lexical #141.
+- `cd packages/plite-dom && bun test ./test/clipboard-boundary.test.ts --test-name-pattern "does not add empty text leaves when pasting a full multi-block fragment"` from `.tmp/plite`: pass for Lexical #146.
+- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/paste-html.test.ts --project=chromium --grep "pasted bold text uses <strong>|pasted code uses <code>|imports Lexical core HTML block shape: plain DOM text node|preserves Google Docs BIU formatting from rich HTML paste"` from `.tmp/plite`: 4 pass for Lexical #147.
+- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "applies deleteWord target ranges over tab whitespace exactly"` from `.tmp/plite`: pass for Lexical #148.
+- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "keeps DOM caret synced after ArrowUp across paragraphs"` from `.tmp/plite`: pass for Lexical #158.
+- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/placeholder.test.ts --project=chromium --grep "commits dictation-style insertText beforeinput from the custom placeholder empty state"` from `.tmp/plite`: pass for Lexical #171.
+- `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/plaintext.test.ts --project=chromium --grep "keeps Shift\\+ArrowRight cross-block selection on real text"` from `.tmp/plite`: pass for Lexical #175.
 
 ## Prompt Requirement Ledger
 
@@ -351,7 +351,7 @@ Verification evidence:
 | Read title/body/classification per issue | active | #3 body read via local `issues-all-with-bodies.json` |
 | Decide skip vs relevant | active | Ledger classification plus per-row body audit before override |
 | Irrelevant rows get `invalid-skip` with reason | active | Existing checked skip rows retained; future rows must use override reason |
-| Relevant rows search exact Slate v2 coverage | active | Plate-owned rows are deferred; future Slate-v2 rows must record exact search/proof |
+| Relevant rows search exact Plite coverage | active | Plate-owned rows are deferred; future Plite-v2 rows must record exact search/proof |
 | Existing coverage requires file:line/test name and focused command | active | #7 example closure |
 | Missing coverage gets smallest correct test | active | Required before `test-written` closure |
 | Focused verification required | active | Required command field in overrides |
@@ -380,8 +380,8 @@ Current issue owner: pending query.
 |--------|-------|----------|--------------|----------|------|
 | P0 | slate-automation/autogoal | all | Created active goal and plan; copied prompt requirements into checkable rows | keep | process #3 |
 | P1 | slate text units | #7 | Wrote and verified `moves word selection across whitespace-padded soft line boundaries` | keep | continue ledger |
-| P2 | scope correction | #3 | Reverted attempted Plate combobox test after user clarified Slate-v2-only; marked #3 `deferred-with-owner` | keep | process #8 |
-| P3 | slate-automation/north-star | all | Patched source rules so Slate-v2-only harvests defer Plate-owned rows; ran `pnpm install`; verified generated mirrors | keep | process #8 |
+| P2 | scope correction | #3 | Reverted attempted Plate combobox test after user clarified Plite-v2-only; marked #3 `deferred-with-owner` | keep | process #8 |
+| P3 | slate-automation/north-star | all | Patched source rules so Plite-v2-only harvests defer Plate-owned rows; ran `pnpm install`; verified generated mirrors | keep | process #8 |
 | P4 | slate transaction contract | #8 | Wrote and verified `moves word selection across formatted middle sibling text leaves` | keep | process #9 |
 | P5 | slate delete contract | #9 | Wrote and verified `deletes forward over Unicode whitespace before the next word` | keep | process #10 |
 | P6 | slate delete contract | #10 | Wrote and verified `deletes backward by word at the start of the next word without clearing the line` | keep | process #14 |
@@ -397,19 +397,19 @@ Current issue owner: pending query.
 | P16 | umbrella coverage bundle | #46 | Linked and reran exact browser/model coverage bundle for keyboard selection/deletion plan requirements | keep | process #59 |
 | P17 | richtext browser proof | #59 | Linked and reran existing collapsed mark hotkey proof for italic-before-typing behavior | keep | query next row |
 | P18 | richtext browser proof | #60 | Wrote and verified dedicated collapsed italic hotkey no-orphan-block proof | keep | query next row |
-| P19 | clipboard coverage bundle | #65 | Linked and reran browser paste/internal-fragment/gauntlet plus slate-dom clipboard round-trip/fallback/multiline/decorated-copy tests | keep | query next row |
+| P19 | clipboard coverage bundle | #65 | Linked and reran browser paste/internal-fragment/gauntlet plus plite-dom clipboard round-trip/fallback/multiline/decorated-copy tests | keep | query next row |
 | P20 | slate delete contract | #66 | Wrote and verified forward word delete preserves tab after deleted word | keep | query next row |
 | P21 | whitespace coverage bundle | #71 | Linked and reran Editable default CSS and plaintext typed-space proofs | keep | query next row |
 | P22 | plaintext browser proof | #72 | Wrote and verified Hello/Enter/world plain text block split proof | keep | query next row |
 | P23 | slate-react selection reconciler | #123 | Wrote and verified stale DOM offset clamp contract; patched selection export to clamp DOM offsets before setBaseAndExtent; reran adjacent #40 proof | keep | query next row |
 | P24 | scope defer | #136 | Deferred Plate-owned code/bold/italic rendering policy with concrete Plate rich-text owner | keep | query next row |
-| P25 | slate-dom clipboard contract | #141 | Wrote and verified single-tab paste plus follow-up insert/delete proof; corrected #141 anchor after later insertion | keep | query next row |
-| P26 | slate-dom clipboard contract | #146 | Wrote and verified full multi-block internal fragment paste has no extra empty text leaves | keep | query next row |
+| P25 | plite-dom clipboard contract | #141 | Wrote and verified single-tab paste plus follow-up insert/delete proof; corrected #141 anchor after later insertion | keep | query next row |
+| P26 | plite-dom clipboard contract | #146 | Wrote and verified full multi-block internal fragment paste has no extra empty text leaves | keep | query next row |
 | P27 | paste-html browser coverage | #147 | Linked and reran existing HTML paste browser subset for bold, code, Lexical core text-node shape, and Google Docs BIU | keep | query next row |
 | P28 | plaintext browser proof | #148 | Wrote and verified `deleteWordForward`/`deleteWordBackward` beforeinput target ranges that include tab whitespace are applied exactly | keep | query next row |
 | P29 | ledger generator repair | #170/#172 | Patched closure generator so overrides can reclassify false positives as irrelevant instead of freezing the original `relevant` flag | keep | query next row |
 | P30 | richtext browser proof | #158 | Wrote and verified ArrowUp cross-paragraph model/DOM caret sync proxy for OS text-cursor-indicator issue | keep | query next row |
-| P31 | false-positive skip | #170 | Reclassified emoji shortcut-on-Enter conversion as product/plugin behavior, not raw Slate-v2 | keep | query next row |
+| P31 | false-positive skip | #170 | Reclassified emoji shortcut-on-Enter conversion as product/plugin behavior, not raw Plite-v2 | keep | query next row |
 | P32 | placeholder browser proof | #171 | Wrote and verified dictation-style `insertText` beforeinput commits real text from custom-placeholder empty state | keep | query next row |
 | P33 | false-positive skip | #172 | Reclassified dictated emote-word-to-emoji conversion as product/plugin behavior; dictation transport covered by #171 | keep | query next row |
 | P34 | plaintext browser proof | #175 | Wrote and verified Shift+ArrowRight cross-block selection includes real text and excludes `\uFEFF` | keep | query next row |
@@ -420,21 +420,21 @@ Current issue owner: pending query.
 |----------------|-------|----------------|----------|-----------------|
 | Broad `rg` for mention/@ terms | automation search | Generic terms streamed huge package/changelog/test output into chat | One over-broad command returned thousands of lines | Use targeted issue-specific searches or redirect broad scans to scratch artifacts |
 | Broad `rg` for whitespace terms | automation search | Generic whitespace/delete search streamed too much output | One over-broad command returned excessive output | Prefer exact issue commands, test anchors, and narrow package paths |
-| `bun test` on Vitest path | command routing | Root Bun treated the path as a filter and suggested recursive `./` prefixes | Three failed attempts before using package Vitest script | For `slate-react` Vitest files, run `cd packages/slate-react && bun test:vitest <file> -t <name>` |
+| `bun test` on Vitest path | command routing | Root Bun treated the path as a filter and suggested recursive `./` prefixes | Three failed attempts before using package Vitest script | For `plite-react` Vitest files, run `cd packages/plite-react && bun test:vitest <file> -t <name>` |
 | #40 first proof run | slate-react beforeinput | Test intentionally exposed runtime gap | Chromium proof first cleared too much text, then after partial fix left stale selection | Fixed selection sync and delete-fragment collapse; reran focused proof green |
-| #59 line anchor read | command cwd | Tried parent-relative `.tmp/slate-v2/...` path while already inside `.tmp/slate-v2` | `nl` failed before proof command still passed | Re-read anchor from correct cwd |
-| `bun test` on slate-dom root path | command routing | Root Bun treated `./packages/slate-dom/test/clipboard-boundary.test.ts` as a filter | One failed attempt | For `slate-dom`, run from `packages/slate-dom` with `bun test ./test/<file>.test.ts` |
+| #59 line anchor read | command cwd | Tried parent-relative `.tmp/plite/...` path while already inside `.tmp/plite` | `nl` failed before proof command still passed | Re-read anchor from correct cwd |
+| `bun test` on plite-dom root path | command routing | Root Bun treated `./packages/plite-dom/test/clipboard-boundary.test.ts` as a filter | One failed attempt | For `plite-dom`, run from `packages/plite-dom` with `bun test ./test/<file>.test.ts` |
 | False-positive issue override could not change `relevant` flag | ledger generator | Per-issue audit can prove a classifier row irrelevant, but generator froze original relevance | #170/#172 would otherwise count as relevant invalid-skips | Patched scratch generator to honor `override.relevant` or `override.disposition: "skip"` |
 
 ## Changed List
 
 | Group | Current-run changes |
 |-------|---------------------|
-| code/runtime/API | Slate React beforeinput delete target-range handling: preserve expanded target ranges through selection sync; collapse explicit delete-fragment selection to range start after deletion. Slate React selection export clamps stale DOM range offsets before `setBaseAndExtent`. |
-| tests/oracles/browser proof | #7, #8, #9, #10, #17, #21, #28, #33, #36, #37, #40, #60, #66, #72, #123, #141, #146, #148, #158, #171, #175 exact Slate-v2 contracts/proofs written and verified; #14, #27, #46, #59, #65, #71, #147 linked to verified existing tests; #170/#172 reclassified as invalid skips; attempted Plate combobox test was reverted due Slate-v2-only scope |
+| code/runtime/API | Plite React beforeinput delete target-range handling: preserve expanded target ranges through selection sync; collapse explicit delete-fragment selection to range start after deletion. Plite React selection export clamps stale DOM range offsets before `setBaseAndExtent`. |
+| tests/oracles/browser proof | #7, #8, #9, #10, #17, #21, #28, #33, #36, #37, #40, #60, #66, #72, #123, #141, #146, #148, #158, #171, #175 exact Plite-v2 contracts/proofs written and verified; #14, #27, #46, #59, #65, #71, #147 linked to verified existing tests; #170/#172 reclassified as invalid skips; attempted Plate combobox test was reverted due Plite-v2-only scope |
 | benchmarks/metrics/targets | none |
 | examples/docs | `docs/plans/2026-06-03-lexical-all-issues-closure.md` created and filled |
-| skills/workflow | Patched `slate-automation` and `vision` to defer Plate-owned rows in Slate-v2-only harvests; synced generated mirrors |
+| skills/workflow | Patched `plite-automation` and `vision` to defer Plate-owned rows in Plite-v2-only harvests; synced generated mirrors |
 | reverted/quarantined packets | none |
 
 ## Needs Your Attention

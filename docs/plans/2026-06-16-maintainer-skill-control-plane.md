@@ -19,11 +19,11 @@ Applied packs:
 Task source:
 - type: user-requested agent workflow creation
 - id / link: current thread request after OpenClaw workflow analysis
-- title: unified `$maintainer` skill for future Plate + Slate repo maintenance
-- acceptance criteria: create repo-local `maintainer` rather than `slate-maintainer`; make it the OpenClaw-style public issue/PR/security control plane; keep `slate-auto` as internal Slate quality supervisor; wire VISION/routing/template/doctrine; sync generated skills; verify discoverability and completion.
+- title: unified `$maintainer` skill for future Plate + Plite repo maintenance
+- acceptance criteria: create repo-local `maintainer` rather than `plite-maintainer`; make it the OpenClaw-style public issue/PR/security control plane; keep `plite-auto` as internal Plite quality supervisor; wire VISION/routing/template/doctrine; sync generated skills; verify discoverability and completion.
 
 First checkpoint:
-- Explicit requirements copied before implementation: unified `$maintainer`; future merged Plate + Slate repo; OpenClaw-style control plane; no crabbox/cloud requirement; no public GitHub mutation; must be strong enough for future heartbeat automation; route rather than bloat `slate-auto`; autogoal-backed until satisfied.
+- Explicit requirements copied before implementation: unified `$maintainer`; future merged Plate + Plite repo; OpenClaw-style control plane; no crabbox/cloud requirement; no public GitHub mutation; must be strong enough for future heartbeat automation; route rather than bloat `plite-auto`; autogoal-backed until satisfied.
 
 Timed checkpoint:
 - requested duration: N/A.
@@ -33,12 +33,12 @@ Timed checkpoint:
 - final score / loop closure: 96%; remaining risk is only first real queue run calibration.
 
 Completion threshold:
-- `.agents/rules/maintainer.mdc` exists as the repo-local public maintainer control plane for Plate + Slate.
+- `.agents/rules/maintainer.mdc` exists as the repo-local public maintainer control plane for Plate + Plite.
 - `.agents/skills/maintainer/SKILL.md` is generated from the source rule after `pnpm install`.
 - `maintainer` is routed from `.agents/AGENTS.md` and generated `AGENTS.md`.
-- `VISION.md` and relevant `docs/vision/*.md` name the maintainer control-plane boundary and Slate primary-root/no-public-main taste default.
+- `VISION.md` and relevant `docs/vision/*.md` name the maintainer control-plane boundary and Plite primary-root/no-public-main taste default.
 - `docs/plans/templates/maintainer.md` exists with queue/heartbeat/authority/proof gates.
-- `slate-auto` routes public GitHub issue/PR/security queue work to `maintainer`.
+- `plite-auto` routes public GitHub issue/PR/security queue work to `maintainer`.
 - Source audits prove the above; `check-complete` passes.
 
 Verification surface:
@@ -54,7 +54,7 @@ Constraints:
 - Keep `maintainer` as control plane; execution remains with narrower owners.
 
 Boundaries:
-- Source of truth: user direction, root `VISION.md`, `docs/vision/common.md`, `docs/vision/slate.md`, `docs/vision/plate.md`, existing `github-triage`, `clawsweeper`, `resolve-slate-issue`, `slate-auto`, and OpenClaw-derived workflow decisions already synced locally.
+- Source of truth: user direction, root `VISION.md`, `docs/vision/common.md`, `docs/vision/slate.md`, `docs/vision/plate.md`, existing `github-triage`, `clawsweeper`, `resolve-slate-issue`, `plite-auto`, and OpenClaw-derived workflow decisions already synced locally.
 - Allowed edit scope: `.agents/rules/**`, `.agents/AGENTS.md`, `VISION.md`, `docs/vision/**`, `docs/plans/templates/**`, generated mirrors via `pnpm install`, and this plan.
 - Browser surface: N/A; no route/UI changed.
 - Tracker sync: N/A; no GitHub issue/PR mutation requested.
@@ -71,7 +71,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | First checkpoint lists all explicit requirements. |
 | Timed checkpoint parsed | no | No duration requested. |
-| Skill analysis before edits | yes | Read autogoal, existing generated plan, `resolve-slate-issue`, `clawsweeper`, global `github-triage`, `vision`, `.agents/AGENTS.md`, `docs/vision/plate.md`, and `slate-auto` template/rule slices. |
+| Skill analysis before edits | yes | Read autogoal, existing generated plan, `resolve-slate-issue`, `clawsweeper`, global `github-triage`, `vision`, `.agents/AGENTS.md`, `docs/vision/plate.md`, and `plite-auto` template/rule slices. |
 | Active goal checked or created | yes | `get_goal` returned none; created active goal for this plan. |
 | Source of truth read before edits | yes | Existing routing and owner files read before patching. |
 | Tracker comments and attachments read | no | No tracker item in this task. |
@@ -101,7 +101,7 @@ Work Checklist:
 - [x] Task source classified with source type, acceptance criteria, caveats, files, browser surface, and root-cause layer.
 - [x] Required video or screen-recording evidence marked N/A.
 - [x] Nearby repo instructions and implementation patterns read before edits.
-- [x] Implementation fixes the right ownership boundary: new repo-local `maintainer` control plane, not `slate-auto` bloat.
+- [x] Implementation fixes the right ownership boundary: new repo-local `maintainer` control plane, not `plite-auto` bloat.
 - [x] Release artifact requirement recorded as N/A.
 - [x] Final handoff shape decided.
 - [x] Branch handling recorded as N/A.
@@ -112,7 +112,7 @@ Work Checklist:
 - [x] Agent-native review decision recorded.
 - [x] Output budget discipline followed.
 - [x] Docs pack: docs lane, target docs, nearest sibling docs, and source owner recorded.
-- [x] Docs pack: named routes/APIs N/A except skill commands and Slate API taste; those are source-backed by current doctrine.
+- [x] Docs pack: named routes/APIs N/A except skill commands and Plite API taste; those are source-backed by current doctrine.
 - [x] Docs pack: docs use current-state reference voice.
 - [x] Docs pack: links/routes/previews N/A.
 - [x] Agent-native pack: source-of-truth rule files edited instead of generated mirrors.
@@ -137,7 +137,7 @@ Completion Gates:
 | Package behavior or public API changed | no | N/A | No changeset. |
 | Registry-only component work changed | no | N/A | No registry component work. |
 | Docs or content changed | yes | Source-backed docs/rules audit | VISION/detail/template docs updated and audited. |
-| High-risk mini gate | yes | Record failure mode and boundary | Failure mode: public queue work continues routing to `slate-auto` or generic triage; fixed by `maintainer` owner plus `slate-auto` Do Not Use routing. |
+| High-risk mini gate | yes | Record failure mode and boundary | Failure mode: public queue work continues routing to `plite-auto` or generic triage; fixed by `maintainer` owner plus `plite-auto` Do Not Use routing. |
 | Agent-native review for agent/tooling changes | yes | Load reviewer and close findings | Loaded `agent-native-reviewer`; no action-parity gap because new surface is agent-only and discoverable. |
 | Local install corruption suspected | no | N/A | No suspicious runtime failure. |
 | Autoreview for non-trivial implementation changes | no | N/A | No product code; agent-native review and deterministic audits are the right review. |
@@ -169,8 +169,8 @@ Phase / pass table:
 
 Findings:
 - The prior OpenClaw direction was still missing the exact repo-local public queue brain.
-- Existing owner pieces were scattered: global `github-triage`, Slate-specific `clawsweeper`, one-issue `resolve-slate-issue`, internal `slate-auto`, and security `security-triage`.
-- Best boundary is `$maintainer` as repo-local control plane, not `$slate-maintainer` and not more `slate-auto`.
+- Existing owner pieces were scattered: global `github-triage`, Plite-specific `clawsweeper`, one-issue `resolve-slate-issue`, internal `plite-auto`, and security `security-triage`.
+- Best boundary is `$maintainer` as repo-local control plane, not `$slate-maintainer` and not more `plite-auto`.
 
 Timeline:
 - Created active autogoal and plan.
@@ -184,8 +184,8 @@ Timeline:
 
 Decisions and tradeoffs:
 - `maintainer` not `maintain`: noun/control-plane role, not a single imperative command.
-- Repo-local, not global: Plate/Slate routing and VISION fit are repo-specific.
-- `slate-auto` remains internal Slate quality supervisor.
+- Repo-local, not global: Plate/Plite routing and VISION fit are repo-specific.
+- `plite-auto` remains internal Plite quality supervisor.
 - `github-triage` remains generic subordinate pattern, not repo brain.
 - Public GitHub mutation remains explicit-authority only.
 
@@ -203,7 +203,7 @@ Verification evidence:
 - `rg` audit found:
   - `maintainer`, `heartbeat`, `VISION fit`, `duplicate/claim`, and `authority` in source/generated skill and template.
   - `maintainer` routing in `.agents/AGENTS.md` and generated `AGENTS.md`.
-  - `slate-auto` Do Not Use route to `maintainer` in source and generated skill.
+  - `plite-auto` Do Not Use route to `maintainer` in source and generated skill.
   - `Claim Width` matrix in `docs/vision/common.md`.
   - primary-root/no public `main` rule in `VISION.md` and `docs/vision/slate.md`.
 
@@ -216,7 +216,7 @@ Final handoff contract:
 - Caveat: first real heartbeat run may reveal queue-specific tuning, but topology is now correct.
 - Design:
   - Chosen boundary: repo-local `$maintainer` control plane.
-  - Why not quick patch: scattering another rule into `slate-auto` would keep public queue ownership muddy.
+  - Why not quick patch: scattering another rule into `plite-auto` would keep public queue ownership muddy.
   - Why not broader change: no cloud/crabbox automation exists here; the skill is enough for future scheduler/thread automation.
 - Verified: `pnpm install`, generated mirror/source audit, agent-native review, final `check-complete`.
 - PR body verified: N/A.
@@ -224,7 +224,7 @@ Final handoff contract:
 Reboot status:
 | Where am I? | Where am I going? | What is the goal? | What learned? | What done? |
 |-------------|-------------------|-------------------|---------------|------------|
-| Closeout | Run final `check-complete`, then complete goal | Create `$maintainer` control plane | `maintainer` is the missing owner; `slate-auto` should not own public queue | Rule/template/VISION/routing generated and audited |
+| Closeout | Run final `check-complete`, then complete goal | Create `$maintainer` control plane | `maintainer` is the missing owner; `plite-auto` should not own public queue | Rule/template/VISION/routing generated and audited |
 
 Open risks:
 - First real `$maintainer heartbeat` may need tuning after seeing live queue shape. This is not a blocker; the owner and proof gates now exist.

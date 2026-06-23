@@ -78,7 +78,7 @@ Boundaries:
 - Browser surface: N/A.
 - Tracker sync: N/A.
 - Non-goals: adding Oracle as a primary entrypoint, running an Oracle review,
-  installing the Oracle CLI binary globally, changing Slate runtime code, commit,
+  installing the Oracle CLI binary globally, changing Plite runtime code, commit,
   push, or PR.
 
 Output budget strategy:
@@ -195,7 +195,7 @@ Completion Gates:
 | Package behavior or public API changed | no | Add a changeset or record why no changeset applies | N/A: no package behavior/API. |
 | Registry-only component work changed | no | Update `docs/components/changelog.mdx` or record N/A | N/A. |
 | Docs or content changed | yes | For docs-heavy work, use `--template docs`; for incidental docs, verify source-backed claims, links, examples, and rendered output or record N/A | Incidental agent docs/ledger only; source-audit routing text. |
-| High-risk mini gate | yes | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | Risk: skill-list clutter. Boundary: Oracle is global advisory worker capacity behind primary entrypoints, not a primary Plate/Slate entrypoint. |
+| High-risk mini gate | yes | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | Risk: skill-list clutter. Boundary: Oracle is global advisory worker capacity behind primary entrypoints, not a primary Plate/Plite entrypoint. |
 | Agent-native review for agent/tooling changes | yes | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | Loaded reviewer; no actionable finding. |
 | Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: no install corruption signal. |
 | Autoreview for non-trivial implementation changes | no | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | N/A: no runtime implementation diff; agent-native review covered agent tooling. |
@@ -309,7 +309,7 @@ Reboot status:
 |----------|--------|
 | Where am I? | Closeout complete |
 | Where am I going? | Final response |
-| What is the goal? | Install Oracle as advisory worker skill without making it a primary Plate/Slate entrypoint. |
+| What is the goal? | Install Oracle as advisory worker skill without making it a primary Plate/Plite entrypoint. |
 | What have I learned? | See Findings |
 | What have I done? | Installed Oracle skill, patched routing, updated ledger, verified. |
 

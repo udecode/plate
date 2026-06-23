@@ -83,7 +83,7 @@ Output budget strategy:
 - Use targeted reads/searches under `packages/basic-styles` and focused proof commands only.
 
 Blocked condition:
-- Stop only if preserving literal tx keys requires changing the Slate/core extension type model beyond this package.
+- Stop only if preserving literal tx keys requires changing the Plite/core extension type model beyond this package.
 
 Task state:
 - task_type: package/API type regression fix

@@ -55,7 +55,7 @@ Constraints:
 Boundaries:
 - Source of truth: pending
 - Allowed edit scope: pending
-- Slate / Plate boundary: pending
+- Plite / Plate boundary: pending
 - Public API boundary: pending
 - Browser surface: pending
 - Package/API surface: pending
@@ -101,7 +101,7 @@ Start Gates:
 | Active goal checked or created | pending | pending |
 | Source of truth read before analysis | pending | pending |
 | VISION fit gate read | pending | pending |
-| Slate / Plate boundary selected | pending | pending |
+| Plite / Plate boundary selected | pending | pending |
 | Cleanup surface selected | pending | pending |
 | Non-goals recorded | pending | pending |
 | Output budget strategy recorded | pending | pending |

@@ -1,7 +1,7 @@
 # Lexical Full All Issues Robustness Harvest
 
 Objective:
-Full all-state `facebook/lexical` issue-body harvest for portable Slate v2 robustness gaps, checkpointed across every issue without stopping for soft questions.
+Full all-state `facebook/lexical` issue-body harvest for portable Plite robustness gaps, checkpointed across every issue without stopping for soft questions.
 
 Goal plan:
 docs/plans/2026-06-03-lexical-full-all-issues-robustness-harvest.md
@@ -25,7 +25,7 @@ Completion threshold:
   - issue-body batches are checkpointed without pausing for soft questions;
   - skipped Lexical/framework/product/support/docs/release issues have explicit
     skip families;
-  - kept/deferred/Plate-owned invariants map to current `.tmp/slate-v2` or
+  - kept/deferred/Plate-owned invariants map to current `.tmp/plite` or
     Plate owners;
   - every non-skip matrix row names owner, proof kind, verification command, or
     defer reason;
@@ -62,7 +62,7 @@ Constraints:
   uses fresh invariant wording and local proof language.
 - Do not browse GitHub files. Use local checkouts or clone missing repos under
   `..`.
-- Do not edit `.tmp/slate-v2`, Plate packages, docs, examples, or build config
+- Do not edit `.tmp/plite`, Plate packages, docs, examples, or build config
   unless the user explicitly requested an apply run.
 
 Boundaries:
@@ -70,14 +70,14 @@ Boundaries:
 - Report directory: `.tmp/editor-issue-harvester/lexical/full/`.
 - Allowed edit scope: this plan and `.tmp/editor-issue-harvester/lexical/full/**`.
 - Non-goals:
-  - no Slate runtime/package/test/example patch during corpus classification;
+  - no Plite runtime/package/test/example patch during corpus classification;
   - no GitHub issue mutation, comments, labels, PR, branch, commit, or push;
   - no full issue-comment expansion unless a specific body row requires it;
-  - no copying Lexical ontology or issue prose into versioned Slate/Plate output.
+  - no copying Lexical ontology or issue prose into versioned Plite/Plate output.
 
 Blocked condition:
 - Do not stop for soft taste/product questions; queue them in the final handoff.
-- Hard-block only if GitHub issue body access, `../lexical`, `.tmp/slate-v2`,
+- Hard-block only if GitHub issue body access, `../lexical`, `.tmp/plite`,
   local license evidence, or artifact write access is unavailable, or if every
   remaining issue row requires a user-only authority decision.
 
@@ -104,7 +104,7 @@ Harvest state:
 Current verdict:
 - verdict: full issue-body classification complete
 - score: 0.93
-- next owner: `slate-automation` apply slice or `slate-plan` for table/mobile/yjs/perf owner decisions
+- next owner: `plite-automation` apply slice or `plite-plan` for table/mobile/yjs/perf owner decisions
 - reason: all 2,741 issues were fetched with bodies, assigned a disposition,
   checkpointed in 14 batches, mapped to 11 matrix families, and every non-skip
   family has owner/proof/command or defer reason.
@@ -121,9 +121,9 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Skill analysis before edits | yes | Used `slate-automation`; read/used `editor-test-harvester`, `clawsweeper`, and `vision` policy from current context and generated skills. |
+| Skill analysis before edits | yes | Used `plite-automation`; read/used `editor-test-harvester`, `clawsweeper`, and `vision` policy from current context and generated skills. |
 | Active goal checked or created | yes | Created active goal for full Lexical all-issues robustness harvest. |
-| Source of truth read before edits | yes | Used `../lexical`, MIT license evidence, previous issue artifacts, existing `docs/editor-test-harvester/lexical/*`, and current `.tmp/slate-v2` proof owners. |
+| Source of truth read before edits | yes | Used `../lexical`, MIT license evidence, previous issue artifacts, existing `docs/editor-test-harvester/lexical/*`, and current `.tmp/plite` proof owners. |
 
 Work Checklist:
 - [x] Short objective plus outcome, score threshold, verification surface,
@@ -144,7 +144,7 @@ Work Checklist:
 - [x] Negative-control skip pressure applied to large skip families.
 - [x] Behavior rows extracted with source ref, tag, invariant, proof kind,
       owner coverage, and action.
-- [x] `.tmp/slate-v2` coverage searches recorded for raw Slate rows.
+- [x] `.tmp/plite` coverage searches recorded for raw Plite rows.
 - [x] Plate owner searches recorded for plugin/product rows.
 - [x] Every create/refactor/copy/fresh-invariant/defer/plate-owned row names
       target owner, proof kind, and command or defer reason.
@@ -163,7 +163,7 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Verify all issue-body rows are classified and non-skip rows have owner/proof/command. | `node .tmp/editor-issue-harvester/lexical/full/classify-issues.mjs --verify` passed for 2,741 issues. |
 | Harvest artifacts current | yes | Verify full report, body corpus, checkpoints, TSV, JSON, matrix, and coverage map exist. | Full artifact set exists under `.tmp/editor-issue-harvester/lexical/full/`. |
-| Behavior-only hygiene | yes | Verify no runtime/versioned Slate/Plate output copied external issue prose or tests. | Only scratch `.tmp` issue artifacts and this plan changed; no runtime patch. |
+| Behavior-only hygiene | yes | Verify no runtime/versioned Plite/Plate output copied external issue prose or tests. | Only scratch `.tmp` issue artifacts and this plan changed; no runtime patch. |
 | Final harvest handoff | yes | Emit full harvest handoff with changed list, needs attention, and stopping checkpoints. | Final response will include artifact anchors and recommended next owners. |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-03-lexical-full-all-issues-robustness-harvest.md` | Final mechanical check recorded in Verification evidence. |
 
@@ -175,7 +175,7 @@ Phase / pass table:
 | Test-name extraction | complete | Existing durable Lexical test harvest context consulted; no new test-source extraction needed for issue-body pass. | classification pressure |
 | Classification pressure | complete | Classifier tightened after false positives from body boilerplate, `hr`, screenshot `image`, and standalone `linebreak`. | behavior extraction |
 | Behavior extraction | complete | Every issue has a primary disposition and matrix key in `classified-issues.tsv`. | coverage mapping |
-| Slate/Plate coverage mapping | complete | `coverage-map.md` records current proof posture for all 11 non-skip matrix families. | action planning |
+| Plite/Plate coverage mapping | complete | `coverage-map.md` records current proof posture for all 11 non-skip matrix families. | action planning |
 | Action planning | complete | `matrix.md` groups non-skip rows with owner/proof/action/command. | ecosystem synthesis |
 | Ecosystem synthesis | complete | Full corpus collapses into subfamily proof work, not 1,330 new tests. | closure review |
 | Closure review | complete | Classifier verification passed; autogoal check will run after this plan patch. | final handoff |
@@ -185,8 +185,8 @@ Confidence score:
 |-----------|-------:|------:|----------|---------|
 | Inventory completeness | 0.20 | 0.99 | All 2,741 issue rows fetched and classified; 14 checkpoint files cover the corpus. | issue comments not expanded |
 | Behavior extraction depth | 0.20 | 0.91 | Full bodies used with deterministic classification; classifier repaired after false-positive audit. | heuristic classification, not human body review of each issue |
-| Skip precision and negative controls | 0.15 | 0.90 | Docs/release/support/package/API/product skip families separated; Plate policy split from raw Slate. | some borderline product/raw split rows need review before apply |
-| Slate/Plate coverage mapping accuracy | 0.20 | 0.93 | Current proof rows checked for IME, paste, tables, history/collab, shadow DOM, and synced selection. | no runtime proof executed because this is harvest-only |
+| Skip precision and negative controls | 0.15 | 0.90 | Docs/release/support/package/API/product skip families separated; Plate policy split from raw Plite. | some borderline product/raw split rows need review before apply |
+| Plite/Plate coverage mapping accuracy | 0.20 | 0.93 | Current proof rows checked for IME, paste, tables, history/collab, shadow DOM, and synced selection. | no runtime proof executed because this is harvest-only |
 | Actionability of copy/refactor/create plan | 0.15 | 0.94 | 11 matrix families and all non-skip rows have owner/proof/action/command or defer lane. | apply order still needs packet execution |
 | Provenance and reproducibility | 0.10 | 0.97 | Raw corpus, classifier, JSON, TSV, matrix, report, coverage map, and checkpoints are all in scratch. | none |
 
@@ -216,25 +216,25 @@ Inventory accounting:
 Matrix accounting:
 | Source ref | Test ref | Tag | Behavior invariant | Proof kind | Owner coverage | Action |
 |------------|----------|-----|--------------------|------------|----------------|--------|
-| `classified-issues.tsv` | `coverage-map.md` | 11 matrix families | All non-skip rows grouped by portable/Plate/deferred invariant family. | package/browser/raw-device/benchmark/defer | `.tmp/slate-v2` and Plate owner surfaces named per row | `matrix.md` names action and verification/defer command |
+| `classified-issues.tsv` | `coverage-map.md` | 11 matrix families | All non-skip rows grouped by portable/Plate/deferred invariant family. | package/browser/raw-device/benchmark/defer | `.tmp/plite` and Plate owner surfaces named per row | `matrix.md` names action and verification/defer command |
 
 Skips and negative controls:
 | Source / family | Reason | Negative-control evidence |
 |-----------------|--------|---------------------------|
 | docs-release-website | Website/docs/release/changelog issues do not define editor robustness invariants. | 519 rows classified as skip. |
 | support-question-discussion | Questions, support, generic requests, and discussions stay out without a concrete invariant. | 137 rows classified as skip. |
-| package-build-infra | Build, packaging, lint, Flow/TS, CI, and package-manager issues are not Slate behavior proof. | 46 rows classified as skip. |
-| lexical-api-ontology | Node class/command/editor-state ontology is not copied into Slate. | Rows skipped unless another portable cluster matched first. |
+| package-build-infra | Build, packaging, lint, Flow/TS, CI, and package-manager issues are not Plite behavior proof. | 46 rows classified as skip. |
+| lexical-api-ontology | Node class/command/editor-state ontology is not copied into Plite. | Rows skipped unless another portable cluster matched first. |
 | product/plugin policy | Lists, links, markdown, toolbar, typeahead, stickers, comments, playground UX route to Plate unless a raw invariant is split. | 468 rows classified Plate-owned. |
 
 Next slice:
 | Row | Owner | Action | Target | Verification / defer reason |
 |-----|-------|--------|--------|-----------------------------|
-| selection subfamily | `slate-patch` / `tdd` | split highest-risk word movement/delete and multi-leaf native selection rows | `generated-editing.test.ts`, richtext/plaintext/inlines examples | focused Playwright grep from `matrix.md` |
-| clipboard subfamily | `slate-patch` | add only missing source-specific paste corpus rows | `paste-html.test.ts`, `clipboard-boundary.ts` | focused paste-html/clipboard commands from `matrix.md` |
-| table subfamily | `slate-plan` or table owner first | define accepted whole-table/nested-table semantics before broad tests | `tables.test.ts`, future table model owner | current table containment rows exist; full model is not accepted |
+| selection subfamily | `plite-patch` / `tdd` | split highest-risk word movement/delete and multi-leaf native selection rows | `generated-editing.test.ts`, richtext/plaintext/inlines examples | focused Playwright grep from `matrix.md` |
+| clipboard subfamily | `plite-patch` | add only missing source-specific paste corpus rows | `paste-html.test.ts`, `clipboard-boundary.ts` | focused paste-html/clipboard commands from `matrix.md` |
+| table subfamily | `plite-plan` or table owner first | define accepted whole-table/nested-table semantics before broad tests | `tables.test.ts`, future table model owner | current table containment rows exist; full model is not accepted |
 | raw mobile | raw mobile proof lane | defer | device proof owner | `bun test:mobile-device-proof:raw` only on real devices |
-| perf | `slate-ar-fast` / benchmark target | defer until target exists | benchmark target registry | benchmark required before runtime optimization |
+| perf | `plite-ar-fast` / benchmark target | defer until target exists | benchmark target registry | benchmark required before runtime optimization |
 
 Report artifacts:
 | Artifact | Path | Status |
@@ -251,16 +251,16 @@ Report artifacts:
 Behavior-only hygiene:
 - status: passed
 - evidence: External issue content stayed in scratch `.tmp` artifacts; no
-  runtime/test/versioned Slate or Plate output copied issue prose or tests.
+  runtime/test/versioned Plite or Plate output copied issue prose or tests.
 
 Findings:
 - Full corpus collapses into 11 non-skip matrix families, not thousands of
-  unique Slate actions.
-- Strongest current Slate coverage is paste/html corpus, IME desktop/browser,
+  unique Plite actions.
+- Strongest current Plite coverage is paste/html corpus, IME desktop/browser,
   history contracts, shadow DOM, table containment, and synced-block selection.
 - Biggest residual lanes are raw mobile/device proof, benchmark-owned perf, and
   accepted semantics for whole-table/nested-table behavior.
-- Many product/plugin issues are useful Plate pressure, not raw Slate law.
+- Many product/plugin issues are useful Plate pressure, not raw Plite law.
 
 Decisions and tradeoffs:
 - Kept full issue bodies and classification scratch-only.
@@ -284,7 +284,7 @@ Verification evidence:
 - `classified-issues.json` disposition counts: 1,330 keep-portable, 468
   Plate-owned, 107 deferred, 836 skipped.
 - `ls` verified 14 checkpoint files.
-- Targeted proof-row searches found named existing Slate v2 rows for IME,
+- Targeted proof-row searches found named existing Plite rows for IME,
   paste, tables, history/collab, and shadow DOM.
 
 Reboot status:
@@ -301,7 +301,7 @@ Timeline:
 - 2026-06-03T20:20Z Full issue-body corpus fetched: 2,741 rows.
 - 2026-06-03T20:24Z Initial classifier overmatched; repaired regex and product routing.
 - 2026-06-03T20:29Z Final classifier verified all rows and wrote 14 checkpoints.
-- 2026-06-03T20:33Z Coverage map written from current Slate v2 proof rows.
+- 2026-06-03T20:33Z Coverage map written from current Plite proof rows.
 
 Open risks:
 - Classification is deterministic and full-body, but still heuristic; borderline
@@ -317,7 +317,7 @@ Packet ledger:
 | full-body-corpus | editor-test-harvester | fetched all issue bodies to scratch | keep | classifier |
 | classifier | editor-test-harvester | added deterministic classifier and checkpoint generator | keep | coverage-map |
 | classifier-repair | slate-automation | fixed overmatching from body boilerplate and product terms | keep | matrix consumers |
-| coverage-map | slate-automation | mapped 11 matrix families to current Slate/Plate proof posture | keep | apply slice |
+| coverage-map | slate-automation | mapped 11 matrix families to current Plite/Plate proof posture | keep | apply slice |
 
 Changed list:
 - code/runtime/API: none
@@ -329,9 +329,9 @@ Changed list:
 
 Needs your attention:
 - Review whether the 468 Plate-owned rows should trigger a Plate-side harvest
-  pass. Recommendation: defer until raw Slate matrix slices are applied.
+  pass. Recommendation: defer until raw Plite matrix slices are applied.
 - Review table-model semantics before broad nested/whole-table issue work.
-  Recommendation: use `slate-plan`, not local table example patches.
+  Recommendation: use `plite-plan`, not local table example patches.
 - Review raw mobile proof lane availability. Recommendation: do not apply
   mobile rows without real device artifacts.
 

@@ -53,7 +53,7 @@ Boundaries:
 
 Blocked condition:
 - TODO: Name the missing repo, license evidence, target checkout, browser/device
-  proof, Slate v2 checkout, or user decision that stops autonomous work.
+  proof, Plite checkout, or user decision that stops autonomous work.
 
 Harvest state:
 - mode: harvest|issue-harvest|lane-plan
@@ -107,7 +107,7 @@ Work Checklist:
 - [ ] Negative-control skip pressure applied to large skip families.
 - [ ] Behavior rows extracted with source ref, tag, invariant, proof kind,
       owner coverage, and action.
-- [ ] `Plate repo root` coverage searches recorded for raw Slate rows.
+- [ ] `Plate repo root` coverage searches recorded for raw Plite rows.
 - [ ] Plate owner searches recorded for plugin/product rows.
 - [ ] Every create/refactor/copy/fresh-invariant/defer/plate-owned row names
       target owner, proof kind, and command or defer reason.
@@ -145,7 +145,7 @@ Completion Gates:
 | Harvest artifacts current | pending | Verify report, inventory, test-index, matrix accounting, and skip evidence are current | pending |
 | Behavior-only hygiene | pending | Verify versioned output uses fresh invariant wording and no copied source material | pending |
 | Lane-plan review pause | pending | If lane-plan mode applies, write the accepted-plan handoff and stop for user review before downstream execution | pending |
-| Downstream lane gates | pending | If lane-plan mode applies, record `slate-plan` or `plate-plan` gate application | pending |
+| Downstream lane gates | pending | If lane-plan mode applies, record `plite-plan` or `plate-plan` gate application | pending |
 | Final harvest handoff | pending | Emit harvest report handoff or keep the plan pending with the next pass | pending |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}` | pending |
 
@@ -157,7 +157,7 @@ Phase / pass table:
 | Test-name extraction | pending | | classification pressure |
 | Classification pressure | pending | | behavior extraction |
 | Behavior extraction | pending | | coverage mapping |
-| Slate/Plate coverage mapping | pending | | action planning |
+| Plite/Plate coverage mapping | pending | | action planning |
 | Action planning | pending | | ecosystem synthesis |
 | Ecosystem synthesis | pending | | closure review |
 | Lane-plan row accounting | N/A | | owner coverage |
@@ -171,7 +171,7 @@ Confidence score:
 | Inventory completeness | 0.20 | pending | | |
 | Behavior extraction depth | 0.20 | pending | | |
 | Skip precision and negative controls | 0.15 | pending | | |
-| Slate/Plate coverage mapping accuracy | 0.20 | pending | | |
+| Plite/Plate coverage mapping accuracy | 0.20 | pending | | |
 | Actionability of copy/refactor/create plan | 0.15 | pending | | |
 | Provenance and reproducibility | 0.10 | pending | | |
 

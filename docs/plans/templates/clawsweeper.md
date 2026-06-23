@@ -41,11 +41,11 @@ Verification surface:
   audit, dossier/PR text audit, and final `check-complete` command.
 
 Constraints:
-- ClawSweeper owns Slate issue-ledger provenance, duplicate/stale/invalid
+- ClawSweeper owns Plite issue-ledger provenance, duplicate/stale/invalid
   classification, exact claim hygiene, fork dossier accounting, gitcrawl
   archive refresh, and subordinate external issue provenance.
 - `maintainer` owns public issue/PR/security queue orchestration.
-- `resolve-slate-issue`, `slate-patch`, `auto`, `issue-harvester`, or
+- `resolve-slate-issue`, `plite-patch`, `auto`, `issue-harvester`, or
   `security-triage` own execution when the decision leaves ledger hygiene.
 - No GitHub comments, labels, closes, reopens, reviews, commits, pushes, PRs,
   releases, or public mutations unless explicitly authorized.
@@ -125,7 +125,7 @@ Work Checklist:
 - [ ] Fork dossier, issue coverage matrix, PR text, and sync ledger updates are
       applied or marked N/A with reason.
 - [ ] External editor provenance stays subordinate to `editor-test-harvester`
-      or `issue-harvester`; no Slate claim is made from external closure alone.
+      or `issue-harvester`; no Plite claim is made from external closure alone.
 - [ ] Security-shaped items are quarantined and routed to `security-triage`.
 - [ ] Any implementation, queue, or public maintainer work is routed to the
       correct owner instead of executed here.

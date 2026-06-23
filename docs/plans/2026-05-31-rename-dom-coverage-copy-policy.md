@@ -1,7 +1,7 @@
 # rename DOM coverage copy policy
 
 Objective:
-Rename Slate v2 DOM coverage copy policy values from `include-model` and
+Rename Plite DOM coverage copy policy values from `include-model` and
 `summary-only` to `model` and `summary` across public API, examples, docs,
 tests, and changesets.
 
@@ -35,8 +35,8 @@ Completion threshold:
   `/Users/zbeyens/git/plate-2/Plate repo root`.
 
 Verification surface:
-- `bun test ./packages/slate-dom/test/dom-coverage.ts ./packages/slate-dom/test/clipboard-boundary.ts`
-- `cd packages/slate-react && bun test:vitest -- keyboard-input-strategy-contract selection-reconciler-contract dom-coverage-native-bridge-contract dom-strategy-and-scroll dom-coverage-boundary-contract`
+- `bun test ./packages/plite-dom/test/dom-coverage.ts ./packages/plite-dom/test/clipboard-boundary.ts`
+- `cd packages/plite-react && bun test:vitest -- keyboard-input-strategy-contract selection-reconciler-contract dom-coverage-native-bridge-contract dom-strategy-and-scroll dom-coverage-boundary-contract`
 - `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/hidden-content-blocks.test.ts playwright/integration/examples/query-controls.test.ts --project=chromium --grep "hidden content|query controls"`
 - `bun check`
 - `rg -n "include-model|summary-only" --glob '!site/out/**' --glob '!node_modules/**' .`
@@ -47,7 +47,7 @@ Constraints:
 - Do not broaden into unrelated DOM coverage behavior.
 
 Boundaries:
-- Source of truth: `Plate repo root` Slate v2 package and example sources.
+- Source of truth: `Plate repo root` Plite package and example sources.
 - Allowed edit scope: DOM coverage copy policy source, tests, examples, docs,
   and changesets.
 - Browser surface: `/examples/hidden-content-blocks`.
@@ -87,7 +87,7 @@ Start Gates:
 | `docs/solutions` checked for non-trivial existing-code work | no | N/A: narrow API rename, local source search was sufficient. |
 | TDD decision before behavior change or bug fix | yes | Rename is API contract work; existing focused tests cover behavior. |
 | Branch decision for code-changing task | yes | N/A: no branch work requested. |
-| Release artifact decision | yes | Changesets updated for `slate-dom` and `slate-react`. |
+| Release artifact decision | yes | Changesets updated for `plite-dom` and `plite-react`. |
 | Browser tool decision for browser surface | yes | Automated Playwright proof covers the route/control behavior. |
 | PR expectation decision | yes | N/A: no PR requested. |
 | Tracker sync expectation decision | yes | N/A: no tracker. |
@@ -159,16 +159,16 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run named commands | Focused tests, Playwright rows, stale-string audit, and `bun check` passed. |
 | Bug reproduced before fix | no | N/A | This is an API rename, not a bug repro. |
-| Targeted behavior verification | yes | Run focused tests | 44 `slate-dom` tests, 94 focused `slate-react` tests, and 17 Playwright rows passed. |
+| Targeted behavior verification | yes | Run focused tests | 44 `plite-dom` tests, 94 focused `plite-react` tests, and 17 Playwright rows passed. |
 | TypeScript or typed config changed | yes | Run typecheck | `bun check` typecheck phase passed. |
 | Package exports or file layout changed | no | N/A | No exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | N/A | No manifest or lockfile changed. |
 | Agent rules or skills changed | no | N/A | No agent rules or skills changed. |
-| Workspace authority proof | yes | Run checks in owning checkout | All commands ran in `Plate repo root` or `packages/slate-react`. |
+| Workspace authority proof | yes | Run checks in owning checkout | All commands ran in `Plate repo root` or `packages/plite-react`. |
 | Browser surface changed | yes | Run route proof or waiver | Playwright hidden-content/query-controls rows passed. |
 | Browser final proof | yes | Record exact route proof | `http://localhost:3100/examples/hidden-content-blocks?selection=model&copy=model` returned 200; Playwright passed. |
 | CI-controlled template output changed | no | N/A | No templates changed. |
-| Package behavior or public API changed | yes | Add changesets | `slate-dom` and `slate-react` changesets updated. |
+| Package behavior or public API changed | yes | Add changesets | `plite-dom` and `plite-react` changesets updated. |
 | Registry-only component work changed | no | N/A | No registry-only component work. |
 | Docs or content changed | yes | Verify docs claims | `editable.md` copy policy table matches source union. |
 | High-risk mini gate | yes | Record failure mode and proof | Failure mode: stale literal breaks consumers; stale audit and typecheck passed. |
@@ -187,7 +187,7 @@ Completion Gates:
 | Plugin page specifics | no | N/A | Not a plugin docs page. |
 | Public API / package boundary proof | yes | Source audit and checks | Union/default/runtime checks use `model` and `summary`. |
 | Release artifact classification | yes | Record classification | Published package API rename. |
-| Published package changeset | yes | Update one per package | Existing `slate-dom` and `slate-react` major changesets updated. |
+| Published package changeset | yes | Update one per package | Existing `plite-dom` and `plite-react` major changesets updated. |
 | Registry changelog | no | N/A | Not registry-only. |
 | No release artifact | no | N/A | Public package delta exists. |
 | Package typecheck/build/test | yes | Run owning checks | Focused tests and `bun check` passed. |
@@ -206,8 +206,8 @@ Phase / pass table:
 | Closeout | complete | Plan completed and ready for autogoal check. | final response |
 
 Findings:
-- `copyPolicy` is a public DOM coverage contract owned by `slate-dom` and
-  surfaced through `slate-react`.
+- `copyPolicy` is a public DOM coverage contract owned by `plite-dom` and
+  surfaced through `plite-react`.
 - The clean names are `model`, `summary`, `exclude`, and `materialize`.
 
 Decisions and tradeoffs:
@@ -229,8 +229,8 @@ Error attempts:
 | `bun check` formatting failure in hidden-content example | 1 | Apply formatter-required line wrap | Fixed and reran `bun check` successfully. |
 
 Verification evidence:
-- `bun test ./packages/slate-dom/test/dom-coverage.ts ./packages/slate-dom/test/clipboard-boundary.ts`: 44 passed.
-- `cd packages/slate-react && bun test:vitest -- keyboard-input-strategy-contract selection-reconciler-contract dom-coverage-native-bridge-contract dom-strategy-and-scroll dom-coverage-boundary-contract`: 5 files, 94 tests passed.
+- `bun test ./packages/plite-dom/test/dom-coverage.ts ./packages/plite-dom/test/clipboard-boundary.ts`: 44 passed.
+- `cd packages/plite-react && bun test:vitest -- keyboard-input-strategy-contract selection-reconciler-contract dom-coverage-native-bridge-contract dom-strategy-and-scroll dom-coverage-boundary-contract`: 5 files, 94 tests passed.
 - `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/hidden-content-blocks.test.ts playwright/integration/examples/query-controls.test.ts --project=chromium --grep "hidden content|query controls"`: 17 passed.
 - `curl http://localhost:3100/examples/hidden-content-blocks?selection=model&copy=model`: 200.
 - `bun check`: passed.

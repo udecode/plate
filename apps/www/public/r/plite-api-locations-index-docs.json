@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plite-api-locations-index-docs",
+  "title": "Location Types APIs",
+  "description": "Union types for paths, points, ranges, and spans in Plite documents.",
+  "files": [
+    {
+      "path": "../../content/docs/plite/api/locations/index.mdx",
+      "content": "---\ntitle: \"Location Types APIs\"\ndescription: \"Union types for paths, points, ranges, and spans in Plite documents.\"\n---\n\nThe `Location` interface is a union of the ways to refer to a specific location in a Plite document: paths, points or ranges. Methods will often accept a `Location` instead of requiring only a `Path`, `Point` or `Range`.\n\n## Type\n\n```typescript\ntype Location = Path | Point | Range;\n```\n\n## Location Pages\n\n- [Location](./location)\n- [Path](./path)\n- [Bookmark](./bookmark)\n- [PathRef](./path-ref)\n- [Point](./point)\n- [PointEntry](./point-entry)\n- [PointRef](./point-ref)\n- [Range](./range)\n- [RangeRef](./range-ref)\n- [Span](./span)\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plite/api/locations/index.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

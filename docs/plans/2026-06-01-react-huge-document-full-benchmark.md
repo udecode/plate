@@ -12,7 +12,7 @@ stable aggregate artifact, and passes target check, target dry-run, script
 syntax check, and a benchmark execution.
 
 Verification surface:
-- `node --check benchmarks/slate-v2/donor/browser/react/huge-document-full.mjs`
+- `node --check benchmarks/plite/donor/browser/react/huge-document-full.mjs`
 - `pnpm bench:targets:check`
 - `pnpm bench:targets:dry-run -- react-huge-document-full`
 - `HUGE_DOC_FULL_SMOKE=1 bun run bench:react:huge-document:full:local`
@@ -24,8 +24,8 @@ Constraints:
 - Do not commit, push, or open a PR.
 
 Boundaries:
-- Source of truth: `benchmarks/slate-v2/donor/**`,
-  `Plate repo root/package.json`, `benchmarks/targets/slate-v2.json`, and this
+- Source of truth: `benchmarks/plite/donor/**`,
+  `Plate repo root/package.json`, `benchmarks/targets/plite.json`, and this
   plan.
 - Non-goals: no product runtime optimization, no pagination UI work, no old
   Evidence Kit rewrite.
@@ -38,7 +38,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Active goal | yes | Created goal for the full huge-document benchmark target. |
-| Source owners read | yes | Read existing core, React legacy compare, browser trace, Slate browser trace, overlay, package script, and target registry surfaces. |
+| Source owners read | yes | Read existing core, React legacy compare, browser trace, Plite browser trace, overlay, package script, and target registry surfaces. |
 | Commit/PR requested | no | No commit, push, staging, or PR requested. |
 
 Work Checklist:
@@ -51,7 +51,7 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Script syntax | yes | `node --check benchmarks/slate-v2/donor/browser/react/huge-document-full.mjs` passed. |
+| Script syntax | yes | `node --check benchmarks/plite/donor/browser/react/huge-document-full.mjs` passed. |
 | Target registry | yes | `pnpm bench:targets:check` passed with 27 targets; `pnpm bench:targets:report --check` passed. |
 | Target dry-run | yes | `pnpm bench:targets:dry-run -- react-huge-document-full` passed with `autoresearchSetupOk=true`. |
 | Benchmark execution | yes | Smoke and full 5k packet passed; full packet emitted `react_huge_doc_full_max_budget_ratio=3.82`, `react_huge_doc_full_failure_count=0`, and `react_huge_doc_full_virtualized_type_to_paint_p95_ms=30`. |
@@ -63,7 +63,7 @@ Phase / pass table:
 | implementation | complete | Wrapper, script entry, target entry, report artifacts, benchmark execution, and correctness gate are complete. |
 
 Verification evidence:
-- `node --check benchmarks/slate-v2/donor/browser/react/huge-document-full.mjs` passed.
+- `node --check benchmarks/plite/donor/browser/react/huge-document-full.mjs` passed.
 - `pnpm bench:targets:check` passed with 27 targets.
 - `pnpm bench:targets:report --check` passed after regenerating target report/history.
 - `pnpm bench:targets:dry-run -- react-huge-document-full` passed with zero missing required artifacts and `autoresearchSetupOk=true`.

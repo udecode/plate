@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: V2 editable blocks need structure-preserving DOM reconciliation for mixed-inline editing
 tags:
-  - slate-v2
+  - plite
   - slate-react-v2
   - editable-blocks
   - mixed-inline
@@ -41,7 +41,7 @@ That destroyed the structure the selection paths still referred to.
 `EditableTextBlocks` uses that seam to:
 
 - keep the current descendant structure
-- read fresh text from each rendered `data-slate-node="text"` owner
+- read fresh text from each rendered `data-plite-node="text"` owner
 - replace only text-leaf content on commit
 
 That keeps mixed-inline edits honest:
@@ -64,7 +64,7 @@ input actually changed.”
 
 ## Reusable rule
 
-For `slate-react-v2` public editing surfaces:
+For `plite-react-v2` public editing surfaces:
 
 - plain-text root extraction is only acceptable for plain-text proof surfaces
 - once a surface claims mixed-node support, DOM commit must preserve that node

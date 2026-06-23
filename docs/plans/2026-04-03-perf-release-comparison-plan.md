@@ -1,7 +1,7 @@
 # Perf Release Comparison Plan
 
 ## Goal
-Produce changeset-ready perf numbers comparing plate-2 vs ../plate, split into nodeId and non-nodeId wins, plus current metrics vs Slate.
+Produce changeset-ready perf numbers comparing plate-2 vs ../plate, split into nodeId and non-nodeId wins, plus current metrics vs Plite.
 
 ## Steps
 1. Inspect existing perf docs, harnesses, and sibling repo state.

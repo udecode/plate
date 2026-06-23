@@ -2,7 +2,7 @@
 title: Hashtag-like text tokens should use dynamic decorations
 date: 2026-05-09
 category: best-practices
-module: slate-v2
+module: plite
 problem_type: best_practice
 component: testing_framework
 symptoms:
@@ -12,7 +12,7 @@ symptoms:
 root_cause: logic_error
 resolution_type: test_update
 severity: medium
-tags: [slate-v2, lexical-harvest, text-token, decorations, browser-tests]
+tags: [plite, lexical-harvest, text-token, decorations, browser-tests]
 ---
 
 # Hashtag-like text tokens should use dynamic decorations
@@ -40,7 +40,7 @@ changes as the text changes.
 
 ## Solution
 
-Model hashtag-style tokens as dynamic text decorations over normal Slate text.
+Model hashtag-style tokens as dynamic text decorations over normal Plite text.
 Use model-owned setup to establish the initial token text, then use browser
 keyboard input for the actual token boundary behavior.
 
@@ -61,7 +61,7 @@ disappear without changing node identity, so keyboard editing remains ordinary
 text editing instead of atom deletion or mark affinity.
 
 This also keeps the harvest boundary honest: Lexical theme spans are evidence
-that a text range is styled, not evidence that Slate needs a new inline element
+that a text range is styled, not evidence that Plite needs a new inline element
 or void contract.
 
 ## Prevention
@@ -78,5 +78,5 @@ or void contract.
 ## Related Files
 
 - `/Users/zbeyens/git/lexical/packages/lexical-playground/__tests__/regression/221-editing-hashtags.spec.mjs`
-- `/Users/zbeyens/git/slate-v2/site/examples/ts/highlighted-text.tsx`
-- `/Users/zbeyens/git/slate-v2/playwright/integration/examples/highlighted-text.test.ts`
+- `/Users/zbeyens/git/plite/site/examples/ts/highlighted-text.tsx`
+- `/Users/zbeyens/git/plite/playwright/integration/examples/highlighted-text.test.ts`

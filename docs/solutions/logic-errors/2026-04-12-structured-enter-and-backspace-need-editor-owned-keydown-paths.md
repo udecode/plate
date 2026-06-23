@@ -34,7 +34,7 @@ That proved the row was not only an Android transport problem.
 
 ## Root cause
 
-Current `slate-v2` was barely owning structural keyboard editing there.
+Current `plite` was barely owning structural keyboard editing there.
 
 Plain text insertion had good browser/input coverage, but plain unmodified:
 

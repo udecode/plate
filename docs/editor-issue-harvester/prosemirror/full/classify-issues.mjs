@@ -15,8 +15,8 @@ mkdirSync(checkpointDir, { recursive: true })
 const owners = {
   api: {
     action: 'defer-api-design',
-    command: 'select or add a focused Slate-v2 API/DX target before implementation',
-    owner: 'Slate-v2 API/DX design owner',
+    command: 'select or add a focused Plite-v2 API/DX target before implementation',
+    owner: 'Plite-v2 API/DX design owner',
     proof: 'package API contract and docs proof required',
   },
   clipboard: {
@@ -24,15 +24,15 @@ const owners = {
     command:
       'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/paste-html.test.ts --project=chromium --grep "paste|clipboard|copy|cut"',
     owner:
-      '.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts; .tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts',
+      '.tmp/plite/playwright/integration/examples/paste-html.test.ts; .tmp/plite/packages/plite-dom/test/clipboard-boundary.ts',
     proof: 'browser clipboard/serialization proof',
   },
   collab: {
     action: 'create-new/defer-collab-browser',
     command:
-      'bun test ./packages/slate/test/collab-history-runtime-contract.ts --test-name-pattern "remote|selection|history|collab"',
+      'bun test ./packages/plite/test/collab-history-runtime-contract.ts --test-name-pattern "remote|selection|history|collab"',
     owner:
-      '.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts; future yjs/browser collaboration lane',
+      '.tmp/plite/packages/plite/test/collab-history-runtime-contract.ts; future yjs/browser collaboration lane',
     proof: 'package remote-edit/history proof; browser/provider proof when transport matters',
   },
   decoration: {
@@ -40,14 +40,14 @@ const owners = {
     command:
       'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/inlines.test.ts --project=chromium --grep "inline|link|decorator|void|triple-click|Backspace|Enter"',
     owner:
-      '.tmp/slate-v2/playwright/integration/examples/inlines.test.ts; .tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts',
+      '.tmp/plite/playwright/integration/examples/inlines.test.ts; .tmp/plite/playwright/integration/examples/editable-voids.test.ts',
     proof: 'browser decoration/inline/void boundary proof',
   },
   history: {
     action: 'refactor-existing/create-new',
     command:
-      'bun test ./packages/slate-history/test/history-contract.ts --test-name-pattern "history|undo|redo|batch|selection"',
-    owner: '.tmp/slate-v2/packages/slate-history/test/history-contract.ts',
+      'bun test ./packages/plite-history/test/history-contract.ts --test-name-pattern "history|undo|redo|batch|selection"',
+    owner: '.tmp/plite/packages/plite-history/test/history-contract.ts',
     proof: 'package history contract proof',
   },
   ime: {
@@ -55,48 +55,48 @@ const owners = {
     command:
       'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "IME|composition|beforeinput"',
     owner:
-      '.tmp/slate-v2/playwright/integration/examples/richtext.test.ts; .tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts',
+      '.tmp/plite/playwright/integration/examples/richtext.test.ts; .tmp/plite/packages/plite-browser/src/playwright/ime.ts',
     proof: 'browser IME/beforeinput proof',
   },
   mobile: {
     action: 'defer-raw-device',
     command:
       'bun test:mobile-device-proof:raw or add a focused raw-device/platform browser target',
-    owner: 'Slate-v2 raw mobile/browser proof owner',
+    owner: 'Plite-v2 raw mobile/browser proof owner',
     proof: 'raw Android/iOS/mobile browser proof required',
   },
   model: {
     action: 'refactor-existing/create-new',
     command:
-      'bun test ./packages/slate/test/transforms-contract.ts ./packages/slate/test/query-contract.ts --test-name-pattern "schema|normalize|join|split|replace|range|node"',
+      'bun test ./packages/plite/test/transforms-contract.ts ./packages/plite/test/query-contract.ts --test-name-pattern "schema|normalize|join|split|replace|range|node"',
     owner:
-      '.tmp/slate-v2/packages/slate/test/transforms-contract.ts; .tmp/slate-v2/packages/slate/test/query-contract.ts',
-    proof: 'Slate model/operation package proof',
+      '.tmp/plite/packages/plite/test/transforms-contract.ts; .tmp/plite/packages/plite/test/query-contract.ts',
+    proof: 'Plite model/operation package proof',
   },
   performance: {
     action: 'defer-benchmark-target',
-    command: 'create or select a Slate-v2 benchmark target before runtime optimization',
-    owner: 'Slate-v2 performance benchmark owner',
+    command: 'create or select a Plite-v2 benchmark target before runtime optimization',
+    owner: 'Plite-v2 performance benchmark owner',
     proof: 'focused benchmark target with correctness guardrails required',
   },
   plate: {
     action: 'plate-owned-defer',
-    command: 'select Plate package/example owner before applying outside Slate-v2-only run',
+    command: 'select Plate package/example owner before applying outside Plite-v2-only run',
     owner: 'Plate plugin/package/docs/example owner',
-    proof: 'Plate package/example proof; deferred under Slate-v2-only scope',
+    proof: 'Plate package/example proof; deferred under Plite-v2-only scope',
   },
   selection: {
     action: 'refactor-existing/create-new',
     command:
       'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/stress/generated-editing.test.ts --project=chromium --grep "selection|range|cursor|caret"',
-    owner: '.tmp/slate-v2/playwright/stress/generated-editing.test.ts',
+    owner: '.tmp/plite/playwright/stress/generated-editing.test.ts',
     proof: 'browser model/native selection proof',
   },
   shadowDom: {
     action: 'covered/refactor-existing',
     command:
       'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/shadow-dom.test.ts --project=chromium',
-    owner: '.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts',
+    owner: '.tmp/plite/playwright/integration/examples/shadow-dom.test.ts',
     proof: 'browser shadow-root input and selection proof',
   },
   table: {
@@ -104,7 +104,7 @@ const owners = {
     command:
       'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/tables.test.ts --project=chromium --grep "table|cell|selection|paste|drag"',
     owner:
-      '.tmp/slate-v2/playwright/integration/examples/tables.test.ts; future table model owner',
+      '.tmp/plite/playwright/integration/examples/tables.test.ts; future table model owner',
     proof: 'browser table containment/navigation/clipboard proof',
   },
 }
@@ -190,7 +190,7 @@ const categoryDefs = [
   {
     cluster: 'plate-plugin-policy',
     disposition: 'plate-owned',
-    key: 'Product/plugin policy above Slate core',
+    key: 'Product/plugin policy above Plite core',
     ownerKey: 'plate',
     re: /\b(menu|menubar|toolbar|tooltip|inputrules?|keymap plugin|schema-list|list item|ordered list|bullet list|heading|blockquote|code block|syntax highlighting|latex|math|mention|emoji|placeholder|prosemirror-menu|prosemirror-schema|tiptap|blocknote|dokuwiki|angular|react|vue|svelte)\b/i,
   },
@@ -246,7 +246,7 @@ const classify = (issue) => {
       matrixKey: `Skip: ${skipHits[0]}`,
       owner: 'N/A',
       proofKind: 'N/A',
-      reason: `Skipped as ${skipHits[0]}; no title-level portable Slate-v2 editor invariant.`,
+      reason: `Skipped as ${skipHits[0]}; no title-level portable Plite-v2 editor invariant.`,
       secondaryClusters: matched.map((def) => def.cluster),
       skipFamilies: skipHits,
     }
@@ -262,7 +262,7 @@ const classify = (issue) => {
       matrixKey: 'Skip: no portable editor invariant detected',
       owner: 'N/A',
       proofKind: 'N/A',
-      reason: 'Skipped because title/body/comments do not expose a portable Slate-v2 behavior invariant.',
+      reason: 'Skipped because title/body/comments do not expose a portable Plite-v2 behavior invariant.',
       secondaryClusters: [],
       skipFamilies: skipHits,
     }
@@ -277,7 +277,7 @@ const classify = (issue) => {
     matrixKey: primary.key,
     owner: owner.owner,
     proofKind: owner.proof,
-    reason: `Kept for ${primary.key}; closure requires exact Slate-v2 proof, fresh verified Slate-v2 test, or concrete defer owner.`,
+    reason: `Kept for ${primary.key}; closure requires exact Plite-v2 proof, fresh verified Plite-v2 test, or concrete defer owner.`,
     secondaryClusters: matched
       .map((def) => def.cluster)
       .filter((cluster) => cluster !== primary.cluster),
@@ -351,7 +351,7 @@ const matrix = [
   '# ProseMirror Issue Harvest Matrix',
   '',
   'source: `ProseMirror/prosemirror`, state: all',
-  'target: Slate v2 only (`.tmp/slate-v2`)',
+  'target: Plite only (`.tmp/plite`)',
   '',
   'Clusters are routing only. Closure requires one checkmark per issue.',
   '',
@@ -381,7 +381,7 @@ const report = [
   'license: MIT from `../prosemirror/LICENSE` and `../prosemirror/package.json`',
   'issue output: `docs/editor-issue-harvester/prosemirror/full`',
   'raw source: `.tmp/editor-issue-harvester/prosemirror/raw/issues-all-with-bodies.json`, with `.tmp/editor-issue-harvester/prosemirror/full/issues-all-with-bodies.json` as a legacy fallback.',
-  'target scope: Slate v2 only; Plate rows are deferred, not patched.',
+  'target scope: Plite only; Plate rows are deferred, not patched.',
   '',
   `issues: ${classified.length}`,
   `open: ${classified.filter((issue) => issue.state === 'OPEN').length}`,

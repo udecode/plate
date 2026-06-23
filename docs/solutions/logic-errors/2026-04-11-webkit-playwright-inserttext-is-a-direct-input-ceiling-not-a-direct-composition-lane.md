@@ -5,7 +5,7 @@ component: testing_framework
 root_cause: wrong_api
 title: WebKit Playwright insertText is a direct-input ceiling not a direct composition lane
 tags:
-  - slate-browser
+  - plite-browser
   - webkit
   - playwright
   - composition
@@ -25,7 +25,7 @@ It cannot, at least in this environment.
 
 On the debug IME surfaces, WebKit `insertText('すし')` produced:
 
-- clean committed Slate text
+- clean committed Plite text
 - clean selection
 - `beforeinput:insertText:すし`
 

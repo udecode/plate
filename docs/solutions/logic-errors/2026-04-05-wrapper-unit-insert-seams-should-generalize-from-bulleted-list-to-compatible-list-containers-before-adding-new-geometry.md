@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Wrapper-unit insert seams should generalize from bulleted-list to compatible list containers before adding new geometry
 tags:
-  - slate-v2
+  - plite
   - ordered-list
   - bulleted-list
   - wrapper-unit

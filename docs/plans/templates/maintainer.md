@@ -49,7 +49,7 @@ Constraints:
 - Live GitHub state outranks archives and generated ledgers.
 - VISION fit outranks queue pressure.
 - Route to narrower owners for execution.
-- Do not use internal Slate automation as a dodge when a public queue blocker
+- Do not use internal Plite automation as a dodge when a public queue blocker
   remains.
 - Maintainer Codex runs are local checkout runs. Do not assume hosted/API
   workers, crabbox, or private agent state can recover missing issue/PR context.

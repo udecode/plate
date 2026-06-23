@@ -18,10 +18,10 @@ Applied packs:
 
 Expectation:
 - user expectation: apply the agreed skill cleanup now.
-- observed miss: too many visible entrypoints and overlapping Slate AR/status
+- observed miss: too many visible entrypoints and overlapping Plite AR/status
   wrappers make the agent ask for routing instead of routing itself.
 - owning skill/template/helper: `.agents/AGENTS.md`, `.agents/rules/slate-auto.mdc`,
-  `.agents/rules/slate-ar.mdc`, Slate AR/Auto templates, and global npx skill
+  `.agents/rules/slate-ar.mdc`, Plite AR/Auto templates, and global npx skill
   registry entries.
 - repair classification: agent-native topology cleanup.
 
@@ -42,11 +42,11 @@ Timed checkpoint:
 
 Completion threshold:
 - The visible routing doctrine has five primary user-facing entrypoints:
-  `slate-auto`, `maintainer`, `sync-vision`, `openclaw-sync`, and `autoreview`;
+  `plite-auto`, `maintainer`, `sync-vision`, `openclaw-sync`, and `autoreview`;
   `autogoal` remains the lifecycle kernel, not a routing brain.
-- `slate-auto` explicitly routes worker skills so the user should not need to
+- `plite-auto` explicitly routes worker skills so the user should not need to
   name them.
-- `slate-ar-perf` policy is merged into `slate-ar` / `slate-auto` routing and
+- `plite-ar-perf` policy is merged into `plite-ar` / `plite-auto` routing and
   the separate local skill source is removed.
 - `status` and `continue` local skill wrappers are removed or demoted out of
   the visible repo-local skill set.
@@ -65,10 +65,10 @@ Completion threshold:
 Verification surface:
 - `pnpm install` regenerates local skill mirrors after `.agents/rules/**`
   changes.
-- Source/generated audits prove `slate-ar-perf`, `status`, and `continue`
+- Source/generated audits prove `plite-ar-perf`, `status`, and `continue`
   no longer exist as local generated skill mirrors.
-- Source audits prove perf routing now names `slate-ar` perf mode and
-  `slate-auto` worker routing.
+- Source audits prove perf routing now names `plite-ar` perf mode and
+  `plite-auto` worker routing.
 - Global skill directory and lock audits prove the eight external npx
   entrypoints are inactive or quarantined.
 - `check-complete.mjs` passes for this plan.
@@ -84,14 +84,14 @@ Boundaries:
 - Allowed edit scope: `.agents/AGENTS.md`, `.agents/rules/**`, relevant
   `docs/plans/templates/**`, this plan, and `/Users/zbeyens/.agents` install
   registry/directories for the named global npx skills.
-- Derived skill scope: local Plate/Slate skill routing and local generated
+- Derived skill scope: local Plate/Plite skill routing and local generated
   mirrors only.
-- Non-goals: runtime Slate/Plate code, public docs, package API, commits,
+- Non-goals: runtime Plite/Plate code, public docs, package API, commits,
   pushes, PRs, deleting unrelated skills, or changing plugin-provided bundled
   skills.
 
 Output budget strategy:
-- Use targeted `rg -n 'slate-ar-perf'`, direct `sed` slices, and exact global
+- Use targeted `rg -n 'plite-ar-perf'`, direct `sed` slices, and exact global
   skill names. No broad full-skill dump except capped reads of directly owned
   source files.
 
@@ -111,7 +111,7 @@ Current verdict:
 - verdict: repaired
 - confidence: high after source/generated/global audits.
 - next owner: final response
-- reason: local wrapper skills are gone, perf policy is in `slate-ar`, and
+- reason: local wrapper skills are gone, perf policy is in `plite-ar`, and
   global duplicate entrypoints are inactive.
 
 Completion rule:
@@ -130,13 +130,13 @@ Start Gates:
 | Timed checkpoint parsed | no | N/A: no duration requested. |
 | Expectation restated | yes | Expectation section restates entrypoint cleanup and overlap removal. |
 | Active goal checked | yes | `get_goal` returned no active goal; `create_goal` created this cleanup goal. |
-| Named plan or skill read | yes | Read `skill-cleaner`, `autogoal`, `slate-auto`, `slate-ar`, `slate-ar-perf`, `status`, and `continue` source. |
+| Named plan or skill read | yes | Read `skill-cleaner`, `autogoal`, `plite-auto`, `plite-ar`, `plite-ar-perf`, `status`, and `continue` source. |
 | Owning source selected | yes | `.agents/AGENTS.md`, `.agents/rules/slate-auto.mdc`, `.agents/rules/slate-ar.mdc`, templates, and global npx registry. |
 | Repair classification selected | yes | Agent-native topology cleanup. |
 | Safety conflict checked | yes | No runtime/package scope; global removals will quarantine directories and remove lock entries. |
 | Output budget strategy recorded | yes | Targeted exact-name reads/searches only. |
 | Agent-native pack selected | yes | `.agents/**` and skill registry behavior changes. |
-| Agent-facing action surface identified | yes | Future visible skill list and Slate Auto routing. |
+| Agent-facing action surface identified | yes | Future visible skill list and Plite Auto routing. |
 | Source rule versus generated mirror boundary identified | yes | Edit `.agents/rules/**` only, then run `pnpm install`; never hand-edit generated mirrors. |
 | `agent-native-reviewer` loaded or waiver recorded | yes | Loaded `.agents/skills/agent-native-reviewer/SKILL.md`; no actionable agent-native finding. |
 
@@ -167,9 +167,9 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Source owner patched | yes | Patch the selected source owner or record runtime-plan-only repair | Patched `.agents/AGENTS.md`, `.agents/rules/slate-auto.mdc`, `.agents/rules/slate-ar.mdc`, `.agents/rules/slate-research.mdc`, `.agents/rules/slate-patch.mdc`, and Slate AR/Auto templates; deleted source wrappers for `slate-ar-perf`, `status`, and `continue`. |
-| Generated skill sync | yes | If `.agents/rules/**` changed, run `pnpm install` and verify generated `SKILL.md` sync | `pnpm install` passed; generated audits found no `slate-ar-perf`, `status`, or `continue` mirrors. |
-| Template smoke | yes | Instantiate the repaired template or inspect it directly when a smoke plan would create noise | Direct template audit shows Slate AR and Slate Auto templates route perf to `slate-ar perf`. |
+| Source owner patched | yes | Patch the selected source owner or record runtime-plan-only repair | Patched `.agents/AGENTS.md`, `.agents/rules/slate-auto.mdc`, `.agents/rules/slate-ar.mdc`, `.agents/rules/slate-research.mdc`, `.agents/rules/slate-patch.mdc`, and Plite AR/Auto templates; deleted source wrappers for `plite-ar-perf`, `status`, and `continue`. |
+| Generated skill sync | yes | If `.agents/rules/**` changed, run `pnpm install` and verify generated `SKILL.md` sync | `pnpm install` passed; generated audits found no `plite-ar-perf`, `status`, or `continue` mirrors. |
+| Template smoke | yes | Instantiate the repaired template or inspect it directly when a smoke plan would create noise | Direct template audit shows Plite AR and Plite Auto templates route perf to `plite-ar perf`. |
 | Incomplete-plan guard | no | Verify an unfinished generated plan still fails `check-complete.mjs`, or record N/A with reason | N/A: no template/checker logic changed; this cleanup changed routing source and generated mirrors. |
 | Completed-plan representability | yes | Verify the repaired expectation can be recorded in a completed plan without editing the template again, or record N/A | This plan records the repaired expectation and closeout evidence without template changes beyond routing text. |
 | Helper/checker tests | no | If scripts changed, run focused script tests; otherwise N/A | N/A: no scripts changed. |
@@ -179,7 +179,7 @@ Completion Gates:
 | Timed checkpoint | no | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | N/A: no duration requested. |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-16-skill-topology-cleanup.md` | Final mechanical gate run after this closeout update. |
 | Agent source / generated sync | yes | Run `pnpm install` when `.agents/rules/**` changed and verify generated mirrors | `pnpm install` passed; source/generated audits passed. |
-| Agent action discoverability | yes | Source-audit the skill/rule path an agent will read | Root and local AGENTS list primary entrypoints; generated `slate-auto` and `slate-ar` mirrors contain worker routing/perf mode. |
+| Agent action discoverability | yes | Source-audit the skill/rule path an agent will read | Root and local AGENTS list primary entrypoints; generated `plite-auto` and `plite-ar` mirrors contain worker routing/perf mode. |
 | Agent-native review | yes | Load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted findings, or record N/A | Loaded reviewer; no actionable finding because agent routing is discoverable from AGENTS and generated skill mirrors. |
 
 Phase / pass table:
@@ -192,8 +192,8 @@ Phase / pass table:
 | Closeout | complete | This plan records changed files, evidence, caveats, and final handoff shape. | final response |
 
 Findings:
-- `slate-ar-perf` has separate local source plus refs from `slate-ar`,
-  `slate-auto`, `slate-research`, `slate-patch`, and templates.
+- `plite-ar-perf` has separate local source plus refs from `plite-ar`,
+  `plite-auto`, `plite-research`, `plite-patch`, and templates.
 - `status` and `continue` are local generic wrappers; their behavior belongs in
   autogoal plans and supervisor routing.
 - The eight external npx skills are active via `/Users/zbeyens/.agents/skills`
@@ -207,10 +207,10 @@ Decisions and tradeoffs:
 Repair patch notes:
 - `.agents/AGENTS.md` now defines the five primary user-facing entrypoints and
   hides reviewer lenses behind `autoreview`.
-- `slate-ar` now owns perf mode and imported the target registry, plateau,
-  exactness, pagination, and huge-document target policy from `slate-ar-perf`.
-- `slate-auto`, `slate-patch`, `slate-research`, and templates route perf to
-  `slate-ar perf`.
+- `plite-ar` now owns perf mode and imported the target registry, plateau,
+  exactness, pagination, and huge-document target policy from `plite-ar-perf`.
+- `plite-auto`, `plite-patch`, `plite-research`, and templates route perf to
+  `plite-ar perf`.
 - Deleted source wrappers `.agents/rules/slate-ar-perf.mdc`,
   `.agents/rules/status.mdc`, and `.agents/rules/continue.mdc`.
 - Removed the eight named external npx skills from
@@ -230,7 +230,7 @@ Error attempts:
 
 Verification evidence:
 - `pnpm install` passed and regenerated local skill mirrors.
-- `rg -n "slate-ar-perf" .agents/rules .agents/skills .agents/AGENTS.md AGENTS.md docs/plans/templates` returned no active source/generated/root/template refs.
+- `rg -n "plite-ar-perf" .agents/rules .agents/skills .agents/AGENTS.md AGENTS.md docs/plans/templates` returned no active source/generated/root/template refs.
 - `rg --files .agents/rules .agents/skills | rg '(^|/)slate-ar-perf(/|$)|(^|/)status(/|$)|(^|/)continue(/|$)|(^|/)status\\.mdc$|(^|/)continue\\.mdc$'` returned no local source/generated paths.
 - Global inactive audit reported all eight named external npx skills inactive
   under `/Users/zbeyens/.agents/skills`.
@@ -238,13 +238,13 @@ Verification evidence:
   `/Users/zbeyens/.agents/.skill-lock.json` or active global skill dirs.
 - `node -e "JSON.parse(...)"` parsed `/Users/zbeyens/.agents/.skill-lock.json`.
 - Quarantine listing contains all eight moved global skill dirs.
-- Source/generated audit found primary entrypoints, Slate Auto worker routing,
-  and Slate AR perf mode in source and generated mirrors.
+- Source/generated audit found primary entrypoints, Plite Auto worker routing,
+  and Plite AR perf mode in source and generated mirrors.
 
 Final repair handoff:
 - Expectation: reduce skill topology so agents route work instead of requiring
   user micro-routing.
-- Repaired owner: `.agents/AGENTS.md`, Slate AR/Auto/Patch/Research rules and
+- Repaired owner: `.agents/AGENTS.md`, Plite AR/Auto/Patch/Research rules and
   templates, plus global npx skill registry state.
 - Files changed: local agent rules/templates/AGENTS, generated mirrors/root
   AGENTS via `pnpm install`, this plan, and global `.skill-lock.json` plus

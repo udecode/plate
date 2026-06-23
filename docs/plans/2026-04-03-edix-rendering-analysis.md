@@ -7,7 +7,7 @@ topic: edix-rendering-analysis
 
 ## Goal
 
-Analyze `../edix` for rendering and runtime techniques that could improve the `slate-v2` package stack, especially the long-term `slate-react-v2` renderer.
+Analyze `../edix` for rendering and runtime techniques that could improve the `plite` package stack, especially the long-term `plite-react-v2` renderer.
 
 ## Decision
 
@@ -16,7 +16,7 @@ Not a generic repo review.
 The point is to answer:
 
 1. Does `edix` have a better rendering/runtime architecture worth stealing?
-2. Which ideas map cleanly into `slate-v2`?
+2. Which ideas map cleanly into `plite`?
 3. Which ideas are incompatible with our locked principles?
 
 ## Scope
@@ -54,11 +54,11 @@ Status: `completed`
 - map DOM bridge ownership
 - map rerender-scope control
 
-### Phase 3: Slate-v2 Comparison
+### Phase 3: Plite-v2 Comparison
 
 Status: `completed`
 
-- compare against current `slate-v2`, `slate-dom-v2`, and `slate-react-v2` proofs
+- compare against current `plite`, `plite-dom-v2`, and `plite-react-v2` proofs
 - separate:
   - worth stealing now
   - worth stealing later
@@ -68,7 +68,7 @@ Status: `completed`
 
 Status: `completed`
 
-- produce a concise “what next” recommendation for the Slate v2 plan
+- produce a concise “what next” recommendation for the Plite plan
 
 ## Progress Log
 
@@ -83,7 +83,7 @@ Status: `completed`
   - clipboard ownership is explicit and extensible through internal copy/paste extensions in [extensions/copy/internal.ts](/Users/zbeyens/git/edix/src/extensions/copy/internal.ts) and [extensions/paste/internal.ts](/Users/zbeyens/git/edix/src/extensions/paste/internal.ts)
   - history is time-batched in [history.ts](/Users/zbeyens/git/edix/src/history.ts), which is exactly the part we should *not* copy
 - strongest take:
-  - Edix has good ideas for `slate-dom-v2` and future clipboard boundaries
+  - Edix has good ideas for `plite-dom-v2` and future clipboard boundaries
   - Edix does **not** show a better React renderer architecture than the one we are already building
   - its React example is just a thin imperative adapter using `useEffect`, `useRef`, and `useState` in [App.tsx](/Users/zbeyens/git/edix/examples/react/src/App.tsx), not a selector-first rendering model
 - what is worth stealing:

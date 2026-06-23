@@ -1,0 +1,154 @@
+---
+title: "Roots"
+description: "Use extra roots for headers, footers, synced blocks, captions, and other editable regions."
+---
+
+Plite stores the primary document as a normal block array. Extra roots let one
+editor own headers, footers, synced blocks, captions, side panels, and other
+editable regions without creating separate editor instances. Use roots when the
+content should share editor state, history, collaboration, schema, and commands.
+
+## Value Shape
+
+The shortest editor value is still an array of blocks. Plite treats it as the
+primary document.
+
+```tsx
+const editor = createEditor({
+  initialValue: [{ type: "paragraph", children: [{ text: "Body" }] }],
+});
+```
+
+Pass `initialValue.children` plus `initialValue.roots` when the editor owns
+extra roots.
+
+```tsx
+const editor = createEditor({
+  initialValue: {
+    children: [{ type: "paragraph", children: [{ text: "Body" }] }],
+    roots: {
+      header: [{ type: "paragraph", children: [{ text: "Draft" }] }],
+      footer: [{ type: "paragraph", children: [{ text: "Internal" }] }],
+    },
+  },
+});
+```
+
+Each root is a normal Plite block array. Rootless operations, points, and
+selections resolve against the current editor or view root. A root-bound view
+resolves rootless locations against its own root.
+
+Persist roots through the full [Document State](14-document-state) value
+instead of saving only the provider root.
+
+## Reading And Writing Roots
+
+Read the primary document with `state.value.root()`. Read an extra root by key.
+
+```tsx
+const body = editor.read((state) => state.value.root());
+const header = editor.read((state) => state.value.root("header"));
+```
+
+Create, replace, or delete extra roots inside `editor.update`.
+
+```tsx
+editor.update((tx) => {
+  tx.roots.create("aside:1", [
+    { type: "paragraph", children: [{ text: "Aside" }] },
+  ]);
+});
+```
+
+Mutate the primary document with normal node and text transforms instead of
+`tx.roots`.
+
+## Rendering Roots
+
+Pass `root` to `Editable` when one React tree renders a named root.
+
+```tsx
+<Plite editor={editor}>
+  <Editable aria-label="Header" root="header" />
+  <Editable aria-label="Body" />
+  <Editable aria-label="Footer" root="footer" />
+</Plite>
+```
+
+Use `usePliteRootChrome(root)` on non-editable wrappers that should participate
+in mouse selection and focus restoration for that root.
+
+```tsx
+const chrome = usePliteRootChrome("header");
+
+return (
+  <section {...chrome.props}>
+    <Editable root="header" />
+  </section>
+);
+```
+
+Use `usePliteRootState(root, selector)` for UI that reads one root without
+subscribing to every editor change. Use `usePliteRootEditor(root)` for commands
+that must run against a specific root.
+
+## Content Roots
+
+Content roots attach an editable child root to an element in another root. The
+element keeps an empty text child as its model anchor. `element.childRoots[slot]`
+stores the root key, and the editable content lives in
+`state.value.root(rootKey)`.
+
+```tsx
+const syncedBlocks = defineEditorExtension({
+  name: "synced-blocks",
+  elements: [
+    {
+      type: "synced-block",
+      contentRoot: { slot: "body" },
+    },
+  ],
+});
+```
+
+Create a persistent content root by storing the root key on the owning element
+and creating the named root in the same transaction.
+
+```tsx
+const bodyRoot = `synced-block:${blockId}:body`;
+
+editor.update((tx) => {
+  tx.roots.create(bodyRoot, [
+    { type: "paragraph", children: [{ text: "Synced body" }] },
+  ]);
+  tx.nodes.insert({
+    type: "synced-block",
+    childRoots: { body: bodyRoot },
+    children: [{ text: "" }],
+  });
+});
+```
+
+`contentRoot` declares the schema slot. `childRoots[slot]` is the persisted
+ownership link that survives save/load and collaboration. Copy/paste adapters
+must decide whether to reuse an existing child root, clone it into a new root,
+or serialize and create the child root in the paste target.
+
+Render the child root from `renderElement` with `slots.contentRoot(slot)`.
+
+```tsx
+const SyncedBlock = ({ attributes, element, slots }) => (
+  <section {...attributes}>
+    <header>Synced block</header>
+    {slots.contentRoot("body", {
+      ariaLabel: "Synced block body",
+      placeholder: "Empty synced block",
+    })}
+  </section>
+);
+```
+
+Use content roots for synced blocks, editable cards, and element-owned editable
+regions. Use [DOM coverage boundaries](../libraries/plite-react/dom-coverage-boundaries)
+when the content is in the same root but intentionally not mounted, such as a
+closed accordion body or inactive tab panel.

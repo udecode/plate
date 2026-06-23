@@ -5,7 +5,7 @@ component: tooling
 root_cause: missing_tooling
 title: Package type publishing should sync lib declarations into dist in one build step
 tags:
-  - slate-v2
+  - plite
   - rollup
   - typescript
   - declarations
@@ -17,7 +17,7 @@ severity: high
 
 ## What happened
 
-`slate-react` and `slate-dom` publish runtime files from `dist/`, but their
+`plite-react` and `plite-dom` publish runtime files from `dist/`, but their
 package `types` entry also points into `dist/`.
 
 The build pipeline was producing declarations under `lib/`, not under `dist/`.

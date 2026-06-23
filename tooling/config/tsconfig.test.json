@@ -18,17 +18,17 @@
       "@platejs/browser/transports": [
         "packages/browser/src/transports/index.ts"
       ],
-      "@platejs/slate": ["packages/slate/src/index.ts"],
-      "@platejs/slate/internal": ["packages/slate/src/internal/index.ts"],
-      "@platejs/slate-dom": ["packages/slate-dom/src/index.ts"],
-      "@platejs/slate-dom/internal": [
-        "packages/slate-dom/src/internal/index.ts"
+      "@platejs/plite": ["packages/plite/src/index.ts"],
+      "@platejs/plite/internal": ["packages/plite/src/internal/index.ts"],
+      "@platejs/plite-dom": ["packages/plite-dom/src/index.ts"],
+      "@platejs/plite-dom/internal": [
+        "packages/plite-dom/src/internal/index.ts"
       ],
-      "@platejs/slate-history": ["packages/slate-history/src/index.ts"],
-      "@platejs/slate-hyperscript": ["packages/slate-hyperscript/src/index.ts"],
-      "@platejs/slate-layout": ["packages/slate-layout/src/index.ts"],
-      "@platejs/slate-layout/react": ["packages/slate-layout/src/react.tsx"],
-      "@platejs/slate-react": ["packages/slate-react/src/index.ts"],
+      "@platejs/plite-history": ["packages/plite-history/src/index.ts"],
+      "@platejs/plite-hyperscript": ["packages/plite-hyperscript/src/index.ts"],
+      "@platejs/plite-layout": ["packages/plite-layout/src/index.ts"],
+      "@platejs/plite-layout/react": ["packages/plite-layout/src/react.tsx"],
+      "@platejs/plite-react": ["packages/plite-react/src/index.ts"],
       "@platejs/yjs": ["packages/yjs/src/index.ts"],
       "@platejs/yjs/core": ["packages/yjs/src/core/index.ts"],
       "@platejs/yjs/internal": ["packages/yjs/src/internal/index.ts"],

@@ -111,7 +111,7 @@ But destructive keys still need one more law: empty blocks should die in place b
 
 - If a markdown container can hold blocks, do not fake its keyboard behavior with `reset` or generic sibling insertion.
 - Treat `Enter`, `Backspace@start`, and reverse `Tab` as structural ownership questions, not isolated key handlers.
-- Do not let a structural delete rule steal empty non-first blocks from Slate's default same-container merge behavior.
+- Do not let a structural delete rule steal empty non-first blocks from Plite's default same-container merge behavior.
 - Add one regression for top-level exit, one for nested exit, and one for "nearest structure wins" when a list lives inside the container.
 - Add destructive regressions for both quote cases:
   - first empty quoted paragraph exits one level

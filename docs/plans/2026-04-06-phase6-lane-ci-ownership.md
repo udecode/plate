@@ -9,7 +9,7 @@ status: completed
 ## Goal
 
 Give the frozen Phase 6 benchmark and compatibility lanes a durable GitHub
-Actions home in [Plate repo root](/Users/zbeyens/git/slate-v2) so the recent large-paste
+Actions home in [Plate repo root](/Users/zbeyens/git/plite) so the recent large-paste
 win stays measured, not local-only.
 
 ## Scope
@@ -28,7 +28,7 @@ win stays measured, not local-only.
 ## Acceptance
 
 - a workflow exists under
-  [/Users/zbeyens/git/slate-v2/.github/workflows](/Users/zbeyens/git/slate-v2/.github/workflows)
+  [/Users/zbeyens/git/plite/.github/workflows](/Users/zbeyens/git/plite/.github/workflows)
 - the workflow installs deps, prepares the Phase 6 runtime, and runs compat +
   huge-document lanes
 - the huge-document benchmark JSON is uploaded
@@ -42,9 +42,9 @@ win stays measured, not local-only.
   factor reusable scripts first, then add one isolated workflow
 - added reusable `phase6:prepare`, `test:phase6:compat`, and
   `bench:phase6:huge-document` scripts in
-  [package.json](/Users/zbeyens/git/slate-v2/package.json)
+  [package.json](/Users/zbeyens/git/plite/package.json)
 - added CI workflow
-  [phase6-proof.yml](/Users/zbeyens/git/slate-v2/.github/workflows/phase6-proof.yml)
+  [phase6-proof.yml](/Users/zbeyens/git/plite/.github/workflows/phase6-proof.yml)
 - verified the workflow-shaped commands sequentially:
   `yarn phase6:prepare`, `yarn test:phase6:compat`, and
   `yarn bench:phase6:huge-document`

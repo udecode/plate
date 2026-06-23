@@ -22,7 +22,7 @@ Task source:
 - type: user instruction in current Codex thread
 - id / link: N/A: no external issue or PR
 - title: Plate v2 facade/core plus one package packet
-- acceptance criteria: execute next items 1, 2, and 3 from the latest roadmap; fix/curate the `platejs` facade instead of bypassing it; keep normal Plate feature imports as `from 'platejs'`; migrate one foundational package from legacy `editor.tf/getTransforms/getPluginApi` patterns toward Slate-style `editor.api` plus `editor.update(tx => ...)`; pause after core plus one package are done for user review.
+- acceptance criteria: execute next items 1, 2, and 3 from the latest roadmap; fix/curate the `platejs` facade instead of bypassing it; keep normal Plate feature imports as `from 'platejs'`; migrate one foundational package from legacy `editor.tf/getTransforms/getPluginApi` patterns toward Plite-style `editor.api` plus `editor.update(tx => ...)`; pause after core plus one package are done for user review.
 
 First checkpoint:
 - Before implementation or broad exploration, copy every explicit prompt
@@ -42,7 +42,7 @@ Timed checkpoint:
 Completion threshold:
 - `platejs` facade direction is recorded and not bypassed by touched feature packages.
 - Core/facade API work needed for the first package packet is complete or explicitly deferred with source evidence.
-- One foundational package is migrated through the accepted Slate-style API path, with no broad package churn.
+- One foundational package is migrated through the accepted Plite-style API path, with no broad package churn.
 - Focused package typecheck/test/build gates pass for core/facade and the migrated package, or unavailable tests are marked N/A with reason.
 - Stop after core plus one package and hand off for user review before continuing the broader Plate migration.
 - Task closure is legal only when the source-of-truth acceptance criteria are
@@ -83,7 +83,7 @@ Output budget strategy:
 - Use targeted `rg` and short `sed`/`nl` ranges only. Exclude generated output and app build folders. Keep package proof output capped. Do not stream repo-wide match bodies unless narrowed to package owners.
 
 Blocked condition:
-- Stop if the first package migration requires a public Plate API design decision beyond the accepted `editor.api` / `editor.update(tx => ...)` direction, or if core/facade gates fail in a way that requires changing Slate substrate APIs.
+- Stop if the first package migration requires a public Plate API design decision beyond the accepted `editor.api` / `editor.update(tx => ...)` direction, or if core/facade gates fail in a way that requires changing Plite substrate APIs.
 
 Task state:
 - task_type: package/API migration checkpoint
@@ -190,7 +190,7 @@ Completion Gates:
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-22-plate-v2-facade-core-package-packet.md` | Run after ledger fill. |
 | Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | `basic-styles` keeps `platejs` imports and has no legacy transform/getter matches. |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Package API behavior checkpoint; changeset intentionally deferred until reviewed. |
-| Published package changeset | N/A | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | N/A for review checkpoint; no release packaging requested. |
+| Published package changeset | N/A | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | N/A for review checkpoint; no release packaging requested. |
 | Registry changelog | N/A | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | N/A: not registry work. |
 | No release artifact | yes | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | Review checkpoint only; broader changeset/release decision waits for migration acceptance. |
 | Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | Core and `basic-styles` typecheck/test/build pass. |
@@ -232,7 +232,7 @@ Error attempts:
 Verification evidence:
 - `rg -n "extendTransforms|getTransforms|getPluginApi|\\.tf\\b|\\.transforms\\b" packages/basic-styles/src -g '*.ts' -g '*.tsx'` -> no matches.
 - `rg -n "from ['\"]@platejs/(core|utils)['\"]" packages/basic-styles/src packages/basic-styles/package.json` -> no matches.
-- `rg -n "executes tx-backed plugin commands|applies font size through the editor update transaction|applies text alignment through the editor update transaction|applies and clears text indent through node updates" packages/core/src/lib/editor/withSlate.spec.ts packages/basic-styles/src/lib/*.spec.ts` -> found expected proof rows.
+- `rg -n "executes tx-backed plugin commands|applies font size through the editor update transaction|applies text alignment through the editor update transaction|applies and clears text indent through node updates" packages/core/src/lib/editor/withPlite.spec.ts packages/basic-styles/src/lib/*.spec.ts` -> found expected proof rows.
 - `pnpm turbo typecheck --filter=./packages/core` -> pass.
 - `pnpm --filter @platejs/core test` -> pass, 953 tests.
 - `pnpm --filter @platejs/core build` -> pass.
@@ -254,7 +254,7 @@ Final handoff contract:
 - Outcome: core tx proof added and `basic-styles` migrated off feature transform wrappers while keeping `platejs` imports.
 - Caveat: this does not remove global core `tf/transforms/getTransforms/getPluginApi` debt; it proves the next migration shape.
 - Design:
-  - Chosen boundary: `platejs` facade stays; package feature mutations move to Slate tx groups.
+  - Chosen boundary: `platejs` facade stays; package feature mutations move to Plite tx groups.
   - Why not quick patch: keeping transform wrappers would preserve the conflict the Plate v2 plan is trying to remove.
   - Why not broader change: user explicitly asked to pause after core plus one package for review.
 - Verified: commands and source audits listed above.
@@ -300,5 +300,5 @@ Reboot status:
 
 Open risks:
 - Broader core/default-route public legacy API remains.
-- `createSlateEditor` naming and `platejs` facade curation remain separate review-approved packets.
+- `createPliteEditor` naming and `platejs` facade curation remain separate review-approved packets.
 - Autoreview has not run because this checkpoint intentionally pauses for user review first.

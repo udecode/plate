@@ -2,7 +2,7 @@
 title: DOM selection bridges must stay cheap on selectionchange
 date: 2026-05-08
 category: docs/solutions/performance-issues
-module: Slate v2 DOM selection bridge
+module: Plite DOM selection bridge
 problem_type: performance_issue
 component: tooling
 symptoms:
@@ -13,7 +13,7 @@ root_cause: inadequate_documentation
 resolution_type: documentation_update
 severity: high
 tags:
-  [slate-v2, dom-selection, selectionchange, performance, react-runtime, yjs]
+  [plite, dom-selection, selectionchange, performance, react-runtime, yjs]
 ---
 
 # DOM selection bridges must stay cheap on selectionchange
@@ -39,7 +39,7 @@ details through public React APIs.
 - Returning rich result objects from the hot path by default. That is useful for
   tests and debug traces, but it is avoidable churn for ordinary browser events.
 - Treating public hooks as the right place for bridge reasons. Apps should not
-  author DOM selection policy to keep Slate usable.
+  author DOM selection policy to keep Plite usable.
 - Solving migration pressure by leaking raw DOM ranges into collaboration
   adapters. That couples deterministic editor state to transient browser state.
 
@@ -57,15 +57,15 @@ Keep the bridge private and make the hot path primitive:
 
 The execution plan records the specific source owners:
 
-- `packages/slate-react/src/editable/runtime-selection-engine.ts`
+- `packages/plite-react/src/editable/runtime-selection-engine.ts`
   owns native `selectionchange` throttling.
-- `packages/slate-react/src/editable/selection-runtime.ts` and
-  `packages/slate-react/src/hooks/use-editor-selector.tsx` own
+- `packages/plite-react/src/editable/selection-runtime.ts` and
+  `packages/plite-react/src/hooks/use-editor-selector.tsx` own
   selection fanout filters.
-- `packages/slate-react/src/editable/selection-controller.ts` owns
+- `packages/plite-react/src/editable/selection-controller.ts` owns
   fast DOM selection range creation, fail-closed import, model export, and
   scroll timing.
-- `packages/slate-react/src/editable/runtime-root-engine.ts` owns
+- `packages/plite-react/src/editable/runtime-root-engine.ts` owns
   React listener/effect wiring.
 
 ## Why This Works
@@ -75,7 +75,7 @@ runtime repair. The editor should decide ownership before importing DOM state,
 but that decision should not allocate a fresh object graph or traverse broad DOM
 on every event.
 
-Keeping bridge reasons private also preserves Slate's API shape. Public
+Keeping bridge reasons private also preserves Plite's API shape. Public
 consumers care whether the model selection is a `Range` or `null`; they should
 not need to understand stale DOM, nested editor, shadow-root, or app-owned
 selection classifications.
@@ -92,7 +92,7 @@ selection classifications.
 
 ## Related Issues
 
-- [Slate React foreign DOM selections must be ignored before import](../logic-errors/2026-05-06-slate-react-foreign-dom-selections-must-be-ignored-before-import.md)
-- [Slate browser selectionchange proof must separate traceability from programmatic import](../test-failures/2026-04-22-slate-browser-selectionchange-proof-must-separate-traceability-from-programmatic-import.md)
-- [Slate React repair-induced selectionchange must stay model-owned](../ui-bugs/2026-04-25-slate-react-repair-induced-selectionchange-must-stay-model-owned.md)
-- [Slate React runtime owner cuts need static inventories and browser proof](../developer-experience/2026-04-27-slate-react-runtime-owner-cuts-need-static-inventories-and-browser-proof.md)
+- [Plite React foreign DOM selections must be ignored before import](../logic-errors/2026-05-06-slate-react-foreign-dom-selections-must-be-ignored-before-import.md)
+- [Plite browser selectionchange proof must separate traceability from programmatic import](../test-failures/2026-04-22-plite-browser-selectionchange-proof-must-separate-traceability-from-programmatic-import.md)
+- [Plite React repair-induced selectionchange must stay model-owned](../ui-bugs/2026-04-25-slate-react-repair-induced-selectionchange-must-stay-model-owned.md)
+- [Plite React runtime owner cuts need static inventories and browser proof](../developer-experience/2026-04-27-slate-react-runtime-owner-cuts-need-static-inventories-and-browser-proof.md)

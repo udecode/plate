@@ -6,7 +6,7 @@
 
 本轮已经关闭。目标检查通过，活动 goal 已标记完成。
 
-- 运行范围：`/Users/felixfeng/Desktop/repos/slate-v2/packages/slate-yjs`
+- 运行范围：`/Users/felixfeng/Desktop/repos/plite/packages/plite-yjs`
 - 控制仓库：`/Users/felixfeng/Desktop/repos/plate-copy`
 - 模式：`@slate/yjs` research mode，原定 8h
 - 实际关闭：约 60 分钟后提前关闭
@@ -18,7 +18,7 @@
 
 ### Benchmark / 指标
 
-- 在 `benchmarks/targets/slate-v2.json` 增加 `yjs-collaboration` 目标。
+- 在 `benchmarks/targets/plite.json` 增加 `yjs-collaboration` 目标。
 - 修复 `scripts/benchmarks/core/current/yjs-collaboration.mjs` 的计时边界：setup 不再算进 work 计时。
 - 修复 benchmark verification：避免多余 `map` 和 peer 0 自比对。
 - benchmark sync 改为按 target state vector 生成增量 update，而不是 full-state 广播。
@@ -26,19 +26,19 @@
 
 ### Runtime
 
-- `packages/slate-yjs/src/core/document.ts`
+- `packages/plite-yjs/src/core/document.ts`
   - 合并 text readback 的 delta 遍历。
   - 空 text 节点直接走 fast path，不再调用 `toDelta()`。
   - hidden-child text match 先比长度，避免不必要 flatten。
   - clone 空 text 节点时保留属性，但跳过空 delta materialization。
-- `packages/slate-yjs/src/core/split-history.ts`
+- `packages/plite-yjs/src/core/split-history.ts`
   - append / trailing / prefix helper 对空 text 直接返回。
 
 ### Tests / oracles / demo
 
-- `packages/slate-yjs/test/support/collaboration.ts`
+- `packages/plite-yjs/test/support/collaboration.ts`
   - 测试 helper 改为 target-vector sync。
-- `packages/slate-yjs/test/attributes-contract.spec.ts`
+- `packages/plite-yjs/test/attributes-contract.spec.ts`
   - 增加空 Yjs text node 属性回读 oracle。
   - 增加 null-valued text attribute 回读 oracle。
 - `site/examples/ts/yjs-collaboration.tsx`
@@ -46,9 +46,9 @@
 
 ## 验证结果
 
-- `bun test ./packages/slate-yjs/test`
+- `bun test ./packages/plite-yjs/test`
   - 最终结果：`215/0`
-- `bun --filter ./packages/slate-yjs typecheck`
+- `bun --filter ./packages/plite-yjs typecheck`
   - exit `0`
 - `bun run bench:core:yjs-collaboration:local`
   - `yjs_correctness_failures=0`
@@ -78,8 +78,8 @@
 
 | 项目 | 当前事实 | 处理 |
 | --- | --- | --- |
-| incremental remote import | receiving peer 仍然通过 `readSlateValueFromYjs` + `editor-adapter.replaceValue` 重建完整 Slate value | defer 到架构 packet |
-| adjacent compatible Yjs text canonical read | live probe 显示相邻 `Y.XmlText("alpha")` + `Y.XmlText("beta")` 仍导入成两个 Slate leaves | defer 到 raw path / canonical read 双视图设计 |
+| incremental remote import | receiving peer 仍然通过 `readSlateValueFromYjs` + `editor-adapter.replaceValue` 重建完整 Plite value | defer 到架构 packet |
+| adjacent compatible Yjs text canonical read | live probe 显示相邻 `Y.XmlText("alpha")` + `Y.XmlText("beta")` 仍导入成两个 Plite leaves | defer 到 raw path / canonical read 双视图设计 |
 | native selection / raw mobile / full browser sweep | 本轮只声明 package + scoped browser smoke | 不扩大 claim |
 | P5 readback cleanup 性能收益 | 代码少做重复 delta 遍历，但 p95 样本不稳定 | 只当 simplification，不当 perf win |
 
@@ -94,9 +94,9 @@
 ## 复现命令
 
 ```bash
-cd /Users/felixfeng/Desktop/repos/slate-v2
-bun test ./packages/slate-yjs/test
-bun --filter ./packages/slate-yjs typecheck
+cd /Users/felixfeng/Desktop/repos/plite
+bun test ./packages/plite-yjs/test
+bun --filter ./packages/plite-yjs typecheck
 bun run bench:core:yjs-collaboration:local
 SOAK_MS=12000 SOAK_FAIL_ON_ISSUES=1 SOAK_ACTION_DELAY_MS=250 SOAK_REPORT_EVERY_MS=5000 SOAK_HEADLESS=1 bun ./scripts/proof/yjs-collaboration-soak.mjs
 PRODUCTION_SOAK_MS=15000 PRODUCTION_SOAK_FAIL_ON_ISSUES=1 PRODUCTION_SOAK_ACTION_DELAY_MS=150 PRODUCTION_SOAK_JITTER_MS=0 SOAK_HEADLESS=1 bun ./scripts/proof/yjs-hocuspocus-production-soak.mjs

@@ -25,8 +25,8 @@ Task source:
 - acceptance criteria: package changesets and registry changelog match the current diff against `origin/main`; no stale package bump remains.
 
 Completion threshold:
-- All changed published package source under `packages/**` is classified as `@platejs/core`, `@platejs/slate`, `@platejs/table`, or test-only `@platejs/list`.
-- Changed package source has one-package-per-file patch changesets for `@platejs/core`, `@platejs/slate`, and `@platejs/table`; `@platejs/list` has no changeset because only its spec changed.
+- All changed published package source under `packages/**` is classified as `@platejs/core`, `@platejs/plite`, `@platejs/table`, or test-only `@platejs/list`.
+- Changed package source has one-package-per-file patch changesets for `@platejs/core`, `@platejs/plite`, and `@platejs/table`; `@platejs/list` has no changeset because only its spec changed.
 - Registry-only work under `apps/www/src/registry/**` is represented in `content/components/changelog.mdx`.
 - `pnpm exec changeset status --since origin/main`, a frontmatter audit, `git diff --check -- .changeset content/components/changelog.mdx`, and this goal plan checker pass.
 
@@ -96,7 +96,7 @@ Start Gates:
 | Tracker sync expectation decision | N/A: no tracker requested | No issue or Linear sync in scope. |
 | Output budget strategy recorded | yes | Plan scopes source reads to changed package paths, `.changeset`, and registry changelog surfaces. |
 | Package/API pack selected | yes | Applied `package-api` pack because published package release artifacts are the target. |
-| Public surface or package boundary identified | yes | Published package source changed under `packages/core`, `packages/slate`, and `packages/table`; `packages/list` is spec-only. |
+| Public surface or package boundary identified | yes | Published package source changed under `packages/core`, `packages/plite`, and `packages/table`; `packages/list` is spec-only. |
 | Release artifact path selected | yes | `.changeset/*.md` for packages; `content/components/changelog.mdx` for registry example rename/addition. |
 | `changeset` skill loaded when `.changeset` is required | yes | `.agents/skills/changeset/SKILL.md` loaded and applied. |
 | Barrel/export impact decision recorded | yes | N/A: no exported file layout or barrel files changed during this audit. |
@@ -155,7 +155,7 @@ Completion Gates:
 | Browser surface changed | N/A: no browser surface changed by this audit | Capture Browser Use proof or record explicit waiver/blocker | Browser smoke already existed; not required for changeset correctness. |
 | Browser final proof | N/A: no browser proof required | Attach screenshot or exact browser verification caveat when browser proof applies | Static audit only. |
 | CI-controlled template output changed | N/A: no template output touched by this audit | Restore generated template output or record why it is intentionally kept | No `templates/**` edits. |
-| Package behavior or public API changed | yes | Add a changeset or record why no changeset applies | `@platejs/core`, `@platejs/slate`, and `@platejs/table` patch changesets exist; `@platejs/list` is spec-only. |
+| Package behavior or public API changed | yes | Add a changeset or record why no changeset applies | `@platejs/core`, `@platejs/plite`, and `@platejs/table` patch changesets exist; `@platejs/list` is spec-only. |
 | Registry-only component work changed | yes | Update `content/components/changelog.mdx` or record N/A | Added May 31 registry changelog entries for `huge-document-demo` and `hundreds-blocks-demo` rename. |
 | Docs or content changed | yes | Verify source-backed claims, links, examples, and rendered output or record N/A | Changelog claims are backed by changed registry files and route rename/addition. |
 | High-risk mini gate | yes | Record realistic failure mode, proof plan, and why the chosen boundary is right | Failure mode: stale/missing release note; proof: package source classification plus Changesets status. |
@@ -192,7 +192,7 @@ Findings:
 - `.changeset/twelve-turkeys-kneel.md` targeted `@platejs/list`, but `packages/list` changed only `BaseListPlugin.spec.tsx`; repointed the file to `@platejs/table`.
 - `packages/table` has published code changes in `BaseTablePlugin.ts`, `normalizeInitialValueTable.ts`, and `getTableGridByRange.ts`; added `@platejs/table` patch coverage.
 - Registry example work under `apps/www/src/registry/**` needed component changelog coverage; added entries in `content/components/changelog.mdx`.
-- `pnpm exec changeset status --since origin/main` reports patch bumps for `@platejs/slate`, `@platejs/core`, `@platejs/table`, plus linked/internal dependency bumps `@platejs/test-utils` and `@platejs/csv`; no minor or major bumps.
+- `pnpm exec changeset status --since origin/main` reports patch bumps for `@platejs/plite`, `@platejs/core`, `@platejs/table`, plus linked/internal dependency bumps `@platejs/test-utils` and `@platejs/csv`; no minor or major bumps.
 
 Decisions and tradeoffs:
 - Keep multiple `@platejs/core` patch changesets because one covers public API/deprecation shape and one covers large-document performance/render correctness.
@@ -215,9 +215,9 @@ Error attempts:
 | None | 0 | N/A | N/A |
 
 Verification evidence:
-- `pnpm exec changeset status --since origin/main` in `/Users/zbeyens/git/plate-2` passed; patch bumps: `@platejs/slate`, `@platejs/core`, `@platejs/table`, linked `@platejs/test-utils`, linked `@platejs/csv`; no minor/major.
-- Frontmatter audit script passed for changed changesets: `.changeset/cyan-rivers-fly.md` -> `@platejs/slate` patch; `.changeset/metal-pumas-wave.md` -> `@platejs/core` patch; `.changeset/shaggy-cobras-cheer.md` -> `@platejs/core` patch; `.changeset/twelve-turkeys-kneel.md` -> `@platejs/table` patch.
-- `git diff --name-only origin/main -- packages` source audit: non-test package source changed only under `packages/core`, `packages/slate`, and `packages/table`; `packages/list` changed only `packages/list/src/lib/BaseListPlugin.spec.tsx`.
+- `pnpm exec changeset status --since origin/main` in `/Users/zbeyens/git/plate-2` passed; patch bumps: `@platejs/plite`, `@platejs/core`, `@platejs/table`, linked `@platejs/test-utils`, linked `@platejs/csv`; no minor/major.
+- Frontmatter audit script passed for changed changesets: `.changeset/cyan-rivers-fly.md` -> `@platejs/plite` patch; `.changeset/metal-pumas-wave.md` -> `@platejs/core` patch; `.changeset/shaggy-cobras-cheer.md` -> `@platejs/core` patch; `.changeset/twelve-turkeys-kneel.md` -> `@platejs/table` patch.
+- `git diff --name-only origin/main -- packages` source audit: non-test package source changed only under `packages/core`, `packages/plite`, and `packages/table`; `packages/list` changed only `packages/list/src/lib/BaseListPlugin.spec.tsx`.
 - Registry audit: `git diff --name-only origin/main -- apps/www/src/registry content/components/changelog.mdx` includes registry example changes and the changelog file.
 - `git diff --check -- .changeset content/components/changelog.mdx` passed.
 - `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-31-changeset-correctness-audit.md` passed.

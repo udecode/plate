@@ -1,6 +1,6 @@
 # Common Vision
 
-Shared doctrine for Plate, Slate, and agent workflows.
+Shared doctrine for Plate, Plite, and agent workflows.
 
 Root `VISION.md` is the mandatory first read. This file carries the fuller
 common doctrine after the lane is selected.
@@ -43,12 +43,12 @@ common doctrine after the lane is selected.
 
 ## Boundary Law
 
-- Slate packages are the raw editor substrate: model, operations, runtime,
+- Plite packages are the raw editor substrate: model, operations, runtime,
   DOM/input, selection, history, browser proof, and unopinionated APIs.
 - Plate packages are the product/editor framework layer: plugins, React
   wrappers, components, kits, opinionated UX, examples, and app-facing docs.
-- Do not fix a Plate product concern by polluting Slate core.
-- Do not hide a Slate primitive gap in Plate glue.
+- Do not fix a Plate product concern by polluting Plite core.
+- Do not hide a Plite primitive gap in Plate glue.
 - Cross-boundary work must name both owners and prove the handoff.
 - Product packaging matters, but it never gets to corrupt core/runtime layers.
 
@@ -79,8 +79,8 @@ tests for package ownership, API intent, and public teaching surfaces.
   simplify, split, keep, defer, and reject decisions for shallow modules, split
   ownership, testability gaps, over-splits, and agent-navigation friction, then
   either applies a safe behavior-neutral packet or routes broader decisions to
-  `major-task`, `slate-plan`, `plate-plan`, `auto`, or a package owner.
-- Public issue and PR bodies are maintainer-agent input contracts. Plate/Slate
+  `major-task`, `plite-plan`, `plate-plan`, `auto`, or a package owner.
+- Public issue and PR bodies are maintainer-agent input contracts. Plate/Plite
   maintenance runs through local Codex sessions in maintainer checkouts, not
   hosted API bots, crabbox, or background cloud workers. Require public repro,
   proof, risk, owner surface, current blocker, and next-action state before an
@@ -103,7 +103,7 @@ tests for package ownership, API intent, and public teaching surfaces.
 - Standing orders should make Codex less prompt-dependent, not less
   accountable. Every autonomous maintainer action needs a scope, trigger,
   approval gate, escalation rule, verification surface, and short report.
-- `$auto` is internal Plate/Slate quality supervision: behavior, visual proof,
+- `$auto` is internal Plate/Plite quality supervision: behavior, visual proof,
   perf, API cleanup, benchmark/test repair, docs consolidation, and skill
   repair. It must not become the public GitHub queue brain.
 - `$auto` may still be the ergonomic user-facing router. `auto PR #123`,

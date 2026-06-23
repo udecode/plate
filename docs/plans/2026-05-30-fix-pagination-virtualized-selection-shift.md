@@ -14,7 +14,7 @@ Keep the patch scoped to virtualized pagination selected text. Do not change sta
 
 Boundaries:
 - Source of truth: `Plate repo root` pagination example and its Playwright integration test.
-- Allowed edit scope: `apps/www/src/app/(app)/examples/slate/_examples/pagination.tsx`, `apps/www/tests/slate-browser/donor/examples/pagination.test.ts`, and this goal plan.
+- Allowed edit scope: `apps/www/src/app/(app)/examples/plite/_examples/pagination.tsx`, `apps/www/tests/plite-browser/donor/examples/pagination.test.ts`, and this goal plan.
 - Browser surface: `http://localhost:3100/examples/pagination?page_layout=single&strategy=virtualized`.
 - Tracker sync: N/A, local user-reported issue.
 - Non-goals: broader pagination architecture, page virtualization policy, shortcut behavior, autoscroll behavior.
@@ -53,7 +53,7 @@ Completion Gates:
 | Formatting | yes | `bunx biome check --write site/examples/ts/pagination.tsx playwright/integration/examples/pagination.test.ts` passed in `Plate repo root`. |
 | Browser surface changed | yes | Playwright exercised the target route and selection transition. |
 | Package exports or install graph | no | N/A: no package export, manifest, lockfile, or install graph changes. |
-| Changeset | no | N/A: example/test-only fix in Slate v2 checkout. |
+| Changeset | no | N/A: example/test-only fix in Plite checkout. |
 | Autoreview | yes | Local autoreview ran for the pagination alignment patch; result recorded below. |
 | PR or tracker sync | no | N/A: user asked for local fix, not git or tracker update. |
 

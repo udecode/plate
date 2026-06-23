@@ -1,0 +1,783 @@
+---
+title: "Migration"
+description: "Move an upstream Slate 0.x editor to the Plite runtime without keeping compatibility aliases."
+---
+
+This guide walks through moving an upstream Slate 0.x editor to the Plite runtime. The migration is mostly a runtime migration: create the editor with an initial value, read with `editor.read(...)`, write with `editor.update(...)`, and render through the React runtime.
+
+## On This Page
+
+- [Should You Migrate This Editor?](#should-you-migrate-this-editor)
+- [First Migration Slice](#first-migration-slice)
+- [Migration Map](#migration-map)
+- [Step 1: Install The Packages](#step-1-install-the-packages)
+- [Step 14: Check Import Boundaries](#step-14-check-import-boundaries)
+- [Proof Before Deleting The Old Path](#proof-before-deleting-the-old-path)
+- [Validation Checklist](#validation-checklist)
+
+## Should You Migrate This Editor?
+
+Migrate when the runtime solves a real ownership problem in your editor. Do not
+migrate just to rename APIs.
+
+> Warning: this package set is a hard API cut. Do not migrate by keeping old helpers
+> alive behind aliases. Move one surface at a time, keep the old editor working
+> until the new editor has matching behavior, and delete each old path as soon
+> as the replacement is verified.
+
+| Migrate this surface first                                                                                      | Wait or defer                                                                                                                                 |
+| --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| A representative editor that users type in, save, undo, and paste into.                                         | A low-value editor with no active product pressure.                                                                                           |
+| An editor that needs cleaner command ownership, document state, overlays, extra roots, or large-document proof. | An editor whose only goal is to keep old Slate 0.x behavior with the smallest possible diff.                                                  |
+| A surface where you can run browser proof for selection, paste, undo, and save/load.                            | A surface whose correctness depends on mobile-device proof, collaboration adapters, or production pagination that your app cannot verify yet. |
+
+Keep the old editor path alive until the new path proves the same user-visible
+behavior. If that sounds expensive, the migration is not ready.
+
+## First Migration Slice
+
+Port the thinnest useful editor before touching every command or reusable
+feature:
+
+1. Create one Plite editor with the same representative document value.
+2. Render one `<Editable>` with the existing element and leaf renderers.
+3. Save the primary value on `change.valueChanged`.
+4. Port one toolbar or shortcut command to `editor.read(...)` and
+   `editor.update(...)`.
+5. Verify typing, selection, paste, undo/redo, and save/load in the browser.
+6. Delete only the old code covered by that proof.
+
+Do not start with comments, collaboration, pagination, custom mobile input, or
+every reusable feature. Those belong after the basic editor behaves correctly.
+
+## Before You Begin
+
+Start with the smallest editor surface that users can type in, save, and undo.
+Migrate commands, custom elements, and persistence after that editor is stable.
+
+You should have:
+
+- one representative document value;
+- the custom element and text types used by that editor;
+- the commands your app calls from toolbars, shortcuts, and paste handlers;
+- the tests that prove typing, selection, copy/paste, undo/redo, and save/load.
+
+Do not start by porting every reusable feature. That is how migrations turn
+into archaeology.
+
+## Migration Map
+
+| Slate 0.x                                                            | Plite runtime                                                                            |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `createEditor()` plus `withReact(editor)`                            | `usePliteEditor({ initialValue })` in React, or `createReactEditor({ initialValue })` outside a component |
+| `withHistory(editor)`                                                | `usePliteEditor(...)` for the default React editor, or `history()` when building an editor manually       |
+| `<Plite editor={editor} initialValue={value}>`                       | `const editor = usePliteEditor({ initialValue }); <Plite editor={editor}>`                                |
+| Slate 0.x transform helper calls                                     | `editor.update((tx) => tx.*...)`                                                                          |
+| `Editor.*` reads that inspect the current editor                     | `editor.read((state) => state.*...)`                                                                      |
+| Pure node, point, path, range, and text helpers                      | `NodeApi`, `ElementApi`, `PointApi`, `PathApi`, `RangeApi`, and `TextApi` from `@platejs/plite`           |
+| `ReactEditor.*` DOM bridge calls                                     | `editor.api.dom.*`, `editor.api.react.*`, or renderer hooks such as `useElementPath()`                    |
+| `usePlite`, `usePliteStatic`                                         | `useEditor()` and `useEditorState(...)`                                                                   |
+| `useSelected`, `useFocused`, `useReadOnly`                           | `useElementSelected(...)`, `useEditorFocused()`, and `useEditorReadOnly()`                                |
+| `onChange(value)` as the primary persistence hook                    | `onChange(value, change)` and `change.valueChanged`, or `state.value.get()` for the full document         |
+| editor-only `children` persistence                                   | primary `children`, optional extra `roots`, and optional document `state`                                 |
+| `decorate` for simple local ranges                                   | `<Editable decorate={...} />`                                                                             |
+| `decorate` for shared, external, frequent, or source-scoped overlays | `usePliteDecorationSource`, `usePliteRangeDecorationSource`, or `usePliteAnnotationStore`                 |
+
+## Step 1: Install The Packages
+
+For the beta package set, install the core editor, DOM helpers, React
+renderer, and React peer packages.
+
+```text
+npm install @platejs/plite @platejs/plite-dom @platejs/plite-react react react-dom
+```
+
+Install the optional packages only when your app imports them directly.
+
+```text
+npm install @platejs/plite-history @platejs/plite-hyperscript @platejs/yjs
+```
+
+Package ownership is split deliberately:
+
+- `@platejs/plite` owns the editor runtime, document model, transactions, state fields,
+  and pure helper APIs.
+- `@platejs/plite-dom` owns DOM resolution, clipboard helpers, hotkeys, and browser
+  environment helpers.
+- `@platejs/plite-react` owns `<Plite>`, `<Editable>`, render primitives, React hooks,
+  DOM repair, and the React editor extension.
+- `@platejs/plite-history` owns the history extension and history API.
+- `@platejs/plite-hyperscript` owns JSX fixtures for tests.
+- `@platejs/yjs` owns the Yjs adapter, awareness, provider lifecycle bridge, and
+  remote cursor hooks. App code owns provider packages and server policy.
+
+## Step 2: Create The Editor
+
+The editor owns its initial value. `<Plite>` receives an editor that already
+exists.
+
+Slate 0.x:
+
+```tsx
+import { useMemo } from "react";
+
+const App = () => {
+  const editor = useMemo(() => withHistory(withReact(createEditor())), []);
+
+  return (
+    <Plite editor={editor} initialValue={initialValue}>
+      <Editable />
+    </Plite>
+  );
+};
+```
+
+Plite runtime:
+
+```tsx
+import { Editable, Plite, usePliteEditor } from "@platejs/plite-react";
+
+const App = () => {
+  const editor = usePliteEditor({ initialValue });
+
+  return (
+    <Plite editor={editor}>
+      <Editable />
+    </Plite>
+  );
+};
+```
+
+Use `createReactEditor` when the editor must be created outside a component,
+such as a test helper or app service.
+
+```tsx
+import { createReactEditor } from "@platejs/plite-react";
+
+const editor = createReactEditor({ initialValue });
+```
+
+Use `createEditor` plus extensions for lower-level runtime construction.
+
+```tsx
+import { createEditor } from "@platejs/plite";
+import { history } from "@platejs/plite-history";
+import { react } from "@platejs/plite-react";
+
+const editor = createEditor({
+  initialValue,
+  extensions: [react(), history()],
+});
+```
+
+## Step 3: Move Reads And Writes Into The Runtime
+
+The runtime separates reads from writes. Reads happen inside `editor.read(...)`.
+Writes happen inside `editor.update(...)`.
+
+Slate 0.x commands often mixed read helpers and transform helpers directly
+against the editor object. In the Plate-maintained runtime, read the committed runtime state and
+write through a transaction.
+
+Plite runtime:
+
+```tsx
+import { ElementApi } from "@platejs/plite";
+
+const isCodeBlockActive = editor.read((state) =>
+  Boolean(
+    state.nodes.find({
+      match: (node) => ElementApi.isElement(node) && node.type === "code",
+    })
+  )
+);
+
+editor.update((tx) => {
+  tx.nodes.set(
+    { type: "code" },
+    {
+      match: (node) => ElementApi.isElement(node) && tx.schema.isBlock(node),
+    }
+  );
+});
+```
+
+For text commands, write through `tx.text`.
+
+```tsx
+editor.update((tx) => {
+  tx.text.insert("Hello");
+});
+```
+
+For selection commands, write through `tx.selection`.
+
+```tsx
+editor.update((tx) => {
+  tx.selection.set({
+    anchor: { path: [0, 0], offset: 0 },
+    focus: { path: [0, 0], offset: 5 },
+  });
+});
+```
+
+For pure data checks, import the helper API from `@platejs/plite`.
+
+```tsx
+import { NodeApi, RangeApi, TextApi } from "@platejs/plite";
+
+const plainText = NodeApi.string(element);
+const isCollapsed = selection ? RangeApi.isCollapsed(selection) : false;
+const isText = TextApi.isText(node);
+```
+
+## Step 4: Migrate Custom Elements
+
+Renderers are still React functions. The critical rule is unchanged: spread
+`attributes` on the top-level DOM element and render `children`.
+
+```tsx
+const CodeElement = ({ attributes, children }) => {
+  return (
+    <pre {...attributes}>
+      <code>{children}</code>
+    </pre>
+  );
+};
+
+const DefaultElement = ({ attributes, children }) => {
+  return <p {...attributes}>{children}</p>;
+};
+
+const renderElement = (props) => {
+  switch (props.element.type) {
+    case "code":
+      return <CodeElement {...props} />;
+    default:
+      return <DefaultElement {...props} />;
+  }
+};
+
+const App = () => {
+  const editor = usePliteEditor({ initialValue });
+
+  return (
+    <Plite editor={editor}>
+      <Editable renderElement={renderElement} />
+    </Plite>
+  );
+};
+```
+
+Keep renderer functions stable. Define them at module scope or memoize them once.
+
+## Step 5: Migrate Leaves, Text, And Placeholders
+
+Custom leaf and text renderers still receive Plite attributes and children.
+Keep the renderer small and pass Plite's props through.
+
+```tsx
+const renderLeaf = ({ attributes, children, leaf }) => {
+  return (
+    <span
+      {...attributes}
+      style={{ fontWeight: leaf.bold ? "bold" : undefined }}
+    >
+      {children}
+    </span>
+  );
+};
+
+const App = () => {
+  const editor = usePliteEditor({ initialValue });
+
+  return (
+    <Plite editor={editor}>
+      <Editable placeholder="Write something..." renderLeaf={renderLeaf} />
+    </Plite>
+  );
+};
+```
+
+Use `PliteElement`, `PliteText`, `PliteLeaf`, and `PlitePlaceholder` only when
+you replace Plite's rendering primitives and still need the required DOM
+attributes attached. Normal apps should start with `renderElement`, `renderLeaf`,
+and `placeholder`.
+
+## Step 6: Migrate Event Handlers
+
+`Editable` owns the default browser behavior. App handlers can run before Plite
+and decide whether Plite continues.
+
+- Return `true` when your handler handled the event and Plite should stop.
+- Return `false` when Plite should run its default handler.
+- Return nothing when Plite should decide from the DOM event state.
+
+Slate 0.x event handlers often prevented the browser event and mutated text
+nodes directly. In the Plate-maintained runtime, return a handler decision and route the write
+through the editor runtime.
+
+Plite runtime:
+
+```tsx
+<Editable
+  onKeyDown={(event, { editor }) => {
+    if (!(event.metaKey && event.key === "b")) return false;
+
+    editor.update((tx) => {
+      tx.marks.toggle("bold");
+    });
+
+    return true;
+  }}
+/>
+```
+
+Use `onDOMBeforeInput` for browser input types that need editor context.
+
+```tsx
+<Editable
+  onDOMBeforeInput={(event, { editor, inputType }) => {
+    if (inputType !== "formatBold") return false;
+
+    editor.update((tx) => {
+      tx.marks.toggle("bold");
+    });
+
+    return true;
+  }}
+/>
+```
+
+## Step 7: Migrate React Hooks
+
+Use editor hooks for editor-wide UI and element hooks for rendered nodes.
+
+| Slate 0.x hook          | Plite hook                                                                   |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| `usePlite()`            | `useEditor()` when you need the editor object                                                 |
+| `usePliteSelector(...)` | `useEditorState(...)` for state reads, or `useEditorSelector(...)` for low-level editor reads |
+| `usePliteSelection()`   | `useEditorSelection()`                                                                        |
+| `useFocused()`          | `useEditorFocused()`                                                                          |
+| `useReadOnly()`         | `useEditorReadOnly()`                                                                         |
+| `useSelected()`         | `useElementSelected(...)`                                                                     |
+
+Toolbar state should subscribe to a derived value.
+
+```tsx
+import { useEditorState } from "@platejs/plite-react";
+
+const BoldButton = () => {
+  const isBold = useEditorState((state) => {
+    return state.marks.get()?.bold === true;
+  });
+
+  return <button aria-pressed={isBold}>Bold</button>;
+};
+```
+
+Rendered element UI should subscribe only when it draws selection state.
+
+```tsx
+import { useElementSelected } from "@platejs/plite-react";
+
+const ImageElement = ({ attributes, children }) => {
+  const selected = useElementSelected({ mode: "collapsed" });
+
+  return (
+    <figure {...attributes} data-selected={selected ? "" : undefined}>
+      {children}
+    </figure>
+  );
+};
+```
+
+## Step 8: Migrate DOM And React Editor Calls
+
+Do not import `ReactEditor` as a value object for DOM bridge calls. Use the
+editor API or renderer hooks.
+
+Slate 0.x:
+
+```tsx
+import { ReactEditor } from "@platejs/plite-react";
+
+const path = ReactEditor.findPath(editor, element);
+const domNode = ReactEditor.toDOMNode(editor, element);
+ReactEditor.focus(editor);
+```
+
+Plite runtime:
+
+```tsx
+const path = editor.api.dom.resolvePath(element);
+
+if (!path) return;
+
+editor.api.dom.focus();
+```
+
+Inside an element renderer, prefer `useElementPath()` when the component must
+render path-derived UI.
+
+```tsx
+import { useElementPath } from "@platejs/plite-react";
+
+const BlockToolbarAnchor = () => {
+  const path = useElementPath();
+
+  return <span data-path={path?.join(".")} />;
+};
+```
+
+Use `editor.api.react.isComposing()` for React runtime state that belongs to the
+React extension.
+
+```tsx
+const composing = editor.api.react.isComposing();
+```
+
+## Step 9: Migrate History
+
+The normal React setup includes history. Use the history hook for UI controls.
+
+```tsx
+import { usePliteHistory } from "@platejs/plite-react";
+
+const HistoryButtons = () => {
+  const history = usePliteHistory();
+
+  return (
+    <>
+      <button disabled={!history.canUndo} onClick={history.undo}>
+        Undo
+      </button>
+      <button disabled={!history.canRedo} onClick={history.redo}>
+        Redo
+      </button>
+    </>
+  );
+};
+```
+
+For a manually created editor, install the history extension.
+
+```tsx
+import { createEditor } from "@platejs/plite";
+import { history } from "@platejs/plite-history";
+
+const editor = createEditor({
+  initialValue,
+  extensions: [history()],
+});
+```
+
+Disable default history in a React editor when a test or app surface needs that
+explicitly.
+
+```tsx
+import { history } from "@platejs/plite-history";
+import { usePliteEditor } from "@platejs/plite-react";
+
+const App = () => {
+  const editor = usePliteEditor({
+    initialValue,
+    extensions: [history({ enabled: false })],
+  });
+
+  return (
+    <Plite editor={editor}>
+      <Editable />
+    </Plite>
+  );
+};
+```
+
+## Step 10: Persist The Right Value
+
+For a single-root editor, save the `value` passed to `<Plite onChange>`.
+
+```tsx
+import { type PliteChange } from "@platejs/plite-react";
+
+const handleChange = (value, change: PliteChange) => {
+  if (!change.valueChanged) return;
+
+  saveDocument(value);
+};
+
+<Plite editor={editor} onChange={handleChange}>
+  <Editable />
+</Plite>;
+```
+
+For a document with extra roots or document state, read the full document value.
+
+```tsx
+const documentValue = editor.read((state) => state.value.get());
+```
+
+The short value is still a block array.
+
+```tsx
+const initialValue = [
+  {
+    type: "paragraph",
+    children: [{ text: "A line of text!" }],
+  },
+];
+```
+
+Use the document value shape when the editor owns more than the primary
+document.
+
+```tsx
+const initialValue = {
+  children: [
+    {
+      type: "paragraph",
+      children: [{ text: "A line of text!" }],
+    },
+  ],
+  roots: {
+    header: [
+      {
+        type: "paragraph",
+        children: [{ text: "Draft" }],
+      },
+    ],
+  },
+  state: {
+    "document.title": "Draft",
+  },
+};
+```
+
+Omit `root` for the primary editable. Pass `root` only for extra roots.
+
+```tsx
+<Plite editor={editor}>
+  <Editable aria-label="Body" />
+  <Editable aria-label="Header" root="header" />
+</Plite>
+```
+
+## Step 11: Migrate Document State
+
+Use `defineStateField` for document-level state that should travel with the
+document, such as title, layout settings, review mode, spellcheck metadata, or
+collaboration-owned state.
+
+```tsx
+import { defineStateField } from "@platejs/plite";
+import {
+  Editable,
+  Plite,
+  useSetStateField,
+  usePliteEditor,
+  useStateFieldValue,
+} from "@platejs/plite-react";
+
+const documentTitle = defineStateField<string>({
+  key: "document.title",
+  initial: () => "Untitled",
+  persist: true,
+});
+
+const TitleInput = () => {
+  const title = useStateFieldValue(documentTitle);
+  const setTitle = useSetStateField(documentTitle);
+
+  return (
+    <input value={title} onChange={(event) => setTitle(event.target.value)} />
+  );
+};
+
+const App = () => {
+  const editor = usePliteEditor({
+    extensions: [documentTitle],
+    initialValue,
+  });
+
+  return (
+    <Plite editor={editor}>
+      <TitleInput />
+      <Editable />
+    </Plite>
+  );
+};
+```
+
+Read fields inside `editor.read(...)` and write fields inside
+`editor.update(...)`.
+
+```tsx
+const title = editor.read((state) => state.getField(documentTitle));
+
+editor.update((tx) => {
+  tx.setField(documentTitle, "Launch Brief");
+});
+```
+
+## Step 12: Migrate Extra Roots
+
+Use extra roots when one editor owns multiple editable regions that share
+history, schema, commands, and document state.
+
+```tsx
+const editor = usePliteEditor({
+  initialValue: {
+    children: [{ type: "paragraph", children: [{ text: "Body" }] }],
+    roots: {
+      header: [{ type: "paragraph", children: [{ text: "Header" }] }],
+      footer: [{ type: "paragraph", children: [{ text: "Footer" }] }],
+    },
+  },
+});
+```
+
+Render the primary document without a `root` prop. Render extra roots by key.
+
+```tsx
+<Plite editor={editor}>
+  <Editable aria-label="Header" root="header" />
+  <Editable aria-label="Body" />
+  <Editable aria-label="Footer" root="footer" />
+</Plite>
+```
+
+Use root-aware hooks for chrome and commands outside editable content.
+
+```tsx
+import { usePliteRootChrome, usePliteRootEditor } from "@platejs/plite-react";
+
+const HeaderChrome = ({ children }) => {
+  const chrome = usePliteRootChrome("header");
+  const headerEditor = usePliteRootEditor("header");
+
+  return (
+    <section {...chrome.props}>
+      <button onClick={() => headerEditor.update((tx) => tx.text.insert("!"))}>
+        Add
+      </button>
+      {children}
+    </section>
+  );
+};
+```
+
+## Step 13: Migrate Hyperscript Tests
+
+Keep hyperscript in tests and fixtures. Runtime editor code should use normal
+Plite node values.
+
+```tsx
+/** @jsx jsx */
+import { jsx } from "@platejs/plite-hyperscript";
+
+const editor = (
+  <editor>
+    <element type="paragraph">
+      alpha
+      <cursor />
+    </element>
+  </editor>
+);
+```
+
+Use `createHyperscript` when your test suite needs domain-specific tags.
+
+```tsx
+import { createHyperscript } from "@platejs/plite-hyperscript";
+
+const h = createHyperscript({
+  elements: {
+    paragraph: { type: "paragraph" },
+  },
+});
+
+const paragraph = h("paragraph", {}, "hello");
+```
+
+## Step 14: Check Import Boundaries
+
+Use public package imports. Do not deep import from package internals.
+
+```tsx
+import {
+  createEditor,
+  defineEditorExtension,
+  defineStateField,
+  ElementApi,
+  NodeApi,
+  RangeApi,
+  TextApi,
+} from "@platejs/plite";
+import { DOMCoverage, dom, Hotkeys, isHotkey } from "@platejs/plite-dom";
+import {
+  Editable,
+  Plite,
+  createReactEditor,
+  useEditor,
+  useEditorState,
+  usePliteEditor,
+} from "@platejs/plite-react";
+import { history } from "@platejs/plite-history";
+import { createHyperscript, jsx } from "@platejs/plite-hyperscript";
+```
+
+The `ReactEditor` export in `@platejs/plite-react` is a type. Do not build runtime code
+around `ReactEditor.*` static calls.
+
+## Proof Before Deleting The Old Path
+
+Delete old Plite code only after the new path proves the behavior users depend
+on. Model assertions are useful, but they do not prove browser selection,
+clipboard, focus, or DOM repair.
+
+| Behavior            | Minimum proof                                                                                                                                   |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Typing and deletion | Type text, Backspace/Delete, Enter, and follow-up typing after command changes.                                                                 |
+| Selection           | Check model selection and native selection for arrows, Shift+arrows, drag, double-click, and blank-space clicks when the surface supports them. |
+| Clipboard and paste | Verify copy, cut, paste, and app-specific paste normalization through browser events.                                                           |
+| Undo/redo           | Prove command grouping, text input, paste, and structural edits undo and redo in the expected order.                                            |
+| Custom rendering    | Verify custom elements, leaves, voids, placeholders, hidden content, and DOM coverage paths used by the editor.                                 |
+| Persistence         | Save and reload the exact value shape the editor owns: primary `children`, plus extra `roots` or document `state` when used.                    |
+
+For selection-sensitive editors, run browser proof before deleting the old path.
+For app-only commands, focused unit tests can be enough after one browser path
+has proven the runtime integration.
+
+## Validation Checklist
+
+Run the migration in behavior order:
+
+1. Render the smallest editor with `usePliteEditor`, `<Plite>`, and
+   `<Editable>`.
+2. Type normal text and save only when `change.valueChanged` is true.
+3. Port one command to `editor.read(...)` plus `editor.update(...)`.
+4. Port custom element and leaf renderers.
+5. Verify keyboard shortcuts, paste, copy, drag/drop, undo/redo, and selection.
+6. Persist `state.value.get()` if the editor uses extra roots or document state.
+7. Move tests to current public imports.
+8. Delete the old editor wrapper after the new editor owns the same behavior.
+
+The migration is complete when the editor behaves the same from the user's point
+of view and the codebase no longer depends on old helper aliases.
+
+## API Reference Links
+
+- [Installing Plite](walkthroughs/01-installing-plite)
+- [Adding Event Handlers](walkthroughs/02-adding-event-handlers)
+- [Defining Custom Elements](walkthroughs/03-defining-custom-elements)
+- [Executing Commands](walkthroughs/05-executing-commands)
+- [Saving to a Database](walkthroughs/06-saving-to-a-database)
+- [Editor](concepts/07-editor)
+- [Transforms](api/transforms)
+- [Roots](concepts/13-roots)
+- [Document State](concepts/14-document-state)
+- [Plite React Hooks](libraries/plite-react/hooks)
+- [Plite React Event Handling](libraries/plite-react/event-handling)
+- [Plite History](libraries/plite-history/history-extension-setup)
+- [Plite Hyperscript](libraries/plite-hyperscript)
+- [Plite Yjs](libraries/plite-yjs)

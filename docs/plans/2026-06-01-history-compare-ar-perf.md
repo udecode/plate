@@ -1,7 +1,7 @@
 # History compare AR perf
 
 Objective:
-Run and repair `history-compare` under Slate AR until target-backed evidence is
+Run and repair `history-compare` under Plite AR until target-backed evidence is
 green, plateaued, or blocked by correctness/architecture proof.
 
 Completion threshold:
@@ -26,10 +26,10 @@ Constraints:
 - Prefer benchmark-native truth over wrapped wall-clock timing.
 
 Boundaries:
-- Source of truth: `benchmarks/targets/slate-v2.json` target `history-compare`
-  and `benchmarks/slate-v2/donor/core/compare/history.mjs`.
+- Source of truth: `benchmarks/targets/plite.json` target `history-compare`
+  and `benchmarks/plite/donor/core/compare/history.mjs`.
 - Browser surface: none; this is a Bun/jsdom-free history benchmark.
-- Release artifact: `slate-history` patch changeset because runtime history
+- Release artifact: `plite-history` patch changeset because runtime history
   replay behavior changed.
 
 Blocked condition:
@@ -59,7 +59,7 @@ Findings:
 - Initial native metric runs were red: default `2.63x`, 15-iteration `3.1x`,
   worst on typing undo.
 - Generic transaction replay was cloning each historic operation and historic
-  replay did not explicitly skip normalization like legacy Slate does.
+  replay did not explicitly skip normalization like legacy Plite does.
 - Adjacent text history operations can be compacted during undo/redo replay
   without changing the final document value.
 
@@ -68,13 +68,13 @@ Decisions and tradeoffs:
   ratio/delta as secondary evidence.
 - Set the benchmark default to 15 iterations because 3-sample p95 is bullshit
   for sub-ms undo/redo lanes.
-- Added a `slate-history` patch changeset because this is package runtime
+- Added a `plite-history` patch changeset because this is package runtime
   behavior, not just benchmark plumbing.
 - No PR, commit, or tracker sync: not requested.
 - Browser proof is N/A: this is a core/history benchmark and Bun test surface.
 
 Verification evidence:
-- `node --check benchmarks/slate-v2/donor/core/compare/history.mjs`
+- `node --check benchmarks/plite/donor/core/compare/history.mjs`
   passed.
 - `pnpm bench:targets:check` passed.
 - `pnpm bench:targets:dry-run -- history-compare` passed with
@@ -82,7 +82,7 @@ Verification evidence:
 - `pnpm bench:targets:report` regenerated target history/report files.
 - AR parser lint accepted the native `history_compare_worst_p95_ratio` metric.
 - Targeted history tests passed:
-  `cd packages/slate-history && bun test ./test/history-contract.ts ./test/integrity-contract.ts ./test/document-state-history-contract.ts`
+  `cd packages/plite-history && bun test ./test/history-contract.ts ./test/integrity-contract.ts ./test/document-state-history-contract.ts`
   with `51 pass`, `0 fail`.
 - Heavy guard run with `HISTORY_BENCH_TYPE_OPS=200` measured
   `history_compare_worst_p95_ratio=1.61`.

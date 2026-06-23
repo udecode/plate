@@ -46,7 +46,7 @@ These checks passed:
 
 ```bash
 bun test packages/markdown/src/lib/deserializer/utils/deserializeInlineMd.spec.ts
-bun test packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.spec.tsx
+bun test packages/markdown/src/lib/deserializer/utils/markdownToPliteNodesSafely.spec.tsx
 pnpm turbo build --filter=./packages/markdown
 pnpm turbo typecheck --filter=./packages/markdown
 ```

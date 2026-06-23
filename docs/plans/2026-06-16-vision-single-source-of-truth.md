@@ -11,7 +11,7 @@ Task source:
 - type: user instruction
 - id / link: current chat
 - title: Root `VISION.md` owns vision; `vision` skill routes to it
-- acceptance criteria: root `VISION.md` carries the Common/Slate/Plate doctrine,
+- acceptance criteria: root `VISION.md` carries the Common/Plite/Plate doctrine,
   `.agents/rules/vision.mdc` contains no duplicated doctrine and only routes to
   root `VISION.md`, generated `.agents/skills/vision/SKILL.md` matches, and
   stale source rules do not instruct agents to patch the skill as the doctrine
@@ -25,7 +25,7 @@ First checkpoint:
 Completion threshold:
 - Root `VISION.md` is the single doctrine source.
 - `vision` source and generated skill are tiny routers to root `VISION.md`.
-- `slate-auto`, `plate-plugin-creator`, and `.agents/AGENTS.md` point future
+- `plite-auto`, `plate-plugin-creator`, and `.agents/AGENTS.md` point future
   reusable vision updates at root `VISION.md`.
 - `pnpm install` regenerates skills.
 - Source audits prove no `patch vision` / `update vision` / `vision profile`
@@ -82,7 +82,7 @@ Start Gates:
 | Prompt requirements captured before work | yes | Captured "do not maintain both" and "vision skill should just say to read VISION.md". |
 | Skill analysis before edits | yes | Read `autogoal`, `vision`, `docs-creator`, and `agent-native-reviewer`. |
 | Active goal checked or created | yes | No active goal; goal created. |
-| Source of truth read before edits | yes | Read existing root `VISION.md`, `.agents/rules/vision.mdc`, generated `.agents/skills/vision/SKILL.md`, `slate-auto`, `plate-plugin-creator`, and `.agents/AGENTS.md`. |
+| Source of truth read before edits | yes | Read existing root `VISION.md`, `.agents/rules/vision.mdc`, generated `.agents/skills/vision/SKILL.md`, `plite-auto`, `plate-plugin-creator`, and `.agents/AGENTS.md`. |
 | Tracker comments and attachments read | no | N/A: no tracker. |
 | Video transcript evidence required | no | N/A: no video. |
 | `docs/solutions` checked for non-trivial existing-code work | no | N/A: no runtime behavior. |
@@ -181,7 +181,7 @@ Phase / pass table:
 Findings:
 - The previous design still had two practical doctrine owners: root `VISION.md`
   and the `vision` skill body.
-- `slate-auto` still had wording that could teach future agents to patch the
+- `plite-auto` still had wording that could teach future agents to patch the
   skill/rule instead of root `VISION.md`.
 
 Decisions and tradeoffs:
@@ -191,16 +191,16 @@ Decisions and tradeoffs:
 - Generated `.agents/skills/vision/SKILL.md` is intentionally tiny.
 
 Implementation notes:
-- Replaced root `VISION.md` with consolidated Common/Slate/Plate doctrine.
+- Replaced root `VISION.md` with consolidated Common/Plite/Plate doctrine.
 - Replaced `.agents/rules/vision.mdc` with a router.
-- Patched `slate-auto` reusable taste capture references to root `VISION.md`.
+- Patched `plite-auto` reusable taste capture references to root `VISION.md`.
 - Patched `plate-plugin-creator` handoff wording to `VISION.md updated` /
   `VISION.md reaffirmed`.
 - Patched `.agents/AGENTS.md` to describe `vision` as a route to root
   `VISION.md`.
 
 Review fixes:
-- Removed stale `vision profile` wording from `slate-auto`.
+- Removed stale `vision profile` wording from `plite-auto`.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |

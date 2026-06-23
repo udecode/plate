@@ -6,7 +6,7 @@ root_cause: async_timing
 title: Placeholder no-FEFF delayed plain typing can still land as ushis
 tags:
   - slate-react
-  - slate-browser
+  - plite-browser
   - placeholder-no-feff
   - zero-width
   - typing

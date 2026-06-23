@@ -30,7 +30,7 @@ doctrine that should not bloat the mandatory first read.
 ## Promotion Rule
 
 Promote to root `VISION.md` only when the rule must be visible in the mandatory
-first read: global taste, source order, cross-boundary law, essential Slate or
+first read: global taste, source order, cross-boundary law, essential Plite or
 Plate direction, proof standards, or supervisor stop conditions.
 
 Promote to `docs/vision/*.md` when the rule is reusable but only relevant after

@@ -1,8 +1,8 @@
 # huge document all lanes
 
 Objective:
-Validate and repair Slate v2 huge-document behavior across staged, virtualized,
-and auto lanes, with legacy Slate screenshot comparison as the final proof.
+Validate and repair Plite huge-document behavior across staged, virtualized,
+and auto lanes, with legacy Plite screenshot comparison as the final proof.
 
 Goal plan:
 docs/plans/2026-06-06-huge-document-all-lanes.md
@@ -17,9 +17,9 @@ Applied packs:
 - none
 
 Automation source:
-- type: user invocation of `slate-automation`
+- type: user invocation of `plite-automation`
 - prompt / link: `8h on huge-document all lanes, staged, virtualized etc., all editor behaviors (cmd+a, navigation, history etc) to test etc. especially screenshot comparison as last stage to double confirm. with huge-document from ../slate`
-- surface / route / package: `.tmp/slate-v2` huge-document example, `packages/slate-react`, `packages/slate-browser`, relevant Playwright/benchmark owners, and legacy comparison repo `../slate`
+- surface / route / package: `.tmp/plite` huge-document example, `packages/plite-react`, `packages/plite-browser`, relevant Playwright/benchmark owners, and legacy comparison repo `../slate`
 - invocation mode: timed mode
 - timebox / deadline: 8h loop-start budget from 2026-06-06; finish/keep/revert/quarantine the active packet before handoff even if it exceeds the nominal timebox
 - completion threshold summary: every in-scope huge-document strategy has behavior/native/visual proof for core editor gestures or an explicit owner/defer; final screenshot comparison against `../slate` is recorded; no dirty half-packet remains
@@ -35,7 +35,7 @@ First checkpoint:
 - Do not continue into implementation until first extraction is complete or
   explicitly marked N/A with reason.
 - Captured prompt requirements:
-  - run `slate-automation`;
+  - run `plite-automation`;
   - timed `8h` mode;
   - focus on huge-document;
   - cover all lanes/strategies, explicitly staged and virtualized, plus auto/current default when available;
@@ -66,16 +66,16 @@ Verification surface:
 - Legacy comparison route: `../slate` huge-document example, discovered from
   that repo source and run locally when available.
 - Replayable browser proof: focused Playwright rows under
-  `.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts`, plus
+  `.tmp/plite/playwright/integration/examples/huge-document.test.ts`, plus
   new rows if gaps appear.
-- Package proof: `bun --filter slate-react typecheck`,
-  `bun --filter slate-react build`, `bun typecheck:root`, and focused Vitest
-  contracts when `packages/slate-react` changes.
+- Package proof: `bun --filter plite-react typecheck`,
+  `bun --filter plite-react build`, `bun typecheck:root`, and focused Vitest
+  contracts when `packages/plite-react` changes.
 - Behavior proof: real keyboard/mouse Playwright, not model-only calls, for
   Cmd+A/select-all, delete, Arrow/Shift+Arrow navigation, typing, Enter, paste,
   undo/redo, scroll away/back, and strategy switching.
 - Visual proof: fresh screenshots or geometry artifacts for final current vs
-  legacy Slate comparison, inspected before handoff.
+  legacy Plite comparison, inspected before handoff.
 - Benchmark/perf proof: huge-document benchmark scripts only after correctness
   oracles are green enough for the packet.
 - Skill/workflow proof: if `.agents/rules/**` changes, run `pnpm install` and
@@ -83,31 +83,31 @@ Verification surface:
 - Final proof: `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-06-huge-document-all-lanes.md`.
 
 Constraints:
-- Slate v2 private alpha by default: no release, publish, changeset, PR, or
+- Plite private alpha by default: no release, publish, changeset, PR, or
   branch readiness unless the prompt explicitly asks.
-- Run Slate v2 behavior commands from `.tmp/slate-v2`; parent repo commands
+- Run Plite behavior commands from `.tmp/plite`; parent repo commands
   prove plans, docs, skills, and templates only.
 - Behavior proof beats perf. Native/visual proof beats model-only selection.
 - No hidden debounce or fake stress fixture wins.
 - No broad pagination/virtualization architecture unless the prompt or a
-  stopping checkpoint routes to `slate-plan`.
-- Do not patch Plate when the run is scoped to Slate v2.
+  stopping checkpoint routes to `plite-plan`.
+- Do not patch Plate when the run is scoped to Plite.
 
 Boundaries:
-- Source of truth: live `.tmp/slate-v2` source/tests/benchmarks, this active
-  plan, `docs/slate-v2/agent-start.md`, `vision`, and the current
-  `slate-automation` rule.
-- Allowed edit scope: `.tmp/slate-v2` runtime/tests/examples/benchmarks for
+- Source of truth: live `.tmp/plite` source/tests/benchmarks, this active
+  plan, `docs/plite/agent-start.md`, `vision`, and the current
+  `plite-automation` rule.
+- Allowed edit scope: `.tmp/plite` runtime/tests/examples/benchmarks for
   huge-document behavior, `docs/plans/2026-06-06-huge-document-all-lanes.md`,
   and `.agents/rules/**` only for proven workflow repair.
 - Browser surfaces: local huge-document route at port 3100 and a separate
   legacy `../slate` huge-document route for final screenshots.
-- Package/API surfaces: `packages/slate-react`, `packages/slate-browser` only
-  if repeated proof helper patterns need promotion, and core Slate/history only
+- Package/API surfaces: `packages/plite-react`, `packages/plite-browser` only
+  if repeated proof helper patterns need promotion, and core Plite/history only
   if a behavior failure proves that owner.
-- Agent/skill surfaces: `slate-automation`, `slate-patch`, autogoal template,
-  or `slate-browser` policy only if this loop misses a reusable expectation.
-- Docs/research surfaces: this plan first; durable `docs/slate-v2/**` only for
+- Agent/skill surfaces: `plite-automation`, `plite-patch`, autogoal template,
+  or `plite-browser` policy only if this loop misses a reusable expectation.
+- Docs/research surfaces: this plan first; durable `docs/plite/**` only for
   accepted reusable decisions.
 - Non-goals: release/publish/changeset/PR readiness, external issue ledgers,
   Plate-owned feature work, mobile raw-device claims unless a real device lane
@@ -162,7 +162,7 @@ Checkpoint supervisor:
 | oracle-repair | slate-patch / tdd | complete | P0 | Add missing native/visual/model oracles for found gaps. | New proof fails before fix or coverage gap is explicit. | update: auto/virtualized/replacement rows added and kept |
 | visual-proof | Browser / Playwright | complete | P0 | Prove visible editor behavior and native selection. | Browser/screenshot/geometry evidence recorded. | update: screenshots inspected |
 | legacy-screenshot-compare | Playwright | complete | P0 | Final comparison against `../slate` huge-document to double-confirm visual/native behavior. | Fresh current/legacy screenshots inspected and recorded. | update: artifacts in `docs/plans/artifacts/huge-document-2026-06-06` |
-| slate-browser-promotion | slate-browser | pending | P1 | Promote repeated browser proof into reusable API/helper. | Helper added, queued, or N/A with reason. | seed |
+| plite-browser-promotion | plite-browser | pending | P1 | Promote repeated browser proof into reusable API/helper. | Helper added, queued, or N/A with reason. | seed |
 | mobile-claim-width | slate-automation | pending | P1 | Separate raw-device proof from viewport proof. | Raw proof command passes or scoped blocker recorded. | seed |
 | huge-document-smoke | slate-ar-stabilize | pending | P1 | Smoke huge-doc correctness without broad architecture work. | Typing/Enter/paste/select-all/undo/nav/scroll proof recorded. | seed |
 | perf-packet | slate-ar-fast / slate-ar-perf | checkpoint_recorded | P2 | Optimize only after correctness is green. | Metric target or plateau recorded. | update: select-then-type p95 gap queued |
@@ -206,7 +206,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | First checkpoint section copies scope, timing, behaviors, screenshot comparison, non-goals, deliverables, stop rules, and proof surfaces |
-| `slate-automation` source rule read | yes | user included generated skill body; source rule behavior confirmed by generated mirror |
+| `plite-automation` source rule read | yes | user included generated skill body; source rule behavior confirmed by generated mirror |
 | `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read |
 | Active goal checked or created | yes | `create_goal` active objective created |
 | Invocation mode and timebox recorded | yes | timed 8h mode, finish active packet before handoff |
@@ -215,7 +215,7 @@ Start Gates:
 | Output budget strategy recorded | yes | narrow searches, artifacts/plan rows over broad streamed scans; one broad `rg` logged as slowdown |
 | Private-alpha release/PR boundary recorded | yes | no release/publish/changeset/PR unless explicitly requested |
 | Browser proof strategy recorded | yes | Playwright/screenshots; in-app Browser unavailable as direct tool, use Playwright screenshot proof |
-| Package/API proof strategy recorded | yes | focused `slate-react` type/build/root typecheck when runtime changes |
+| Package/API proof strategy recorded | yes | focused `plite-react` type/build/root typecheck when runtime changes |
 | Mobile/raw-device claim-width policy recorded | yes | N/A unless a real device lane appears; do not claim raw-device proof |
 | Skill repair authority and source-rule boundary recorded | yes | `.agents/rules/**` only when reusable workflow miss is proven |
 
@@ -239,7 +239,7 @@ Work Checklist:
       selection/editing risks or explicitly scoped.
 - [x] Missing oracle packets are written, kept, reverted, quarantined, or
       deferred with owner and proof command.
-- [x] Repeated browser proof patterns are promoted to `slate-browser` or queued
+- [x] Repeated browser proof patterns are promoted to `plite-browser` or queued
       with reason.
 - [x] Mobile/raw-device proof is run or the claim width is explicitly limited;
       Playwright viewport proof is not recorded as raw-device proof.
@@ -269,14 +269,14 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run the proof commands/artifacts named in this plan | Chromium/Firefox/WebKit suites, package checks, screenshots, and benchmark artifact recorded |
 | Dynamic checkpoint reconciliation | yes | Prove the plan was updated from evidence and not frozen to the initial seed | 6 mutation rows recorded |
-| Workspace authority proof | yes | Record cwd/tool for each Slate v2, parent-docs, skill, browser, package, or benchmark proof | commands recorded with `.tmp/slate-v2` or parent docs artifacts |
+| Workspace authority proof | yes | Record cwd/tool for each Plite, parent-docs, skill, browser, package, or benchmark proof | commands recorded with `.tmp/plite` or parent docs artifacts |
 | Behavior gates | yes | Run focused stable behavior proof or record scoped defer rows | behavior proof ledger complete |
 | Visual/native selection proof | yes | Record Browser/Playwright/native-selection evidence or scoped blocker | screenshot artifacts and native/model summaries recorded |
 | Missing oracle repair | yes | Add/verify/revert/quarantine oracle packets or record owner defer | auto, virtualized, replacement, multiline/fragment oracles recorded |
-| `slate-browser` promotion | no | Add/verify helper/API or record queue/defer reason | N/A: helper stayed local; promote only if reused outside huge-document suite |
+| `plite-browser` promotion | no | Add/verify helper/API or record queue/defer reason | N/A: helper stayed local; promote only if reused outside huge-document suite |
 | Mobile/raw-device claim width | no | Run raw-device proof or record that only scoped viewport/browser proof is available | N/A: no mobile/raw-device claim in this prompt |
 | Huge-document correctness smoke | yes | Run focused huge-document behavior smoke or record owner defer | smoke ledger complete |
-| Package/API proof | yes | Source-audit and run package/type/test proof when package/API changed, otherwise N/A | `slate-react` typecheck/build, root typecheck, Vitest |
+| Package/API proof | yes | Source-audit and run package/type/test proof when package/API changed, otherwise N/A | `plite-react` typecheck/build, root typecheck, Vitest |
 | Skill/rule sync | no | Run `pnpm install` and mirror audit when `.agents/rules/**` changed, otherwise N/A | N/A: no `.agents/rules/**` changes |
 | Changed list / review attention / stopping checkpoints | yes | Fill final handoff ledgers from current packet evidence | changed list, needs-attention, stopping checkpoints filled |
 | Final lint/check | yes | Run scoped lint/check or record why no code changed | targeted Biome, type/build, Playwright suites, Vitest |
@@ -293,8 +293,8 @@ Phase / pass table:
 | Gap scan and scenario matrix | complete | matrix below; gaps patched or scoped | behavior proof |
 | Behavior proof | complete | full Chromium 24 passed; Firefox/WebKit portable rows passed | visual proof |
 | Oracle repair | complete | missing browser shortcut/history/replacement/guard rows added | visual proof |
-| Visual/native proof | complete | screenshot artifacts inspected | slate-browser promotion |
-| slate-browser promotion | complete | N/A: helper remains local until reused outside suite | mobile claim width |
+| Visual/native proof | complete | screenshot artifacts inspected | plite-browser promotion |
+| plite-browser promotion | complete | N/A: helper remains local until reused outside suite | mobile claim width |
 | Mobile/raw-device claim width | complete | N/A: no raw-device claim made | huge-document smoke |
 | Huge-document correctness smoke | complete | smoke ledger complete | perf/API/docs as needed |
 | Perf/API/docs/skill packets as needed | complete | benchmark repaired; select-then-type gap queued | consolidation |
@@ -319,26 +319,26 @@ Scenario matrix:
 Packet ledger:
 | Packet | Loop | Owner | Hypothesis / failure signature | Files / commands | Behavior / visual proof | Decision | Next |
 |--------|------|-------|--------------------------------|------------------|-------------------------|----------|------|
-| virtualized-cmd-a-selection | 1 | slate-react | Browser Cmd+A selected the model but did not paint a projected view selection in virtualized huge docs. | `.tmp/slate-v2/packages/slate-react/src/view-selection.ts`, `.tmp/slate-v2/packages/slate-react/src/editable/caret-engine.ts`, `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts` | focused Chromium proof below | keep | full suite |
-| virtualized-full-delete | 1 | slate-react | Once projected select-all painted, Delete needed a full-block fast path instead of deleting thousands of projected text ranges. | `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts` | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium --grep "auto partial-dom collapsed typing|virtualized browser select-all"` passed | keep | full suite |
-| auto-collapsed-history-oracle | 1 | playwright | Auto/partial-dom lane lacked browser collapsed typing, arrow nav, undo, and redo proof. | `.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts` | same focused Chromium grep passed | keep | Firefox/WebKit and full suite |
-| full-range-replacement-fast-path | 2 | slate-react | 10k staged and 20k auto paste replacement timed out because full-block replacement removed every top-level block individually. | `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts` | focused Chromium grep for staged 10k, auto 5k, auto 20k, and full 300 replacement passed in 20.0s | keep | full Chromium suite |
-| huge-document-browser-suites | 3 | playwright | Full behavior proof across current huge-document lanes after runtime/test repair. | `.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts` | Chromium 24 passed; Firefox 12 passed/12 skipped; WebKit 12 passed/12 skipped | keep | screenshots |
+| virtualized-cmd-a-selection | 1 | slate-react | Browser Cmd+A selected the model but did not paint a projected view selection in virtualized huge docs. | `.tmp/plite/packages/plite-react/src/view-selection.ts`, `.tmp/plite/packages/plite-react/src/editable/caret-engine.ts`, `.tmp/plite/packages/plite-react/src/editable/mutation-controller.ts` | focused Chromium proof below | keep | full suite |
+| virtualized-full-delete | 1 | slate-react | Once projected select-all painted, Delete needed a full-block fast path instead of deleting thousands of projected text ranges. | `.tmp/plite/packages/plite-react/src/editable/mutation-controller.ts` | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium --grep "auto partial-dom collapsed typing|virtualized browser select-all"` passed | keep | full suite |
+| auto-collapsed-history-oracle | 1 | playwright | Auto/partial-dom lane lacked browser collapsed typing, arrow nav, undo, and redo proof. | `.tmp/plite/playwright/integration/examples/huge-document.test.ts` | same focused Chromium grep passed | keep | Firefox/WebKit and full suite |
+| full-range-replacement-fast-path | 2 | slate-react | 10k staged and 20k auto paste replacement timed out because full-block replacement removed every top-level block individually. | `.tmp/plite/packages/plite-react/src/editable/mutation-controller.ts` | focused Chromium grep for staged 10k, auto 5k, auto 20k, and full 300 replacement passed in 20.0s | keep | full Chromium suite |
+| huge-document-browser-suites | 3 | playwright | Full behavior proof across current huge-document lanes after runtime/test repair. | `.tmp/plite/playwright/integration/examples/huge-document.test.ts` | Chromium 24 passed; Firefox 12 passed/12 skipped; WebKit 12 passed/12 skipped | keep | screenshots |
 | legacy-screenshot-compare | 4 | Playwright | Final visual/native proof against current staged, current virtualized, and `../slate` huge-document. | `docs/plans/artifacts/huge-document-2026-06-06/summary.json` plus PNGs | inspected images; current select-all uses one projected highlight layer, legacy uses native selection | keep | review |
-| legacy-compare-benchmark-hygiene | 5 | benchmark | Legacy compare failed because staged mode waited for a stale full native-surface-complete metric. | `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs` | current-only `v2DomPresent` artifact writes; small compare artifact writes | keep | queue select-then-type perf gap |
-| full-block-paste-safety-guard | 6 | slate-react | Full-block fast path must not flatten multiline paste or bypass custom insert-data handlers. | `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts` | focused browser rows plus multiline/fragment Vitest contracts passed | keep | final review |
+| legacy-compare-benchmark-hygiene | 5 | benchmark | Legacy compare failed because staged mode waited for a stale full native-surface-complete metric. | `.tmp/plite/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs` | current-only `v2DomPresent` artifact writes; small compare artifact writes | keep | queue select-then-type perf gap |
+| full-block-paste-safety-guard | 6 | slate-react | Full-block fast path must not flatten multiline paste or bypass custom insert-data handlers. | `.tmp/plite/packages/plite-react/src/editable/mutation-controller.ts` | focused browser rows plus multiline/fragment Vitest contracts passed | keep | final review |
 
 Behavior proof ledger:
 | Family | Route / package | Command / proof | Browser | Result | Follow-up |
 |--------|-----------------|-----------------|---------|--------|-----------|
-| owner discovery | `.tmp/slate-v2` huge-document | targeted `rg` and `sed` over route/test/benchmark owners | N/A | existing tests cover many lanes but gaps found | add virtualized Cmd+A/Delete, auto collapsed typing/nav/shortcut proof, redo and final screenshot compare as needed |
-| focused auto + virtualized oracle | `.tmp/slate-v2` huge-document | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium --grep "auto partial-dom collapsed typing|virtualized browser select-all"` | Chromium | 2 passed in 8.9s | run full huge-document suite |
-| focused full-range replacement oracle | `.tmp/slate-v2` huge-document | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium --grep "staged 10k select-all|auto partial-dom select-all|auto partial-dom 20k select-all|replaces a huge select-all range"` | Chromium | 4 passed in 20.0s; rows were 5.8s, 2.4s, 3.3s, 685ms | run full huge-document suite |
-| full huge-document suite | `.tmp/slate-v2` huge-document | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium` | Chromium | 24 passed in 37.8s after formatting | complete |
-| portable huge-document suite | `.tmp/slate-v2` huge-document | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=firefox` | Firefox | 12 passed, 12 Chromium-only skipped in 21.1s after formatting | complete |
-| portable huge-document suite | `.tmp/slate-v2` huge-document | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=webkit` | WebKit | 12 passed, 12 Chromium-only skipped in 29.4s after sequential rerun | complete |
-| final full huge-document suite after guard | `.tmp/slate-v2` huge-document | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium` | Chromium | 24 passed in 38.2s | complete |
-| multiline/fragment paste contracts | `packages/slate-react` | `bun --filter slate-react test:vitest dom-strategy-and-scroll.test.tsx --testNamePattern "preserves multiline plain text over a full-document partial-dom-backed selection|preserves Slate fragment data for partial-dom-backed paste"` | Vitest | 2 passed, 45 skipped | complete |
+| owner discovery | `.tmp/plite` huge-document | targeted `rg` and `sed` over route/test/benchmark owners | N/A | existing tests cover many lanes but gaps found | add virtualized Cmd+A/Delete, auto collapsed typing/nav/shortcut proof, redo and final screenshot compare as needed |
+| focused auto + virtualized oracle | `.tmp/plite` huge-document | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium --grep "auto partial-dom collapsed typing|virtualized browser select-all"` | Chromium | 2 passed in 8.9s | run full huge-document suite |
+| focused full-range replacement oracle | `.tmp/plite` huge-document | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium --grep "staged 10k select-all|auto partial-dom select-all|auto partial-dom 20k select-all|replaces a huge select-all range"` | Chromium | 4 passed in 20.0s; rows were 5.8s, 2.4s, 3.3s, 685ms | run full huge-document suite |
+| full huge-document suite | `.tmp/plite` huge-document | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium` | Chromium | 24 passed in 37.8s after formatting | complete |
+| portable huge-document suite | `.tmp/plite` huge-document | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=firefox` | Firefox | 12 passed, 12 Chromium-only skipped in 21.1s after formatting | complete |
+| portable huge-document suite | `.tmp/plite` huge-document | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=webkit` | WebKit | 12 passed, 12 Chromium-only skipped in 29.4s after sequential rerun | complete |
+| final full huge-document suite after guard | `.tmp/plite` huge-document | `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium` | Chromium | 24 passed in 38.2s | complete |
+| multiline/fragment paste contracts | `packages/plite-react` | `bun --filter plite-react test:vitest dom-strategy-and-scroll.test.tsx --testNamePattern "preserves multiline plain text over a full-document partial-dom-backed selection|preserves Plite fragment data for partial-dom-backed paste"` | Vitest | 2 passed, 45 skipped | complete |
 
 Visual/native selection ledger:
 | Scenario | Model selection proof | Native selected text | DOM endpoint / caret / geometry | Screenshot / Browser proof | Result |
@@ -348,9 +348,9 @@ Visual/native selection ledger:
 | current staged 5k select-all | model selection `[0,0]:0` to `[4999,0]:102` | native text length 0 by design for projected selection | 24 projected markers | `docs/plans/artifacts/huge-document-2026-06-06/current-staged-5k-select-all.png` | single projected highlight layer |
 | current virtualized 5k select-all | model selection `[0,0]:0` to `[4999,0]:102` | native text length 0 by design for projected selection | 12 projected markers | `docs/plans/artifacts/huge-document-2026-06-06/current-virtualized-5k-select-all.png` | single projected highlight layer |
 | current virtualized Shift+Down then Shift+Up | Shift+Down model `[0,0]:8` to `[0,0]:42`; Shift+Up collapses back to `[0,0]:8` | native text length 0 by design for projected selection | one marker on Shift+Down, zero after Shift+Up | `current-virtualized-5k-shift-down-from-handle.png`, `current-virtualized-5k-shift-up-after-down-from-handle.png` | no double highlight seen |
-| legacy Slate 5k select-all | N/A: legacy does not expose v2 browser handle | native text length 745141 | native selection range | `legacy-slate-5k-select-all.png` | comparable selected visible surface, different selection mechanism |
+| legacy Plite 5k select-all | N/A: legacy does not expose v2 browser handle | native text length 745141 | native selection range | `legacy-slate-5k-select-all.png` | comparable selected visible surface, different selection mechanism |
 
-slate-browser promotion ledger:
+plite-browser promotion ledger:
 | Pattern | Repeated where | Proposed helper/API | Proof command | Decision |
 |---------|----------------|---------------------|---------------|----------|
 | projected view selection summary | `getViewSelectionSummary`, virtualized select-all oracle | already local to current Playwright helper surface | focused grep | defer promotion until repeated outside this suite |
@@ -366,12 +366,12 @@ Huge-document smoke ledger:
 | huge-document auto | collapsed type, ArrowLeft/Right, undo, redo | exact model text and selection after each step, caret visible | focused Chromium grep | passed |
 | huge-document virtualized | browser Cmd+A, Delete, type, undo, redo | model selection/value, view selection active after Cmd+A, DOM budget under 80 mounted blocks | focused Chromium grep | passed |
 | huge-document staged/auto/full | select-all paste/replacement undo | exact model replacement, selection, undo restoration | focused Chromium replacement grep | passed |
-| huge-document partial-dom paste safety | multiline paste and Slate fragment paste over full-document projected selection | multiline splits into paragraphs; Slate fragment stays fragment-owned | focused Vitest contracts | passed |
+| huge-document partial-dom paste safety | multiline paste and Plite fragment paste over full-document projected selection | multiline splits into paragraphs; Plite fragment stays fragment-owned | focused Vitest contracts | passed |
 
 Workflow slowdowns:
 | Step / command | Owner | Elapsed / estimate | Why slow | Evidence produced | Repair decision |
 |----------------|-------|--------------------|----------|-------------------|-----------------|
-| broad `rg` over `docs/slate-v2 docs/plans benchmarks/targets .tmp/slate-v2` | slate-automation | under 1 minute but output-heavy | search was too broad and streamed thousands of matches | showed need to narrow to owner files/artifacts | keep as logged miss; use targeted route/test/benchmark owner reads next |
+| broad `rg` over `docs/plite docs/plans benchmarks/targets .tmp/plite` | slate-automation | under 1 minute but output-heavy | search was too broad and streamed thousands of matches | showed need to narrow to owner files/artifacts | keep as logged miss; use targeted route/test/benchmark owner reads next |
 | stale-server focused proof risk | slate-automation | one failed/uncertain slice before managed rerun | `PLAYWRIGHT_BASE_URL` can point at stale built output after runtime changes | managed Playwright rerun rebuilt and passed | use managed Playwright or freshly rebuilt server for runtime proof |
 | full Chromium suite before second fix | slate-react | 6.0m | exposed four select-all replacement failures and long paste waits | 20 passed, 4 failed | keep failure as baseline; repair shared replacement path |
 | parallel managed Playwright builds | slate-automation | failed fast | Firefox and WebKit managed runs both invoked `next build`; WebKit failed with "Another next build process is already running." | sequential WebKit rerun passed | do not parallelize managed Playwright projects that own the same Next build directory |
@@ -380,9 +380,9 @@ Workflow slowdowns:
 Changed list:
 | Group | Current-run changes |
 |-------|---------------------|
-| code/runtime/API | `.tmp/slate-v2/packages/slate-react/src/view-selection.ts`, `.tmp/slate-v2/packages/slate-react/src/editable/caret-engine.ts`, `.tmp/slate-v2/packages/slate-react/src/editable/mutation-controller.ts` |
-| tests/oracles/browser proof | `.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts` |
-| benchmarks/metrics/targets | `.tmp/slate-v2/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs`; fresh artifacts under `.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-*` |
+| code/runtime/API | `.tmp/plite/packages/plite-react/src/view-selection.ts`, `.tmp/plite/packages/plite-react/src/editable/caret-engine.ts`, `.tmp/plite/packages/plite-react/src/editable/mutation-controller.ts` |
+| tests/oracles/browser proof | `.tmp/plite/playwright/integration/examples/huge-document.test.ts` |
+| benchmarks/metrics/targets | `.tmp/plite/scripts/benchmarks/browser/react/huge-document-legacy-compare.mjs`; fresh artifacts under `.tmp/plite/tmp/slate-react-huge-document-legacy-compare-benchmark-*` |
 | examples/docs | `docs/plans/2026-06-06-huge-document-all-lanes.md`; screenshot artifacts under `docs/plans/artifacts/huge-document-2026-06-06/` |
 | skills/workflow | no `.agents/rules/**` changes in this packet |
 | reverted/quarantined packets | none reverted; select-then-type perf parity is quarantined/queued |
@@ -390,23 +390,23 @@ Changed list:
 Needs your attention:
 | Rank | Item | Why | Anchor | Recommendation |
 |------|------|-----|--------|----------------|
-| 1 | Legacy compare select-then-type p95 | Current default-auto is slower than legacy in jsdom compare, though still sub-40ms. | `.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-v2DefaultRenderAuto-v2DomPresent-blocks-5000-iters-2-ops-5-chunk-1000-segment-32-radius-0-dispose-500-full-run-native-beforeinput-combined-surfaces-split-selection-no-profile.json` | Route to focused perf packet, not this behavior-fix packet |
+| 1 | Legacy compare select-then-type p95 | Current default-auto is slower than legacy in jsdom compare, though still sub-40ms. | `.tmp/plite/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-v2DefaultRenderAuto-v2DomPresent-blocks-5000-iters-2-ops-5-chunk-1000-segment-32-radius-0-dispose-500-full-run-native-beforeinput-combined-surfaces-split-selection-no-profile.json` | Route to focused perf packet, not this behavior-fix packet |
 | 2 | Firefox/WebKit Chromium-only skips | Some keyboard/perf rows are intentionally Chromium-only. Portable rows pass, but full parity proof is not claimed. | `playwright/integration/examples/huge-document.test.ts` | Keep claim scoped |
 
 Stopping checkpoints to unblock:
 | Id | Type | Question / decision | Why it matters | Paused work | Continued work | Recommendation | Anchor |
 |----|------|---------------------|----------------|-------------|----------------|----------------|--------|
-| SC-1 | perf | Should we chase jsdom select-then-type parity vs legacy now? | Current default-auto p95 39.45ms vs legacy 22.29ms; profiler does not name a small product owner. | none | behavior/visual/replacement fixes completed | defer to focused `slate-ar-perf` packet | legacy compare artifact |
+| SC-1 | perf | Should we chase jsdom select-then-type parity vs legacy now? | Current default-auto p95 39.45ms vs legacy 22.29ms; profiler does not name a small product owner. | none | behavior/visual/replacement fixes completed | defer to focused `plite-ar-perf` packet | legacy compare artifact |
 | SC-2 | browser coverage | Should Chromium-only huge-doc keyboard/perf rows be ported to Firefox/WebKit? | Portable rows pass, but shortcut/perf rows are scoped Chromium-only. | none | current claim is scoped | keep scoped unless cross-browser parity becomes a requirement | Playwright suite output |
 
 Findings:
 - Virtualized Browser Cmd+A can have model selection without native selected text; the correct visual oracle is projected view-selection markers plus screenshot, not `window.getSelection().toString()`.
 - Full-document projected Delete needs the top-level full-block delete path. Deleting each projected text range is the slow path the user saw.
 - Full-document text replacement needs the same structural top-level replacement path as Delete. Removing 10k or 20k top-level blocks individually is the timeout path.
-- Full-document text replacement must stay single-line only and must not bypass custom insert-data handlers. Existing multiline and Slate fragment tests cover that risk.
+- Full-document text replacement must stay single-line only and must not bypass custom insert-data handlers. Existing multiline and Plite fragment tests cover that risk.
 
 Decisions and tradeoffs:
-- Keep projected select-all as a Slate view selection in virtualized mode so selection can paint without mounting every block.
+- Keep projected select-all as a Plite view selection in virtualized mode so selection can paint without mounting every block.
 - Keep full-document Delete on a structural replacement path; do not optimize it by hiding latency behind debounce.
 - Keep full-document paste/text replacement on a single `replace_children` operation when the selection covers all top-level blocks.
 - Do not use the fast path for multiline text or when insert-data handlers are registered; preserve existing clipboard semantics over speed there.
@@ -421,21 +421,21 @@ Error attempts:
 
 Verification evidence:
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium --grep "auto partial-dom collapsed typing|virtualized browser select-all"` passed: 2 tests, 8.9s.
-- `bun --filter slate-react typecheck` passed after both runtime patches.
+- `bun --filter plite-react typecheck` passed after both runtime patches.
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium --grep "staged 10k select-all|auto partial-dom select-all|auto partial-dom 20k select-all|replaces a huge select-all range"` passed: 4 tests, 20.0s.
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=chromium` passed after guard: 24 tests, 38.2s.
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=firefox` passed after formatting: 12 tests, 12 Chromium-only skipped, 21.1s.
 - `PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright playwright/integration/examples/huge-document.test.ts --project=webkit` passed sequentially after formatting: 12 tests, 12 Chromium-only skipped, 29.4s.
-- `bun --filter slate-react build` passed.
+- `bun --filter plite-react build` passed.
 - `bun typecheck:root` passed.
-- `bun --filter slate-react test:vitest keyboard-input-strategy-contract.test.ts --testNamePattern "plain vertical shift extension|virtualized plain vertical shift"` passed: 7 tests, 27 skipped.
-- `bun --filter slate-react test:vitest dom-strategy-and-scroll.test.tsx --testNamePattern "preserves multiline plain text over a full-document partial-dom-backed selection|preserves Slate fragment data for partial-dom-backed paste"` passed: 2 tests, 45 skipped.
+- `bun --filter plite-react test:vitest keyboard-input-strategy-contract.test.ts --testNamePattern "plain vertical shift extension|virtualized plain vertical shift"` passed: 7 tests, 27 skipped.
+- `bun --filter plite-react test:vitest dom-strategy-and-scroll.test.tsx --testNamePattern "preserves multiline plain text over a full-document partial-dom-backed selection|preserves Plite fragment data for partial-dom-backed paste"` passed: 2 tests, 45 skipped.
 - `REACT_HUGE_COMPARE_ITERATIONS=2 REACT_HUGE_COMPARE_TYPE_OPS=5 REACT_HUGE_COMPARE_SURFACES=v2DefaultRenderAuto,v2DomPresent REACT_HUGE_COMPARE_SPLIT_SELECTION=1 bun bench:react:huge-document:legacy-compare:local` passed after benchmark repair.
 - Screenshot artifacts: `docs/plans/artifacts/huge-document-2026-06-06/summary.json` and PNGs.
 
 Final handoff contract:
 - Goal plan: this file
-- Surface and route/package: `.tmp/slate-v2` huge-document, `packages/slate-react`, `packages/slate-browser` proof helpers, legacy `../slate`
+- Surface and route/package: `.tmp/plite` huge-document, `packages/plite-react`, `packages/plite-browser` proof helpers, legacy `../slate`
 - Invocation mode, elapsed/timebox, loop/checkpoint count: timed 8h mode; 6 recorded loops/checkpoints
 - Behavior gates and visual proof: full Chromium suite, Firefox/WebKit portable suites, screenshot artifacts
 - Primary metric baseline/latest/best and stop reason: select-all replacement went from timeout/failure to 5.8s staged 10k, 3.4s auto 20k, 610ms virtualized delete row; stopped current packet because behavior/visual proof is green and remaining perf gap is queued
@@ -446,7 +446,7 @@ Final handoff contract:
 - Needs your attention: see Needs your attention table
 - Stopping checkpoints to unblock: see Stopping checkpoints table
 - Accepted deferrals and residual risks: select-then-type perf parity and Firefox/WebKit porting of Chromium-only rows
-- Next owner: focused `slate-ar-perf` only if you want to chase the select-then-type parity gap
+- Next owner: focused `plite-ar-perf` only if you want to chase the select-then-type parity gap
 
 Reboot status:
 | Question | Answer |

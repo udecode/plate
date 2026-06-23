@@ -1,7 +1,7 @@
 # architecture candidate finder
 
 Objective:
-Find Plate/Slate architecture deepening candidates; done when at least 5 source-backed areas are ranked with owners/proof paths.
+Find Plate/Plite architecture deepening candidates; done when at least 5 source-backed areas are ranked with owners/proof paths.
 
 Goal plan:
 docs/plans/2026-06-16-architecture-candidate-finder.md
@@ -18,12 +18,12 @@ Applied packs:
 Major source:
 - type: user-invoked skill
 - id / link: `$improve-codebase-architecture`
-- title: Broad Plate/Slate architecture candidate finder
+- title: Broad Plate/Plite architecture candidate finder
 - decision to make: Which source-backed architecture deepening candidates are
   worth planning, supervising, deferring, or rejecting now?
 - decision criteria:
   - Start from root `VISION.md`, relevant `docs/vision/**`, and current source.
-  - Inspect at least five candidate areas across Plate and Slate unless source
+  - Inspect at least five candidate areas across Plate and Plite unless source
     proof narrows the useful surface sooner.
   - Separate facts, inference, and recommendation.
   - Every candidate row names files, owner, proof path, and keep/defer/reject
@@ -34,7 +34,7 @@ Major lane:
 - lane: architecture candidate finding
 - output type: durable ranked candidate artifact plus completed goal plan
 - implementation expected: no runtime implementation; docs/plan artifact only
-- affected packages / surfaces: Plate packages, Slate v2 sibling checkout,
+- affected packages / surfaces: Plate packages, Plite sibling checkout,
   docs/analysis, docs/vision, `.agents` routing context
 - dominant risk: generic refactor menu without source proof
 
@@ -87,7 +87,7 @@ Boundaries:
 - Source of truth: root `VISION.md`, `docs/vision/common.md`,
   `docs/vision/slate.md`, `docs/vision/plate.md`,
   `docs/analysis/editor-architecture-candidates.md`, package/source/test/docs
-  files in this checkout, and `.tmp/slate-v2` when present.
+  files in this checkout, and `.tmp/plite` when present.
 - Allowed edit scope: this plan and
   `docs/analysis/2026-06-16-architecture-candidate-finder.md`.
 - External sources: N/A by default; local repo and sibling checkout first.
@@ -138,14 +138,14 @@ Start Gates:
 | Timed checkpoint parsed | yes | N/A: no duration requested. |
 | `major-task` loaded | yes | Read generated `major-task` plan template and previous major-task source in this thread. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created active goal for this plan. |
-| Source of truth read before analysis | partial | Read `$improve-codebase-architecture`, `autogoal`, root `VISION.md`, `docs/vision/common.md`, and architecture candidate map; still reading Slate/Plate detail files before findings. |
+| Source of truth read before analysis | partial | Read `$improve-codebase-architecture`, `autogoal`, root `VISION.md`, `docs/vision/common.md`, and architecture candidate map; still reading Plite/Plate detail files before findings. |
 | Major lane selected | yes | architecture candidate finding. |
 | Decision criteria stated | yes | See Major source. |
 | Existing repo patterns / prior decisions checked | pending | pending |
 | Helper stack selected | yes | `improve-codebase-architecture`, `autogoal`, `major-task` plan shell; no extra helpers unless evidence demands. |
 | External research decision recorded | yes | N/A by default; local source first. |
 | Implementation expectation recorded | yes | No runtime implementation; artifact only unless a tiny docs correction is unavoidable. |
-| Workspace authority selected | yes | `/Users/zbeyens/git/plate-2`, plus `.tmp/slate-v2` for Slate v2 source when present. |
+| Workspace authority selected | yes | `/Users/zbeyens/git/plate-2`, plus `.tmp/plite` for Plite source when present. |
 | Branch / PR expectation decided | yes | N/A: no branch/PR/commit requested. |
 | Output budget strategy recorded | yes | Capped reads and artifact synthesis. |
 
@@ -251,7 +251,7 @@ Reboot status:
 |----------|--------|
 | Where am I? | Source audit |
 | Where am I going? | Research / analysis, options, review, verification, closeout |
-| What is the goal? | Rank source-backed Plate/Slate architecture candidates. |
+| What is the goal? | Rank source-backed Plate/Plite architecture candidates. |
 | What have I learned? | See Findings |
 | What have I done? | See Timeline |
 

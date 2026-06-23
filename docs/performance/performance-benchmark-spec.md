@@ -124,7 +124,7 @@ The benchmark model is multi-editor by design.
 Current editors:
 
 - Plate
-- Slate
+- Plite
 
 Future editors can include:
 
@@ -132,7 +132,7 @@ Future editors can include:
 - Tiptap
 - Lexical
 
-The registry and UI must not hardcode `Plate vs Slate` assumptions.
+The registry and UI must not hardcode `Plate vs Plite` assumptions.
 
 ### Benchmark profiles
 

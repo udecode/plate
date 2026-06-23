@@ -19,7 +19,7 @@ templates/my-app
 # Generated files
 .history
 apps/www/next-env.d.ts
-apps/slate/out/
+**/out/
 node_modules/
 report.*
 *.tsv
@@ -105,7 +105,7 @@ pnpm-error.log*
 .env.production.local
 
 # next.js build output
-.next
+**/.next*
 
 # System Files
 .DS_Store

@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: V2 editable text should split leaves from projection slices
 tags:
-  - slate-v2
+  - plite
   - slate-react-v2
   - projections
   - decorations
@@ -20,7 +20,7 @@ severity: medium
 Once the plain-text renderer stack was packaged, the next real rich-text seam
 was decoration-style leaf splitting.
 
-`slate-react-v2` already had projection slices.
+`plite-react-v2` already had projection slices.
 What it did not have was a renderer primitive that could turn one text node plus
 those slices into multiple rendered leaves.
 
@@ -29,9 +29,9 @@ those slices into multiple rendered leaves.
 `EditableText` now owns that split:
 
 - it accepts a `runtimeId`
-- reads `useSlateProjections(runtimeId)`
+- reads `usePliteProjections(runtimeId)`
 - splits the string into cumulative text segments
-- renders one `SlateLeaf` per segment
+- renders one `PliteLeaf` per segment
 - lets callers style active segments through `renderSegment(...)`
 
 That was enough to prove a highlighted middle slice in a real browser while
@@ -47,12 +47,12 @@ into leaves.
 
 That keeps the model simple:
 
-- `slate-v2` projects ranges into runtime-local slices
-- `slate-react-v2` renders those slices as leaves
+- `plite` projects ranges into runtime-local slices
+- `plite-react-v2` renders those slices as leaves
 
 ## Reusable rule
 
-For `slate-react-v2` rich-text rendering:
+For `plite-react-v2` rich-text rendering:
 
 - do not invent a second decoration model when projection slices already exist
 - let the compositional text primitive own leaf splitting from those slices

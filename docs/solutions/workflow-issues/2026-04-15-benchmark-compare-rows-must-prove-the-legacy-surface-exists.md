@@ -2,7 +2,7 @@
 title: Benchmark compare rows must prove the legacy surface exists
 date: 2026-04-15
 category: workflow-issues
-module: slate-v2
+module: plite
 problem_type: workflow_issue
 component: testing_framework
 symptoms:
@@ -12,7 +12,7 @@ root_cause: missing_workflow_step
 resolution_type: workflow_improvement
 severity: medium
 tags:
-  - slate-v2
+  - plite
   - benchmarking
   - legacy-compare
   - history
@@ -25,7 +25,7 @@ tags:
 ## Problem
 
 The browser huge-document history compare row looked like ordinary benchmark
-debt. It was not. Legacy Slate’s huge-document example was never a
+debt. It was not. Legacy Plite’s huge-document example was never a
 history-backed surface, so the row had no valid comparison target to recover.
 
 ## Symptoms
@@ -49,9 +49,9 @@ behavior.
 Hard cut the fake row instead of carrying it as future debt.
 
 - removed `bench:replacement:huge-document:history:local` from
-  [package.json](/Users/zbeyens/git/slate-v2/package.json)
+  [package.json](/Users/zbeyens/git/plite/package.json)
 - deleted
-  [huge-document-history.mjs](/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/replacement/huge-document-history.mjs)
+  [huge-document-history.mjs](/Users/zbeyens/git/plite/scripts/benchmarks/browser/replacement/huge-document-history.mjs)
 - rewrote live perf docs so
   `pnpm bench:history:compare:local` is the only honest owner for history
   compare truth
@@ -85,5 +85,5 @@ benchmark work.
 
 ## Related Issues
 
-- [Slate v2 Huge-Document History Lane Cut](/Users/zbeyens/git/plate-2/docs/plans/2026-04-15-slate-v2-huge-document-history-lane-cut.md)
-- [Slate v2 Release-Readiness Decision](/Users/zbeyens/git/plate-2/docs/slate-v2/release-readiness-decision.md)
+- [Plite Huge-Document History Lane Cut](/Users/zbeyens/git/plate-2/docs/plans/2026-04-15-plite-huge-document-history-lane-cut.md)
+- [Plite Release-Readiness Decision](/Users/zbeyens/git/plate-2/docs/plite/release-readiness-decision.md)

@@ -1,4 +1,4 @@
-# rename legacy Slate taste profile to vision
+# rename legacy Plite taste profile to vision
 
 Objective:
 Create `vision` as the unified doctrine skill; done when source rules, generated skill, references, and sync proof are updated.
@@ -18,8 +18,8 @@ Applied packs:
 Task source:
 - type: user instruction
 - id / link: current chat
-- title: Create unified `vision` skill from the legacy Slate taste profile
-- acceptance criteria: `vision` skill exists, carries Common/Slate/Plate sections, absorbs current Slate taste rules and Plate north-star doctrine, source references route to `vision`, generated mirrors are synced, no manual generated skill edits.
+- title: Create unified `vision` skill from the legacy Plite taste profile
+- acceptance criteria: `vision` skill exists, carries Common/Plite/Plate sections, absorbs current Plite taste rules and Plate north-star doctrine, source references route to `vision`, generated mirrors are synced, no manual generated skill edits.
 
 First checkpoint:
 - Before implementation or broad exploration, copy every explicit prompt
@@ -30,8 +30,8 @@ First checkpoint:
   explicitly marked N/A with reason.
 
 Completion threshold:
-- Source-owned `vision` skill replaces the legacy Slate taste profile as the agent taste
-  and routing profile, contains Common/Slate/Plate sections, references from
+- Source-owned `vision` skill replaces the legacy Plite taste profile as the agent taste
+  and routing profile, contains Common/Plite/Plate sections, references from
   active source rules/templates use `vision`, generated skills are synced, and
   source audits prove no active source-rule dependency on the legacy profile
   remains.
@@ -60,7 +60,7 @@ Boundaries:
 - Allowed edit scope: agent rules, generated mirrors via sync, goal plan.
 - Browser surface: N/A.
 - Tracker sync: N/A.
-- Non-goals: do not create root `VISION.md` in this pass; do not patch Slate
+- Non-goals: do not create root `VISION.md` in this pass; do not patch Plite
   runtime; do not hand-edit generated `.agents/skills/**/SKILL.md`; do not keep
   a legacy compatibility wrapper.
 
@@ -82,11 +82,11 @@ Task state:
 - goal_status: active
 
 Current verdict:
-- verdict: implement hard rename to `vision` and route Slate/Plate/Common
+- verdict: implement hard rename to `vision` and route Plite/Plate/Common
   doctrine through it
 - confidence: high
 - next owner: source-rule patch
-- reason: user explicitly wants `vision` first from the legacy Slate taste
+- reason: user explicitly wants `vision` first from the legacy Plite taste
   profile, with common/slate/plate sections.
 
 Completion rule:
@@ -102,9 +102,9 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | Requirements captured in plan before source edits. |
-| Skill analysis before edits | yes | Read `autogoal`, the legacy Slate taste profile, Plate doctrine source, and `agent-native-reviewer`; source refs mapped. |
+| Skill analysis before edits | yes | Read `autogoal`, the legacy Plite taste profile, Plate doctrine source, and `agent-native-reviewer`; source refs mapped. |
 | Active goal checked or created | yes | `get_goal` returned none; active goal created. |
-| Source of truth read before edits | yes | Legacy Slate taste source, Plate doctrine source, `slate-auto`, `slate-migration`, `plate-plugin-creator`, `.agents/AGENTS.md` refs audited. |
+| Source of truth read before edits | yes | Legacy Plite taste source, Plate doctrine source, `plite-auto`, `plite-migration`, `plate-plugin-creator`, `.agents/AGENTS.md` refs audited. |
 | Tracker comments and attachments read | no | N/A: no tracker. |
 | Video transcript evidence required | no | N/A: no video. |
 | `docs/solutions` checked for non-trivial existing-code work | no | N/A: skill topology rename, no runtime behavior. |
@@ -116,7 +116,7 @@ Start Gates:
 | Tracker sync expectation decision | no | N/A: no tracker. |
 | Output budget strategy recorded | yes | Targeted source/template audits only; historical plans excluded. One bad broad audit attempt is recorded below. |
 | Agent-native pack selected | yes | Skill/rule action surface changed. |
-| Agent-facing action surface identified | yes | `$vision`, `slate-auto` checkpoint zero, `slate-migration`, Plate plugin doctrine routing. |
+| Agent-facing action surface identified | yes | `$vision`, `plite-auto` checkpoint zero, `plite-migration`, Plate plugin doctrine routing. |
 | Source rule versus generated mirror boundary identified | yes | Edited `.agents/rules/**`; ran `pnpm install`; no generated skill was hand-edited. |
 | `agent-native-reviewer` loaded or waiver recorded | yes | Loaded `.agents/skills/agent-native-reviewer/SKILL.md`; no user-action parity gap because this is a skill routing surface, not app UI. |
 
@@ -126,9 +126,9 @@ Work Checklist:
       section, verification surface, and success criterion is copied into this
       plan as checkable checkpoints before implementation.
 - [x] Explicit requirements captured: create `vision` first; start by renaming
-      the legacy Slate taste profile; include Slate taste content and Plate content;
-      structure as three big sections: Common, Slate, Plate; support future
-      unified Plate repo while preserving clear Slate package/docs and Plate
+      the legacy Plite taste profile; include Plite taste content and Plate content;
+      structure as three big sections: Common, Plite, Plate; support future
+      unified Plate repo while preserving clear Plite package/docs and Plate
       package/docs boundaries.
 - [x] Short objective plus outcome, completion threshold, verification surface,
       constraints, boundaries, and blocked condition are concrete.
@@ -183,7 +183,7 @@ Completion Gates:
 | Registry-only component work changed | no | Update `docs/components/changelog.mdx` or record N/A | N/A: no registry component work. |
 | Docs or content changed | yes | For docs-heavy work, use `--template docs`; for incidental docs, verify source-backed claims, links, examples, and rendered output or record N/A | Source-backed skill docs changed; verified generated mirror and active references. No public docs page changed. |
 | High-risk mini gate | yes | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | Failure mode: stale old doctrine owner causes wrong skill routing. Proof: old-name audits empty; new generated `vision` exists; routing refs updated. |
-| Agent-native review for agent/tooling changes | yes | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | Loaded reviewer. Finding: no missing app UI parity; action surface is agent-readable through `$vision`, `.agents/AGENTS.md`, `slate-auto`, `slate-migration`, and `plate-plugin-creator`. |
+| Agent-native review for agent/tooling changes | yes | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | Loaded reviewer. Finding: no missing app UI parity; action surface is agent-readable through `$vision`, `.agents/AGENTS.md`, `plite-auto`, `plite-migration`, and `plate-plugin-creator`. |
 | Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: no install-corruption failure shape. |
 | Autoreview for non-trivial implementation changes | no | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | N/A: source-rule rename and generated mirror sync only; agent-native review covered action-surface risk. |
 | PR create or update | no | Run `check` before PR work and sync PR body to the task-style final handoff | N/A: PR not requested. |
@@ -208,10 +208,10 @@ Phase / pass table:
 | Closeout | complete | Plan evidence recorded; completion script is final gate. | final response |
 
 Findings:
-- Legacy Slate taste and Plate doctrine were overlapping doctrine owners. Keeping
+- Legacy Plite taste and Plate doctrine were overlapping doctrine owners. Keeping
   both would make future routing worse.
-- The durable owner should be `vision`, with Common/Slate/Plate sections and
-  explicit Slate-vs-Plate boundary law.
+- The durable owner should be `vision`, with Common/Plite/Plate sections and
+  explicit Plite-vs-Plate boundary law.
 - Active source references should use `vision`; historical old plans are not
   rewritten.
 
@@ -266,7 +266,7 @@ Final handoff contract:
   - Reproduced: N/A, no runtime bug.
   - Verified: `pnpm install`, old-name audits, generated mirror existence.
 - Browser check: N/A, no browser surface.
-- Outcome: `vision` is now the unified Common/Slate/Plate doctrine skill and
+- Outcome: `vision` is now the unified Common/Plite/Plate doctrine skill and
   old doctrine names are cut from active source/generated agent surfaces.
 - Caveat: root `VISION.md` is not created in this pass; the skill is ready to
   defer to it when it exists.
@@ -314,8 +314,8 @@ Reboot status:
 |----------|--------|
 | Where am I? | Closeout complete; final completion script remains. |
 | Where am I going? | Run `check-complete`, mark active goal complete, final response. |
-| What is the goal? | Rename Slate/Plate doctrine owner to `vision` and cut old active names. |
-| What have I learned? | Duplicate doctrine owners create routing ambiguity; `vision` should own Common/Slate/Plate taste. |
+| What is the goal? | Rename Plite/Plate doctrine owner to `vision` and cut old active names. |
+| What have I learned? | Duplicate doctrine owners create routing ambiguity; `vision` should own Common/Plite/Plate taste. |
 | What have I done? | Added `vision`, removed old source owners, updated active refs, synced generated skills, audited old names. |
 
 Open risks:

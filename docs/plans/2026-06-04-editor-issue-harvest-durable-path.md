@@ -29,7 +29,7 @@ Boundaries:
 - Generated mirrors: `.agents/skills/editor-test-harvester/SKILL.md`, `.agents/skills/issue-harvester/SKILL.md`, `.agents/skills/slate-automation/SKILL.md`, `.agents/skills/clawsweeper/SKILL.md`.
 - Durable docs path: `docs/editor-issue-harvester/`.
 - Raw cache path: `.tmp/editor-issue-harvester/<repo>/raw/`.
-- Non-goals: runtime Slate v2 fixes, issue processing, bulk corpus migration, PR/release work.
+- Non-goals: runtime Plite fixes, issue processing, bulk corpus migration, PR/release work.
 
 Blocked condition:
 - None. The path contract and skill sync were completed. Bulk migration remains a separate explicit action if desired.
@@ -64,7 +64,7 @@ Work Checklist:
 - [x] Patched `editor-test-harvester` so issue mode writes compact issue artifacts to `docs/editor-issue-harvester/<repo>/` and raw cache to `.tmp/editor-issue-harvester/<repo>/raw/`.
 - [x] Patched `issue-harvester` so closure ledgers, overrides, run notes, and resume state live in `docs/editor-issue-harvester/<repo>/full/`.
 - [x] Patched `issue-harvester` legacy handling so old `.tmp/editor-issue-harvester/<repo>/full/` ledgers are import sources, not the canonical path.
-- [x] Patched `slate-automation` to delegate issue-harvest loops to the docs ledger path and raw-cache split.
+- [x] Patched `plite-automation` to delegate issue-harvest loops to the docs ledger path and raw-cache split.
 - [x] Patched `clawsweeper` provenance wording so raw archive output is scratch and compact closure ledgers live in docs.
 - [x] Added `docs/editor-issue-harvester/README.md` with the durable path and raw-cache policy.
 - [x] Added `.tmp/` to repo `.gitignore` and unignored `docs/editor-issue-harvester/**/*.tsv` so durable TSV ledgers can be versioned.
@@ -96,7 +96,7 @@ Phase / pass table:
 | Closeout | complete | Plan updated with evidence. | final response |
 
 Findings:
-- `.tmp/editor-issue-harvester/<repo>/full/` was hardcoded as the canonical ledger path in `issue-harvester` and `slate-automation`.
+- `.tmp/editor-issue-harvester/<repo>/full/` was hardcoded as the canonical ledger path in `issue-harvester` and `plite-automation`.
 - `editor-test-harvester` treated issue-mode outputs as scratch even when the output was compact local classification.
 - `.tmp/` was only locally excluded in `.git/info/exclude`; the repo `.gitignore` did not protect raw cache on other machines.
 - `*.tsv` was globally ignored, which would block versioned closure TSV ledgers without an exception.
@@ -108,7 +108,7 @@ Decisions and tradeoffs:
 - Rejected bulk migration in this pass: old Lexical/ProseMirror raw corpora include body dumps and generator scratch; import should happen through the harvester path contract.
 
 Implementation notes:
-- Relevant skills updated: `editor-test-harvester`, `issue-harvester`, `slate-automation`, `clawsweeper`.
+- Relevant skills updated: `editor-test-harvester`, `issue-harvester`, `plite-automation`, `clawsweeper`.
 - Generated mirrors synced by `pnpm install`.
 - README added so the docs path is self-explanatory before the first imported ledger appears.
 

@@ -1,7 +1,7 @@
 # full docs taste profile ten checkpoints
 
 Objective:
-Build full Slate taste profile from 100 docs; done when 10x10-file checkpoints
+Build full Plite taste profile from 100 docs; done when 10x10-file checkpoints
 are logged, profile is updated, and checks pass.
 
 Goal plan:
@@ -35,7 +35,7 @@ Major lane:
 - implementation expected: yes, docs/rule update if evidence changes the
   supervisor contract
 - affected packages / surfaces: `docs/**`,
-  `docs/slate-v2/automation-supervisor-north-star.md`,
+  `docs/plite/automation-supervisor-north-star.md`,
   `.agents/rules/slate-automation.mdc`, generated skill mirror when synced
 - dominant risk: fake breadth. Reading 10 thematic docs is not enough; this
   run must read 100 concrete docs files and checkpoint after each batch.
@@ -45,18 +45,18 @@ Completion threshold:
 - Each iteration reads exactly 10 concrete markdown files under `docs/**`.
 - The plan records each checkpoint's file list and extracted taste/profile
   deltas.
-- `docs/slate-v2/automation-supervisor-north-star.md` incorporates the new
+- `docs/plite/automation-supervisor-north-star.md` incorporates the new
   reusable deltas without becoming a raw chat/doc dump.
-- `slate-automation` source and generated mirror are updated if checkpointing
+- `plite-automation` source and generated mirror are updated if checkpointing
   policy changes.
 - Verification commands pass.
 
 Verification surface:
 - Full-file local extraction for 10 batches of 10 docs files.
 - Plan checkpoint table with 100 file paths.
-- Source audit of north-star profile and `slate-automation` mirror.
+- Source audit of north-star profile and `plite-automation` mirror.
 - `pnpm install` if `.agents/rules/**` changes.
-- `pnpm docs:slate-v2:audit`
+- `pnpm docs:plite:audit`
 - `pnpm lint:fix`
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-03-full-docs-taste-profile-ten-checkpoints.md`
 
@@ -69,13 +69,13 @@ Constraints:
 Boundaries:
 - Source of truth: markdown files under `docs/**`, existing source rules under
   `.agents/rules/**`, and the active goal plan.
-- Allowed edit scope: the profile doc, `slate-automation` source rule if
+- Allowed edit scope: the profile doc, `plite-automation` source rule if
   policy changes, generated mirror via `pnpm install`, stale docs uncovered by
   repo audits, and this plan.
 - External sources: N/A; this is repo-doc taste consolidation.
 - Browser surface: N/A unless a docs route is changed, which is not planned.
 - Tracker sync: N/A.
-- Non-goals: no runtime Slate patch, no benchmark optimization, no commit/PR,
+- Non-goals: no runtime Plite patch, no benchmark optimization, no commit/PR,
   no raw dump of every line read.
 
 Output budget strategy:
@@ -119,7 +119,7 @@ Start Gates:
 | Source of truth read before analysis | yes | User correction plus pasted autogoal instructions read; file batches are being read under this plan. |
 | Major lane selected | yes | Durable agent taste/profile consolidation. |
 | Decision criteria stated | yes | Criteria require 10 checkpoints x 10 docs files. |
-| Existing repo patterns / prior decisions checked | yes | Existing north-star profile and `slate-automation` checkpoint rule are the current owners. |
+| Existing repo patterns / prior decisions checked | yes | Existing north-star profile and `plite-automation` checkpoint rule are the current owners. |
 | Helper stack selected | yes | `autogoal` lifecycle plus repo docs extraction. |
 | External research decision recorded | no | N/A: repo docs only. |
 | Implementation expectation recorded | yes | Profile/rule updates are allowed if evidence warrants. |
@@ -128,11 +128,11 @@ Start Gates:
 | Output budget strategy recorded | yes | Full-file local extraction with capped decision-line output. |
 | Docs pack selected | yes | Docs under `docs/**` and profile doc are the surface. |
 | `docs-creator` loaded | no | N/A: internal profile/decision docs, not public docs copy. |
-| Docs lane selected | yes | Internal Slate/taste profile docs. |
+| Docs lane selected | yes | Internal Plite/taste profile docs. |
 | Target docs and nearest sibling docs read | yes | 10 checkpoints x 10 docs files are logged under Checkpoint details. |
 | Docs style doctrine read | yes | Current-state docs, no changelog prose. |
-| Documented source owner identified | yes | Profile doc under `docs/slate-v2`; checkpoint evidence in this plan. |
-| Agent-native pack selected | yes | `slate-automation` source rule may change. |
+| Documented source owner identified | yes | Profile doc under `docs/plite`; checkpoint evidence in this plan. |
+| Agent-native pack selected | yes | `plite-automation` source rule may change. |
 | Agent-facing action surface identified | yes | `$slate-automation` checkpoint behavior. |
 | Source rule versus generated mirror boundary identified | yes | Edit `.agents/rules/**`; sync generated `.agents/skills/**` with `pnpm install`. |
 | `agent-native-reviewer` loaded or waiver recorded | yes | Loaded reviewer; scoped audit found source rule and generated skill mirror both expose the exact file-batch behavior. |
@@ -154,19 +154,19 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | yes | Complete 10 checkpoints, update profile, run checks | 10 checkpoints logged; profile/rule updated; `pnpm install`, source/mirror `rg`, `pnpm docs:slate-v2:audit`, and `pnpm lint:fix` passed. |
+| Named verification threshold | yes | Complete 10 checkpoints, update profile, run checks | 10 checkpoints logged; profile/rule updated; `pnpm install`, source/mirror `rg`, `pnpm docs:plite:audit`, and `pnpm lint:fix` passed. |
 | Current-state source audit | yes | Read 100 docs files in batches of 10 | 100 concrete `docs/**` markdown files are listed under checkpoint details. |
 | Decision criteria closure | yes | Mark all criteria satisfied or blocked | Satisfied: exact 10x10 pass, reusable deltas, profile update, skill mirror sync, checks green. |
 | Options / tradeoffs / rejection record | yes | Record compact profile vs raw dump and any rejected deltas | Kept compact profile; rejected raw dump and thematic-pass substitute. |
 | Review / pressure pass | yes | Run source/mirror/docs audits | Source/mirror `rg` passed; docs audit passed; lint passed; agent-native scoped audit passed. |
-| Review findings closure | yes | Fix accepted findings or record N/A | Only accepted workflow miss was exact batch handling; fixed in `slate-automation` source and generated mirror. |
+| Review findings closure | yes | Fix accepted findings or record N/A | Only accepted workflow miss was exact batch handling; fixed in `plite-automation` source and generated mirror. |
 | External-source audit | no | N/A: repo docs only | N/A: repo docs only |
-| Implementation gates | yes | Profile/rule/docs gates | `docs/slate-v2/automation-supervisor-north-star.md` updated; `.agents/rules/slate-automation.mdc` updated; generated skill synced. |
+| Implementation gates | yes | Profile/rule/docs gates | `docs/plite/automation-supervisor-north-star.md` updated; `.agents/rules/slate-automation.mdc` updated; generated skill synced. |
 | Final handoff contract | yes | Record recommendation, evidence, caveats, residual risk, next owner | Recorded below. |
 | Final lint | yes | Run `pnpm lint:fix` | Passed; Biome checked 3234 files, no fixes applied. |
 | Output budget discipline | yes | Keep broad output capped and artifacted in plan | Full files read locally; only headings/evidence lines streamed; file lists and deltas artifacted here. |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-03-full-docs-taste-profile-ten-checkpoints.md` | Passed: `[autogoal] complete: docs/plans/2026-06-03-full-docs-taste-profile-ten-checkpoints.md`. |
-| Docs source-backed claim audit | yes | Run `pnpm docs:slate-v2:audit` or record scoped N/A | Passed. |
+| Docs source-backed claim audit | yes | Run `pnpm docs:plite:audit` or record scoped N/A | Passed. |
 | Docs links / routes / previews | no | N/A: internal docs only | N/A: no route docs changed |
 | Docs MDX/content parser | no | N/A: no content/MDX changed | N/A: no content/MDX changed |
 | Plugin page specifics | no | N/A: not a plugin page | N/A: not a plugin page |
@@ -178,7 +178,7 @@ Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
 | Intake and source read | complete | Corrected goal and concrete plan created | checkpoint 1 |
-| Checkpoint 1 | complete | 10 Slate v2 current-truth docs read; see checkpoint 1 details | checkpoint 2 |
+| Checkpoint 1 | complete | 10 Plite current-truth docs read; see checkpoint 1 details | checkpoint 2 |
 | Checkpoint 2 | complete | 10 runtime/proof-contract docs read; see checkpoint 2 details | checkpoint 3 |
 | Checkpoint 3 | complete | 10 research architecture decision docs read; see checkpoint 3 details | checkpoint 4 |
 | Checkpoint 4 | complete | 10 behavior/API decision docs read; see checkpoint 4 details | checkpoint 5 |
@@ -189,7 +189,7 @@ Phase / pass table:
 | Checkpoint 9 | complete | 10 AR target/benchmark/pagination perf plans read; see checkpoint 9 details | checkpoint 10 |
 | Checkpoint 10 | complete | 10 pagination/solutions/issues docs read; see checkpoint 10 details | profile update |
 | Profile update | complete | `automation-supervisor-north-star.md` includes 100-doc synthesis and reinforced evidence/benchmark/pagination rules | verification |
-| Verification | complete | `pnpm install`, source/mirror `rg`, `pnpm docs:slate-v2:audit`, and `pnpm lint:fix` passed | closeout |
+| Verification | complete | `pnpm install`, source/mirror `rg`, `pnpm docs:plite:audit`, and `pnpm lint:fix` passed | closeout |
 | Closeout | complete | Final handoff contract recorded; completion checker is final action | final response |
 
 Checkpoint log:
@@ -197,35 +197,35 @@ Checkpoint log:
 |------------|------------|----------------------|
 | 1 | 10 files; see checkpoint 1 details | Current truth is owner-doc scoped; hard cuts beat legacy-compatible drag; public API claims must match live source/tests; selection bugs need native behavior slices plus model and DOM assertions. |
 | 2 | 10 files; see checkpoint 2 details | Scope labels must match audited evidence; deletion/package closure is not behavior closure; 1k-block perf is smoke only; projection/source-scoped overlays beat callback decoration and child-count chunking. |
-| 3 | 10 files; see checkpoint 3 details | Keep Slate-shaped architecture; steal read/update, transactions, DOM-selection authority, dirty runtime ideas, and Tiptap DX; reject flat `editor.*` sprawl and universal-superiority claims. |
+| 3 | 10 files; see checkpoint 3 details | Keep Plite-shaped architecture; steal read/update, transactions, DOM-selection authority, dirty runtime ideas, and Tiptap DX; reject flat `editor.*` sprawl and universal-superiority claims. |
 | 4 | 10 files; see checkpoint 4 details | Optional behavior must be explicit profile config; runtime owns browser correctness; specs own behavior; delete/clipboard/autoformat need first-class lanes; recover legacy timing without reviving legacy monoliths. |
 | 5 | 10 files; see checkpoint 5 details | Research is a compiled agent layer, not a scrapbook; stable paths, one concept per file, outward claims, and durable knowledge only; tests outrank docs for behavior truth. |
 | 6 | 10 files; see checkpoint 6 details | Behavior should be profile-driven: plugins provide capabilities, profiles decide. Typora owns markdown-native product feel; Milkdown is inspectable behavior cross-check; Lexical/ProseMirror/Pretext are scoped benchmarks. |
-| 7 | 10 files; see checkpoint 7 details | Each matrix has a role: spec is law, parity matrix is release gate, protocol matrix is exhaustive backlog, benchmark registry owns timed lanes, slate-browser selects proof lanes. |
+| 7 | 10 files; see checkpoint 7 details | Each matrix has a role: spec is law, parity matrix is release gate, protocol matrix is exhaustive backlog, benchmark registry owns timed lanes, plite-browser selects proof lanes. |
 | 8 | 10 files; see checkpoint 8 details | Supervisor loops must repair tests/metrics/skills, split long work with autogoal checkpoints, fix shared runtime owners, keep behavior gates before perf, and stop at commit approval. |
 | 9 | 10 files; see checkpoint 9 details | Prefer target-backed AR with benchmark-native metrics, plateau/blocked stop rules, registry-owned reports, measured layout truth, DOM caps, dropped-character checks, and no fixed debounce core. |
-| 10 | 10 files; see checkpoint 10 details | Preserve simple Slate model and operations; make transactions/runtime/DOM/input explicit; best shared owner beats example hacks; public hard cuts need browser proof; protocols must cover selection shape and repeated escalation. |
+| 10 | 10 files; see checkpoint 10 details | Preserve simple Plite model and operations; make transactions/runtime/DOM/input explicit; best shared owner beats example hacks; public hard cuts need browser proof; protocols must cover selection shape and repeated escalation. |
 
 Checkpoint details:
 
 ### Checkpoint 1
 
 Files read:
-- `docs/slate-v2/automation-supervisor-north-star.md`
-- `docs/slate-v2/agent-start.md`
-- `docs/slate-v2/overview.md`
-- `docs/slate-v2/master-roadmap.md`
-- `docs/slate-v2/absolute-architecture-release-claim.md`
-- `docs/slate-v2/references/architecture-contract.md`
-- `docs/slate-v2/release-readiness-decision.md`
-- `docs/slate-v2/replacement-gates-scoreboard.md`
-- `docs/slate-v2/final-api-hard-cuts-status.md`
-- `docs/slate-v2/selection-navigation-coverage.md`
+- `docs/plite/automation-supervisor-north-star.md`
+- `docs/plite/agent-start.md`
+- `docs/plite/overview.md`
+- `docs/plite/master-roadmap.md`
+- `docs/plite/absolute-architecture-release-claim.md`
+- `docs/plite/references/architecture-contract.md`
+- `docs/plite/release-readiness-decision.md`
+- `docs/plite/replacement-gates-scoreboard.md`
+- `docs/plite/final-api-hard-cuts-status.md`
+- `docs/plite/selection-navigation-coverage.md`
 
 Profile deltas:
 - Start every long loop from the profile, active plan, and narrow owner docs;
   broad architecture docs are reference material, not a live queue.
-- Public claims must stay exact: live `.tmp/slate-v2` source/tests beat old docs,
+- Public claims must stay exact: live `.tmp/plite` source/tests beat old docs,
   adjacent green proof, and aspirational release language.
 - Prefer the best v2 runtime/API even when it requires hard cuts; compatibility is
   a public-boundary target, not an architecture veto.
@@ -235,16 +235,16 @@ Profile deltas:
 ### Checkpoint 2
 
 Files read:
-- `docs/slate-v2/slate-react-perf-loop-context.md`
-- `docs/slate-v2/references/deletion-closure-protocol.md`
-- `docs/slate-v2/references/live-shape-register.md`
-- `docs/slate-v2/references/normalization-reference.md`
-- `docs/slate-v2/references/replacement-family-ledger.md`
-- `docs/slate-v2/references/slate-batch-engine.md`
-- `docs/slate-v2/true-slate-rc-proof-ledger.md`
-- `docs/slate-v2/release-file-review-ledger.md`
-- `docs/slate-v2/decorations-annotations-cluster.md`
-- `docs/slate-v2/decoration-roadmap.md`
+- `docs/plite/slate-react-perf-loop-context.md`
+- `docs/plite/references/deletion-closure-protocol.md`
+- `docs/plite/references/live-shape-register.md`
+- `docs/plite/references/normalization-reference.md`
+- `docs/plite/references/replacement-family-ledger.md`
+- `docs/plite/references/slate-batch-engine.md`
+- `docs/plite/true-slate-rc-proof-ledger.md`
+- `docs/plite/release-file-review-ledger.md`
+- `docs/plite/decorations-annotations-cluster.md`
+- `docs/plite/decoration-roadmap.md`
 
 Profile deltas:
 - Closure language must be brutally scoped: deletion closure, package-runtime
@@ -262,15 +262,15 @@ Profile deltas:
 
 Files read:
 - `docs/research/decisions/README.md`
-- `docs/research/decisions/slate-v2-state-tx-public-api-and-extension-namespaces.md`
-- `docs/research/decisions/slate-v2-read-update-runtime-architecture.md`
-- `docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md`
-- `docs/research/decisions/slate-v2-react-19-2-perf-architecture-vs-field.md`
-- `docs/research/decisions/slate-v2-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md`
-- `docs/research/decisions/slate-v2-architecture-verdict-after-human-stress-sweep.md`
-- `docs/research/decisions/slate-v2-post-closure-architecture-review.md`
-- `docs/research/decisions/slate-v2-overlay-architecture-cuts.md`
-- `docs/research/decisions/slate-v2-overlay-superiority-vs-legacy-and-field.md`
+- `docs/research/decisions/plite-state-tx-public-api-and-extension-namespaces.md`
+- `docs/research/decisions/plite-read-update-runtime-architecture.md`
+- `docs/research/decisions/plite-data-model-first-react-perfect-runtime.md`
+- `docs/research/decisions/plite-react-19-2-perf-architecture-vs-field.md`
+- `docs/research/decisions/plite-perfect-plan-should-steal-read-update-transaction-discipline-and-extension-dx.md`
+- `docs/research/decisions/plite-architecture-verdict-after-human-stress-sweep.md`
+- `docs/research/decisions/plite-post-closure-architecture-review.md`
+- `docs/research/decisions/plite-overlay-architecture-cuts.md`
+- `docs/research/decisions/plite-overlay-superiority-vs-legacy-and-field.md`
 
 Profile deltas:
 - Public API taste is `state` for reads, `tx` for writes, and extension-owned
@@ -280,18 +280,18 @@ Profile deltas:
 - The right research habit is steal/reject/defer: steal Lexical dirty-runtime
   discipline, ProseMirror transactions/selection authority, and Tiptap product
   DX; reject wholesale pivots and framework worship.
-- Claims must be field-aware: React 19.2 makes Slate v2 credible as a
+- Claims must be field-aware: React 19.2 makes Plite credible as a
   React-native runtime, not a universal editor-engine winner.
 
 ### Checkpoint 4
 
 Files read:
-- `docs/research/decisions/slate-v2-source-scoped-overlay-invalidation.md`
-- `docs/research/decisions/slate-v2-node-query-api-should-keep-lazy-entries-and-add-first-match-helpers.md`
+- `docs/research/decisions/plite-source-scoped-overlay-invalidation.md`
+- `docs/research/decisions/plite-node-query-api-should-keep-lazy-entries-and-add-first-match-helpers.md`
 - `docs/research/decisions/editor-node-dx-should-use-runtime-owned-shells-and-spec-first-renderers.md`
-- `docs/research/decisions/slate-v2-collaborative-annotation-channels.md`
-- `docs/research/decisions/slate-v2-editing-epoch-legacy-timing-recovery-audit.md`
-- `docs/research/decisions/slate-v2-destructive-leaf-boundary-legacy-parity.md`
+- `docs/research/decisions/plite-collaborative-annotation-channels.md`
+- `docs/research/decisions/plite-editing-epoch-legacy-timing-recovery-audit.md`
+- `docs/research/decisions/plite-destructive-leaf-boundary-legacy-parity.md`
 - `docs/research/decisions/clipboard-and-delete-commands-need-explicit-lanes.md`
 - `docs/research/decisions/current-kit-autoformat-normalization-split.md`
 - `docs/research/decisions/plugin-input-rules-guide-should-lead-with-runtime-first-then-feature-owners-then-api-reference.md`
@@ -319,7 +319,7 @@ Files read:
 - `docs/research/concepts/source-scoped-overlay-invalidation.md`
 - `docs/research/concepts/durable-anchor-vs-live-handle.md`
 - `docs/research/systems/editor-architecture-landscape.md`
-- `docs/research/systems/slate-v2-perfect-plan-steal-reject-defer-map.md`
+- `docs/research/systems/plite-perfect-plan-steal-reject-defer-map.md`
 
 Profile deltas:
 - Research docs are a compiled agent layer between raw evidence and execution,
@@ -336,7 +336,7 @@ Profile deltas:
 
 Files read:
 - `docs/research/systems/editor-behavior-architecture.md`
-- `docs/research/systems/slate-v2-overlay-architecture.md`
+- `docs/research/systems/plite-overlay-architecture.md`
 - `docs/research/systems/milkdown-behavior-map.md`
 - `docs/research/systems/typora-behavior-map.md`
 - `docs/research/systems/obsidian-behavior-map.md`
@@ -356,7 +356,7 @@ Profile deltas:
 - Lexical is the runtime challenger, ProseMirror is the overlay/transaction
   discipline benchmark, and Pretext is a measurement/layout proof source.
 - Do not copy whole ecosystems. Pull the scoped idea that survived evidence and
-  keep Slate inheritance pressure plus local v2 proof in view.
+  keep Plite inheritance pressure plus local v2 proof in view.
 
 ### Checkpoint 7
 
@@ -369,8 +369,8 @@ Files read:
 - `docs/performance/README.md`
 - `docs/performance/editor-performance-master-plan.md`
 - `docs/performance/performance-benchmark-spec.md`
-- `docs/slate-browser/overview.md`
-- `docs/slate-browser/proof-lane-matrix.md`
+- `docs/plite-browser/overview.md`
+- `docs/plite-browser/proof-lane-matrix.md`
 
 Profile deltas:
 - Behavior artifacts have different authority: standards/specs are law, parity
@@ -380,7 +380,7 @@ Profile deltas:
   workloads but must not silently become universal cross-editor benchmark truth.
 - Human-facing perf docs summarize current state; raw JSON stays in `.tmp/` or
   the benchmark artifact owner.
-- `slate-browser` is specialist proof selection. It answers which lane to run,
+- `plite-browser` is specialist proof selection. It answers which lane to run,
   not what the product verdict or roadmap order is.
 
 ### Checkpoint 8
@@ -437,24 +437,24 @@ Profile deltas:
 
 Files read:
 - `docs/plans/2026-05-29-pagination-left-margin-click-architecture.md`
-- `docs/plans/2026-05-29-slate-v2-pagination-architecture-review.md`
+- `docs/plans/2026-05-29-plite-pagination-architecture-review.md`
 - `docs/plans/2026-05-28-pagination-virtualized-interaction-correctness.md`
 - `docs/plans/2026-05-28-pagination-burst-typing-performance.md`
-- `docs/solutions/developer-experience/2026-04-18-slate-v2-migration-must-take-transaction-seams-from-real-draft-source-not-reference-proposals.md`
-- `docs/solutions/developer-experience/2026-05-17-slate-v2-extension-composition-hard-cuts-need-creation-time-inference-and-browser-proof.md`
+- `docs/solutions/developer-experience/2026-04-18-plite-migration-must-take-transaction-seams-from-real-draft-source-not-reference-proposals.md`
+- `docs/solutions/developer-experience/2026-05-17-plite-extension-composition-hard-cuts-need-creation-time-inference-and-browser-proof.md`
 - `docs/solutions/developer-experience/2026-05-23-slate-react-multi-root-editable-dx-needs-package-owned-root-views.md`
 - `docs/solutions/logic-errors/2026-04-03-editor-key-protocols-must-cover-expanded-selection-and-repeated-escalation.md`
-- `docs/slate-issues/requirements-from-issues.md`
-- `docs/slate-issues/roadmap-from-issues.md`
+- `docs/plite-issues/requirements-from-issues.md`
+- `docs/plite-issues/roadmap-from-issues.md`
 
 Profile deltas:
 - Best shared owner beats example-only hacks. Pagination should stress the
-  layout/editor boundary without turning raw Slate into a product pagination API.
+  layout/editor boundary without turning raw Plite into a product pagination API.
 - Public examples must teach the intended API, not runtime substrate. If examples
   become huge stress harnesses, split call-site, fixtures, controls, and proof.
 - Real source beats reference proposals and memory. Public API hard cuts need
   source greps, examples/docs cleanup, browser proof, and type proof.
-- The issue corpus says preserve the simple Slate document model and operations
+- The issue corpus says preserve the simple Plite document model and operations
   while making transactions, runtime identity, DOM selection, input/IME,
   clipboard, history, and benchmark hardening explicit.
 - Key protocols need selection-shape and repeated-escalation coverage; collapsed
@@ -464,7 +464,7 @@ Findings:
 - Checkpoints 1-10 complete.
 - The north-star profile now records the 100-doc synthesis without becoming a raw
   dump.
-- `slate-automation` now explicitly requires exact user-specified file-batch
+- `plite-automation` now explicitly requires exact user-specified file-batch
   ingestion for profile work.
 
 Decisions and tradeoffs:
@@ -477,7 +477,7 @@ Decisions and tradeoffs:
   evidence layer.
 
 Implementation notes:
-- Updated `docs/slate-v2/automation-supervisor-north-star.md` with:
+- Updated `docs/plite/automation-supervisor-north-star.md` with:
   100-doc source scan, synthesis rules, source-weighting rule, simple-model plus
   explicit-runtime rule, behavior-profile rule, benchmark target authority
   additions, pagination exactness notes, and research durable-target additions.
@@ -492,29 +492,29 @@ Review fixes:
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| Previous run used 10 thematic passes instead of 10 batches of 10 files | 1 | Run a fresh 100-file checkpointed autogoal | Resolved by 10 x 10-file checkpoints and `slate-automation` rule repair. |
+| Previous run used 10 thematic passes instead of 10 batches of 10 files | 1 | Run a fresh 100-file checkpointed autogoal | Resolved by 10 x 10-file checkpoints and `plite-automation` rule repair. |
 
 Verification evidence:
 - `pnpm install` passed and regenerated Skiller output.
-- `rg -n "batch shape|10 iterations|file-batched|100-doc|Behavior should be profile-driven|Cold estimates" docs/slate-v2/automation-supervisor-north-star.md .agents/rules/slate-automation.mdc .agents/skills/slate-automation/SKILL.md` passed.
-- `pnpm docs:slate-v2:audit` passed: Slate v2 docs audit passed.
+- `rg -n "batch shape|10 iterations|file-batched|100-doc|Behavior should be profile-driven|Cold estimates" docs/plite/automation-supervisor-north-star.md .agents/rules/slate-automation.mdc .agents/skills/slate-automation/SKILL.md` passed.
+- `pnpm docs:plite:audit` passed: Plite docs audit passed.
 - `pnpm lint:fix` passed: Biome checked 3234 files, no fixes applied.
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-03-full-docs-taste-profile-ten-checkpoints.md` passed: `[autogoal] complete: docs/plans/2026-06-03-full-docs-taste-profile-ten-checkpoints.md`.
 
 Final handoff contract:
-- Recommendation: keep `docs/slate-v2/automation-supervisor-north-star.md` as
-  checkpoint zero for overnight Slate automation and use concrete file-batched
+- Recommendation: keep `docs/plite/automation-supervisor-north-star.md` as
+  checkpoint zero for overnight Plite automation and use concrete file-batched
   ingestion whenever the profile is being improved.
 - Confidence: high.
 - Evidence: 100 file paths logged, profile updated, source rule repaired,
   generated mirror synced, docs audit passed, lint passed.
-- Tests / commands: `pnpm install`; source/mirror `rg`; `pnpm docs:slate-v2:audit`;
+- Tests / commands: `pnpm install`; source/mirror `rg`; `pnpm docs:plite:audit`;
   `pnpm lint:fix`; `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-03-full-docs-taste-profile-ten-checkpoints.md`.
 - Browser proof: N/A unless browser/docs route changes.
 - PR / tracker: N/A.
 - Caveats: this is a high-signal 100-file pass, not a literal read of all 1733
   docs markdown files.
-- Next owner: `slate-automation` can now consume the profile as checkpoint zero;
+- Next owner: `plite-automation` can now consume the profile as checkpoint zero;
   run target-specific loops next.
 
 Timeline:
@@ -527,9 +527,9 @@ Reboot status:
 |----------|--------|
 | Where am I? | Goal complete |
 | Where am I going? | Close goal and hand off |
-| What is the goal? | Build full Slate taste profile from 100 concrete docs files |
+| What is the goal? | Build full Plite taste profile from 100 concrete docs files |
 | What have I learned? | The profile must preserve exact owner roles, source weighting, behavior/profile splits, benchmark authority, and exact batch ingestion policy |
-| What have I done? | Read and logged 100 docs, updated profile, repaired `slate-automation`, synced mirror, and ran verification gates |
+| What have I done? | Read and logged 100 docs, updated profile, repaired `plite-automation`, synced mirror, and ran verification gates |
 
 Open risks:
 - 100 files is a high-signal slice, not all 1733 docs markdown files. Mitigation:

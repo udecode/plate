@@ -39,7 +39,7 @@ Completion threshold:
 - `.agents/rules/autoclosure.mdc` exists and defines distinct post-merge/current-tree until-clean ownership.
 - `docs/plans/templates/autoclosure.md` exists and enforces zero accepted actionable findings, rerun proof, clean pass count, and final ledgers.
 - `.agents/skills/autoclosure/SKILL.md` is generated from the source rule.
-- AGENTS, VISION, docs/vision, `auto`, `maintainer`, `architecture-cleanup`, and `slate-ar` route closure to `autoclosure`.
+- AGENTS, VISION, docs/vision, `auto`, `maintainer`, `architecture-cleanup`, and `plite-ar` route closure to `autoclosure`.
 - `auto` no longer owns post-merge/current-tree closure as a primary lane.
 - `pnpm install`, generated audits, template smoke failure, and `check-complete.mjs` pass.
 
@@ -241,7 +241,7 @@ Verification evidence:
 - `pnpm install` completed successfully after source edits and regenerated skills.
 - Generated skill audit passed: `.agents/skills/autoclosure/SKILL.md` exists with `name: autoclosure`, source pointer, and `--template autoclosure`.
 - Template smoke passed: instantiated `docs/plans/2026-06-17-autoclosure-template-smoke.md`, unfinished plan failed `check-complete.mjs`, then smoke artifact was removed.
-- Routing audit passed: AGENTS, VISION, docs/vision, `auto`, `maintainer`, `architecture-cleanup`, and `slate-ar` route post-merge/current-tree until-clean closure to `autoclosure`.
+- Routing audit passed: AGENTS, VISION, docs/vision, `auto`, `maintainer`, `architecture-cleanup`, and `plite-ar` route post-merge/current-tree until-clean closure to `autoclosure`.
 - Boundary audit passed: no bad `auto` primary ownership for post-merge/current-tree closure remains; `auto` only delegates that lane.
 - Agent-native review loaded; no discoverability/action parity gap found.
 

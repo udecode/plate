@@ -1,0 +1,42 @@
+import { type Path, NodeApi } from '@platejs/plite';
+
+import type { PliteEditor } from '../../../editor';
+
+import { getCurrentRuntimeTransforms } from '../../../../internal/currentRuntimeBridge';
+import { NodeIdPlugin } from '../../node-id/NodeIdPlugin';
+import { BaseParagraphPlugin } from '../../paragraph';
+
+/**
+ * Reset the current block to a paragraph, removing all properties except the
+ * configured node id key and type.
+ */
+export const resetBlock = (editor: PliteEditor, { at }: { at?: Path } = {}) => {
+  const entry = editor.api.block({ at });
+  if (!entry?.[0]) return;
+
+  const [block, path] = entry;
+  const idKey = editor.getOptions(NodeIdPlugin).idKey ?? 'id';
+  const tf = getCurrentRuntimeTransforms(editor);
+
+  tf.withoutNormalizing(() => {
+    const { type, ...otherProps } = NodeApi.extractProps(block) as Record<
+      string,
+      unknown
+    > & { type?: unknown };
+
+    delete otherProps[idKey];
+
+    Object.keys(otherProps).forEach((key) => {
+      tf.unsetNodes(key, { at: path });
+    });
+
+    const paragraphType = editor.getType(BaseParagraphPlugin.key);
+
+    if (block.type !== paragraphType) {
+      // Set the new type to paragraph
+      tf.setNodes({ type: paragraphType }, { at: path });
+    }
+  });
+
+  return true;
+};

@@ -65,7 +65,7 @@ Start Gates:
 |------|---------|----------|
 | Prompt requirements captured before work | yes | User narrowed to "only 1 and 2"; plan records exactly those two imports and non-goals. |
 | Timed checkpoint parsed | no | N/A: no duration requested. |
-| Skill analysis before edits | yes | Read `autogoal`, `openclaw-sync`, OpenClaw source docs, local `autoreview`, `slate-auto`, `slate-patch`, `testing`, `editor-test-harvester`, and `agent-native-reviewer`. |
+| Skill analysis before edits | yes | Read `autogoal`, `openclaw-sync`, OpenClaw source docs, local `autoreview`, `plite-auto`, `plite-patch`, `testing`, `editor-test-harvester`, and `agent-native-reviewer`. |
 | Active goal checked or created | yes | `get_goal` returned none; created goal for this import. |
 | Source of truth read before edits | yes | Read OpenClaw `docs/code-review.md`, `docs/2026-02-19-mock-agent-testing.md`, and `docs/plugins/sdk-testing.md`. |
 | Tracker comments and attachments read | no | N/A: no tracker item. |
@@ -79,7 +79,7 @@ Start Gates:
 | Tracker sync expectation decision | no | N/A: no tracker sync requested. |
 | Output budget strategy recorded | yes | Focused reads/audits only; broad report stored under `.tmp/openclaw-sync/`. |
 | Agent-native pack selected | yes | Applied `agent-native` pack because `.agents/**` changed. |
-| Agent-facing action surface identified | yes | Autoreview validation and Slate/editor testing supervisor rules. |
+| Agent-facing action surface identified | yes | Autoreview validation and Plite/editor testing supervisor rules. |
 | Source rule versus generated mirror boundary identified | yes | Patched `.agents/AGENTS.md` and `.agents/rules/*.mdc`; generated `SKILL.md` through `pnpm install`. |
 | `agent-native-reviewer` loaded or waiver recorded | yes | Loaded `.agents/skills/agent-native-reviewer/SKILL.md`; no parity gap from policy-only edits. |
 
@@ -135,7 +135,7 @@ Completion Gates:
 | Output budget discipline | yes | Verify no unbounded output was relied on | Broad report saved under `.tmp/openclaw-sync/`; final audits used focused `rg -F`. |
 | Timed checkpoint | no | Record N/A | N/A: no duration requested. |
 | Goal plan complete | yes | Run check-complete | Final mechanical gate before goal close. |
-| Agent source / generated sync | yes | Run sync and audit generated mirrors | `pnpm install`; `rg -F` found generated `testing`, `editor-test-harvester`, `slate-auto`, and `slate-patch` text. |
+| Agent source / generated sync | yes | Run sync and audit generated mirrors | `pnpm install`; `rg -F` found generated `testing`, `editor-test-harvester`, `plite-auto`, and `plite-patch` text. |
 | Agent action discoverability | yes | Source-audit skill/rule path | `rg -F` audits show source and generated mirrors carry the rules. |
 | Agent-native review | yes | Load reviewer and close findings | Reviewer loaded; no accepted finding. |
 
@@ -151,11 +151,11 @@ Phase / pass table:
 Findings:
 - OpenClaw `clawpatch/docs/code-review.md` has a stronger review finding gate: findings are not valid unless evidence still matches current files.
 - OpenClaw/acpx mock-agent docs and plugin testing docs point to fake peers and contract helpers as better proof than one-off smokes.
-- Local `autoreview` skill exists without a repo-local source rule, so durable local enforcement belongs in `.agents/AGENTS.md` and the Slate rules that call review.
+- Local `autoreview` skill exists without a repo-local source rule, so durable local enforcement belongs in `.agents/AGENTS.md` and the Plite rules that call review.
 
 Decisions and tradeoffs:
-- Imported evidence validation into `.agents/AGENTS.md` and `slate-patch` closeout, not by editing generated `autoreview/SKILL.md`.
-- Imported fake-runtime contract testing into `testing`, `editor-test-harvester`, and `slate-auto`, not by creating a new wrapper skill.
+- Imported evidence validation into `.agents/AGENTS.md` and `plite-patch` closeout, not by editing generated `autoreview/SKILL.md`.
+- Imported fake-runtime contract testing into `testing`, `editor-test-harvester`, and `plite-auto`, not by creating a new wrapper skill.
 - Rejected broader OpenClaw imports in this pass because the user said only items 1 and 2.
 
 Implementation notes:
@@ -177,7 +177,7 @@ Error attempts:
 Verification evidence:
 - `pnpm install` -> passed and regenerated Codex/Claude skill mirrors.
 - `rg -F "AI review findings are actionable only when grounded in the current checkout" .agents/AGENTS.md AGENTS.md` -> source and generated root AGENTS contain the rule.
-- `rg -F "line range still exists" .agents/AGENTS.md AGENTS.md .agents/rules .agents/skills` -> AGENTS plus generated `slate-patch` mirror contain the review validation rule.
+- `rg -F "line range still exists" .agents/AGENTS.md AGENTS.md .agents/rules .agents/skills` -> AGENTS plus generated `plite-patch` mirror contain the review validation rule.
 - `rg -F "Fake Runtime Contracts" .agents/rules/testing.mdc .agents/skills/testing/SKILL.md` -> source and generated mirror contain the section.
 - `rg -F "runtime-boundary problem" .agents/rules/editor-test-harvester.mdc .agents/skills/editor-test-harvester/SKILL.md` -> source and generated mirror contain the harvest rule.
 - `rg -F "Runtime-boundary oracle gap" .agents/rules/slate-auto.mdc .agents/skills/slate-auto/SKILL.md` -> source and generated mirror contain the supervisor rule.

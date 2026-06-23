@@ -3,7 +3,7 @@
 Security-shaped maintainer work routes through `maintainer security`, then
 `security-triage`.
 
-This is local Codex guidance for Plate/Slate maintainers. Public policy lives
+This is local Codex guidance for Plate/Plite maintainers. Public policy lives
 in `SECURITY.md`.
 
 ## Read First
@@ -24,7 +24,7 @@ in `SECURITY.md`.
 | High | Verified trust-boundary bypass with limited preconditions, sensitive data exposure, or credential/tool execution impact. |
 | Medium | Practical security weakness with constrained exploitability or substantial prerequisites. |
 | Low | Defense-in-depth, hardening, narrow denial-of-service, or non-exploitable boundary clarity. |
-| Invalid | No Plate/Slate-owned boundary, app misuse only, scanner-only without reachability, or plain Slate-only issue that belongs upstream. |
+| Invalid | No Plate/Plite-owned boundary, app misuse only, scanner-only without reachability, or plain Plite-only issue that belongs upstream. |
 
 ## Required Proof
 

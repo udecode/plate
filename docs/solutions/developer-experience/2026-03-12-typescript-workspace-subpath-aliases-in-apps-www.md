@@ -6,7 +6,7 @@ component: tooling
 symptoms:
   - "`apps/www` typecheck mixes `packages/*/src` and `packages/*/dist` types after pnpm workspace linking"
   - "`platejs/react` resolves to package source while `@platejs/ai/react` and similar imports fall back to package `dist`"
-  - "TypeScript reports deep `SlateEditor` and plugin incompatibilities that disappear or move when local package `dist` is rebuilt"
+  - "TypeScript reports deep `PliteEditor` and plugin incompatibilities that disappear or move when local package `dist` is rebuilt"
 root_cause: config_error
 resolution_type: config_change
 severity: high
@@ -50,7 +50,7 @@ The broad `@platejs/*` rule absorbed imports like `@platejs/core/react` with `* 
 
 ### 2. Chasing the resulting type errors inside package source
 
-Once `src` and `dist` types were mixed, the app started throwing huge incompatibility chains involving `SlateEditor`, plugin config types, and internal generated `dist` symbols.
+Once `src` and `dist` types were mixed, the app started throwing huge incompatibility chains involving `PliteEditor`, plugin config types, and internal generated `dist` symbols.
 
 Those errors were downstream noise. Rebuilding package `dist` could change which errors appeared, but it did not fix the actual resolution split.
 

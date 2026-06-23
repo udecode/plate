@@ -88,9 +88,9 @@ List focused commands, not every incidental command.
 
 </details>
 
-## Plate / Slate ownership
+## Plate / Plite ownership
 
-- Surface: Slate substrate / Plate framework / docs / examples / registry / packages:
+- Surface: Plite substrate / Plate framework / docs / examples / registry / packages:
 - Public API, docs, or examples changed:
 - Changeset needed:
 - Barrel update needed:

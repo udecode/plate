@@ -45,7 +45,7 @@ Work Checklist:
 - [x] Named APIs, options, transforms, components, imports, routes, and package specifiers are exact and current where patched.
 - [x] Plugin docs with major reference loss were restored instead of summarized.
 - [x] Serialization docs restore detailed HTML/Markdown contracts and correct unsupported raw-HTML guidance.
-- [x] API reference docs restore exact contracts such as Slate API details and core options.
+- [x] API reference docs restore exact contracts such as Plite API details and core options.
 - [x] Demos/previews use real registry entries or supported `ComponentSource src`.
 - [x] Links target real pages and anchors.
 - [x] Anti-slop audit passed through focused autoreview clean result.
@@ -93,7 +93,7 @@ Phase / pass table:
 | Closeout | done | Plan updated for completion check | final response |
 
 Findings:
-- Initial review found major content loss in Slate API reference, changelog, Next.js snippets, table docs, Markdown security guidance, core options, HTML customization docs, Markdown rules, link/media/AI/Yjs docs, and invalid example source blocks.
+- Initial review found major content loss in Plite API reference, changelog, Next.js snippets, table docs, Markdown security guidance, core options, HTML customization docs, Markdown rules, link/media/AI/Yjs docs, and invalid example source blocks.
 - Accepted findings were fixed by restoring risky reference-heavy docs from `HEAD` and patching precise defects that remained.
 
 Decisions and tradeoffs:
@@ -102,7 +102,7 @@ Decisions and tradeoffs:
 - Added `ComponentSource src` hydration support because the docs component already exposed the prop and the examples needed secondary registry files.
 
 Implementation notes:
-- Restored detailed Slate, table, changelog, core, HTML, Markdown, link, media, AI, Yjs, and other high-risk docs where autoreview or deletion counts showed reference loss.
+- Restored detailed Plite, table, changelog, core, HTML, Markdown, link, media, AI, Yjs, and other high-risk docs where autoreview or deletion counts showed reference loss.
 - Added `shouldMergeNodes` API reference and fixed editing-behavior/table anchors.
 - Fixed Next.js client snippets, HTML deserialize call shape, Markdown raw-HTML guidance, Markdown API options, and example value source rendering.
 

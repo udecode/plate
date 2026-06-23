@@ -18,17 +18,17 @@ Applied packs:
 Task source:
 - type: chat correction
 - title: Hard-cut apps/www Playwright proof
-- acceptance criteria: no active script, source rule, generated skill, CI row, or current docs guidance tells agents to run Playwright against `apps/www`; Slate browser proof remains under `apps/slate`.
+- acceptance criteria: no active script, source rule, generated skill, CI row, or current docs guidance tells agents to run Playwright against `apps/www`; Plite browser proof remains under `apps/plite`.
 
 First checkpoint:
-- Requirement copied before implementation: cut the `/blocks/playground` Playwright proof path; do not run Playwright against the `apps/www` app; keep Slate Playwright under `apps/slate`.
+- Requirement copied before implementation: cut the `/blocks/playground` Playwright proof path; do not run Playwright against the `apps/www` app; keep Plite Playwright under `apps/plite`.
 
 Timed checkpoint:
 - N/A: no duration requested.
 
 Completion threshold:
-- `apps/www/package.json` has no Playwright or Slate-browser test scripts.
-- Active command/rule/generated-skill/doc surfaces have no `apps/www` Slate browser proof references.
+- `apps/www/package.json` has no Playwright or Plite-browser test scripts.
+- Active command/rule/generated-skill/doc surfaces have no `apps/www` Plite browser proof references.
 - Stale source rules are patched and generated mirrors are synced.
 - Final source audit passes.
 
@@ -39,7 +39,7 @@ Verification surface:
 - `check-complete.mjs` for this plan.
 
 Constraints:
-- Do not remove `apps/slate` Playwright proof.
+- Do not remove `apps/plite` Playwright proof.
 - Do not add a replacement `apps/www` Playwright lane.
 - Do not touch historical ledgers just to rewrite old evidence.
 - No commit, push, PR, or changeset.
@@ -73,7 +73,7 @@ Current verdict:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Prompt requirements captured before work | yes | First checkpoint records the hard cut: no Playwright against `apps/www`; keep `apps/slate`. |
+| Prompt requirements captured before work | yes | First checkpoint records the hard cut: no Playwright against `apps/www`; keep `apps/plite`. |
 | Timed checkpoint parsed | no | N/A: no duration requested. |
 | Skill analysis before edits | yes | Loaded `hard-cut` and `task`; task routed to autogoal because this touches agent rules. |
 | Active goal checked or created | yes | `get_goal` returned none; active goal created for this packet. |
@@ -88,7 +88,7 @@ Start Gates:
 | Tracker sync expectation decision | no | N/A: no tracker. |
 | Output budget strategy recorded | yes | Active-surface scan excludes generated and historical paths. |
 | Agent-native pack selected | yes | `.agents/rules/**` changed. |
-| Agent-facing action surface identified | yes | Slate-related skills that still pointed at `apps/www` Playwright. |
+| Agent-facing action surface identified | yes | Plite-related skills that still pointed at `apps/www` Playwright. |
 | Source rule versus generated mirror boundary identified | yes | Patched `.agents/rules/**`; regenerated `.agents/skills/**` with `pnpm install`. |
 | `agent-native-reviewer` loaded or waiver recorded | no | N/A: small literal command-path hard cut; source audit is the useful review. |
 
@@ -97,7 +97,7 @@ Work Checklist:
 - [x] Stale source rules patched instead of generated mirrors.
 - [x] Generated mirrors synced with `pnpm install`.
 - [x] Active command/rule/generated-skill/doc surfaces audited clean.
-- [x] `apps/www/package.json` asserted to have no Playwright or Slate-browser script.
+- [x] `apps/www/package.json` asserted to have no Playwright or Plite-browser script.
 - [x] No replacement `apps/www` Playwright lane added.
 - [x] Historical ledgers left alone as archival evidence.
 
@@ -110,7 +110,7 @@ Completion Gates:
 | TypeScript or typed config changed | no | N/A | No TS/config runtime type surface changed. |
 | Package exports or file layout changed | no | N/A | No exports. |
 | Package manifests, lockfile, or install graph changed | no | N/A | `pnpm install` run only for skill generation; lockfile already current. |
-| Agent rules or skills changed | yes | Run `pnpm install` and verify generated mirrors | `pnpm install` passed; generated mirrors now route to `apps/slate`. |
+| Agent rules or skills changed | yes | Run `pnpm install` and verify generated mirrors | `pnpm install` passed; generated mirrors now route to `apps/plite`. |
 | Workspace authority proof | yes | Verify in current repo | Commands run from `/Users/zbeyens/git/plate-2`. |
 | Browser surface changed | no | N/A | Browser proof path removed. |
 | Browser final proof | no | N/A | Explicitly no `apps/www` Playwright proof. |
@@ -132,7 +132,7 @@ Completion Gates:
 | Timed checkpoint | no | N/A | No duration requested. |
 | Goal plan complete | yes | Run `check-complete.mjs` | Final gate runs after this update. |
 | Agent source / generated sync | yes | Run `pnpm install` | Passed. |
-| Agent action discoverability | yes | Source-audit the skill/rule path an agent will read | Generated skills contain only `apps/slate` browser proof commands. |
+| Agent action discoverability | yes | Source-audit the skill/rule path an agent will read | Generated skills contain only `apps/plite` browser proof commands. |
 | Agent-native review | no | N/A | Waived for small literal command-path hard cut. |
 
 Phase / pass table:
@@ -150,13 +150,13 @@ Findings:
 - `apps/www/package.json` already had the Playwright scripts removed from the previous packet.
 
 Decisions and tradeoffs:
-- Keep all Slate Playwright proof under `apps/slate`.
+- Keep all Plite Playwright proof under `apps/plite`.
 - Do not run any Playwright proof against `apps/www`.
 - Do not rewrite historical ledgers that mention old paths as evidence.
 
 Implementation notes:
-- Replaced stale `pnpm --filter www test:slate-browser` guidance with `pnpm --filter slate test:slate-browser`.
-- Replaced stale focused `pnpm --filter www exec playwright ... playwright.slate.config.ts` guidance with `pnpm --filter slate test:slate-browser:chromium ...`.
+- Replaced stale `pnpm --filter www test:plite-browser` guidance with `pnpm --filter plite test:plite-browser`.
+- Replaced stale focused `pnpm --filter www exec playwright ... playwright.slate.config.ts` guidance with `pnpm --filter plite test:plite-browser:chromium ...`.
 - Ran `pnpm install` to regenerate skill mirrors.
 
 Review fixes:
@@ -170,8 +170,8 @@ Error attempts:
 Verification evidence:
 - `pnpm install` passed.
 - Active-surface scan passed with `no active apps/www Playwright proof references`.
-- `apps/www package scripts have no Playwright/Slate-browser lane`.
-- Positive scan shows all current Slate browser proof guidance routes through `pnpm --filter slate ...`.
+- `apps/www package scripts have no Playwright/Plite-browser lane`.
+- Positive scan shows all current Plite browser proof guidance routes through `pnpm --filter plite ...`.
 
 Final handoff contract:
 - PR line: N/A.
@@ -184,7 +184,7 @@ Final handoff contract:
 - Outcome: no active `apps/www` Playwright proof path remains.
 - Caveat: historical ledgers may still mention old paths as old evidence.
 - Design:
-  - Chosen boundary: `apps/slate` owns Slate Playwright; `apps/www` has no Playwright proof lane.
+  - Chosen boundary: `apps/plite` owns Plite Playwright; `apps/www` has no Playwright proof lane.
   - Why not quick patch: generated skills would have been stale unless source rules were patched.
   - Why not broader change: no runtime or docs route behavior changed.
 - Verified: install, source audit, package-script assertion.

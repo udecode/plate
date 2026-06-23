@@ -1,7 +1,7 @@
 # openclaw public intake alignment
 
 Objective:
-Align Plate/Slate public intake with OpenClaw; done when accepted docs/templates/rules are patched, CODEOWNERS/API assumptions excluded, and audits pass.
+Align Plate/Plite public intake with OpenClaw; done when accepted docs/templates/rules are patched, CODEOWNERS/API assumptions excluded, and audits pass.
 
 Goal plan:
 docs/plans/2026-06-16-openclaw-public-intake-alignment.md
@@ -19,9 +19,9 @@ Applied packs:
 Task source:
 - type: user request + OpenClaw reference import
 - id / link: local OpenClaw corpus at `/Users/zbeyens/git/openclaw`
-- title: OpenClaw-style public intake alignment for Plate/Slate
+- title: OpenClaw-style public intake alignment for Plate/Plite
 - acceptance criteria:
-  - Be closest to OpenClaw while staying relevant to Slate/Plate.
+  - Be closest to OpenClaw while staying relevant to Plite/Plate.
   - Do not add CODEOWNERS.
   - Explicitly adapt the model to local Codex maintainers; no hosted/API/cloud bot assumption.
   - Patch public intake docs and maintainer workflow owners where useful.
@@ -44,7 +44,7 @@ Timed checkpoint:
 - final score / loop closure: N/A: no timed loop requested
 
 Completion threshold:
-- Done state: accepted OpenClaw public-intake invariants are imported into Plate/Slate docs/templates/rules, with CODEOWNERS excluded and local-Codex/no-hosted-automation wording explicit.
+- Done state: accepted OpenClaw public-intake invariants are imported into Plate/Plite docs/templates/rules, with CODEOWNERS excluded and local-Codex/no-hosted-automation wording explicit.
 - Task closure is legal only when the source-of-truth acceptance criteria are
   satisfied or explicitly narrowed, required verification evidence is recorded,
   code-review and release-artifact gates are closed when applicable, tracker/PR
@@ -104,7 +104,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Prompt requirements captured before work | yes | First checkpoint copied OpenClaw relevance, Slate/Plate scope, no CODEOWNERS, local Codex/no API-hosted automation, edit scope, non-goals, and verification. |
+| Prompt requirements captured before work | yes | First checkpoint copied OpenClaw relevance, Plite/Plate scope, no CODEOWNERS, local Codex/no API-hosted automation, edit scope, non-goals, and verification. |
 | Timed checkpoint parsed | no | N/A: no duration requested. |
 | Skill analysis before edits | yes | Read `autogoal` and `openclaw-sync` skills before durable edits. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created this active objective. |
@@ -206,7 +206,7 @@ Completion Gates:
 | Timed checkpoint | no | If duration was requested, keep improving until elapsed, then finish the current loop cleanly; otherwise N/A | N/A: no duration requested. |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-16-openclaw-public-intake-alignment.md` | Passed after phase-status repair. |
 | Docs source-backed claim audit | yes | Verify docs claims against current source or record N/A | `rg` audit found local Codex/intake/security/proof text in all target owners. |
-| Docs links / routes / previews | yes | Verify leaf links, routes, anchors, and preview names or record N/A | GitHub advisory/discussion/Discord/Slate links are static external links; no local route render needed. |
+| Docs links / routes / previews | yes | Verify leaf links, routes, anchors, and preview names or record N/A | GitHub advisory/discussion/Discord/Plite links are static external links; no local route render needed. |
 | Docs MDX/content parser | no | Run `pnpm --filter www build:contentlayer` for MDX/content changes, or record N/A | N/A: no MDX/content docs changed. |
 | Plugin page specifics | no | For plugin pages, apply `docs-creator` kit/manual/API rules; otherwise N/A | N/A: no plugin docs page. |
 | Agent source / generated sync | yes | Run `pnpm install` when `.agents/rules/**` changed and verify generated mirrors | `pnpm install` passed; generated `.agents/skills/maintainer/SKILL.md` contains new local Codex rules. |
@@ -262,7 +262,7 @@ Final handoff contract:
   - Reproduced: N/A: not a bug fix.
   - Verified: `pnpm install`, YAML/JSON syntax, no CODEOWNERS audit, generated mirror/source audit, final check-complete passed.
 - Browser check: N/A: no browser surface touched.
-- Outcome: Plate/Slate public intake now mirrors the useful OpenClaw pattern while staying local-Codex and no-CODEOWNERS.
+- Outcome: Plate/Plite public intake now mirrors the useful OpenClaw pattern while staying local-Codex and no-CODEOWNERS.
 - Caveat: Did not import OpenClaw cloud/crabbox/taskflow, CODEOWNERS, release, Discord/team, or product-specific security model.
 - Design:
   - Chosen boundary: public intake docs/templates plus maintainer/vision owners.
@@ -310,7 +310,7 @@ Reboot status:
 |----------|--------|
 | Where am I? | Goal verified and ready to close. |
 | Where am I going? | Close goal and hand off. |
-| What is the goal? | Align Plate/Slate public intake with OpenClaw while excluding CODEOWNERS and hosted/API automation. |
+| What is the goal? | Align Plate/Plite public intake with OpenClaw while excluding CODEOWNERS and hosted/API automation. |
 | What have I learned? | OpenClaw's strongest relevant pattern is public intake as durable maintainer-agent state. |
 | What have I done? | Patched public docs/templates, maintainer/vision/AGENTS owners, decision ledger, and verification plan. |
 

@@ -119,7 +119,7 @@ Start Gates:
 | Timed checkpoint parsed | no | N/A: no duration requested. |
 | Skill analysis before edits | yes | Used `autogoal`; selected `task` with `package-api` pack because this changes a public package API. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` started this objective. |
-| Source of truth read before edits | yes | Read `SlatePlugin.ts`, `PlatePlugin.ts`, `createSlatePlugin.ts`, `toPlatePlugin.ts`, runtime tx installation, and all `extendTx` callers. |
+| Source of truth read before edits | yes | Read `SlatePlugin.ts`, `PlatePlugin.ts`, `createPlitePlugin.ts`, `toPlatePlugin.ts`, runtime tx installation, and all `extendTx` callers. |
 | Tracker comments and attachments read | no | N/A: chat-only API design request. |
 | Video transcript evidence required | no | N/A: no video evidence. |
 | `docs/solutions` checked for non-trivial existing-code work | no | N/A: package API implementation with live source owner, no solution doc target. |
@@ -215,7 +215,7 @@ Completion Gates:
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-22-extend-tx-api-inference.md` | To run after this plan update. |
 | Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | Dist declarations expose `extendTx` plus `extendTxGroup` literal-keyed signatures; rejected names absent. |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published package API/type delta; no immediate artifact by migration policy for this packet. |
-| Published package changeset | no | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | N/A: changesets deferred for current Plate migration packets. |
+| Published package changeset | no | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | N/A: changesets deferred for current Plate migration packets. |
 | Registry changelog | no | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | N/A: not registry-only. |
 | No release artifact | yes | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | No immediate artifact because this is unreleased beta migration work and release artifacts will be batched. |
 | Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | Passed touched-package typecheck, tests, and builds. |
@@ -241,12 +241,12 @@ Decisions and tradeoffs:
 - `extendTx` -> plugin-owned group by default; shortest common path.
 - `extendTxGroup(key, ...)` -> explicit foreign/shared group path.
 - Rejected `extendPluginTx` as redundant naming.
-- Rejected `extendRootTx` because root is overloaded with Slate document/editor roots.
+- Rejected `extendRootTx` because root is overloaded with Plite document/editor roots.
 - No compatibility alias for old map-returning `extendTx`; current callers migrated.
 
 Implementation notes:
 - `packages/core/src/lib/plugin/SlatePlugin.ts` and `packages/core/src/react/plugin/PlatePlugin.ts` now type `extendTx` as `PluginTx<C['key'], ...>` and `extendTxGroup` as `PluginTx<K, ...>`.
-- `packages/core/src/lib/plugin/createSlatePlugin.ts` normalizes both public APIs into internal map-shaped `__txExtensions`.
+- `packages/core/src/lib/plugin/createPlitePlugin.ts` normalizes both public APIs into internal map-shaped `__txExtensions`.
 - `packages/core/src/react/plugin/toPlatePlugin.ts` wraps `extendTxGroup`.
 - Migrated tx callers in basic styles/nodes, callout, code-block, comment, date, list-classic, math, media, mention, and tag.
 - `packages/comment/src/lib/BaseCommentRuntimePlugin.spec.ts` now uses current `editor.api.comment` and `editor.update(tx => tx.comment...)`.

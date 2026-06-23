@@ -1,7 +1,7 @@
 # ProseMirror Issue Harvest Matrix
 
 source: `ProseMirror/prosemirror`, state: all
-target: Slate v2 only (`.tmp/slate-v2`)
+target: Plite only (`.tmp/plite`)
 
 Clusters are routing only. Closure requires one checkmark per issue.
 

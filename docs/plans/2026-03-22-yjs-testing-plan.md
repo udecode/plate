@@ -56,7 +56,7 @@ This package currently has:
 - Use thin plugin contract tests for:
   - `BaseYjsPlugin` editor API and init orchestration
   - `withPlateYjs` composition order and conditional cursor wiring
-- Prefer `createSlateEditor` for plugin tests.
+- Prefer `createPliteEditor` for plugin tests.
 - Prefer plain objects and module spies for provider doubles.
 - Avoid mounting React or importing app registries.
 
@@ -176,7 +176,7 @@ Fifth slice. Highest value, highest harness cost.
   - triggers `editor.api.onChange()`
   - calls `onReady` with the async flag and final children
 - Harness:
-  - use `createSlateEditor` with the plugin configured
+  - use `createPliteEditor` with the plugin configured
   - spy on `createProvider`, `YjsEditor.connect`, `Y.applyUpdate`, and editor APIs
   - keep provider doubles tiny and explicit
 

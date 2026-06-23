@@ -50,12 +50,12 @@ Fix every valid finding from `Plate repo root/.clawpatch/reports/20260517T152655
 
 ## Verification Targets
 
-- Focused `packages/slate` tests for editor command, mark, insertion, fragment, query, and runtime rollback behavior. Done: `bun test ./packages/slate/test/primitive-method-runtime-contract.ts ./packages/slate/test/snapshot-contract.ts ./packages/slate/test/query-extension-contract.ts ./packages/slate/test/state-tx-public-api-contract.ts ...` passed.
-- Focused `packages/slate-dom` tests for coverage, clipboard, focus, and DOM text sync. Done: included `./packages/slate-dom/test/dom-coverage.ts` and `./packages/slate-dom/test/clipboard-boundary.test.ts`; passed.
-- Focused Slate browser release-script contract. Done: included `./packages/slate-browser/test/core/scenario.test.ts`; passed.
+- Focused `packages/plite` tests for editor command, mark, insertion, fragment, query, and runtime rollback behavior. Done: `bun test ./packages/plite/test/primitive-method-runtime-contract.ts ./packages/plite/test/snapshot-contract.ts ./packages/plite/test/query-extension-contract.ts ./packages/plite/test/state-tx-public-api-contract.ts ...` passed.
+- Focused `packages/plite-dom` tests for coverage, clipboard, focus, and DOM text sync. Done: included `./packages/plite-dom/test/dom-coverage.ts` and `./packages/plite-dom/test/clipboard-boundary.test.ts`; passed.
+- Focused Plite browser release-script contract. Done: included `./packages/plite-browser/test/core/scenario.test.ts`; passed.
 - `bun typecheck:packages`: passed.
 - `bun lint:fix`: passed.
-- `bun lint`: passed with one pre-existing `packages/slate-react/src/components/slate.tsx` hook warning and no errors.
+- `bun lint`: passed with one pre-existing `packages/plite-react/src/components/slate.tsx` hook warning and no errors.
 - `bun test`: passed.
 - `bun test:vitest`: passed.
 - `bun check`: passed.
@@ -72,7 +72,7 @@ Fix every valid finding from `Plate repo root/.clawpatch/reports/20260517T152655
 
 ## 2026-05-18 Follow-Up Review Batch
 
-Fresh Clawpatch review run `20260518T023214-469527` found three open `slate-react` findings under feature `feat_library_1fd6f4c229`:
+Fresh Clawpatch review run `20260518T023214-469527` found three open `plite-react` findings under feature `feat_library_1fd6f4c229`:
 
 - `fnd_sig-feat-library-1fd6f4c229-ba19_84c65afa29`: collapsed projection slices inside text are dropped.
 - `fnd_sig-feat-library-1fd6f4c229-0200_75cb9399be`: `onBeforeInput` is typed as a React event but routed through native `InputEvent`.
@@ -82,26 +82,26 @@ Execution target:
 
 1. Run `clawpatch fix --finding ... --json` for each open finding, sequentially.
 2. Inspect any Clawpatch changes before accepting them.
-3. Run focused `slate-react` Vitest rows for projections, editable behavior, and surface contracts.
-4. Run `bun --filter slate-react typecheck`, `bun lint:fix`, and `bun check`.
-5. Add or update one `slate-react` changeset if user-visible package behavior changes.
+3. Run focused `plite-react` Vitest rows for projections, editable behavior, and surface contracts.
+4. Run `bun --filter plite-react typecheck`, `bun lint:fix`, and `bun check`.
+5. Add or update one `plite-react` changeset if user-visible package behavior changes.
 6. Revalidate the three findings with Clawpatch and record final status.
 
 Result:
 
 - `fnd_sig-feat-library-1fd6f4c229-ba19_84c65afa29`: fixed. Current `HEAD` already includes zero-length projection boundaries and the focused collapsed-projection regression.
 - `fnd_sig-feat-library-1fd6f4c229-0200_75cb9399be`: fixed. Current `HEAD` already keeps React `onBeforeInput` on the React path and native `beforeinput` on `onDOMBeforeInput`, with regression coverage.
-- `fnd_sig-feat-library-1fd6f4c229-3086_837d3573b9`: fixed in this slice. `isSlateReactDevelopmentEnvironment` now treats missing `process.env.NODE_ENV` as production-safe, with regression coverage.
-- Removed one unrelated Clawpatch-added static assertion from `packages/slate-react/test/surface-contract.tsx`.
+- `fnd_sig-feat-library-1fd6f4c229-3086_837d3573b9`: fixed in this slice. `isPliteReactDevelopmentEnvironment` now treats missing `process.env.NODE_ENV` as production-safe, with regression coverage.
+- Removed one unrelated Clawpatch-added static assertion from `packages/plite-react/test/surface-contract.tsx`.
 - Restored `.clawpatch/config.json` to `requireCleanWorktreeForFix: true`.
 - Added `.changeset/slate-react-browser-dev-guard.md`.
 
 Verification:
 
-- `bun --filter slate-react test:vitest -- projections-and-selection-contract editable-behavior dom-coverage-boundary-contract surface-contract`: 4 files, 65 tests passed.
-- `bun --filter slate-react typecheck`: passed.
+- `bun --filter plite-react test:vitest -- projections-and-selection-contract editable-behavior dom-coverage-boundary-contract surface-contract`: 4 files, 65 tests passed.
+- `bun --filter plite-react typecheck`: passed.
 - `bun lint:fix`: passed, no fixes applied.
-- `bun check`: passed with the existing `packages/slate-react/src/components/slate.tsx` hook warning only.
+- `bun check`: passed with the existing `packages/plite-react/src/components/slate.tsx` hook warning only.
 - `clawpatch revalidate --finding fnd_sig-feat-library-1fd6f4c229-ba19_84c65afa29 --json`: `fixed`.
 - `clawpatch revalidate --finding fnd_sig-feat-library-1fd6f4c229-0200_75cb9399be --json`: `fixed`.
 - `clawpatch revalidate --finding fnd_sig-feat-library-1fd6f4c229-3086_837d3573b9 --json`: `fixed`.
@@ -135,7 +135,7 @@ Result:
 Final same-turn verification:
 
 - `npm run typecheck`: passed across packages, site, and root.
-- `npm run lint`: passed with one existing warning in `packages/slate-react/src/components/slate.tsx` and no errors.
+- `npm run lint`: passed with one existing warning in `packages/plite-react/src/components/slate.tsx` and no errors.
 - `npm run test`: passed; Bun package tests `1022 pass`, `95 skip`, `0 fail`; slate-react Vitest `34 files`, `304 tests` passed.
 
 ## 2026-05-19 Fresh Clawpatch Review Batch
@@ -163,16 +163,16 @@ Result:
 Open findings:
 
 - `fnd_sig-feat-release-a235aa99b1-4903_035655915a`: site typecheck omits `--noEmit`.
-- `fnd_sig-feat-test-suite-cb681e102d-7_cccedbe3b1`: slate-browser aggregate test runs selection browser suite twice.
+- `fnd_sig-feat-test-suite-cb681e102d-7_cccedbe3b1`: plite-browser aggregate test runs selection browser suite twice.
 - `fnd_sig-feat-ui-flow-6a27e982ce-f94c_532ec95c63`: inline void shell child order can differ between SSR and Mac client render.
 - `fnd_sig-feat-ui-flow-6feb103d8d-ae72_f0494f2e0b`: placeholder `as` type accepts void HTML elements that cannot render children.
 - `fnd_sig-feat-ui-flow-7e14dc4c24-2e7d_8a458c669b`: shelled segment preview/coverage can go stale after hidden content changes.
 - `fnd_sig-feat-ui-flow-b96511949d-48f1_601dca3f51`: deferred selector callback can flush after unsubscribe.
-- `fnd_sig-feat-ui-flow-b96511949d-b05d_5266b77c35`: mount-time editor commits can happen before Slate subscribes.
+- `fnd_sig-feat-ui-flow-b96511949d-b05d_5266b77c35`: mount-time editor commits can happen before Plite subscribes.
 - `fnd_sig-feat-ui-flow-cfa3a8c90a-ae9f_505553d0bf`: default selection scrolling misses scroll containers outside a shadow root.
 - `fnd_sig-feat-ui-flow-cfa3a8c90a-b4c0_f3acc7896c`: documented `zIndex` workaround is emitted as ignored `zindex` DOM attribute.
 - `fnd_sig-feat-ui-flow-d9b2f7f1a2-c714_b31cf1ed14`: bound text can stay stale when skipped React render is not DOM-synced.
-- `fnd_sig-feat-ui-flow-e1e5bc9333-e201_2053767467`: `SlateElement` does not rebind DOM maps when its path changes.
+- `fnd_sig-feat-ui-flow-e1e5bc9333-e201_2053767467`: `PliteElement` does not rebind DOM maps when its path changes.
 - `fnd_sig-feat-ui-flow-f991203b7d-e62d_fdbe54b63d`: `domSyncReason` is attached when `domSync` is false and suppressed when true.
 
 ## 2026-05-19 Clawpatch Fix Batch
@@ -198,15 +198,15 @@ Result:
 
 - Fixed 11 valid findings from run `20260519T143737-1f263b`.
 - Marked `fnd_sig-feat-ui-flow-f991203b7d-e62d_fdbe54b63d` false-positive: `domSyncReason` is intentionally emitted only when DOM sync is disabled; inverting it broke the existing rendering-strategy DOM sync contract.
-- Rebuilt `slate-react` so the fixed source paths are reflected in `packages/slate-react/dist/index.js`.
-- Restored `/Users/zbeyens/git/slate-v2/.clawpatch/config.json` to `"requireCleanWorktreeForFix": true`.
-- Added `/Users/zbeyens/git/slate-v2/.changeset/slate-react-clawpatch-ui-flow-fixes.md`.
+- Rebuilt `plite-react` so the fixed source paths are reflected in `packages/plite-react/dist/index.js`.
+- Restored `/Users/zbeyens/git/plite/.clawpatch/config.json` to `"requireCleanWorktreeForFix": true`.
+- Added `/Users/zbeyens/git/plite/.changeset/slate-react-clawpatch-ui-flow-fixes.md`.
 - `clawpatch report --status open --json`: `findings: 0`.
 - `clawpatch status --json`: `openFindings: 0`, `activeLocks: 0`, `lockFiles: 0`.
 
 Revalidation:
 
-- `fnd_sig-feat-ui-flow-6a27e982ce-f94c_532ec95c63`: fixed after rebuilding `slate-react` dist.
+- `fnd_sig-feat-ui-flow-6a27e982ce-f94c_532ec95c63`: fixed after rebuilding `plite-react` dist.
 - `fnd_sig-feat-ui-flow-6feb103d8d-ae72_f0494f2e0b`: fixed.
 - `fnd_sig-feat-ui-flow-7e14dc4c24-2e7d_8a458c669b`: fixed.
 
@@ -215,14 +215,14 @@ Final verification:
 - `npm run typecheck`: passed.
 - `npm run lint:fix`: passed, no fixes applied.
 - `npm run lint`: passed.
-- `npm run test`: passed (`bun test`: 1022 pass, 95 skip, 0 fail; `slate-react` Vitest: 35 files, 312 tests passed).
+- `npm run test`: passed (`bun test`: 1022 pass, 95 skip, 0 fail; `plite-react` Vitest: 35 files, 312 tests passed).
 
 ## 2026-05-19 Unlimited Clawpatch Review
 
 Source state before review:
 
 - Previous Clawpatch closeout: `openFindings: 0`.
-- `/Users/zbeyens/git/slate-v2/.clawpatch/config.json`: `"requireCleanWorktreeForFix": true`.
+- `/Users/zbeyens/git/plite/.clawpatch/config.json`: `"requireCleanWorktreeForFix": true`.
 
 Command:
 
@@ -231,7 +231,7 @@ Command:
 Result:
 
 - Run: `20260519T174319-47a168`.
-- Report: `/Users/zbeyens/git/slate-v2/.clawpatch/reports/20260519T174319-47a168.md`.
+- Report: `/Users/zbeyens/git/plite/.clawpatch/reports/20260519T174319-47a168.md`.
 - Reviewed `0` features and produced `0` new findings.
 - `clawpatch report --status open --json`: `findings: 0`.
 - `clawpatch status --json`: `findings: 107`, `openFindings: 0`, `activeLocks: 0`, `lockFiles: 0`.
@@ -244,11 +244,11 @@ Note:
 
 Requested state:
 
-- Force re-review every known Clawpatch feature in `/Users/zbeyens/git/slate-v2`.
+- Force re-review every known Clawpatch feature in `/Users/zbeyens/git/plite`.
 
 Current filesystem state:
 
-- `/Users/zbeyens/git/slate-v2` no longer contains the full Slate v2 checkout or prior Clawpatch project state.
+- `/Users/zbeyens/git/plite` no longer contains the full Plite checkout or prior Clawpatch project state.
 - Current files under that path are only `.clawpatch/features/feat_ui-flow_6feb103d8d.json` and `.clawpatch/runs/20260520T083030-e09d29.json`.
 - `clawpatch status --json`: failed with `error: not initialized; run clawpatch init`.
 - Current feature count from `.clawpatch/features/*.json`: `1`, not the expected `92`.
@@ -256,4 +256,4 @@ Current filesystem state:
 
 Result:
 
-- Marked this pass blocked. The requested 92-feature force re-review cannot be completed from the current `/Users/zbeyens/git/slate-v2` filesystem state without restoring the full checkout or Clawpatch state.
+- Marked this pass blocked. The requested 92-feature force re-review cannot be completed from the current `/Users/zbeyens/git/plite` filesystem state without restoring the full checkout or Clawpatch state.

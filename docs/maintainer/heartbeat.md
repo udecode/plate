@@ -57,7 +57,7 @@ Scan the smallest useful slice, in this order:
 3. Issues needing triage, duplicate/claim guard, or missing reproduction.
 4. Stale user-visible bugs with enough public intake for local Codex.
 5. Docs/setup breakage with clear proof.
-6. One internal `slate-auto` fallback checkpoint only when no public item is
+6. One internal `plite-auto` fallback checkpoint only when no public item is
    safe and fallback is allowed.
 
 Do not pad the matrix with weak candidates. Three strong rows beat twenty noisy
@@ -88,7 +88,7 @@ Record compact rows:
 | rank | why this item is higher or lower than alternatives |
 | item | issue/PR/advisory URL or local maintenance item |
 | live state | current GitHub state and updated time when available |
-| category | Slate, Plate, docs, security, PR review, support/noise, internal fallback |
+| category | Plite, Plate, docs, security, PR review, support/noise, internal fallback |
 | VISION fit | yes, no, unclear |
 | intake | agent-ready, needs-repro, thin, N/A |
 | duplicate/claim guard | clear, active owner, related PR, skipped with reason |

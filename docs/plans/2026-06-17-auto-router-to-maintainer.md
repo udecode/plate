@@ -1,7 +1,7 @@
 # auto router to maintainer
 
 Objective:
-Patch `auto` routing so natural public queue prompts route to `maintainer` while internal Plate/Slate prompts stay in `auto`.
+Patch `auto` routing so natural public queue prompts route to `maintainer` while internal Plate/Plite prompts stay in `auto`.
 
 Goal plan:
 docs/plans/2026-06-17-auto-router-to-maintainer.md
@@ -49,7 +49,7 @@ Timed checkpoint:
 - final score / loop closure: 0.97 after source/generator audit and agent-native review
 
 Completion threshold:
-- Done when durable routing doctrine and generated mirrors make `auto` redirect public queue/post-merge prompts to the correct owner while preserving `auto` for internal Plate/Slate quality loops.
+- Done when durable routing doctrine and generated mirrors make `auto` redirect public queue/post-merge prompts to the correct owner while preserving `auto` for internal Plate/Plite quality loops.
 - Task closure is legal only when the source-of-truth acceptance criteria are
   satisfied or explicitly narrowed, required verification evidence is recorded,
   code-review and release-artifact gates are closed when applicable, tracker/PR

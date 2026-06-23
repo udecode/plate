@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: V2 editable text primitives should compose leaf text zero-width and placeholder
 tags:
-  - slate-v2
+  - plite
   - slate-react-v2
   - text
   - zero-width
@@ -17,8 +17,8 @@ severity: medium
 
 ## What happened
 
-Even after `TextString`, `SlateText`, `SlateLeaf`, `ZeroWidthString`, and
-`SlatePlaceholder` existed, the proof surfaces were still assembling the same
+Even after `TextString`, `PliteText`, `PliteLeaf`, `ZeroWidthString`, and
+`PlitePlaceholder` existed, the proof surfaces were still assembling the same
 composition by hand:
 
 - text node wrapper
@@ -30,17 +30,17 @@ That was one layer too low.
 
 ## What fixed it
 
-`slate-react-v2` now owns an `EditableText` primitive:
+`plite-react-v2` now owns an `EditableText` primitive:
 
-- [editable-text.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react-v2/src/components/editable-text.tsx)
+- [editable-text.tsx](/Users/zbeyens/git/plite/packages/plite-react-v2/src/components/editable-text.tsx)
 
 It composes:
 
-- `SlateText`
-- `SlateLeaf`
+- `PliteText`
+- `PliteLeaf`
 - `TextString`
 - `ZeroWidthString`
-- optional `SlatePlaceholder`
+- optional `PlitePlaceholder`
 
 The v2 placeholder, inline-edge, void-edge, and matrix proof surfaces now use
 that one component instead of restating the same branch logic over and over.
@@ -58,7 +58,7 @@ contract still lives in example files.
 
 ## Reusable rule
 
-For `slate-react-v2`:
+For `plite-react-v2`:
 
 - once a renderer contract has both low-level primitives and repeated branch
   logic, package the branch logic too

@@ -2,7 +2,7 @@
 
 Objective:
 Build a comprehensive Evidence Kit benchmark lane for rich-text editors in
-`benchmarks/editor`, expanding the first Slate v2 vs legacy row into an
+`benchmarks/editor`, expanding the first Plite vs legacy row into an
 artifact-backed benchmark matrix with explicit adapter gaps for Plate,
 ProseMirror, Lexical, and Tiptap.
 
@@ -25,7 +25,7 @@ Major source:
 - title: comprehensive rich-text editor benchmark
 - decision to make: what Evidence Kit result owns rich-text editor benchmark
   claims, and which editor/runtime lanes are measured vs still adapter gaps
-- decision criteria: current Slate v2 artifact families are imported; all local
+- decision criteria: current Plite artifact families are imported; all local
   editor targets appear in coverage rows; non-measured editor comparisons are
   visible as gaps; Evidence Kit checks and perf docs pass
 
@@ -35,16 +35,16 @@ Major lane:
 - implementation expected: yes
 - affected packages / surfaces: `benchmarks/editor/**`, Evidence Kit docs/perf,
   this goal plan
-- dominant risk: fake cross-editor numbers or duplicated Slate-only proof being
+- dominant risk: fake cross-editor numbers or duplicated Plite-only proof being
   mistaken for ProseMirror/Lexical/Plate/Tiptap runtime comparison
 
 Completion threshold:
 - `benchmarks/results/rich-text-editors-latest.json` exists and has at least
   250 rows, at least 180 measured `ok` rows, all six local editor target roots,
-  visible adapter-gap rows for non-Slate editors, and no missing required Slate
+  visible adapter-gap rows for non-Plite editors, and no missing required Plite
   v2 artifacts.
-- The result imports every available Slate v2 artifact family named by the
-  current Slate v2 benchmark docs or records an explicit missing optional row.
+- The result imports every available Plite artifact family named by the
+  current Plite benchmark docs or records an explicit missing optional row.
 - README / iteration / source-map docs name the result file, measured families,
   adapter gaps, and verification command.
 - Major-task closure is legal only when the decision criteria are satisfied or
@@ -58,7 +58,7 @@ Verification surface:
 - `npm run bench:rich-text:check`
 - `npm run bench:evidence`
 - `npm run docs:perf && npm run docs:perf:check`
-- `npm run docs:perf:search -- rich text editor slate-v2 lexical prosemirror`
+- `npm run docs:perf:search -- rich text editor plite lexical prosemirror`
 - `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-27-rich-text-editor-evidence-benchmark.md`
 
 Constraints:
@@ -81,7 +81,7 @@ Boundaries:
   integration sweeps.
 
 Blocked condition:
-- Block only if required Slate v2 artifacts are absent, Evidence Kit cannot
+- Block only if required Plite artifacts are absent, Evidence Kit cannot
   parse the result rows, or the approved browser surface cannot be verified
   after generated docs are rebuilt.
 
@@ -97,7 +97,7 @@ Current verdict:
 - verdict: implementation in progress
 - confidence: medium
 - next owner: major-task
-- reason: imported Slate v2 artifacts are available locally; non-Slate editor
+- reason: imported Plite artifacts are available locally; non-Plite editor
   adapters remain explicit gaps
 
 Completion rule:
@@ -115,7 +115,7 @@ Start Gates:
 |------|---------|----------|
 | `major-task` loaded | yes | `/Users/zbeyens/git/plate-2/.agents/skills/major-task/SKILL.md` |
 | Active goal checked or created | yes | `create_goal` active objective |
-| Source of truth read before analysis | yes | `benchmarks/editor/**`, docs/slate-v2 summaries, `Plate repo root` artifacts |
+| Source of truth read before analysis | yes | `benchmarks/editor/**`, docs/plite summaries, `Plate repo root` artifacts |
 | Major lane selected | yes | benchmark / performance |
 | Decision criteria stated | yes | completion threshold above |
 | Existing repo patterns / prior decisions checked | yes | existing Evidence Kit scripts, result rows, iteration notes, source map |
@@ -127,7 +127,7 @@ Start Gates:
 | Docs pack selected | yes | plan created with docs pack |
 | `docs-creator` loaded | yes | `/Users/zbeyens/git/plate-2/.agents/skills/docs-creator/SKILL.md` |
 | Docs lane selected | yes | benchmark README/iteration/source-map reference docs |
-| Target docs and nearest sibling docs read | yes | `README.md`, `iterations/001-slate-v2-legacy-evidence.md`, `research/evidence-source-map.md` |
+| Target docs and nearest sibling docs read | yes | `README.md`, `iterations/001-plite-legacy-evidence.md`, `research/evidence-source-map.md` |
 | Docs style doctrine read | yes | docs-creator relevant sections read |
 | Documented source owner identified | yes | `benchmarks/results/rich-text-editors-latest.json` |
 | Browser pack selected | yes | plan created with browser pack |
@@ -172,11 +172,11 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run the repo audit, benchmark, review, prototype, or artifact check named in this plan | `npm run check` passed in `benchmarks/editor`; rich result has 530 rows, 479 ok, 47 adapter-missing, no missing required artifacts |
 | Current-state source audit | yes | Map current owner, boundaries, constraints, and affected surfaces | `README.md`, `src/index.mjs`, `Plate repo root` artifact inventory, local editor source roots |
-| Decision criteria closure | yes | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | Criteria satisfied for Slate v2 imported artifacts; explicitly narrowed for non-Slate runtime adapters as adapter gaps |
+| Decision criteria closure | yes | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | Criteria satisfied for Plite imported artifacts; explicitly narrowed for non-Plite runtime adapters as adapter gaps |
 | Options / tradeoffs / rejection record | yes | Record viable options, chosen recommendation, and why alternatives lose | Decisions and tradeoffs section records import-and-gap matrix vs fake cross-editor numbers |
 | Review / pressure pass | yes | Run selected reviewer/lens or record N/A with reason | Benchmark Guardian pressure applied: bad/unsupported/over-budget rows remain visible; no fake aggregate winner |
 | Review findings closure | yes | Fix or explicitly reject accepted/actionable findings and record closure proof | First `npm run check` found pack budget drift; fixed by raising private lab dry-run pack budget to 800 KB |
-| External-source audit | yes | Cite official/local clone/external sources when used, or record N/A | Local clones only: Plate, Slate v2, legacy Slate, ProseMirror, Lexical, Tiptap source roots recorded in result rows |
+| External-source audit | yes | Cite official/local clone/external sources when used, or record N/A | Local clones only: Plate, Plite, legacy Plite, ProseMirror, Lexical, Tiptap source roots recorded in result rows |
 | Implementation gates | yes | If code changed, close primary-template and touched-surface gates; otherwise N/A | `npm run check` and `pnpm exec biome check ... --fix` passed |
 | Final handoff contract | yes | Record recommendation, evidence, caveats, residual risk, and next owner | Final handoff contract section completed below |
 | Final lint | yes | Run `pnpm lint:fix` or scoped equivalent when files changed | `pnpm exec biome check benchmarks/editor/src/index.mjs benchmarks/editor/benchmarks/rich-text-editors-benchmark.mjs benchmarks/editor/package.json --fix` passed |
@@ -192,7 +192,7 @@ Completion Gates:
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Intake and source read | complete | read Evidence Kit package, Slate v2 docs/artifacts, local editor target roots | current-state map |
+| Intake and source read | complete | read Evidence Kit package, Plite docs/artifacts, local editor target roots | current-state map |
 | Current-state map | complete | first lane had 59 docs rows; new artifact sources available under `Plate repo root` | options |
 | Options and recommendation | complete | choose import-and-gap matrix over fake cross-editor numbers | review |
 | Review / pressure pass | complete | kept adapter gaps and over-budget rows visible; rejected fake cross-editor numbers | implementation decision |
@@ -204,20 +204,20 @@ Findings:
 - Current Evidence Kit docs had 59 rows / 20 fixtures before the broad import.
 - `Plate repo root` already had required artifacts for React, core, clipboard,
   collab, history, and issue #6038 lanes.
-- Plate, legacy Slate, ProseMirror, Lexical, and Tiptap source roots exist
+- Plate, legacy Plite, ProseMirror, Lexical, and Tiptap source roots exist
   locally.
-- Non-Slate editors do not yet have equivalent runtime adapters in this lab.
+- Non-Plite editors do not yet have equivalent runtime adapters in this lab.
 
 Decisions and tradeoffs:
-- Chosen: import all existing Slate v2 artifact families and add coverage rows
+- Chosen: import all existing Plite artifact families and add coverage rows
   for all rich-text editor targets.
 - Rejected: fake ProseMirror/Lexical/Tiptap/Plate runtime numbers from source
   presence alone.
-- Accepted caveat: optional Slate v2 transaction/current-memory artifacts can be
+- Accepted caveat: optional Plite transaction/current-memory artifacts can be
   visible as optional missing rows until those scripts emit local JSON.
 
 Implementation notes:
-- Added `createRichTextEditorBenchmarkRows`, Slate v2 artifact specs, workload
+- Added `createRichTextEditorBenchmarkRows`, Plite artifact specs, workload
   coverage rows, and generic metric-stat normalization.
 - Added `benchmarks/rich-text-editors-benchmark.mjs`.
 - Added `bench:rich-text:check` and included it in `bench:evidence` / `check`.
@@ -236,7 +236,7 @@ Verification evidence:
 - `npm run bench:rich-text:check` in `benchmarks/editor`: pass, wrote 530 rows.
 - `npm run bench:evidence` in `benchmarks/editor`: pass.
 - `npm run docs:perf && npm run docs:perf:check` in `benchmarks/editor`: pass.
-- `npm run docs:perf:search -- rich text editor slate-v2 lexical prosemirror`
+- `npm run docs:perf:search -- rich text editor plite lexical prosemirror`
   in `benchmarks/editor`: rich-text matrix and workload rows found.
 - `npm run check` in `benchmarks/editor`: pass.
 - `pnpm exec biome check benchmarks/editor/src/index.mjs benchmarks/editor/benchmarks/rich-text-editors-benchmark.mjs benchmarks/editor/package.json --fix`
@@ -247,7 +247,7 @@ Verification evidence:
 Final handoff contract:
 - Recommendation: use `benchmarks/results/rich-text-editors-latest.json` as the
   current rich-text benchmark authority.
-- Confidence: high for Slate v2 artifact import coverage; low for non-Slate
+- Confidence: high for Plite artifact import coverage; low for non-Plite
   runtime comparison until adapters exist.
 - Evidence: 530 rich-text rows, 589 total perf-doc benchmark rows, six local
   source roots, 47 visible adapter-gap rows.
@@ -256,7 +256,7 @@ Final handoff contract:
 - PR / tracker: none requested.
 - Caveats: ProseMirror, Lexical, Plate, and Tiptap are source-backed targets,
   not measured runtime peers yet.
-- Next owner: implement one non-Slate runtime adapter at a time, starting with
+- Next owner: implement one non-Plite runtime adapter at a time, starting with
   ProseMirror or Lexical.
 
 Timeline:
@@ -279,6 +279,6 @@ Reboot status:
 Open risks:
 - Browser plugin may not be exposed in this turn; if so, use curl/static output
   proof and record the limitation.
-- The current result is comprehensive for Slate v2 imported artifacts, not a
+- The current result is comprehensive for Plite imported artifacts, not a
   finished runtime-vs-runtime comparison for ProseMirror, Lexical, Plate, or
   Tiptap.

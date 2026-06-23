@@ -20,7 +20,7 @@ const owners = {
     command:
       'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/richtext.test.ts --project=chromium --grep "IME|composition|beforeinput"',
     owner:
-      '.tmp/slate-v2/playwright/integration/examples/richtext.test.ts; .tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts',
+      '.tmp/plite/playwright/integration/examples/richtext.test.ts; .tmp/plite/packages/plite-browser/src/playwright/ime.ts',
     proof: 'browser IME/beforeinput plus package history when applicable',
   },
   mobile: {
@@ -33,7 +33,7 @@ const owners = {
     action: 'refactor-existing/create-new',
     command:
       'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/stress/generated-editing.test.ts --project=chromium --grep "selection|range|cursor|caret"',
-    owner: '.tmp/slate-v2/playwright/stress/generated-editing.test.ts',
+    owner: '.tmp/plite/playwright/stress/generated-editing.test.ts',
     proof: 'browser model/native selection proof',
   },
   clipboard: {
@@ -41,14 +41,14 @@ const owners = {
     command:
       'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/paste-html.test.ts --project=chromium --grep "paste|clipboard|copy|cut"',
     owner:
-      '.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts; .tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts',
-    proof: 'browser clipboard plus slate-dom package proof',
+      '.tmp/plite/playwright/integration/examples/paste-html.test.ts; .tmp/plite/packages/plite-dom/test/clipboard-boundary.ts',
+    proof: 'browser clipboard plus plite-dom package proof',
   },
   history: {
     action: 'refactor-existing/create-new',
     command:
-      'bun test ./packages/slate-history/test/history-contract.ts --test-name-pattern "history|undo|redo|batch|selection"',
-    owner: '.tmp/slate-v2/packages/slate-history/test/history-contract.ts',
+      'bun test ./packages/plite-history/test/history-contract.ts --test-name-pattern "history|undo|redo|batch|selection"',
+    owner: '.tmp/plite/packages/plite-history/test/history-contract.ts',
     proof: 'package history contract plus browser proof when transport matters',
   },
   table: {
@@ -56,7 +56,7 @@ const owners = {
     command:
       'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/tables.test.ts --project=chromium --grep "table|cell|selection|paste|drag"',
     owner:
-      '.tmp/slate-v2/playwright/integration/examples/tables.test.ts; future table model owner for whole-table/nested-table semantics',
+      '.tmp/plite/playwright/integration/examples/tables.test.ts; future table model owner for whole-table/nested-table semantics',
     proof: 'browser table containment/navigation plus package insert-fragment proof',
   },
   voidAtom: {
@@ -64,28 +64,28 @@ const owners = {
     command:
       'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/editable-voids.test.ts --project=chromium --grep "void|decorator|image|mention|Enter|Arrow"',
     owner:
-      '.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts; .tmp/slate-v2/playwright/integration/examples/mentions.test.ts',
+      '.tmp/plite/playwright/integration/examples/editable-voids.test.ts; .tmp/plite/playwright/integration/examples/mentions.test.ts',
     proof: 'browser atom/void keyboard, paste, and IME proof',
   },
   collab: {
     action: 'create-new/defer-yjs-browser',
     command:
-      'bun test ./packages/slate/test/collab-history-runtime-contract.ts --test-name-pattern "remote|selection|history|collab"',
+      'bun test ./packages/plite/test/collab-history-runtime-contract.ts --test-name-pattern "remote|selection|history|collab"',
     owner:
-      '.tmp/slate-v2/packages/slate/test/collab-history-runtime-contract.ts; future yjs browser lane',
+      '.tmp/plite/packages/plite/test/collab-history-runtime-contract.ts; future yjs browser lane',
     proof: 'package remote-selection/history proof; browser yjs proof when accepted',
   },
   perf: {
     action: 'defer-to-benchmark-target',
     command: 'create or select a benchmark target before runtime optimization',
-    owner: 'slate-ar-fast/slate-ar-perf benchmark target owner',
+    owner: 'plite-ar-fast/slate-ar-perf benchmark target owner',
     proof: 'benchmark with correctness guardrails',
   },
   shadowDom: {
     action: 'covered/refactor-existing',
     command:
       'PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun run playwright playwright/integration/examples/shadow-dom.test.ts --project=chromium',
-    owner: '.tmp/slate-v2/playwright/integration/examples/shadow-dom.test.ts',
+    owner: '.tmp/plite/playwright/integration/examples/shadow-dom.test.ts',
     proof: 'browser shadow-root input and selection proof',
   },
   plate: {
@@ -296,7 +296,7 @@ function classify(issue) {
       disposition = 'plate-owned'
       action = 'plate-owned/split-raw-invariant-if-needed'
       reason =
-        'Plugin/product issue with possible raw invariant; route to Plate unless a Slate substrate row is split.'
+        'Plugin/product issue with possible raw invariant; route to Plate unless a Plite substrate row is split.'
     }
 
     return {
@@ -322,7 +322,7 @@ function classify(issue) {
       matrixKey: `Skip: ${skipHits[0]}`,
       owner: 'N/A',
       proofKind: 'N/A',
-      reason: `Skipped as ${skipHits[0]}; no portable Slate/Plate editor robustness invariant found in title/body.`,
+      reason: `Skipped as ${skipHits[0]}; no portable Plite/Plate editor robustness invariant found in title/body.`,
       secondaryClusters: [],
       skipFamilies: skipHits,
     }
@@ -351,7 +351,7 @@ function classify(issue) {
     matrixKey: 'Skip: unrelated-or-product-unclear',
     owner: 'N/A',
     proofKind: 'N/A',
-    reason: 'Skipped after full-body pass; no portable Slate/Plate editor robustness invariant matched.',
+    reason: 'Skipped after full-body pass; no portable Plite/Plate editor robustness invariant matched.',
     secondaryClusters: [],
     skipFamilies: ['unrelated-or-product-unclear'],
   }

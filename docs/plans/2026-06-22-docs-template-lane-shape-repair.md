@@ -87,7 +87,7 @@ Boundaries:
   `.agents/rules/docs-creator.mdc`, regenerated
   `.agents/skills/docs-creator/SKILL.md`, and this repair plan/smoke artifacts.
 - Derived skill scope: docs-creator/docs template only.
-- Non-goals: do not rewrite Slate docs pages in this repair; do not patch
+- Non-goals: do not rewrite Plite docs pages in this repair; do not patch
   generic autogoal lifecycle rules; do not add new scripts unless prose gates
   cannot express the expectation.
 
@@ -214,7 +214,7 @@ Repair patch notes:
 
 Deliberate non-repairs:
 
-- Did not rewrite `content/docs/slate/walkthroughs/01-installing-slate.mdx` in
+- Did not rewrite `content/docs/plite/walkthroughs/01-installing-slate.mdx` in
   this repair; the requested owner was the future workflow/template gap.
 - Did not add scripts. The check-complete unresolved-cell mechanics plus the new
   table are enough for this expectation.

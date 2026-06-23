@@ -42,23 +42,23 @@ Completion threshold:
 
 Verification surface:
 - TODO: Name the focused package tests, Playwright routes/greps, in-app Browser proof, source audits, benchmark metrics, mobile/raw-device proof, helper API checks, docs audit, skill sync, and final plan check that prove this run.
-- Slate package proof uses `pnpm slate:test` and `pnpm slate:typecheck`.
-- Slate daily proof uses `pnpm check:slate`.
-- Slate focused browser proof uses `pnpm --filter slate test:slate-browser:chromium <file-or--grep>`.
-- `apps/slate` reuses `apps/www` Slate examples; never maintain a second example source tree.
-- Slate release/deletion proof adds explicit closure gates such as package
+- Plite package proof uses `pnpm plite:test` and `pnpm plite:typecheck`.
+- Plite daily proof uses `pnpm check:plite`.
+- Plite focused browser proof uses `pnpm --filter plite test:plite-browser:chromium <file-or--grep>`.
+- `apps/plite` reuses `apps/www` Plite examples; never maintain a second example source tree.
+- Plite release/deletion proof adds explicit closure gates such as package
   build, docs checks, benchmark target audit, and
-  `pnpm check:slate:browser-matrix` when those claims are in scope.
+  `pnpm check:plite:browser-matrix` when those claims are in scope.
 
 Constraints:
-- Resolve lane first: Slate, Plate, or shared editor. Use `autoclosure` for post-merge/current-tree until-clean closure.
+- Resolve lane first: Plite, Plate, or shared editor. Use `autoclosure` for post-merge/current-tree until-clean closure.
 - Release, PR, and publish work are in scope only when the prompt explicitly asks for them or the active lane requires them.
-- Slate-lane proof runs from the Plate repo root against transplanted Slate packages and routes. Do not use donor-checkout proof.
-- Plate-lane proof runs in the owning Plate package, app, or docs route. Slate runtime proof does not prove Plate docs, registry, plugin, or package DX.
+- Plite-lane proof runs from the Plate repo root against transplanted Plite packages and routes. Do not use donor-checkout proof.
+- Plate-lane proof runs in the owning Plate package, app, or docs route. Plite runtime proof does not prove Plate docs, registry, plugin, or package DX.
 - Behavior proof beats perf. Native/visual proof beats model-only selection.
 - No hidden debounce or fake stress fixture wins.
-- No broad pagination/virtualization architecture unless the prompt or a stopping checkpoint routes to `slate-plan`.
-- Do not patch Plate when the run is scoped to Slate. Do not patch Slate runtime when the run is scoped to Plate docs/product unless a shared-editor owner row names that boundary.
+- No broad pagination/virtualization architecture unless the prompt or a stopping checkpoint routes to `plite-plan`.
+- Do not patch Plate when the run is scoped to Plite. Do not patch Plite runtime when the run is scoped to Plate docs/product unless a shared-editor owner row names that boundary.
 - Use root `VISION.md` and relevant `docs/vision/*.md` for durable taste.
 - Do not create compatibility aliases or runtime shims unless the checkpoint explicitly requires them.
 
@@ -160,7 +160,7 @@ Work Checklist:
 - [ ] First checkpoint complete: every explicit prompt requirement, scope boundary, timing constraint, stop condition, deliverable, final handoff section, verification surface, and success criterion is copied into this plan as checkable checkpoints before implementation.
 - [ ] Short objective, completion threshold, verification surface, constraints, boundaries, and blocked condition are concrete.
 - [ ] Invocation mode, minimum runtime/deadline, stop-question policy, remaining backlog ladder, and supervision-mode fallback are recorded.
-- [ ] Lane is resolved as Slate, Plate, or shared editor, with owning workspace/package/app proof named.
+- [ ] Lane is resolved as Plite, Plate, or shared editor, with owning workspace/package/app proof named.
 - [ ] Checkpoint supervisor table has been reconciled at least once after the initial seed.
 - [ ] Post-merge/current-tree closure is routed to `autoclosure` when in scope, or marked N/A with reason.
 - [ ] Each loop ends with a checkpoint mutation decision: add, update, split, merge, retire, remove, reopen, reprioritize, or no-change with reason.
@@ -188,7 +188,7 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | pending | Run the proof commands/artifacts named in this plan | pending |
 | Dynamic checkpoint reconciliation | pending | Prove the plan was updated from evidence and not frozen to the initial seed | pending |
-| Lane authority proof | pending | Prove each command ran in the owning Slate/Plate/shared workspace, or record N/A | pending |
+| Lane authority proof | pending | Prove each command ran in the owning Plite/Plate/shared workspace, or record N/A | pending |
 | Workspace authority proof | pending | Record cwd/tool for each package, docs, skill, browser, or benchmark proof | pending |
 | Behavior gates | pending | Run focused stable behavior proof or record scoped defer rows | pending |
 | Visual/native selection proof | pending | Record Browser/Playwright/native-selection evidence or scoped blocker | pending |

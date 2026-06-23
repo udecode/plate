@@ -3,12 +3,12 @@
 ## Goal
 
 Create a first-class Plate repo skill for operating Clawpatch from the current
-docs and local Slate v2 state.
+docs and local Plite state.
 
 ## Source
 
 - Official docs: `https://clawpatch.ai/`
-- Local active Slate v2 state: `Plate repo root/.clawpatch`
+- Local active Plite state: `Plate repo root/.clawpatch`
 
 ## Result
 

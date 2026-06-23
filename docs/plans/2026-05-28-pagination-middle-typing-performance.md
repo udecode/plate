@@ -1,7 +1,7 @@
 # pagination middle typing performance
 
 Objective:
-Fix poor typing latency in the middle of the Slate v2 pagination example so
+Fix poor typing latency in the middle of the Plite pagination example so
 virtualized mode stays responsive on the real rich-markdown stress document.
 
 Goal plan:
@@ -54,7 +54,7 @@ Start Gates:
 | `docs/solutions` checked for non-trivial existing-code work | no | N/A: current request was a live perf trace against freshly edited pagination work. |
 | TDD decision before behavior change or bug fix | yes | Added focused Playwright perf proof plus package contract tests for native input repair. |
 | Branch decision for code-changing task | no | N/A: user did not ask for branch, commit, or PR. |
-| Release artifact decision | yes | Added `.changeset/pagination-middle-typing.md` for `slate-layout` and `slate-react`. |
+| Release artifact decision | yes | Added `.changeset/pagination-middle-typing.md` for `plite-layout` and `plite-react`. |
 | Browser tool decision for browser surface | yes | Used repeatable Playwright proof because the task requires latency samples and DOM/page counts. |
 | PR expectation decision | no | N/A: no PR requested. |
 | Tracker sync expectation decision | no | N/A: no tracker. |
@@ -87,7 +87,7 @@ Completion Gates:
 | Named verification threshold | yes | Run focused browser proof and typecheck | Browser proof passed; `bun typecheck:site` passed. |
 | Bug reproduced before fix | yes | Record failing trace/repro | Pre-fix trace showed p95 observable paint around 100ms after layout caching, with earlier layout compose spikes around 479ms before page-layout caching. |
 | Targeted behavior verification | yes | Run focused tests/proof | Focused Playwright proof passed. |
-| TypeScript or typed config changed | yes | Run relevant typecheck | `bun --filter slate-react typecheck`, `bun --filter slate-layout typecheck`, and `bun typecheck:site` passed. |
+| TypeScript or typed config changed | yes | Run relevant typecheck | `bun --filter plite-react typecheck`, `bun --filter plite-layout typecheck`, and `bun typecheck:site` passed. |
 | Package exports or file layout changed | no | Run `pnpm brl` or record N/A | N/A: no package exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | Run install or record N/A | N/A: no package manifest, lockfile, or install graph changed. |
 | Agent rules or skills changed | no | Run sync or record N/A | N/A: no agent rules or skills changed. |
@@ -166,10 +166,10 @@ Decisions and tradeoffs:
   typing, not first post-scroll layout settling.
 
 Implementation notes:
-- `slate-layout` caches measured Pretext blocks, raises the prepared-entry
+- `plite-layout` caches measured Pretext blocks, raises the prepared-entry
   cache limit, debounces text-change layout refresh, and supports filtered page
   layout decorations.
-- `slate-react` scopes element-path selectors by runtime id, keeps custom leaf
+- `plite-react` scopes element-path selectors by runtime id, keeps custom leaf
   wrappers DOM-sync capable, skips redundant DOM text rewrites, defers native
   text input repair in virtualized mode, and repairs caret after deferred model
   import.
@@ -191,7 +191,7 @@ Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
 | Deferred repair initially let the third char land before `Release` | 1 | Repair caret after deferred model import and wait for model selection in the proof | Fixed; focused test passed. |
-| `bun test ./packages/slate-react/test/input-router-contract.test.tsx` treated the file as a filter | 2 | Run the file through package Vitest | `cd packages/slate-react && bun test:vitest test/input-router-contract.test.tsx` passed. |
+| `bun test ./packages/plite-react/test/input-router-contract.test.tsx` treated the file as a filter | 2 | Run the file through package Vitest | `cd packages/plite-react && bun test:vitest test/input-router-contract.test.tsx` passed. |
 | Parallel final Playwright run timed out before selecting DOM strategy | 1 | Rerun focused Playwright alone | Passed alone. |
 
 Verification evidence:
@@ -204,13 +204,13 @@ Verification evidence:
 - `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium -g "keeps middle-document typing responsive" --reporter=line`
   passed after the final patch.
 - `bun typecheck:site` passed.
-- `bun --filter slate-react typecheck` passed.
-- `bun --filter slate-layout typecheck` passed.
-- `bun --filter slate-layout test` passed.
-- `bun test ./packages/slate-react/test/dom-repair-policy-contract.ts` passed.
-- `bun test ./packages/slate-react/test/dom-text-sync-contract.ts` passed.
-- `cd packages/slate-react && bun test:vitest test/input-router-contract.test.tsx` passed.
-- `cd packages/slate-react && bun test:vitest test/dom-strategy-and-scroll.test.tsx` passed.
+- `bun --filter plite-react typecheck` passed.
+- `bun --filter plite-layout typecheck` passed.
+- `bun --filter plite-layout test` passed.
+- `bun test ./packages/plite-react/test/dom-repair-policy-contract.ts` passed.
+- `bun test ./packages/plite-react/test/dom-text-sync-contract.ts` passed.
+- `cd packages/plite-react && bun test:vitest test/input-router-contract.test.tsx` passed.
+- `cd packages/plite-react && bun test:vitest test/dom-strategy-and-scroll.test.tsx` passed.
 - `bun lint:fix` passed.
 
 Final handoff contract:
@@ -227,8 +227,8 @@ Final handoff contract:
   with bounded mounted pages/DOM.
 - Caveat: no full integration sweep, no mobile/IME proof, no production RUM.
 - Design:
-  - Chosen boundary: layout cache/decorations in `slate-layout`, native
-    input/DOM sync repair in `slate-react`, and route-level active-flow wiring
+  - Chosen boundary: layout cache/decorations in `plite-layout`, native
+    input/DOM sync repair in `plite-react`, and route-level active-flow wiring
     in the pagination example.
   - Why not quick patch: fake stress fixtures or disabling layout would hide
     the actual virtualized editor behavior.

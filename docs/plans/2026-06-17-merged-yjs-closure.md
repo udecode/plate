@@ -72,7 +72,7 @@ Constraints:
 - Closure target is already-landed/current-tree/branch work; do not expand into
   broad quality/perf/research unless a row routes to `auto`.
 - Patch safe findings; route public API/runtime/product forks to
-  `slate-plan`, `plate-plan`, or `major-task`.
+  `plite-plan`, `plate-plan`, or `major-task`.
 - Do not commit, push, open PRs, merge, release, publish, or mutate public
   GitHub unless explicitly authorized.
 - Do not call stale, speculative, or out-of-scope review findings accepted.
@@ -130,7 +130,7 @@ Start Gates:
 | `vision` / root `VISION.md` read | yes | read `VISION.md`, `docs/vision/common.md`, `docs/vision/slate.md`, `docs/vision/plate.md` |
 | `.agents/AGENTS.md` routing read | yes | read `.agents/AGENTS.md` |
 | Active goal checked or created | yes | created goal `Close merged Yjs work until no accepted actionable closure findings remain; plan docs/plans/2026-06-17-merged-yjs-closure.md.` |
-| Target kind resolved | yes | commit target `34cf20ab64` found from Yjs history; current `slate-v2` branch does not contain it |
+| Target kind resolved | yes | commit target `34cf20ab64` found from Yjs history; current `plite` branch does not contain it |
 | Base/comparison resolved or marked N/A | yes | use `34cf20ab64^..34cf20ab64`; old detached worktree proof is invalid for current-checkout closure |
 | Output budget strategy recorded | yes | use capped `git`/`rg` output, write large findings to plan/artifacts, avoid streaming huge diffs |
 | Public authority boundary recorded | yes | no commit/push/PR/release/publish/merge/public mutation without explicit authority |
@@ -149,7 +149,7 @@ Work Checklist:
       scope, or N/A with reason.
 - [x] Coherence audit checks stale dirty fixes, fake aliases, docs/API mismatch,
       orphan tests, stale generated output, weak proof commands, and
-      Slate-vs-Plate boundary drift.
+      Plite-vs-Plate boundary drift.
 - [x] Focused proof is run for each changed behavior/API/docs/generated surface,
       or marked N/A with reason.
 - [x] `autoreview` target mode is selected from actual target state.
@@ -161,7 +161,7 @@ Work Checklist:
 - [x] `architecture-cleanup` is invoked when review/coherence finds source-shape,
       deslop, over-split, fake-wrapper, or agent-navigation issues, or marked
       N/A with reason: no source-shape/deslop finding, only lifecycle/status/docs closure.
-- [x] Public API/runtime/product forks are routed to `slate-plan`, `plate-plan`,
+- [x] Public API/runtime/product forks are routed to `plite-plan`, `plate-plan`,
       `major-task`, or owner, not patched blindly.
 - [x] Generated outputs are synced when source owners require it, or marked N/A.
 - [x] Browser proof is run for browser-visible app/docs/package behavior, or
@@ -234,7 +234,7 @@ Findings ledger:
 Proof ledger:
 | Surface | Command / audit | Cwd | Result | Follow-up |
 |---------|-----------------|-----|--------|-----------|
-| target isolation | `git branch --show-current`; `git log --grep=yjs`; `git branch --all --contains 34cf20ab64`; `git merge-base --is-ancestor 34cf20ab64 HEAD` | `/Users/zbeyens/git/plate-2` | target commit found on `origin/main`/`origin/next`, not current `slate-v2` branch | should have captured/applied diff in current checkout, not created a worktree |
+| target isolation | `git branch --show-current`; `git log --grep=yjs`; `git branch --all --contains 34cf20ab64`; `git merge-base --is-ancestor 34cf20ab64 HEAD` | `/Users/zbeyens/git/plate-2` | target commit found on `origin/main`/`origin/next`, not current `plite` branch | should have captured/applied diff in current checkout, not created a worktree |
 | invalid worktree step | `git worktree add --detach ../plate-2-yjs-autoclosure 34cf20ab64` | `/Users/zbeyens/git/plate-2` | worktree created at target commit | invalid autoclosure methodology; do not repeat |
 | dependencies | `pnpm install` | `/Users/zbeyens/git/plate-2-yjs-autoclosure` | pass | generated no tracked diff |
 | package tests | `pnpm --filter @platejs/yjs test` | `/Users/zbeyens/git/plate-2-yjs-autoclosure` | final pass: 52 pass, 0 fail | kept lifecycle/status regressions |
@@ -269,7 +269,7 @@ Changed list:
 Needs your attention:
 | Rank | Item | Why | Anchor | Recommendation |
 |------|------|-----|--------|----------------|
-| 1 | Fix lived in a detached Yjs worktree, not the current checkout | `34cf20ab64` is not an ancestor of current `slate-v2`; current root did not contain the patched files | old detached worktree path | do not commit from the worktree; capture/apply the diff into the intended current checkout and prove there |
+| 1 | Fix lived in a detached Yjs worktree, not the current checkout | `34cf20ab64` is not an ancestor of current `plite`; current root did not contain the patched files | old detached worktree path | do not commit from the worktree; capture/apply the diff into the intended current checkout and prove there |
 | 2 | Manual local persistence now hydrates during `init` even when `autoConnect: false` | This is the correct anti-corruption behavior, but it is a public lifecycle semantic worth knowing | `packages/yjs/src/lib/BaseYjsPlugin.ts` | keep; docs updated to explain network providers still remain manual |
 | 3 | Direct `pnpm --filter @platejs/yjs typecheck` failed before source graph was included | It resolves missing `platejs` declarations without the filtered `platejs` graph | proof ledger typecheck rows | use `pnpm turbo typecheck --filter=./packages/yjs --filter=./packages/plate` for this branch shape |
 
@@ -277,7 +277,7 @@ Stopping checkpoints:
 | Id | Question / decision | Why it matters | Continued work | Recommendation | Anchor |
 |----|---------------------|----------------|----------------|----------------|--------|
 | S1 | Should the old Yjs diff be reopened? | Autoclosure found likely real Yjs bugs, but proof was invalid for current-checkout closure | capture/apply the diff in the real checkout only if reopened | use current-checkout apply/proof, not worktree commit | old detached diff |
-| S2 | Which current checkout/branch should receive the Yjs diff if reopened? | Current `slate-v2` branch did not contain the Yjs merge at the time | no further mutation without explicit current-checkout target | choose target branch, then apply/prove there | `git branch --all --contains 34cf20ab64` |
+| S2 | Which current checkout/branch should receive the Yjs diff if reopened? | Current `plite` branch did not contain the Yjs merge at the time | no further mutation without explicit current-checkout target | choose target branch, then apply/prove there | `git branch --all --contains 34cf20ab64` |
 
 Findings:
 - Accepted autoreview findings fixed: premature fallback seed before IndexedDB hydration, dropped initial content for empty manual local persistence, and local persistence leaking global connected/synced status in mixed provider setups.
@@ -333,7 +333,7 @@ Reboot status:
 
 Timeline:
 - 2026-06-17T11:31:43.041Z Goal plan created.
-- 2026-06-17 Autoclosure target resolved to `34cf20ab64`, not current `slate-v2` branch.
+- 2026-06-17 Autoclosure target resolved to `34cf20ab64`, not current `plite` branch.
 - 2026-06-17 Detached proof worktree created at `/Users/zbeyens/git/plate-2-yjs-autoclosure`; this is now marked invalid methodology.
 - 2026-06-17 Initial proof and autoreview found manual IndexedDB fallback corruption.
 - 2026-06-17 Lifecycle/status/docs fixes applied and verified.

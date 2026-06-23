@@ -30,7 +30,7 @@ Verification surface:
 Constraints:
 - Do not patch skill topology yet; this checkpoint is analysis and flow design only.
 - Do not let CE command skills replace auto, task, autogoal, autoreview, maintainer, or autoclosure.
-- Prefer local forks only when CE content is useful but generic behavior conflicts with Plate/Slate rules.
+- Prefer local forks only when CE content is useful but generic behavior conflicts with Plate/Plite rules.
 - Keep generated mirrors untouched.
 
 Boundaries:
@@ -122,7 +122,7 @@ Findings:
 Decisions and tradeoffs:
 - Decision: keep local leaf lenses only when they have a distinct proof/review/research owner. Reason: avoids command sprawl. Risk: fewer remembered command names, but auto/task routing stays clean.
 - Decision: fork relevant CE command ideas into existing local owners. Reason: CE command assumptions conflict with Plate git, worktree, PR, Browser, and goal rules. Risk: requires a later cleanup pass to remove stale locked entries.
-- Decision: remove/reject CE domain-specific skills for Rails, iOS, Slack, Figma, Proof, plugin setup/update, and product-pulse workflows. Reason: wrong repo shape unless explicitly requested. Risk: none for Plate/Slate.
+- Decision: remove/reject CE domain-specific skills for Rails, iOS, Slack, Figma, Proof, plugin setup/update, and product-pulse workflows. Reason: wrong repo shape unless explicitly requested. Risk: none for Plate/Plite.
 
 # CE Skill Boundary Matrix
 
@@ -153,7 +153,7 @@ Decision counts: fork=29, remove=32, keep-local=21.
 | ✅ | `ce-optimize` | fork | Metric loop ideas belong in auto/slate-ar/benchmarks; standalone optimizer overlaps autogoal. |
 | ✅ | `ce-plan` | remove | Conflicts with major-task, slate-plan, plate-plan, and autogoal templates. |
 | ✅ | `ce-polish` | fork | Browser polish loop can feed autoclosure/Browser proof, but not a remembered command. |
-| ✅ | `ce-product-pulse` | remove | Product analytics pulse is not current Plate/Slate repo work. |
+| ✅ | `ce-product-pulse` | remove | Product analytics pulse is not current Plate/Plite repo work. |
 | ✅ | `ce-promote` | remove | Marketing/promotion copy is out of scope for repo maintenance. |
 | ✅ | `ce-proof` | remove | External Proof editor workflow is not part of our docs/review system. |
 | ✅ | `ce-release-notes` | remove | Plugin-specific release-note query; not relevant to Plate release lanes. |
@@ -162,7 +162,7 @@ Decision counts: fork=29, remove=32, keep-local=21.
 | ✅ | `ce-riffrec-feedback-analysis` | remove | Product-specific bundle workflow; no current Plate need. |
 | ✅ | `ce-sessions` | fork | Prior-session search idea belongs in memory/learnings, not a CE session command. |
 | ✅ | `ce-setup` | remove | Compound plugin setup diagnostics are irrelevant inside Plate. |
-| ✅ | `ce-simplify-code` | fork | Good deslop concept; architecture-cleanup owns this with Plate/Slate boundaries. |
+| ✅ | `ce-simplify-code` | fork | Good deslop concept; architecture-cleanup owns this with Plate/Plite boundaries. |
 | ✅ | `ce-slack-research` | remove | No Slack connector workflow in this repo; ask explicitly if needed. |
 | ✅ | `ce-strategy` | fork | Strategy-doctrine idea maps to VISION.md/sync-vision, not STRATEGY.md. |
 | ✅ | `ce-test-browser` | fork | Browser test ideas matter, but dev-browser/testing/@platejs/browser own proof. |
@@ -221,7 +221,7 @@ Decision counts: fork=29, remove=32, keep-local=21.
 | ✅ | `ce-web-researcher` | fork | Structured web research belongs in slate-research/best-practices, not standalone CE. |
 
 ## Recommended Flow
-- `auto` stays the only ergonomic Plate/Slate supervisor front door.
+- `auto` stays the only ergonomic Plate/Plite supervisor front door.
 - `task` stays the normal one-shot execution skill.
 - `autogoal` stays lifecycle only; no CE command should wrap or replace it.
 - `autoreview` stays the only structured code-review closeout path.

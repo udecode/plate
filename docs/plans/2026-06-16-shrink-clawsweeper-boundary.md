@@ -1,7 +1,7 @@
 # Shrink ClawSweeper Boundary
 
 Objective:
-Shrink ClawSweeper to Slate issue-ledger provenance and claim hygiene, and add
+Shrink ClawSweeper to Plite issue-ledger provenance and claim hygiene, and add
 ClawSweeper autogoal template coverage so the narrower boundary remains usable.
 
 Goal plan:
@@ -17,7 +17,7 @@ Applied packs:
 - agent-native (docs/plans/templates/packs/agent-native.md)
 
 Expectation:
-- user expectation: `clawsweeper` should only own Slate issue-ledger,
+- user expectation: `clawsweeper` should only own Plite issue-ledger,
   provenance, and claim hygiene now that `maintainer` exists.
 - observed miss: `clawsweeper` still describes small-fix sweeps and work
   candidate routing in a way that can read like general issue orchestration.
@@ -28,7 +28,7 @@ Expectation:
 First checkpoint:
 - [x] Scope: shrink `clawsweeper`.
 - [x] Boundary: `maintainer` owns public issue/PR/security queue orchestration.
-- [x] Remaining `clawsweeper` owner: Slate issue-ledger, provenance, duplicate,
+- [x] Remaining `clawsweeper` owner: Plite issue-ledger, provenance, duplicate,
   stale, invalid, claim hygiene, fork dossier, and subordinate external issue
   provenance.
 - [x] Condition: only acceptable if covered by an autogoal template.
@@ -80,7 +80,7 @@ Boundaries:
 - Allowed edit scope: `.agents/rules/clawsweeper.mdc`,
   `docs/plans/templates/clawsweeper.md`, `.agents/AGENTS.md` if routing needs
   sharper wording, generated mirrors from `pnpm install`, and this plan.
-- Derived skill scope: `clawsweeper` only owns Slate issue-ledger provenance,
+- Derived skill scope: `clawsweeper` only owns Plite issue-ledger provenance,
   duplicate/stale/invalid classification, exact claim hygiene, fork dossier
   accounting, gitcrawl archive refresh, and subordinate external issue
   provenance.
@@ -193,7 +193,7 @@ Findings:
 
 Decisions and tradeoffs:
 - Keep `maintainer` as the public queue control plane.
-- Keep `clawsweeper` as the Slate issue-ledger/provenance/claim-hygiene owner.
+- Keep `clawsweeper` as the Plite issue-ledger/provenance/claim-hygiene owner.
 - Do not move ClawSweeper evidence bars into generic `autogoal`; they are
   lane-specific.
 
@@ -235,7 +235,7 @@ Verification evidence:
 - Final `check-complete` passed for this repair plan.
 
 Final repair handoff:
-- Expectation: ClawSweeper only owns Slate issue-ledger/provenance/claim hygiene
+- Expectation: ClawSweeper only owns Plite issue-ledger/provenance/claim hygiene
   now that `maintainer` exists.
 - Repaired owner: `.agents/rules/clawsweeper.mdc` plus
   `docs/plans/templates/clawsweeper.md`.

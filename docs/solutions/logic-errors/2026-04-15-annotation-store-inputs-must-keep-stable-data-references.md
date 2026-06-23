@@ -1,5 +1,5 @@
 ---
-module: slate-v2
+module: plite
 date: 2026-04-15
 last_updated: 2026-04-27
 problem_type: logic_error
@@ -11,7 +11,7 @@ symptoms:
   - External editor controls lose focus when store inputs are recreated.
   - Annotation or projection refreshes can cascade into avoidable rerenders.
 tags:
-  - slate-v2
+  - plite
   - annotations
   - projections
   - widgets
@@ -30,7 +30,7 @@ The new `review-comments` example loaded the editor route, then blew up with
 
 The failure looked like a generic React loop at first, but the real cause was
 more specific: the example rebuilt fresh annotation payload objects on every
-render and fed them straight into `useSlateAnnotationStore(...)`.
+render and fed them straight into `usePliteAnnotationStore(...)`.
 
 ## What fixed it
 
@@ -40,7 +40,7 @@ reference identity across renders.
 Bad:
 
 ```tsx
-const annotationStore = useSlateAnnotationStore(
+const annotationStore = usePliteAnnotationStore(
   editor,
   comments.map((comment) => ({
     id: comment.id,
@@ -67,12 +67,12 @@ const annotations = useMemo(
   [comments]
 );
 
-const annotationStore = useSlateAnnotationStore(editor, annotations);
+const annotationStore = usePliteAnnotationStore(editor, annotations);
 ```
 
 ## Why This Works
 
-`createSlateAnnotationStore(...)` treats annotation snapshots as unchanged only
+`createPliteAnnotationStore(...)` treats annotation snapshots as unchanged only
 when the bookmark, resolved range, and `data` object keep stable identity.
 
 If you create a fresh `data` object every render, the hook refreshes the store
@@ -81,7 +81,7 @@ loop.
 
 ## Reusable rule
 
-When feeding `useSlateAnnotationStore(...)`:
+When feeding `usePliteAnnotationStore(...)`:
 
 - memoize the annotation array
 - keep `data` references stable for unchanged items
@@ -97,7 +97,7 @@ The same rule bit `/examples/search-highlighting`: the search input updated
 decorations correctly, but if the editor had focus first, typing the first
 letter moved focus back to the editor.
 
-The cause was rebuilding `createSlateProjectionStore(...)` from React search
+The cause was rebuilding `createPliteProjectionStore(...)` from React search
 state. Changing the input changed state, state recreated the projection store,
 and the editor remount path restored the previous editor focus.
 
@@ -108,7 +108,7 @@ const [search, setSearch] = useState('')
 
 const projectionStore = useMemo(
   () =>
-    createSlateProjectionStore(
+    createPliteProjectionStore(
       editor,
       (snapshot) => collectSearchProjections(snapshot.children, search),
       { dirtiness: ['text', 'external'], sourceId: 'search-highlighting' }
@@ -124,7 +124,7 @@ const searchRef = useRef('')
 
 const projectionStore = useMemo(
   () =>
-    createSlateProjectionStore(
+    createPliteProjectionStore(
       editor,
       (snapshot) =>
         collectSearchProjections(snapshot.children, searchRef.current),

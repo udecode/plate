@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Deeper wrapper stacks still fit the current model when stripping prefixes exposes proved inner geometry
 tags:
-  - slate-v2
+  - plite
   - wrapper-stack
   - geometry
   - browser-proof

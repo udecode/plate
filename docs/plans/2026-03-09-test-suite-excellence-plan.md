@@ -13,30 +13,30 @@ status: active
 - No Playwright or browser coverage in this program.
 - Use coverage as hotspot telemetry, not as a repo-wide KPI.
 - Phase order:
-  1. `@platejs/slate`
+  1. `@platejs/plite`
   2. `@platejs/utils`, `@udecode/react-utils`, `@udecode/utils`
   3. `@platejs/core`
   4. High-ROI remaining packages
   5. Everything else only when it has real logic
 
-## Phase 1: `@platejs/slate`
+## Phase 1: `@platejs/plite`
 
 - Focus on pure editor/query/transform behavior first.
 - Add runtime coverage for editor navigation, selection math, structural queries, transform edge cases, extension transforms, and `createEditor` legacy sync.
-- Add a small compile-only type lane for public `@platejs/slate` contracts.
+- Add a small compile-only type lane for public `@platejs/plite` contracts.
 
 ### Upstream `Plate repo root` scan
 
-- `[ ]` `slate-react/test/chunking.spec.ts`: save chunk/index-stability ideas for `@platejs/core`
-- `[x]` `slate-react/test/decorations.spec.tsx`: adapt later in `@platejs/core`
-- `[x]` `slate-react/test/editable.spec.tsx`: keep change-callback partitioning ideas for `@platejs/core`
-- `[ ]` `slate-react/test/react-editor.spec.tsx`: skip unless a Plate DOM bug forces it
-- `[x]` `slate-react/test/use-selected.spec.tsx`: adapt later in `@platejs/core`
-- `[x]` `slate-react/test/use-slate-selector.spec.tsx`: reuse in utility and core selector tests
-- `[x]` `slate-react/test/use-slate.spec.tsx`: adapt later in `@platejs/core`
+- `[ ]` `plite-react/test/chunking.spec.ts`: save chunk/index-stability ideas for `@platejs/core`
+- `[x]` `plite-react/test/decorations.spec.tsx`: adapt later in `@platejs/core`
+- `[x]` `plite-react/test/editable.spec.tsx`: keep change-callback partitioning ideas for `@platejs/core`
+- `[ ]` `plite-react/test/react-editor.spec.tsx`: skip unless a Plate DOM bug forces it
+- `[x]` `plite-react/test/use-selected.spec.tsx`: adapt later in `@platejs/core`
+- `[x]` `plite-react/test/use-slate-selector.spec.tsx`: reuse in utility and core selector tests
+- `[x]` `plite-react/test/use-slate.spec.tsx`: adapt later in `@platejs/core`
 - `[ ]` `playwright/integration/examples/*`: explicitly out
 
-# Full Test Suite Plan After Slate Phase 1
+# Full Test Suite Plan After Plite Phase 1
 
 ## Summary
 
@@ -50,7 +50,7 @@ status: active
 ### Phase 2: utility ring
 
 - `@platejs/utils` stays runtime-first. Cover `ExitBreakPlugin`, selection hooks, `useSelectionFragment`, `useEditorString`, `useMarkToolbarButton`, `useRemoveNodeButton`, and only the real branchy parts of `BlockPlaceholderPlugin`.
-- Use `createSlateEditor` for plugin behavior and selector-backed hook state. Use rendered React tests only for hook props, click handlers, and placeholder rerender semantics.
+- Use `createPliteEditor` for plugin behavior and selector-backed hook state. Use rendered React tests only for hook props, click handlers, and placeholder rerender semantics.
 - Do not add utility type-tests by default. Only add them if a utility exposes a brittle public generic contract during implementation.
 - `@udecode/react-utils` gets direct behavior tests for `createPrimitiveComponent`, `createPrimitiveElement`, `createSlotComponent`, `useEffectOnce`, `useOnClickOutside`, `useStableFn`, `useStableMemo`, `withRef`, and `PortalBody`.
 - Skip thin wrapper vanity tests for `Box`, `Text`, or `MemoizedChildren` unless a real branch or regression shows up.
@@ -60,10 +60,10 @@ status: active
 ### Phase 3: `@platejs/core`
 
 - Make this the first-class compile-only type phase.
-- Expand `packages/core/type-tests` into multiple focused fixtures covering `createSlatePlugin`, `createTSlatePlugin`, `createPlatePlugin`, `createPlateEditor`, `withSlate`, `withPlate`, plugin API merging, option merging, and editor or plugin inference.
+- Expand `packages/core/type-tests` into multiple focused fixtures covering `createPlitePlugin`, `createTSlatePlugin`, `createPlatePlugin`, `createPlateEditor`, `withPlite`, `withPlate`, plugin API merging, option merging, and editor or plugin inference.
 - Keep type fixtures compile-only with both positive assertions and `@ts-expect-error` negatives. Do not mix these checks into Bun runtime specs.
 - Deepen runtime coverage around plugin resolution, store behavior, selector equality, rerender semantics, plugin conversion boundaries, override rules, HTML or static behavior, node-id, and affinity.
-- Mine `packages/slate-react/test` by invariant, not by file copy:
+- Mine `packages/plite-react/test` by invariant, not by file copy:
   - `use-slate-selector` for equality and stale-rerender prevention
   - `use-slate` for editor version and subscription behavior
   - `use-selected` for selection rerender and path stability
@@ -96,8 +96,8 @@ status: active
 - `bun test` remains the default workflow and must stay fast enough to not punish local use. Treat runtime growth as a constraint, not an afterthought.
 - After each phase, use coverage only to pick the next hotspot. For package truth, prefer `lcov` or package-scoped coverage output over Bun’s broad summary.
 - Each phase is done only when the new tests prove public behavior through the smallest honest seam:
-  - `createEditor` for pure Slate behavior
-  - `createSlateEditor` for non-React plugin or editor wiring
+  - `createEditor` for pure Plite behavior
+  - `createPliteEditor` for non-React plugin or editor wiring
   - `createPlateEditor` only for reviewed Plate-specific boundaries
 - Each package pass must end with targeted Bun specs and the normal package verification path: build, typecheck, and lint for touched packages.
 - `pnpm test:types` must stay green, and phase 3 expands it materially for core. Phase 2 only adds type-tests if a utility contract proves worth the cost.

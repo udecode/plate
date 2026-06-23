@@ -21,12 +21,12 @@ Use TDD for every new spec group. Keep this file as the live record for status, 
 
 ## Findings
 
-- Phase 2 package surfaces are still sparse compared to `@platejs/slate`:
+- Phase 2 package surfaces are still sparse compared to `@platejs/plite`:
   - `@platejs/utils`: 5 specs / 26 source files
   - `@udecode/react-utils`: 4 specs / 18 source files
   - `@udecode/utils`: 6 specs / 17 source files
 - `@platejs/core` already has a much wider runtime base plus one compile-only type fixture, so deferring core until after the utility ring still makes sense.
-- The shared upstream `slate-react` invariant that cleanly maps into phase 2 is `use-slate-selector`; the rest are phase-3 core material.
+- The shared upstream `plite-react` invariant that cleanly maps into phase 2 is `use-slate-selector`; the rest are phase-3 core material.
 - `@platejs/utils` has real untested behavior in `ExitBreakPlugin`, selection hooks, fragment hooks, toolbar/remove hooks, and `BlockPlaceholderPlugin`.
 - `@udecode/react-utils` has several branchy runtime helpers with no direct specs yet: primitive factories, `useEffectOnce`, `useOnClickOutside`, `useStableFn`, `useStableMemo`, `PortalBody`, and `withRef`.
 - `@udecode/utils` mostly needs branch completion plus direct coverage for `findHtmlParentElement`.

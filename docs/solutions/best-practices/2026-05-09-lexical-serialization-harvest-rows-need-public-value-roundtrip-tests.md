@@ -2,16 +2,16 @@
 title: Lexical serialization harvest rows need public value roundtrip tests
 date: 2026-05-09
 category: docs/solutions/best-practices
-module: slate-v2 lexical harvest
+module: plite lexical harvest
 problem_type: best_practice
 component: testing_framework
 symptoms:
   - Lexical serialization tests expose huge editor-state JSON snapshots.
-  - Directly copying the fixture would lock Slate to Lexical schema details.
+  - Directly copying the fixture would lock Plite to Lexical schema details.
 root_cause: wrong_api
 resolution_type: test_fix
 severity: low
-tags: [slate-v2, lexical-harvest, serialization, json, testing]
+tags: [plite, lexical-harvest, serialization, json, testing]
 ---
 
 # Lexical serialization harvest rows need public value roundtrip tests
@@ -20,7 +20,7 @@ tags: [slate-v2, lexical-harvest, serialization, json, testing]
 
 Lexical serialization unit tests can look portable because they use JSON
 round-tripping, but the fixture mostly asserts Lexical's editor-state schema.
-For Slate v2, the useful invariant is narrower: raw document values must be
+For Plite, the useful invariant is narrower: raw document values must be
 JSON-portable through the public state API.
 
 ## Symptoms
@@ -28,17 +28,17 @@ JSON-portable through the public state API.
 - The source test is a large exact JSON snapshot of Lexical nodes.
 - The snapshot includes node versions, node keys, parser shape, table metadata,
   and class-specific fields.
-- Porting the whole fixture would make Slate tests verify the wrong framework.
+- Porting the whole fixture would make Plite tests verify the wrong framework.
 
 ## What Didn't Work
 
 - Treating Lexical editor-state JSON as a generic editor serialization contract.
-- Looking for a matching Slate parser API instead of first isolating the raw
+- Looking for a matching Plite parser API instead of first isolating the raw
   document-value behavior.
 
 ## Solution
 
-Add a compact public API test that serializes only Slate document values:
+Add a compact public API test that serializes only Plite document values:
 
 ```ts
 const serialized = JSON.stringify(value);
@@ -65,10 +65,10 @@ assert.equal(JSON.stringify(exported).includes("idToPath"), false);
 
 ## Why This Works
 
-Slate's public document value is the portable contract. Runtime IDs, indexes,
+Plite's public document value is the portable contract. Runtime IDs, indexes,
 commit metadata, parser APIs, and node class schemas belong to other owners or
 stay framework-specific. The test proves the behavior applications rely on
-without pretending Slate should serialize like Lexical.
+without pretending Plite should serialize like Lexical.
 
 ## Prevention
 
@@ -82,4 +82,4 @@ without pretending Slate should serialize like Lexical.
 ## Related Issues
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalSerialization.test.ts`
-- `packages/slate/test/state-tx-public-api-contract.ts`
+- `packages/plite/test/state-tx-public-api-contract.ts`

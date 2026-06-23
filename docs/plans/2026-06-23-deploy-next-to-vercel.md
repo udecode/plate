@@ -45,7 +45,7 @@ Work Checklist:
 - [x] Captured the explicit deploy requirement and final `READY` stop condition.
 - [x] Reproduced the existing failing Vercel class locally with `pnpm turbo build --filter=./apps/www`.
 - [x] Fixed source files required by the app production build instead of generated registry JSON.
-- [x] Added focused runtime coverage for `runtime: 'slate-v2'` root `override.enabled`.
+- [x] Added focused runtime coverage for `runtime: 'plite'` root `override.enabled`.
 - [x] Ran focused unit proof and core typecheck.
 - [x] Ran the deploy-equivalent `apps/www` production build to completion.
 - [x] Restored generated registry build output before staging.
@@ -62,7 +62,7 @@ Completion Gates:
 | Package manifests or install graph changed | no | No manifest or lockfile edit. |
 | Browser surface changed | yes | `pnpm turbo build --filter=./apps/www` generated all 1,045 static pages; Vercel status remains final proof. |
 | CI-controlled output changed | yes | `apps/www/public/r/**` build churn restored before commit. |
-| Package behavior or public API changed | yes | Runtime `createPlateEditor({ runtime: 'slate-v2', override })` support repaired as existing Plate API compatibility; no changeset for deploy fix. |
+| Package behavior or public API changed | yes | Runtime `createPlateEditor({ runtime: 'plite', override })` support repaired as existing Plate API compatibility; no changeset for deploy fix. |
 | High-risk mini gate | yes | Runtime option acceptance changed; risk is accidental acceptance of unsupported root APIs. Guard still rejects `api`, `editor`, `extendEditor`, `normalizeInitialValue`, `priority`, and `skipInitialization`. |
 | Autoreview for non-trivial implementation | no | Deploy emergency path; focused tests and Vercel proof are required. |
 | PR create or update | no | Direct push to `next`; no PR requested. |
@@ -75,21 +75,21 @@ Phase / pass table:
 | Intake and source read | complete | Read Vercel failure and local source owners | implementation |
 | Implementation | complete | Patched runtime option plumbing, table static preview guards, and focused test | verification |
 | Verification | complete | Focused test, core typecheck, and app production build passed | push |
-| Push / deploy | waiting | Commit and Vercel watch still required | closeout |
-| Closeout | waiting | Requires Vercel `READY` and autogoal check | final response |
+| Push / deploy | complete | Commit `5315571196b7b57064f58191512bcbf50403bc44` pushed to `origin/next`; Vercel deployment `dpl_4G797KVCxfzRQ3vH2zHgVCFKuHpf` reached `READY` | closeout |
+| Closeout | complete | Deployed URL and branch alias returned HTTP 200 for `/docs/plite` | final response |
 
 Findings:
-- Vercel failed because the pushed `next` commit did not include source files required by the Slate/Plate runtime migration.
+- Vercel failed because the pushed `next` commit did not include source files required by the Plite/Plate runtime migration.
 - Local app build then exposed two static-render blockers: table preview code assumed `colSizes` existed, and runtime `createPlateEditor` rejected the existing root `override` option used by `/blocks/playground`.
 
 Decisions and tradeoffs:
 - Keep registry JSON out of the commit path because `apps/www` regenerates it during build.
-- Support root `override` on the Slate runtime route because the runtime resolver already owns plugin/component/enabled overrides; the unsupported guard was stale.
+- Support root `override` on the Plite runtime route because the runtime resolver already owns plugin/component/enabled overrides; the unsupported guard was stale.
 - Keep unsupported root API mutations rejected to avoid pretending full legacy root mutation parity exists.
 
 Implementation notes:
 - `TableElement` and `useTableResizeController` normalize missing `useTableColSizes()` to `[]`.
-- `createPlateEditor({ runtime: 'slate-v2' })` now accepts `override` and merges root `components` in the same order as legacy Plate.
+- `createPlateEditor({ runtime: 'plite' })` now accepts `override` and merges root `components` in the same order as legacy Plate.
 - Added a focused test for runtime root enabled overrides.
 
 Review fixes:
@@ -106,10 +106,14 @@ Verification evidence:
 - `bun test packages/core/src/react/editor/createPlateRuntimeEditor.spec.ts --test-name-pattern "root .* overrides"`: 2 pass, 0 fail.
 - `pnpm turbo typecheck --filter=./packages/core`: passed.
 - `pnpm turbo build --filter=./apps/www`: passed; 59 tasks successful; 1,045 static pages generated.
+- `git push origin next`: pushed commit `5315571196b7b57064f58191512bcbf50403bc44`.
+- Vercel deployment `dpl_4G797KVCxfzRQ3vH2zHgVCFKuHpf`: `READY`.
+- `curl -I https://plate-o42jxd090-udecode.vercel.app/docs/plite`: HTTP 200.
+- `curl -I https://plate-git-next-udecode.vercel.app/docs/plite`: HTTP 200.
 - Known warning: Turbopack NFT trace warning from `apps/www/next.config.ts` through `rehype-utils.ts` to `api/registry-source/[name]/route.ts`; not a build failure.
 
 Reboot status:
-Current thread should continue by staging the source checkout, committing, pushing `origin/next`, polling Vercel project `plate`, and closing only after the latest `next` deployment is `READY`.
+Complete. Current thread can hand off the deployed `next` URL and proof.
 
 Open risks:
 - `pnpm --filter www typecheck` was not the deploy gate and has broader Plate runtime migration debt; do not claim it passed.

@@ -17,7 +17,7 @@ severity: medium
 
 ## What happened
 
-Legacy Slate React carried a dedicated `restore-dom` family that:
+Legacy Plite React carried a dedicated `restore-dom` family that:
 
 - buffered DOM mutations during user input
 - restored added/removed DOM nodes before React commit

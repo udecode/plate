@@ -8,7 +8,7 @@ $1$ this is good
 $$1$$
 one
 
-Produce $$changeset$$-ready perf numbers comparing plate-2 vs ../plate, split into nodeId and non-nodeId wins, plus current[^3] metrics vs Slate[^1] pko
+Produce $$changeset$$-ready perf numbers comparing plate-2 vs ../plate, split into nodeId and non-nodeId wins, plus current[^3] metrics vs Plite[^1] pko
 
 
 

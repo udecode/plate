@@ -2,7 +2,7 @@
 title: React Scan should stay an opt-in dev microscope, not a benchmark gate
 date: 2026-04-11
 category: docs/solutions/performance-issues
-module: Slate v2 React runtime
+module: Plite React runtime
 problem_type: performance_issue
 component: frontend_stimulus
 symptoms:
@@ -13,7 +13,7 @@ root_cause: inadequate_documentation
 resolution_type: process_improvement
 severity: medium
 tags:
-  - slate-v2
+  - plite
   - slate-react
   - performance
   - huge-document
@@ -53,7 +53,7 @@ Use `react-scan` only as an opt-in local profiler in the `site` app.
 
 Kept integration:
 
-- [site/pages/_app.tsx](/Users/zbeyens/git/slate-v2/site/pages/_app.tsx)
+- [site/pages/_app.tsx](/Users/zbeyens/git/plite/site/pages/_app.tsx)
   checks for `?reactScan=1`
 - when present in development, it injects the official loader:
   `https://unpkg.com/react-scan/dist/auto.global.js`
@@ -91,6 +91,6 @@ That makes it a microscope, not the judge.
 
 ## Related Issues
 
-- [2026-04-11-slate-v2-proof-first-large-document-layer-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-slate-v2-proof-first-large-document-layer-plan.md)
-- [2026-04-11-slate-v2-rerender-breadth-batch.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-slate-v2-rerender-breadth-batch.md)
-- [2026-04-11-slate-react-rerender-breadth-is-mostly-local-and-useSlate-is-the-only-broad-hook-left.md](/Users/zbeyens/git/plate-2/docs/solutions/performance-issues/2026-04-11-slate-react-rerender-breadth-is-mostly-local-and-useSlate-is-the-only-broad-hook-left.md)
+- [2026-04-11-plite-proof-first-large-document-layer-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-plite-proof-first-large-document-layer-plan.md)
+- [2026-04-11-plite-rerender-breadth-batch.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-plite-rerender-breadth-batch.md)
+- [2026-04-11-slate-react-rerender-breadth-is-mostly-local-and-usePlite-is-the-only-broad-hook-left.md](/Users/zbeyens/git/plate-2/docs/solutions/performance-issues/2026-04-11-slate-react-rerender-breadth-is-mostly-local-and-usePlite-is-the-only-broad-hook-left.md)

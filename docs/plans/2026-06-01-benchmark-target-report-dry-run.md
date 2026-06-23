@@ -29,7 +29,7 @@ Completion threshold:
 - `pnpm bench:targets:report` writes target-owned report/history files.
 - `pnpm bench:targets:report:check` verifies those generated files are current.
 - `pnpm bench:targets:dry-run -- react-active-typing-breakdown` validates registry -> report model -> Autoresearch setup-plan without running expensive benchmarks.
-- `slate-autoresearch` generated skill text advertises report/dry-run flow.
+- `plite-autoresearch` generated skill text advertises report/dry-run flow.
 - Syntax, JSON, generated-skill, diff, and goal-plan checks pass.
 
 Verification surface:
@@ -39,7 +39,7 @@ Verification surface:
 - command: `pnpm bench:targets:report:dry-run`
 - command: `pnpm bench:targets:dry-run -- react-active-typing-breakdown`
 - command: `node --check tooling/scripts/bench-targets.mjs`
-- command: JSON parse for `package.json`, `benchmarks/targets/slate-v2.json`, and `benchmarks/targets/history/slate-v2-latest.json`
+- command: JSON parse for `package.json`, `benchmarks/targets/plite.json`, and `benchmarks/targets/history/plite-latest.json`
 - source-audit: generated skill and README mention report/dry-run commands
 - command: `git diff --check`
 - command: `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-01-benchmark-target-report-dry-run.md`
@@ -51,7 +51,7 @@ Constraints:
 - Do not commit, push, or PR.
 
 Boundaries:
-- Source of truth: target registry from `benchmarks/targets/slate-v2.json` and the prior migration plan.
+- Source of truth: target registry from `benchmarks/targets/plite.json` and the prior migration plan.
 - Allowed edit scope: `tooling/scripts/bench-targets.mjs`, `package.json`, `benchmarks/targets/**`, `.agents/rules/slate-autoresearch.mdc`, generated skill mirrors, this plan.
 - Browser surface: N/A, no UI changed.
 - Tracker sync: N/A.
@@ -104,7 +104,7 @@ Start Gates:
 | Docs style doctrine read | yes | Current-state docs style applied; no changelog voice. |
 | Documented source owner identified | yes | `benchmarks/targets/README.md` documents target report/history ownership. |
 | Agent-native pack selected | yes | Package scripts and skill rule changed. |
-| Agent-facing action surface identified | yes | `bench:targets:report`, `bench:targets:dry-run`, and `slate-autoresearch`. |
+| Agent-facing action surface identified | yes | `bench:targets:report`, `bench:targets:dry-run`, and `plite-autoresearch`. |
 | Source rule versus generated mirror boundary identified | yes | Edited `.agents/rules/slate-autoresearch.mdc`; ran `pnpm install` for generated mirrors. |
 | `agent-native-reviewer` loaded or waiver recorded | yes | Loaded in prior slice; command discoverability and generated mirrors audited here. |
 
@@ -180,7 +180,7 @@ Phase / pass table:
 
 Findings:
 - Existing Evidence Kit report generation is tied to `benchmarks/editor/docs/perf/**`.
-- Target registry can now generate `benchmarks/targets/history/slate-v2-latest.json` and `benchmarks/targets/reports/slate-v2.md` without running benchmark workloads.
+- Target registry can now generate `benchmarks/targets/history/plite-latest.json` and `benchmarks/targets/reports/plite.md` without running benchmark workloads.
 - Target report status correctly separates required-missing from optional-missing artifacts.
 - Dry-run proves `react-active-typing-breakdown` target can create an Autoresearch setup-plan with `typing_seconds`.
 
@@ -207,7 +207,7 @@ Error attempts:
 | Shell command used an unescaped template literal and zsh expanded `${...}` | 1 | Rerun Node summary with single-quoted command | Rerun passed and showed 2 optional-missing targets. |
 
 Verification evidence:
-- `/Users/zbeyens/git/plate-2`: `pnpm bench:targets:report` -> wrote `benchmarks/targets/history/slate-v2-latest.json` and `benchmarks/targets/reports/slate-v2.md`.
+- `/Users/zbeyens/git/plate-2`: `pnpm bench:targets:report` -> wrote `benchmarks/targets/history/plite-latest.json` and `benchmarks/targets/reports/plite.md`.
 - `/Users/zbeyens/git/plate-2`: `pnpm bench:targets:check` -> `benchmark-targets ok: 23 targets`.
 - `/Users/zbeyens/git/plate-2`: `pnpm bench:targets:report:check` -> checked generated history/report.
 - `/Users/zbeyens/git/plate-2`: `pnpm bench:targets:report:dry-run` -> `targets=23 missingRequired=0`.

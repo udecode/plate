@@ -24,7 +24,7 @@ Task source:
 
 Completion threshold:
 - #5005 is fixed at the `@platejs/markdown` deserializer boundary, with a failing-before/passing-after regression test for the reported input.
-- Valid MDX/HTML fallback behavior covered by existing `deserializeMd` and `markdownToSlateNodesSafely` tests remains passing.
+- Valid MDX/HTML fallback behavior covered by existing `deserializeMd` and `markdownToPliteNodesSafely` tests remains passing.
 - Published package delta is recorded in one `@platejs/markdown` patch changeset.
 - PR is created with task-style body and issue #5005 is synced after PR creation.
 - Task closure is legal only when the source-of-truth acceptance criteria are
@@ -35,7 +35,7 @@ Completion threshold:
 
 Verification surface:
 - Repro: direct `deserializeMd(createTestEditor(), String.raw\`</ph\\><\`)` throws before fix.
-- Targeted tests: `bun test packages/markdown/src/lib/deserializer/deserializeMd.spec.ts packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.spec.tsx packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.spec.ts`.
+- Targeted tests: `bun test packages/markdown/src/lib/deserializer/deserializeMd.spec.ts packages/markdown/src/lib/deserializer/utils/markdownToPliteNodesSafely.spec.tsx packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.spec.ts`.
 - Package check: `pnpm turbo typecheck --filter=./packages/markdown`.
 - Lint: `pnpm lint:fix`.
 - Browser: only if package fix also changes docs/demo UI behavior beyond parser output; otherwise N/A with reason.
@@ -151,7 +151,7 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run the command, proof, source audit, or artifact check named in this plan | Targeted repro red, focused tests, full markdown package tests, package typecheck, lint, changeset, package build for browser proof, and `pnpm install` sync passed; review/check/PR rows remain below |
 | Bug reproduced before fix | yes | Record failing test/repro or N/A with reason | New `deserializeMd` regression failed before code change with MDX parser `Unexpected character \`\\\`` |
-| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | `bun test packages/markdown/src/lib/deserializer/deserializeMd.spec.ts packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.spec.tsx packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.spec.ts` passed: 31 tests |
+| Targeted behavior verification | yes | Run focused test/proof for changed behavior or record N/A | `bun test packages/markdown/src/lib/deserializer/deserializeMd.spec.ts packages/markdown/src/lib/deserializer/utils/markdownToPliteNodesSafely.spec.tsx packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.spec.ts` passed: 31 tests |
 | TypeScript or typed config changed | yes | Run relevant typecheck | `pnpm turbo typecheck --filter=./packages/markdown` passed |
 | Package exports or file layout changed | N/A: no export or file layout change | Run `pnpm brl` before final verification and keep generated barrel updates | No public export files moved/added/removed |
 | Package manifests, lockfile, or install graph changed | N/A: no manifest or lockfile change | Run `pnpm install` and relevant package checks | `pnpm install` still ran for agent skill sync and left lockfile up to date |
@@ -177,7 +177,7 @@ Completion Gates:
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-14-fix-malformed-markdown-html-crash.md` | Final rerun passed: `[autogoal] complete` |
 | Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | `packages/markdown/package.json` exports unchanged; behavior change is runtime fallback for existing `deserializeMd`/MarkdownPlugin API |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published package runtime behavior fix for `@platejs/markdown` |
-| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | `.changeset/markdown-invalid-html-fallback.md` uses `"@platejs/markdown": patch`; no forbidden core minor |
+| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | `.changeset/markdown-invalid-html-fallback.md` uses `"@platejs/markdown": patch`; no forbidden core minor |
 | Registry changelog | N/A: not registry-only | If the change is registry-only under `apps/www/src/registry/**`, update `tooling/data/plate-ui-changelog.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, and do not add a package changeset | Package change uses changeset instead |
 | No release artifact | N/A: release artifact required | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | Changeset added |
 | Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | `pnpm --filter @platejs/markdown test`, `pnpm turbo typecheck --filter=./packages/markdown`, and `pnpm --filter @platejs/markdown build` passed |
@@ -187,7 +187,7 @@ Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
 | Intake and source read | complete | issue #5005, task/autogoal/tdd/changeset rules, parser files, tests, and prior splitIncompleteMdx solution read | implementation |
-| Implementation | complete | Fixed `splitIncompleteMdx` malformed tag boundary handling and hardened `markdownToSlateNodesSafely` fallback; added tests and changeset | verification |
+| Implementation | complete | Fixed `splitIncompleteMdx` malformed tag boundary handling and hardened `markdownToPliteNodesSafely` fallback; added tests and changeset | verification |
 | Verification | complete | Focused tests, package tests, typecheck, build, lint, install sync, autoreview, and `pnpm check` passed | closeout |
 | PR / tracker sync | complete | PR #5016 created and issue #5005 comment posted | final response |
 | Closeout | complete | PR, tracker sync, final handoff fields, and open risks recorded | final response |
@@ -201,8 +201,8 @@ Decisions and tradeoffs:
 - No public API shape change; compatibility impact is safer runtime behavior.
 
 Implementation notes:
-- Likely files: `packages/markdown/src/lib/deserializer/deserializeMd.ts`, `packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.ts`, focused specs.
-- Actual code fix: `splitIncompleteMdx` now cuts at tag start when a parsed tag name is followed by an invalid non-boundary character, and `markdownToSlateNodesSafely` reparses failed complete prefixes without MDX instead of letting MDX parser errors escape.
+- Likely files: `packages/markdown/src/lib/deserializer/deserializeMd.ts`, `packages/markdown/src/lib/deserializer/utils/markdownToPliteNodesSafely.ts`, focused specs.
+- Actual code fix: `splitIncompleteMdx` now cuts at tag start when a parsed tag name is followed by an invalid non-boundary character, and `markdownToPliteNodesSafely` reparses failed complete prefixes without MDX instead of letting MDX parser errors escape.
 
 Review fixes:
 - Accepted autoreview P2: initial scanner boundary rejected valid MDX member tags like `<Foo.Bar>`. Fixed by supporting `$` and `.` in scanned MDX tag names and adding split/safe-deserializer regression tests that preserve a completed member tag before an incomplete tail.
@@ -215,14 +215,14 @@ Error attempts:
 Verification evidence:
 - Repro before fix: `bun - <<'EOF' ... deserializeMd(createTestEditor(), String.raw\`</ph\\><\`) ... EOF` threw `Unexpected character \`\\\` (U+005C) in name...`.
 - New regression red: `bun test packages/markdown/src/lib/deserializer/deserializeMd.spec.ts` failed on `falls back to editable text for malformed html-like mdx` before parser changes.
-- Focused tests green: `bun test packages/markdown/src/lib/deserializer/deserializeMd.spec.ts packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.spec.tsx packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.spec.ts` passed: 31 tests, 37 expects.
+- Focused tests green: `bun test packages/markdown/src/lib/deserializer/deserializeMd.spec.ts packages/markdown/src/lib/deserializer/utils/markdownToPliteNodesSafely.spec.tsx packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.spec.ts` passed: 31 tests, 37 expects.
 - Package typecheck green: `pnpm turbo typecheck --filter=./packages/markdown` passed.
 - Lint green: `pnpm lint:fix` passed; no fixes applied.
 - Package tests green: `pnpm --filter @platejs/markdown test` passed: 229 tests, 4 snapshots, 364 expects.
 - Package build green for browser proof setup: `pnpm --filter @platejs/markdown build` passed.
 - Agent sync green for existing `.agents/**` checkout files: `pnpm install` passed and ran `skiller apply`.
 - Browser caveat: docs dev server ran at `http://localhost:3010`; browser proof was attempted, but after package build the in-app Browser reset reported `Browser is not available: iab`.
-- Review fix focused tests green: `bun test packages/markdown/src/lib/deserializer/deserializeMd.spec.ts packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.spec.tsx packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.spec.ts` passed: 33 tests, 39 expects.
+- Review fix focused tests green: `bun test packages/markdown/src/lib/deserializer/deserializeMd.spec.ts packages/markdown/src/lib/deserializer/utils/markdownToPliteNodesSafely.spec.tsx packages/markdown/src/lib/deserializer/utils/splitIncompleteMdx.spec.ts` passed: 33 tests, 39 expects.
 - Review fix package tests green: `pnpm --filter @platejs/markdown test` passed: 232 tests, 4 snapshots, 367 expects.
 - Review fix package typecheck green: `pnpm turbo typecheck --filter=./packages/markdown` passed.
 - Final lint green: `pnpm lint:fix` passed; no fixes applied.

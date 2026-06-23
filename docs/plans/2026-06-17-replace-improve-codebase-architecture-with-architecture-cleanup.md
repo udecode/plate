@@ -15,7 +15,7 @@ Task source:
 - title: Replace `$improve-codebase-architecture` with stronger architecture-cleanup ownership
 - acceptance criteria:
   - remove the old skill owner instead of keeping a wrapper;
-  - add the overrides from the selected text: anti-confetti rule, deslop mode, agent-navigation score, Slate/Plate hard boundary, strict implementation packet law, merge/delete as equal outcomes, and VISION fit gate;
+  - add the overrides from the selected text: anti-confetti rule, deslop mode, agent-navigation score, Plite/Plate hard boundary, strict implementation packet law, merge/delete as equal outcomes, and VISION fit gate;
   - add a dedicated autogoal template for this flow;
   - update local routing so supervisors use the new owner;
   - sync generated skill mirrors;
@@ -24,7 +24,7 @@ Task source:
 First checkpoint:
 - Explicit requirement captured: replace the old owner, not just patch it.
 - Scope captured: local skill/rule/template/routing only.
-- Non-goal captured: no runtime Slate/Plate code cleanup in this pass.
+- Non-goal captured: no runtime Plite/Plate code cleanup in this pass.
 - Stop condition captured: stop after generated mirror sync, stale-reference audit, and goal closeout pass.
 - Final handoff captured: changed list, verification, caveat, and next owner.
 
@@ -61,7 +61,7 @@ Constraints:
 Boundaries:
 - Source of truth: `.agents/rules/architecture-cleanup.mdc`, `.agents/AGENTS.md`, `docs/plans/templates/architecture-cleanup.md`, and `docs/vision/common.md`.
 - Allowed edit scope: agent rules, generated mirror via `pnpm install`, plan template, and this closeout plan.
-- Slate / Plate boundary: captured in the new skill; Slate owns substrate/API/proof, Plate owns plugin/product/docs/registry UX.
+- Plite / Plate boundary: captured in the new skill; Plite owns substrate/API/proof, Plate owns plugin/product/docs/registry UX.
 - Public API boundary: no package public API changed.
 - Browser surface: not applicable; no app UI changed.
 - Package/API surface: not applicable; no package exports changed.
@@ -87,7 +87,7 @@ Current verdict:
 - verdict: complete
 - confidence: 0.93
 - next owner: architecture-cleanup
-- reason: The old soft candidate wrapper is gone, and the new owner has explicit anti-confetti, deslop, navigation-score, Slate/Plate boundary, implementation packet, and VISION-fit gates.
+- reason: The old soft candidate wrapper is gone, and the new owner has explicit anti-confetti, deslop, navigation-score, Plite/Plate boundary, implementation packet, and VISION-fit gates.
 
 Start Gates:
 | Gate | Applies | Evidence |
@@ -180,7 +180,7 @@ Findings:
 - A replacement owner is cleaner than a wrapper because the user wants one architecture-cleanup lane, not another synonym.
 
 Decisions and tradeoffs:
-- Chose `$architecture-cleanup` as the name because it is short, scoped to architecture/code cleanliness, and not confused with task execution, maintainer queue routing, or Slate automation.
+- Chose `$architecture-cleanup` as the name because it is short, scoped to architecture/code cleanliness, and not confused with task execution, maintainer queue routing, or Plite automation.
 - Kept implementation authority narrow: safe behavior-neutral cleanup only; broader public API/runtime/product decisions route to plan owners.
 - Kept merge/delete/inline equal to split because file-count reduction and fewer agent hops are often the real architecture win.
 
@@ -219,7 +219,7 @@ Final handoff contract:
   - Reproduced: old skill existed and active routing referenced it.
   - Verified: new generated skill exists; old active refs removed; template renders.
 - Browser check: not applicable.
-- Outcome: `$architecture-cleanup` is now the architecture/code-cleanliness owner, with anti-confetti, deslop, agent-navigation, Slate/Plate boundary, packet-law, merge/delete, and VISION-fit gates.
+- Outcome: `$architecture-cleanup` is now the architecture/code-cleanliness owner, with anti-confetti, deslop, agent-navigation, Plite/Plate boundary, packet-law, merge/delete, and VISION-fit gates.
 - Caveat: historical plans or logs may still mention the old skill; active sources/templates/routing do not.
 - Design:
   - Chosen boundary: one repo-local architecture cleanup owner.

@@ -16,7 +16,7 @@ The extractor records literal, dynamic, and multiline titles by line pointer. Dy
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-code-shiki/src/__tests__/unit/LexicalCodeNodeTabs.test.ts:47` describe: LexicalCodeNode tests
 - `../lexical/packages/lexical-code-shiki/src/__tests__/unit/LexicalCodeNodeTabs.test.ts:49` describe: Tabs
@@ -26,7 +26,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-code/src/__tests__/unit/LexicalCodeNode.test.ts:60` describe: LexicalCodeNode tests
 - `../lexical/packages/lexical-code/src/__tests__/unit/LexicalCodeNode.test.ts:62` test: CodeNode.constructor
@@ -57,7 +57,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-code/src/__tests__/unit/LexicalCodeNodeTabs.test.ts:34` describe: LexicalCodeNode tests
 - `../lexical/packages/lexical-code/src/__tests__/unit/LexicalCodeNodeTabs.test.ts:36` describe: Tabs
@@ -67,7 +67,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-history/src/__tests__/unit/LexicalHistory.test.tsx:205` describe: LexicalHistory tests
 - `../lexical/packages/lexical-history/src/__tests__/unit/LexicalHistory.test.tsx:248` test: LexicalHistory after clearing
@@ -82,7 +82,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-html/src/__tests__/unit/LexicalHtml.test.ts:25` describe: HTML
 - `../lexical/packages/lexical-html/src/__tests__/unit/LexicalHtml.test.ts:42` test: [Lexical -> HTML]: ${name}
@@ -96,7 +96,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-list/src/__tests__/unit/LexicalListItemNode.test.ts:44` describe: LexicalListItemNode tests
 - `../lexical/packages/lexical-list/src/__tests__/unit/LexicalListItemNode.test.ts:46` test: ListItemNode.constructor
@@ -137,7 +137,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-list/src/__tests__/unit/LexicalListNode.test.ts:54` describe: LexicalListNode tests
 - `../lexical/packages/lexical-list/src/__tests__/unit/LexicalListNode.test.ts:56` test: ListNode.constructor
@@ -167,7 +167,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-list/src/__tests__/unit/ListExtension.test.ts:23` describe: ListExtension
 - `../lexical/packages/lexical-list/src/__tests__/unit/ListExtension.test.ts:36` it: Creates the list
@@ -179,7 +179,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-list/src/__tests__/unit/formatList.test.ts:82` describe: insertList
 - `../lexical/packages/lexical-list/src/__tests__/unit/formatList.test.ts:84` test: inserting with empty root selection
@@ -202,7 +202,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-list/src/__tests__/unit/registerListStrictIndentTransform.test.ts:19` describe: Lexical List StrictIndentTransform tests
 - `../lexical/packages/lexical-list/src/__tests__/unit/registerListStrictIndentTransform.test.ts:26` test: applyStrictListIndentation
@@ -211,7 +211,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-list/src/__tests__/unit/utils.test.ts:15` describe: Lexical List Utils tests
 - `../lexical/packages/lexical-list/src/__tests__/unit/utils.test.ts:17` test: getListDepth should return the 1-based depth of a list with one levels
@@ -229,7 +229,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-markdown/src/__tests__/unit/LexicalMarkdown.test.ts:257` describe: Markdown
 - `../lexical/packages/lexical-markdown/src/__tests__/unit/LexicalMarkdown.test.ts:818` it: dynamic or multiline title
@@ -277,7 +277,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-markdown/src/__tests__/unit/MarkdownTransformers.test.ts:52` describe: LINK
 - `../lexical/packages/lexical-markdown/src/__tests__/unit/MarkdownTransformers.test.ts:53` test: text before a markdown link is preserved
@@ -289,7 +289,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable-mixed
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/AutoLinks.spec.mjs:29` describe: Auto Links
 - `../lexical/packages/lexical-playground/__tests__/e2e/AutoLinks.spec.mjs:32` test: Can convert url-like text into links
@@ -341,7 +341,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: beforeinput-input / browser-engine
-target: packages/slate-react/test/model-input-strategy-contract.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite-react/test/model-input-strategy-contract.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/AutoScroll.spec.mjs:17` test: Auto scroll while typing
 - `../lexical/packages/lexical-playground/__tests__/e2e/AutoScroll.spec.mjs:66` test: dynamic or multiline title
@@ -351,7 +351,7 @@ target: packages/slate-react/test/model-input-strategy-contract.test.ts; apps/ww
 
 category: portable-mixed
 family: mixed portable invariant
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Autocomplete.spec.mjs:27` test: Autocomplete
 - `../lexical/packages/lexical-playground/__tests__/e2e/Autocomplete.spec.mjs:31` test: Can autocomplete a word
@@ -365,7 +365,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable-mixed
 family: mixed portable invariant
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/CharacterLimit.spec.mjs:24` test: displays overflow on text
 - `../lexical/packages/lexical-playground/__tests__/e2e/CharacterLimit.spec.mjs:25` test: dynamic or multiline title
@@ -395,7 +395,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/ClearFormatting.spec.mjs:34` test: Clear All Formatting
 - `../lexical/packages/lexical-playground/__tests__/e2e/ClearFormatting.spec.mjs:36` test: dynamic or multiline title
@@ -412,7 +412,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/CodeBlock.spec.mjs:34` test: CodeBlock
 - `../lexical/packages/lexical-playground/__tests__/e2e/CodeBlock.spec.mjs:36` test: Can create code block with markdown
@@ -443,7 +443,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: collaboration-remote / history-undo-redo
-target: packages/slate/test/collab-history-runtime-contract.ts; future slate-yjs browser lane
+target: packages/plite/test/collab-history-runtime-contract.ts; future slate-yjs browser lane
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Collaboration.spec.mjs:33` test: Collaboration
 - `../lexical/packages/lexical-playground/__tests__/e2e/Collaboration.spec.mjs:36` test: Undo with collaboration on
@@ -463,7 +463,7 @@ target: packages/slate/test/collab-history-runtime-contract.ts; future slate-yjs
 
 category: portable-mixed
 family: mixed portable invariant
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/ColumnLayoutBackspaceAtEnd.spec.mjs:17` test: Layout - removes layout completely when both columns are empty and backspace is pressed at the first layout item
 - `../lexical/packages/lexical-playground/__tests__/e2e/ColumnLayoutBackspaceAtEnd.spec.mjs:22` test: dynamic or multiline title
@@ -472,7 +472,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: ime-composition / history-undo-redo
-target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; packages/browser/src/playwright/ime.ts; packages/slate-history/test
+target: apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; packages/browser/src/playwright/ime.ts; packages/plite-history/test
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Composition.spec.mjs:33` test: Composition
 - `../lexical/packages/lexical-playground/__tests__/e2e/Composition.spec.mjs:35` test: Handles Hiragana characters
@@ -507,7 +507,7 @@ target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; pac
 
 category: portable
 family: clipboard-paste / browser-engine
-target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipboard-boundary.test.ts; apps/www/tests/slate-browser/donor/examples/paste-html.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test/clipboard-contract.ts; packages/plite-dom/test/clipboard-boundary.test.ts; apps/www/tests/plite-browser/donor/examples/paste-html.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/html/HTMLCopyAndPaste.spec.mjs:22` test: HTML CopyAndPaste
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/html/HTMLCopyAndPaste.spec.mjs:25` test: Copy + paste multi line html with extra newlines
@@ -523,7 +523,7 @@ target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipb
 
 category: portable
 family: clipboard-paste / browser-engine
-target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipboard-boundary.test.ts; apps/www/tests/slate-browser/donor/examples/paste-html.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test/clipboard-contract.ts; packages/plite-dom/test/clipboard-boundary.test.ts; apps/www/tests/plite-browser/donor/examples/paste-html.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/html/ImageHTMLCopyAndPaste.spec.mjs:26` test: HTML Image CopyAndPaste
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/html/ImageHTMLCopyAndPaste.spec.mjs:31` test: Copy + paste HTML of a figure with img and figcaption
@@ -537,7 +537,7 @@ target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipb
 
 category: portable
 family: clipboard-paste / browser-engine
-target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipboard-boundary.test.ts; apps/www/tests/slate-browser/donor/examples/paste-html.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test/clipboard-contract.ts; packages/plite-dom/test/clipboard-boundary.test.ts; apps/www/tests/plite-browser/donor/examples/paste-html.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/html/LinksHTMLCopyAndPaste.spec.mjs:34` test: HTML Links CopyAndPaste
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/html/LinksHTMLCopyAndPaste.spec.mjs:37` test: Copy + paste an anchor element
@@ -563,7 +563,7 @@ target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipb
 
 category: portable
 family: clipboard-paste / browser-engine
-target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipboard-boundary.test.ts; apps/www/tests/slate-browser/donor/examples/paste-html.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test/clipboard-contract.ts; packages/plite-dom/test/clipboard-boundary.test.ts; apps/www/tests/plite-browser/donor/examples/paste-html.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/html/ListsHTMLCopyAndPaste.spec.mjs:21` test: HTML Lists CopyAndPaste
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/html/ListsHTMLCopyAndPaste.spec.mjs:24` test: Copy + paste a list element
@@ -585,7 +585,7 @@ target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipb
 
 category: portable
 family: clipboard-paste / browser-engine
-target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipboard-boundary.test.ts; apps/www/tests/slate-browser/donor/examples/paste-html.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test/clipboard-contract.ts; packages/plite-dom/test/clipboard-boundary.test.ts; apps/www/tests/plite-browser/donor/examples/paste-html.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/html/TablesHTMLCopyAndPaste.spec.mjs:19` test: HTML Tables CopyAndPaste
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/html/TablesHTMLCopyAndPaste.spec.mjs:24` test: Copy + paste (Table - Google Docs)
@@ -612,7 +612,7 @@ target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipb
 
 category: portable
 family: clipboard-paste / browser-engine
-target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipboard-boundary.test.ts; apps/www/tests/slate-browser/donor/examples/paste-html.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test/clipboard-contract.ts; packages/plite-dom/test/clipboard-boundary.test.ts; apps/www/tests/plite-browser/donor/examples/paste-html.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/html/TextFormatHTMLCopyAndPaste.spec.mjs:17` test: HTML CopyAndPaste
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/html/TextFormatHTMLCopyAndPaste.spec.mjs:20` test: Copy + paste html with BIU formatting
@@ -624,7 +624,7 @@ target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipb
 
 category: portable
 family: clipboard-paste / browser-engine
-target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipboard-boundary.test.ts; apps/www/tests/slate-browser/donor/examples/paste-html.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test/clipboard-contract.ts; packages/plite-dom/test/clipboard-boundary.test.ts; apps/www/tests/plite-browser/donor/examples/paste-html.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/lexical/ContextMenuCopyAndPaste.spec.mjs:23` test: ContextMenuCopyAndPaste
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/lexical/ContextMenuCopyAndPaste.spec.mjs:29` test: Basic copy-paste #6231
@@ -636,7 +636,7 @@ target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipb
 
 category: portable
 family: clipboard-paste / browser-engine
-target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipboard-boundary.test.ts; apps/www/tests/slate-browser/donor/examples/paste-html.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test/clipboard-contract.ts; packages/plite-dom/test/clipboard-boundary.test.ts; apps/www/tests/plite-browser/donor/examples/paste-html.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/lexical/CopyAndPaste.spec.mjs:33` test: CopyAndPaste
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/lexical/CopyAndPaste.spec.mjs:35` test: Basic copy + paste
@@ -663,7 +663,7 @@ target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipb
 
 category: portable
 family: clipboard-paste / browser-engine
-target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipboard-boundary.test.ts; apps/www/tests/slate-browser/donor/examples/paste-html.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test/clipboard-contract.ts; packages/plite-dom/test/clipboard-boundary.test.ts; apps/www/tests/plite-browser/donor/examples/paste-html.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/lexical/ListsCopyAndPaste.spec.mjs:30` test: Lists CopyAndPaste
 - `../lexical/packages/lexical-playground/__tests__/e2e/CopyAndPaste/lexical/ListsCopyAndPaste.spec.mjs:33` test: Copy and paste of partial list items into an empty editor
@@ -686,7 +686,7 @@ target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipb
 
 category: portable-mixed
 family: mixed portable invariant
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/DateTime.spec.mjs:20` test: DateTime
 - `../lexical/packages/lexical-playground/__tests__/e2e/DateTime.spec.mjs:23` test: can insert a DateTime node via the Insert dropdown
@@ -700,7 +700,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/DraggableBlock.spec.mjs:18` test: DraggableBlock
 - `../lexical/packages/lexical-playground/__tests__/e2e/DraggableBlock.spec.mjs:21` test: Paragraph one can be successfully dragged below paragraph two
@@ -724,7 +724,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/ElementFormat.spec.mjs:20` test: Element format
 - `../lexical/packages/lexical-playground/__tests__/e2e/ElementFormat.spec.mjs:22` test: dynamic or multiline title
@@ -735,7 +735,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable-mixed
 family: mixed portable invariant
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Emoticons.spec.mjs:24` test: Emoticons
 - `../lexical/packages/lexical-playground/__tests__/e2e/Emoticons.spec.mjs:26` test: Can handle a single emoticon
@@ -746,7 +746,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable-mixed
 family: mixed portable invariant
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/EquationNode.spec.mjs:60` test: EquationNode
 - `../lexical/packages/lexical-playground/__tests__/e2e/EquationNode.spec.mjs:62` test: dynamic or multiline title
@@ -757,7 +757,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: beforeinput-input / browser-engine
-target: packages/slate-react/test/model-input-strategy-contract.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite-react/test/model-input-strategy-contract.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Events.spec.mjs:18` test: Events
 - `../lexical/packages/lexical-playground/__tests__/e2e/Events.spec.mjs:21` test: Autocapitalization (MacOS specific)
@@ -767,7 +767,7 @@ target: packages/slate-react/test/model-input-strategy-contract.test.ts; apps/ww
 
 category: portable
 family: clipboard-paste / browser-engine
-target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipboard-boundary.test.ts; apps/www/tests/slate-browser/donor/examples/paste-html.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test/clipboard-contract.ts; packages/plite-dom/test/clipboard-boundary.test.ts; apps/www/tests/plite-browser/donor/examples/paste-html.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Extensions.spec.mjs:23` test: Extensions
 - `../lexical/packages/lexical-playground/__tests__/e2e/Extensions.spec.mjs:25` test: dynamic or multiline title
@@ -783,7 +783,7 @@ target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipb
 
 category: portable
 family: beforeinput-input / browser-engine
-target: packages/slate-react/test/model-input-strategy-contract.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite-react/test/model-input-strategy-contract.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Focus.spec.mjs:18` test: Focus
 - `../lexical/packages/lexical-playground/__tests__/e2e/Focus.spec.mjs:20` test: can tab out of the editor
@@ -795,7 +795,7 @@ target: packages/slate-react/test/model-input-strategy-contract.test.ts; apps/ww
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Hashtags.spec.mjs:28` test: Hashtags
 - `../lexical/packages/lexical-playground/__tests__/e2e/Hashtags.spec.mjs:30` test: Can handle a single hashtag
@@ -815,7 +815,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Headings/HeadingsBackspaceAtStart.spec.mjs:19` test: Headings - stays as a heading when you backspace at the start of a heading with no previous sibling nodes present
 - `../lexical/packages/lexical-playground/__tests__/e2e/Headings/HeadingsBackspaceAtStart.spec.mjs:24` test: dynamic or multiline title
@@ -824,7 +824,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Headings/HeadingsEnterAtEnd.spec.mjs:18` test: Headings - changes to a paragraph when you press enter at the end of a heading
 - `../lexical/packages/lexical-playground/__tests__/e2e/Headings/HeadingsEnterAtEnd.spec.mjs:23` test: dynamic or multiline title
@@ -833,7 +833,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Headings/HeadingsEnterInMiddle.spec.mjs:23` test: Headings - stays as a heading when you press enter in the middle of a heading
 - `../lexical/packages/lexical-playground/__tests__/e2e/Headings/HeadingsEnterInMiddle.spec.mjs:28` test: dynamic or multiline title
@@ -842,7 +842,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/HorizontalRule.spec.mjs:35` test: HorizontalRule
 - `../lexical/packages/lexical-playground/__tests__/e2e/HorizontalRule.spec.mjs:37` test: Can create a horizontal rule and move selection around it
@@ -864,7 +864,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Images.spec.mjs:35` test: Images
 - `../lexical/packages/lexical-playground/__tests__/e2e/Images.spec.mjs:37` test: dynamic or multiline title
@@ -896,7 +896,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Indentation.spec.mjs:41` test: Identation
 - `../lexical/packages/lexical-playground/__tests__/e2e/Indentation.spec.mjs:46` test: Can create content and indent and outdent it all
@@ -916,7 +916,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: beforeinput-input / browser-engine
-target: packages/slate-react/test/model-input-strategy-contract.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite-react/test/model-input-strategy-contract.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Keyboard.spec.mjs:21` test: Keyboard shortcuts
 - `../lexical/packages/lexical-playground/__tests__/e2e/Keyboard.spec.mjs:26` test: dynamic or multiline title
@@ -926,7 +926,7 @@ target: packages/slate-react/test/model-input-strategy-contract.test.ts; apps/ww
 
 category: portable
 family: beforeinput-input / browser-engine
-target: packages/slate-react/test/model-input-strategy-contract.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite-react/test/model-input-strategy-contract.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/KeyboardShortcuts.spec.mjs:179` test: Keyboard shortcuts
 - `../lexical/packages/lexical-playground/__tests__/e2e/KeyboardShortcuts.spec.mjs:181` test: dynamic or multiline title
@@ -942,7 +942,7 @@ target: packages/slate-react/test/model-input-strategy-contract.test.ts; apps/ww
 
 category: portable-mixed
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Keywords.spec.mjs:24` test: Keywords
 - `../lexical/packages/lexical-playground/__tests__/e2e/Keywords.spec.mjs:26` test: Can create a decorator and move selection around it
@@ -956,7 +956,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Links.spec.mjs:39` test: dynamic or multiline title
 - `../lexical/packages/lexical-playground/__tests__/e2e/Links.spec.mjs:42` describe: Links
@@ -1028,7 +1028,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/List.spec.mjs:75` test: dynamic or multiline title
 - `../lexical/packages/lexical-playground/__tests__/e2e/List.spec.mjs:78` test: Checklist focus option
@@ -1075,7 +1075,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Markdown.spec.mjs:55` describe: Markdown
 - `../lexical/packages/lexical-playground/__tests__/e2e/Markdown.spec.mjs:219` test: Should create stylized (e.g. BIUS) text from plain text using a markdown shortcut e.g. ${markdownText}
@@ -1110,7 +1110,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable-mixed
 family: mixed portable invariant
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/MaxLength.spec.mjs:24` test: MaxLength
 - `../lexical/packages/lexical-playground/__tests__/e2e/MaxLength.spec.mjs:29` test: can restrict the text to specified length
@@ -1123,7 +1123,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Mentions.spec.mjs:29` test: Mentions
 - `../lexical/packages/lexical-playground/__tests__/e2e/Mentions.spec.mjs:32` test: Can enter the Luke Skywalker mention
@@ -1141,7 +1141,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: beforeinput-input / browser-engine
-target: packages/slate-react/test/model-input-strategy-contract.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite-react/test/model-input-strategy-contract.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Mutations.spec.mjs:51` test: Mutations
 - `../lexical/packages/lexical-playground/__tests__/e2e/Mutations.spec.mjs:53` test: Text mutation observers also manage the selection
@@ -1151,7 +1151,7 @@ target: packages/slate-react/test/model-input-strategy-contract.test.ts; apps/ww
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Navigation.spec.mjs:44` test: Keyboard Navigation
 - `../lexical/packages/lexical-playground/__tests__/e2e/Navigation.spec.mjs:47` test: can type several paragraphs
@@ -1170,7 +1170,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Placeholder.spec.mjs:20` test: Placeholder
 - `../lexical/packages/lexical-playground/__tests__/e2e/Placeholder.spec.mjs:22` test: Displays a placeholder when no content is present
@@ -1179,7 +1179,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Selection.spec.mjs:59` describe: Selection
 - `../lexical/packages/lexical-playground/__tests__/e2e/Selection.spec.mjs:63` test: does not focus the editor on load
@@ -1279,7 +1279,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable-mixed
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/SelectionAlwaysOnDisplay.spec.mjs:20` test: SelectionAlwaysOnDisplay
 - `../lexical/packages/lexical-playground/__tests__/e2e/SelectionAlwaysOnDisplay.spec.mjs:24` test: retain selection works
@@ -1291,7 +1291,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable-mixed
 family: mixed portable invariant
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/SpecialTexts.spec.mjs:18` test: Special Text
 - `../lexical/packages/lexical-playground/__tests__/e2e/SpecialTexts.spec.mjs:27` test: should handle a single special text
@@ -1302,7 +1302,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Tab.spec.mjs:20` test: Tab
 - `../lexical/packages/lexical-playground/__tests__/e2e/Tab.spec.mjs:22` test: can tab + IME
@@ -1316,7 +1316,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: tables-grid / selection-dom-mapping
-target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; apps/www/tests/slate-browser/donor/examples/tables.test.ts; packages/slate/test/transforms/insertFragment
+target: apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; apps/www/tests/plite-browser/donor/examples/tables.test.ts; packages/plite/test/transforms/insertFragment
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Tables.spec.mjs:92` describe: Tables
 - `../lexical/packages/lexical-playground/__tests__/e2e/Tables.spec.mjs:93` test: Can a table be inserted from the toolbar
@@ -1516,7 +1516,7 @@ target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; app
 
 category: portable
 family: beforeinput-input / browser-engine
-target: packages/slate-react/test/model-input-strategy-contract.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite-react/test/model-input-strategy-contract.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/TextEntry.spec.mjs:27` test: TextEntry
 - `../lexical/packages/lexical-playground/__tests__/e2e/TextEntry.spec.mjs:29` test: dynamic or multiline title
@@ -1540,7 +1540,7 @@ target: packages/slate-react/test/model-input-strategy-contract.test.ts; apps/ww
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/TextFormatting.spec.mjs:37` describe: TextFormatting
 - `../lexical/packages/lexical-playground/__tests__/e2e/TextFormatting.spec.mjs:39` test: Can create bold text using the shortcut
@@ -1590,7 +1590,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable-mixed
 family: mixed portable invariant
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/e2e/Toolbar.spec.mjs:33` test: Toolbar
 - `../lexical/packages/lexical-playground/__tests__/e2e/Toolbar.spec.mjs:43` test: Insert image caption + table
@@ -1606,7 +1606,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/1055-fast-typing-undo.spec.mjs:18` test: Regression test #1055
 - `../lexical/packages/lexical-playground/__tests__/regression/1055-fast-typing-undo.spec.mjs:20` test: Adds new editor state into undo stack right after undo was done
@@ -1616,7 +1616,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/1083-backspace-with-element-at-front.spec.mjs:23` test: Regression test #1083
 - `../lexical/packages/lexical-playground/__tests__/regression/1083-backspace-with-element-at-front.spec.mjs:25` test: Backspace with ElementNode at the front of the paragraph
@@ -1628,7 +1628,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/1113-link-newline-at-end.spec.mjs:18` test: Regression test #1113
 - `../lexical/packages/lexical-playground/__tests__/regression/1113-link-newline-at-end.spec.mjs:20` test: Selects new line when inserting a new line at the end of a link
@@ -1638,7 +1638,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/regression/1258-delete-forward.spec.mjs:22` test: Regression test #1258
 - `../lexical/packages/lexical-playground/__tests__/regression/1258-delete-forward.spec.mjs:24` test: Can delete forward with keyboard
@@ -1647,7 +1647,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/1384-insert-nodes.spec.mjs:21` test: Regression test #1384
 - `../lexical/packages/lexical-playground/__tests__/regression/1384-insert-nodes.spec.mjs:23` test: Properly pastes in code blocks
@@ -1657,7 +1657,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/regression/1730-delete-backword.spec.mjs:19` test: Regression test #1730
 - `../lexical/packages/lexical-playground/__tests__/regression/1730-delete-backword.spec.mjs:21` test: Can delete backward with keyboard
@@ -1666,7 +1666,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/221-editing-hashtags.spec.mjs:20` test: Regression test #221
 - `../lexical/packages/lexical-playground/__tests__/regression/221-editing-hashtags.spec.mjs:22` test: Can handle space in hashtag
@@ -1677,7 +1677,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/230-navigation-around-hashtags.spec.mjs:20` test: Regression test #230
 - `../lexical/packages/lexical-playground/__tests__/regression/230-navigation-around-hashtags.spec.mjs:22` test: Is able to right arrow before hashtag after inserting text node
@@ -1686,7 +1686,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/231-empty-text-nodes.spec.mjs:24` test: Regression test #231
 - `../lexical/packages/lexical-playground/__tests__/regression/231-empty-text-nodes.spec.mjs:26` test: Does not generate segment error when editing empty text nodes
@@ -1695,7 +1695,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/3136-insert-nodes-adjacent-to-inline.spec.mjs:24` test: Regression test #3136
 - `../lexical/packages/lexical-playground/__tests__/regression/3136-insert-nodes-adjacent-to-inline.spec.mjs:26` test: Correctly pastes rich content when the selection is followed by an inline element
@@ -1709,7 +1709,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/3433-merge-markdown-lists.spec.mjs:17` test: Regression test #3433
 - `../lexical/packages/lexical-playground/__tests__/regression/3433-merge-markdown-lists.spec.mjs:19` test: can merge markdown lists created immediately before existing lists
@@ -1719,7 +1719,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/379-backspace-with-mentions.spec.mjs:20` test: Regression test #379
 - `../lexical/packages/lexical-playground/__tests__/regression/379-backspace-with-mentions.spec.mjs:22` test: Is able to correctly handle backspace press at the line boundary
@@ -1728,7 +1728,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/399-open-line.spec.mjs:20` test: Regression test #399
 - `../lexical/packages/lexical-playground/__tests__/regression/399-open-line.spec.mjs:22` test: Supports Ctrl-O as an open line command
@@ -1737,7 +1737,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/429-swapping-emoji.spec.mjs:19` test: Regression test #429
 - `../lexical/packages/lexical-playground/__tests__/regression/429-swapping-emoji.spec.mjs:21` test: Can add new lines before the line with emoji
@@ -1746,7 +1746,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/4661-insert-column-selection.spec.mjs:22` test: Regression test #4661
 - `../lexical/packages/lexical-playground/__tests__/regression/4661-insert-column-selection.spec.mjs:26` test: inserting 2 columns before inserts before selection
@@ -1758,7 +1758,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/4697-repeated-table-selection.spec.mjs:19` test: Regression test #4697
 - `../lexical/packages/lexical-playground/__tests__/regression/4697-repeated-table-selection.spec.mjs:21` test: repeated table selection results in table selection
@@ -1768,7 +1768,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/4872-full-row-span-cell-merge.spec.mjs:19` test: Regression test #4872
 - `../lexical/packages/lexical-playground/__tests__/regression/4872-full-row-span-cell-merge.spec.mjs:21` test: merging two full rows does not break table selection
@@ -1778,7 +1778,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/4876-unmerge-cell.spec.mjs:21` test: Regression test #4876
 - `../lexical/packages/lexical-playground/__tests__/regression/4876-unmerge-cell.spec.mjs:23` test: unmerging cells should add cells to correct rows
@@ -1788,7 +1788,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/5251-paste-into-inline-element.spec.mjs:29` test: Regression test #5251
 - `../lexical/packages/lexical-playground/__tests__/regression/5251-paste-into-inline-element.spec.mjs:31` test: Correctly pastes rich content inside an inline element
@@ -1798,7 +1798,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/5583-select-list-followed-by-element-node.spec.mjs:25` test: Regression test #5251
 - `../lexical/packages/lexical-playground/__tests__/regression/5583-select-list-followed-by-element-node.spec.mjs:27` test: dynamic or multiline title
@@ -1808,7 +1808,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: tables-grid / selection-dom-mapping
-target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; apps/www/tests/slate-browser/donor/examples/tables.test.ts; packages/slate/test/transforms/insertFragment
+target: apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; apps/www/tests/plite-browser/donor/examples/tables.test.ts; packages/plite/test/transforms/insertFragment
 
 - `../lexical/packages/lexical-playground/__tests__/regression/6870-table-left-arrow-selection.spec.mjs:22` test: Regression test #6870
 - `../lexical/packages/lexical-playground/__tests__/regression/6870-table-left-arrow-selection.spec.mjs:24` test: left arrow moves selection around decorators near tables
@@ -1822,7 +1822,7 @@ target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; app
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/regression/6974-delete-character-backward.spec.mjs:21` test: Regression tests for #6974
 - `../lexical/packages/lexical-playground/__tests__/regression/6974-delete-character-backward.spec.mjs:26` test: deleteCharacter merges children from adjacent blocks even if the previous leaf is an inline decorator
@@ -1832,7 +1832,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/regression/7163-graphemes.spec.mjs:21` test: Grapheme deleteCharacter
 - `../lexical/packages/lexical-playground/__tests__/regression/7163-graphemes.spec.mjs:133` test: dynamic or multiline title
@@ -1842,7 +1842,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/regression/7246-delete-character-backward-list.spec.mjs:21` test: Regression tests for #7246
 - `../lexical/packages/lexical-playground/__tests__/regression/7246-delete-character-backward-list.spec.mjs:26` test: deleteCharacter merges children from block adjacent to ListNode
@@ -1852,7 +1852,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/7266-column-header-merged-cells.spec.mjs:22` test: Regression test #7266
 - `../lexical/packages/lexical-playground/__tests__/regression/7266-column-header-merged-cells.spec.mjs:25` test: toggling column header with merged column cells should only apply column header to the selected column
@@ -1864,7 +1864,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/regression/7319-delete-character-backward-nodeselection.spec.mjs:19` test: Regression tests for #7319
 - `../lexical/packages/lexical-playground/__tests__/regression/7319-delete-character-backward-nodeselection.spec.mjs:24` test: deleteCharacter after hr with RangeSelection
@@ -1876,7 +1876,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/7354-firefox-decorator-paste.spec.mjs:23` test: HTML CopyAndPaste
 - `../lexical/packages/lexical-playground/__tests__/regression/7354-firefox-decorator-paste.spec.mjs:26` test: Copy + paste multi line html with extra newlines
@@ -1886,7 +1886,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-playground/__tests__/regression/7635-SELECTION_INSERT_CLIPBOARD_NODES_COMMAND.spec.mjs:34` test: Regression #7635
 - `../lexical/packages/lexical-playground/__tests__/regression/7635-SELECTION_INSERT_CLIPBOARD_NODES_COMMAND.spec.mjs:39` test: Paste into image caption
@@ -1896,7 +1896,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: ime-composition / history-undo-redo
-target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; packages/browser/src/playwright/ime.ts; packages/slate-history/test
+target: apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; packages/browser/src/playwright/ime.ts; packages/plite-history/test
 
 - `../lexical/packages/lexical-playground/__tests__/regression/8153-safari-ime-delete-selection.spec.mjs:36` test: Regression #8153
 - `../lexical/packages/lexical-playground/__tests__/regression/8153-safari-ime-delete-selection.spec.mjs:39` test: Can delete all text selected with Cmd+A after IME composition end on Safari
@@ -1912,7 +1912,7 @@ target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; pac
 
 category: portable-mixed
 family: clipboard-paste / browser-engine
-target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipboard-boundary.test.ts; apps/www/tests/slate-browser/donor/examples/paste-html.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test/clipboard-contract.ts; packages/plite-dom/test/clipboard-boundary.test.ts; apps/www/tests/plite-browser/donor/examples/paste-html.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-playground/__tests__/unit/ImageHTML.test.ts:26` describe: ImageNode HTML serialization
 - `../lexical/packages/lexical-playground/__tests__/unit/ImageHTML.test.ts:27` describe: ImageNode export
@@ -1923,7 +1923,7 @@ target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipb
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-rich-text/src/__tests__/unit/LexicalHeadingNode.test.ts:38` describe: LexicalHeadingNode tests
 - `../lexical/packages/lexical-rich-text/src/__tests__/unit/LexicalHeadingNode.test.ts:40` test: HeadingNode.constructor
@@ -1941,7 +1941,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-rich-text/src/__tests__/unit/LexicalQuoteNode.test.ts:21` describe: LexicalQuoteNode tests
 - `../lexical/packages/lexical-rich-text/src/__tests__/unit/LexicalQuoteNode.test.ts:23` test: QuoteNode.constructor
@@ -1954,7 +1954,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: clipboard-paste / browser-engine
-target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipboard-boundary.test.ts; apps/www/tests/slate-browser/donor/examples/paste-html.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test/clipboard-contract.ts; packages/plite-dom/test/clipboard-boundary.test.ts; apps/www/tests/plite-browser/donor/examples/paste-html.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-rich-text/src/__tests__/unit/LexicalTabNode.test.ts:23` describe: LexicalTabNode tests
 - `../lexical/packages/lexical-rich-text/src/__tests__/unit/LexicalTabNode.test.ts:25` test: INSERT_TAB_COMMAND applies selection format and style to TabNode
@@ -1964,7 +1964,7 @@ target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipb
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-selection/src/__tests__/unit/$sliceSelectedTextNodeContent.test.ts:21` describe: $sliceSelectedTextNodeContent
 - `../lexical/packages/lexical-selection/src/__tests__/unit/$sliceSelectedTextNodeContent.test.ts:55` describe: clone
@@ -1977,7 +1977,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-selection/src/__tests__/unit/LexicalSelection.test.tsx:125` describe: LexicalSelection tests
 - `../lexical/packages/lexical-selection/src/__tests__/unit/LexicalSelection.test.tsx:228` test: Expect initial output to be a block with no text.
@@ -2026,7 +2026,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical-selection/src/__tests__/unit/LexicalSelectionHelpers.test.ts:90` describe: LexicalSelectionHelpers tests
 - `../lexical/packages/lexical-selection/src/__tests__/unit/LexicalSelectionHelpers.test.ts:91` describe: Collapsed
@@ -2098,7 +2098,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: tables-grid / selection-dom-mapping
-target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; apps/www/tests/slate-browser/donor/examples/tables.test.ts; packages/slate/test/transforms/insertFragment
+target: apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; apps/www/tests/plite-browser/donor/examples/tables.test.ts; packages/plite/test/transforms/insertFragment
 
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableCellNode.test.ts:32` describe: LexicalTableCellNode tests
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableCellNode.test.ts:34` test: TableCellNode.constructor
@@ -2115,7 +2115,7 @@ target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; app
 
 category: portable
 family: tables-grid / selection-dom-mapping
-target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; apps/www/tests/slate-browser/donor/examples/tables.test.ts; packages/slate/test/transforms/insertFragment
+target: apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; apps/www/tests/plite-browser/donor/examples/tables.test.ts; packages/plite/test/transforms/insertFragment
 
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableExtension.test.ts:51` describe: TableExtension
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableExtension.test.ts:67` it: Creates a table with INSERT_TABLE_COMMAND
@@ -2139,7 +2139,7 @@ target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; app
 
 category: portable
 family: tables-grid / selection-dom-mapping
-target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; apps/www/tests/slate-browser/donor/examples/tables.test.ts; packages/slate/test/transforms/insertFragment
+target: apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; apps/www/tests/plite-browser/donor/examples/tables.test.ts; packages/plite/test/transforms/insertFragment
 
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableMobileSelection.test.tsx:53` describe: LexicalTableMobileSelection
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableMobileSelection.test.tsx:108` test: mouse click should set anchor cell for selection (existing behavior)
@@ -2153,7 +2153,7 @@ target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; app
 
 category: portable
 family: tables-grid / selection-dom-mapping
-target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; apps/www/tests/slate-browser/donor/examples/tables.test.ts; packages/slate/test/transforms/insertFragment
+target: apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; apps/www/tests/plite-browser/donor/examples/tables.test.ts; packages/plite/test/transforms/insertFragment
 
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableNode.test.tsx:105` describe: LexicalTableNode tests
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableNode.test.tsx:107` describe: hasHorizontalScroll={${hasHorizontalScroll}}
@@ -2183,7 +2183,7 @@ target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; app
 
 category: portable
 family: tables-grid / selection-dom-mapping
-target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; apps/www/tests/slate-browser/donor/examples/tables.test.ts; packages/slate/test/transforms/insertFragment
+target: apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; apps/www/tests/plite-browser/donor/examples/tables.test.ts; packages/plite/test/transforms/insertFragment
 
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTablePlugin.test.tsx:26` describe: LexicalTablePlugin
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTablePlugin.test.tsx:43` test: INSERT_TABLE_COMMAND inserts a table
@@ -2193,7 +2193,7 @@ target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; app
 
 category: portable
 family: tables-grid / selection-dom-mapping
-target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; apps/www/tests/slate-browser/donor/examples/tables.test.ts; packages/slate/test/transforms/insertFragment
+target: apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; apps/www/tests/plite-browser/donor/examples/tables.test.ts; packages/plite/test/transforms/insertFragment
 
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableRowNode.test.ts:20` describe: LexicalTableRowNode tests
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableRowNode.test.ts:22` test: TableRowNode.constructor
@@ -2203,7 +2203,7 @@ target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; app
 
 category: portable
 family: tables-grid / selection-dom-mapping
-target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; apps/www/tests/slate-browser/donor/examples/tables.test.ts; packages/slate/test/transforms/insertFragment
+target: apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; apps/www/tests/plite-browser/donor/examples/tables.test.ts; packages/plite/test/transforms/insertFragment
 
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableSelection.test.tsx:34` describe: table selection
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableSelection.test.tsx:70` describe: regression #7076
@@ -2216,7 +2216,7 @@ target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; app
 
 category: portable
 family: tables-grid / selection-dom-mapping
-target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; apps/www/tests/slate-browser/donor/examples/tables.test.ts; packages/slate/test/transforms/insertFragment
+target: apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts; apps/www/tests/plite-browser/donor/examples/tables.test.ts; packages/plite/test/transforms/insertFragment
 
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableUtils.test.ts:58` describe: $moveTableColumn
 - `../lexical/packages/lexical-table/src/__tests__/unit/LexicalTableUtils.test.ts:73` test: moves a column forward
@@ -2236,7 +2236,7 @@ target: apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts; app
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-utils/src/__tests__/unit/LexicalUtilsInsertNodeToNearestRoot.test.tsx:26` describe: LexicalUtils#insertNodeToNearestRoot
 - `../lexical/packages/lexical-utils/src/__tests__/unit/LexicalUtilsInsertNodeToNearestRoot.test.tsx:139` it: dynamic or multiline title
@@ -2245,7 +2245,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: core package behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical-utils/src/__tests__/unit/LexicalUtilsSplitNode.test.tsx:18` describe: LexicalUtils#splitNode
 - `../lexical/packages/lexical-utils/src/__tests__/unit/LexicalUtilsSplitNode.test.tsx:104` it: dynamic or multiline title
@@ -2255,7 +2255,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical/src/__tests__/unit/CodeBlock.test.ts:23` describe: CodeBlock tests
 - `../lexical/packages/lexical/src/__tests__/unit/CodeBlock.test.ts:117` test: Code block html paste: ${testCase.name}
@@ -2264,7 +2264,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: clipboard-paste / browser-engine
-target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipboard-boundary.test.ts; apps/www/tests/slate-browser/donor/examples/paste-html.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test/clipboard-contract.ts; packages/plite-dom/test/clipboard-boundary.test.ts; apps/www/tests/plite-browser/donor/examples/paste-html.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical/src/__tests__/unit/HTMLCopyAndPaste.test.ts:24` describe: HTMLCopyAndPaste tests
 - `../lexical/packages/lexical/src/__tests__/unit/HTMLCopyAndPaste.test.ts:110` test: HTML copy paste: ${testCase.name}
@@ -2274,7 +2274,7 @@ target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipb
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalEditor.test.tsx:167` describe: LexicalEditor tests
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalEditor.test.tsx:244` describe: registerNodeTransform
@@ -2369,7 +2369,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalEditorListener.test.ts:11` describe: LexicalEditor listeners
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalEditorListener.test.ts:12` describe: registerRootListener
@@ -2385,7 +2385,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalEditorState.test.ts:23` describe: LexicalEditorState tests
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalEditorState.test.ts:25` test: constructor
@@ -2397,7 +2397,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalElementHelpers.test.ts:15` describe: LexicalElementHelpers tests
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalElementHelpers.test.ts:16` describe: addClassNamesToElement() and removeClassNamesFromElement()
@@ -2411,7 +2411,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalExtensionCore.test.ts:18` describe: defineExtension
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalExtensionCore.test.ts:19` it: does not change identity
@@ -2427,7 +2427,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: serialization-parsing / marks-inline
-target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+target: packages/plite/test; packages/plite-history/test; apps/www/tests/plite-browser/donor/examples/richtext.test.ts
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalListPlugin.test.tsx:42` describe: @lexical/list tests
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalListPlugin.test.tsx:85` test: Toggle an empty list on/off
@@ -2438,7 +2438,7 @@ target: packages/slate/test; packages/slate-history/test; apps/www/tests/slate-b
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalNode.test.ts:98` describe: LexicalNode tests
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalNode.test.ts:122` test: LexicalNode.constructor
@@ -2510,7 +2510,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalNodeState.test.ts:117` describe: LexicalNode state
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalNodeState.test.ts:129` test: state.$set() and state.$get() need to be inside an update
@@ -2538,7 +2538,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalNormalization.test.tsx:24` describe: LexicalNormalization tests
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalNormalization.test.tsx:26` describe: $normalizeSelection
@@ -2552,7 +2552,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalReconciler.test.ts:21` describe: LexicalReconciler
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalReconciler.test.ts:23` test: Should set direction of root node children to auto if root node has no direction
@@ -2565,7 +2565,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalSelection.test.ts:55` describe: LexicalSelection tests
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalSelection.test.ts:57` describe: Inserting text either side of inline elements
@@ -2652,7 +2652,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalSerialization.test.ts:104` describe: LexicalSerialization tests
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalSerialization.test.ts:106` test: serializes and deserializes from JSON
@@ -2661,7 +2661,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalUpdateTags.test.ts:31` describe: LexicalUpdateTags tests
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalUpdateTags.test.ts:33` test: Built-in update tags work correctly
@@ -2675,7 +2675,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalUtils.test.ts:44` describe: LexicalUtils tests
 - `../lexical/packages/lexical/src/__tests__/unit/LexicalUtils.test.ts:46` test: scheduleMicroTask(): native
@@ -2717,7 +2717,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/__tests__/unit/mergeRegister.test.ts:11` describe: mergeRegister
 - `../lexical/packages/lexical/src/__tests__/unit/mergeRegister.test.ts:12` it: calls all of the clean-up functions
@@ -2727,7 +2727,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: selection-dom-mapping / void-atom
-target: packages/slate/test; packages/slate-react/test/editable-behavior.test.tsx; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test; packages/plite-react/test/editable-behavior.test.tsx; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical/src/caret/__tests__/unit/LexicalCaret.test.ts:88` describe: LexicalCaret
 - `../lexical/packages/lexical/src/caret/__tests__/unit/LexicalCaret.test.ts:90` describe: $getChildCaret
@@ -2784,7 +2784,7 @@ target: packages/slate/test; packages/slate-react/test/editable-behavior.test.ts
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/caret/__tests__/unit/docs-traversals.test.ts:32` describe: traversals.md
 - `../lexical/packages/lexical/src/caret/__tests__/unit/docs-traversals.test.ts:34` describe: Traversal Strategies
@@ -2805,7 +2805,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalElementNode.test.tsx:35` describe: LexicalElementNode tests
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalElementNode.test.tsx:100` describe: exportJSON()
@@ -2848,7 +2848,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalGC.test.tsx:25` describe: LexicalGC tests
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalGC.test.tsx:27` test: RootNode.clear() with a child and subchild
@@ -2860,7 +2860,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalLineBreakNode.test.ts:14` describe: LexicalLineBreakNode tests
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalLineBreakNode.test.ts:16` test: LineBreakNode.constructor
@@ -2873,7 +2873,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalParagraphNode.test.ts:27` describe: LexicalParagraphNode tests
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalParagraphNode.test.ts:29` test: ParagraphNode.constructor
@@ -2889,7 +2889,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalRootNode.test.ts:30` describe: LexicalRootNode tests
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalRootNode.test.ts:61` test: RootNode.constructor
@@ -2912,7 +2912,7 @@ target: packages/slate/test; add focused browser proof only when behavior depend
 
 category: portable
 family: clipboard-paste / browser-engine
-target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipboard-boundary.test.ts; apps/www/tests/slate-browser/donor/examples/paste-html.test.ts; apps/www/tests/slate-browser/donor/stress/generated-editing.test.ts
+target: packages/plite/test/clipboard-contract.ts; packages/plite-dom/test/clipboard-boundary.test.ts; apps/www/tests/plite-browser/donor/examples/paste-html.test.ts; apps/www/tests/plite-browser/donor/stress/generated-editing.test.ts
 
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalTabNode.test.tsx:44` describe: LexicalTabNode tests
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalTabNode.test.tsx:56` test: can paste plain text with tabs and newlines in plain text
@@ -2934,7 +2934,7 @@ target: packages/slate/test/clipboard-contract.ts; packages/slate-dom/test/clipb
 
 category: portable
 family: portable editor behavior
-target: packages/slate/test; add focused browser proof only when behavior depends on DOM/runtime transport
+target: packages/plite/test; add focused browser proof only when behavior depends on DOM/runtime transport
 
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalTextNode.test.tsx:74` describe: LexicalTextNode tests
 - `../lexical/packages/lexical/src/nodes/__tests__/unit/LexicalTextNode.test.tsx:133` describe: exportJSON()

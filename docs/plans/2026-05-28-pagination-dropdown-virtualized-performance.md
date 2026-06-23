@@ -82,7 +82,7 @@ Work Checklist:
 - [x] Branch handling recorded as N/A: no commit or PR requested.
 - [x] Local-env-rot retry policy recorded as N/A: no install corruption signal.
 - [x] Workspace authority recorded: commands ran in `/Users/zbeyens/git/plate-2/Plate repo root`; plan check runs in `/Users/zbeyens/git/plate-2`.
-- [x] High-risk note recorded: large fixture reconciliation must not use thousands of Slate operations on a mounted editor.
+- [x] High-risk note recorded: large fixture reconciliation must not use thousands of Plite operations on a mounted editor.
 - [x] Review/autoreview target marked N/A for this narrow follow-up; focused tests cover the changed path.
 - [x] Agent-native review decision recorded as N/A: no agent files changed.
 - [x] Browser pack route, interaction path, and expected visible outcome recorded.

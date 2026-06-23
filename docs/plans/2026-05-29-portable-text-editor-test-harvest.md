@@ -1,7 +1,7 @@
 # Portable Text Editor Test Harvest
 
 Objective:
-Run the editor-test-harvester skill comprehensively for local target ../portabletext. Completion means the stable permissive harvest artifacts under docs/editor-test-harvester/portabletext are current, the exact inventory is rerun and fully classified, every runnable portable/portable-mixed source has test-name extraction and family routing, Slate/Plate owner coverage is mapped from current files, every action row has owner/target/proof/verification or backlog owner, no Plate repo root or Plate implementation/test files are edited, and this plan passes the autogoal mechanical check.
+Run the editor-test-harvester skill comprehensively for local target ../portabletext. Completion means the stable permissive harvest artifacts under docs/editor-test-harvester/portabletext are current, the exact inventory is rerun and fully classified, every runnable portable/portable-mixed source has test-name extraction and family routing, Plite/Plate owner coverage is mapped from current files, every action row has owner/target/proof/verification or backlog owner, no Plate repo root or Plate implementation/test files are edited, and this plan passes the autogoal mechanical check.
 
 Goal plan:
 docs/plans/2026-05-29-portable-text-editor-test-harvest.md
@@ -31,7 +31,7 @@ Verification surface:
 - Target repo: ../portabletext.
 - Harvest artifacts: docs/editor-test-harvester/portabletext/report.md, inventory.md, test-index.md, source-routing.md.
 - Source inventory command: rg --files ../portabletext piped through the editor-test-harvester include/exclude regex.
-- Raw Slate owner searches: Plate repo root packages/slate/test, slate-react/test, slate-browser/test, and Playwright routes for selection, fragment, insert, delete, paste, clipboard, history, collab, composition, IME, drag/drop, void, root, schema, operation, and transform owners.
+- Raw Plite owner searches: Plate repo root packages/plite/test, slate-react/test, plite-browser/test, and Playwright routes for selection, fragment, insert, delete, paste, clipboard, history, collab, composition, IME, drag/drop, void, root, schema, operation, and transform owners.
 - Plate owner searches: packages, apps/www/src/registry, and docs for link, list, markdown, serializer, html, docx, collaboration, yjs, toolbar, mention, emoji, comment, annotation, media, schema, plugin, void, editable-voids, version-history, and collaboration owners.
 - Hygiene check: report-only pass; behavior-only hygiene is not applicable because license mode is permissive, but artifacts still avoid source body copying.
 - Final mechanical gate: node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-29-portable-text-editor-test-harvest.md.
@@ -68,8 +68,8 @@ Harvest state:
 Current verdict:
 - verdict: done
 - score: 0.94
-- next owner: user-selected apply pass, likely slate-patch for Q1/Q2 raw Slate rows
-- reason: Portable Text gives high-value raw Slate pressure for selection/root/object-boundary behavior, while schema/list/serializer/plugin policy is routed to Plate.
+- next owner: user-selected apply pass, likely slate-patch for Q1/Q2 raw Plite rows
+- reason: Portable Text gives high-value raw Plite pressure for selection/root/object-boundary behavior, while schema/list/serializer/plugin policy is routed to Plate.
 
 Completion rule:
 - update_goal(status: complete) is legal only after the final check-complete command passes.
@@ -91,7 +91,7 @@ Work Checklist:
 - [x] Test-name extraction complete for every runnable portable, portable-mixed, and uncertain file, or skipped with reason.
 - [x] Negative-control skip pressure applied to large skip families.
 - [x] Behavior rows extracted with source ref, tag, invariant, proof kind, owner coverage, and action.
-- [x] Plate repo root coverage searches recorded for raw Slate rows.
+- [x] Plate repo root coverage searches recorded for raw Plite rows.
 - [x] Plate owner searches recorded for plugin/product rows.
 - [x] Every create/refactor/copy/fresh-invariant/defer/plate-owned row names target owner, proof kind, and command or defer reason.
 - [x] Behavior-only hygiene checked: no durable/versioned output copies or mechanically translates source code, fixtures, snapshots, helpers, expected output blobs, or expressive prose.
@@ -116,7 +116,7 @@ Phase / pass table:
 | Test-name extraction | complete | 200 runnable portable/mixed files indexed with 1944 anchors. | done |
 | Classification pressure | complete | Parser/renderer/plugin/test-helper rows re-routed more honestly. | done |
 | Behavior extraction | complete | 14 behavior/product families extracted with fresh invariants. | done |
-| Slate/Plate coverage mapping | complete | Raw Slate and Plate owner searches recorded. | done |
+| Plite/Plate coverage mapping | complete | Raw Plite and Plate owner searches recorded. | done |
 | Action planning | complete | Every family and source route has target, proof kind, and command/backlog owner. | done |
 | Ecosystem synthesis | complete | Steal/reject/Plate-owner decisions recorded. | done |
 | Closure review | complete | Score 0.94 and verification gates recorded. | final handoff |
@@ -127,7 +127,7 @@ Confidence score:
 | Inventory completeness | 0.20 | 0.98 | Exact command rerun; 502/502 rows classified; full inventory linked. | none |
 | Behavior extraction depth | 0.20 | 0.94 | 200 runnable portable/mixed files indexed with 1944 line/name anchors; every portable/mixed file routed. | no source bodies copied |
 | Skip precision and negative controls | 0.15 | 0.92 | Harness, Plate-owned, and skip buckets have concrete reasons; converter, renderer, behavior API, and test-helper negative controls read. | none |
-| Slate/Plate coverage mapping accuracy | 0.20 | 0.92 | Plate repo root owner searches and current Plate owner searches recorded. | report-only, no tests executed |
+| Plite/Plate coverage mapping accuracy | 0.20 | 0.92 | Plate repo root owner searches and current Plate owner searches recorded. | report-only, no tests executed |
 | Actionability of copy/refactor/create plan | 0.15 | 0.93 | Every behavior family has action, target owner, proof kind, and focused command/backlog owner. | browser rows require later apply proof |
 | Provenance and reproducibility | 0.10 | 0.95 | Local license evidence, exact inventory command, source refs, line/name anchors, and rerun delta recorded. | none |
 
@@ -155,37 +155,37 @@ Inventory accounting:
 Matrix accounting:
 | Source ref | Test ref | Tag | Behavior invariant | Proof kind | Owner coverage | Action |
 |------------|----------|-----|--------------------|------------|----------------|--------|
-| PT-H01 | selection selectors, ranges, selected value | selection-dom-mapping | Selection projection across text/object/root boundaries. | unit plus browser | Slate selection/projection owners found. | refactor-existing/create-new for gaps |
-| PT-H02 | container/root rows | structured-blocks | Nested editable roots keep stable ownership and order. | unit plus browser | Slate content-root owners found; schema split to Plate. | split |
-| PT-H03 | block/inline object rows | void-atom | Void/object atoms do not corrupt caret, delete, paste, or drag. | unit plus browser | Slate void shell and editable-void owners found. | refactor/create |
-| PT-H04 | insert/split/break rows | insert-fragment | Insertions choose stable placement and final selection. | unit | Slate transform owners found. | refactor-existing |
-| PT-H05 | delete/backspace rows | delete-backspace | Delete removes intended content and leaves valid selection. | unit plus browser | Slate delete/operation owners found. | refactor/create |
-| PT-H06 | paste/clipboard rows | clipboard-paste | Clipboard fragments preserve shape and endpoints. | unit plus browser | Slate clipboard and paste-html owners found; serializers split to Plate. | split |
+| PT-H01 | selection selectors, ranges, selected value | selection-dom-mapping | Selection projection across text/object/root boundaries. | unit plus browser | Plite selection/projection owners found. | refactor-existing/create-new for gaps |
+| PT-H02 | container/root rows | structured-blocks | Nested editable roots keep stable ownership and order. | unit plus browser | Plite content-root owners found; schema split to Plate. | split |
+| PT-H03 | block/inline object rows | void-atom | Void/object atoms do not corrupt caret, delete, paste, or drag. | unit plus browser | Plite void shell and editable-void owners found. | refactor/create |
+| PT-H04 | insert/split/break rows | insert-fragment | Insertions choose stable placement and final selection. | unit | Plite transform owners found. | refactor-existing |
+| PT-H05 | delete/backspace rows | delete-backspace | Delete removes intended content and leaves valid selection. | unit plus browser | Plite delete/operation owners found. | refactor/create |
+| PT-H06 | paste/clipboard rows | clipboard-paste | Clipboard fragments preserve shape and endpoints. | unit plus browser | Plite clipboard and paste-html owners found; serializers split to Plate. | split |
 | PT-H07 | drag/drop rows | drag-drop | Drag inside/outside selection and self-drop are deterministic. | browser plus unit | Root interaction owner found; exact drag rows likely gap. | create-new |
-| PT-H08 | collab/history rows | collaboration-remote | Remote operations and local undo rebase selection once. | unit | Slate collab/history owners found. | refactor/create |
-| PT-H09 | composition rows | ime-composition | Composition transport preserves DOM/model selection/history. | honest browser | slate-browser and composition owners found. | covered/refactor |
-| PT-H10 | focus/keyboard rows | accessibility-keyboard | Focus/keyboard import DOM selection before model commands. | unit plus browser | Slate selection controller and hotkey owners found. | split/refactor |
-| PT-H11 | path/point/range/operation rows | normalization-schema | Core location and operation helpers stay deterministic and root-aware. | unit | Slate operation/root contracts found. | covered/refactor |
+| PT-H08 | collab/history rows | collaboration-remote | Remote operations and local undo rebase selection once. | unit | Plite collab/history owners found. | refactor/create |
+| PT-H09 | composition rows | ime-composition | Composition transport preserves DOM/model selection/history. | honest browser | plite-browser and composition owners found. | covered/refactor |
+| PT-H10 | focus/keyboard rows | accessibility-keyboard | Focus/keyboard import DOM selection before model commands. | unit plus browser | Plite selection controller and hotkey owners found. | split/refactor |
+| PT-H11 | path/point/range/operation rows | normalization-schema | Core location and operation helpers stay deterministic and root-aware. | unit | Plite operation/root contracts found. | covered/refactor |
 | PT-H12 | behavior pipeline rows | beforeinput-input | Event pipeline authority stays explicit. | unit plus browser if raw input handoff changes | Raw transaction owner plus Plate plugin owner. | split/plate-owned |
-| PT-P01 | schema/marks/list rows | structured-blocks | Product schema and mark/list policy belongs above raw Slate. | Plate package/docs | Plate registry/package owners found. | plate-owned |
+| PT-P01 | schema/marks/list rows | structured-blocks | Product schema and mark/list policy belongs above raw Plite. | Plate package/docs | Plate registry/package owners found. | plate-owned |
 | PT-P02 | serializer/toolbar/plugin rows | serialization-parsing | Product serializers/plugins/toolbars belong to Plate. | Plate package/docs | Plate package/docs owners found. | plate-owned |
 
 Skips and negative controls:
 | Source / family | Reason | Negative-control evidence |
 |-----------------|--------|---------------------------|
 | Harness/support files | Fixtures, setup, generated step definitions, and test helper notation are not editor behavior. | Read editor src/test rows and textspec helper tests. |
-| Parser/serializer policy | HTML/PT/plain conversion expected output is product serialization policy, not raw Slate law. | Read converter.text-html.deserialize.test.ts. |
-| Renderer/type helpers | Renderer config helper tests prove Portable Text authoring API, not raw Slate behavior. | Read renderer.types.test.tsx. |
-| Behavior API | execute/raise/forward/effect naming is API pressure, not a raw Slate API to copy. | Read behavior-api.test.tsx. |
+| Parser/serializer policy | HTML/PT/plain conversion expected output is product serialization policy, not raw Plite law. | Read converter.text-html.deserialize.test.ts. |
+| Renderer/type helpers | Renderer config helper tests prove Portable Text authoring API, not raw Plite behavior. | Read renderer.types.test.tsx. |
+| Behavior API | execute/raise/forward/effect naming is API pressure, not a raw Plite API to copy. | Read behavior-api.test.tsx. |
 
 Next slice:
 | Row | Owner | Action | Target | Verification / defer reason |
 |-----|-------|--------|--------|-----------------------------|
-| PT-H01/PT-H02 | Slate v2 | refactor-existing/create-new | slate selection/projection/content-root tests | focused bun package tests plus Playwright multi-root only if browser row changes |
-| PT-H03/PT-H05 | Slate v2 | refactor/create | void shell, editable-void browser, delete transforms | focused bun plus Playwright editable-void/stress rows |
-| PT-H07 | Slate v2 | create-new | root-interaction resolver plus browser drag/drop route | browser proof required; model-only proof is insufficient |
-| PT-H08 | Slate v2 | refactor/create | collab selection/history contracts | focused bun collab/history tests |
-| PT-P01/PT-P02 | Plate | plate-owned | list/schema/serializer/plugin packages and docs | Plate backlog; no raw Slate execution |
+| PT-H01/PT-H02 | Plite | refactor-existing/create-new | slate selection/projection/content-root tests | focused bun package tests plus Playwright multi-root only if browser row changes |
+| PT-H03/PT-H05 | Plite | refactor/create | void shell, editable-void browser, delete transforms | focused bun plus Playwright editable-void/stress rows |
+| PT-H07 | Plite | create-new | root-interaction resolver plus browser drag/drop route | browser proof required; model-only proof is insufficient |
+| PT-H08 | Plite | refactor/create | collab selection/history contracts | focused bun collab/history tests |
+| PT-P01/PT-P02 | Plate | plate-owned | list/schema/serializer/plugin packages and docs | Plate backlog; no raw Plite execution |
 
 Report artifacts:
 | Artifact | Path | Status |
@@ -200,13 +200,13 @@ Behavior-only hygiene:
 - evidence: durable artifacts still avoid source-body copying and record source paths, test names, line refs, and fresh invariants.
 
 Findings:
-- Portable Text's strongest raw Slate pressure is root/selection/object-boundary behavior, not schema or API surface.
-- The previous compressed report was too generous to raw Slate; parser/renderer/plugin policy is now routed to Plate.
+- Portable Text's strongest raw Plite pressure is root/selection/object-boundary behavior, not schema or API surface.
+- The previous compressed report was too generous to raw Plite; parser/renderer/plugin policy is now routed to Plate.
 - The harvest now has a real source-routing appendix, so every portable/mixed source file discharges to a behavior family.
 
 Decisions and tradeoffs:
-- Keep raw Slate unopinionated: no Portable Text schema or behavior API import.
-- Prefer strengthening existing Slate selection/projection/delete/collab owners before adding duplicate tests.
+- Keep raw Plite unopinionated: no Portable Text schema or behavior API import.
+- Prefer strengthening existing Plite selection/projection/delete/collab owners before adding duplicate tests.
 - Treat drag/drop as browser-owned proof; unit tests can cover path resolution only.
 - Route list, serializer, mark, annotation, renderer, toolbar, and plugin rows to Plate.
 
@@ -233,12 +233,12 @@ Reboot status:
 | Where am I? | Closure verification for the Portable Text editor-test-harvester rerun. |
 | Where am I going? | Run artifact checks and close the active goal if they pass. |
 | What is the goal? | Closure-grade Portable Text harvest artifacts with complete inventory, test-name extraction, source routing, owner coverage, and no implementation edits. |
-| What have I learned? | Portable Text is excellent selection/root/object-boundary test pressure but a bad raw Slate API model. |
+| What have I learned? | Portable Text is excellent selection/root/object-boundary test pressure but a bad raw Plite API model. |
 | What have I done? | Regenerated report.md, inventory.md, test-index.md, source-routing.md, and this goal plan. |
 
 Timeline:
 - 2026-05-29T00:48:00+02:00 Goal created and scratchpad generated.
-- 2026-05-29T00:52:00+02:00 Existing harvest artifacts, license, package scripts, Slate owners, Plate owners, and solution notes read.
+- 2026-05-29T00:52:00+02:00 Existing harvest artifacts, license, package scripts, Plite owners, Plate owners, and solution notes read.
 - 2026-05-29T00:58:00+02:00 Harvest artifacts regenerated with stricter routing and test-name extraction.
 - 2026-05-29T01:02:00+02:00 Goal ledger filled for closure verification.
 

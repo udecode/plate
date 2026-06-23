@@ -68,30 +68,30 @@ importers:
       '@platejs/mention':
         specifier: workspace:^
         version: link:packages/mention
+      '@platejs/plite':
+        specifier: workspace:^
+        version: link:packages/plite
+      '@platejs/plite-dom':
+        specifier: workspace:^
+        version: link:packages/plite-dom
+      '@platejs/plite-history':
+        specifier: workspace:^
+        version: link:packages/plite-history
+      '@platejs/plite-hyperscript':
+        specifier: workspace:^
+        version: link:packages/plite-hyperscript
+      '@platejs/plite-layout':
+        specifier: workspace:^
+        version: link:packages/plite-layout
+      '@platejs/plite-react':
+        specifier: workspace:^
+        version: link:packages/plite-react
       '@platejs/selection':
         specifier: workspace:^
         version: link:packages/selection
-      '@platejs/slate':
-        specifier: workspace:^
-        version: link:packages/slate
-      '@platejs/slate-dom':
-        specifier: workspace:^
-        version: link:packages/slate-dom
-      '@platejs/slate-history':
-        specifier: workspace:^
-        version: link:packages/slate-history
-      '@platejs/slate-hyperscript':
-        specifier: workspace:^
-        version: link:packages/slate-hyperscript
-      '@platejs/slate-layout':
-        specifier: workspace:^
-        version: link:packages/slate-layout
       '@platejs/slate-legacy':
         specifier: workspace:^
         version: link:packages/slate-legacy
-      '@platejs/slate-react':
-        specifier: workspace:^
-        version: link:packages/slate-react
       '@platejs/suggestion':
         specifier: workspace:^
         version: link:packages/suggestion
@@ -267,7 +267,7 @@ importers:
         specifier: 4.1.12
         version: 4.1.12
 
-  apps/slate:
+  apps/plite:
     dependencies:
       '@playwright/test':
         specifier: 1.53.0
@@ -423,6 +423,24 @@ importers:
       '@platejs/playwright':
         specifier: workspace:^
         version: link:../../packages/playwright
+      '@platejs/plite':
+        specifier: workspace:^
+        version: link:../../packages/plite
+      '@platejs/plite-dom':
+        specifier: workspace:^
+        version: link:../../packages/plite-dom
+      '@platejs/plite-history':
+        specifier: workspace:^
+        version: link:../../packages/plite-history
+      '@platejs/plite-hyperscript':
+        specifier: workspace:^
+        version: link:../../packages/plite-hyperscript
+      '@platejs/plite-layout':
+        specifier: workspace:^
+        version: link:../../packages/plite-layout
+      '@platejs/plite-react':
+        specifier: workspace:^
+        version: link:../../packages/plite-react
       '@platejs/resizable':
         specifier: workspace:^
         version: link:../../packages/resizable
@@ -432,24 +450,6 @@ importers:
       '@platejs/slash-command':
         specifier: workspace:^
         version: link:../../packages/slash-command
-      '@platejs/slate':
-        specifier: workspace:^
-        version: link:../../packages/slate
-      '@platejs/slate-dom':
-        specifier: workspace:^
-        version: link:../../packages/slate-dom
-      '@platejs/slate-history':
-        specifier: workspace:^
-        version: link:../../packages/slate-history
-      '@platejs/slate-hyperscript':
-        specifier: workspace:^
-        version: link:../../packages/slate-hyperscript
-      '@platejs/slate-layout':
-        specifier: workspace:^
-        version: link:../../packages/slate-layout
-      '@platejs/slate-react':
-        specifier: workspace:^
-        version: link:../../packages/slate-react
       '@platejs/suggestion':
         specifier: workspace:^
         version: link:../../packages/suggestion
@@ -859,12 +859,12 @@ importers:
       '@platejs/markdown':
         specifier: workspace:^
         version: link:../markdown
+      '@platejs/plite':
+        specifier: workspace:^
+        version: link:../plite
       '@platejs/selection':
         specifier: workspace:^
         version: link:../selection
-      '@platejs/slate':
-        specifier: workspace:^
-        version: link:../slate
       '@platejs/suggestion':
         specifier: workspace:^
         version: link:../suggestion
@@ -905,9 +905,9 @@ importers:
 
   packages/basic-nodes:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -921,9 +921,9 @@ importers:
 
   packages/basic-styles:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -961,9 +961,9 @@ importers:
 
   packages/callout:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -977,9 +977,9 @@ importers:
 
   packages/caption:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -996,9 +996,9 @@ importers:
 
   packages/code-block:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1021,9 +1021,9 @@ importers:
       '@codemirror/theme-one-dark':
         specifier: 6.1.3
         version: 6.1.3
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       '@uiw/react-codemirror':
         specifier: 4.25.4
         version: 4.25.4(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.39.16)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1064,9 +1064,9 @@ importers:
 
   packages/combobox:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1080,9 +1080,9 @@ importers:
 
   packages/comment:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -1099,21 +1099,21 @@ importers:
 
   packages/core:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
-      '@platejs/slate-dom':
+        version: link:../plite
+      '@platejs/plite-dom':
         specifier: workspace:^
-        version: link:../slate-dom
-      '@platejs/slate-hyperscript':
+        version: link:../plite-dom
+      '@platejs/plite-hyperscript':
         specifier: workspace:^
-        version: link:../slate-hyperscript
+        version: link:../plite-hyperscript
+      '@platejs/plite-react':
+        specifier: workspace:^
+        version: link:../plite-react
       '@platejs/slate-legacy':
         specifier: workspace:*
         version: link:../slate-legacy
-      '@platejs/slate-react':
-        specifier: workspace:^
-        version: link:../slate-react
       '@udecode/react-hotkeys':
         specifier: workspace:*
         version: link:../udecode/react-hotkeys
@@ -1206,9 +1206,9 @@ importers:
 
   packages/cursor:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1222,9 +1222,9 @@ importers:
 
   packages/date:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1238,9 +1238,9 @@ importers:
 
   packages/diff:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       diff-match-patch-ts:
         specifier: ^0.6.0
         version: 0.6.0
@@ -1260,9 +1260,9 @@ importers:
 
   packages/dnd:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -1369,9 +1369,9 @@ importers:
       '@excalidraw/excalidraw':
         specifier: 0.18.0
         version: 0.18.0(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(immer@10.2.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -1391,9 +1391,9 @@ importers:
 
   packages/find-replace:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1413,9 +1413,9 @@ importers:
       '@floating-ui/react':
         specifier: ^0.26.23
         version: 0.26.28(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1432,9 +1432,9 @@ importers:
       '@platejs/combobox':
         specifier: workspace:^
         version: link:../combobox
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1493,9 +1493,9 @@ importers:
       '@platejs/floating':
         specifier: workspace:^
         version: link:../floating
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1525,9 +1525,9 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       platejs:
         specifier: workspace:^
         version: link:../plate
@@ -1537,9 +1537,9 @@ importers:
       '@platejs/core':
         specifier: workspace:^
         version: link:../core
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       '@platejs/utils':
         specifier: workspace:^
         version: link:../utils
@@ -1565,9 +1565,9 @@ importers:
       '@platejs/date':
         specifier: workspace:*
         version: link:../date
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       lodash:
         specifier: ^4.17.23
         version: 4.17.23
@@ -1632,9 +1632,9 @@ importers:
 
   packages/math:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       katex:
         specifier: 0.16.22
         version: 0.16.22
@@ -1654,9 +1654,9 @@ importers:
 
   packages/media:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1673,9 +1673,9 @@ importers:
       '@platejs/combobox':
         specifier: workspace:*
         version: link:../combobox
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1692,9 +1692,9 @@ importers:
       '@platejs/core':
         specifier: workspace:^
         version: link:../core
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       '@platejs/utils':
         specifier: workspace:^
         version: link:../utils
@@ -1719,9 +1719,9 @@ importers:
 
   packages/playwright:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -1733,55 +1733,7 @@ importers:
         specifier: workspace:^
         version: link:../plate
 
-  packages/resizable:
-    dependencies:
-      react-compiler-runtime:
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
-
-  packages/selection:
-    dependencies:
-      '@platejs/slate':
-        specifier: workspace:^
-        version: link:../slate
-      copy-to-clipboard:
-        specifier: ^3.3.3
-        version: 3.3.3
-      react-compiler-runtime:
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
-
-  packages/slash-command:
-    dependencies:
-      '@platejs/combobox':
-        specifier: workspace:*
-        version: link:../combobox
-      react-compiler-runtime:
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
-
-  packages/slate:
+  packages/plite:
     devDependencies:
       '@plate/scripts':
         specifier: workspace:*
@@ -1790,14 +1742,14 @@ importers:
         specifier: ^4.17.21
         version: 4.17.23
 
-  packages/slate-dom:
+  packages/plite-dom:
     devDependencies:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       '@types/node':
         specifier: 24.12.0
         version: 24.12.0
@@ -1805,28 +1757,28 @@ importers:
         specifier: 20.0.3
         version: 20.0.3
 
-  packages/slate-history:
+  packages/plite-history:
     devDependencies:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
 
-  packages/slate-hyperscript:
+  packages/plite-hyperscript:
     devDependencies:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
 
-  packages/slate-layout:
+  packages/plite-layout:
     dependencies:
       '@chenglou/pretext':
         specifier: ^0.0.7
@@ -1838,12 +1790,12 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
-      '@platejs/slate-react':
+        version: link:../plite
+      '@platejs/plite-react':
         specifier: workspace:^
-        version: link:../slate-react
+        version: link:../plite-react
       '@testing-library/react':
         specifier: 16.3.0
         version: 16.3.0(@testing-library/dom@10.4.0)(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1860,39 +1812,14 @@ importers:
         specifier: 19.2.4
         version: 19.2.4(react@19.2.4)
 
-  packages/slate-legacy:
-    dependencies:
-      '@udecode/utils':
-        specifier: workspace:^
-        version: link:../udecode/utils
-      is-plain-object:
-        specifier: ^5.0.0
-        version: 5.0.0
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.23
-      scroll-into-view-if-needed:
-        specifier: ^3.1.0
-        version: 3.1.0
-      slate:
-        specifier: 0.124.1
-        version: 0.124.1
-      slate-dom:
-        specifier: 0.124.1
-        version: 0.124.1(slate@0.124.1)
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-
-  packages/slate-react:
+  packages/plite-react:
     dependencies:
       '@juggle/resize-observer':
         specifier: ^3.4.0
         version: 3.4.0
-      '@platejs/slate-history':
+      '@platejs/plite-history':
         specifier: workspace:^
-        version: link:../slate-history
+        version: link:../plite-history
       '@tanstack/react-virtual':
         specifier: ^3.13.25
         version: 3.14.3(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -1906,15 +1833,15 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
-      '@platejs/slate-dom':
+        version: link:../plite
+      '@platejs/plite-dom':
         specifier: workspace:^
-        version: link:../slate-dom
-      '@platejs/slate-hyperscript':
+        version: link:../plite-dom
+      '@platejs/plite-hyperscript':
         specifier: workspace:^
-        version: link:../slate-hyperscript
+        version: link:../plite-hyperscript
       '@testing-library/dom':
         specifier: 10.4.0
         version: 10.4.0
@@ -1949,14 +1876,87 @@ importers:
         specifier: ^4.1.0
         version: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.12.0)(@vitest/browser-playwright@4.1.9)(happy-dom@20.8.3)(jsdom@20.0.3)(msw@2.12.10(@types/node@24.12.0)(typescript@6.0.2))(vite@7.3.5(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.30.1)(sass@1.89.2)(tsx@4.20.1)(yaml@2.9.0))
 
+  packages/resizable:
+    dependencies:
+      react-compiler-runtime:
+        specifier: ^1.0.0
+        version: 1.0.0(react@19.2.4)
+    devDependencies:
+      '@plate/scripts':
+        specifier: workspace:*
+        version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
+
+  packages/selection:
+    dependencies:
+      '@platejs/plite':
+        specifier: workspace:^
+        version: link:../plite
+      copy-to-clipboard:
+        specifier: ^3.3.3
+        version: 3.3.3
+      react-compiler-runtime:
+        specifier: ^1.0.0
+        version: 1.0.0(react@19.2.4)
+    devDependencies:
+      '@plate/scripts':
+        specifier: workspace:*
+        version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
+
+  packages/slash-command:
+    dependencies:
+      '@platejs/combobox':
+        specifier: workspace:*
+        version: link:../combobox
+      react-compiler-runtime:
+        specifier: ^1.0.0
+        version: 1.0.0(react@19.2.4)
+    devDependencies:
+      '@plate/scripts':
+        specifier: workspace:*
+        version: link:../plate-scripts
+      platejs:
+        specifier: workspace:^
+        version: link:../plate
+
+  packages/slate-legacy:
+    dependencies:
+      '@udecode/utils':
+        specifier: workspace:^
+        version: link:../udecode/utils
+      is-plain-object:
+        specifier: ^5.0.0
+        version: 5.0.0
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.23
+      scroll-into-view-if-needed:
+        specifier: ^3.1.0
+        version: 3.1.0
+      slate:
+        specifier: 0.124.1
+        version: 0.124.1
+      slate-dom:
+        specifier: 0.124.1
+        version: 0.124.1(slate@0.124.1)
+    devDependencies:
+      '@plate/scripts':
+        specifier: workspace:*
+        version: link:../plate-scripts
+
   packages/suggestion:
     dependencies:
       '@platejs/diff':
         specifier: workspace:^
         version: link:../diff
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -1989,12 +1989,12 @@ importers:
 
   packages/table:
     dependencies:
+      '@platejs/plite':
+        specifier: workspace:^
+        version: link:../plite
       '@platejs/resizable':
         specifier: workspace:^
         version: link:../resizable
-      '@platejs/slate':
-        specifier: workspace:^
-        version: link:../slate
       lodash:
         specifier: ^4.17.21
         version: 4.17.23
@@ -2014,9 +2014,9 @@ importers:
 
   packages/tag:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -2030,9 +2030,9 @@ importers:
 
   packages/test-utils:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
     devDependencies:
       '@plate/scripts':
         specifier: workspace:*
@@ -2040,9 +2040,9 @@ importers:
 
   packages/toc:
     dependencies:
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       react-compiler-runtime:
         specifier: ^1.0.0
         version: 1.0.0(react@19.2.4)
@@ -2182,9 +2182,9 @@ importers:
       '@platejs/core':
         specifier: workspace:^
         version: link:../core
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
+        version: link:../plite
       '@udecode/react-utils':
         specifier: workspace:^
         version: link:../udecode/react-utils
@@ -2210,15 +2210,15 @@ importers:
       '@plate/scripts':
         specifier: workspace:*
         version: link:../plate-scripts
-      '@platejs/slate':
+      '@platejs/plite':
         specifier: workspace:^
-        version: link:../slate
-      '@platejs/slate-history':
+        version: link:../plite
+      '@platejs/plite-history':
         specifier: workspace:^
-        version: link:../slate-history
-      '@platejs/slate-react':
+        version: link:../plite-history
+      '@platejs/plite-react':
         specifier: workspace:^
-        version: link:../slate-react
+        version: link:../plite-react
       '@types/node':
         specifier: 24.12.0
         version: 24.12.0

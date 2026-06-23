@@ -24,7 +24,7 @@ Actual: the second typed update does not autoscroll.
 
 ## Investigation
 
-- Relevant source owner: `packages/slate-react/src/components/editable.tsx`.
+- Relevant source owner: `packages/plite-react/src/components/editable.tsx`.
 - `defaultScrollSelectionIntoView` temporarily assigns
   `leafEl.getBoundingClientRect` so `scroll-into-view-if-needed` measures the
   focus point.
@@ -49,16 +49,16 @@ Actual: the second typed update does not autoscroll.
 - `defaultScrollSelectionIntoView` now restores the original leaf measurement
   behavior after temporary focus-point measurement.
 - Added a regression test covering the poisoned leaf-element case.
-- Added a `slate-react` patch changeset.
+- Added a `plite-react` patch changeset.
 
 ## Verification
 
-- `bun test ./packages/slate-react/test/editable-behavior.tsx -t "default scroll restores leaf measurement"` passed after fix.
-- `bunx biome check packages/slate-react/src/components/editable.tsx packages/slate-react/test/editable-behavior.tsx --fix` passed.
-- `bun test ./packages/slate-react/test/editable-behavior.tsx` passed.
-- `bun test ./packages/slate-react/test/rendering-strategy-and-scroll.tsx ./packages/slate-react/test/editable-behavior.tsx` passed:
+- `bun test ./packages/plite-react/test/editable-behavior.tsx -t "default scroll restores leaf measurement"` passed after fix.
+- `bunx biome check packages/plite-react/src/components/editable.tsx packages/plite-react/test/editable-behavior.tsx --fix` passed.
+- `bun test ./packages/plite-react/test/editable-behavior.tsx` passed.
+- `bun test ./packages/plite-react/test/rendering-strategy-and-scroll.tsx ./packages/plite-react/test/editable-behavior.tsx` passed:
   37 tests, 153 expects.
-- `bun --filter slate-react typecheck` passed.
+- `bun --filter plite-react typecheck` passed.
 - `pnpm lint:fix` in `plate-2` passed.
 - `bun run completion-check` in `plate-2` passed with no session state.
 - Browser was used on `http://localhost:3100/examples/scroll-into-view` to load

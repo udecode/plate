@@ -65,7 +65,7 @@ Boundaries:
 - Allowed edit scope: new global skill files and active goal plan.
 - Browser surface: N/A.
 - Tracker sync: N/A.
-- Non-goals: do not patch Plate/Slate setup from OpenClaw yet; do not commit;
+- Non-goals: do not patch Plate/Plite setup from OpenClaw yet; do not commit;
   do not clone more repos unless the local OpenClaw root is missing; do not
   flatten OpenClaw product-specific rules into our setup.
 

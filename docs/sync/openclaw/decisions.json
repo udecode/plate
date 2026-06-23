@@ -40,7 +40,7 @@
     "openclaw:skill:clawsweeper:.agents/skills/clawsweeper/SKILL.md": {
       "action": "covered",
       "owner": ".agents/rules/clawsweeper.mdc",
-      "reason": "Local Slate issue owner already carries archive-first, duplicate-proof, small-fix, live-state, and external-editor harvest discipline."
+      "reason": "Local Plite issue owner already carries archive-first, duplicate-proof, small-fix, live-state, and external-editor harvest discipline."
     },
     "openclaw:skill:tag-duplicate-prs-issues:.agents/skills/tag-duplicate-prs-issues/SKILL.md": {
       "action": "covered",
@@ -54,7 +54,7 @@
     },
     "openclaw:skill:control-ui-e2e:.agents/skills/control-ui-e2e/SKILL.md": {
       "action": "reject",
-      "owner": "Browser/slate-browser local proof lanes",
+      "owner": "Browser/plite-browser local proof lanes",
       "reason": "Control UI specifics are OpenClaw product plumbing; reusable visual-proof discipline already has local owners."
     },
     "openclaw:skill:agent-transcript:.agents/skills/agent-transcript/SKILL.md": {
@@ -160,7 +160,7 @@
     "openclaw:doc:CONTRIBUTING:CONTRIBUTING.md#public-intake": {
       "action": "accepted",
       "owner": "CONTRIBUTING.md + VISION.md + docs/vision/common.md + docs/vision/plate.md",
-      "reason": "Imported public issue/PR intake as durable maintainer-agent handoff, adapted to Plate/Slate local Codex runs instead of hosted/API OpenClaw automation."
+      "reason": "Imported public issue/PR intake as durable maintainer-agent handoff, adapted to Plate/Plite local Codex runs instead of hosted/API OpenClaw automation."
     },
     "openclaw:doc:.github/pull_request_template:.github/pull_request_template.md": {
       "action": "accepted",
@@ -170,12 +170,12 @@
     "openclaw:doc:.github/ISSUE_TEMPLATE/bug_report:.github/ISSUE_TEMPLATE/bug_report.yml#one-issue-agent-intake": {
       "action": "accepted",
       "owner": ".github/ISSUE_TEMPLATE/bug.yml",
-      "reason": "Imported one-issue-per-submission and evidence-grounded intake wording, adapted to Plate/Slate surfaces."
+      "reason": "Imported one-issue-per-submission and evidence-grounded intake wording, adapted to Plate/Plite surfaces."
     },
     "openclaw:doc:.github/ISSUE_TEMPLATE/feature_request:.github/ISSUE_TEMPLATE/feature_request.yml": {
       "action": "accepted",
       "owner": ".github/ISSUE_TEMPLATE/feature_request.yml",
-      "reason": "Imported summary/problem/solution/alternatives/impact/evidence shape, extended with Slate-vs-Plate ownership and API/DX impact."
+      "reason": "Imported summary/problem/solution/alternatives/impact/evidence shape, extended with Plite-vs-Plate ownership and API/DX impact."
     },
     "openclaw:doc:SECURITY:SECURITY.md#disclosure-and-trust-model": {
       "action": "accepted",
@@ -185,12 +185,12 @@
     "openclaw:doc:CODEOWNERS:.github/CODEOWNERS": {
       "action": "reject",
       "owner": "N/A",
-      "reason": "User explicitly excluded CODEOWNERS for this Plate/Slate setup."
+      "reason": "User explicitly excluded CODEOWNERS for this Plate/Plite setup."
     },
     "openclaw:runtime:hosted-api-crabbox-automation": {
       "action": "reject",
       "owner": ".agents/rules/maintainer.mdc + docs/plans/templates/maintainer.md",
-      "reason": "Plate/Slate maintainer automation runs through local Codex sessions in maintainer checkouts; no hosted/API/cloud-worker assumption."
+      "reason": "Plate/Plite maintainer automation runs through local Codex sessions in maintainer checkouts; no hosted/API/cloud-worker assumption."
     },
     "openclaw:doc:docs/automation/standing-orders:docs/automation/standing-orders.md": {
       "action": "accepted",
@@ -255,7 +255,7 @@
     "clawhub:doc:docs/security:docs/security.md": {
       "action": "accepted",
       "owner": "SECURITY.md + docs/maintainer/security.md",
-      "reason": "Imported platform-vs-third-party ownership distinction as Plate/Slate-owned boundary discipline; ClawHub cloud disclosure policy stays out."
+      "reason": "Imported platform-vs-third-party ownership distinction as Plate/Plite-owned boundary discipline; ClawHub cloud disclosure policy stays out."
     }
   }
 }

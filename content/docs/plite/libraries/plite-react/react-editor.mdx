@@ -1,0 +1,215 @@
+---
+title: "React Editor"
+description: "Use React, DOM, focus, selection, clipboard, and DataTransfer host APIs on a React editor."
+---
+
+`createReactEditor` creates an editor with React, DOM, and clipboard host APIs
+installed. Hooks such as `usePliteEditor` create the same editor shape.
+
+## Minimal Usage
+
+```typescript
+import { createReactEditor } from "@platejs/plite-react";
+
+const editor = createReactEditor();
+
+editor.api.dom.focus();
+```
+
+## On This Page
+
+- [Checks](react-editor#checks)
+- [Focus And Selection](react-editor#focus-and-selection)
+- [DOM Translation](react-editor#dom-translation)
+- [DOM Environment](react-editor#dom-environment)
+- [DataTransfer](react-editor#datatransfer)
+
+## Checks
+
+#### `editor.api.react.isComposing(): boolean`
+
+Check if the user is currently composing inside the editor.
+
+#### `editor.api.react.isFocused(): boolean`
+
+Check if the editor is focused.
+
+#### `editor.api.react.isReadOnly(): boolean`
+
+Check if the editor is in read-only mode.
+
+#### `editor.api.dom.isComposing(): boolean`
+
+Check if the user is currently composing inside the editor from the DOM bridge.
+
+#### `editor.api.dom.isFocused(): boolean`
+
+Check if the DOM editor is focused.
+
+#### `editor.api.dom.isReadOnly(): boolean`
+
+Check if the DOM editor is in read-only mode.
+
+## Focus And Selection
+
+#### `editor.api.dom.blur(): void`
+
+Blur the editor.
+
+#### `editor.api.dom.focus(options?: { retries: number }): void`
+
+Focus the editor.
+
+#### `editor.api.dom.deselect(): void`
+
+Clear the native DOM selection and the Plite selection.
+
+## DOM Translation
+
+#### `editor.api.dom.findKey(node: Node): Key`
+
+Find a key for a Plite node.
+
+#### `editor.api.dom.resolvePath(node: Node): Path | null`
+
+Resolve the current path of a Plite node. Returns `null` when the node is not
+mounted in the current editor value.
+
+#### `editor.api.dom.assertPath(node: Node): Path`
+
+Assert the current path of a Plite node.
+
+#### `editor.api.dom.hasDOMNode(target: DOMNode, options?: { editable?: boolean }): boolean`
+
+Check if a DOM node is within the editor.
+
+#### `editor.api.dom.hasEditableTarget(target: EventTarget | null): target is DOMNode`
+
+Check if the target is editable and in the editor.
+
+#### `editor.api.dom.hasSelectableTarget(target: EventTarget | null): boolean`
+
+Check if the target can be selected by the editor.
+
+#### `editor.api.dom.hasTarget(target: EventTarget | null): target is DOMNode`
+
+Check if the target is in the editor.
+
+#### `editor.api.dom.assertDOMNode(node: Node): HTMLElement`
+
+Assert the native DOM element for a Plite node.
+
+#### `editor.api.dom.resolveDOMNode(node: Node): HTMLElement | null`
+
+Resolve the native DOM element for a Plite node. Returns `null` when the Plite
+node is not mounted.
+
+#### `editor.api.dom.assertDOMPoint(point: Point): DOMPoint`
+
+Assert a native DOM selection point from a Plite point.
+
+#### `editor.api.dom.resolveDOMPoint(point: Point): DOMPoint | null`
+
+Resolve a native DOM selection point from a Plite point. Returns `null` when the
+Plite point is not currently mappable.
+
+#### `editor.api.dom.assertDOMRange(range: Range): DOMRange`
+
+Assert a native DOM range from a Plite range.
+
+#### `editor.api.dom.resolveDOMRange(range: Range): DOMRange | null`
+
+Resolve a native DOM range from a Plite range. Returns `null` when the Plite
+range is not currently mappable.
+
+#### `editor.api.dom.resolveRangeRect(range: Range): DOMRect | null`
+
+Resolve the bounding rect for a Plite range. Returns `null` when the range is
+not currently mappable to mounted DOM.
+
+#### `editor.api.dom.assertPliteNode(domNode: DOMNode): Node`
+
+Assert a Plite node from a native DOM node.
+
+#### `editor.api.dom.resolvePliteNode(domNode: DOMNode): Node | null`
+
+Resolve a Plite node from a native DOM node. Returns `null` when the DOM node is
+not owned by the editor.
+
+#### `editor.api.dom.assertEventRange(event: unknown): Range`
+
+Assert the target range from a DOM event.
+
+#### `editor.api.dom.resolveEventRange(event: unknown): Range | null`
+
+Resolve the target range from a DOM event. Returns `null` when the event target
+cannot be mapped into the editor.
+
+#### `editor.api.dom.assertPlitePoint(domPoint: DOMPoint, options: { exactMatch: boolean; searchDirection?: 'backward' | 'forward' }): Point`
+
+Assert a Plite point from a DOM point.
+
+#### `editor.api.dom.resolvePlitePoint(domPoint: DOMPoint, options: { exactMatch: boolean; searchDirection?: 'backward' | 'forward' }): Point | null`
+
+Resolve a Plite point from a DOM point. Returns `null` when the DOM point is not
+currently mappable.
+
+#### `editor.api.dom.assertPliteRange(domRange: DOMRange | DOMStaticRange | DOMSelection, options: { exactMatch: boolean }): Range`
+
+Assert a Plite range from a DOM range or selection.
+
+#### `editor.api.dom.resolvePliteRange(domRange: DOMRange | DOMStaticRange | DOMSelection, options: { exactMatch: boolean }): Range | null`
+
+Resolve a Plite range from a DOM range or selection. Returns `null` when the DOM
+range is not currently mappable.
+
+## DOM Environment
+
+#### `editor.api.dom.findDocumentOrShadowRoot(): Document | ShadowRoot`
+
+Return the document or shadow root that owns the editor.
+
+#### `editor.api.dom.getWindow(): Window`
+
+Return the window that owns the editor.
+
+#### `editor.api.dom.hasRange(range: Range): boolean`
+
+Check whether a Plite range can currently be mapped to DOM.
+
+#### `editor.api.dom.isTargetInsideNonReadonlyVoid(target: EventTarget | null): boolean`
+
+Check whether a DOM event target is inside a non-read-only void element.
+
+## DataTransfer
+
+#### `editor.api.clipboard.insertData(data: DataTransfer): boolean`
+
+Insert data from a `DataTransfer` into the editor. Returns `true` when Plite or
+an extension inserts content.
+
+Plite runs typed `clipboard.insertData` extension handlers first. A handler that
+returns `true` stops the default import path. When no handler claims the data,
+Plite tries an internal Plite fragment for the editor's configured
+`clipboardFormatKey`, then plain text.
+
+#### `editor.api.clipboard.insertFragmentData(data: DataTransfer): boolean`
+
+Insert Plite fragment data from a `DataTransfer`. Returns `true` when fragment
+content was inserted.
+
+#### `editor.api.clipboard.insertTextData(data: DataTransfer): boolean`
+
+Insert plain text data from a `DataTransfer`. Returns `true` when text content
+was inserted.
+
+#### `editor.api.clipboard.writeSelection(data: Pick<DataTransfer, 'getData' | 'setData'>): void`
+
+Write the current selection to a `DataTransfer`.
+
+Plite writes plain text, HTML, and an internal Plite fragment payload. The
+fragment payload uses `application/${clipboardFormatKey}` and the HTML fallback
+is tagged with the same key, so differently configured editors do not blindly
+import each other's internal JSON.
+Use [Clipboard And Paste](../../concepts/17-clipboard-and-paste) for the full
+copy, paste, drop, and fragment insertion pipeline.

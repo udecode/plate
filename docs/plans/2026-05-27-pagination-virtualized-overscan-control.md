@@ -20,7 +20,7 @@ Decision:
 Changed:
 - `page_overscan` URL state added to pagination controls.
 - Virtualized DOM strategy now receives `overscan: pageOverscan`.
-- `slate-layout` page-surface virtualization now derives overscan from the virtualized DOM strategy.
+- `plite-layout` page-surface virtualization now derives overscan from the virtualized DOM strategy.
 - Toolbar shows `Page overscan` only when DOM strategy is `virtualized`.
 - Meta line shows `page overscan` and derived `visible pages`.
 - Added `.changeset/paged-editable-virtualized-overscan.md`.
@@ -32,7 +32,7 @@ Verification:
   - Result: 20 passed.
 - `bun typecheck:site`
   - Result: passed.
-- `bun --filter slate-layout typecheck`
+- `bun --filter plite-layout typecheck`
   - Result: passed.
 - `bunx tsc --noEmit --project tsconfig.json --pretty false`
   - Result: passed.

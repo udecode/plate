@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Wrapper-unit geometry can expand from paragraph plus nested list to paragraph plus quote with the same sibling-unit seam
 tags:
-  - slate-v2
+  - plite
   - list-item
   - quote
   - wrapper-unit
@@ -40,8 +40,8 @@ The same sibling-unit rule held:
 
 That was enough to prove the shape through:
 
-- `slate-v2` contracts
-- `slate-dom-v2` clipboard-boundary
+- `plite` contracts
+- `plite-dom-v2` clipboard-boundary
 - real Chromium copy/paste routes
 
 ## Why this works

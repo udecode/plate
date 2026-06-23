@@ -74,7 +74,7 @@ There are no `score >= 6` files left. The entire honest `score >= 5` set is just
 4. `udecode/depset`: [get-package-manager.ts](packages/udecode/depset/src/utils/get-package-manager.ts) — score `4`
 5. `table`: [getCellIndices.ts](packages/table/src/lib/utils/getCellIndices.ts) — score `4`
 6. `basic-nodes`: [BaseBoldPlugin.ts](packages/basic-nodes/src/lib/BaseBoldPlugin.ts) — score `4`
-7. `slate`: [deleteText.ts](packages/slate/src/internal/transforms/deleteText.ts) — score `4`
+7. `slate`: [deleteText.ts](packages/plite/src/internal/transforms/deleteText.ts) — score `4`
 
 ## Packages By Value
 
@@ -100,18 +100,18 @@ There are no `score >= 6` files left. The entire honest `score >= 5` set is just
 5. `basic-nodes` — [BaseUnderlinePlugin.ts](packages/basic-nodes/src/lib/BaseUnderlinePlugin.ts) — score `5`, coverage `82.6%`, uncovered `4`
 6. `table` — [getSelectedCellsBorders.ts](packages/table/src/lib/queries/getSelectedCellsBorders.ts) — score `4`, coverage `95.1%`, uncovered `12`
 7. `docx-io` — [settings.ts](packages/docx-io/src/lib/internal/schemas/settings.ts) — score `4`, coverage `0.0%`, uncovered `11`
-8. `slate` — [hasDOMNode.ts](packages/slate/src/internal/dom-editor/hasDOMNode.ts) — score `4`, coverage `18.2%`, uncovered `9`
+8. `slate` — [hasDOMNode.ts](packages/plite/src/internal/dom-editor/hasDOMNode.ts) — score `4`, coverage `18.2%`, uncovered `9`
 9. `autoformat` — [AutoformatPlugin.ts](packages/autoformat/src/lib/AutoformatPlugin.ts) — score `4`, coverage `88.9%`, uncovered `8`
-10. `slate` — [hasEditableTarget.ts](packages/slate/src/internal/dom-editor/hasEditableTarget.ts) — score `4`, coverage `20.0%`, uncovered `8`
-11. `slate` — [hasSelectableTarget.ts](packages/slate/src/internal/dom-editor/hasSelectableTarget.ts) — score `4`, coverage `20.0%`, uncovered `8`
-12. `slate` — [hasTarget.ts](packages/slate/src/internal/dom-editor/hasTarget.ts) — score `4`, coverage `20.0%`, uncovered `8`
+10. `slate` — [hasEditableTarget.ts](packages/plite/src/internal/dom-editor/hasEditableTarget.ts) — score `4`, coverage `20.0%`, uncovered `8`
+11. `slate` — [hasSelectableTarget.ts](packages/plite/src/internal/dom-editor/hasSelectableTarget.ts) — score `4`, coverage `20.0%`, uncovered `8`
+12. `slate` — [hasTarget.ts](packages/plite/src/internal/dom-editor/hasTarget.ts) — score `4`, coverage `20.0%`, uncovered `8`
 13. `core` — [DebugPlugin.ts](packages/core/src/lib/plugins/debug/DebugPlugin.ts) — score `4`, coverage `90.6%`, uncovered `5`
 14. `udecode/depset` — [get-package-manager.ts](packages/udecode/depset/src/utils/get-package-manager.ts) — score `4`, coverage `81.5%`, uncovered `5`
 15. `table` — [getCellIndices.ts](packages/table/src/lib/utils/getCellIndices.ts) — score `4`, coverage `81.8%`, uncovered `4`
 
 ## Stop Condition
 
-Stop non-React coverage after the phase-4 roadmap below. The remaining misses after that are mostly DOM-only Slate crumbs, schema or type dust, wrapper/plugin residue, and giant low-ROI serializer sludge.
+Stop non-React coverage after the phase-4 roadmap below. The remaining misses after that are mostly DOM-only Plite crumbs, schema or type dust, wrapper/plugin residue, and giant low-ROI serializer sludge.
 
 That is where more non-React coverage turns into percentage cosplay. Switch to React or architecture-safety work instead.
 

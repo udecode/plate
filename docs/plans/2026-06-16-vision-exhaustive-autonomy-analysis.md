@@ -20,7 +20,7 @@ Major source:
 - type: user prompt
 - id / link: chat request 2026-06-16
 - title: Exhaustive VISION.md autonomy analysis
-- decision to make: how VISION.md should improve so Slate/Plate supervisors can decide more like the user without repeated review
+- decision to make: how VISION.md should improve so Plite/Plate supervisors can decide more like the user without repeated review
 - decision criteria: every Markdown-like repo source is inventoried and mined for reusable doctrine; gaps are mapped against current VISION.md; recommendations separate facts, inference, and proposed durable rules; editor-behavior and supervisor autonomy are explicit
 
 Major lane:
@@ -41,7 +41,7 @@ First checkpoint:
   - Read all Markdown-like files we have, including docs, plans, skills, and related doctrine surfaces.
   - Analyze how to improve root `VISION.md`.
   - Target: make `VISION.md` exhaustive enough that the user does not need to review recurring decisions.
-  - Target: supervisor modes like `slate-auto` should decide by themselves.
+  - Target: supervisor modes like `plite-auto` should decide by themselves.
   - Target: supervisor modes should predict the user's answers, taste, and editor-behavior expectations.
   - Include editor-behavior doctrine, not only generic workflow doctrine.
   - Use `autogoal`.
@@ -77,7 +77,7 @@ Boundaries:
 - External sources: N/A for this pass; start from local repo evidence. OpenClaw or web research can be a later comparison pass.
 - Browser surface: N/A; this is doctrine analysis, not visible UI behavior.
 - Tracker sync: N/A.
-- Non-goals: no runtime Slate/Plate code changes, no commits, no PR, no release claims, no generated skill mirror edits by hand.
+- Non-goals: no runtime Plite/Plate code changes, no commits, no PR, no release claims, no generated skill mirror edits by hand.
 
 Output budget strategy:
 - Use `rg --files` and a local analysis script to read the corpus and write artifacts. Show counts and summaries in chat; do not print full corpus matches. Cap direct file reads to selected source-of-truth docs and generated reports.
@@ -97,7 +97,7 @@ Current verdict:
 - verdict: complete analysis; current `VISION.md` has the right themes but needs decision tables to replace repeated user taste review
 - confidence: high
 - next owner: major-task
-- reason: the corpus scan and selected source reads show scattered exact rules in `slate-auto`, plans, research, and behavior docs; `VISION.md` should distill those into compact default-decision doctrine
+- reason: the corpus scan and selected source reads show scattered exact rules in `plite-auto`, plans, research, and behavior docs; `VISION.md` should distill those into compact default-decision doctrine
 
 Completion rule:
 - Do not call `update_goal(status: complete)` while any required checklist item
@@ -118,7 +118,7 @@ Start Gates:
 | Source of truth read before analysis | yes | Read root `VISION.md` and `vision` router skill |
 | Major lane selected | yes | Mixed major work: architecture / agent workflow / docs doctrine |
 | Decision criteria stated | yes | See Major source and Completion threshold |
-| Existing repo patterns / prior decisions checked | yes | Read `VISION.md`, `autogoal`, `docs-creator`, `major-task`, `agent-native-reviewer`, `slate-auto`, `slate-research`, `docs/editor-behavior/editor-protocol-matrix.md`, prior vision hardening and beta/API readiness plans; corpus artifacts generated |
+| Existing repo patterns / prior decisions checked | yes | Read `VISION.md`, `autogoal`, `docs-creator`, `major-task`, `agent-native-reviewer`, `plite-auto`, `plite-research`, `docs/editor-behavior/editor-protocol-matrix.md`, prior vision hardening and beta/API readiness plans; corpus artifacts generated |
 | Helper stack selected | yes | `autogoal`, `vision`, `major-task`, `docs-creator`, `agent-native-reviewer`; no external research for first pass |
 | External research decision recorded | yes | N/A: local corpus first; OpenClaw/web can be later comparison |
 | Implementation expectation recorded | yes | Analysis first; no VISION.md rewrite unless later requested |
@@ -128,11 +128,11 @@ Start Gates:
 | Docs pack selected | yes | Generated plan includes docs pack because the deliverable is doctrine/docs-facing |
 | `docs-creator` loaded | yes | Read `.agents/skills/docs-creator/SKILL.md` |
 | Docs lane selected | yes | Spec / law / behavior doctrine analysis |
-| Target docs and nearest sibling docs read | yes | Read root `VISION.md`; nearest owners include `slate-auto`, `slate-research`, `docs/editor-behavior/editor-protocol-matrix.md`, prior vision hardening/API readiness plans |
+| Target docs and nearest sibling docs read | yes | Read root `VISION.md`; nearest owners include `plite-auto`, `plite-research`, `docs/editor-behavior/editor-protocol-matrix.md`, prior vision hardening/API readiness plans |
 | Docs style doctrine read | yes | Read `.agents/skills/docs-creator/SKILL.md` |
 | Documented source owner identified | yes | Root `VISION.md`; `.agents/rules/**` source rules; generated skills are mirrors |
 | Agent-native pack selected | yes | Generated plan includes agent-native pack because supervisor behavior and skills are the target |
-| Agent-facing action surface identified | yes | `slate-auto`, `autogoal`, `vision`, `.agents/rules/**`, generated `.agents/skills/**` |
+| Agent-facing action surface identified | yes | `plite-auto`, `autogoal`, `vision`, `.agents/rules/**`, generated `.agents/skills/**` |
 | Source rule versus generated mirror boundary identified | yes | `.agents/rules/**` are source; `.agents/skills/**/SKILL.md` are generated mirrors |
 | `agent-native-reviewer` loaded or waiver recorded | yes | Read `.agents/skills/agent-native-reviewer/SKILL.md` |
 
@@ -181,7 +181,7 @@ Completion Gates:
 | Named verification threshold | yes | Run the repo audit, benchmark, review, prototype, or artifact check named in this plan | Corpus analyzer read 4,612 Markdown-like files and wrote inventory, pattern summary, high-signal extracts, coverage matrix, gap matrix, and patch-ready outline under `.tmp/vision-analysis/**` |
 | Current-state source audit | yes | Map current owner, boundaries, constraints, and affected surfaces | Root `VISION.md` is doctrine owner; `.agents/rules/**` are source skills; `.agents/skills/**` are generated mirrors; owner docs listed in gap matrix |
 | Decision criteria closure | yes | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | Gap matrix separates current strengths, missing/thin areas, and recommended additions |
-| Options / tradeoffs / rejection record | yes | Record viable options, chosen recommendation, and why alternatives lose | Rejected duplicating `slate-auto`, making `VISION.md` a history log, promising zero human review, or treating generated mirrors as doctrine |
+| Options / tradeoffs / rejection record | yes | Record viable options, chosen recommendation, and why alternatives lose | Rejected duplicating `plite-auto`, making `VISION.md` a history log, promising zero human review, or treating generated mirrors as doctrine |
 | Review / pressure pass | yes | Run selected reviewer/lens or record N/A with reason | Agent-native/document pressure applied manually from loaded `major-task`, `docs-creator`, and `agent-native-reviewer`; no code/runtime implementation to autoreview |
 | Review findings closure | yes | Fix or explicitly reject accepted/actionable findings and record closure proof | No actionable implementation findings; recommendation adjusted to patch-ready outline instead of direct `VISION.md` rewrite |
 | External-source audit | yes | Cite official/local clone/external sources when used, or record N/A | N/A: local corpus only; OpenClaw/web can be a later comparison pass |
@@ -204,7 +204,7 @@ Phase / pass table:
 | Intake and source read | complete | Read required skills and current `VISION.md`; created active goal | closed |
 | Current-state map | complete | `.tmp/vision-analysis/category-counts.md`, `pattern-summary.md`, `current-vision-coverage.md` | closed |
 | Options and recommendation | complete | `.tmp/vision-analysis/vision-gap-matrix.md`, `suggested-vision-upgrade.md` | closed |
-| Review / pressure pass | complete | Compared against `slate-auto`, `slate-research`, editor behavior matrix, prior hardening/API/beta plans | closed |
+| Review / pressure pass | complete | Compared against `plite-auto`, `plite-research`, editor behavior matrix, prior hardening/API/beta plans | closed |
 | Implementation or plan artifact | complete | Analysis artifacts only; no `VISION.md` patch yet by design | closed |
 | Verification | complete | Corpus analyzer output plus source reads recorded | closeout |
 | Closeout | complete | `check-complete` initially found only plan-row closeout issues; rows patched and rerun next | final response |
@@ -212,15 +212,15 @@ Phase / pass table:
 Findings:
 - Corpus analyzed 4,612 Markdown-like files and 1,481,761 lines.
 - Current `VISION.md` covers the right themes but is principle-heavy.
-- `slate-auto` contains the most concrete supervisor rules; those should not be duplicated wholesale into `VISION.md`.
+- `plite-auto` contains the most concrete supervisor rules; those should not be duplicated wholesale into `VISION.md`.
 - The missing root doctrine is default decisions: authority, stop conditions, claim width, editor-behavior non-negotiables, API/DX defaults, research escalation, issue corpus closure, and review attention.
 - The honest target is not zero human review. It is zero repeated taste review. Commits, release, credentials, destructive actions, and unsafe irreversible forks remain authority boundaries.
 
 Decisions and tradeoffs:
 - Recommend patching `VISION.md` with compact constitution tables, not with detailed command recipes.
-- Keep command pitfalls, packet ledger mechanics, and scenario generation in `slate-auto`.
+- Keep command pitfalls, packet ledger mechanics, and scenario generation in `plite-auto`.
 - Keep exhaustive editor protocol rows in `docs/editor-behavior/**`.
-- Keep raw research ledgers in `docs/slate-v2/research/**` and `docs/research/raw/**`.
+- Keep raw research ledgers in `docs/plite/research/**` and `docs/research/raw/**`.
 - Reject copying all prior plan/session history into `VISION.md`; it would make checkpoint-zero too heavy.
 
 Implementation notes:
@@ -239,7 +239,7 @@ Error attempts:
 
 Verification evidence:
 - `node .tmp/vision-analysis/analyze-markdown-corpus.mjs` passed and wrote artifacts for 4,612 files / 1,481,761 lines.
-- Selected source reads: `VISION.md`, `autogoal`, `major-task`, `docs-creator`, `agent-native-reviewer`, `vision`, `slate-auto`, `slate-research`, `docs/editor-behavior/editor-protocol-matrix.md`, prior vision hardening/API readiness/beta readiness plans.
+- Selected source reads: `VISION.md`, `autogoal`, `major-task`, `docs-creator`, `agent-native-reviewer`, `vision`, `plite-auto`, `plite-research`, `docs/editor-behavior/editor-protocol-matrix.md`, prior vision hardening/API readiness/beta readiness plans.
 - Broad output discipline: full corpus and high-volume matches are in `.tmp/vision-analysis/**`; chat saw only capped summaries/slices.
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-16-vision-exhaustive-autonomy-analysis.md` passed.
 

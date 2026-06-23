@@ -37,14 +37,14 @@ Use TDD for every new spec cluster. Keep this file as the live record for status
   - `react/stores/plate/createPlateStore.ts`
   - `lib/plugins/node-id/withNodeId.ts`
   - `react/utils/pipeOnChange.ts`
-- Useful upstream `slate-react` invariants remain the same shortlist:
+- Useful upstream `plite-react` invariants remain the same shortlist:
   - `use-slate-selector`
   - `use-slate`
   - `use-selected`
   - `editable`
   - `decorations`
 - Low-ROI core render wrappers like `PlateContainer`, `PlateView`, and `ContentVisibilityChunk` stay deferred unless a real invariant forces them in.
-- Mixed Slate-only and Plate-react type fixtures produce useless cross-type noise fast. Keep nested plugin/configure coverage Slate-only, and prove Plate-specific editor/value inference in a separate narrow contract.
+- Mixed Plite-only and Plate-react type fixtures produce useless cross-type noise fast. Keep nested plugin/configure coverage Plite-only, and prove Plate-specific editor/value inference in a separate narrow contract.
 - `usePluginOption(plugin, 'state')` was typed as supported but broken at runtime. Phase 3 fixes that contract instead of papering over it in tests.
 - `withNodeId` can be covered directly, but Bun needs `NodeIdPlugin` loaded first to avoid a module-cycle false start during the spec import.
 
@@ -52,7 +52,7 @@ Use TDD for every new spec cluster. Keep this file as the live record for status
 
 - Created phase-3 execution log.
 - Replaced the old single core type fixture with focused compile-only files:
-  - `slate-plugin-contracts.ts`
+  - `plite-plugin-contracts.ts`
   - `plate-plugin-contracts.ts`
   - `editor-configure-contracts.ts`
 - `pnpm test:types` is green with the split core fixtures.
@@ -121,7 +121,7 @@ Use TDD for every new spec cluster. Keep this file as the live record for status
 
 ## Learnings
 
-- `package reality`: mixed Slate/Plate nested fixtures create garbage type errors that hide the real contract. Separate Slate-only configure chains from Plate-only editor inference tests.
+- `package reality`: mixed Plite/Plate nested fixtures create garbage type errors that hide the real contract. Separate Plite-only configure chains from Plate-only editor inference tests.
 - `package reality`: core editor creation can trigger change handlers during setup. Clear handler mocks after creating the editor before asserting `pipeOn*Change` behavior.
 - `bug found`: `usePluginOption(plugin, 'state')` needed a dedicated runtime branch. The type contract existed before the runtime contract did.
 - `package reality`: `usePlateStore()` can hand back equivalent wrapper APIs over the same underlying store. Compare the inner `.store` when a test cares about identity.

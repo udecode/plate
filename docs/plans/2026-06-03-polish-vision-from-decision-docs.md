@@ -45,7 +45,7 @@ Verification surface:
 - .tmp/vision-decision-themes.md records themed extraction for synthesis.
 - rg verifies source and generated skill contain the new doctrine.
 - pnpm install regenerates skills from .agents/rules.
-- pnpm docs:slate-v2:audit and pnpm lint:fix verify docs/formatting lanes.
+- pnpm docs:plite:audit and pnpm lint:fix verify docs/formatting lanes.
 - autogoal check-complete verifies this goal plan.
 
 Constraints:
@@ -61,7 +61,7 @@ Boundaries:
 - External sources: N/A; this is a local docs consolidation pass.
 - Browser surface: N/A; no runtime UI changed.
 - Tracker sync: N/A.
-- Non-goals: no Slate runtime code, no public docs rewrite beyond this plan, no benchmark target change, no skill topology redesign.
+- Non-goals: no Plite runtime code, no public docs rewrite beyond this plan, no benchmark target change, no skill topology redesign.
 
 Output budget strategy:
 - Count and classify docs with capped Node extraction instead of streaming full files.
@@ -103,7 +103,7 @@ Start Gates:
 | Helper stack selected | yes | autogoal, vision, major-task, docs-creator, agent-native-reviewer. |
 | External research decision recorded | yes | N/A: local docs corpus is the source. |
 | Implementation expectation recorded | yes | Source rule edit plus generated mirror sync. |
-| Workspace authority selected | yes | plate-2 owns skill/docs artifacts; .tmp/slate-v2 runtime is not touched. |
+| Workspace authority selected | yes | plate-2 owns skill/docs artifacts; .tmp/plite runtime is not touched. |
 | Branch / PR expectation decided | yes | N/A: user did not ask for branch, commit, or PR. |
 | Output budget strategy recorded | yes | Capped extraction to .tmp artifacts; no full corpus dump. |
 | Docs pack selected | yes | docs pack applied to plan. |
@@ -287,7 +287,7 @@ Completion Gates:
 | Goal plan complete | yes | Run node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-03-polish-vision-from-decision-docs.md | Recorded in Verification evidence. |
 | Docs source-backed claim audit | yes | Verify docs claims against current source or record N/A | High-signal owner docs and manifest used; no public API docs changed. |
 | Docs links / routes / previews | N/A | Verify leaf links, routes, anchors, and preview names or record N/A | No public route or MDX page changed. |
-| Docs MDX/content parser | yes | Run pnpm docs:slate-v2:audit for docs/plans change | Recorded in Verification evidence. |
+| Docs MDX/content parser | yes | Run pnpm docs:plite:audit for docs/plans change | Recorded in Verification evidence. |
 | Plugin page specifics | N/A | Apply docs-creator kit/manual/API rules; otherwise N/A | No plugin page changed. |
 | Agent source / generated sync | yes | Run pnpm install when .agents/rules/** changed and verify generated mirrors | pnpm install completed and rg found new rules in source and mirror. |
 | Agent action discoverability | yes | Source-audit the skill/rule path an agent will read | New checkpoint doctrine visible in .agents/skills/vision/SKILL.md. |
@@ -307,7 +307,7 @@ Phase / pass table:
 Findings:
 - The docs corpus contains 1287 decision-bearing docs and 446 skipped docs without reusable decision signals.
 - The current north-star skeleton was directionally right, but under-specified external-reference policy, layered ownership, benchmark fairness, and solution-note promotion.
-- The strongest repeated doctrine is: external editors provide pressure; Slate keeps its own model, operations, selection, DOM, and browser-proof vocabulary.
+- The strongest repeated doctrine is: external editors provide pressure; Plite keeps its own model, operations, selection, DOM, and browser-proof vocabulary.
 - Page layout and deterministic measurement belong above document truth; active editing must not be routed through a measurement engine.
 - Benchmarks must answer a named decision with fair workloads and behavior guardrails, not a single broad speed claim.
 
@@ -339,7 +339,7 @@ Verification evidence:
 - Artifacts: .tmp/vision-decision-docs.json, .tmp/vision-decision-batches.md, .tmp/vision-decision-themes.md.
 - pnpm install: completed successfully and ran skiller apply.
 - rg source/mirror audit: new doctrine found in .agents/rules/vision.mdc and .agents/skills/vision/SKILL.md.
-- pnpm docs:slate-v2:audit: passed, Slate v2 docs audit passed.
+- pnpm docs:plite:audit: passed, Plite docs audit passed.
 - pnpm lint:fix: passed, checked 3234 files and no fixes were applied.
 - autogoal check-complete: passed for this plan.
 
@@ -347,7 +347,7 @@ Final handoff contract:
 - Recommendation: keep vision as the checkpoint-zero taste skill and keep long batch evidence out of it.
 - Confidence: high after final command pass.
 - Evidence: corpus manifest, 129 checked batches, source/mirror sync, docs/lint/autogoal gates.
-- Tests / commands: pnpm install; rg source/mirror audit; pnpm docs:slate-v2:audit; pnpm lint:fix; autogoal check-complete.
+- Tests / commands: pnpm install; rg source/mirror audit; pnpm docs:plite:audit; pnpm lint:fix; autogoal check-complete.
 - Browser proof: N/A, no browser surface changed.
 - PR / tracker: N/A, user did not request git actions.
 - Caveats: decision-bearing detection is heuristic, but skipped files are counted and manifest-backed.

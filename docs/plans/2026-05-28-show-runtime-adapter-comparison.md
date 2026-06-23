@@ -46,7 +46,7 @@ Verification surface:
 Constraints:
 - Keep raw Evidence Kit result rows unchanged.
 - Fix the dashboard grouping layer, not the benchmark producers.
-- Preserve existing Slate v2 internals split.
+- Preserve existing Plite internals split.
 - Do not create PRs, comments, commits, or pushes.
 
 Boundaries:
@@ -56,7 +56,7 @@ Boundaries:
   goal plan.
 - Browser surface: static docs served from `http://127.0.0.1:8765`.
 - Tracker sync: N/A, no tracker item.
-- Non-goals: adding new benchmark rows, changing measurements, or making Slate
+- Non-goals: adding new benchmark rows, changing measurements, or making Plite
   rows directly comparable to Lexical/ProseMirror.
 
 Blocked condition:
@@ -170,8 +170,8 @@ Decisions and tradeoffs:
   `runtime-adapter-compare` in `render-rich-text-viewer.mjs`.
 - Rejected: changing raw benchmark result categories, because Evidence Kit
   artifact identity should stay target-owned.
-- Deferred: direct Slate vs Lexical/ProseMirror normalized runtime comparison.
-  That needs a Slate adapter or normalized fixtures, not a display-only trick.
+- Deferred: direct Plite vs Lexical/ProseMirror normalized runtime comparison.
+  That needs a Plite adapter or normalized fixtures, not a display-only trick.
 
 Implementation notes:
 - Added `runtimeAdapterCategories`.
@@ -207,12 +207,12 @@ Final handoff contract:
 - Browser check: served data is updated; reload `rich-text.html` to fetch it.
 - Outcome: visible Lexical vs ProseMirror runtime comparison table.
 - Caveat: this is Lexical vs ProseMirror headless runtime comparison, not a
-  direct Slate-vs-Lexical runtime comparison.
+  direct Plite-vs-Lexical runtime comparison.
 - Design:
   - Chosen boundary: viewer data normalization.
   - Why not quick patch: raw artifact names are still useful; display grouping
     is the broken layer.
-  - Why not broader change: direct Slate normalization is a separate benchmark
+  - Why not broader change: direct Plite normalization is a separate benchmark
     design problem.
 - Verified: docs check, data assertion, syntax check, served JSON smoke,
   autogoal check.
@@ -238,5 +238,5 @@ Reboot status:
 | What have I done? | Added shared runtime-adapter comparison group and regenerated docs/data |
 
 Open risks:
-- Direct Slate vs Lexical/ProseMirror runtime comparison still needs normalized
-  Slate-side fixtures or a Slate adapter.
+- Direct Plite vs Lexical/ProseMirror runtime comparison still needs normalized
+  Plite-side fixtures or a Plite adapter.

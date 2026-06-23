@@ -22,7 +22,7 @@ Make plain `ArrowUp` / `ArrowDown` table navigation stable.
 - Plain `ArrowUp` / `ArrowDown` goes through the shared `moveLine` seam before browser default caret movement.
 - Table navigation needs to take ownership at that seam. Repairing selection later is too late and causes visible caret flash.
 - Same-cell adjacent block detection is enough for real multi-block cells.
-- Wrapped single-block cells need DOM geometry, not just Slate path checks.
+- Wrapped single-block cells need DOM geometry, not just Plite path checks.
 - `editor.api.toDOMRange(...)` plus caret/block rect comparison is enough to detect whether the caret is already on the visual first or last line.
 - Missing DOM rects should fail conservatively and preserve previous non-throwing behavior.
 

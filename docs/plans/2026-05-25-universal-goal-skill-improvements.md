@@ -39,7 +39,7 @@ Verification surface:
 Constraints:
 - Keep `goal` generic.
 - Do not add repo-specific commands, PR policy, browser tooling, package manager
-  rules, Slate scorecards, or issue-ledger rules to `goal`.
+  rules, Plite scorecards, or issue-ledger rules to `goal`.
 - Do not hand-edit generated skill files.
 
 Boundaries:

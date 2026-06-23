@@ -94,7 +94,7 @@ Strict batch, sorted by value:
 12. `core` — [SlatePlugin.ts](packages/core/src/lib/plugin/SlatePlugin.ts) — score `5`, coverage `0.0%`, uncovered `641`
 13. `core` — [BasePlugin.ts](packages/core/src/lib/plugin/BasePlugin.ts) — score `5`, coverage `0.0%`, uncovered `541`
 14. `utils` — [plate-types.ts](packages/utils/src/lib/plate-types.ts) — score `5`, coverage `0.0%`, uncovered `251`
-15. `core` — [SlateEditor.ts](packages/core/src/lib/editor/SlateEditor.ts) — score `5`, coverage `0.0%`, uncovered `197`
+15. `core` — [PliteEditor.ts](packages/core/src/lib/editor/PliteEditor.ts) — score `5`, coverage `0.0%`, uncovered `197`
 
 ## Stop Condition
 

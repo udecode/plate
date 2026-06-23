@@ -1,0 +1,28 @@
+{
+  "extends": "../../tooling/config/tsconfig.base.json",
+  "include": ["src", "../../tooling/config/global.d.ts"],
+  "exclude": [],
+  "compilerOptions": {
+    "paths": {
+      "@platejs/browser/browser": ["../browser/src/browser/index.ts"],
+      "@platejs/browser/core": ["../browser/src/core/index.ts"],
+      "@platejs/browser/playwright": ["../browser/src/playwright/index.ts"],
+      "@platejs/browser/transports": ["../browser/src/transports/index.ts"],
+      "@platejs/plite": ["../plite/src/index.ts"],
+      "@platejs/plite/internal": ["../plite/src/internal/index.ts"],
+      "@platejs/plite-dom": ["../plite-dom/src/index.ts"],
+      "@platejs/plite-dom/internal": ["../plite-dom/src/internal/index.ts"],
+      "@platejs/plite-history": ["../plite-history/src/index.ts"],
+      "@platejs/plite-hyperscript": ["../plite-hyperscript/src/index.ts"],
+      "@platejs/plite-layout": ["../plite-layout/src/index.ts"],
+      "@platejs/plite-layout/react": ["../plite-layout/src/react.tsx"],
+      "@platejs/plite-react": ["../plite-react/src/index.ts"],
+      "@platejs/yjs": ["../yjs/src/index.ts"],
+      "@platejs/yjs/core": ["../yjs/src/core/index.ts"],
+      "@platejs/yjs/internal": ["../yjs/src/internal/index.ts"],
+      "@platejs/yjs/react": ["../yjs/src/react/index.ts"]
+    },
+    "types": ["node", "react", "react-dom"],
+    "jsx": "react-jsx"
+  }
+}

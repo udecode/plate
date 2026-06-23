@@ -27,7 +27,7 @@ Implement the March 22 Yjs testing plan with:
 - No `/react` coverage.
 - No browser lane.
 - Slow Yjs collaboration tests must not run as part of `bun test`.
-- Use upstream `slate-yjs` and `yjs` for invariants, not for blind file mirroring.
+- Use upstream `plite-yjs` and `yjs` for invariants, not for blind file mirroring.
 
 ## Findings
 
@@ -35,7 +35,7 @@ Implement the March 22 Yjs testing plan with:
 - Bun ships `mock.module(...)`, and the local `bun-types` docs confirm it is available in this repo.
 - `BaseYjsPlugin` is the core risk surface: provider instantiation, sync wait, seed behavior, and cleanup.
 - `withPlateYjs` is worth direct coverage because it has real branching and composition order.
-- Upstream `slate-yjs` mostly validates operation-level Slate/Yjs correctness and should not be mirrored in this wrapper package.
+- Upstream `plite-yjs` mostly validates operation-level Plite/Yjs correctness and should not be mirrored in this wrapper package.
 - Upstream `yjs` late-sync and pending-update cases are worth adapting at the provider-sync layer, which justified the disconnected-concurrent and out-of-order slow fixtures.
 
 ## Verification Target

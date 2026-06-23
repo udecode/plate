@@ -1,7 +1,7 @@
 # refresh five stale benchmark artifacts
 
 Objective:
-Refresh the five stale active Evidence Kit artifacts for `react-huge-document-browser-trace`, `core-normalization-current`, `core-query-ref-observation`, `core-refs-projection`, and `history-compare`; regenerate benchmark health/docs; verify those five refresh actions disappear while the dashboard stays scoped to Slate and Slate v2.
+Refresh the five stale active Evidence Kit artifacts for `react-huge-document-browser-trace`, `core-normalization-current`, `core-query-ref-observation`, `core-refs-projection`, and `history-compare`; regenerate benchmark health/docs; verify those five refresh actions disappear while the dashboard stays scoped to Plite and Plite.
 
 Goal plan:
 docs/plans/2026-05-28-refresh-five-stale-benchmark-artifacts.md
@@ -10,7 +10,7 @@ Task source:
 - type: benchmark health next actions
 - id / link: `refresh-react-huge-document-browser-trace`, `refresh-core-normalization-current`, `refresh-core-query-ref-observation`, `refresh-core-refs-projection`, `refresh-history-compare`
 - title: refresh the five remaining stale active artifacts
-- acceptance criteria: all five registry commands pass, all five registered artifact files are fresh, Evidence Kit health/docs regenerate, health no longer lists those five refresh actions, and live `rich-text-data.json` remains Slate-only.
+- acceptance criteria: all five registry commands pass, all five registered artifact files are fresh, Evidence Kit health/docs regenerate, health no longer lists those five refresh actions, and live `rich-text-data.json` remains Plite-only.
 
 Completion threshold:
 - `Plate repo root` runs all five active registry commands successfully.
@@ -29,10 +29,10 @@ Verification surface:
 - `benchmarks/editor`: `npm run check`
 - repo root: health-next-action JSON audit
 - repo root: artifact mtime audit
-- repo root: live `rich-text-data.json` Slate-only fetch audit
+- repo root: live `rich-text-data.json` Plite-only fetch audit
 
 Constraints:
-- Keep active benchmark scope to `slate` and `slate-v2`.
+- Keep active benchmark scope to `slate` and `plite`.
 - Do not reintroduce Plate, ProseMirror, Lexical, TipTap, or chunk-off lanes.
 - Do not repair optional artifact decisions or unregistered historical artifact policy in this refresh.
 - Do not create commits, PRs, pushes, or tracker comments.
@@ -42,7 +42,7 @@ Boundaries:
 - Allowed edit scope: stale benchmark harness drift, Evidence Kit registry command contract, generated Evidence Kit outputs, and this goal plan.
 - Browser surface: static dashboard served at `http://127.0.0.1:8765/`.
 - Tracker sync: not applicable, no external tracker requested.
-- Non-goals: optional artifact policy, unregistered artifact cleanup, non-Slate adapters, and unrelated Slate v2 repo contract test cleanup.
+- Non-goals: optional artifact policy, unregistered artifact cleanup, non-Plite adapters, and unrelated Plite repo contract test cleanup.
 
 Blocked condition:
 - A real blocker would be any of the five benchmark commands failing after source-level harness repair, or Evidence Kit still reporting one of the five refresh actions after regenerated docs/health. Neither blocker remains.
@@ -96,14 +96,14 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run all five benchmark commands, Evidence Kit check, health audit, artifact audit, and live JSON audit | Completed. |
-| Bug reproduced before fix | yes | Record failing command before fix | `bun run bench:history:compare:local` failed on missing `.tmp/slate/package.json`; env override then exposed stale `withHistory` import against current Slate v2. |
+| Bug reproduced before fix | yes | Record failing command before fix | `bun run bench:history:compare:local` failed on missing `.tmp/slate/package.json`; env override then exposed stale `withHistory` import against current Plite. |
 | Targeted behavior verification | yes | Run each target benchmark command | All five target commands passed after fixing history compare. |
 | TypeScript or typed config changed | no | No typecheck required | Changed JS benchmark script and JSON registry only. |
 | Package exports or file layout changed | no | No barrel action | No exported layout changed. |
 | Package manifests, lockfile, or install graph changed | no | No install needed | No manifest or lockfile changed. |
 | Agent rules or skills changed | no | No skill sync | No `.agents` source edited. |
 | Workspace authority proof | yes | Run verification in owning workspaces | Target commands and lint ran in `Plate repo root`; Evidence Kit suite ran in `benchmarks/editor`; HTTP data audit ran from repo root. |
-| Browser surface changed | yes | Verify generated/served dashboard data | Direct fetch of served `rich-text-data.json` passed with no forbidden non-Slate terms. |
+| Browser surface changed | yes | Verify generated/served dashboard data | Direct fetch of served `rich-text-data.json` passed with no forbidden non-Plite terms. |
 | Browser final proof | yes | Record caveat | Browser MCP was not exposed; live HTTP JSON proof covers the dashboard data source. |
 | CI-controlled template output changed | no | No template output | No `templates/**` changed. |
 | Package behavior or public API changed | no | No changeset | Benchmark harness only. |
@@ -132,17 +132,17 @@ Phase / pass table:
 Findings:
 - Four artifacts refreshed without code changes.
 - `history-compare` defaulted to `.tmp/slate`, but this repo workflow compares `Plate repo root` against `../../../slate`.
-- After the legacy path was corrected, `history-compare` still used old `withHistory` assumptions. Current Slate v2 uses `history()` extensions and `tx.history.undo()/redo()`.
+- After the legacy path was corrected, `history-compare` still used old `withHistory` assumptions. Current Plite uses `history()` extensions and `tx.history.undo()/redo()`.
 - Evidence Kit health now has only three non-refresh next actions.
 
 Decisions and tradeoffs:
-- Patched the Evidence Kit registry command to pin `HISTORY_BENCH_LEGACY_REPO=../../../slate`, matching the established Slate vs Slate-v2 checkout layout.
+- Patched the Evidence Kit registry command to pin `HISTORY_BENCH_LEGACY_REPO=../../../slate`, matching the established Plite vs Plite-v2 checkout layout.
 - Patched the history compare runner to support both current extension-based history and legacy plugin-based history.
 - Did not touch optional artifact decisions or historical unregistered artifacts; those are separate next actions.
 
 Implementation notes:
 - Updated [benchmark-registry.json](/Users/zbeyens/git/plate-2/benchmarks/editor/research/benchmark-registry.json:207) so `history-compare` uses `HISTORY_BENCH_LEGACY_REPO=../../../slate`.
-- Updated [history.mjs](/Users/zbeyens/git/plate-2/benchmarks/slate-v2/donor/core/compare/history.mjs:1) to dynamically support `history()` and `withHistory()` APIs.
+- Updated [history.mjs](/Users/zbeyens/git/plate-2/benchmarks/plite/donor/core/compare/history.mjs:1) to dynamically support `history()` and `withHistory()` APIs.
 - Regenerated benchmark results and docs under `benchmarks/editor`.
 
 Review fixes:
@@ -152,7 +152,7 @@ Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
 | `history-compare` looked for `.tmp/slate/package.json` | 1 | Pin `HISTORY_BENCH_LEGACY_REPO=../../../slate` | Fixed in registry and command rerun. |
-| `withHistory` missing from current `slate-history` | 1 | Support both current `history()` extension and legacy `withHistory()` plugin | Fixed in compare runner. |
+| `withHistory` missing from current `plite-history` | 1 | Support both current `history()` extension and legacy `withHistory()` plugin | Fixed in compare runner. |
 
 Verification evidence:
 - `Plate repo root`: `bun run bench:react:huge-document:browser-trace:local` passed and wrote `tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-3-ops-10.json`.
@@ -163,7 +163,7 @@ Verification evidence:
 - Fresh artifact mtimes: browser trace `2026-05-28T21:59:39.539Z`; normalization `2026-05-28T21:59:45.787Z`; query/ref observation `2026-05-28T21:59:54.777Z`; refs projection `2026-05-28T22:00:05.880Z`; history compare `2026-05-28T22:01:58.315Z`.
 - `benchmarks/editor`: `npm run check` passed. It regenerated benchmark results, scope, docs, health, and research list output.
 - Health audit: `nextActionCount=3`; remaining titles are `Decide whether core-transaction-current should stay optional`, `Decide whether history-retained-memory should stay optional`, and `Delete or ignore historical unregistered artifacts`; none of the five refresh IDs remain.
-- Live dashboard data audit: `rowCount=463`, `groupCount=11`, libraries `slate`, `slate-v2`, `slate-v2:browser-replay`, `slate-v2:current`, `slate-v2:default-render-auto`, `slate-v2:dom-present`, `slate:baseline`, `slate:browser-replay`; forbidden terms found `[]`.
+- Live dashboard data audit: `rowCount=463`, `groupCount=11`, libraries `slate`, `plite`, `plite:browser-replay`, `plite:current`, `plite:default-render-auto`, `plite:dom-present`, `slate:baseline`, `plite:browser-replay`; forbidden terms found `[]`.
 - `Plate repo root`: `bun lint` passed.
 
 Final handoff contract:
@@ -172,7 +172,7 @@ Final handoff contract:
 - Confidence line: high.
 - Flow table:
   - Reproduced: five stale refresh actions existed; history compare initially failed on wrong legacy path and stale history API.
-  - Verified: all five target commands passed, Evidence Kit check passed, health refresh actions disappeared, live dashboard data stayed Slate-only.
+  - Verified: all five target commands passed, Evidence Kit check passed, health refresh actions disappeared, live dashboard data stayed Plite-only.
 - Browser check: direct HTTP fetch against served `rich-text-data.json`; Browser MCP unavailable.
 - Outcome: all five stale active artifacts are fresh and health is down to the three non-refresh tasks.
 - Caveat: remaining health tasks are optional-artifact decisions and unregistered artifact cleanup, not refreshes.

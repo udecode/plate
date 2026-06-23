@@ -48,7 +48,7 @@ lanes are release-prep or later-release follow-up.
   - non-empty quoted paragraphs should still lift one quote level
   - first empty quoted paragraphs should still exit one quote level
   - empty non-first quoted paragraphs should not lift; they should delete or merge inside the same quote first
-- Heading `Backspace@start` needed a real plugin rule instead of generic Slate merge behavior:
+- Heading `Backspace@start` needed a real plugin rule instead of generic Plite merge behavior:
   - non-empty headings should reset to paragraphs before any merge
   - empty headings should reset to empty paragraphs instead of disappearing into the previous block
 - The remaining Batch 1 destructive rows were mostly coverage debt, not more seam debt:

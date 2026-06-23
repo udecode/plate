@@ -28,7 +28,7 @@ Task source:
     route and no better local owner;
   - rewire source rules/templates before deleting a referenced skill;
   - do not remove current owners such as `auto`, `maintainer`, `autoclosure`,
-    `architecture-cleanup`, `slate-research`, `performance`, `tdd`, or
+    `architecture-cleanup`, `plite-research`, `performance`, `tdd`, or
     `agent-native-reviewer`;
   - run `pnpm install` to regenerate mirrors and audit that no dangling
     removed-skill references remain.
@@ -56,7 +56,7 @@ Completion threshold:
   `.claude/skills/<name>/SKILL.md` mirrors.
 - Source rules/templates no longer route to removed skiller names; references
   are replaced with current owners such as `architecture-cleanup`,
-  `slate-research`, `performance`, `autoreview`, `grill-with-docs`, `tdd`, or
+  `plite-research`, `performance`, `autoreview`, `grill-with-docs`, `tdd`, or
   direct source/history reads.
 - `pnpm install` passes and final audits pass.
 - Task closure is legal only when the source-of-truth acceptance criteria are
@@ -242,7 +242,7 @@ Findings:
 
 Decisions and tradeoffs:
 - Keep only `agent-native-reviewer` from the old `EveryInc/compound-engineering-plugin` skiller set.
-- Replace generic CE research/review names with current owners: direct prior-doc/source search, `research-wiki`, `slate-research`, `architecture-cleanup`, `performance`, `grill-with-docs`, `autoreview`, and `tdd`.
+- Replace generic CE research/review names with current owners: direct prior-doc/source search, `research-wiki`, `plite-research`, `architecture-cleanup`, `performance`, `grill-with-docs`, `autoreview`, and `tdd`.
 - Do not remove `agent-native-reviewer` until there is a better local/dotai owner for agent-action parity review.
 
 Implementation notes:

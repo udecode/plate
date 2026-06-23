@@ -1,7 +1,7 @@
 # React huge document legacy AR perf
 
 Objective:
-Optimize `react-huge-document-legacy-compare` under Slate AR until target
+Optimize `react-huge-document-legacy-compare` under Plite AR until target
 evidence is green, plateaued, or blocked by correctness/architecture proof.
 
 Goal plan:
@@ -20,7 +20,7 @@ Applied packs:
 Task source:
 - type: user request
 - id / link: local chat request, 2026-06-01
-- title: Run Slate AR perf on `react-huge-document-legacy-compare`
+- title: Run Plite AR perf on `react-huge-document-legacy-compare`
 - acceptance criteria: make the target measure real huge-document behavior
   instead of benchmark harness time, run target-backed AR packets, use `bun
   check` as correctness gate, and stop when the target is under the promotion
@@ -59,9 +59,9 @@ Constraints:
 - Do not add broad ceremony when the task is trivial or docs-only.
 
 Boundaries:
-- Source of truth: `benchmarks/targets/slate-v2.json` target
+- Source of truth: `benchmarks/targets/plite.json` target
   `react-huge-document-legacy-compare`, the benchmark script under
-  `benchmarks/slate-v2/donor/browser/react`, and
+  `benchmarks/plite/donor/browser/react`, and
   `Plate repo root/autoresearch.*`.
 - Allowed edit scope: target registry/report artifacts, benchmark metric output,
   AR session files, and runtime code only if the benchmark exposes a real owner.
@@ -108,13 +108,13 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Skill analysis before edits | yes | Using `autogoal`, `slate-ar-perf`, and `slate-ar` workflow. |
+| Skill analysis before edits | yes | Using `autogoal`, `plite-ar-perf`, and `plite-ar` workflow. |
 | Active goal checked or created | yes | `get_goal` returned none; created this goal. |
 | Source of truth read before edits | yes | Read target registry entry and benchmark output script. |
 | Tracker comments and attachments read | no | N/A: no tracker item or attachment. |
 | Video transcript evidence required | no | N/A: no video evidence in this task. |
 | `docs/solutions` checked for non-trivial existing-code work | no | N/A: investigation landed in benchmark harness isolation, not product runtime architecture. |
-| TDD decision before behavior change or bug fix | yes | No product behavior changed; verification is benchmark contract plus existing Slate v2 correctness suite. |
+| TDD decision before behavior change or bug fix | yes | No product behavior changed; verification is benchmark contract plus existing Plite correctness suite. |
 | Branch decision for code-changing task | no | N/A: no branch/commit/PR requested. |
 | Release artifact decision | yes | No release artifact: benchmark/AR tooling only, no published package runtime/API delta. |
 | Browser tool decision for browser surface | no | N/A: jsdom benchmark target, no site route proof. |
@@ -193,7 +193,7 @@ Completion Gates:
 | CI-controlled template output changed | no | Record N/A | N/A: no templates changed. |
 | Package behavior or public API changed | no | Record no changeset reason | No changeset: benchmark harness/target metadata only. |
 | Registry-only component work changed | no | Record N/A | N/A: no registry component work. |
-| Docs or content changed | yes | Verify source-backed incidental plan/report docs | Target report regenerated from `benchmarks/targets/slate-v2.json`; plan records local evidence. |
+| Docs or content changed | yes | Verify source-backed incidental plan/report docs | Target report regenerated from `benchmarks/targets/plite.json`; plan records local evidence. |
 | High-risk mini gate | yes | Record failure mode/proof/boundary | Risk was benchmark command contract lying via shared-process GC; fixed at harness boundary and proven by parser lint plus repeated run/check. |
 | Agent-native review for agent/tooling changes | no | Record N/A | N/A: no skill/rule/hook/prompt source changed. |
 | Local install corruption suspected | no | Record N/A | N/A: no install corruption signature remained. |
@@ -203,11 +203,11 @@ Completion Gates:
 | PR proof image hosting | no | Record N/A | N/A: no PR/browser proof image. |
 | Tracker sync-back | no | Record N/A | N/A: no tracker requested. |
 | Final handoff contract | yes | Fill final handoff fields | Completed below. |
-| Final lint | yes | Run scoped equivalent | `node --check benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs` passed. |
+| Final lint | yes | Run scoped equivalent | `node --check benchmarks/plite/donor/browser/react/huge-document-legacy-compare.mjs` passed. |
 | Output budget discipline | yes | Record output handling | Full benchmark JSON remains in artifact; final reports metric summaries. |
 | Goal plan complete | yes | Run mechanical autogoal check | `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-01-react-huge-document-legacy-ar-perf.md` passed. |
 | Agent source / generated sync | no | Record N/A | N/A: no `.agents/rules/**` change. |
-| Agent action discoverability | yes | Source-audit command surface | `benchmarks/targets/slate-v2.json`, `Plate repo root/autoresearch.sh`, and `Plate repo root/autoresearch.md` expose the target command. |
+| Agent action discoverability | yes | Source-audit command surface | `benchmarks/targets/plite.json`, `Plate repo root/autoresearch.sh`, and `Plate repo root/autoresearch.md` expose the target command. |
 | Agent-native review | no | Record N/A | N/A: no agent source changed. |
 | Public API / package boundary proof | yes | Record impact | No public API/package boundary/export impact; benchmark harness and target metadata only. |
 | Release artifact classification | yes | Record classification | No release artifact: internal benchmark/AR tooling only. |
@@ -246,15 +246,15 @@ Decisions and tradeoffs:
   product optimization patch.
 
 Implementation notes:
-- `benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs`
+- `benchmarks/plite/donor/browser/react/huge-document-legacy-compare.mjs`
   now emits behavior-native `METRIC` lines and namespaces artifacts by isolated
   versus combined surface mode.
 - The benchmark forces Bun GC before samples and after disposal when available.
-- `benchmarks/targets/slate-v2.json`, `Plate repo root/autoresearch.sh`, and
+- `benchmarks/targets/plite.json`, `Plate repo root/autoresearch.sh`, and
   `Plate repo root/autoresearch.md` use
   `REACT_HUGE_COMPARE_ISOLATE_SURFACES=1`.
-- `benchmarks/targets/history/slate-v2-latest.json` and
-  `benchmarks/targets/reports/slate-v2.md` were regenerated from the target
+- `benchmarks/targets/history/plite-latest.json` and
+  `benchmarks/targets/reports/plite.md` were regenerated from the target
   registry.
 
 Review fixes:
@@ -267,14 +267,14 @@ Error attempts:
 | `promote-gate` blocked on historical contaminated evidence | 2 | Use `autoresearch run` and explicit measure logs | Repeat evidence recorded as accepted measurements without creating commits. |
 
 Verification evidence:
-- `node --check benchmarks/slate-v2/donor/browser/react/huge-document-legacy-compare.mjs` passed.
+- `node --check benchmarks/plite/donor/browser/react/huge-document-legacy-compare.mjs` passed.
 - `pnpm bench:targets:check` passed: 26 targets valid.
 - `pnpm bench:targets:dry-run -- react-huge-document-legacy-compare` passed:
   `autoresearchSetupOk=true`, required artifact present, primary metric
   `react_huge_doc_legacy_compare_worst_p95_ratio`.
 - `pnpm bench:targets:report` regenerated
-  `benchmarks/targets/history/slate-v2-latest.json` and
-  `benchmarks/targets/reports/slate-v2.md`.
+  `benchmarks/targets/history/plite-latest.json` and
+  `benchmarks/targets/reports/plite.md`.
 - `autoresearch benchmark-lint --sample` parsed
   `react_huge_doc_legacy_compare_worst_p95_ratio=0.53` and
   `react_huge_doc_legacy_compare_worst_p95_delta_ms=-35.82`.
@@ -282,7 +282,7 @@ Verification evidence:
 - AR run 9: ratio `0.87`, delta `-5.68ms`, checks passed.
 - AR run 10: ratio `0.53`, delta `-35.82ms`, checks passed.
 - AR checks covered `Plate repo root` `bun check`: Bun package tests
-  `1172 pass`, `95 skip`, `0 fail`; `slate-layout` `41 pass`; slate-react
+  `1172 pass`, `95 skip`, `0 fail`; `plite-layout` `41 pass`; slate-react
   Vitest `56 files`, `590 tests passed`.
 
 Final handoff contract:

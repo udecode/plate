@@ -343,7 +343,7 @@ Design intent:
 
 Phase 1A should support:
 
-- `node` target by Slate path
+- `node` target by Plite path
 
 Optional but deferred:
 

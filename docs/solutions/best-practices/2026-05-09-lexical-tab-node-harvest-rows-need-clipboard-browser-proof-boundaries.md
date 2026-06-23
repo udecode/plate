@@ -2,7 +2,7 @@
 title: Lexical tab node harvest rows need clipboard and browser proof boundaries
 date: 2026-05-09
 category: docs/solutions/best-practices
-module: Slate v2 Lexical harvest
+module: Plite Lexical harvest
 problem_type: best_practice
 component: testing_framework
 symptoms:
@@ -12,7 +12,7 @@ symptoms:
 root_cause: wrong_api
 resolution_type: documentation_update
 severity: medium
-tags: [slate-v2, lexical-harvest, tab-node, paste-html, clipboard, tests]
+tags: [plite, lexical-harvest, tab-node, paste-html, clipboard, tests]
 ---
 
 # Lexical tab node harvest rows need clipboard and browser proof boundaries
@@ -22,7 +22,7 @@ tags: [slate-v2, lexical-harvest, tab-node, paste-html, clipboard, tests]
 Lexical `TabNode` tests look like one portable tab feature, but they cover
 several different owners: plain-text clipboard fallback, Google Docs HTML paste,
 keyboard indentation, command-level tab insertion, node serialization, and
-selection around a TabNode class. Slate only owns the literal tab/newline paste
+selection around a TabNode class. Plite only owns the literal tab/newline paste
 behavior in this slice.
 
 ## Symptoms
@@ -37,7 +37,7 @@ behavior in this slice.
 
 ## What Didn't Work
 
-- Treating Lexical's `TabNode` class as a Slate model target. Slate stores
+- Treating Lexical's `TabNode` class as a Plite model target. Plite stores
   literal tabs as normal text.
 - Broadly changing the paste-html importer insertion API to satisfy one
   paragraph-count assertion. That traded a narrow tab proof for regressions in
@@ -49,7 +49,7 @@ behavior in this slice.
 
 Split the source rows by owner:
 
-- add a `slate-dom` clipboard package row for `text/plain`
+- add a `plite-dom` clipboard package row for `text/plain`
   `hello\tworld\nhello\tworld`;
 - add a paste-html browser row for the Google Docs `Apple-tab-span` HTML;
 - assert the two non-empty paragraph text values exactly as
@@ -60,7 +60,7 @@ Split the source rows by owner:
 
 ## Why This Works
 
-The copied behavior is not "Slate should have a TabNode." The useful invariant
+The copied behavior is not "Plite should have a TabNode." The useful invariant
 is that editor paste paths preserve literal tab characters while honoring line
 boundaries. Package clipboard proof covers model fallback; Playwright covers the
 browser HTML parser path.
@@ -73,7 +73,7 @@ new tab row.
 ## Prevention
 
 - For upstream node tests, split clipboard/browser behavior from node
-  serialization and command API before editing Slate.
+  serialization and command API before editing Plite.
 - When touching paste-html insertion, run the whole paste-html browser file, not
   only the new row.
 - In paste browser rows, assert visible imported content and exact text where
@@ -85,4 +85,4 @@ new tab row.
 ## Related Issues
 
 - [Lexical paragraph node harvest rows need DOM import splitting](./2026-05-09-lexical-paragraph-node-harvest-rows-need-dom-import-splitting.md)
-- [Slate browser command rows must share app text policy with native input](../test-failures/2026-04-29-slate-browser-command-rows-must-share-app-text-policy-with-native-input.md)
+- [Plite browser command rows must share app text policy with native input](../test-failures/2026-04-29-plite-browser-command-rows-must-share-app-text-policy-with-native-input.md)

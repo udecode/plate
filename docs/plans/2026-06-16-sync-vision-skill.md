@@ -105,7 +105,7 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | First checkpoint copied explicit requirements before implementation |
-| Skill analysis before edits | yes | Read `autogoal`, `skill-creator`, `vision`, `sync-shadcn`, `slate-auto`, `.agents/AGENTS.md`, and `.agents/skiller.toml` |
+| Skill analysis before edits | yes | Read `autogoal`, `skill-creator`, `vision`, `sync-shadcn`, `plite-auto`, `.agents/AGENTS.md`, and `.agents/skiller.toml` |
 | Active goal checked or created | yes | `get_goal` returned null; created active goal for this plan |
 | Source of truth read before edits | yes | Read `.agents/AGENTS.md`, `VISION.md`, and relevant source-rule patterns |
 | Tracker comments and attachments read | N/A | No tracker |

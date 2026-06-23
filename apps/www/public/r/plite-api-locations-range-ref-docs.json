@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plite-api-locations-range-ref-docs",
+  "title": "RangeRef API",
+  "description": "Mutable range references that track selections or anchors across operations.",
+  "files": [
+    {
+      "path": "../../content/docs/plite/api/locations/range-ref.mdx",
+      "content": "---\ntitle: \"RangeRef API\"\ndescription: \"Mutable range references that track selections or anchors across operations.\"\n---\n\n`RangeRef` objects keep a specific range synced over time as operations are\napplied. They are low-level location values used by Plite internals and\nadvanced runtime code.\n\n## Shape\n\nRead `current` for the up-to-date `Range` value. Call `unref()` when you no\nlonger need to track the range. `affinity` controls how the range follows\ninsertions at its edges. `inward` keeps the range tight; `outward` lets the\nrange grow.\n\n```typescript\ninterface RangeRef {\n  current: Range | null;\n  affinity: \"forward\" | \"backward\" | \"outward\" | \"inward\" | null;\n  unref(): Range | null;\n}\n```\n\n- [Instance methods](range-ref#instance-methods)\n- [Static methods](range-ref#static-methods)\n  - [Transform methods](range-ref#transform-methods)\n\n## Instance Methods\n\n#### `unref() => Range | null`\n\nCall this when you no longer need to sync this range.\nIt also returns the current value.\n\n## Static Methods\n\n### Transform Methods\n\n#### `RangeRefApi.transform(ref: RangeRef, op: Operation)`\n\nTransform the range ref's current value by an `op`.\nThe editor calls this as needed, so normally you won't need to.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plite/api/locations/range-ref.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

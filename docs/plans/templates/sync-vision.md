@@ -56,7 +56,7 @@ Constraints:
 Boundaries:
 - Allowed sync inputs: `VISION.md`, `docs/vision/**`, `.agents/AGENTS.md`,
   `.agents/rules/**`, `docs/plans/**`, `docs/sync/**`, `docs/research/**`,
-  `docs/slate-v2/**`, `docs/editor-behavior/**`, `docs/solutions/**`,
+  `docs/plite/**`, `docs/editor-behavior/**`, `docs/solutions/**`,
   `content/docs/**`, and other changed Markdown-like root docs.
 - Working-tree overlay includes relevant untracked files, so new doctrine docs,
   plans, or rule files must be visible in artifacts before commit.

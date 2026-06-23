@@ -8,7 +8,7 @@ Determine whether GitHub issue `#4637` is reproducible on the current Plate site
 
 - Issue: `https://github.com/udecode/plate/issues/4637`
 - Title: `Spaces do overflow, instead of getting moved to the next line`
-- Reported version: Plate `21.3.2`, Slate React `0.95.0`
+- Reported version: Plate `21.3.2`, Plite React `0.95.0`
 - Reported browser: Chrome
 - Reproduction URL: `https://platejs.org/`
 
@@ -33,7 +33,7 @@ Determine whether GitHub issue `#4637` is reproducible on the current Plate site
 ## Initial Hypotheses
 
 - The behavior was caused by old editor CSS around `white-space`, wrapping, or `overflow-wrap`.
-- The issue may be specific to older Slate/Plate rendering semantics and no longer reproduce on current versions.
+- The issue may be specific to older Plite/Plate rendering semantics and no longer reproduce on current versions.
 - The live site may still show it if the editor content area allows preserved spaces without a wrapping rule.
 
 ## Findings

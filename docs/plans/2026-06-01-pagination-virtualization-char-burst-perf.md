@@ -1,7 +1,7 @@
 # pagination virtualization char burst perf
 
 Objective:
-Optimize Slate pagination virtualization typing; done when char-burst benchmark proves virtualized rows800 within staged tolerance and correctness passes.
+Optimize Plite pagination virtualization typing; done when char-burst benchmark proves virtualized rows800 within staged tolerance and correctness passes.
 
 Completion threshold:
 Rows=800 virtualized pagination passes the source-backed char-burst benchmark with `pagination_virtualized_failed=0`, correct inserted text, bounded DOM/page surfaces, p95 typing <= 16ms, scroll <= 400ms, and app-ready <= 800ms.
@@ -14,11 +14,11 @@ Verification surface:
 
 Constraints:
 - Preserve native text editing, selection, double-click word selection, margin click placement, and insert-break routing while improving pagination virtualization.
-- Keep the package ownership boundary in `slate-layout` / `slate-react`; keep example code as a consumer proof, not a second layout engine.
+- Keep the package ownership boundary in `plite-layout` / `plite-react`; keep example code as a consumer proof, not a second layout engine.
 - Do not create PRs or pushes for this task.
 
 Boundaries:
-- Source of truth: `Plate repo root` packages and pagination example, with root benchmark target wiring in `benchmarks/targets/slate-v2.json`.
+- Source of truth: `Plate repo root` packages and pagination example, with root benchmark target wiring in `benchmarks/targets/plite.json`.
 - Allowed edit scope: pagination virtualization package code, focused pagination example code, benchmark target/script, and this goal plan.
 - Browser surface: `/examples/pagination?page_layout=single&rows=800&strategy=virtualized`.
 - Tracker sync: N/A, no issue or PR was requested.
@@ -94,8 +94,8 @@ Error attempts:
 | Source benchmark failed app-ready and scroll gates | 3 | Remove full initial page render, full-doc projection, duplicate refresh, and whole-page selection retention | Fixed; benchmark passes. |
 
 Verification evidence:
-- `bun --filter ./packages/slate-layout typecheck && bun --filter ./packages/slate-layout test --timeout 10000`: passed, 41 tests.
-- `bun --filter ./packages/slate-react typecheck`: passed.
+- `bun --filter ./packages/plite-layout typecheck && bun --filter ./packages/plite-layout test --timeout 10000`: passed, 41 tests.
+- `bun --filter ./packages/plite-react typecheck`: passed.
 - `bun typecheck:site`: passed.
 - `bun run bench:react:pagination-virtualized-char-burst:local`: passed with load 578.4ms, scroll 352.1ms, p95 8.8ms, failed 0.
 - `pnpm slate:ar:benchmark-lint`: passed with load 561.6ms, scroll 357ms, p95 11.6ms, failed 0.

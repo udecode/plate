@@ -2,7 +2,7 @@
 
 Objective:
 Split the generated Evidence Kit rich-text viewer into two pages: a comparison
-page for apples-to-apples editor rows and a Slate v2 internals page for
+page for apples-to-apples editor rows and a Plite internals page for
 diagnostic rows that should not pretend to compare against other editors.
 
 Goal plan:
@@ -11,7 +11,7 @@ docs/plans/2026-05-28-split-rich-text-viewer-pages.md
 Completion threshold:
 The split is complete when `benchmarks/render-rich-text-viewer.mjs` emits
 `rich-text.html` / `rich-text-data.json` for comparison rows and
-`slate-v2-internals.html` / `slate-v2-internals-data.json` for v2-only rows,
+`plite-internals.html` / `plite-internals-data.json` for v2-only rows,
 generated checks pass, `npm run check` passes in `benchmarks/editor`, both
 served HTML routes return HTTP 200, served JSON proves there are no internal
 category leaks on the comparison page, and this plan passes the autogoal
@@ -21,15 +21,15 @@ Verification surface:
 - Generator: `/Users/zbeyens/git/plate-2/benchmarks/editor/benchmarks/render-rich-text-viewer.mjs`
 - Comparison output: `/Users/zbeyens/git/plate-2/benchmarks/editor/docs/perf/rich-text.html`
 - Comparison data: `/Users/zbeyens/git/plate-2/benchmarks/editor/docs/perf/rich-text-data.json`
-- Internals output: `/Users/zbeyens/git/plate-2/benchmarks/editor/docs/perf/slate-v2-internals.html`
-- Internals data: `/Users/zbeyens/git/plate-2/benchmarks/editor/docs/perf/slate-v2-internals-data.json`
+- Internals output: `/Users/zbeyens/git/plate-2/benchmarks/editor/docs/perf/plite-internals.html`
+- Internals data: `/Users/zbeyens/git/plate-2/benchmarks/editor/docs/perf/plite-internals-data.json`
 - Served routes: `http://127.0.0.1:8765/rich-text.html` and
-  `http://127.0.0.1:8765/slate-v2-internals.html`
+  `http://127.0.0.1:8765/plite-internals.html`
 
 Constraints:
 - Keep the intentionally ugly js-framework-benchmark-style table.
 - Do not hide missing adapters on the comparison page.
-- Move only categories that are truly Slate v2 internal proof rows.
+- Move only categories that are truly Plite internal proof rows.
 - Keep one generator command so `docs:perf` and `docs:perf:check` stay simple.
 
 Boundaries:
@@ -50,7 +50,7 @@ not serve both routes. None of those happened.
 Phase / pass table:
 | Phase | Status | Evidence |
 |-------|--------|----------|
-| Source map | complete | Identified 16 Slate v2-only internal categories and comparison workload fixtures. |
+| Source map | complete | Identified 16 Plite-only internal categories and comparison workload fixtures. |
 | Generator split | complete | `render-rich-text-viewer.mjs` now emits comparison and internals page/data pairs. |
 | Generated docs | complete | `docs:rich-text` wrote all four generated files. |
 | Package verification | complete | `npm run check` passed in `benchmarks/editor`. |
@@ -63,14 +63,14 @@ Start Gates:
 | Active goal checked or created | yes | Autogoal created for the viewer split. |
 | Source of truth read before edits | yes | Read current viewer generator, package scripts, and generated benchmark data shape. |
 | Edit scope selected | yes | Only viewer generator, generated docs/data, and this plan changed for this task. |
-| Browser route selected | yes | `rich-text.html` and `slate-v2-internals.html` under the existing static server. |
+| Browser route selected | yes | `rich-text.html` and `plite-internals.html` under the existing static server. |
 | Browser tool decision recorded | yes | Browser MCP was not exposed; HTTP served-route proof used against the same local target. |
 
 Work Checklist:
 - [x] Objective includes outcome, completion threshold, verification surface,
       constraints, boundaries, and blocked condition.
 - [x] Source data shape is mapped before editing.
-- [x] Comparison rows and Slate v2 internals rows have explicit filters.
+- [x] Comparison rows and Plite internals rows have explicit filters.
 - [x] Generator emits both HTML and data JSON files in normal and check modes.
 - [x] Generated docs are refreshed.
 - [x] Package checks are green.
@@ -81,7 +81,7 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Comparison page generated | yes | Generate `rich-text.html` and `rich-text-data.json` | Comparison JSON has 542 rows, 11 groups, and zero internal category leaks. |
-| Internals page generated | yes | Generate `slate-v2-internals.html` and `slate-v2-internals-data.json` | Internals JSON has 326 rows, 16 groups, and all expected internal categories. |
+| Internals page generated | yes | Generate `plite-internals.html` and `plite-internals-data.json` | Internals JSON has 326 rows, 16 groups, and all expected internal categories. |
 | Docs check | yes | Run generated docs check | `npm run docs:rich-text:check` checked both page/data pairs. |
 | Package check | yes | Run package gate | `npm run check` passed in `benchmarks/editor`. |
 | Served HTML proof | yes | Hit both served HTML routes | Both returned HTTP 200. |
@@ -90,8 +90,8 @@ Completion Gates:
 
 Verification evidence:
 - `cd benchmarks/editor && npm run docs:rich-text` wrote
-  `rich-text.html`, `rich-text-data.json`, `slate-v2-internals.html`, and
-  `slate-v2-internals-data.json`.
+  `rich-text.html`, `rich-text-data.json`, `plite-internals.html`, and
+  `plite-internals-data.json`.
 - Local generated-data proof: comparison page has 542 rows, 11 groups, and no
   internal category leaks.
 - Local generated-data proof: internals page has 326 rows, 16 groups, and all
@@ -102,7 +102,7 @@ Verification evidence:
 - Served proof: `curl -I --max-time 2 http://127.0.0.1:8765/rich-text.html`
   returned HTTP 200.
 - Served proof:
-  `curl -I --max-time 2 http://127.0.0.1:8765/slate-v2-internals.html`
+  `curl -I --max-time 2 http://127.0.0.1:8765/plite-internals.html`
   returned HTTP 200.
 - Served JSON proof: comparison data returned 542 rows, 11 groups, and
   `internalLeaks: []`.
@@ -110,10 +110,10 @@ Verification evidence:
   `missingExpectedInternalCategories: []`.
 
 Reboot status:
-Complete. `rich-text.html` is the comparison page; `slate-v2-internals.html` is
+Complete. `rich-text.html` is the comparison page; `plite-internals.html` is
 the v2-only proof page. Both are generated by `npm run docs:rich-text`.
 
 Open risks:
-The category split is manually curated in the generator. If new Slate v2-only
+The category split is manually curated in the generator. If new Plite-only
 categories are added later, they must be added to the internal category set or
 they will appear on the comparison page.

@@ -16,9 +16,9 @@ Completion threshold:
 Verification surface:
 - `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium -g "keeps fast burst typing" --reporter=line`
 - `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium -g "keeps middle-document typing responsive" --reporter=line`
-- `bun test ./packages/slate-react/test/dom-repair-policy-contract.ts`
-- `cd packages/slate-react && bun test:vitest test/input-router-contract.test.tsx`
-- `bun --filter slate-react typecheck`
+- `bun test ./packages/plite-react/test/dom-repair-policy-contract.ts`
+- `cd packages/plite-react && bun test:vitest test/input-router-contract.test.tsx`
+- `bun --filter plite-react typecheck`
 - `bun typecheck:site`
 - `bun lint:fix`
 
@@ -43,7 +43,7 @@ Start Gates:
 | Source of truth read before edits | yes | User reported fast typing still slow and skipping chars. |
 | Browser route identified | yes | `/examples/pagination` with DOM strategy `virtualized`. |
 | TDD decision | yes | Added failing burst Playwright repro before repair changes. |
-| Release artifact decision | yes | Existing pagination typing changeset covers `slate-react` behavior change. |
+| Release artifact decision | yes | Existing pagination typing changeset covers `plite-react` behavior change. |
 | PR expectation | no | N/A: no PR requested. |
 | Tracker sync | no | N/A: chat-only report. |
 
@@ -63,7 +63,7 @@ Completion Gates:
 | Bug reproduced before fix | yes | Run focused burst proof | Failed with text `Release arcdeeghajklmdopiness memo`, proving skipped/reordered chars. |
 | Targeted behavior verification | yes | Run burst proof after fix | Passed. |
 | Previous latency proof | yes | Rerun existing middle typing proof | Passed. |
-| TypeScript changed | yes | Run relevant typecheck | `bun --filter slate-react typecheck` and `bun typecheck:site` passed. |
+| TypeScript changed | yes | Run relevant typecheck | `bun --filter plite-react typecheck` and `bun typecheck:site` passed. |
 | Lint | yes | Run formatter/lint fix | `bun lint:fix` passed. |
 | Package behavior changed | yes | Changeset | Covered by existing pagination typing changeset. |
 | PR create or update | no | N/A | No PR requested. |
@@ -100,7 +100,7 @@ Performance:
 Implementation notes:
 - `input-router` debounces deferred native text repair for virtualized insert
   text bursts and coalesces pending repairs.
-- `dom-repair-queue` imports the current DOM text delta relative to the Slate
+- `dom-repair-queue` imports the current DOM text delta relative to the Plite
   text instead of trusting the stale single-character `InputEvent.data`.
 - Playwright now has a burst typing proof that does not wait per character.
 
@@ -114,9 +114,9 @@ Verification evidence:
 - Regression proof:
   `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium -g "keeps middle-document typing responsive" --reporter=line`
   passed.
-- `bun test ./packages/slate-react/test/dom-repair-policy-contract.ts` passed.
-- `cd packages/slate-react && bun test:vitest test/input-router-contract.test.tsx` passed.
-- `bun --filter slate-react typecheck` passed.
+- `bun test ./packages/plite-react/test/dom-repair-policy-contract.ts` passed.
+- `cd packages/plite-react && bun test:vitest test/input-router-contract.test.tsx` passed.
+- `bun --filter plite-react typecheck` passed.
 - `bun typecheck:site` passed.
 - `bun lint:fix` passed.
 

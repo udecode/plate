@@ -5,7 +5,7 @@ problem_type: performance_issue
 component: documentation
 symptoms:
   - "A side-by-side editor demo reports worse per-engine UI timings than the standalone engine page."
-  - "Slate metrics inside the Plate docs demo are materially slower than the same lane should be."
+  - "Plite metrics inside the Plate docs demo are materially slower than the same lane should be."
   - "The demo is useful visually, but the second mounted editor contaminates the timing numbers."
 root_cause: wrong_api
 resolution_type: code_fix
@@ -27,7 +27,7 @@ A side-by-side editor demo is fine for eyeballing behavior, but it is a bad
 default measurement surface. Mounting both editors at once adds extra DOM,
 layout, and page-level work that can make one engine look slower than it is.
 
-The Huge Document docs page was doing exactly that: it rendered Plate and Slate
+The Huge Document docs page was doing exactly that: it rendered Plate and Plite
 next to each other, then showed timing stats as if those numbers were clean
 per-engine measurements.
 
@@ -35,13 +35,13 @@ per-engine measurements.
 
 - The docs page looked like a comparison harness, but it mounted two huge
   editors at once.
-- Temporary automation against the page showed the Slate column in `Plate +
-Slate` mode reporting a visible slowdown in one run:
+- Temporary automation against the page showed the Plite column in `Plate +
+Plite` mode reporting a visible slowdown in one run:
   - last keypress: `10 ms`
   - average of last 10 keypresses: `21 ms`
   - last long animation frame: `73 ms`
-- The same page in `Slate only` mode dropped back to the near-zero /
-  non-reporting class, which is where standalone Slate also tended to land
+- The same page in `Plite only` mode dropped back to the near-zero /
+  non-reporting class, which is where standalone Plite also tended to land
   under automation.
 
 ## What Didn't Work
@@ -58,11 +58,11 @@ not in a public example page.
 
 Add a `Mounted editors` control with:
 
-- `Plate + Slate`
+- `Plate + Plite`
 - `Plate only`
-- `Slate only`
+- `Plite only`
 
-Keep `Plate + Slate` as the parity/demo view, but make single-engine mount the
+Keep `Plate + Plite` as the parity/demo view, but make single-engine mount the
 obvious truth mode for anyone looking at timing stats.
 
 Also add an explicit note in the stats panel:

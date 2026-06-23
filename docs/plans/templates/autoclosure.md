@@ -52,7 +52,7 @@ Constraints:
   PR/range not applied to this checkout, capture the full file list and patch
   under `docs/plans/artifacts/<plan-slug>/` and audit from that artifact.
 - Patch safe findings; route public API/runtime/product forks to
-  `slate-plan`, `plate-plan`, or `major-task`.
+  `plite-plan`, `plate-plan`, or `major-task`.
 - Do not commit, push, open PRs, merge, release, publish, or mutate public
   GitHub unless explicitly authorized.
 - Do not call stale, speculative, or out-of-scope review findings accepted.
@@ -138,7 +138,7 @@ Work Checklist:
       diff review with next owner.
 - [ ] Coherence audit checks stale dirty fixes, fake aliases, docs/API mismatch,
       orphan tests, stale generated output, weak proof commands, and
-      Slate-vs-Plate boundary drift.
+      Plite-vs-Plate boundary drift.
 - [ ] Focused proof is run for each changed behavior/API/docs/generated surface,
       or marked N/A with reason.
 - [ ] `autoreview` target mode is selected from actual target state.
@@ -150,7 +150,7 @@ Work Checklist:
 - [ ] `architecture-cleanup` is invoked when review/coherence finds source-shape,
       deslop, over-split, fake-wrapper, or agent-navigation issues, or marked
       N/A with reason.
-- [ ] Public API/runtime/product forks are routed to `slate-plan`, `plate-plan`,
+- [ ] Public API/runtime/product forks are routed to `plite-plan`, `plate-plan`,
       `major-task`, or owner, not patched blindly.
 - [ ] Generated outputs are synced when source owners require it, or marked N/A.
 - [ ] Browser proof is run for browser-visible app/docs/package behavior, or

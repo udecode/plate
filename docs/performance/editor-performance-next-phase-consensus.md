@@ -26,7 +26,7 @@
 2. Underline dissection already proved the live seam is generic leaf/text pipe
    composition, not underline-specific behavior.
 3. The main user constraint is avoiding breaking changes while still pushing
-   for the best practical result versus Slate.
+   for the best practical result versus Plite.
 
 ### Viable Options
 

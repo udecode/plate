@@ -1,7 +1,7 @@
 # yjs perfection 8h
 
 Objective:
-Timed 8h `@slate/yjs` perfection loop in `../slate-v2`: find the highest-value
+Timed 8h `@slate/yjs` perfection loop in `../plite`: find the highest-value
 behavior/proof/API gaps, patch safe packets, and keep/revert/quarantine each.
 
 Goal plan:
@@ -17,9 +17,9 @@ Applied packs:
 - none
 
 Automation source:
-- type: user-invoked `slate-automation`
-- prompt / link: `[$slate-automation] 8h on yjs perfection ../slate-v2`
-- surface / route / package: `../slate-v2`, primarily `packages/slate-yjs`,
+- type: user-invoked `plite-automation`
+- prompt / link: `[$slate-automation] 8h on yjs perfection ../plite`
+- surface / route / package: `../plite`, primarily `packages/plite-yjs`,
   Hocuspocus/collaboration browser examples, and reusable proof helpers
 - invocation mode: timed mode
 - timebox / deadline: 8h loop-start budget; started 2026-06-11T22:59:17+0800;
@@ -54,10 +54,10 @@ Completion threshold:
   passes.
 
 Verification surface:
-- Source/status: live `../slate-v2` source under `packages/slate-yjs`,
+- Source/status: live `../plite` source under `packages/plite-yjs`,
   `site/examples/ts/yjs-hocuspocus.tsx`, collaboration proof scripts/tests,
   benchmark targets, and current docs/proof ledgers.
-- Package proof: `bun test ./packages/slate-yjs/test`; `bun --filter
+- Package proof: `bun test ./packages/plite-yjs/test`; `bun --filter
   @slate/yjs typecheck`; focused builds only when public-export/browser proof
   resolves built output.
 - Browser proof: focused Playwright/Hocuspocus collaboration rows first; use
@@ -75,33 +75,33 @@ Verification surface:
   docs/plans/2026-06-11-yjs-perfection-8h.md` only at true closure.
 
 Constraints:
-- Slate v2 private alpha by default: no release, publish, changeset, PR, or
+- Plite private alpha by default: no release, publish, changeset, PR, or
   branch readiness unless the prompt explicitly asks.
-- Run Slate v2 behavior commands from `.tmp/slate-v2`; parent repo commands
+- Run Plite behavior commands from `.tmp/plite`; parent repo commands
   prove plans, docs, skills, and templates only.
 - Behavior proof beats perf. Native/visual proof beats model-only selection.
 - No hidden debounce or fake stress fixture wins.
 - No more multi-hour soaks in this run. Long endurance proof is a user-owned
   final validation task unless explicitly requested again.
 - No broad pagination/virtualization architecture unless the prompt or a
-  stopping checkpoint routes to `slate-plan`.
-- Do not patch Plate when the run is scoped to Slate v2.
+  stopping checkpoint routes to `plite-plan`.
+- Do not patch Plate when the run is scoped to Plite.
 
 Boundaries:
-- Source of truth: live `../slate-v2` source/tests/benchmarks for runtime
+- Source of truth: live `../plite` source/tests/benchmarks for runtime
   behavior; this plan in `plate-copy` for supervisor state.
-- Allowed edit scope: `../slate-v2` Yjs package/tests/examples/proof helpers;
+- Allowed edit scope: `../plite` Yjs package/tests/examples/proof helpers;
   parent `docs/plans/**` and `.agents/rules/**` only when the run owns plan or
   reusable workflow repair.
 - Browser surfaces: `yjs-hocuspocus` and any current collaboration example/proof
   route discovered in the live tree.
-- Package/API surfaces: `packages/slate-yjs` public/internal exports only when
+- Package/API surfaces: `packages/plite-yjs` public/internal exports only when
   evidence shows API/DX cleanup is the real owner.
 - Agent/skill surfaces: source rules under `.agents/rules/**`; generated skill
   mirrors only via `pnpm install` when those rules change.
-- Docs/research surfaces: this plan; `docs/slate-v2/**` only for accepted
+- Docs/research surfaces: this plan; `docs/plite/**` only for accepted
   current decisions or proof claim width.
-- Non-goals: no commit, push, PR, release, publish, changeset, broad Slate
+- Non-goals: no commit, push, PR, release, publish, changeset, broad Plite
   architecture rewrite, Plate package patching, or raw mobile-device claim unless
   explicitly requested or proven as the next safe owner.
 
@@ -114,7 +114,7 @@ Blocked condition:
   batch mode, queue soft questions for final handoff.
 
 Automation state:
-- surface: `@slate/yjs` perfection in `../slate-v2`
+- surface: `@slate/yjs` perfection in `../plite`
 - mode: timed 8h
 - checkpoint_policy: dynamic_supervisor
 - current_loop: 17
@@ -155,7 +155,7 @@ Checkpoint supervisor:
 | behavior-proof | slate-ar-stabilize | checkpoint_green | P0 | Prove stable editor behavior before perf. | Package tests, production smoke, persistent-room soak, local soak, strict local soak, and `bun check` passed. | update |
 | oracle-repair | slate-patch / tdd | complete | P0 | Add missing native/visual/model oracles for found gaps. | Added `SOAK_FAIL_ON_ISSUES=1` so local soak can become a strict gate. | update |
 | visual-proof | Browser / Playwright | checkpoint_green | P0 | Prove visible editor behavior and native selection. | Playwright-backed soak summaries recorded for Hocuspocus and local collaboration routes. | update |
-| slate-browser-promotion | slate-browser | N/A | P1 | Promote repeated browser proof into reusable API/helper. | No repeated route-local Playwright helper gap found; proof gap was script exit behavior, repaired in owning soak script. | update |
+| plite-browser-promotion | plite-browser | N/A | P1 | Promote repeated browser proof into reusable API/helper. | No repeated route-local Playwright helper gap found; proof gap was script exit behavior, repaired in owning soak script. | update |
 | mobile-claim-width | slate-automation | N/A | P1 | Separate raw-device proof from viewport proof. | Raw mobile-device proof not claimed. | update |
 | huge-document-smoke | slate-ar-stabilize | complete | P1 | Smoke huge-doc correctness without broad architecture work. | Persistent-room growth reached 137 blocks / 2,494 chars on all peers with 0 issues. | update |
 | perf-packet | slate-ar-fast / slate-ar-perf | complete | P2 | Optimize only after correctness is green. | Benchmark phase metrics added; latest root command correctness 0 and work/verification metrics printed. | update |
@@ -167,7 +167,7 @@ Checkpoint mutation ledger:
 |------|----------|---------------|----------|--------|--------|
 | 0 | seed | initial template rows | plan creation | starter topology only | pending |
 | 0 | update | checkpoint-zero, status, gap-scan | user prompt, active goal, north-star, agent-start, memory quick pass | timed 8h Yjs scope and proof surfaces are now concrete | checkpoint-zero in progress; status next |
-| 1 | update | status, behavior-proof | `bun test ./packages/slate-yjs/test`; `bun --filter @slate/yjs typecheck` | current package baseline is green before browser/perf work | keep package-proof packet; continue provider/browser gap scan |
+| 1 | update | status, behavior-proof | `bun test ./packages/plite-yjs/test`; `bun --filter @slate/yjs typecheck` | current package baseline is green before browser/perf work | keep package-proof packet; continue provider/browser gap scan |
 | 2 | update | behavior-proof, visual-proof | Hocuspocus production soak summary | provider-backed browser smoke is green with offline/reload/degraded scenarios | keep provider-proof packet; move to wider gap scan |
 | 3 | update | perf-packet | `bun ./scripts/benchmarks/core/current/yjs-collaboration.mjs` x3 | correctness is green; large-doc sync dominates worst p95 | keep metric packet; inspect whether lane is real hot path or setup-heavy |
 | 4 | update | perf-packet, workflow-slowdown | benchmark patch + focused checks | metric now splits work vs verification and root script registry exposes the benchmark | keep benchmark/DX packet |
@@ -178,8 +178,8 @@ Checkpoint mutation ledger:
 | 9 | update | behavior-proof, visual-proof | strict 10m local `yjs-collaboration` soak | fail-on-issues command shape held for the same local route scenario packet | keep strict local collaboration proof packet |
 | 10 | update | final-handoff, behavior-proof | `bun check` | broad fast repo gate passed after benchmark/proof script/docs changes | keep final-check packet; continue because timed budget remains |
 | 11 | stop | long-endurance-proof, behavior-proof | user clarified "把8h用在改进上 而非测试" | expensive soaks are the wrong budget allocation for this run | killed P11 and moved next owner to improvement-gap-scan |
-| 12 | update | replacement-identity | failing focused unit contract, then fix | compatible replacements should see virtual children through the same visible Yjs projection as Slate | keep P12; scan next code/API/DX gap |
-| 13 | update | split-visible-children | failing focused unit contract, then fix | element split should split visible virtual children by Slate position instead of raw Yjs child slots | keep P13; continue improvement scan |
+| 12 | update | replacement-identity | failing focused unit contract, then fix | compatible replacements should see virtual children through the same visible Yjs projection as Plite | keep P12; scan next code/API/DX gap |
+| 13 | update | split-visible-children | failing focused unit contract, then fix | element split should split visible virtual children by Plite position instead of raw Yjs child slots | keep P13; continue improvement scan |
 | 14 | update | virtual-child-removal | failing focused unit contracts, then fix | full replacement and removal should clear virtual child references instead of leaking, appending, or throwing | keep P14; continue improvement scan |
 | 15 | update | virtual-child-insert | failing focused unit contract, then fix | inserting before a leading virtual child must preserve moved-node identity, not clone/replace it through raw index -1 behavior | keep P15; reassess next improvement vs short local e2e |
 | 16 | update | move-before-virtual-child | failing focused unit contract, then fix | moving into index 0 before an existing virtual child must not overwrite that virtual child as if the parent were empty | keep P16; reassess next improvement vs short local e2e |
@@ -208,12 +208,12 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | explicit prompt rows copied into Automation source, Boundaries, Completion threshold, and Verification surface |
-| `slate-automation` source rule read | yes | user supplied skill body; `.agents/rules/slate-automation.mdc` read |
+| `plite-automation` source rule read | yes | user supplied skill body; `.agents/rules/slate-automation.mdc` read |
 | `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read |
 | Active goal checked or created | yes | `get_goal` returned null; `create_goal` created active goal |
 | Invocation mode and timebox recorded | yes | timed mode; 8h; start/deadline recorded |
 | Dynamic checkpoint policy accepted | yes | supervisor/mutation ledgers retained |
-| Source of truth and allowed workspaces recorded | yes | `../slate-v2` runtime; parent plan/control only |
+| Source of truth and allowed workspaces recorded | yes | `../plite` runtime; parent plan/control only |
 | Output budget strategy recorded | yes | write packet/proof evidence into plan/artifacts; avoid broad streamed scans |
 | Private-alpha release/PR boundary recorded | yes | no release/publish/PR/branch unless explicitly requested |
 | Browser proof strategy recorded | yes | focused Playwright/Hocuspocus first; Browser visual smoke when route is fresh |
@@ -241,7 +241,7 @@ Work Checklist:
       selection/editing risks or explicitly scoped.
 - [x] Missing oracle packets are written, kept, reverted, quarantined, or
       deferred with owner and proof command.
-- [x] Repeated browser proof patterns are promoted to `slate-browser` or queued
+- [x] Repeated browser proof patterns are promoted to `plite-browser` or queued
       with reason.
 - [x] Mobile/raw-device proof is run or the claim width is explicitly limited;
       Playwright viewport proof is not recorded as raw-device proof.
@@ -271,11 +271,11 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run the proof commands/artifacts named in this plan | Package tests/typecheck, Hocuspocus smoke, persistent-room soak, local soaks, benchmark, focused registry contract, and `bun check` passed. |
 | Dynamic checkpoint reconciliation | yes | Prove the plan was updated from evidence and not frozen to the initial seed | Mutation ledger has loops 0-10 with packet decisions. |
-| Workspace authority proof | yes | Record cwd/tool for each Slate v2, parent-docs, skill, browser, package, or benchmark proof | Runtime/proof commands ran from `/Users/felixfeng/Desktop/repos/slate-v2`; control plan from `/Users/felixfeng/Desktop/repos/plate-copy`. |
+| Workspace authority proof | yes | Record cwd/tool for each Plite, parent-docs, skill, browser, package, or benchmark proof | Runtime/proof commands ran from `/Users/felixfeng/Desktop/repos/plite`; control plan from `/Users/felixfeng/Desktop/repos/plate-copy`. |
 | Behavior gates | yes | Run focused stable behavior proof or record scoped defer rows | Package and browser soak ledgers are green. |
 | Visual/native selection proof | scoped | Record Browser/Playwright/native-selection evidence or scoped blocker | Playwright-backed route proof covers DOM text/convergence/shape/page errors; no raw native selection-specific defect was found in this checkpoint. |
 | Missing oracle repair | yes | Add/verify/revert/quarantine oracle packets or record owner defer | Added `SOAK_FAIL_ON_ISSUES=1` to local soak script and verified at smoke + 10m length. |
-| `slate-browser` promotion | N/A | Add/verify helper/API or record queue/defer reason | No repeated slate-browser helper gap found; owning proof script was repaired instead. |
+| `plite-browser` promotion | N/A | Add/verify helper/API or record queue/defer reason | No repeated plite-browser helper gap found; owning proof script was repaired instead. |
 | Mobile/raw-device claim width | N/A | Run raw-device proof or record that only scoped viewport/browser proof is available | No raw mobile claim made. |
 | Huge-document correctness smoke | yes | Run focused huge-document behavior smoke or record owner defer | Persistent-room Hocuspocus grew to 137 blocks / 2,494 chars on all peers with 0 issues. |
 | Package/API proof | yes | Source-audit and run package/type/test proof when package/API changed, otherwise N/A | No public package API changed; root command/docs changed and registry proof passed. |
@@ -295,8 +295,8 @@ Phase / pass table:
 | Gap scan and scenario matrix | in_progress | Hocuspocus/proof scripts/recent plans identified | behavior proof |
 | Behavior proof | in_progress | package baseline, provider-backed smoke, persistent-room soak, and local collaboration soak green | final checks |
 | Oracle repair | pending | no failing oracle yet | visual proof |
-| Visual/native proof | in_progress | Hocuspocus production smoke, persistent-room soak, and local collaboration soak recorded | slate-browser promotion |
-| slate-browser promotion | pending | | mobile claim width |
+| Visual/native proof | in_progress | Hocuspocus production smoke, persistent-room soak, and local collaboration soak recorded | plite-browser promotion |
+| plite-browser promotion | pending | | mobile claim width |
 | Mobile/raw-device claim width | pending | | huge-document smoke |
 | Huge-document correctness smoke | complete | persistent-room grew to 137 blocks / 2,494 chars on all peers with 0 issues | perf/API/docs as needed |
 | Perf/API/docs/skill packets as needed | in_progress | Yjs collaboration benchmark x3 plus phase-metric patch; correctness 0 failures; latest worst p95 177.84ms, work p95 168.44ms, verification p95 11.06ms | persistent-room soak |
@@ -307,7 +307,7 @@ Phase / pass table:
 Scenario matrix:
 | Surface | Topology | Viewport / strategy | Gesture | Assertion family | Status |
 |---------|----------|---------------------|---------|------------------|--------|
-| `packages/slate-yjs` structural contracts | paragraphs, split/merge, replace, move, virtual placeholders, empty Yjs text leaves | package runtime | replay seeds / operation contracts | value shape, Yjs visible children, history/reconnect convergence | planned |
+| `packages/plite-yjs` structural contracts | paragraphs, split/merge, replace, move, virtual placeholders, empty Yjs text leaves | package runtime | replay seeds / operation contracts | value shape, Yjs visible children, history/reconnect convergence | planned |
 | Hocuspocus provider route | real provider-backed multi-peer room | desktop browser, current example route | offline/reconnect, typing, structural mix replay | raw DOM text, normalized text, server snapshot, page errors | planned |
 | Collaboration browser operations | peer matrix from current proof/example files | Chromium first; Firefox/WebKit only if failures point there | append/replace/remove/split/merge/move/wrap/unwrap/lift/undo/redo/connect/disconnect | peer convergence, DOM text, structural errors | planned |
 | Huge/stress smoke | current Yjs large-doc/proof scripts if present | current script/route knobs | burst typing, Enter, paste/select-all/undo where available | convergence, timing, DOM budget/visible text | planned |
@@ -315,7 +315,7 @@ Scenario matrix:
 Packet ledger:
 | Packet | Loop | Owner | Hypothesis / failure signature | Files / commands | Behavior / visual proof | Decision | Next |
 |--------|------|-------|--------------------------------|------------------|-------------------------|----------|------|
-| P1-package-baseline | 1 | slate-automation | Current `@slate/yjs` package must be green before browser/perf claims. | `bun test ./packages/slate-yjs/test` -> 187 pass, 0 fail; `bun --filter @slate/yjs typecheck` -> exit 0 | Package behavior proof only; no browser proof yet | keep | Run provider/browser proof |
+| P1-package-baseline | 1 | slate-automation | Current `@slate/yjs` package must be green before browser/perf claims. | `bun test ./packages/plite-yjs/test` -> 187 pass, 0 fail; `bun --filter @slate/yjs typecheck` -> exit 0 | Package behavior proof only; no browser proof yet | keep | Run provider/browser proof |
 | P2-provider-production-smoke | 2 | slate-automation | Real Hocuspocus provider route should survive reload, offline, and degraded network scenarios on current tree. | `PRODUCTION_SOAK_FAIL_ON_ISSUES=1 PRODUCTION_SOAK_RUN_ID=yjs-perfection-production-smoke-20260611-1 bun ./scripts/proof/yjs-hocuspocus-production-soak.mjs` | Browser proof: 71,929ms, 90 actions, 6 hard reloads, 6 offline windows, console/page/errors/issues all 0 | keep | Run a different risk class, not duplicate smoke |
 | P3-yjs-collaboration-metric | 3 | slate-automation | Current collaboration benchmark should have correctness 0 and repeated metric samples before any perf patch. | `bun ./scripts/benchmarks/core/current/yjs-collaboration.mjs` x3 | Metrics: worst p95 174.35/180.53/184.68ms; large-doc sync dominates; correctness failures 0 each run | keep | Audit large-doc sync owner and setup/hot-path split |
 | P4-yjs-benchmark-phase-metrics | 4 | slate-automation | The Yjs benchmark should separate measured work from verification cost and be exposed through root scripts. | Edited `scripts/benchmarks/core/current/yjs-collaboration.mjs` and root `package.json`; verified with benchmark run, Biome, and focused core benchmark registry contract. | Latest metrics: worst p95 177.84ms, worst work p95 168.44ms, worst verification p95 11.06ms; correctness failures 0. | keep | Run longer provider-backed persistence proof |
@@ -324,20 +324,20 @@ Packet ledger:
 | P7-local-collaboration-10m | 7 | slate-automation | The local `yjs-collaboration` route should stay stable independently of Hocuspocus provider proof. | `SOAK_HEADLESS=1 SOAK_MS=600000 SOAK_ACTION_DELAY_MS=500 SOAK_REPORT_EVERY_MS=60000 SOAK_RUN_ID=yjs-perfection-local-collab-10m-20260611-1 bun ./scripts/proof/yjs-collaboration-soak.mjs` | Browser proof: 617,576ms, 975 actions, 105 iterations, 106 hard resets, structural/random/history/awareness scenario coverage, console/page/errors/issues all 0 | keep | Final focused checks |
 | P8-local-soak-fail-on-issues | 8 | slate-automation | Automation should not require manual summary inspection to fail a dirty local collaboration soak. | Edited `scripts/proof/yjs-collaboration-soak.mjs`; verified Biome and short `SOAK_FAIL_ON_ISSUES=1` smoke. | Summary records `fail_on_issues: true`; short smoke exited 0 with 130 actions, 14 iterations, 0 issues. | keep | Run focused package/proof checks |
 | P9-local-collaboration-strict-10m | 9 | slate-automation | The stricter local soak command should pass at full 10m packet length when no issues are recorded. | `SOAK_HEADLESS=1 SOAK_FAIL_ON_ISSUES=1 SOAK_MS=600000 SOAK_ACTION_DELAY_MS=500 SOAK_REPORT_EVERY_MS=60000 SOAK_RUN_ID=yjs-perfection-local-collab-10m-fail-on-issues-20260611-1 bun ./scripts/proof/yjs-collaboration-soak.mjs` | Browser proof: 612,289ms, 975 actions, 105 iterations, 106 hard resets, `fail_on_issues: true`, console/page/errors/issues all 0 | keep | Final focused checks |
-| P10-bun-check | 10 | slate-automation | The current tree should pass the repo's fast aggregate gate after benchmark/proof/docs changes. | `bun check` | Pass: Biome/eslint, all package typechecks, site/root typechecks, Bun tests, slate-layout tests, Slate React Vitest 57 files / 662 tests | keep | Final handoff |
+| P10-bun-check | 10 | slate-automation | The current tree should pass the repo's fast aggregate gate after benchmark/proof/docs changes. | `bun check` | Pass: Biome/eslint, all package typechecks, site/root typechecks, Bun tests, slate-layout tests, Plite React Vitest 57 files / 662 tests | keep | Final handoff |
 | P11-provider-persistent-endurance | 11 | slate-automation | Initially started to spend remaining timed budget on endurance proof. User clarified the budget should go to improvements, not long tests. | Started `SOAK_HEADLESS=1 PERSISTENT_SOAK_FAIL_ON_ISSUES=1 PERSISTENT_SOAK_MS=10800000 ... yjs-perfection-persistent-3h-20260611-1`; killed PID 71257. | Partial evidence before stop: ~51m, 4,416 actions, 691 checkpoints, 138 offline windows, 0 console errors, 0 page errors, 0 issues; not counted as a required gate. | stop | Move to improvement work; no more long soaks |
-| P12-compatible-replacement-visible-children | 12 | slate-patch | `replace_fragment` and `replace_children` compatibility checks used raw children during nested replacement, so virtual moved children took traceable fallback instead of the identity-preserving operation path. | Edited `packages/slate-yjs/src/core/replacement.ts`, `packages/slate-yjs/src/core/operations.ts`, `packages/slate-yjs/test/replace-fragment-contract.spec.ts`, `packages/slate-yjs/test/simple-operations-contract.spec.ts`. | Focused failing test reproduced fallback; after fix: `bun test ./packages/slate-yjs/test/replace-fragment-contract.spec.ts --test-name-pattern "virtual moved-node identity"` pass; affected files `18 pass`; `bun --filter @slate/yjs typecheck` pass; `bunx biome check ...` pass. | keep | Find next improvement packet |
-| P13-split-visible-virtual-children | 13 | slate-patch | `split_node` on an element whose visible child came from a virtual move split raw children instead of visible children, leaving the moved content on the wrong side. | Edited `packages/slate-yjs/src/core/document.ts`, `packages/slate-yjs/src/core/operations.ts`, `packages/slate-yjs/test/split-node-contract.spec.ts`. | Focused test failed with `No Yjs node at path 1.0`; after fix: focused pass, split-node file `14 pass`, `bun --filter @slate/yjs typecheck` pass, Biome pass, full package unit suite later green. | keep | Find next improvement packet |
-| P14-virtual-child-replacement-removal | 14 | slate-patch | Full child replacement on virtual moved children either appended beside the old virtual child (`replace_fragment`) or threw while removing a virtual child (`replace_children`); direct `remove_node` needed coverage for the same helper. | Edited `packages/slate-yjs/src/core/document.ts`, `packages/slate-yjs/test/replace-fragment-contract.spec.ts`, `packages/slate-yjs/test/simple-operations-contract.spec.ts`, `packages/slate-yjs/test/remove-node-contract.spec.ts`. | Red tests: `replace_fragment` leaked `moved`; `replace_children` threw `Cannot remove a virtual Yjs child from its parent.` After fix: affected files `39 pass`; `bun --filter @slate/yjs typecheck` pass; Biome pass; full `bun test ./packages/slate-yjs/test` -> 194 pass. | keep | Find next improvement packet |
-| P15-insert-before-leading-virtual-child | 15 | slate-patch | `insert_node` before a parent-level virtual child used raw index `-1`, producing correct text order but replacing moved-node identity. | Edited `packages/slate-yjs/src/core/document.ts`, `packages/slate-yjs/test/simple-operations-contract.spec.ts`. | Focused test failed on reference equality for the moved paragraph; after fix: focused pass, affected operation files later green. | keep | Check move path using same insertion helper |
-| P16-move-before-leading-virtual-child | 16 | slate-patch | `move_node` into index 0 before an existing virtual child treated a raw-empty parent as empty and overwrote the virtual child reference. | Edited `packages/slate-yjs/src/core/operations.ts`, `packages/slate-yjs/test/move-node-contract.spec.ts`. | Focused move test failed with `No Yjs node at path 0.1`; after fix: focused pass; affected operation files `48 pass`; `bun --filter @slate/yjs typecheck` pass; Biome pass; full `bun test ./packages/slate-yjs/test` -> 196 pass. | keep | Reassess next improvement vs short local e2e |
+| P12-compatible-replacement-visible-children | 12 | slate-patch | `replace_fragment` and `replace_children` compatibility checks used raw children during nested replacement, so virtual moved children took traceable fallback instead of the identity-preserving operation path. | Edited `packages/plite-yjs/src/core/replacement.ts`, `packages/plite-yjs/src/core/operations.ts`, `packages/plite-yjs/test/replace-fragment-contract.spec.ts`, `packages/plite-yjs/test/simple-operations-contract.spec.ts`. | Focused failing test reproduced fallback; after fix: `bun test ./packages/plite-yjs/test/replace-fragment-contract.spec.ts --test-name-pattern "virtual moved-node identity"` pass; affected files `18 pass`; `bun --filter @slate/yjs typecheck` pass; `bunx biome check ...` pass. | keep | Find next improvement packet |
+| P13-split-visible-virtual-children | 13 | slate-patch | `split_node` on an element whose visible child came from a virtual move split raw children instead of visible children, leaving the moved content on the wrong side. | Edited `packages/plite-yjs/src/core/document.ts`, `packages/plite-yjs/src/core/operations.ts`, `packages/plite-yjs/test/split-node-contract.spec.ts`. | Focused test failed with `No Yjs node at path 1.0`; after fix: focused pass, split-node file `14 pass`, `bun --filter @slate/yjs typecheck` pass, Biome pass, full package unit suite later green. | keep | Find next improvement packet |
+| P14-virtual-child-replacement-removal | 14 | slate-patch | Full child replacement on virtual moved children either appended beside the old virtual child (`replace_fragment`) or threw while removing a virtual child (`replace_children`); direct `remove_node` needed coverage for the same helper. | Edited `packages/plite-yjs/src/core/document.ts`, `packages/plite-yjs/test/replace-fragment-contract.spec.ts`, `packages/plite-yjs/test/simple-operations-contract.spec.ts`, `packages/plite-yjs/test/remove-node-contract.spec.ts`. | Red tests: `replace_fragment` leaked `moved`; `replace_children` threw `Cannot remove a virtual Yjs child from its parent.` After fix: affected files `39 pass`; `bun --filter @slate/yjs typecheck` pass; Biome pass; full `bun test ./packages/plite-yjs/test` -> 194 pass. | keep | Find next improvement packet |
+| P15-insert-before-leading-virtual-child | 15 | slate-patch | `insert_node` before a parent-level virtual child used raw index `-1`, producing correct text order but replacing moved-node identity. | Edited `packages/plite-yjs/src/core/document.ts`, `packages/plite-yjs/test/simple-operations-contract.spec.ts`. | Focused test failed on reference equality for the moved paragraph; after fix: focused pass, affected operation files later green. | keep | Check move path using same insertion helper |
+| P16-move-before-leading-virtual-child | 16 | slate-patch | `move_node` into index 0 before an existing virtual child treated a raw-empty parent as empty and overwrote the virtual child reference. | Edited `packages/plite-yjs/src/core/operations.ts`, `packages/plite-yjs/test/move-node-contract.spec.ts`. | Focused move test failed with `No Yjs node at path 0.1`; after fix: focused pass; affected operation files `48 pass`; `bun --filter @slate/yjs typecheck` pass; Biome pass; full `bun test ./packages/plite-yjs/test` -> 196 pass. | keep | Reassess next improvement vs short local e2e |
 | P17-short-local-e2e | 17 | slate-automation | Run only a short local e2e smoke after virtual-child fixes, respecting the user instruction to avoid expensive soaks. | `SOAK_HEADLESS=1 SOAK_FAIL_ON_ISSUES=1 SOAK_MS=15000 SOAK_ACTION_DELAY_MS=100 SOAK_REPORT_EVERY_MS=5000 SOAK_RUN_ID=yjs-perfection-local-short-e2e-20260612-1 bun ./scripts/proof/yjs-collaboration-soak.mjs` | Pass: elapsed 26,784ms, 130 actions, 14 iterations, 15 hard resets, 0 console errors, 0 page errors, 0 issues, fail-on-issues true. | keep | Review touched virtual-child logic |
 
 Behavior proof ledger:
 | Family | Route / package | Command / proof | Browser | Result | Follow-up |
 |--------|-----------------|-----------------|---------|--------|-----------|
-| package contracts | `packages/slate-yjs` | `bun test ./packages/slate-yjs/test` | n/a | pass: 187 pass, 0 fail | continue browser proof |
-| package typecheck | `packages/slate-yjs` | `bun --filter @slate/yjs typecheck` | n/a | pass | continue browser proof |
+| package contracts | `packages/plite-yjs` | `bun test ./packages/plite-yjs/test` | n/a | pass: 187 pass, 0 fail | continue browser proof |
+| package typecheck | `packages/plite-yjs` | `bun --filter @slate/yjs typecheck` | n/a | pass | continue browser proof |
 | provider-backed production smoke | `/examples/yjs-hocuspocus` | `PRODUCTION_SOAK_FAIL_ON_ISSUES=1 PRODUCTION_SOAK_RUN_ID=yjs-perfection-production-smoke-20260611-1 bun ./scripts/proof/yjs-hocuspocus-production-soak.mjs` | Chromium | pass: 90 actions, 0 issues | continue wider proof/gap scan |
 | provider-backed persistent room | `/examples/yjs-hocuspocus` | `SOAK_HEADLESS=1 PERSISTENT_SOAK_FAIL_ON_ISSUES=1 PERSISTENT_SOAK_MS=600000 ... bun ./scripts/proof/yjs-hocuspocus-persistent-room-soak.mjs` | Chromium | pass: 1,088 actions, 171 checkpoints, 34 offline windows, 0 issues | continue final focused checks |
 | local collaboration soak | `/examples/yjs-collaboration` | `SOAK_HEADLESS=1 SOAK_MS=600000 SOAK_ACTION_DELAY_MS=500 SOAK_REPORT_EVERY_MS=60000 SOAK_RUN_ID=yjs-perfection-local-collab-10m-20260611-1 bun ./scripts/proof/yjs-collaboration-soak.mjs` | Chromium | pass: 975 actions, 105 iterations, 0 issues | continue final focused checks |
@@ -351,10 +351,10 @@ Visual/native selection ledger:
 | Local yjs-collaboration 10m | convergence/issue checks inside runner | DOM text normalized by runner; no issue recorded | page errors, console errors, non-convergence, nested paragraph checks | summary at `test-results/yjs-collaboration-soak/yjs-perfection-local-collab-10m-20260611-1/summary.md` | pass |
 | Strict local yjs-collaboration 10m | convergence/issue checks inside runner | DOM text normalized by runner; no issue recorded | page errors, console errors, non-convergence, nested paragraph checks, exit-on-issues enabled | summary at `test-results/yjs-collaboration-soak/yjs-perfection-local-collab-10m-fail-on-issues-20260611-1/summary.md` | pass |
 
-slate-browser promotion ledger:
+plite-browser promotion ledger:
 | Pattern | Repeated where | Proposed helper/API | Proof command | Decision |
 |---------|----------------|---------------------|---------------|----------|
-| none found | n/a | n/a | Proof gap was local soak exit behavior, not a missing `slate-browser` helper | N/A for this checkpoint |
+| none found | n/a | n/a | Proof gap was local soak exit behavior, not a missing `plite-browser` helper | N/A for this checkpoint |
 
 Mobile/raw-device claim-width ledger:
 | Claim | Proof type | Command / device | Result | Claim width |
@@ -371,13 +371,13 @@ Huge-document smoke ledger:
 Workflow slowdowns:
 | Step / command | Owner | Elapsed / estimate | Why slow | Evidence produced | Repair decision |
 |----------------|-------|--------------------|----------|-------------------|-----------------|
-| `bun test ./packages/slate/test/core-benchmark-scripts-contract.ts` | benchmark registry contract | under 1s, but noisy output | running the whole file exposed unrelated existing huge-doc contract failures while checking one Yjs registry row | first failure showed `yjs-collaboration.mjs` missing root script; other failures were existing huge-doc assertions | repaired Yjs root script; reran focused registry row only |
+| `bun test ./packages/plite/test/core-benchmark-scripts-contract.ts` | benchmark registry contract | under 1s, but noisy output | running the whole file exposed unrelated existing huge-doc contract failures while checking one Yjs registry row | first failure showed `yjs-collaboration.mjs` missing root script; other failures were existing huge-doc assertions | repaired Yjs root script; reran focused registry row only |
 | manual issue enforcement after local collaboration soak | `scripts/proof/yjs-collaboration-soak.mjs` | avoidable manual step | script recorded issue count but always exited 0 for recorded issues unless runner threw | added `SOAK_FAIL_ON_ISSUES=1`; short clean smoke proved exit 0 and summary flag | keep as workflow repair |
 
 Changed list:
 | Group | Current-run changes |
 |-------|---------------------|
-| code/runtime/API | none; no Slate/Yjs runtime package API changed |
+| code/runtime/API | none; no Plite/Yjs runtime package API changed |
 | tests/oracles/browser proof | package baseline, Hocuspocus production smoke, and 10m persistent-room soak run; no files changed |
 | benchmarks/metrics/targets | Yjs collaboration benchmark now emits work/verification phase metrics; root package script exposes it |
 | examples/docs | plan created and filled; benchmark README lists Yjs benchmark family, artifact, and run command |
@@ -387,8 +387,8 @@ Changed list:
 Needs your attention:
 | Rank | Item | Why | Anchor | Recommendation |
 |------|------|-----|--------|----------------|
-| 1 | Benchmark phase metrics | This changes the metric artifact shape by adding `phaseLanes` and work/verification metrics while keeping existing headline metrics. | `/Users/felixfeng/Desktop/repos/slate-v2/scripts/benchmarks/core/current/yjs-collaboration.mjs`; command `bun run bench:core:yjs-collaboration:local` | accept |
-| 2 | Local soak strict mode | Future automation can fail on local collaboration issues instead of manually reading summaries. | `/Users/felixfeng/Desktop/repos/slate-v2/scripts/proof/yjs-collaboration-soak.mjs`; env `SOAK_FAIL_ON_ISSUES=1` | accept |
+| 1 | Benchmark phase metrics | This changes the metric artifact shape by adding `phaseLanes` and work/verification metrics while keeping existing headline metrics. | `/Users/felixfeng/Desktop/repos/plite/scripts/benchmarks/core/current/yjs-collaboration.mjs`; command `bun run bench:core:yjs-collaboration:local` | accept |
+| 2 | Local soak strict mode | Future automation can fail on local collaboration issues instead of manually reading summaries. | `/Users/felixfeng/Desktop/repos/plite/scripts/proof/yjs-collaboration-soak.mjs`; env `SOAK_FAIL_ON_ISSUES=1` | accept |
 | 3 | Timed-goal state | The 8h goal is checkpoint-green but not literal 8h elapsed. | `docs/plans/2026-06-11-yjs-perfection-8h.md` | inspect if you wanted wall-clock burn rather than high-value packets |
 
 Stopping checkpoints to unblock:
@@ -400,7 +400,7 @@ Findings:
 - Prior proof memory says the strongest Yjs bundle is package tests/typecheck,
   focused browser collaboration proof, and Hocuspocus-backed replay when provider
   shape differs from local collaboration.
-- Live tree has `packages/slate-yjs`, `site/examples/ts/yjs-hocuspocus.tsx`,
+- Live tree has `packages/plite-yjs`, `site/examples/ts/yjs-hocuspocus.tsx`,
   `site/examples/ts/yjs-collaboration.tsx`, production and persistent-room soak
   scripts, and recent target-side plans claiming known Hocuspocus issues fixed.
 - Current package baseline is green: 187 Yjs package tests pass and package
@@ -431,7 +431,7 @@ Findings:
   virtual moved children stay on the operation path for `replace_fragment` and
   `replace_children` instead of falling back to scoped replacement.
 - Element `split_node` now splits visible Yjs child slots, so virtual moved
-  content follows Slate split position instead of raw empty-wrapper slots.
+  content follows Plite split position instead of raw empty-wrapper slots.
 - Full replacement/removal now clears virtual child references correctly, so
   virtual moved children do not leak into replacement results or crash
   `replace_children`.
@@ -459,50 +459,50 @@ Error attempts:
 | Full `core-benchmark-scripts-contract.ts` surfaced unrelated huge-doc contract failures while checking Yjs registry exposure | 1 | Run focused registry test after fixing Yjs script exposure | Focused test passed; unrelated huge-doc rows left untouched |
 
 Verification evidence:
-- Checkpoint-zero evidence: active goal created; `slate-automation`,
-  `vision`, and `docs/slate-v2/agent-start.md` read; memory quick pass
+- Checkpoint-zero evidence: active goal created; `plite-automation`,
+  `vision`, and `docs/plite/agent-start.md` read; memory quick pass
   read prior Yjs cleanup/Hocuspocus summaries.
-- `bun test ./packages/slate-yjs/test` from `/Users/felixfeng/Desktop/repos/slate-v2` passed: 187 pass, 0 fail.
-- `bun --filter @slate/yjs typecheck` from `/Users/felixfeng/Desktop/repos/slate-v2` exited 0.
-- `PRODUCTION_SOAK_FAIL_ON_ISSUES=1 PRODUCTION_SOAK_RUN_ID=yjs-perfection-production-smoke-20260611-1 bun ./scripts/proof/yjs-hocuspocus-production-soak.mjs` from `/Users/felixfeng/Desktop/repos/slate-v2` exited 0; summary reports elapsed 71,929ms, actions 90, hard reloads 6, browser offline windows 6, console errors 0, page errors 0, issues 0.
-- `bun ./scripts/benchmarks/core/current/yjs-collaboration.mjs` from `/Users/felixfeng/Desktop/repos/slate-v2` exited 0 three times; worst p95 values 174.35ms, 180.53ms, 184.68ms; correctness failures 0 each run.
+- `bun test ./packages/plite-yjs/test` from `/Users/felixfeng/Desktop/repos/plite` passed: 187 pass, 0 fail.
+- `bun --filter @slate/yjs typecheck` from `/Users/felixfeng/Desktop/repos/plite` exited 0.
+- `PRODUCTION_SOAK_FAIL_ON_ISSUES=1 PRODUCTION_SOAK_RUN_ID=yjs-perfection-production-smoke-20260611-1 bun ./scripts/proof/yjs-hocuspocus-production-soak.mjs` from `/Users/felixfeng/Desktop/repos/plite` exited 0; summary reports elapsed 71,929ms, actions 90, hard reloads 6, browser offline windows 6, console errors 0, page errors 0, issues 0.
+- `bun ./scripts/benchmarks/core/current/yjs-collaboration.mjs` from `/Users/felixfeng/Desktop/repos/plite` exited 0 three times; worst p95 values 174.35ms, 180.53ms, 184.68ms; correctness failures 0 each run.
 - After benchmark patch, `bun ./scripts/benchmarks/core/current/yjs-collaboration.mjs | rg '^METRIC '` exited 0; latest worst p95 177.84ms, worst work p95 168.44ms, worst verification p95 11.06ms, correctness failures 0.
 - `bunx biome check scripts/benchmarks/core/current/yjs-collaboration.mjs package.json` exited 0.
-- `bun test ./packages/slate/test/core-benchmark-scripts-contract.ts --test-name-pattern "exposes every current core benchmark"` exited 0: 1 pass, 13 filtered.
-- `SOAK_HEADLESS=1 PERSISTENT_SOAK_FAIL_ON_ISSUES=1 PERSISTENT_SOAK_MS=600000 PERSISTENT_SOAK_ACTION_DELAY_MS=500 PERSISTENT_SOAK_REPORT_EVERY_MS=60000 PERSISTENT_SOAK_RUN_ID=yjs-perfection-persistent-10m-20260611-1 bun ./scripts/proof/yjs-hocuspocus-persistent-room-soak.mjs` from `/Users/felixfeng/Desktop/repos/slate-v2` exited 0; summary reports elapsed 608,478ms, actions 1,088, checkpoints 171, offline windows 34, console errors 0, page errors 0, issues 0, final growth 137 blocks / 2,494 chars on all peers.
-- `bun run bench:core:yjs-collaboration:local | rg '^METRIC '` from `/Users/felixfeng/Desktop/repos/slate-v2` exited 0; latest worst p95 181.54ms, worst work p95 167.91ms, worst verification p95 17.81ms, correctness failures 0.
+- `bun test ./packages/plite/test/core-benchmark-scripts-contract.ts --test-name-pattern "exposes every current core benchmark"` exited 0: 1 pass, 13 filtered.
+- `SOAK_HEADLESS=1 PERSISTENT_SOAK_FAIL_ON_ISSUES=1 PERSISTENT_SOAK_MS=600000 PERSISTENT_SOAK_ACTION_DELAY_MS=500 PERSISTENT_SOAK_REPORT_EVERY_MS=60000 PERSISTENT_SOAK_RUN_ID=yjs-perfection-persistent-10m-20260611-1 bun ./scripts/proof/yjs-hocuspocus-persistent-room-soak.mjs` from `/Users/felixfeng/Desktop/repos/plite` exited 0; summary reports elapsed 608,478ms, actions 1,088, checkpoints 171, offline windows 34, console errors 0, page errors 0, issues 0, final growth 137 blocks / 2,494 chars on all peers.
+- `bun run bench:core:yjs-collaboration:local | rg '^METRIC '` from `/Users/felixfeng/Desktop/repos/plite` exited 0; latest worst p95 181.54ms, worst work p95 167.91ms, worst verification p95 17.81ms, correctness failures 0.
 - `bunx biome check scripts/benchmarks/README.md scripts/benchmarks/core/current/yjs-collaboration.mjs package.json` exited 0 for supported files.
 - Focused core benchmark registry contract rerun exited 0: 1 pass, 13 filtered.
-- `SOAK_HEADLESS=1 SOAK_MS=600000 SOAK_ACTION_DELAY_MS=500 SOAK_REPORT_EVERY_MS=60000 SOAK_RUN_ID=yjs-perfection-local-collab-10m-20260611-1 bun ./scripts/proof/yjs-collaboration-soak.mjs` from `/Users/felixfeng/Desktop/repos/slate-v2` exited 0; summary reports elapsed 617,576ms, actions 975, iterations 105, hard resets 106, skipped disabled 15, console errors 0, page errors 0, issues 0.
+- `SOAK_HEADLESS=1 SOAK_MS=600000 SOAK_ACTION_DELAY_MS=500 SOAK_REPORT_EVERY_MS=60000 SOAK_RUN_ID=yjs-perfection-local-collab-10m-20260611-1 bun ./scripts/proof/yjs-collaboration-soak.mjs` from `/Users/felixfeng/Desktop/repos/plite` exited 0; summary reports elapsed 617,576ms, actions 975, iterations 105, hard resets 106, skipped disabled 15, console errors 0, page errors 0, issues 0.
 - `bunx biome check scripts/proof/yjs-collaboration-soak.mjs` exited 0.
 - `SOAK_HEADLESS=1 SOAK_FAIL_ON_ISSUES=1 SOAK_MS=15000 SOAK_ACTION_DELAY_MS=100 SOAK_REPORT_EVERY_MS=5000 SOAK_RUN_ID=yjs-perfection-local-fail-on-issues-smoke-20260611-1 bun ./scripts/proof/yjs-collaboration-soak.mjs` exited 0; summary includes `fail_on_issues: true`, actions 130, issues 0.
 - `SOAK_HEADLESS=1 SOAK_FAIL_ON_ISSUES=1 SOAK_MS=600000 SOAK_ACTION_DELAY_MS=500 SOAK_REPORT_EVERY_MS=60000 SOAK_RUN_ID=yjs-perfection-local-collab-10m-fail-on-issues-20260611-1 bun ./scripts/proof/yjs-collaboration-soak.mjs` exited 0; summary reports elapsed 612,289ms, actions 975, iterations 105, hard resets 106, skipped disabled 15, console errors 0, page errors 0, issues 0, fail-on-issues true.
-- `bun check` from `/Users/felixfeng/Desktop/repos/slate-v2` exited 0: Biome/eslint pass; package/site/root typecheck pass; Bun tests 1,019 pass / 95 skip; slate-layout 47 pass; Slate React Vitest 57 files / 662 tests pass.
+- `bun check` from `/Users/felixfeng/Desktop/repos/plite` exited 0: Biome/eslint pass; package/site/root typecheck pass; Bun tests 1,019 pass / 95 skip; slate-layout 47 pass; Plite React Vitest 57 files / 662 tests pass.
 - P12 red/green local unit proof: focused `replace_fragment` virtual moved-node
   identity contract failed on fallback, then passed after the visible-children
   replacement fix.
-- `bun test ./packages/slate-yjs/test/replace-fragment-contract.spec.ts
-  ./packages/slate-yjs/test/simple-operations-contract.spec.ts` exited 0:
+- `bun test ./packages/plite-yjs/test/replace-fragment-contract.spec.ts
+  ./packages/plite-yjs/test/simple-operations-contract.spec.ts` exited 0:
   18 pass, 0 fail.
 - `bun --filter @slate/yjs typecheck` exited 0 after P12.
-- `bunx biome check packages/slate-yjs/src/core/operations.ts
-  packages/slate-yjs/src/core/replacement.ts
-  packages/slate-yjs/test/replace-fragment-contract.spec.ts
-  packages/slate-yjs/test/simple-operations-contract.spec.ts` exited 0.
+- `bunx biome check packages/plite-yjs/src/core/operations.ts
+  packages/plite-yjs/src/core/replacement.ts
+  packages/plite-yjs/test/replace-fragment-contract.spec.ts
+  packages/plite-yjs/test/simple-operations-contract.spec.ts` exited 0.
 - P13 red/green local unit proof: focused split virtual moved-child contract
   failed with `No Yjs node at path 1.0`, then passed after
   `splitVisibleYjsChildren`.
-- `bun test ./packages/slate-yjs/test/split-node-contract.spec.ts` exited 0:
+- `bun test ./packages/plite-yjs/test/split-node-contract.spec.ts` exited 0:
   14 pass, 0 fail.
 - P14 red/green local unit proof: focused `replace_fragment` fallback test
   leaked `moved`; focused `replace_children` fallback test threw
   `Cannot remove a virtual Yjs child from its parent`; both pass after clearing
   virtual child references on full replacement/removal.
-- `bun test ./packages/slate-yjs/test/replace-fragment-contract.spec.ts
-  ./packages/slate-yjs/test/simple-operations-contract.spec.ts
-  ./packages/slate-yjs/test/remove-node-contract.spec.ts
-  ./packages/slate-yjs/test/split-node-contract.spec.ts` exited 0: 39 pass.
-- `bun test ./packages/slate-yjs/test` exited 0 after P14: 194 pass, 0 fail.
+- `bun test ./packages/plite-yjs/test/replace-fragment-contract.spec.ts
+  ./packages/plite-yjs/test/simple-operations-contract.spec.ts
+  ./packages/plite-yjs/test/remove-node-contract.spec.ts
+  ./packages/plite-yjs/test/split-node-contract.spec.ts` exited 0: 39 pass.
+- `bun test ./packages/plite-yjs/test` exited 0 after P14: 194 pass, 0 fail.
 - P15 red/green local unit proof: focused insert-before-leading-virtual-child
   test failed because the visible text was right but the moved paragraph
   identity was replaced; after fix the focused test passed.
@@ -510,19 +510,19 @@ Verification evidence:
   test failed with `No Yjs node at path 0.1`; after fix the focused test
   passed.
 - Affected operation files exited 0 after P16: 48 pass, 0 fail.
-- `bun test ./packages/slate-yjs/test` exited 0 after P16: 196 pass, 0 fail.
+- `bun test ./packages/plite-yjs/test` exited 0 after P16: 196 pass, 0 fail.
 - Short local e2e after P16:
   `SOAK_HEADLESS=1 SOAK_FAIL_ON_ISSUES=1 SOAK_MS=15000 ...` exited 0;
   summary reports elapsed 26,784ms, 130 actions, 14 iterations, 15 hard resets,
   console/page/errors/issues all 0.
 - Final lightweight checkpoint verification:
-  `bun test ./packages/slate-yjs/test` exited 0 with 196 pass; `bun --filter
+  `bun test ./packages/plite-yjs/test` exited 0 with 196 pass; `bun --filter
   @slate/yjs typecheck` exited 0; `bunx biome check` on touched Yjs files exited
   0.
 
 Final handoff contract:
 - Goal plan: `docs/plans/2026-06-11-yjs-perfection-8h.md`
-- Surface and route/package: `../slate-v2`, `packages/slate-yjs`, current Yjs
+- Surface and route/package: `../plite`, `packages/plite-yjs`, current Yjs
   collaboration/Hocuspocus proofs
 - Invocation mode, elapsed/timebox, loop/checkpoint count: timed 8h; checkpoint
   handoff after 10 packet loops; full wall-clock budget not exhausted.
@@ -552,7 +552,7 @@ Reboot status:
 |----------|--------|
 | Where am I? | Checkpoint handoff |
 | Where am I going? | Final response, with active goal still resumable |
-| What is the goal? | Timed 8h `@slate/yjs` perfection loop in `../slate-v2` with packet decisions and proof. |
+| What is the goal? | Timed 8h `@slate/yjs` perfection loop in `../plite` with packet decisions and proof. |
 | What have I learned? | Package/provider/local collaboration proof is green; benchmark honesty and strict local soak gating are improved and verified at 10m. |
 | What have I done? | Created goal, ran proof, patched Yjs benchmark metrics/command/docs, added local soak fail-on-issues mode. |
 | What changed in the checkpoint plan? | Final handoff rows filled; goal remains active because 8h wall-clock did not elapse. |

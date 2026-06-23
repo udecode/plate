@@ -10,9 +10,9 @@ Source of truth:
 - Browser surface: `http://localhost:3100/examples/pagination`
 
 Decision:
-- Keep this in the pagination example, not `slate-layout` package internals.
+- Keep this in the pagination example, not `plite-layout` package internals.
 - Use fixed-height `pagination-stress-page` blocks appended after the editable rich fixture when `DOM strategy = virtualized`.
-- Keep the table as one Slate table subtree and size its default rows to span roughly 10 pages at normal row height.
+- Keep the table as one Plite table subtree and size its default rows to span roughly 10 pages at normal row height.
 - Add a URL-backed `stress_pages` control shown only for virtualized mode.
 - Show `table pages` and `stress pages` in the example meta row so the scale is visible without devtools.
 

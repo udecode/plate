@@ -18,7 +18,7 @@ Applied packs:
 - agent-native (docs/plans/templates/packs/agent-native.md)
 
 Task source:
-- type: user-requested Slate automation issue-by-issue closure loop
+- type: user-requested Plite automation issue-by-issue closure loop
 - id / link: `.tmp/editor-issue-harvester/prosemirror/full/issue-closure-ledger.tsv`
 - title: ProseMirror all-issues closure ledger, full issue-by-issue loop
 - acceptance criteria:
@@ -26,7 +26,7 @@ Task source:
   - process issues in ascending issue number order until the last issue
   - every relevant issue needs its own checkmark
   - cluster/matrix coverage is routing only, never closure
-  - for each issue: read title/body/classification; decide skip vs relevant; if irrelevant mark `invalid-skip` with concrete reason; if relevant search exact Slate v2 / Plate coverage; if exact coverage exists link file:line/test name and run focused command; if no coverage exists write the smallest correct regression/contract/browser test; run focused verification; update `issue-closure-overrides.json`; regenerate ledger; move next
+  - for each issue: read title/body/classification; decide skip vs relevant; if irrelevant mark `invalid-skip` with concrete reason; if relevant search exact Plite / Plate coverage; if exact coverage exists link file:line/test name and run focused command; if no coverage exists write the smallest correct regression/contract/browser test; run focused verification; update `issue-closure-overrides.json`; regenerate ledger; move next
   - use autogoal checkpoints aggressively: one checkpoint per complex/runtime issue or one per 10 trivial skip/covered issues
   - do not stop after a batch summary
   - continue until all ledger rows are checked, a real blocker prevents progress, or commit is explicitly needed
@@ -44,8 +44,8 @@ Completion threshold:
 - Prior mass `deferred-with-owner` rows from the earlier broad pass are reopened to `needs-test-audit` before this loop.
 - The loop processes rows in ascending issue number order from the first unchecked row.
 - A relevant row is closed only by:
-  - exact existing Slate v2 / Plate coverage linked to file:line and test name, with focused command passing;
-  - a newly written smallest correct Slate v2 / Plate regression/contract/browser test, with focused command passing;
+  - exact existing Plite / Plate coverage linked to file:line and test name, with focused command passing;
+  - a newly written smallest correct Plite / Plate regression/contract/browser test, with focused command passing;
   - `invalid-skip` with concrete non-portable/support/product reason; or
   - a genuine blocker/defer with reason when proof cannot be created safely in the current run.
 - Completion is legal only when unchecked relevant count is `0`, or a real blocker is recorded with remaining count and next issue number.
@@ -61,7 +61,7 @@ Verification surface:
 - Override source: `.tmp/editor-issue-harvester/prosemirror/full/issue-closure-overrides.json`.
 - Ledger source: `.tmp/editor-issue-harvester/prosemirror/full/issue-closure-ledger.tsv`.
 - Ledger regeneration: `node .tmp/editor-issue-harvester/prosemirror/full/build-closure-ledger.mjs`.
-- Per-issue proof: focused Slate v2 / Plate command recorded in the override and handoff.
+- Per-issue proof: focused Plite / Plate command recorded in the override and handoff.
 
 Constraints:
 - Preserve existing user-facing behavior outside the task scope.
@@ -71,9 +71,9 @@ Constraints:
 - Do not add broad ceremony when the task is trivial or docs-only.
 
 Boundaries:
-- Source of truth: `slate-automation`, `vision`, `editor-test-harvester`, `clawsweeper`, ProseMirror issue artifacts, current `.tmp/slate-v2` tests/source, and Plate coverage when exact coverage exists.
-- Allowed edit scope: `.tmp/editor-issue-harvester/prosemirror/full/**`, this plan, and new/updated focused Slate v2 tests/oracles when a relevant issue lacks exact coverage. Plate rows may be searched for exact coverage; do not patch Plate unless the row truly belongs there and the test is the smallest correct owner.
-- Browser surface: focused Playwright routes in `.tmp/slate-v2` or exact Plate proof when used.
+- Source of truth: `plite-automation`, `vision`, `editor-test-harvester`, `clawsweeper`, ProseMirror issue artifacts, current `.tmp/plite` tests/source, and Plate coverage when exact coverage exists.
+- Allowed edit scope: `.tmp/editor-issue-harvester/prosemirror/full/**`, this plan, and new/updated focused Plite tests/oracles when a relevant issue lacks exact coverage. Plate rows may be searched for exact coverage; do not patch Plate unless the row truly belongs there and the test is the smallest correct owner.
+- Browser surface: focused Playwright routes in `.tmp/plite` or exact Plate proof when used.
 - Tracker sync: N/A: no GitHub mutations requested.
 - Non-goals: no cluster-level closure; no fake coverage; no broad architecture rewrite from issue titles; no commits/PRs unless explicitly requested.
 
@@ -97,7 +97,7 @@ Current verdict:
 - verdict: pass-with-known-unrelated-gate-debt
 - confidence: focused-high
 - next owner: final verification and handoff
-- reason: strict issue-by-issue loop closed all remaining `needs-test-audit` rows through `#1568`; regenerated ledger reports `uncheckedRelevant: 0`; focused Slate-v2 browser/package gates pass.
+- reason: strict issue-by-issue loop closed all remaining `needs-test-audit` rows through `#1568`; regenerated ledger reports `uncheckedRelevant: 0`; focused Plite-v2 browser/package gates pass.
 
 Completion rule:
 - Do not call `update_goal(status: complete)` while any required checklist item
@@ -112,26 +112,26 @@ Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
 | Prompt requirements captured before work | yes | This plan captures ledger path, ascending order, per-issue 10-step loop, autogoal checkpoint cadence, no batch-summary stop, completion/blocked rules, and final handoff sections. |
-| Skill analysis before edits | yes | `slate-automation` provided by user; `autogoal`, `editor-test-harvester`, `clawsweeper`, and `vision` used from current session context. |
+| Skill analysis before edits | yes | `plite-automation` provided by user; `autogoal`, `editor-test-harvester`, `clawsweeper`, and `vision` used from current session context. |
 | Active goal checked or created | yes | Created active goal for ProseMirror issue-by-issue closure. |
 | Source of truth read before edits | yes | Existing ProseMirror issue ledger and issue body/classification artifacts exist under `.tmp/editor-issue-harvester/prosemirror/full`. |
 | Tracker comments and attachments read | N/A | GitHub issue bodies/comments already fetched to scratch artifact; no tracker mutation. |
 | Video transcript evidence required | N/A | No video input. |
-| `docs/solutions` checked for non-trivial existing-code work | N/A | The only runtime fix was local Slate React selection-origin repair with direct nearby tests; no prior-solution dependency. |
+| `docs/solutions` checked for non-trivial existing-code work | N/A | The only runtime fix was local Plite React selection-origin repair with direct nearby tests; no prior-solution dependency. |
 | TDD decision before behavior change or bug fix | yes | Missing exact coverage means write the smallest correct regression/contract/browser test first, then verify. |
 | Branch decision for code-changing task | N/A | Stay on current checkout; no branch work requested. |
-| Release artifact decision | N/A | Slate v2 private alpha; no release/publish/changeset/PR requested. |
-| Browser tool decision for browser surface | yes | Use focused `.tmp/slate-v2` Playwright commands for browser behavior rows. |
+| Release artifact decision | N/A | Plite private alpha; no release/publish/changeset/PR requested. |
+| Browser tool decision for browser surface | yes | Use focused `.tmp/plite` Playwright commands for browser behavior rows. |
 | PR expectation decision | N/A | No PR requested. |
 | Tracker sync expectation decision | N/A | No GitHub issue comments/labels requested. |
 | Output budget strategy recorded | yes | Per-issue checkpoints/artifacts, capped chat output. |
 | Browser pack selected | yes | Focused Playwright/browser behavior proof was required for paste, read-only selection, boundary selection, history focus, and Firefox paste rows. |
-| Browser route / app surface identified | yes | `.tmp/slate-v2` examples: `paste-html`, `read-only`, `dom-coverage-boundaries`, `document-state`, `comment-mode`, `plaintext`. |
+| Browser route / app surface identified | yes | `.tmp/plite` examples: `paste-html`, `read-only`, `dom-coverage-boundaries`, `document-state`, `comment-mode`, `plaintext`. |
 | Browser tool decision recorded | yes | Used Playwright because the issue loop needs repeatable focused cross-browser proofs; in-app Browser MCP action was not exposed in this session. |
 | Console/network caveat policy recorded | yes | Focused Playwright commands fail on page errors where relevant; no separate console/network sweep was required for ledger closure. |
-| Package/API pack selected | yes | Slate React runtime source changed in `packages/slate-react`; no public export/API shape changed. |
-| Public surface or package boundary identified | yes | Runtime behavior only: read-only selection import in `packages/slate-react/src/editable/selection-reconciler.ts`. |
-| Release artifact path selected | N/A | Slate v2 private alpha; no release/publish/changeset requested. |
+| Package/API pack selected | yes | Plite React runtime source changed in `packages/plite-react`; no public export/API shape changed. |
+| Public surface or package boundary identified | yes | Runtime behavior only: read-only selection import in `packages/plite-react/src/editable/selection-reconciler.ts`. |
+| Release artifact path selected | N/A | Plite private alpha; no release/publish/changeset requested. |
 | `changeset` skill loaded when `.changeset` is required | N/A | No changeset required under current private-alpha instruction. |
 | Barrel/export impact decision recorded | N/A | No export/file-layout change. |
 | Agent-native pack selected | N/A | No `.agents/**`, skill, rule, hook, command, or prompt source changed. |
@@ -196,19 +196,19 @@ Completion Gates:
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Regenerate ledger and run focused proof commands. | `node .tmp/editor-issue-harvester/prosemirror/full/build-closure-ledger.mjs` reports `uncheckedRelevant: 0`; focused commands recorded in checkpoint artifacts. |
 | Bug reproduced before fix | yes | New regression should fail before runtime fix. | `read-only.test.ts:48` failed before the `selectionChangeOrigin` fix, then passed. `richtext.test.ts:568` failed before the `tx.marks.add` fix, then passed. |
-| Targeted behavior verification | yes | Run focused browser and package tests. | Read-only, paste, Firefox paste, boundary selection, document-state, comment-mode, plaintext, richtext selected-mark delete, and Slate React Vitest focused commands passed. |
+| Targeted behavior verification | yes | Run focused browser and package tests. | Read-only, paste, Firefox paste, boundary selection, document-state, comment-mode, plaintext, richtext selected-mark delete, and Plite React Vitest focused commands passed. |
 | TypeScript or typed config changed | N/A | No typed config changed. | Runtime TS source changed, but package-focused Vitest and targeted Biome passed; full `bun check` blocked before typecheck by unrelated lint/format debt. |
 | Package exports or file layout changed | N/A | No export/file-layout changes. | No barrel generation needed. |
 | Package manifests, lockfile, or install graph changed | N/A | No dependency or lockfile changes. | No install graph proof needed. |
 | Agent rules or skills changed | N/A | No agent rules/skills changed. | No `pnpm install` sync needed. |
-| Workspace authority proof | yes | Commands ran in `.tmp/slate-v2` or owning package cwd. | Command outputs recorded in checkpoints and final handoff. |
+| Workspace authority proof | yes | Commands ran in `.tmp/plite` or owning package cwd. | Command outputs recorded in checkpoints and final handoff. |
 | Browser surface changed | yes | Verify affected routes with focused browser tests. | Playwright proof on `paste-html`, `read-only`, `dom-coverage-boundaries`, `document-state`, `comment-mode`, `plaintext`; direct Browser MCP action unavailable. |
 | Browser final proof | yes | Record exact browser verification caveat. | Playwright proof is final browser proof; no screenshot needed for non-visual selection/clipboard oracles. |
 | CI-controlled template output changed | N/A | No template output changed. | N/A. |
-| Package behavior or public API changed | N/A | No public package API/release artifact requested. | Slate v2 private alpha; runtime test-only delta. |
+| Package behavior or public API changed | N/A | No public package API/release artifact requested. | Plite private alpha; runtime test-only delta. |
 | Registry-only component work changed | N/A | No registry component work. | N/A. |
 | Docs or content changed | yes | Update internal plan/checkpoint docs. | Plan and checkpoint artifacts updated; no public docs. |
-| High-risk mini gate | yes | Runtime selection ownership change needs focused proof. | Narrowed to pointer selection origin when not void/model-owned; read-only, comment-mode, plaintext, and Slate React selection tests passed. |
+| High-risk mini gate | yes | Runtime selection ownership change needs focused proof. | Narrowed to pointer selection origin when not void/model-owned; read-only, comment-mode, plaintext, and Plite React selection tests passed. |
 | Agent-native review for agent/tooling changes | N/A | No agent/tooling changes. | N/A. |
 | Local install corruption suspected | N/A | No install-corruption failure signature. | N/A. |
 | Autoreview for non-trivial implementation changes | N/A | User stopped autoreviews in this flow; focused gates used instead. | No autoreview run. |
@@ -223,11 +223,11 @@ Completion Gates:
 | Browser interaction proof | yes | Exercise focused routes. | Playwright focused route proofs passed. |
 | Browser console/network check | N/A | No console/network-sensitive web change. | Relevant Playwright runs would fail on page errors for these oracles; no network path involved. |
 | Browser final proof artifact | yes | Record exact commands instead of screenshots. | Command outputs and checkpoints are the proof artifact. |
-| Public API / package boundary proof | yes | Source-audit changed package boundary. | Only internal Slate React selection reconciler changed; no exports. |
+| Public API / package boundary proof | yes | Source-audit changed package boundary. | Only internal Plite React selection reconciler changed; no exports. |
 | Release artifact classification | N/A | Private alpha, no release artifact. | No changeset/release/changelog. |
 | Published package changeset | N/A | No release/publish requested. | N/A. |
 | Registry changelog | N/A | No registry work. | N/A. |
-| No release artifact | yes | Record exact reason. | Slate v2 private alpha and no public API/export change. |
+| No release artifact | yes | Record exact reason. | Plite private alpha and no public API/export change. |
 | Package typecheck/build/test | yes | Run package-focused tests. | `bun run test:vitest -- test/selection-runtime-contract.test.ts test/selection-dom-realm-contract.test.ts` passed. |
 | Barrel/export generation | N/A | No exports changed. | N/A. |
 | Agent source / generated sync | N/A | No agent source changed. | N/A. |
@@ -245,16 +245,16 @@ Phase / pass table:
 
 Findings:
 - Ledger closure is complete: all 1420 rows have a checkmark; `uncheckedRelevant: 0`.
-- The strict pass found two real Slate-v2 bugs: read-only DOM selection collapsed on native click while Slate model selection stayed stale after programmatic selection; full-block selected-mark deletion called an internal transaction method from the public update transaction.
+- The strict pass found two real Plite-v2 bugs: read-only DOM selection collapsed on native click while Plite model selection stayed stale after programmatic selection; full-block selected-mark deletion called an internal transaction method from the public update transaction.
 
 Decisions and tradeoffs:
-- Plate/table-owned rows are deferred under the user’s Slate-v2-only instruction.
+- Plate/table-owned rows are deferred under the user’s Plite-v2-only instruction.
 - Raw device/platform rows are deferred instead of fake-covered by desktop Playwright.
-- No release artifact/changeset because Slate v2 is continuous private alpha and no release was requested.
+- No release artifact/changeset because Plite is continuous private alpha and no release was requested.
 
 Implementation notes:
 - Checkpoints written through `#85` under `.tmp/editor-issue-harvester/prosemirror/full/checkpoints/`.
-- New focused Slate-v2 tests added for PageDown scroll stability, toolbar collapsed-link insertion, multi-code-unit beforeinput deletion, repeated external drops, and rich HTML whitespace paste.
+- New focused Plite-v2 tests added for PageDown scroll stability, toolbar collapsed-link insertion, multi-code-unit beforeinput deletion, repeated external drops, and rich HTML whitespace paste.
 - Checkpoint `#86`-`#126` added focused tests for list-start Enter, click-to-collapse selection, triple-click through read-only inline content, multi-paragraph typing replacement, and surrogate-pair word delete.
 - Runtime fix: expanded text insertion over fully selected sibling blocks now replaces those blocks with inserted text while preserving following blocks; select-all deletion still leaves an editable block.
 - Checkpoint `#1010`-`#1073` closed the selected-mark deletion/browser target-range slice, added shared selected-mark extraction, preserved marks through core and React full-block deletion, repaired imported browser delete-fragment target-range deletion, and left `365` relevant rows unchecked with `#1078` next.
@@ -309,7 +309,7 @@ Final handoff contract:
 - Outcome: all ProseMirror ledger rows checked; new tests and runtime fixes added.
 - Caveat: full `bun check` is blocked by broader checkout lint/format debt outside this packet.
 - Design:
-  - Chosen boundary: Slate React selection reconciler pointer-origin ownership; Slate React full-block delete fragment mark restoration.
+  - Chosen boundary: Plite React selection reconciler pointer-origin ownership; Plite React full-block delete fragment mark restoration.
   - Why not quick patch: clearing read-only selection in the test/example would hide the stale-origin bug; exposing `tx.setMarks` publicly would broaden API surface for one internal misuse.
   - Why not broader change: generic selectionchange policy is risky; native pointer origin reset and public `tx.marks.add` restoration are narrow and covered by nearby selection tests.
 - Verified: focused browser/package commands passed; ledger and checkpoints regenerated.
@@ -361,7 +361,7 @@ Reboot status:
 | Where am I? | Closeout complete |
 | Where am I going? | Final response |
 | What is the goal? | Close every ProseMirror issue ledger row by exact proof, new verified test, invalid skip, or concrete defer owner. |
-| What have I learned? | Ledger is closed; two real Slate-v2 runtime bugs were found and fixed; remaining hard rows are raw-device/table/pagination/architecture owners. |
+| What have I learned? | Ledger is closed; two real Plite-v2 runtime bugs were found and fixed; remaining hard rows are raw-device/table/pagination/architecture owners. |
 | What have I done? | See Timeline, checkpoints, and verification evidence. |
 
 Open risks:

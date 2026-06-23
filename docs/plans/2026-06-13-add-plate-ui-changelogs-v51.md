@@ -207,7 +207,7 @@ Completion Gates:
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-13-add-plate-ui-changelogs-v51.md` | ready to run |
 | Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | no exports/package APIs changed; public registry JSON/docs route verified |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | registry-only changelog artifact plus release docs rendering |
-| Published package changeset | no | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | N/A: no package changeset |
+| Published package changeset | no | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | N/A: no package changeset |
 | Registry changelog | yes | If the change is registry-only under `apps/www/src/registry/**`, update `tooling/data/plate-ui-changelog.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, and do not add a package changeset | done |
 | No release artifact | no | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | N/A: registry artifact applies |
 | Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | `pnpm --filter www typecheck` passed |

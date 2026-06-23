@@ -38,7 +38,7 @@ Verification surface:
 - `pnpm install`
 - Negative audit for the stale concrete API names across Plate Plan surfaces.
 - Positive audit for `source-discovered`, `runtime accessors`, product command
-  surfaces, plugin extension points, legacy substrate bridges, Slate/Plate
+  surfaces, plugin extension points, legacy substrate bridges, Plite/Plate
   boundary, and minimal breaking language.
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-22-future-proof-plate-plan-api-conflict-language.md`
 

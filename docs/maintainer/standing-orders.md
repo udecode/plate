@@ -1,7 +1,7 @@
 # Maintainer Standing Orders
 
 These standing orders define what local Codex may do when it is maintaining
-Plate/Slate.
+Plate/Plite.
 
 They adapt the OpenClaw standing-order pattern to this repo. The important
 difference: maintenance runs in local Codex sessions inside a maintainer
@@ -10,7 +10,7 @@ background cloud automation unless that is explicitly built later.
 
 ## Program
 
-**Authority:** maintain public Plate/Slate issue, PR, and security queue health;
+**Authority:** maintain public Plate/Plite issue, PR, and security queue health;
 route one safe item per activation; improve local intake/proof workflow when it
 is clearly weak.
 
@@ -34,14 +34,14 @@ repo-maintenance prompts, or a future local scheduled Codex activation.
 - Build a candidate matrix and pick one item.
 - Run duplicate/claim guards.
 - Classify issues as agent-ready, needs-repro, support/noise, duplicate,
-  security-shaped, Plate-owned, Slate-owned, or deferred.
+  security-shaped, Plate-owned, Plite-owned, or deferred.
 - Route to the correct owner skill.
 - Patch local docs, templates, skills/rules, tests, or source when the selected
   owner permits local execution and no public mutation is required.
 - Repair public intake docs when recurring reports or PRs are too weak for local
   Codex to act on.
 - Produce a decision-ready brief when evidence or authority is missing.
-- Run one internal `slate-auto` quality fallback only when no public queue item
+- Run one internal `plite-auto` quality fallback only when no public queue item
   is safe and the invocation allows fallback.
 - Write a compact `docs/maintainer/runs/*` note when it prevents duplicate
   future work.

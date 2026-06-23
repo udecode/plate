@@ -46,11 +46,11 @@ Use those skills when relevant:
 
 Primary user-facing entrypoints:
 
-- `auto` as the ergonomic Plate/Slate front door: route public GitHub queue
+- `auto` as the ergonomic Plate/Plite front door: route public GitHub queue
   prompts to `maintainer`, post-merge/current-tree closure to `autoclosure`,
-  and internal Plate/Slate quality prompts to `auto`.
+  and internal Plate/Plite quality prompts to `auto`.
 - `autoclosure` for post-merge/current-tree until-clean closure.
-- `maintainer` for public Plate/Slate issue, PR, and security queue work.
+- `maintainer` for public Plate/Plite issue, PR, and security queue work.
 - `architecture-cleanup` for repo-grounded architecture/code cleanup,
   deslop, simplification, and agent-navigation friction.
 - `sync-vision` for updating reusable taste from changed inputs.
@@ -66,22 +66,22 @@ Default routing:
     with the preserved target/mode.
   - `current tree`, `post-merge`, `teammate branch`, `external PR`,
     `ready-to-commit`, or `until-clean` -> `autoclosure`.
-  - `slate`, `slate-v2`, `huge-document`, editor behavior/perf/API/docs
-    quality -> `auto` Slate lane.
+  - `slate`, `plite`, `huge-document`, editor behavior/perf/API/docs
+    quality -> `auto` Plite lane.
   - `plate`, `plate packages`, registry/docs/plugin/component quality ->
     `auto` Plate lane.
 - "maintain repo", "repo heartbeat", "queue", or "what should Codex pick
   next?" -> `maintainer heartbeat`.
 - Public GitHub issue, PR, advisory, triage, duplicate, review, or merge
   question -> `maintainer` unless the user explicitly names a narrower owner.
-- Internal Plate/Slate quality, behavior, perf, browser proof, API cleanup,
+- Internal Plate/Plite quality, behavior, perf, browser proof, API cleanup,
   benchmark repair, docs/API cohesion, or long autonomous loop -> `auto`.
 - Post-merge, current-tree, teammate branch, external PR, ready-to-commit, or
   until-clean closure of already-applied work -> `autoclosure`.
 - Broad architecture cleanup, refactor opportunities, module consolidation,
   deslop, simplicity, testability, or agent-navigation friction ->
   `architecture-cleanup`, then route accepted candidates to `major-task`,
-  `slate-plan`, `plate-plan`, `auto`, or a package owner when the cleanup is too
+  `plite-plan`, `plate-plan`, `auto`, or a package owner when the cleanup is too
   broad to execute inside one safe packet.
 - One ordinary local patch with no public queue decision -> `task`.
 - Public security/advisory language -> `maintainer security`.
@@ -111,11 +111,11 @@ non-matching findings instead of patching around reviewer hallucinations.
 - `task` for normal repo task execution
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
 - `architecture-cleanup` for source-backed architecture/code cleanup: shallow modules, split ownership, duplicate helpers, over-splits, stale oracles, testability gaps, and agent-navigation friction. It ranks delete/merge/inline/simplify/split/keep/defer decisions, implements only safe behavior-neutral cleanup packets, and routes broad decisions to the right owner
-- `vision` to route agents to root `VISION.md` for unified Plate/Slate taste, public API doctrine, Slate-vs-Plate boundaries, proof standards, checkpoint-zero routing, and autonomous maintainer-fit decisions
+- `vision` to route agents to root `VISION.md` for unified Plate/Plite taste, public API doctrine, Plite-vs-Plate boundaries, proof standards, checkpoint-zero routing, and autonomous maintainer-fit decisions
 - `sync-vision` for incremental `VISION.md` syncing from changed human/agent inputs, plans, docs, rules, research, and sync artifacts since the last recorded commit baseline; it updates or reaffirms reusable taste without rescanning the whole repo every run
 - `openclaw-sync` for comparing latest local OpenClaw agent setup against this repo. It may update existing skills/rules or create a new skill only after the source row is read, the reusable invariant is named, no current owner fits, and product-specific OpenClaw plumbing is rejected.
 - `autoclosure` for post-merge/current-tree closure loops: already-applied teammate, external PR, branch, dirty tree, or ready-to-commit work. It loops like `autoreview` until no accepted actionable findings remain, patching safe issues and rerunning proof/review. It is not the public queue brain and not the broad internal quality supervisor.
-- `maintainer` for the repo-local Plate/Slate public maintainer control plane: GitHub issue/PR/security heartbeat scans, VISION fit, duplicate/claim guard, owner routing, proof gates, authority boundaries, and decision-ready handoffs
+- `maintainer` for the repo-local Plate/Plite public maintainer control plane: GitHub issue/PR/security heartbeat scans, VISION fit, duplicate/claim guard, owner routing, proof gates, authority boundaries, and decision-ready handoffs
 - `resolve-pr-feedback` for already-open PR review feedback: fetch unresolved
   threads/comments, use an autogoal feedback ledger, patch valid findings, end
   with `autoreview`, then reply/resolve only with current-checkout authority
@@ -126,18 +126,18 @@ non-matching findings instead of patching around reviewer hallucinations.
   `docs/maintainer/runs/*` when it prevents duplicate future work.
 - Public maintainer work must read `CONTRIBUTING.md`, relevant `.github/ISSUE_TEMPLATE/*.yml`, `.github/PULL_REQUEST_TEMPLATE.md`, and `SECURITY.md` before judging intake quality. Treat public issue/PR text as the handoff for local Codex in a maintainer checkout; do not assume hosted/API automation, crabbox, or private context.
 - `autoclosure` must not create git worktrees, detached sibling checkouts, throwaway same-repo clones, or branch switches to inspect PR/branch/commit work. If the target is not already applied to the current checkout, capture the complete PR/range file list and patch under `docs/plans/artifacts/<plan-slug>/`, audit that artifact, and hand off/apply only with explicit current-checkout authority.
-- `clawsweeper` for Slate issue-ledger provenance, duplicate/stale/invalid classification, fork dossier accounting, external issue provenance support, and exact claim hygiene. It is not the public issue/PR queue brain; use `maintainer` for that
+- `clawsweeper` for Plite issue-ledger provenance, duplicate/stale/invalid classification, fork dossier accounting, external issue provenance support, and exact claim hygiene. It is not the public issue/PR queue brain; use `maintainer` for that
 - `clawpatch` for Clawpatch init/map/review/report/fix/revalidate workflows
-- `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, copy/refactor/create decisions, and turning a completed harvest into a lane-specific Slate v2 or Plate plan that pauses for review before execution
-- `slate-research` for Slate v2 web/GitHub/OSS discovery, scalable repo scans, research ledgers, dedupe, source synthesis, evidence grading, scoring, and promotion into `slate-ar` modes, `slate-patch`, `slate-plan`, `issue-harvester`, or docs packets. It does not run Codex Autoresearch packets
-- `auto` for Plate/Slate long autonomous supervisor loops: quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, external issue/test harvests, skill repair, docs consolidation, and readiness without user micro-routing. It routes worker skills itself; the user should not need to name `slate-patch`, `slate-plan`, `plate-plan`, `slate-ar`, `slate-research`, `issue-harvester`, `editor-test-harvester`, or `tdd` for ordinary internal Plate/Slate automation
-- `slate-migration` for autonomous Slate v2 migration closure: Plate-to-Slate-v2 migration loops, stale Slate API audits, migration-guide repair, changeset repair, package/docs/examples/tests proof, and migration workflow self-repair
+- `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Plite coverage gaps, copy/refactor/create decisions, and turning a completed harvest into a lane-specific Plite or Plate plan that pauses for review before execution
+- `plite-research` for Plite web/GitHub/OSS discovery, scalable repo scans, research ledgers, dedupe, source synthesis, evidence grading, scoring, and promotion into `plite-ar` modes, `plite-patch`, `plite-plan`, `issue-harvester`, or docs packets. It does not run Codex Autoresearch packets
+- `auto` for Plate/Plite long autonomous supervisor loops: quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, external issue/test harvests, skill repair, docs consolidation, and readiness without user micro-routing. It routes worker skills itself; the user should not need to name `plite-patch`, `plite-plan`, `plate-plan`, `plite-ar`, `plite-research`, `issue-harvester`, `editor-test-harvester`, or `tdd` for ordinary internal Plate/Plite automation
+- `plite-migration` for autonomous Plite migration closure: Plate-to-Plite-v2 migration loops, stale Plite API audits, migration-guide repair, changeset repair, package/docs/examples/tests proof, and migration workflow self-repair
 - `sync-plate-ui` for fork-aware Plate UI registry component syncs into downstream apps like Potion, including status, planning, review, dashboard, and accepted-row apply workflows
 - `release-lanes` for beta/latest release lane maintenance, promote, direct main-to-next sync, beta pre-mode, and npm/GitHub release verification
 - `sync-main-to-next` for the fast direct `main -> next` release-lane sync wrapper without promotion or autoreview ceremony
 - `tdd`
 - @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
-- @.agents/rules/plate-plan.mdc when defining Plate v2 architecture/API/boundary plans, minimal breaking changes, Slate/Plate ownership, or editor-behavior law when that surface is touched
+- @.agents/rules/plate-plan.mdc when defining Plate v2 architecture/API/boundary plans, minimal breaking changes, Plite/Plate ownership, or editor-behavior law when that surface is touched
 
 Skill ownership:
 
@@ -167,20 +167,20 @@ Browser usage:
 
 ## Commands
 
-### Slate v2 packages in Plate repo
+### Plite packages in Plate repo
 
-- `pnpm check:slate` is the normal daily Slate lane. It covers Slate package
+- `pnpm check:plite` is the normal daily Plite lane. It covers Plite package
   typecheck/tests, browser package tests, and full Chromium browser proof
-  through `apps/slate`.
-- Use `pnpm --filter slate test:slate-browser:chromium <file-or--grep>`
-  for focused changed browser rows. `apps/slate` must import Slate
+  through `apps/plite`.
+- Use `pnpm --filter plite test:plite-browser:chromium <file-or--grep>`
+  for focused changed browser rows. `apps/plite` must import Plite
   examples from `apps/www`; never maintain a second example source tree.
-- Use `pnpm check:slate:browser-matrix` for closure-only app browser proof:
+- Use `pnpm check:plite:browser-matrix` for closure-only app browser proof:
   Chromium, Firefox, mobile viewport, and WebKit on Darwin.
 - Do not put WebKit, mobile, transplant parity, docs-v2 audits, benchmark
-  target audits, www typecheck, or the full browser matrix in the daily Slate
+  target audits, www typecheck, or the full browser matrix in the daily Plite
   loop; they are explicit closure or release gates.
-- Pair browser proof with package proof when making release-quality Slate
+- Pair browser proof with package proof when making release-quality Plite
   behavior claims.
 - Use `bun test:mobile-device-proof:raw` only on a machine/device lane that can provide real Appium Android/iOS proof artifacts. Do not let semantic mobile handles or Playwright mobile viewport rows satisfy raw-device claims.
 - During editor-kernel/browser work, use focused package tests and focused Playwright greps first.

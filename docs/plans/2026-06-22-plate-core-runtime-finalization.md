@@ -17,7 +17,7 @@ Applied packs:
 - none
 
 Completion threshold:
-- `createPlateEditor()` defaults to the Slate v2 Plate runtime, or the plan
+- `createPlateEditor()` defaults to the Plite Plate runtime, or the plan
   proves the exact unsupported option/plugin/runtime owner that blocks that
   default.
 - `currentRuntimeBridge.ts` and `legacyRuntimeUpdateBridge.ts` are either
@@ -26,13 +26,13 @@ Completion threshold:
 - No public compatibility aliases, public legacy runtime shims, or docs for the
   old default route are introduced.
 - Closure is legal only when every pass row is complete or intentionally skipped
-  with evidence, every required API conflict row has a verdict, Slate/Plate
+  with evidence, every required API conflict row has a verdict, Plite/Plate
   boundary rows are closed, proof gates are named, final handoff is emitted, and
   `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-22-plate-core-runtime-finalization.md`
   passes.
 
 Verification surface:
-- `rg -n "runtime\\?: 'legacy'|runtime: 'slate-v2'|createCurrentRuntimeEditor|installLegacyRuntimeUpdateBridge|@platejs/slate-legacy" packages/core/src packages/core/package.json packages/plate/src packages/plate/package.json`
+- `rg -n "runtime\\?: 'legacy'|runtime: 'plite'|createCurrentRuntimeEditor|installLegacyRuntimeUpdateBridge|@platejs/slate-legacy" packages/core/src packages/core/package.json packages/plate/src packages/plate/package.json`
 - `pnpm turbo typecheck --filter=./packages/core`
 - `pnpm --filter @platejs/core test`
 - `pnpm --filter @platejs/core build`
@@ -43,8 +43,8 @@ Constraints:
 - Plate v2 may make breaking changes for best architecture, DX, performance,
   testability, and agent-maintainability.
 - Minimal breaking change means the smallest public break set that removes the
-  real Slate/Plate conflict. It does not mean keeping aliases or shims.
-- Slate APIs win when Plate APIs overlap with the Slate substrate.
+  real Plite/Plate conflict. It does not mean keeping aliases or shims.
+- Plite APIs win when Plate APIs overlap with the Plite substrate.
 - No public compatibility aliases, public runtime shims, or docs for old API
   names.
 - Private temporary bridges are allowed only with an owner, deletion gate, proof
@@ -54,11 +54,11 @@ Constraints:
 
 Boundaries:
 - Source of truth: latest user request, root `VISION.md`, relevant
-  `docs/vision/**`, `.agents/rules/plate-plan.mdc`, current Slate package APIs,
+  `docs/vision/**`, `.agents/rules/plate-plan.mdc`, current Plite package APIs,
   and current Plate source/docs/tests.
 - Allowed planning edit scope: `docs/plans/**`, `docs/research/**`,
   `docs/vision/**`, `docs/editor-behavior/**` when behavior law changes,
-  `docs/slate-v2/**` references when Slate migration evidence is required.
+  `docs/plite/**` references when Plite migration evidence is required.
 - Allowed execution edit scope: accepted-plan package/app/docs/tests/examples
   owners.
 - Browser surface: N/A until a rendered Plate route changes.
@@ -107,7 +107,7 @@ Start Gates:
 | Prompt requirements captured before work | yes | User asked whether Plate core can be finalized/cleaned up after reviewing `currentRuntimeBridge.ts` and `legacyRuntimeUpdateBridge.ts`; requirement is to pursue final core cleanup, not polish bridge scaffolding. |
 | Active goal checked or created | yes | `get_goal` returned none; created active goal for this plan. |
 | Source of truth read before edits | yes | Read root `VISION.md`, `docs/vision/plate.md`, `docs/vision/slate.md`, accepted API conflict plan, execution plan, and core runtime adapter plan. |
-| Slate/Plate boundary surface identified | yes | Surface is Plate core runtime/default route and private legacy bridge deletion gate. |
+| Plite/Plate boundary surface identified | yes | Surface is Plate core runtime/default route and private legacy bridge deletion gate. |
 | API conflict ledger needed | yes | Existing accepted ledger applies; this plan narrows to the default-runtime bridge row. |
 | Planning vs execution mode decided | yes | Execution checkpoint against accepted Plate v2 API conflict plan, not a fresh planning-only proposal. |
 | Browser proof needed | N/A | No rendered route changed yet; required if default runtime behavior changes. |
@@ -119,13 +119,13 @@ Work Checklist:
 - [x] Planning vs execution mode is explicit.
 - [x] Live source grounding recorded for every current implementation/API/docs
       claim.
-- [x] Slate/Plate boundary map is complete.
+- [x] Plite/Plate boundary map is complete.
 - [x] API conflict ledger is source-discovered and includes every public or
       exported Plate runtime accessor, product command surface, transform
-      namespace, plugin extension point, Slate transaction/read/update
+      namespace, plugin extension point, Plite transaction/read/update
       interaction point, runtime/default-route bridge, package export,
       declaration, docs/example API, and legacy substrate bridge that may
-      overlap with Slate.
+      overlap with Plite.
 - [x] Minimal breaking-change matrix is complete.
 - [x] Private bridges, if any, have owner, deletion gate, and proof route.
 - [x] Public API target is concrete.
@@ -145,9 +145,9 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | yes | Run core and facade gates | `pnpm --filter @platejs/core test`, `pnpm turbo typecheck --filter=./packages/core`, `pnpm --filter @platejs/core build`, `pnpm turbo typecheck --filter=./packages/plate`, and `pnpm --filter platejs build` passed after formatting and serial rerun. |
-| Slate/Plate boundary rows closed | yes | Close default route and name remaining blocker | Default `createPlateEditor()` now enters the Slate v2 Plate runtime; exported legacy `PlateEditor/TPlateEditor/withSlate/withStatic` remain the next hard-cut blocker. |
+| Plite/Plate boundary rows closed | yes | Close default route and name remaining blocker | Default `createPlateEditor()` now enters the Plite Plate runtime; exported legacy `PlateEditor/TPlateEditor/withPlite/withStatic` remain the next hard-cut blocker. |
 | API conflict ledger closed | yes | Verdict every row | Runtime aliases were cut from `PlateRuntimeEditor`; remaining `getPluginApi/getTransforms` are legacy editor/type exports only. |
-| Breaking changes accepted | yes | Record adoption answer | Default route break is accepted by user doctrine: Slate substrate wins, no public compat aliases. |
+| Breaking changes accepted | yes | Record adoption answer | Default route break is accepted by user doctrine: Plite substrate wins, no public compat aliases. |
 | Private bridges controlled | yes | Owner, deletion gate, and no public docs | `currentRuntimeBridge.ts` and `legacyRuntimeUpdateBridge.ts` remain only because exported legacy editor/type surfaces still exist; no v2 runtime alias remains. |
 | Package/source execution changed | yes | Run focused owner gates | Core and `platejs` package typecheck/build passed; no barrel export source changed, so `pnpm brl` was not needed. |
 | Docs/content changed | N/A | No docs route changed | No browser proof or docs check required for this core-source packet. |
@@ -162,7 +162,7 @@ Phase / pass table:
 |-------|--------|----------|------|
 | Current-state read and initial score | complete | Source owners and accepted Plate v2 plan read. | closed |
 | Intent, scope, boundary, non-goals | complete | Scope narrowed to Plate core default runtime and bridge cleanup. | closed |
-| Slate/Plate boundary audit | complete | Source audit shows default route changed; legacy exports remain. | closed |
+| Plite/Plate boundary audit | complete | Source audit shows default route changed; legacy exports remain. | closed |
 | API conflict inventory | complete | Runtime aliases cut; legacy editor aliases remain outside v2 route. | closed |
 | Minimal breaking-change strategy | complete | Hard-cut default route, defer exported legacy type-system deletion to next packet. | closed |
 | Runtime, performance, testability pass | complete | Core tests/typecheck/build green. | closed |
@@ -176,28 +176,28 @@ Phase / pass table:
 Scorecard:
 | Dimension | Weight | Score | Evidence |
 |-----------|-------:|------:|----------|
-| Slate/Plate boundary correctness | 0.20 | 0.94 | Default route is v2; legacy substrate is named as exported-type blocker. |
+| Plite/Plate boundary correctness | 0.20 | 0.94 | Default route is v2; legacy substrate is named as exported-type blocker. |
 | Plate API/DX quality | 0.20 | 0.92 | V2 runtime aliases cut; fallback return type no longer leaks private runtime generics. |
 | Runtime, performance, and testability | 0.20 | 0.94 | Core package tests, typecheck, and build pass. |
 | Minimal breaking-change strategy | 0.15 | 0.93 | Hard-cut default route without broad feature-package migration. |
 | Product/plugin/docs/examples coherence | 0.15 | 0.90 | No docs changed; next docs pass waits for full legacy export cut. |
 | Research, source evidence, and proof completeness | 0.10 | 0.92 | Source and dist audits identify remaining legacy owners. |
 
-Slate/Plate boundary map:
+Plite/Plate boundary map:
 | Surface | Current owner | Target owner | Keep / move / cut / bridge / defer | Evidence | Verdict |
 |---------|---------------|--------------|------------------------------------|----------|---------|
-| `createPlateEditor()` default route | Plate core over legacy runtime | Plate core over Slate v2 runtime | cut legacy default | `packages/core/src/react/editor/withPlate.ts` now dispatches to runtime unless `runtime: 'legacy'` is explicitly passed. | done |
-| `currentRuntimeBridge.ts` | Plate core private scaffold | deleted by next hard-cut blocker | bridge then delete | Source and dist audits show `PlateEditor/TPlateEditor/withSlate/withStatic` still import legacy substrate. | defer to exported legacy type-system cut |
-| `legacyRuntimeUpdateBridge.ts` | Plate core private scaffold | delete by next hard-cut blocker | bridge then delete | `packages/core/src/lib/editor/withSlate.ts` still installs the legacy update bridge. | defer to exported legacy type-system cut |
+| `createPlateEditor()` default route | Plate core over legacy runtime | Plate core over Plite runtime | cut legacy default | `packages/core/src/react/editor/withPlate.ts` now dispatches to runtime unless `runtime: 'legacy'` is explicitly passed. | done |
+| `currentRuntimeBridge.ts` | Plate core private scaffold | deleted by next hard-cut blocker | bridge then delete | Source and dist audits show `PlateEditor/TPlateEditor/withPlite/withStatic` still import legacy substrate. | defer to exported legacy type-system cut |
+| `legacyRuntimeUpdateBridge.ts` | Plate core private scaffold | delete by next hard-cut blocker | bridge then delete | `packages/core/src/lib/editor/withPlite.ts` still installs the legacy update bridge. | defer to exported legacy type-system cut |
 
 API conflict ledger:
 | Surface | Current shape | Conflict | Target shape | Verdict | Adoption/docs/proof answer |
 |---------|---------------|----------|--------------|---------|---------------------------|
-| runtime accessors | default `createPlateEditor()` returns `PlateRuntimeEditor` | old default removed | default returns Slate v2 Plate runtime | done | core typecheck/test/build |
-| product command surfaces | legacy route exposes `tf/transforms/getTransforms` | duplicate mutation layer beside Slate tx | tx/API extension route | cut from v2 runtime; legacy exports deferred | source and dist audit |
+| runtime accessors | default `createPlateEditor()` returns `PlateRuntimeEditor` | old default removed | default returns Plite Plate runtime | done | core typecheck/test/build |
+| product command surfaces | legacy route exposes `tf/transforms/getTransforms` | duplicate mutation layer beside Plite tx | tx/API extension route | cut from v2 runtime; legacy exports deferred | source and dist audit |
 | transform namespaces | `PlateEditor` and `TPlateEditor` expose `tf/transforms` | old command namespace remains in exported legacy types | no public default route dependency | defer to legacy type-system cut | core declaration audit |
 | plugin extension points | v2 route rejects unsupported `extendEditor`, `api`, `transforms` options | default route cannot flip until these are handled or broken | reject unsupported old options with explicit hard cut | hard-cut unless source proves product blocker | existing v2 unsupported option tests |
-| Slate transaction/read/update interaction points | v2 route exists and has tx tests | not default | make default | keep | `createPlateRuntimeEditor.spec.ts` |
+| Plite transaction/read/update interaction points | v2 route exists and has tx tests | not default | make default | keep | `createPlateRuntimeEditor.spec.ts` |
 | runtime/default-route bridges | `currentRuntimeBridge` + `legacyRuntimeUpdateBridge` | old runtime still exists for explicit legacy route/types | delete after legacy type-system cut | defer with blocker | source audit |
 | package exports and declarations | core still depends on `@platejs/slate-legacy` | public dependency remains | remove dependency in next hard-cut packet | defer with blocker | package build and dep scan |
 | docs/examples teaching public API | docs not touched in this checkpoint | no route/doc changed | update in docs pass after full legacy export cut | defer | docs owner after core proof |
@@ -206,26 +206,26 @@ API conflict ledger:
 Minimal breaking-change matrix:
 | Break | Why required | Smaller option rejected | User impact | Migration route | Proof |
 |-------|--------------|-------------------------|-------------|-----------------|-------|
-| Make Slate v2 Plate runtime the default `createPlateEditor()` route | Bridge cleanup cannot finish while default route is legacy | Keeping `runtime: 'slate-v2'` opt-in preserves old API as de facto default | callers using unsupported old options fail and must migrate | package-by-package fixes or explicit hard cuts | core typecheck/test/build |
+| Make Plite Plate runtime the default `createPlateEditor()` route | Bridge cleanup cannot finish while default route is legacy | Keeping `runtime: 'plite'` opt-in preserves old API as de facto default | callers using unsupported old options fail and must migrate | package-by-package fixes or explicit hard cuts | core typecheck/test/build |
 | Delete public legacy default semantics | User rejected compat aliases/shims | Renaming bridge files is fake cleanup | old `tf/getTransforms/getPluginApi` default assumptions break | use `editor.api` and `editor.update(tx => ...)` | declaration/source audit |
 
 Public API target:
 | Surface | Proposed shape | User-facing DX | Boundary owner | Evidence | Verdict |
 |---------|----------------|----------------|----------------|----------|---------|
-| `createPlateEditor()` | Slate v2 Plate runtime by default | one current editor runtime, no opt-in v2 flag | Plate on Slate substrate | current opt-in route at `withPlate.ts`; runtime scaffold in `createPlateRuntimeEditor.ts` | target |
+| `createPlateEditor()` | Plite Plate runtime by default | one current editor runtime, no opt-in v2 flag | Plate on Plite substrate | current opt-in route at `withPlate.ts`; runtime scaffold in `createPlateRuntimeEditor.ts` | target |
 | Old legacy route | explicit `runtime: 'legacy'` still exists | no compatibility promise | next hard-cut packet | source audit shows only tests and exported legacy types require it | defer with blocker |
 
 Private bridge and deletion gates:
 | Bridge | Owner | Why temporary | Public exposure check | Deletion gate | Proof |
 |--------|-------|---------------|-----------------------|---------------|-------|
-| `currentRuntimeBridge.ts` | Plate core | exported legacy editor/type system still imports it | not an explicit runtime entrypoint, but leaks through legacy declarations | delete with `PlateEditor/TPlateEditor/withSlate/withStatic` hard cut | dep/source scan |
-| `legacyRuntimeUpdateBridge.ts` | Plate core | fake v2 `update` on legacy editor | not exported directly | delete with legacy `withSlate` hard cut | source scan |
+| `currentRuntimeBridge.ts` | Plate core | exported legacy editor/type system still imports it | not an explicit runtime entrypoint, but leaks through legacy declarations | delete with `PlateEditor/TPlateEditor/withPlite/withStatic` hard cut | dep/source scan |
+| `legacyRuntimeUpdateBridge.ts` | Plate core | fake v2 `update` on legacy editor | not exported directly | delete with legacy `withPlite` hard cut | source scan |
 
 Runtime / default-route target:
 | Layer | Current shape | Target mechanism | Avoids | Evidence | Verdict |
 |-------|---------------|------------------|--------|----------|---------|
 | default editor factory | `createPlateRuntimeEditor()` default unless explicit legacy route | `createPlateRuntimeEditor()` default | permanent opt-in v2 split | `withPlate.ts` | done |
-| runtime implementation | v2 route backed by `@platejs/slate-react` | keep and expand | legacy bridge | `createPlateRuntimeEditor.ts` | keep |
+| runtime implementation | v2 route backed by `@platejs/plite-react` | keep and expand | legacy bridge | `createPlateRuntimeEditor.ts` | keep |
 
 Plugin / feature package target:
 | Package / feature | Current API | Target API | Break level | Proof command | Verdict |
@@ -271,9 +271,9 @@ High-risk deliberate-mode pre-mortem:
 Objection ledger:
 | Change | Who feels pain | Objection | Tradeoff | Evidence | Adoption/docs/proof answer | Verdict |
 |--------|----------------|-----------|----------|----------|----------------------------|---------|
-| Default runtime route to Slate v2 | Plate integrators using unsupported old factory options | Some old options fail instead of silently bridging | Better testability and one runtime mental model | core tests/typecheck/build pass | migrate package-by-package; no compat aliases | accepted |
-| Remove v2 runtime `getPluginApi/getTransforms` aliases | Code expecting old helper names on new runtime | Short-term break | Prevents fake API compatibility on the Slate v2 route | no source leftovers in `createPlateRuntimeEditor` or its spec | use `editor.api`, `editor.transforms`, or `editor.update` directly | accepted |
-| Keep legacy export blocker for now | Maintainers wanting full cleanup immediately | Still leaks `@platejs/slate-legacy` through declarations | Cutting it requires broader `withSlate/PlateEditor/TPlateEditor` migration | source/dist audit lists exact owners | next hard-cut packet | deferred |
+| Default runtime route to Plite | Plate integrators using unsupported old factory options | Some old options fail instead of silently bridging | Better testability and one runtime mental model | core tests/typecheck/build pass | migrate package-by-package; no compat aliases | accepted |
+| Remove v2 runtime `getPluginApi/getTransforms` aliases | Code expecting old helper names on new runtime | Short-term break | Prevents fake API compatibility on the Plite route | no source leftovers in `createPlateRuntimeEditor` or its spec | use `editor.api`, `editor.transforms`, or `editor.update` directly | accepted |
+| Keep legacy export blocker for now | Maintainers wanting full cleanup immediately | Still leaks `@platejs/slate-legacy` through declarations | Cutting it requires broader `withPlite/PlateEditor/TPlateEditor` migration | source/dist audit lists exact owners | next hard-cut packet | deferred |
 
 Hard cuts and rejected alternatives:
 | Option / API | Keep / cut / reject | Why | Migration cost | Evidence | Follow-up |
@@ -293,30 +293,30 @@ Plan deltas from review:
 Open questions and decision-changing evidence:
 | Question | Why it matters | Evidence needed | Owner | Status |
 |----------|----------------|-----------------|-------|--------|
-| Can `@platejs/slate-legacy` be removed from `@platejs/core` now? | It determines whether core is fully clean. | Full `PlateEditor/TPlateEditor/withSlate/withStatic` hard cut. | next Plate core packet | open |
+| Can `@platejs/slate-legacy` be removed from `@platejs/core` now? | It determines whether core is fully clean. | Full `PlateEditor/TPlateEditor/withPlite/withStatic` hard cut. | next Plate core packet | open |
 
 Implementation phases with owners:
 | Phase | Owner | Scope | Entry criteria | Exit criteria | Verification |
 |-------|-------|-------|----------------|---------------|--------------|
 | core default route | Plate core runtime | `createPlateEditor` default, runtime metadata, navigation hook, runtime alias cut | accepted plan | core and facade gates green | complete |
-| legacy export hard cut | Plate core API | remove `PlateEditor/TPlateEditor/withSlate/withStatic` dependency on legacy substrate | current packet complete | no `@platejs/slate-legacy` in core src/dist/package | next |
+| legacy export hard cut | Plate core API | remove `PlateEditor/TPlateEditor/withPlite/withStatic` dependency on legacy substrate | current packet complete | no `@platejs/slate-legacy` in core src/dist/package | next |
 
 Final user-review handoff outline:
-- accepted boundary decisions: default Plate editor route is Slate v2 runtime.
+- accepted boundary decisions: default Plate editor route is Plite runtime.
 - accepted API conflict verdicts: v2 runtime aliases removed; legacy exported types remain a named blocker.
 - breaking changes: callers relying on old default factory options must migrate.
-- private bridges and deletion gates: delete with `PlateEditor/TPlateEditor/withSlate/withStatic` hard cut.
+- private bridges and deletion gates: delete with `PlateEditor/TPlateEditor/withPlite/withStatic` hard cut.
 - docs/examples/registry changes: none in this packet.
 - proof gates: core test/typecheck/build and plate facade typecheck/build.
 - next execution owners: Plate core legacy type-system hard cut, then package-by-package migration.
-- needs user attention: decide whether to immediately cut exported legacy `PlateEditor/TPlateEditor/withSlate/withStatic`.
+- needs user attention: decide whether to immediately cut exported legacy `PlateEditor/TPlateEditor/withPlite/withStatic`.
 
 Final completion gates:
 | Gate | Required evidence | Status |
 |------|-------------------|--------|
 | score >= 0.92 and no dimension below 0.85 | scorecard rows cite evidence | complete |
 | all pass rows complete or skipped with evidence | phase/pass table closed | complete |
-| Slate/Plate boundary closed | boundary map closed | complete |
+| Plite/Plate boundary closed | boundary map closed | complete |
 | API conflict ledger closed | ledger rows have verdicts | complete |
 | live source grounding complete | source-backed rows cite current owners | complete |
 | workspace verification recorded | proof matrix closed | complete |
@@ -325,13 +325,13 @@ Final completion gates:
 | `check-complete` passes | `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-22-plate-core-runtime-finalization.md` | ready |
 
 Findings:
-- `createPlateEditor()` can default to the Slate v2 Plate runtime while keeping tests/build green.
+- `createPlateEditor()` can default to the Plite Plate runtime while keeping tests/build green.
 - The v2 route still needed production parity fixes for selector options, leaf plugin cache, removed shortcuts, input-rule helper tests, and navigation feedback rerendering.
 - The v2 runtime still had fake old helper aliases; those are now cut.
-- Full removal of `@platejs/slate-legacy` is blocked by exported legacy `PlateEditor/TPlateEditor/withSlate/withStatic`, not by the default runtime route.
+- Full removal of `@platejs/slate-legacy` is blocked by exported legacy `PlateEditor/TPlateEditor/withPlite/withStatic`, not by the default runtime route.
 
 Decisions and tradeoffs:
-- Keep default route as Slate v2.
+- Keep default route as Plite.
 - Do not silently support arbitrary legacy `extendEditor` in v2 runtime.
 - Do not export v2 runtime `getPluginApi/getTransforms` aliases.
 - Defer full `@platejs/slate-legacy` dependency removal to the exported legacy type-system hard cut.
@@ -348,7 +348,7 @@ Verification evidence:
 - `pnpm --filter @platejs/core build` passed.
 - `pnpm turbo typecheck --filter=./packages/plate` passed.
 - `pnpm --filter platejs build` passed.
-- Source audit: `@platejs/slate-legacy` remains in `packages/core/package.json`, `currentRuntimeBridge.ts`, legacy editor types, `withSlate`, `withStatic`, and plugin base types.
+- Source audit: `@platejs/slate-legacy` remains in `packages/core/package.json`, `currentRuntimeBridge.ts`, legacy editor types, `withPlite`, `withStatic`, and plugin base types.
 
 Open risks:
 - `@platejs/core` still exposes legacy editor/type surfaces that import

@@ -1,7 +1,7 @@
 # Yjs cleanup 8h
 
 Objective:
-Clean `@slate/yjs` in sibling `../slate-v2` for 8h while keeping Yjs tests green and leaving no known technical debt.
+Clean `@slate/yjs` in sibling `../plite` for 8h while keeping Yjs tests green and leaving no known technical debt.
 
 Goal plan:
 docs/plans/2026-06-11-yjs-cleanup-8h.md
@@ -16,9 +16,9 @@ Applied packs:
 - none
 
 Automation source:
-- type: user-invoked `slate-automation`
-- prompt / link: `Keep all yjs tests passing while refactoring the yjs code to be as clean as possible in ../slate-v2, with no technical debt left behind you should do this clean up in 8h.`
-- surface / route / package: `/Users/felixfeng/Desktop/repos/slate-v2/packages/slate-yjs`; browser proof only for touched browser-visible collaboration behavior.
+- type: user-invoked `plite-automation`
+- prompt / link: `Keep all yjs tests passing while refactoring the yjs code to be as clean as possible in ../plite, with no technical debt left behind you should do this clean up in 8h.`
+- surface / route / package: `/Users/felixfeng/Desktop/repos/plite/packages/plite-yjs`; browser proof only for touched browser-visible collaboration behavior.
 - invocation mode: timed mode
 - timebox / deadline: 8h loop-start budget, started 2026-06-11T10:29:33+0800, deadline 2026-06-11T18:29:33+0800.
 - completion threshold summary: all focused Yjs package tests pass after cleanup; package type/build/check proof is green or scoped with a real blocker; touched browser-visible behavior has Playwright/Browser proof; packet ledger, changed list, review attention, stopping checkpoints, slowdowns, and final handoff are complete.
@@ -37,7 +37,7 @@ First checkpoint:
 Completion threshold:
 - Done means the current `@slate/yjs` implementation is measurably cleaner by source ownership, naming, dead-code removal, duplication reduction, and test/support shape without weakening public package API or existing behavior.
 - Every code packet must end in `keep`, `revert`, or `quarantine`; only `keep` packets count.
-- Required green proof after kept implementation changes: `bun test ./packages/slate-yjs/test`, `bun --filter @slate/yjs typecheck`, `bun --filter @slate/yjs build`, focused behavior/browser proof for touched browser-facing collaboration paths, and `bun check` unless unrelated failures are isolated with exact evidence.
+- Required green proof after kept implementation changes: `bun test ./packages/plite-yjs/test`, `bun --filter @slate/yjs typecheck`, `bun --filter @slate/yjs build`, focused behavior/browser proof for touched browser-facing collaboration paths, and `bun check` unless unrelated failures are isolated with exact evidence.
 - `bun test:integration-local` is not the default cleanup gate for this narrow Yjs lane; run it only if the touched surface or final claim width requires it.
 - Closure is legal only when required behavior, visual/native selection,
   package/API, mobile/raw-device claim-width, huge-document, docs/skill repair,
@@ -47,33 +47,33 @@ Completion threshold:
   passes.
 
 Verification surface:
-- Source audit: `packages/slate-yjs/src/**`, `packages/slate-yjs/test/**`, and public exports in `packages/slate-yjs/package.json`.
-- Baseline and final package proof from `/Users/felixfeng/Desktop/repos/slate-v2`: `bun test ./packages/slate-yjs/test`, `bun --filter @slate/yjs typecheck`, `bun --filter @slate/yjs build`.
-- Final repo sanity from `/Users/felixfeng/Desktop/repos/slate-v2`: `bun check`, unless an unrelated known failure is isolated with a focused command.
+- Source audit: `packages/plite-yjs/src/**`, `packages/plite-yjs/test/**`, and public exports in `packages/plite-yjs/package.json`.
+- Baseline and final package proof from `/Users/felixfeng/Desktop/repos/plite`: `bun test ./packages/plite-yjs/test`, `bun --filter @slate/yjs typecheck`, `bun --filter @slate/yjs build`.
+- Final repo sanity from `/Users/felixfeng/Desktop/repos/plite`: `bun check`, unless an unrelated known failure is isolated with a focused command.
 - Browser/provider proof: focused `bun playwright ...` rows only when cleanup touches browser-visible Yjs collaboration, provider lifecycle, selection, or structural replay behavior.
 - Mobile/raw-device: N/A unless this cleanup touches mobile-specific browser behavior; do not broaden claim width from desktop proof.
 - Benchmarks/perf: N/A unless cleanup discovers a measurable Yjs hot lane or benchmark debt.
-- Skill/docs sync: only if `.agents/rules/**`, `docs/slate-v2/**`, or active plan doctrine changes.
+- Skill/docs sync: only if `.agents/rules/**`, `docs/plite/**`, or active plan doctrine changes.
 - Final plan proof: `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-11-yjs-cleanup-8h.md`.
 
 Constraints:
-- Slate v2 private alpha by default: no release, publish, changeset, PR, or
+- Plite private alpha by default: no release, publish, changeset, PR, or
   branch readiness unless the prompt explicitly asks.
-- Run Slate v2 behavior commands from `.tmp/slate-v2`; parent repo commands
+- Run Plite behavior commands from `.tmp/plite`; parent repo commands
   prove plans, docs, skills, and templates only.
 - Behavior proof beats perf. Native/visual proof beats model-only selection.
 - No hidden debounce or fake stress fixture wins.
 - No broad pagination/virtualization architecture unless the prompt or a
-  stopping checkpoint routes to `slate-plan`.
-- Do not patch Plate when the run is scoped to Slate v2.
+  stopping checkpoint routes to `plite-plan`.
+- Do not patch Plate when the run is scoped to Plite.
 
 Boundaries:
-- Source of truth: live sibling checkout `/Users/felixfeng/Desktop/repos/slate-v2`; parent `plate-copy` owns this plan/control ledger.
-- Allowed edit scope: `packages/slate-yjs/src/**`, `packages/slate-yjs/test/**`, focused package config/export files if cleanup requires it, and this plan. Broaden only with recorded evidence.
+- Source of truth: live sibling checkout `/Users/felixfeng/Desktop/repos/plite`; parent `plate-copy` owns this plan/control ledger.
+- Allowed edit scope: `packages/plite-yjs/src/**`, `packages/plite-yjs/test/**`, focused package config/export files if cleanup requires it, and this plan. Broaden only with recorded evidence.
 - Browser surfaces: Yjs collaboration/provider routes only if touched behavior is visible in browser.
 - Package/API surfaces: preserve intentional `@slate/yjs` public API unless evidence shows an API cleanup is the real long-term fix.
 - Agent/skill surfaces: no skill/rule edits unless the workflow itself misses a reusable expectation.
-- Docs/research surfaces: plan ledger only unless a reusable Slate v2 decision must be consolidated.
+- Docs/research surfaces: plan ledger only unless a reusable Plite decision must be consolidated.
 - Non-goals: no commit, push, PR, publish, release, branch creation, Plate package patching, broad integration sweep as primary gate, or cosmetic churn.
 
 Blocked condition:
@@ -82,7 +82,7 @@ Blocked condition:
   batch mode, queue soft questions for final handoff.
 
 Automation state:
-- surface: `/Users/felixfeng/Desktop/repos/slate-v2/packages/slate-yjs`
+- surface: `/Users/felixfeng/Desktop/repos/plite/packages/plite-yjs`
 - mode: timed 8h
 - checkpoint_policy: dynamic_supervisor
 - current_loop: 0
@@ -112,13 +112,13 @@ Completion rule:
 Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
-| checkpoint-zero | slate-automation | complete | P0 | Copy prompt requirements and read north-star before implementation. | User prompt, autogoal, `vision`, `docs/slate-v2/agent-start.md`, current package file list, and no `.env` files found under sibling checkout. | update: completed and made scope concrete |
+| checkpoint-zero | slate-automation | complete | P0 | Copy prompt requirements and read north-star before implementation. | User prompt, autogoal, `vision`, `docs/plite/agent-start.md`, current package file list, and no `.env` files found under sibling checkout. | update: completed and made scope concrete |
 | status | slate-automation | in_progress | P0 | Read active plan, latest prompt, source status, and current evidence without proactive git checks. | Baseline Yjs tests and source audit recorded. | update: next owner |
-| gap-scan | slate-automation | pending | P0 | Identify cleanup targets by current source complexity, duplication, dead code, naming, tests, and API shape. | Gaps routed to packet owners. | update: narrowed to `packages/slate-yjs` cleanup |
-| behavior-proof | slate-ar-stabilize | pending | P0 | Keep all Yjs tests passing before and after cleanup. | `bun test ./packages/slate-yjs/test` baseline and final pass. | update: package tests are the hard guardrail |
+| gap-scan | slate-automation | pending | P0 | Identify cleanup targets by current source complexity, duplication, dead code, naming, tests, and API shape. | Gaps routed to packet owners. | update: narrowed to `packages/plite-yjs` cleanup |
+| behavior-proof | slate-ar-stabilize | pending | P0 | Keep all Yjs tests passing before and after cleanup. | `bun test ./packages/plite-yjs/test` baseline and final pass. | update: package tests are the hard guardrail |
 | oracle-repair | slate-patch / tdd | pending | P0 | Add missing native/visual/model oracles for found gaps. | New proof fails before fix or coverage gap is explicit. | seed |
 | visual-proof | Browser / Playwright | pending | P0 | Prove visible collaboration/selection behavior when touched. | Focused Playwright/Browser evidence recorded, or N/A if cleanup stays package-internal with tests covering behavior. | update: scoped to touched browser-visible behavior |
-| slate-browser-promotion | slate-browser | pending | P1 | Promote repeated browser proof into reusable API/helper. | Helper added, queued, or N/A with reason. | seed |
+| plite-browser-promotion | plite-browser | pending | P1 | Promote repeated browser proof into reusable API/helper. | Helper added, queued, or N/A with reason. | seed |
 | mobile-claim-width | slate-automation | complete | P1 | Separate raw-device proof from viewport proof. | N/A: prompt is package cleanup, no mobile claim. | update: scoped N/A |
 | huge-document-smoke | slate-ar-stabilize | pending | P1 | Smoke huge-doc correctness only if cleanup touches huge-doc-sensitive collaboration behavior. | Focused proof or N/A with source reason. | update: conditional |
 | perf-packet | slate-ar-fast / slate-ar-perf | pending | P2 | Optimize only after correctness is green. | N/A unless source audit finds real Yjs benchmark debt. | update: conditional |
@@ -129,7 +129,7 @@ Checkpoint mutation ledger:
 | Loop | Mutation | Checkpoint(s) | Evidence | Reason | Result |
 |------|----------|---------------|----------|--------|--------|
 | 0 | seed | initial template rows | plan creation | starter topology only | superseded by concrete requirement extraction |
-| 0 | update | checkpoint-zero, status, behavior-proof, visual-proof, mobile-claim-width, huge-document-smoke, perf-packet | user prompt, `vision`, `docs/slate-v2/agent-start.md`, live package file list | Current task is package cleanup with Yjs tests as guardrail, not broad release/mobile/perf work. | status packet next |
+| 0 | update | checkpoint-zero, status, behavior-proof, visual-proof, mobile-claim-width, huge-document-smoke, perf-packet | user prompt, `vision`, `docs/plite/agent-start.md`, live package file list | Current task is package cleanup with Yjs tests as guardrail, not broad release/mobile/perf work. | status packet next |
 
 Mutation rules:
 - Add a checkpoint when a new failure, missing oracle, missing metric, API smell,
@@ -153,13 +153,13 @@ Mutation rules:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Prompt requirements captured before work | yes | Scope `../slate-v2`; surface Yjs code; keep all Yjs tests passing; cleanup as much as safely possible; no technical debt; 8h timed loop; no PR/commit/publish requested. |
-| `slate-automation` source rule read | yes | User supplied full skill body for this run. |
+| Prompt requirements captured before work | yes | Scope `../plite`; surface Yjs code; keep all Yjs tests passing; cleanup as much as safely possible; no technical debt; 8h timed loop; no PR/commit/publish requested. |
+| `plite-automation` source rule read | yes | User supplied full skill body for this run. |
 | `vision` read as checkpoint zero | yes | `.agents/skills/vision/SKILL.md` read 2026-06-11T10:29+0800. |
 | Active goal checked or created | yes | `create_goal` active for this exact 8h cleanup objective. |
 | Invocation mode and timebox recorded | yes | timed mode, 8h loop-start budget, deadline 2026-06-11T18:29:33+0800. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint table updated from current evidence before baseline. |
-| Source of truth and allowed workspaces recorded | yes | Implementation in `/Users/felixfeng/Desktop/repos/slate-v2`; plan in parent `plate-copy`. |
+| Source of truth and allowed workspaces recorded | yes | Implementation in `/Users/felixfeng/Desktop/repos/plite`; plan in parent `plate-copy`. |
 | Output budget strategy recorded | yes | Write broad evidence to this plan; keep chat terse; cap source reads and command output. |
 | Private-alpha release/PR boundary recorded | yes | No release, publish, changeset, branch, commit, or PR unless user explicitly asks. |
 | Browser proof strategy recorded | yes | Run only when cleanup touches browser-visible collaboration/selection/provider behavior. |
@@ -187,7 +187,7 @@ Work Checklist:
       selection/editing risks or explicitly scoped.
 - [x] Missing oracle packets are written, kept, reverted, quarantined, or
       deferred with owner and proof command.
-- [x] Repeated browser proof patterns are promoted to `slate-browser` or queued
+- [x] Repeated browser proof patterns are promoted to `plite-browser` or queued
       with reason.
 - [x] Mobile/raw-device proof is run or the claim width is explicitly limited;
       Playwright viewport proof is not recorded as raw-device proof.
@@ -215,19 +215,19 @@ Work Checklist:
 Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
-| Named verification threshold | yes | Run the proof commands/artifacts named in this plan | `bun test ./packages/slate-yjs/test`, focused provider/awareness tests, `bun --filter @slate/yjs typecheck`, `bun --filter @slate/yjs build`, and `bun lint` passed after kept packets. |
+| Named verification threshold | yes | Run the proof commands/artifacts named in this plan | `bun test ./packages/plite-yjs/test`, focused provider/awareness tests, `bun --filter @slate/yjs typecheck`, `bun --filter @slate/yjs build`, and `bun lint` passed after kept packets. |
 | Dynamic checkpoint reconciliation | yes | Prove the plan was updated from evidence and not frozen to the initial seed | Packet ledger, changed list, slowdowns, findings, and final handoff rows updated after each proof packet. |
-| Workspace authority proof | yes | Record cwd/tool for each Slate v2, parent-docs, skill, browser, package, or benchmark proof | Implementation/proof ran from `/Users/felixfeng/Desktop/repos/slate-v2`; plan ran from `/Users/felixfeng/Desktop/repos/plate-copy`. |
+| Workspace authority proof | yes | Record cwd/tool for each Plite, parent-docs, skill, browser, package, or benchmark proof | Implementation/proof ran from `/Users/felixfeng/Desktop/repos/plite`; plan ran from `/Users/felixfeng/Desktop/repos/plate-copy`. |
 | Behavior gates | yes | Run focused stable behavior proof or record scoped defer rows | Yjs package contracts passed after baseline and every kept packet. |
 | Visual/native selection proof | no | Record Browser/Playwright/native-selection evidence or scoped blocker | N/A: kept packets were package-internal helper/test cleanup and no route-visible behavior changed. |
 | Missing oracle repair | no | Add/verify/revert/quarantine oracle packets or record owner defer | N/A: no missing oracle was found; P4 improved typed test support only. |
-| `slate-browser` promotion | no | Add/verify helper/API or record queue/defer reason | N/A: no repeated browser proof pattern appeared. |
+| `plite-browser` promotion | no | Add/verify helper/API or record queue/defer reason | N/A: no repeated browser proof pattern appeared. |
 | Mobile/raw-device claim width | no | Run raw-device proof or record that only scoped viewport/browser proof is available | N/A: no mobile/raw-device claim in this cleanup. |
 | Huge-document correctness smoke | no | Run focused huge-document behavior smoke or record owner defer | N/A: no huge-document-sensitive Yjs path changed. |
 | Package/API proof | yes | Source-audit and run package/type/test proof when package/API changed, otherwise N/A | Public exports unchanged; package tests/typecheck/build/lint passed. |
 | Skill/rule sync | no | Run `pnpm install` and mirror audit when `.agents/rules/**` changed, otherwise N/A | N/A: no `.agents/rules/**` changes. |
 | Changed list / review attention / stopping checkpoints | yes | Fill final handoff ledgers from current packet evidence | Changed list, review attention, and stopping checkpoint table filled. |
-| Final lint/check | yes | Run scoped lint/check or record why no code changed | `bun lint` passed; `bun check` isolated to unrelated Slate React Vitest failure. |
+| Final lint/check | yes | Run scoped lint/check or record why no code changed | `bun lint` passed; `bun check` isolated to unrelated Plite React Vitest failure. |
 | Workflow slowdown review | yes | Log slow steps and repair avoidable recurring slowdown, otherwise N/A | `bun check` slowdown/blocker logged with focused non-Yjs reproduction. |
 | Agent-native review for agent/tooling changes | no | Load `agent-native-reviewer` and close accepted findings, or N/A | N/A: no agent/tooling source changed. |
 | Autoreview for non-trivial implementation changes | no | Load `autoreview` and close accepted/actionable findings, or N/A for no implementation diff | N/A for this checkpoint: proof is focused Yjs contracts/type/build/lint; no PR/review requested. |
@@ -241,8 +241,8 @@ Phase / pass table:
 | Gap scan and scenario matrix | complete | source audit selected seven cleanup packets | behavior proof |
 | Behavior proof | complete | Yjs package tests passed after every kept packet | oracle repair |
 | Oracle repair | complete | N/A: no missing oracle found; P4 improved test support typing | visual proof |
-| Visual/native proof | complete | N/A: no route-visible behavior changed | slate-browser promotion |
-| slate-browser promotion | complete | N/A: no repeated browser proof helper gap | mobile claim width |
+| Visual/native proof | complete | N/A: no route-visible behavior changed | plite-browser promotion |
+| plite-browser promotion | complete | N/A: no repeated browser proof helper gap | mobile claim width |
 | Mobile/raw-device claim width | complete | N/A: no mobile claim | huge-document smoke |
 | Huge-document correctness smoke | complete | N/A: no huge-doc-sensitive path changed | perf/API/docs as needed |
 | Perf/API/docs/skill packets as needed | complete | N/A for perf/skill; plan docs updated | consolidation |
@@ -252,32 +252,32 @@ Phase / pass table:
 Scenario matrix:
 | Surface | Topology | Viewport / strategy | Gesture | Assertion family | Status |
 |---------|----------|---------------------|---------|------------------|--------|
-| `packages/slate-yjs/test/**` | operations, provider, awareness, selection, history, structural replay | package tests | all contract suites | model value, selection, Yjs doc structure, provider sync | baseline pass |
+| `packages/plite-yjs/test/**` | operations, provider, awareness, selection, history, structural replay | package tests | all contract suites | model value, selection, Yjs doc structure, provider sync | baseline pass |
 | browser collaboration routes | only if touched by cleanup | desktop Chromium first | collaboration/provider gestures matching touched behavior | visible text, native selection, console errors, peer convergence | conditional |
 
 Packet ledger:
 | Packet | Loop | Owner | Hypothesis / failure signature | Files / commands | Behavior / visual proof | Decision | Next |
 |--------|------|-------|--------------------------------|------------------|-------------------------|----------|------|
-| P0-baseline | 0 | slate-automation | Current Yjs package tests must be green before cleanup. | `/Users/felixfeng/Desktop/repos/slate-v2`: `bun test ./packages/slate-yjs/test` -> 173 pass, 0 fail, 22 files, 563ms. | package behavior proof; no browser proof yet | keep | source gap scan |
-| P1-attributes | 1 | slate-automation | `document.ts` and `operations.ts` duplicated `slate:type`, `getAttributes()` casts, and Yjs attribute setters; extract a private helper so Yjs attribute semantics have one owner. | Added `src/core/attributes.ts`; updated `document.ts` and `operations.ts`; `/Users/felixfeng/Desktop/repos/slate-v2`: `bun test ./packages/slate-yjs/test` -> 173 pass, 0 fail; `bun --filter @slate/yjs typecheck` -> pass. | package behavior proof pass; browser proof N/A because behavior is package-internal helper extraction | keep | next cleanup gap scan |
-| P2-path-helpers | 2 | slate-automation | `operations.ts` duplicated `getYjsNodeIf`/`pathsEqual`, and `controller.ts` imported generic path helpers from `split-history`; move generic helpers to neutral owners. | Added `src/core/path.ts`; exported `getYjsNodeIf` from `document.ts`; updated `controller.ts`, `operations.ts`, `split-history.ts`; `/Users/felixfeng/Desktop/repos/slate-v2`: `bun test ./packages/slate-yjs/test` -> 173 pass, 0 fail; `bun --filter @slate/yjs typecheck` -> pass. | package behavior proof pass; browser proof N/A because behavior is package-internal helper extraction | keep | controller lifecycle gap scan |
-| P3-dead-branch | 3 | slate-automation | `handleCommit` returned on `!commit.snapshotChanged` and then checked `!commit.snapshotChanged` again; the second branch was unreachable and made selection publishing logic harder to audit. | Removed unreachable block; `/Users/felixfeng/Desktop/repos/slate-v2`: focused awareness/provider tests -> 34 pass, 0 fail; `bun --filter @slate/yjs typecheck` -> pass; full package tests -> 173 pass, 0 fail. | package behavior proof pass; browser proof N/A | keep | remaining source audit |
+| P0-baseline | 0 | slate-automation | Current Yjs package tests must be green before cleanup. | `/Users/felixfeng/Desktop/repos/plite`: `bun test ./packages/plite-yjs/test` -> 173 pass, 0 fail, 22 files, 563ms. | package behavior proof; no browser proof yet | keep | source gap scan |
+| P1-attributes | 1 | slate-automation | `document.ts` and `operations.ts` duplicated `slate:type`, `getAttributes()` casts, and Yjs attribute setters; extract a private helper so Yjs attribute semantics have one owner. | Added `src/core/attributes.ts`; updated `document.ts` and `operations.ts`; `/Users/felixfeng/Desktop/repos/plite`: `bun test ./packages/plite-yjs/test` -> 173 pass, 0 fail; `bun --filter @slate/yjs typecheck` -> pass. | package behavior proof pass; browser proof N/A because behavior is package-internal helper extraction | keep | next cleanup gap scan |
+| P2-path-helpers | 2 | slate-automation | `operations.ts` duplicated `getYjsNodeIf`/`pathsEqual`, and `controller.ts` imported generic path helpers from `split-history`; move generic helpers to neutral owners. | Added `src/core/path.ts`; exported `getYjsNodeIf` from `document.ts`; updated `controller.ts`, `operations.ts`, `split-history.ts`; `/Users/felixfeng/Desktop/repos/plite`: `bun test ./packages/plite-yjs/test` -> 173 pass, 0 fail; `bun --filter @slate/yjs typecheck` -> pass. | package behavior proof pass; browser proof N/A because behavior is package-internal helper extraction | keep | controller lifecycle gap scan |
+| P3-dead-branch | 3 | slate-automation | `handleCommit` returned on `!commit.snapshotChanged` and then checked `!commit.snapshotChanged` again; the second branch was unreachable and made selection publishing logic harder to audit. | Removed unreachable block; `/Users/felixfeng/Desktop/repos/plite`: focused awareness/provider tests -> 34 pass, 0 fail; `bun --filter @slate/yjs typecheck` -> pass; full package tests -> 173 pass, 0 fail. | package behavior proof pass; browser proof N/A | keep | remaining source audit |
 | P4-provider-test-support | 4 | slate-automation | Provider tests repeatedly used raw `as any` to read/write the Yjs extension group; shared support should own that test typing. | Added `readEditorYjsState` and `runEditorYjsUpdate` to test support; replaced provider-test Yjs casts; remaining `any` is history-extension-only; focused provider test -> 26 pass, 0 fail; typecheck -> pass; full package tests -> 173 pass, 0 fail. | package/test proof pass; browser proof N/A | keep | build/check proof |
-| P5-yjs-text-factory | 5 | slate-automation | `operations.ts` had a local Yjs text factory while `document.ts` already owns Slate-to-Yjs node materialization; text node creation should have one owner. | Exported `createYjsText` from `document.ts`, used it from `operations.ts`; package tests -> 173 pass, 0 fail; typecheck -> pass; build -> pass. | package behavior proof pass; browser proof N/A | keep | replacement split |
+| P5-yjs-text-factory | 5 | slate-automation | `operations.ts` had a local Yjs text factory while `document.ts` already owns Plite-to-Yjs node materialization; text node creation should have one owner. | Exported `createYjsText` from `document.ts`, used it from `operations.ts`; package tests -> 173 pass, 0 fail; typecheck -> pass; build -> pass. | package behavior proof pass; browser proof N/A | keep | replacement split |
 | P6-replacement-owner | 6 | slate-automation | `operations.ts` mixed operation dispatch with compatible replacement and attribute-patch machinery; replacement should be a private owner. | Added `src/core/replacement.ts`; moved noop detection, split-element creation, attribute patching, compatible child replacement; `operations.ts` is 642 lines after starting at 954; package tests -> 173 pass, 0 fail; typecheck -> pass; build -> pass; lint -> pass. | package behavior proof pass; browser proof N/A | keep | final proof/handoff |
 | P7-provider-lifecycle-sync | 7 | slate-automation | `connect` and `disconnect` duplicated provider promise/status synchronization; lifecycle result handling should have one path. | Extracted `syncProviderLifecycleResult`; focused provider tests -> 26 pass, 0 fail; package tests -> 173 pass, 0 fail; typecheck -> pass; lint -> pass; build -> pass. | package/provider proof pass; browser proof N/A | keep | final proof/handoff |
 
 Behavior proof ledger:
 | Family | Route / package | Command / proof | Browser | Result | Follow-up |
 |--------|-----------------|-----------------|---------|--------|-----------|
-| Yjs package contracts | `packages/slate-yjs` | `bun test ./packages/slate-yjs/test` | N/A | pass: 173 pass, 0 fail, 22 files, 563ms | source gap scan |
+| Yjs package contracts | `packages/plite-yjs` | `bun test ./packages/plite-yjs/test` | N/A | pass: 173 pass, 0 fail, 22 files, 563ms | source gap scan |
 
 Visual/native selection ledger:
 | Scenario | Model selection proof | Native selected text | DOM endpoint / caret / geometry | Screenshot / Browser proof | Result |
 |----------|-----------------------|----------------------|-------------------------------|----------------------------|--------|
 | Package-internal cleanup | Covered by contract tests when no browser-visible path changes | N/A | N/A | N/A | baseline pass |
 
-slate-browser promotion ledger:
+plite-browser promotion ledger:
 | Pattern | Repeated where | Proposed helper/API | Proof command | Decision |
 |---------|----------------|---------------------|---------------|----------|
 | N/A | No browser helper pattern repeated; cleanup stayed package-internal. | none | package tests/typecheck/build/lint | N/A |
@@ -295,7 +295,7 @@ Huge-document smoke ledger:
 Workflow slowdowns:
 | Step / command | Owner | Elapsed / estimate | Why slow | Evidence produced | Repair decision |
 |----------------|-------|--------------------|----------|-------------------|-----------------|
-| `bun check` | repo root | ~34s | Full repo check includes unrelated `slate-react` Vitest suite outside Yjs cleanup scope. | Lint and package/site/root typecheck passed; root check failed only at `packages/slate-react/test/dom-repair-policy-contract.test.ts:698`, reproduced focused with same failure. | Keep as necessary broad sanity; final Yjs claim uses package tests/typecheck/build/lint plus scoped non-Yjs blocker. |
+| `bun check` | repo root | ~34s | Full repo check includes unrelated `plite-react` Vitest suite outside Yjs cleanup scope. | Lint and package/site/root typecheck passed; root check failed only at `packages/plite-react/test/dom-repair-policy-contract.test.ts:698`, reproduced focused with same failure. | Keep as necessary broad sanity; final Yjs claim uses package tests/typecheck/build/lint plus scoped non-Yjs blocker. |
 
 Changed list:
 | Group | Current-run changes |
@@ -310,13 +310,13 @@ Changed list:
 Needs your attention:
 | Rank | Item | Why | Anchor | Recommendation |
 |------|------|-----|--------|----------------|
-| 1 | Non-Yjs `bun check` blocker | Root check still fails in Slate React after Yjs proof is green. | `/Users/felixfeng/Desktop/repos/slate-v2/packages/slate-react/test/dom-repair-policy-contract.test.ts:698` | defer from this Yjs cleanup |
-| 2 | Replacement ownership split | Largest cleanup: `operations.ts` dispatch now delegates replacement machinery to a private file. | `/Users/felixfeng/Desktop/repos/slate-v2/packages/slate-yjs/src/core/replacement.ts` | inspect closely, accept if the owner boundary reads well |
+| 1 | Non-Yjs `bun check` blocker | Root check still fails in Plite React after Yjs proof is green. | `/Users/felixfeng/Desktop/repos/plite/packages/plite-react/test/dom-repair-policy-contract.test.ts:698` | defer from this Yjs cleanup |
+| 2 | Replacement ownership split | Largest cleanup: `operations.ts` dispatch now delegates replacement machinery to a private file. | `/Users/felixfeng/Desktop/repos/plite/packages/plite-yjs/src/core/replacement.ts` | inspect closely, accept if the owner boundary reads well |
 
 Stopping checkpoints to unblock:
 | Id | Type | Question / decision | Why it matters | Paused work | Continued work | Recommendation | Anchor |
 |----|------|---------------------|----------------|-------------|----------------|----------------|--------|
-| none | N/A | none | No user decision needed for kept Yjs cleanup packets. | none | package cleanup and proof completed | continue only if you want the unrelated Slate React failure fixed | N/A |
+| none | N/A | none | No user decision needed for kept Yjs cleanup packets. | none | package cleanup and proof completed | continue only if you want the unrelated Plite React failure fixed | N/A |
 
 Findings:
 - `controller.ts` (1120 lines), `operations.ts` (954), and `document.ts` (661) are the core cleanup hotspots; exports are already small.
@@ -329,72 +329,72 @@ Findings:
 Decisions and tradeoffs:
 - Kept cleanup package-internal; no public export/API changes.
 - Browser proof is N/A for this pass because kept packets extracted helpers, removed unreachable code, and cleaned tests without changing route-visible collaboration behavior.
-- `bun check` is recorded as scoped red because the remaining failure is in `slate-react`, not `packages/slate-yjs`.
+- `bun check` is recorded as scoped red because the remaining failure is in `plite-react`, not `packages/plite-yjs`.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
 | P1 typecheck missed one local rename from `removeYjsAttribute` to `removeSlateYjsAttribute` | 1 | exact compiler line, one-line fix, rerun tests/typecheck | resolved; package tests and typecheck pass |
 | P6 first run missed `getSlateYjsElementType` import after moving replacement helpers | 1 | exact compiler/runtime line, restore import, rerun tests/typecheck/build/lint | resolved; package tests, typecheck, build, and lint pass |
-| Full `bun check` failed outside Yjs | 1 | isolate focused non-Yjs row | scoped blocker: `packages/slate-react/test/dom-repair-policy-contract.test.ts:698` still fails focused, unrelated to `packages/slate-yjs` cleanup |
+| Full `bun check` failed outside Yjs | 1 | isolate focused non-Yjs row | scoped blocker: `packages/plite-react/test/dom-repair-policy-contract.test.ts:698` still fails focused, unrelated to `packages/plite-yjs` cleanup |
 
 Verification evidence:
-- `/Users/felixfeng/Desktop/repos/slate-v2`: `bun test ./packages/slate-yjs/test` passed before edits with 173 pass, 0 fail, 22 files, 563ms.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: after P1, `bun test ./packages/slate-yjs/test` passed with 173 pass, 0 fail, 22 files, 526ms.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: after P1, `bun --filter @slate/yjs typecheck` passed.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: after P2, `bun test ./packages/slate-yjs/test` passed with 173 pass, 0 fail, 22 files, 541ms.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: after P2, `bun --filter @slate/yjs typecheck` passed.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: after P3, `bun test ./packages/slate-yjs/test/awareness-contract.spec.ts ./packages/slate-yjs/test/provider-contract.spec.ts` passed with 34 pass, 0 fail.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: after P3, `bun --filter @slate/yjs typecheck` passed.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: after P3, `bun test ./packages/slate-yjs/test` passed with 173 pass, 0 fail, 22 files, 523ms.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: after P4, `bun test ./packages/slate-yjs/test/provider-contract.spec.ts` passed with 26 pass, 0 fail.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: after P4, `bun --filter @slate/yjs typecheck` passed.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: after P4, `bun test ./packages/slate-yjs/test` passed with 173 pass, 0 fail, 22 files, 479ms.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: after P5, `bun test ./packages/slate-yjs/test` passed with 173 pass, 0 fail; `bun --filter @slate/yjs typecheck` passed; `bun --filter @slate/yjs build` passed.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: `bun check` passed lint and package/site/root typecheck, then failed in non-Yjs `packages/slate-react/test/dom-repair-policy-contract.test.ts:698`.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: focused non-Yjs row `cd packages/slate-react && bun test:vitest -- test/dom-repair-policy-contract.test.ts -t "native text repair advances captured virtualized target when DOM offset lags"` reproduced the same failure.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: after P6, `bun test ./packages/slate-yjs/test` passed with 173 pass, 0 fail, 22 files, 1170ms; `bun --filter @slate/yjs typecheck` passed; `bun --filter @slate/yjs build` passed; `bun lint` passed.
-- `/Users/felixfeng/Desktop/repos/slate-v2`: after P7, `bun test ./packages/slate-yjs/test/provider-contract.spec.ts` passed with 26 pass, 0 fail; `bun test ./packages/slate-yjs/test` passed with 173 pass, 0 fail; `bun --filter @slate/yjs typecheck` passed; `bun lint` passed; `bun --filter @slate/yjs build` passed.
+- `/Users/felixfeng/Desktop/repos/plite`: `bun test ./packages/plite-yjs/test` passed before edits with 173 pass, 0 fail, 22 files, 563ms.
+- `/Users/felixfeng/Desktop/repos/plite`: after P1, `bun test ./packages/plite-yjs/test` passed with 173 pass, 0 fail, 22 files, 526ms.
+- `/Users/felixfeng/Desktop/repos/plite`: after P1, `bun --filter @slate/yjs typecheck` passed.
+- `/Users/felixfeng/Desktop/repos/plite`: after P2, `bun test ./packages/plite-yjs/test` passed with 173 pass, 0 fail, 22 files, 541ms.
+- `/Users/felixfeng/Desktop/repos/plite`: after P2, `bun --filter @slate/yjs typecheck` passed.
+- `/Users/felixfeng/Desktop/repos/plite`: after P3, `bun test ./packages/plite-yjs/test/awareness-contract.spec.ts ./packages/plite-yjs/test/provider-contract.spec.ts` passed with 34 pass, 0 fail.
+- `/Users/felixfeng/Desktop/repos/plite`: after P3, `bun --filter @slate/yjs typecheck` passed.
+- `/Users/felixfeng/Desktop/repos/plite`: after P3, `bun test ./packages/plite-yjs/test` passed with 173 pass, 0 fail, 22 files, 523ms.
+- `/Users/felixfeng/Desktop/repos/plite`: after P4, `bun test ./packages/plite-yjs/test/provider-contract.spec.ts` passed with 26 pass, 0 fail.
+- `/Users/felixfeng/Desktop/repos/plite`: after P4, `bun --filter @slate/yjs typecheck` passed.
+- `/Users/felixfeng/Desktop/repos/plite`: after P4, `bun test ./packages/plite-yjs/test` passed with 173 pass, 0 fail, 22 files, 479ms.
+- `/Users/felixfeng/Desktop/repos/plite`: after P5, `bun test ./packages/plite-yjs/test` passed with 173 pass, 0 fail; `bun --filter @slate/yjs typecheck` passed; `bun --filter @slate/yjs build` passed.
+- `/Users/felixfeng/Desktop/repos/plite`: `bun check` passed lint and package/site/root typecheck, then failed in non-Yjs `packages/plite-react/test/dom-repair-policy-contract.test.ts:698`.
+- `/Users/felixfeng/Desktop/repos/plite`: focused non-Yjs row `cd packages/plite-react && bun test:vitest -- test/dom-repair-policy-contract.test.ts -t "native text repair advances captured virtualized target when DOM offset lags"` reproduced the same failure.
+- `/Users/felixfeng/Desktop/repos/plite`: after P6, `bun test ./packages/plite-yjs/test` passed with 173 pass, 0 fail, 22 files, 1170ms; `bun --filter @slate/yjs typecheck` passed; `bun --filter @slate/yjs build` passed; `bun lint` passed.
+- `/Users/felixfeng/Desktop/repos/plite`: after P7, `bun test ./packages/plite-yjs/test/provider-contract.spec.ts` passed with 26 pass, 0 fail; `bun test ./packages/plite-yjs/test` passed with 173 pass, 0 fail; `bun --filter @slate/yjs typecheck` passed; `bun lint` passed; `bun --filter @slate/yjs build` passed.
 - `/Users/felixfeng/Desktop/repos/plate-copy`: `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-11-yjs-cleanup-8h.md` passed.
 
 Final handoff contract:
 - Goal plan: `docs/plans/2026-06-11-yjs-cleanup-8h.md`
-- Surface and route/package: `/Users/felixfeng/Desktop/repos/slate-v2/packages/slate-yjs`
+- Surface and route/package: `/Users/felixfeng/Desktop/repos/plite/packages/plite-yjs`
 - Invocation mode, elapsed/timebox, loop/checkpoint count: timed 8h, 7 kept packets plus baseline; stopped after a clean package-level cleanup/proof checkpoint with scoped non-Yjs root check blocker.
 - Behavior gates and visual proof: Yjs package tests pass; focused provider/awareness tests pass; browser proof N/A because no route-visible behavior changed.
 - Primary metric baseline/latest/best and stop reason: no perf metric; cleanup metric is ownership reduction (`operations.ts` 954 -> 642 lines, with private owners added).
 - Bugs fixed and oracles added: no behavior bug targeted; removed unreachable controller branch and improved provider-test Yjs access helpers.
 - Benchmark/skill/docs repairs: no benchmark or skill changes; active plan updated.
-- Workflow slowdowns and repairs: `bun check` isolated to non-Yjs Slate React failure.
+- Workflow slowdowns and repairs: `bun check` isolated to non-Yjs Plite React failure.
 - Changed list: see table above.
 - Needs your attention: replacement owner split and non-Yjs root check blocker.
 - Stopping checkpoints to unblock: none.
-- Accepted deferrals and residual risks: root `bun check` remains red in unrelated Slate React test.
-- Next owner: fix unrelated Slate React test only if requested; otherwise this Yjs cleanup checkpoint is done.
+- Accepted deferrals and residual risks: root `bun check` remains red in unrelated Plite React test.
+- Next owner: fix unrelated Plite React test only if requested; otherwise this Yjs cleanup checkpoint is done.
 
 Reboot status:
 | Question | Answer |
 |----------|--------|
 | Where am I? | Final handoff checkpoint |
-| Where am I going? | Ready for user review or a separate Slate React blocker fix |
-| What is the goal? | Clean `@slate/yjs` in sibling `../slate-v2` for 8h while keeping Yjs tests green and leaving no known technical debt. |
-| What have I learned? | Current Yjs package tests are stable; root check has an unrelated Slate React failure. |
+| Where am I going? | Ready for user review or a separate Plite React blocker fix |
+| What is the goal? | Clean `@slate/yjs` in sibling `../plite` for 8h while keeping Yjs tests green and leaving no known technical debt. |
+| What have I learned? | Current Yjs package tests are stable; root check has an unrelated Plite React failure. |
 | What have I done? | Kept 7 cleanup packets, with package tests/typecheck/build/lint green. |
 | What changed in the checkpoint plan? | Requirement extraction completed; package-internal proof rows kept; browser/mobile/perf rows scoped N/A; non-Yjs root check blocker recorded. |
 
 Timeline:
 - 2026-06-11T02:29:12.794Z Goal plan created.
-- 2026-06-11T02:29:33Z Checkpoint zero read `vision`, `docs/slate-v2/agent-start.md`, current package file list, and recorded timed-mode scope.
-- 2026-06-11T02:31Z Baseline `bun test ./packages/slate-yjs/test` passed: 173 pass, 0 fail, 22 files, 563ms.
+- 2026-06-11T02:29:33Z Checkpoint zero read `vision`, `docs/plite/agent-start.md`, current package file list, and recorded timed-mode scope.
+- 2026-06-11T02:31Z Baseline `bun test ./packages/plite-yjs/test` passed: 173 pass, 0 fail, 22 files, 563ms.
 - 2026-06-11T02:35Z P1 extracted private Yjs attribute helpers; package tests and typecheck passed after one rename fix.
 - 2026-06-11T02:39Z P2 moved generic path/node lookup helpers out of split-history/local operations; package tests and typecheck passed.
 - 2026-06-11T02:43Z P3 removed unreachable `handleCommit` branch; focused awareness/provider tests, package tests, and typecheck passed.
 - 2026-06-11T02:48Z P4 added typed plain-editor Yjs test helpers and removed provider-test raw Yjs `any` casts; focused provider tests, package tests, and typecheck passed.
 - 2026-06-11T02:53Z P5 moved Yjs text creation into document materialization; package tests/typecheck/build passed.
-- 2026-06-11T02:54Z Root `bun check` passed lint/typecheck then failed in unrelated Slate React Vitest row; focused rerun reproduced the non-Yjs failure.
+- 2026-06-11T02:54Z Root `bun check` passed lint/typecheck then failed in unrelated Plite React Vitest row; focused rerun reproduced the non-Yjs failure.
 - 2026-06-11T03:00Z P6 split compatible replacement machinery into `replacement.ts`; after one missed import fix, package tests/typecheck/build/lint passed.
 - 2026-06-11T03:03Z P7 deduped provider lifecycle promise/status sync; focused provider tests, package tests, typecheck, lint, and build passed.
 - 2026-06-11T03:06Z Autogoal `check-complete` passed for this plan.
 
 Open risks:
-- Root `bun check` remains red in `packages/slate-react/test/dom-repair-policy-contract.test.ts:698`; focused rerun confirms it is outside the Yjs package.
+- Root `bun check` remains red in `packages/plite-react/test/dom-repair-policy-contract.test.ts:698`; focused rerun confirms it is outside the Yjs package.

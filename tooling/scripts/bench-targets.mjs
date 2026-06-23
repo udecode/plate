@@ -7,15 +7,15 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(__dirname, '../..');
-const registryPath = path.join(root, 'benchmarks/targets/slate-v2.json');
+const registryPath = path.join(root, 'benchmarks/targets/plite.json');
 const historyPath = path.join(
   root,
-  'benchmarks/targets/history/slate-v2-latest.json'
+  'benchmarks/targets/history/plite-latest.json'
 );
 const historyRepoPath = path
   .relative(root, historyPath)
   .replaceAll(path.sep, '/');
-const reportPath = path.join(root, 'benchmarks/targets/reports/slate-v2.md');
+const reportPath = path.join(root, 'benchmarks/targets/reports/plite.md');
 const evidenceKitRegistryPath = path.join(
   root,
   'benchmarks/editor/research/benchmark-registry.json'
@@ -98,7 +98,7 @@ function targetFromEvidenceKitArtifact(artifact) {
   return {
     id: artifact.id,
     question: artifact.decision,
-    owner: artifact.owner ?? 'slate-v2',
+    owner: artifact.owner ?? 'plite',
     family: artifact.family ?? artifact.category ?? 'uncategorized',
     kind: artifact.kind ?? 'benchmark',
     cwd: normalizeRepoPath(artifact.cwd),
@@ -391,7 +391,7 @@ function renderMarkdownReport(history) {
     })
     .join('\n');
 
-  return `# Slate v2 Benchmark Targets
+  return `# Plite v2 Benchmark Targets
 
 This report is generated from \`${history.registryPath}\`.
 

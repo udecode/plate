@@ -27,13 +27,13 @@ Automation source:
 First checkpoint:
 - Explicit requirements captured:
   - remove private `editor.tf`, `editor.transforms`, and `plugin.transforms` runtime bridge debt created during the API hard cut;
-  - migrate the default Plate runtime toward Slate `editor.read`, `editor.update`, `editor.api`, and tx groups;
+  - migrate the default Plate runtime toward Plite `editor.read`, `editor.update`, `editor.api`, and tx groups;
   - move package-by-package only when typecheck, test, and build pass;
   - do not create public compat aliases;
   - allow private bridges only when they have deletion gates;
   - pause after core runtime plus one representative package are clean so the user can review final API shape before broad package sweep.
 - Scope boundary: Plate lane, starting in `packages/core`, then one representative package selected from source evidence.
-- Non-goals: no PR, release, changeset, public docs rewrite, browser behavior claim, Slate package redesign, or broad package sweep before review.
+- Non-goals: no PR, release, changeset, public docs rewrite, browser behavior claim, Plite package redesign, or broad package sweep before review.
 - Stop condition: pause at the core-plus-one-package checkpoint even if more package rows remain.
 - First checkpoint complete; continue to source/status audit.
 
@@ -46,7 +46,7 @@ Timed checkpoint:
 
 Completion threshold:
 - Core runtime has the smallest credible deletion of `editor.tf` / `editor.transforms` / `plugin.transforms` bridge debt, or an exact runtime blocker is recorded with owner and next API decision.
-- One representative Plate feature package uses Slate-style `editor.api` / `editor.update` / tx groups without public compat aliases and passes package typecheck, test, and build.
+- One representative Plate feature package uses Plite-style `editor.api` / `editor.update` / tx groups without public compat aliases and passes package typecheck, test, and build.
 - Private bridges that remain are named with owner, deletion gate, and proof route.
 - Source audits prove no new public compat aliases were introduced.
 - The run pauses before the broad package sweep with changed list, proof commands, review-attention items, residual risks, and next owner.
@@ -69,23 +69,23 @@ Verification surface:
 - Browser proof: N/A unless source changes affect browser-visible editor behavior.
 - Docs audit: N/A unless public docs are touched.
 - Skill sync: N/A unless `.agents/rules/**` changes.
-- Slate package proof uses `pnpm slate:test` and `pnpm slate:typecheck`.
-- Slate daily proof uses `pnpm check:slate`.
-- Slate focused browser proof uses `pnpm --filter slate test:slate-browser:chromium <file-or--grep>`.
-- `apps/slate` reuses `apps/www` Slate examples; never maintain a second example source tree.
-- Slate release/deletion proof adds explicit closure gates such as package
+- Plite package proof uses `pnpm plite:test` and `pnpm plite:typecheck`.
+- Plite daily proof uses `pnpm check:plite`.
+- Plite focused browser proof uses `pnpm --filter plite test:plite-browser:chromium <file-or--grep>`.
+- `apps/plite` reuses `apps/www` Plite examples; never maintain a second example source tree.
+- Plite release/deletion proof adds explicit closure gates such as package
   build, docs checks, benchmark target audit, and
-  `pnpm check:slate:browser-matrix` when those claims are in scope.
+  `pnpm check:plite:browser-matrix` when those claims are in scope.
 
 Constraints:
-- Resolve lane first: Slate, Plate, or shared editor. Use `autoclosure` for post-merge/current-tree until-clean closure.
+- Resolve lane first: Plite, Plate, or shared editor. Use `autoclosure` for post-merge/current-tree until-clean closure.
 - Release, PR, and publish work are in scope only when the prompt explicitly asks for them or the active lane requires them.
-- Slate-lane proof runs from the Plate repo root against transplanted Slate packages and routes. Do not use donor-checkout proof.
-- Plate-lane proof runs in the owning Plate package, app, or docs route. Slate runtime proof does not prove Plate docs, registry, plugin, or package DX.
+- Plite-lane proof runs from the Plate repo root against transplanted Plite packages and routes. Do not use donor-checkout proof.
+- Plate-lane proof runs in the owning Plate package, app, or docs route. Plite runtime proof does not prove Plate docs, registry, plugin, or package DX.
 - Behavior proof beats perf. Native/visual proof beats model-only selection.
 - No hidden debounce or fake stress fixture wins.
-- No broad pagination/virtualization architecture unless the prompt or a stopping checkpoint routes to `slate-plan`.
-- Do not patch Plate when the run is scoped to Slate. Do not patch Slate runtime when the run is scoped to Plate docs/product unless a shared-editor owner row names that boundary.
+- No broad pagination/virtualization architecture unless the prompt or a stopping checkpoint routes to `plite-plan`.
+- Do not patch Plate when the run is scoped to Plite. Do not patch Plite runtime when the run is scoped to Plate docs/product unless a shared-editor owner row names that boundary.
 - Use root `VISION.md` and relevant `docs/vision/*.md` for durable taste.
 - Do not create compatibility aliases or runtime shims unless the checkpoint explicitly requires them.
 
@@ -96,7 +96,7 @@ Boundaries:
 - Package/API surfaces: Plate runtime/plugin/editor API internals and selected package tx/API usage.
 - Agent/skill surfaces: none initially.
 - Docs/research surfaces: this plan only unless a reusable decision must be consolidated.
-- Non-goals: broad package sweep, release, PR, changeset, public docs rewrite, compatibility aliases, and full Slate substrate redesign.
+- Non-goals: broad package sweep, release, PR, changeset, public docs rewrite, compatibility aliases, and full Plite substrate redesign.
 
 Output budget strategy:
 - Use `rg -l` / focused owner reads before broad `rg -n`.
@@ -128,7 +128,7 @@ Current verdict:
 - confidence: 0.82 after focused core + callout proof
 - next owner: user review, then `auto` broad package sweep if accepted
 - keep / revert / quarantine call: keep both packets
-- reason: core bridge export is no longer public, one representative package migrated from `editor.tf` to Slate-style `editor.update`, and remaining debt is broad runtime/plugin API shape.
+- reason: core bridge export is no longer public, one representative package migrated from `editor.tf` to Plite-style `editor.update`, and remaining debt is broad runtime/plugin API shape.
 
 Completion rule:
 - Do not call `update_goal(status: complete)` while any required checklist item remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
@@ -139,7 +139,7 @@ Checkpoint supervisor:
 | Checkpoint | Owner | Status | Priority | Why it exists | Evidence / exit rule | Mutation decision |
 |------------|-------|--------|----------|---------------|----------------------|-------------------|
 | checkpoint-zero | auto | complete | P0 | Copy prompt requirements and read vision before implementation. | Requirements, vision, lane, scope, non-goals, proof, and pause condition recorded. | update: complete |
-| status-source-audit | auto | complete | P0 | Read current runtime bridge owners and exact stale surfaces before edits. | Core audit found `getEditorPlugin`, `createPlateRuntimeEditor`, `OverrideEditor` typing, and `withSlate` bridge install as remaining owners; `callout` selected as representative package. | complete |
+| status-source-audit | auto | complete | P0 | Read current runtime bridge owners and exact stale surfaces before edits. | Core audit found `getEditorPlugin`, `createPlateRuntimeEditor`, `OverrideEditor` typing, and `withPlite` bridge install as remaining owners; `callout` selected as representative package. | complete |
 | core-runtime-packet | auto / packages/core | complete | P0 | Remove or shrink private runtime bridge debt at the owner. | `legacyRuntimeUpdateBridge` moved under `packages/core/src/internal/editor`, public barrel export removed, core typecheck/test/build passed. | keep |
 | representative-package-packet | auto / package owner | complete | P0 | Migrate one package through final API shape before broad sweep. | `packages/callout` no longer uses `editor.tf` in source; typecheck/test/build passed. | keep |
 | review-pause | auto | in_progress | P0 | Stop before broad package sweep so user can review final API shape. | Final handoff records remaining runtime API decisions. | keep |
@@ -194,7 +194,7 @@ Work Checklist:
 - [x] First checkpoint complete: every explicit prompt requirement, scope boundary, timing constraint, stop condition, deliverable, final handoff section, verification surface, and success criterion is copied into this plan as checkable checkpoints before implementation.
 - [x] Short objective, completion threshold, verification surface, constraints, boundaries, and blocked condition are concrete.
 - [x] Invocation mode, minimum runtime/deadline, stop-question policy, remaining backlog ladder, and supervision-mode fallback are recorded.
-- [x] Lane is resolved as Slate, Plate, or shared editor, with owning workspace/package/app proof named.
+- [x] Lane is resolved as Plite, Plate, or shared editor, with owning workspace/package/app proof named.
 - [x] Checkpoint supervisor table has been reconciled at least once after the initial seed.
 - [x] Post-merge/current-tree closure is routed to `autoclosure` when in scope, or marked N/A with reason.
 - [x] Each loop ends with a checkpoint mutation decision: add, update, split, merge, retire, remove, reopen, reprioritize, or no-change with reason.
@@ -326,7 +326,7 @@ Findings:
 
 Decisions and tradeoffs:
 - Kept `insertCallout(editor, options)` as a public helper name but changed the implementation to `editor.update`.
-- Used `editor.api.findPath(element)` in the React hook instead of the old node-object `at` convenience. That is more explicit and closer to Slate runtime boundaries.
+- Used `editor.api.findPath(element)` in the React hook instead of the old node-object `at` convenience. That is more explicit and closer to Plite runtime boundaries.
 - Did not add public compat aliases or runtime shims.
 - Did not run Browser proof because no browser route, selection path, or visible editor behavior changed.
 
@@ -337,7 +337,7 @@ Error attempts:
 | Parallel core gates created transient package-resolution noise | 1 | Run package migration gates serially. | Serialized core typecheck passed; callout gates were run serially. |
 
 Verification evidence:
-- `pnpm exec biome check --fix packages/core/src/internal/editor/legacyRuntimeUpdateBridge.ts packages/core/src/lib/editor/withSlate.ts packages/core/src/lib/editor/index.ts` passed.
+- `pnpm exec biome check --fix packages/core/src/internal/editor/legacyRuntimeUpdateBridge.ts packages/core/src/lib/editor/withPlite.ts packages/core/src/lib/editor/index.ts` passed.
 - `pnpm brl` passed.
 - `pnpm turbo typecheck --filter=./packages/core` passed on serialized rerun.
 - `pnpm --filter @platejs/core test` passed: 951 pass, 0 fail.

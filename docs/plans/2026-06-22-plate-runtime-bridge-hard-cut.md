@@ -61,7 +61,7 @@ First checkpoint:
 - Scope boundary: Plate lane. Start with core runtime API deletion, then finish
   callout as the first representative package, then expand package-by-package.
 - Non-goals: no PR, push, release, changeset unless package release policy
-  requires one later; no Slate substrate redesign; no browser claim unless a
+  requires one later; no Plite substrate redesign; no browser claim unless a
   visible editor route is touched.
 - Stop condition: stop only for a real API blocker, unsafe inference loss, or a
   package whose migration requires a new user-visible Plate v2 API decision.
@@ -115,7 +115,7 @@ Constraints:
 - Preserve or improve inferred plugin/tx typing; do not accept `[x: string]`,
   avoidable `any`, or type erasure as final shape.
 - Prefer inline package tx implementations when used once.
-- Do not patch Slate substrate to hide a Plate product API problem.
+- Do not patch Plite substrate to hide a Plate product API problem.
 
 Boundaries:
 - Source of truth: latest user approval, prior bridge deletion plan, root
@@ -127,7 +127,7 @@ Boundaries:
 - External sources: N/A; repo source settles this API migration.
 - Browser surface: N/A unless visible editor examples/routes change.
 - Tracker sync: N/A.
-- Non-goals: PR, push, release, broad docs rewrite, Slate runtime redesign,
+- Non-goals: PR, push, release, broad docs rewrite, Plite runtime redesign,
   pagination/perf work, and unrelated Plate behavior changes.
 
 Output budget strategy:
@@ -219,12 +219,12 @@ Work Checklist:
       files; no external reviewer was needed for repo-local API deletion.
 - [x] If implementation happens, touched-surface packs cover docs, browser,
       package/API, or agent-native surfaces as needed. Package/API pack applied;
-      browser/docs proof applied for the touched Slate API docs route; no
+      browser/docs proof applied for the touched Plite API docs route; no
       agent-native files changed.
 - [x] Workspace authority recorded: every proof command names the cwd/tool that
       owns the analyzed or changed behavior. Verification evidence uses
       `/Users/zbeyens/git/plate-2` package filters and Browser against
-      `http://localhost:3002/docs/api/slate/editor-api`.
+      `http://localhost:3002/docs/api/plite/editor-api`.
 - [x] Output budget discipline recorded and followed: broad searches are
       scoped, capped, counted, or artifacted instead of streamed into goal
       context. One broad app/docs audit and one full `www` typecheck produced
@@ -261,7 +261,7 @@ Completion Gates:
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-22-plate-runtime-bridge-hard-cut.md` | Passed. |
 | Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | Production package source and affected declaration audits returned no stale bridge symbols. |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published package behavior/API/types changed, but user previously set this Plate migration lane as no-changeset; release artifact deferred to release-lanes before publishing. |
-| Published package changeset | N/A: user said no changeset for this Plate migration checkpoint | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | No changeset in this checkpoint; release-lanes must re-evaluate before publishing. |
+| Published package changeset | N/A: user said no changeset for this Plate migration checkpoint | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | No changeset in this checkpoint; release-lanes must re-evaluate before publishing. |
 | Registry changelog | N/A: not registry-only | If the change is registry-only under `apps/www/src/registry/**`, use the `registry-changelog` pack and do not add a package changeset | Registry/docs edits only remove stale API leaks caused by package migration. |
 | No release artifact | N/A: release artifact intentionally deferred | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | Package-visible API changed; changeset is deferred by lane rule, not because there is no user-visible delta. |
 | Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | Per-package tests/builds recorded; final affected-package typecheck sweep passed: 29 successful / 29 total. |
@@ -280,7 +280,7 @@ Phase / pass table:
 
 Findings:
 - `packages/core` still treats Plate runtime transforms as first-class editor
-  structure: `SlateEditor` and `PlateEditor` expose `tf` and `transforms`,
+  structure: `PliteEditor` and `PlateEditor` expose `tf` and `transforms`,
   `BasePluginContext` exposes `tf`, and `createPlateRuntimeEditor` composes
   `plugin.transforms`.
 - `packages/core/src/internal/currentRuntimeBridge.ts` still points at
@@ -299,7 +299,7 @@ Findings:
   normalizer and reverse-tab behavior.
 - Table cell index computation cannot read table nodes through
   `editor.api.node({ at })`: that path can materialize fresh node ids and poison
-  cell-index caches. Table internals should use the Slate substrate
+  cell-index caches. Table internals should use the Plite substrate
   `NodeApi.get` for path-owned current tree reads, with id-based fallback only
   when the node comes from a snapshot.
 
@@ -338,8 +338,8 @@ Implementation notes:
     to `editor.api.dom.focus()`;
   - removed `withNormalizeTypes` and `withTrailingBlock` exported helper files;
   - moved normalize-types and trailing-block behavior behind runtime plugin
-    flags and Slate v2 normalizers;
-  - moved single-block/single-line break behavior into Slate transform
+    flags and Plite normalizers;
+  - moved single-block/single-line break behavior into Plite transform
     middleware for `insertBreak` / `insertSoftBreak`, with empty-block
     normalization explicitly covered;
   - added core path propagation into `inject.nodeProps` so
@@ -387,7 +387,7 @@ Implementation notes:
   - migrated tabbable DOM/root/path lookup to `editor.api.dom.*` and path
     focus to explicit selection update plus DOM focus;
   - widened the current runtime DOM API type for `resolvePath` and
-    `resolveSlateNode`, matching existing Slate DOM services.
+    `resolvePliteNode`, matching existing Plite DOM services.
 - Indent/tag/toggle packet:
   - deleted package-level `withIndent` and `withToggle` transform overrides and
     removed their exports;
@@ -409,7 +409,7 @@ Implementation notes:
   - fixed toggle runtime selectable fallback to return `true` when no previous
     selectable handler exists, instead of calling an absent schema fallback.
 - DOM alias packet:
-  - migrated cursor, floating, and toc production code from flat Slate DOM
+  - migrated cursor, floating, and toc production code from flat Plite DOM
     aliases (`toDOMNode`, `toDOMRange`) to `editor.api.dom.resolveDOMNode` and
     `editor.api.dom.resolveDOMRange`;
   - widened the current runtime DOM API type for `resolveDOMRange`;
@@ -513,7 +513,7 @@ Implementation notes:
   - replaced legacy `api.descendant`, `api.isStart`, `api.isEnd`, object
     matchers, and hidden `tf`-style calls with current `editor.read`,
     `editor.update`, `tx.*`, and predicate matches;
-  - fixed Slate normalizer restart semantics after explicit mutation, because
+  - fixed Plite normalizer restart semantics after explicit mutation, because
     forced normalization was walking stale paths after a list normalizer moved
     nodes;
   - fixed classic-list delete-backward so "start of a descendant content node"
@@ -531,15 +531,15 @@ Implementation notes:
     lookup surfaces to `editor.api.history`, `editor.api.dom`, direct typed
     `editor.api.<group>`, `editor.update`, and `tx.*`;
   - converted AIChat/Copilot editor overrides from transform-bridge wrappers to
-    Slate v2 extension factories;
+    Plite extension factories;
   - added a package-local structural `AIChatPlateEditor` /
-    `AIChatSlateEditor` type so direct plugin API groups stay explicit without
+    `AIChatPliteEditor` type so direct plugin API groups stay explicit without
     reintroducing `getPluginApi` or broad `any`;
   - repaired AI tests that still mocked `getPluginApi` / `editor.tf`, so the
     oracles now assert the current direct API path.
 
 Review fixes:
-- Accepted: stale `editor.api.findPath` references in Slate API docs and copied
+- Accepted: stale `editor.api.findPath` references in Plite API docs and copied
   registry UI components. Fixed with internal path-resolution wording and
   `useNodePath(element)`.
 - Accepted: touched registry files still had local `getPluginApi`,
@@ -556,7 +556,7 @@ Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
 | Broad transform audit streamed too many matches | 1 | Use owner files and package groups, not full line dumps. | Continued with core slices and callout packet. |
-| Basic-nodes normalization tests first used `createSlateEditor` plus `tx.normalize` | 1 | Use `createPlateRuntimeEditor`, because v2 normalizers are the runtime owner. | Tests now pass through runtime editor proof. |
+| Basic-nodes normalization tests first used `createPliteEditor` plus `tx.normalize` | 1 | Use `createPlateRuntimeEditor`, because v2 normalizers are the runtime owner. | Tests now pass through runtime editor proof. |
 | Running same-package/package-dependent build and tests in parallel raced `dist` and produced false `@platejs/utils/react` module errors | 2 | Run package build/test gates serially when they touch or consume the same built artifacts. | Core runtime test passed after serial `@platejs/utils` build. |
 | Dnd hover test fed the previous node into the hovered-node path lookup after source moved to id/path resolution | 1 | Model the actual call order: hovered path first, previous sibling node second. | Dnd tests now pass. |
 | Selection typecheck exposed stale `ctx.tf` transform overrides | 1 | Cut hidden transform interception instead of adding local casts or restoring `ctx.tf` typing. | Package source now typechecks; behavior is explicit block-selection API/tx only. |
@@ -567,7 +567,7 @@ Error attempts:
 | Cursor/floating/toc tests mocked stale flat DOM aliases after source moved to `api.dom` | 1 | Repair mocks to require the current nested DOM service shape. | Cursor, floating, and toc package tests passed. |
 | Layout tests first exposed legacy fixture/update mismatch and `setColumns` width normalization happening inside `withoutNormalizing` | 1 | Use v2 runtime fixtures and move final normalize outside the suppression block. | Layout tests passed: 32 pass, 0 fail. |
 | Layout first build after `brl` failed in `rolldown-plugin-dts` saying `src/index.ts` was not in the program | 1 | Verify `tsc -p tsconfig.build.json --noEmit` and rerun build before changing public type shape. | `tsc` passed and rerun `pnpm --filter @platejs/layout build` passed. |
-| Media typecheck exposed stale Plate-only `nextBlock` option typing after writes moved to Slate tx | 1 | Replace `nextBlock` with explicit path calculation before calling `tx.nodes.insert`. | Media typecheck passed. |
+| Media typecheck exposed stale Plate-only `nextBlock` option typing after writes moved to Plite tx | 1 | Replace `nextBlock` with explicit path calculation before calling `tx.nodes.insert`. | Media typecheck passed. |
 | Media tests still installed old transform fixtures and did not install the runtime `InputRulesPlugin` owner for image rules | 1 | Move specs to `createPlateRuntimeEditor` + `getCurrentRuntimeTransforms` and install `InputRulesPlugin` where insert-data rules are the behavior under test. | Media tests passed: 95 pass, 0 fail. |
 | Link runtime flag was first kept inside the legacy extension loop after `withLink` was deleted | 1 | Make `a` key-owned outside the extension loop, like blockquote/indent/toggle/column. | Link-end typing tests passed and LinkPlugin editor API stopped being swallowed. |
 | Link normalizer tried to insert the following text leaf and set selection in one normalize pass | 1 | Keep normalizers structural; move user-visible link-end typing into the runtime `insertText` transform. | Follow-up typing now lands outside links; link tests passed. |
@@ -593,9 +593,9 @@ Verification evidence:
 - `/Users/zbeyens/git/plate-2`: list-classic source/declaration audit for
   `editor.tf`, `tf`, `api.findPath`, `getTransforms`, `extendTransforms`,
   `plugin.transforms`, and wrapper production file names returned no matches.
-- `/Users/zbeyens/git/plate-2`: `pnpm turbo typecheck --filter=./packages/slate`
+- `/Users/zbeyens/git/plate-2`: `pnpm turbo typecheck --filter=./packages/plite`
   passed after the normalize restart change.
-- `/Users/zbeyens/git/plate-2`: `pnpm --filter @platejs/slate test` passed:
+- `/Users/zbeyens/git/plate-2`: `pnpm --filter @platejs/plite test` passed:
   1007 pass, 85 skip, 0 fail.
 - `/Users/zbeyens/git/plate-2`: `pnpm turbo typecheck --filter=./packages/ai`
   passed after the direct API-group typing repair.
@@ -634,7 +634,7 @@ Verification evidence:
 - `pnpm turbo typecheck --filter=./packages/core` passed.
 - `pnpm --filter @platejs/core build` passed.
 - `pnpm --filter @platejs/core test -- createPlateRuntimeEditor` passed: 952 pass, 0 fail.
-- `rg -n "editor\\.tf|editor\\.transforms|plugin\\.transforms|getTransforms|extendTransforms|extendEditorTransforms|api\\.findPath|toDOMNode\\(editor\\)|createSlateEditor" packages/dnd/src --glob '!**/dist/**'` returned no matches.
+- `rg -n "editor\\.tf|editor\\.transforms|plugin\\.transforms|getTransforms|extendTransforms|extendEditorTransforms|api\\.findPath|toDOMNode\\(editor\\)|createPliteEditor" packages/dnd/src --glob '!**/dist/**'` returned no matches.
 - `pnpm turbo typecheck --filter=./packages/dnd` passed.
 - `pnpm --filter @platejs/dnd test` passed: 40 pass, 0 fail.
 - `pnpm --filter @platejs/dnd build` passed.
@@ -715,9 +715,9 @@ Verification evidence:
 - `pnpm --filter @platejs/table test` passed: 218 pass, 0 fail.
 - `pnpm --filter @platejs/table brl` passed.
 - `pnpm --filter @platejs/table build` passed.
-- `rg -n "editor\\.tf|\\btf:|\\btf\\.|SlateEditor\\['tf'\\]|api\\.findPath|getTransforms|extendTransforms|extendEditorTransforms|plugin\\.transforms|editor\\.transforms" packages/table/src --glob '!**/dist/**'` returned no matches.
+- `rg -n "editor\\.tf|\\btf:|\\btf\\.|PliteEditor\\['tf'\\]|api\\.findPath|getTransforms|extendTransforms|extendEditorTransforms|plugin\\.transforms|editor\\.transforms" packages/table/src --glob '!**/dist/**'` returned no matches.
 - `rg -n "withApplyTable|withDeleteTable|withGetFragmentTable|withInsertFragmentTable|withInsertTextTable|withNormalizeTable|withSetFragmentDataTable|withTableCellSelection|withTable" packages/table/src --glob '!**/dist/**'` returned no matches.
-- `rg -n "editor\\.tf|\\btf:|\\btf\\.|SlateEditor\\['tf'\\]|api\\.findPath|getTransforms|extendTransforms|extendEditorTransforms|plugin\\.transforms|editor\\.transforms" packages/table/dist --glob '*.d.ts'` returned no matches.
+- `rg -n "editor\\.tf|\\btf:|\\btf\\.|PliteEditor\\['tf'\\]|api\\.findPath|getTransforms|extendTransforms|extendEditorTransforms|plugin\\.transforms|editor\\.transforms" packages/table/dist --glob '*.d.ts'` returned no matches.
 - `pnpm turbo typecheck --filter=./packages/core --filter=./packages/table --filter=./packages/suggestion --filter=./packages/ai --filter=./packages/selection --filter=./packages/markdown --filter=./packages/csv --filter=./packages/docx-io` passed: 29 successful / 29 total.
 - `pnpm --filter @platejs/suggestion test` passed: 101 pass, 0 fail.
 - `pnpm --filter @platejs/suggestion build` passed.
@@ -734,10 +734,10 @@ Verification evidence:
 - `rg -n "getPluginApi\\b|editor\\.tf\\b|editor\\.transforms\\b|plugin\\.transforms\\b|editor\\.api\\.findPath\\(" packages/*/src --glob '*.{ts,tsx}' --glob '!packages/slate-legacy/**' --glob '!**/*.spec.*' --glob '!**/*.test.*' --glob '!**/*.slow.*'` returned no matches.
 - `rg -n "extendTransforms\\b|extendEditorTransforms\\b|getTransforms\\b|plugin\\.transforms\\b|editor\\.transforms\\b|getPluginApi\\b" packages/*/src --glob '*.{ts,tsx}' --glob '!packages/slate-legacy/**' --glob '!**/*.spec.*' --glob '!**/*.test.*' --glob '!**/*.slow.*'` returned no matches.
 - `rg -n "getPluginApi\\b|editor\\.transforms\\b|plugin\\.transforms\\b|extendTransforms\\b|extendEditorTransforms\\b|getTransforms\\b" packages/*/dist --glob '*.{d.ts,js,mjs,cjs}' --glob '!packages/slate-legacy/**'` returned no matches.
-- `rg -n "editor\\.api\\.findPath\\(" content/docs/api/slate apps/www/src/registry/ui/{inline-combobox.tsx,block-draggable.tsx,code-drawing-node.tsx,block-discussion.tsx,media-placeholder-node.tsx}` returned no matches.
-- `pnpm exec biome check --fix content/docs/api/slate/editor-api.mdx content/docs/api/slate/editor-api.cn.mdx apps/www/src/registry/ui/inline-combobox.tsx apps/www/src/registry/ui/block-draggable.tsx apps/www/src/registry/ui/code-drawing-node.tsx apps/www/src/registry/ui/block-discussion.tsx apps/www/src/registry/ui/media-placeholder-node.tsx` passed after repair.
+- `rg -n "editor\\.api\\.findPath\\(" content/docs/api/plite apps/www/src/registry/ui/{inline-combobox.tsx,block-draggable.tsx,code-drawing-node.tsx,block-discussion.tsx,media-placeholder-node.tsx}` returned no matches.
+- `pnpm exec biome check --fix content/docs/api/plite/editor-api.mdx content/docs/api/plite/editor-api.cn.mdx apps/www/src/registry/ui/inline-combobox.tsx apps/www/src/registry/ui/block-draggable.tsx apps/www/src/registry/ui/code-drawing-node.tsx apps/www/src/registry/ui/block-discussion.tsx apps/www/src/registry/ui/media-placeholder-node.tsx` passed after repair.
 - `pnpm --filter www typecheck > /tmp/plate-www-typecheck.log 2>&1` failed broadly on existing Plate app/registry migration debt, but focused grep for touched docs/registry files returned no matches after repair.
-- Browser proof: `http://localhost:3002/docs/api/slate/editor-api` rendered with `h1: "Editor API"`, `hasEditorApi: true`, `hasFindPath: false`, title `Editor API - Plate`.
+- Browser proof: `http://localhost:3002/docs/api/plite/editor-api` rendered with `h1: "Editor API"`, `hasEditorApi: true`, `hasFindPath: false`, title `Editor API - Plate`.
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-22-plate-runtime-bridge-hard-cut.md` passed.
 
 Final handoff contract:
@@ -749,7 +749,7 @@ Final handoff contract:
   package typecheck/test/build evidence, touched docs/registry stale-symbol audit,
   focused `www` typecheck grep, and Browser route proof.
 - Tests / commands: see Verification evidence section.
-- Browser proof: `http://localhost:3002/docs/api/slate/editor-api` renders and
+- Browser proof: `http://localhost:3002/docs/api/plite/editor-api` renders and
   no longer exposes `findPath`.
 - PR / tracker: N/A; no PR/push requested.
 - Caveats: full `apps/www` typecheck still fails on broader legacy Plate runtime

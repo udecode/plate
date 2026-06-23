@@ -6,7 +6,7 @@ component: documentation
 root_cause: logic_error
 title: V2 placeholder primitives should own overlay attrs and style
 tags:
-  - slate-v2
+  - plite
   - slate-react-v2
   - placeholder
   - renderer
@@ -20,14 +20,14 @@ severity: medium
 After packaging the v2 node-shape and text-boundary primitives, the placeholder
 proof surface was still hand-rolling the overlay DOM:
 
-- `data-slate-placeholder`
+- `data-plite-placeholder`
 - `contentEditable={false}`
 - overlay positioning and interaction styles
 
 That was the same mistake in smaller clothes.
 
 The same failure mode came back in `examples/custom-placeholder`: the built-in
-placeholder used `SlatePlaceholder` and looked right, but custom
+placeholder used `PlitePlaceholder` and looked right, but custom
 `renderPlaceholder` received `attributes.style = {}` and rendered as normal
 black document content instead of the grey absolute overlay.
 
@@ -44,14 +44,14 @@ never restarted.
 
 ## What fixed it
 
-`slate-react` owns a reusable `SlatePlaceholder` primitive:
+`plite-react` owns a reusable `PlitePlaceholder` primitive:
 
-- [slate-placeholder.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/slate-placeholder.tsx)
+- [slate-placeholder.tsx](/Users/zbeyens/git/plite/packages/plite-react/src/components/slate-placeholder.tsx)
 
 The placeholder proof surface consumes that primitive instead of
 repeating the overlay contract inline.
 
-Custom placeholder renderers use the same owner. `SlatePlaceholder` exposes the
+Custom placeholder renderers use the same owner. `PlitePlaceholder` exposes the
 default style through a shared helper, and `EditableText` passes that merged
 style through `renderPlaceholder` attributes.
 
@@ -86,7 +86,7 @@ correctly but still outside the visible editor box.
 
 ## Reusable rule
 
-For `slate-react`:
+For `plite-react`:
 
 - node shapes belong in renderer primitives
 - text boundaries belong in renderer primitives
@@ -99,7 +99,7 @@ For `slate-react`:
 - custom `renderPlaceholder` must not be called with missing placeholder
   children
 - parity tests should assert the style object, not just that
-  `data-slate-placeholder` exists
+  `data-plite-placeholder` exists
 
 If a DOM contract affects browser editing behavior, it should not live forever
 inside example files.

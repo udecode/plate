@@ -15,13 +15,13 @@ Major source:
 - id / link: `$improve-codebase-architecture`
 - title: Architecture improvement owner topology
 - decision to make: Should architecture improvement live inside
-  `slate-auto`, `maintainer`, `major-task`, or `slate-ar`, or exist as its own
+  `plite-auto`, `maintainer`, `major-task`, or `plite-ar`, or exist as its own
   candidate-finding pass?
 - decision criteria:
-  - Do not bloat `slate-auto` into a generic architecture worker.
+  - Do not bloat `plite-auto` into a generic architecture worker.
   - Keep `maintainer` as public queue control plane.
   - Keep `major-task` as decision and implementation-plan owner.
-  - Keep `slate-ar` as measured packet/autoresearch owner.
+  - Keep `plite-ar` as measured packet/autoresearch owner.
   - Make explicit architecture improvement invocations discoverable.
   - Avoid external lock-managed skills when repo-local routing needs local
     source-rule ownership.
@@ -38,8 +38,8 @@ Major lane:
 
 First checkpoint:
 - Explicit prompt requirement: implement the chosen routing.
-- Scope: `$improve-codebase-architecture`, `slate-auto`, `maintainer`,
-  `major-task`, `slate-ar`.
+- Scope: `$improve-codebase-architecture`, `plite-auto`, `maintainer`,
+  `major-task`, `plite-ar`.
 - Non-goals: no runtime package refactor, no broad architecture audit, no PR,
   no commit.
 - Deliverable: local source-owned skill plus routing rules.
@@ -58,7 +58,7 @@ Completion threshold:
   `.agents/rules/improve-codebase-architecture.mdc`.
 - Generated mirror exists and points to that source rule.
 - Lock-managed external skill conflict is removed.
-- `major-task`, `slate-auto`, `maintainer`, and `slate-ar` have clear routing.
+- `major-task`, `plite-auto`, `maintainer`, and `plite-ar` have clear routing.
 - `.agents/AGENTS.md`, root `AGENTS.md`, and `docs/vision/common.md` mention
   the durable owner.
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-16-codebase-architecture-improvement.md`
@@ -110,7 +110,7 @@ Current verdict:
 - next owner: `improve-codebase-architecture` for future architecture candidate
   finding
 - reason: The skill has distinct ownership: source-backed candidate discovery
-  before `major-task` / `slate-plan` / `plate-plan` implementation planning.
+  before `major-task` / `plite-plan` / `plate-plan` implementation planning.
 
 Completion rule:
 - Do not call `update_goal(status: complete)` until
@@ -217,11 +217,11 @@ Findings:
 
 Decisions and tradeoffs:
 - Accepted: standalone `improve-codebase-architecture` skill.
-- Rejected: merge into `slate-auto`; it would bloat the Slate quality
+- Rejected: merge into `plite-auto`; it would bloat the Plite quality
   supervisor.
 - Rejected: merge into `maintainer`; it would turn public queue routing into
   generic architecture execution.
-- Rejected: merge into `slate-ar`; AR owns measured packet state, not
+- Rejected: merge into `plite-ar`; AR owns measured packet state, not
   architecture candidate discovery.
 - Accepted: `major-task` owns accepted decision/implementation planning after
   this candidate-finding pass.
@@ -231,7 +231,7 @@ Implementation notes:
 - Patched `.agents/rules/major-task.mdc` to invoke it before broad architecture
   refactor planning.
 - Patched `.agents/rules/slate-auto.mdc` to invoke it opportunistically when
-  repeated Slate loops prove broader architecture friction.
+  repeated Plite loops prove broader architecture friction.
 - Patched `.agents/rules/maintainer.mdc` to route public cross-package
   architecture/testability candidates to it.
 - Patched `.agents/rules/slate-ar.mdc` to explicitly not own the pass.
@@ -273,7 +273,7 @@ Final handoff contract:
 - Caveats: this installs the workflow owner; it does not run a full architecture
   candidate review yet.
 - Next owner: invoke `$improve-codebase-architecture <surface>` directly, or let
-  `slate-auto` / `maintainer` call it when they detect the right signal.
+  `plite-auto` / `maintainer` call it when they detect the right signal.
 
 Timeline:
 - 2026-06-16T21:28:40.365Z Original major-task goal plan created.

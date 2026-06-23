@@ -6,7 +6,7 @@ root_cause: logic_error
 title: Firefox drag drop proof needs example-owned drop mutation and document-level drag cleanup
 tags:
   - slate-react
-  - slate-browser
+  - plite-browser
   - firefox
   - drag-drop
   - dragend
@@ -60,7 +60,7 @@ The proof is the second drag:
 
 ## Why this matters
 
-Legacy Slate carried the global Firefox drag cleanup for a reason.
+Legacy Plite carried the global Firefox drag cleanup for a reason.
 Dragged nodes can disappear before their own local `dragend` path finishes.
 
 If the current proof row only checks one drag, it can miss the dirty internal

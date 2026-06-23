@@ -18,10 +18,10 @@ Applied packs:
 
 Major source:
 - type: local docs corpus, local Codex session logs, memory registry, existing `vision` source rule
-- id / link: `docs/plans/**`, `docs/research/decisions/**`, `docs/solutions/**`, `docs/slate-v2/**`, `docs/slate-browser/**`, `docs/editor-behavior/**`, `/Users/zbeyens/.codex/session_index.jsonl`, local Codex session JSONL, `/Users/zbeyens/.codex/memories/MEMORY.md`
+- id / link: `docs/plans/**`, `docs/research/decisions/**`, `docs/solutions/**`, `docs/plite/**`, `docs/plite-browser/**`, `docs/editor-behavior/**`, `/Users/zbeyens/.codex/session_index.jsonl`, local Codex session JSONL, `/Users/zbeyens/.codex/memories/MEMORY.md`
 - title: Harden Vision taste profile from docs and project prompts
 - decision to make: which repeated user corrections become automatic supervisor self-grill/red-flag rules
-- decision criteria: compact, deduped, future-actionable, source-backed, Slate-specific, and strong enough to change future automation behavior
+- decision criteria: compact, deduped, future-actionable, source-backed, Plite-specific, and strong enough to change future automation behavior
 
 Major lane:
 - lane: mixed docs, agent-native workflow, prompt/session research
@@ -31,11 +31,11 @@ Major lane:
 - dominant risk: overfitting noisy prompts or old execution logs into permanent doctrine
 
 Completion threshold:
-- Decision docs/plans/solutions/slate-browser/editor-behavior corpus is scanned in batches and deduped into reusable correction themes.
+- Decision docs/plans/solutions/plite-browser/editor-behavior corpus is scanned in batches and deduped into reusable correction themes.
 - Relevant local Codex sessions are streamed, user prompts are extracted, deduped, and batched without loading giant JSONL files into memory.
 - `vision` gains a compact red-flags/self-grill section that tells an overnight supervisor how to catch misses before the user does.
 - The source rule is edited, generated skill mirror is synced, and source/mirror audit finds the new rules.
-- `pnpm install`, `pnpm docs:slate-v2:audit`, `pnpm lint:fix`, and `check-complete.mjs` pass before goal close.
+- `pnpm install`, `pnpm docs:plite:audit`, `pnpm lint:fix`, and `check-complete.mjs` pass before goal close.
 
 Verification surface:
 - `.tmp/vision-doc-prompt-ingest.json` records the docs scan.
@@ -45,7 +45,7 @@ Verification surface:
 - `.tmp/vision-self-grill-synthesis.md` records promoted corrections.
 - Source/mirror `rg` verifies new red-flag/self-grill doctrine.
 - `pnpm install` syncs generated skill output.
-- `pnpm docs:slate-v2:audit`, `pnpm lint:fix`, and `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-03-harden-vision-from-docs-and-sessions.md` verify closure.
+- `pnpm docs:plite:audit`, `pnpm lint:fix`, and `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-03-harden-vision-from-docs-and-sessions.md` verify closure.
 
 Constraints:
 - Start from repo evidence before external claims.
@@ -54,7 +54,7 @@ Constraints:
 - Keep the skill compact; artifacts hold batch evidence.
 - Promote only reusable future-supervisor behavior, not one-off complaints.
 - Do not edit generated skill mirrors by hand.
-- Do not change Slate runtime code.
+- Do not change Plite runtime code.
 
 Boundaries:
 - Source of truth: local docs/session artifacts plus `.agents/rules/vision.mdc`.
@@ -350,7 +350,7 @@ Completion Gates:
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-03-harden-vision-from-docs-and-sessions.md` | Recorded in Verification evidence. |
 | Docs source-backed claim audit | yes | Verify docs claims against current source or record N/A | Source/mirror audit verifies changed skill claims. |
 | Docs links / routes / previews | N/A | Verify leaf links, routes, anchors, and preview names or record N/A | No public route or MDX page changed. |
-| Docs MDX/content parser | yes | Run `pnpm docs:slate-v2:audit` for docs/plans change | Recorded in Verification evidence. |
+| Docs MDX/content parser | yes | Run `pnpm docs:plite:audit` for docs/plans change | Recorded in Verification evidence. |
 | Plugin page specifics | N/A | For plugin pages, apply docs-creator kit/manual/API rules; otherwise N/A | No plugin page changed. |
 | Agent source / generated sync | yes | Run `pnpm install` when `.agents/rules/**` changed and verify generated mirrors | `pnpm install` completed; `rg` found new rules in source and mirror. |
 | Agent action discoverability | yes | Source-audit the skill/rule path an agent will read | New sections visible in `.agents/skills/vision/SKILL.md`. |
@@ -378,7 +378,7 @@ Decisions and tradeoffs:
 - Rejected: paste prompt examples into the skill; that would make checkpoint zero noisy and slower.
 - Rejected: create another skill now; the failure is checkpoint-zero doctrine, not missing topology.
 - Chosen: keep raw prompt excerpts and batch ledgers in `.tmp` artifacts.
-- Chosen: treat `slate-browser` API growth as a self-grill row, not only a proof-lane note.
+- Chosen: treat `plite-browser` API growth as a self-grill row, not only a proof-lane note.
 
 Implementation notes:
 - Patched `.agents/rules/vision.mdc`.
@@ -397,14 +397,14 @@ Error attempts:
 | Broad prompt-artifact `rg` printed too much before truncation | 1 | Treat artifacts as evidence and sample targeted slices only | Resolved; synthesis artifact is compact. |
 
 Verification evidence:
-- `rg` memory pass: found relevant `plate-2` Slate/session entries in `/Users/zbeyens/.codex/memories/MEMORY.md`.
+- `rg` memory pass: found relevant `plate-2` Plite/session entries in `/Users/zbeyens/.codex/memories/MEMORY.md`.
 - Session source map: 763 keyword-relevant JSONL files, 629 owned project session files by `session_meta.cwd`.
 - Session extraction: 1565 deduped prompt excerpts, 63 prompt batches.
 - Docs extraction: 1233 decision docs, 124 doc batches.
 - `pnpm install`: completed and regenerated skills with skiller apply.
-- Source/mirror `rg`: `Self-Grill Red Flags`, `Exact repro`, `Human behavior`, `Perf honesty`, `Slate-browser growth`, `Supervisor Freedom`, and supervisor freedom rules found in both source and generated skill.
+- Source/mirror `rg`: `Self-Grill Red Flags`, `Exact repro`, `Human behavior`, `Perf honesty`, `Plite-browser growth`, `Supervisor Freedom`, and supervisor freedom rules found in both source and generated skill.
 - Banned-word audit: no forbidden-term matches in `.agents/rules/vision.mdc` or generated skill.
-- `pnpm docs:slate-v2:audit`: passed, Slate v2 docs audit passed.
+- `pnpm docs:plite:audit`: passed, Plite docs audit passed.
 - `pnpm lint:fix`: passed, checked 3234 files and no fixes were applied.
 - `check-complete.mjs`: passed for this plan.
 
@@ -412,11 +412,11 @@ Final handoff contract:
 - Recommendation: keep `vision` as the compact taste profile; keep prompt/doc evidence in artifacts.
 - Confidence: high after final command pass.
 - Evidence: docs/session batch artifacts, source/mirror audit, install sync, docs audit, lint, autogoal check.
-- Tests / commands: `pnpm install`; source/mirror `rg`; `pnpm docs:slate-v2:audit`; `pnpm lint:fix`; `check-complete.mjs`.
+- Tests / commands: `pnpm install`; source/mirror `rg`; `pnpm docs:plite:audit`; `pnpm lint:fix`; `check-complete.mjs`.
 - Browser proof: N/A, no browser surface changed.
 - PR / tracker: N/A, user did not request git actions.
 - Caveats: prompt extraction is heuristic and excludes injected context; raw artifacts preserve excerpts for audit.
-- Next owner: `slate-automation` should consume `vision` at checkpoint zero.
+- Next owner: `plite-automation` should consume `vision` at checkpoint zero.
 
 Timeline:
 - 2026-06-03T13:34:09.346Z Major-task goal plan created.

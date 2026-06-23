@@ -5,7 +5,7 @@ component: testing_framework
 root_cause: async_timing
 title: Mobile inline and void IME proofs need a zero-width selection collapse before typing
 tags:
-  - slate-browser
+  - plite-browser
   - agent-browser
   - appium
   - inline-edge
@@ -43,7 +43,7 @@ It was a missing selection-setup primitive for those edge rows.
 ## What fixed it
 
 Before typing, collapse DOM selection onto the leading text leaf inside the
-first `[data-slate-node="text"]` owner.
+first `[data-plite-node="text"]` owner.
 
 The winning primitive was:
 

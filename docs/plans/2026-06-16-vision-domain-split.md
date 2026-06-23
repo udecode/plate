@@ -45,7 +45,7 @@ First checkpoint:
 
 Completion threshold:
 - Done when `VISION.md` stays a compact mandatory index with essential Common,
-  Slate, Plate, and sync doctrine; `docs/vision/*` contains detailed domain
+  Plite, Plate, and sync doctrine; `docs/vision/*` contains detailed domain
   doctrine; `.agents/rules/vision.mdc` and `.agents/rules/sync-vision.mdc`
   describe the root-plus-domain read/promotion policy; the sync helper includes
   `docs/vision/**`; `pnpm install` regenerates skill mirrors; source/mirror
@@ -82,7 +82,7 @@ Boundaries:
   `docs/plans/templates/sync-vision.md`, sync artifacts, and this plan.
 - Browser surface: N/A, no app route/UI behavior changed.
 - Tracker sync: N/A, no tracker.
-- Non-goals: no runtime Slate/Plate code changes, no public package API change,
+- Non-goals: no runtime Plite/Plate code changes, no public package API change,
   no commit/PR, no broad taste rewrite beyond splitting existing doctrine.
 
 Output budget strategy:
@@ -280,7 +280,7 @@ Findings:
 Decisions and tradeoffs:
 - Keep root `VISION.md` concise enough to be read every time, but still
   essential enough that agents do not need every detail doc for basic taste.
-- Put detailed Slate, Plate, common, and sync doctrine in `docs/vision/*.md`.
+- Put detailed Plite, Plate, common, and sync doctrine in `docs/vision/*.md`.
 - Keep timed checkpoint behavior out of vision and sync-vision after the user
   correction; move it to shared autogoal and local plan templates.
 - Commit and push dotai because `sync-skills dotai` mode requires it. Do not
@@ -343,7 +343,7 @@ Verification evidence:
 - Negative audit passed: no `Timed Checkpoint`, `Timed checkpoint`,
   `minimum active-work`, `initial confidence scorecard`, or `hour checkpoint`
   matches in `VISION.md`, `docs/vision/**`, `vision`, or `sync-vision`.
-- Stale-name audit passed for removed skill identity: no `slate-north-star`
+- Stale-name audit passed for removed skill identity: no `plite-north-star`
   matches in `.agents`, `VISION.md`, `docs/vision`, `docs/plans/templates`,
   or `docs/sync/vision`.
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-16-vision-domain-split.md`

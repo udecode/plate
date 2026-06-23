@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Zero-width DOM selection bridges must normalize both directions
 tags:
-  - slate-dom-v2
+  - plite-dom-v2
   - zero-width
   - selection
   - dom-bridge
@@ -17,9 +17,9 @@ severity: medium
 
 ## What happened
 
-The first `slate-dom-v2` zero-width fix only patched the write path:
+The first `plite-dom-v2` zero-width fix only patched the write path:
 
-- Slate point or range
+- Plite point or range
 - to DOM point or range
 
 That avoided out-of-bounds native offsets when the zero-width sentinel text was
@@ -28,7 +28,7 @@ missing.
 It still left the read path wrong.
 
 If the browser handed back a native offset of `1` inside a zero-width marker,
-`toSlatePoint` returned Slate offset `1` for an empty leaf.
+`toPlitePoint` returned Plite offset `1` for an empty leaf.
 
 That is garbage.
 
@@ -37,12 +37,12 @@ That is garbage.
 The bridge needed symmetric ownership:
 
 - `toDOMRange` clamps zero-width native offsets to actual DOM reality
-- `toSlatePoint` maps zero-width native offset `1` back to Slate offset `0`
+- `toPlitePoint` maps zero-width native offset `1` back to Plite offset `0`
 
 The key rule is simple:
 
 - zero-width sentinel behavior is DOM implementation detail
-- it must not leak into Slate offsets
+- it must not leak into Plite offsets
 
 ## Reusable rule
 

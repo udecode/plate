@@ -4,7 +4,7 @@ date: 2026-04-02
 problem_type: logic_error
 component: markdown_serializer
 symptoms:
-  - "Markdown image serialization added a title even when the Slate image node had no title"
+  - "Markdown image serialization added a title even when the Plite image node had no title"
   - "Images serialized as `![alt](url \"alt\")` instead of `![alt](url)`"
   - "Explicit image titles were lost because serialization mirrored the caption into the title slot"
 root_cause: synthesized_image_title
@@ -49,7 +49,7 @@ Plate produced this:
 ## Solution
 
 Serialize markdown image titles from `node.title` only, and leave `title`
-undefined when the Slate image node does not have one.
+undefined when the Plite image node does not have one.
 
 The serializer seam changed from this:
 
@@ -109,7 +109,7 @@ pnpm lint:fix
 
 ## Prevention
 
-- Do not infer optional markdown fields from a different Slate field just to
+- Do not infer optional markdown fields from a different Plite field just to
   make output look "fuller"
 - Add package-surface tests for both:
   - images without titles

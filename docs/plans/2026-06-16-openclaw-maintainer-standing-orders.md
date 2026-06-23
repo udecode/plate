@@ -19,7 +19,7 @@ Applied packs:
 Task source:
 - type: user request + OpenClaw source-backed import
 - id / link: `/Users/zbeyens/git/openclaw/openclaw/docs/automation/standing-orders.md`, `docs/automation/cron-vs-heartbeat.md`, `docs/concepts/agent-loop.md`
-- title: Closest relevant OpenClaw maintainer setup for local Codex Plate/Slate maintenance
+- title: Closest relevant OpenClaw maintainer setup for local Codex Plate/Plite maintenance
 - acceptance criteria:
   - Implement all eight requested recommendations from the previous answer.
   - Update `.agents/rules/maintainer.mdc` with standing orders.
@@ -30,7 +30,7 @@ Task source:
   - Add `docs/maintainer/standing-orders.md`.
   - Record accepted/rejected imports in `docs/sync/openclaw/decisions.json`.
   - Patch `/Users/zbeyens/.agents/skills/openclaw-sync/SKILL.md` so public intake / maintainer docs are treated as high-signal even when the raw report score is low.
-  - Keep the setup Plate/Slate-relevant: local Codex, no CODEOWNERS, no hosted/API worker, no crabbox/cloud daemon, no release/channel/product plumbing.
+  - Keep the setup Plate/Plite-relevant: local Codex, no CODEOWNERS, no hosted/API worker, no crabbox/cloud daemon, no release/channel/product plumbing.
 
 First checkpoint:
 - Before implementation or broad exploration, copy every explicit prompt
@@ -229,7 +229,7 @@ Phase / pass table:
 
 Findings:
 - OpenClaw standing orders are useful as a mechanism: scope, triggers, approval gates, escalation, Execute-Verify-Report.
-- The direct OpenClaw cron/cloud/channel parts are not relevant; Plate/Slate needs local Codex heartbeat, not daemon/platform runtime.
+- The direct OpenClaw cron/cloud/channel parts are not relevant; Plate/Plite needs local Codex heartbeat, not daemon/platform runtime.
 - Current `openclaw-sync` report scoring underweights public intake and maintainer docs; global skill now overrides that class before rejection.
 
 Decisions and tradeoffs:
@@ -314,7 +314,7 @@ Reboot status:
 |----------|--------|
 | Where am I? | Final verification. |
 | Where am I going? | Run check-complete and close goal. |
-| What is the goal? | Import relevant OpenClaw standing-order/heartbeat setup for local Plate/Slate maintainer automation. |
+| What is the goal? | Import relevant OpenClaw standing-order/heartbeat setup for local Plate/Plite maintainer automation. |
 | What have I learned? | The useful OpenClaw piece is standing authority with approval gates, not the cloud/runtime plumbing. |
 | What have I done? | Patched rules, templates, docs, global sync skill, decision ledger, and generated mirrors. |
 

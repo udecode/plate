@@ -14,7 +14,7 @@ Completion threshold:
 - TODO: Define the exact Plate Plan done state.
 - Plate Plan closure is legal only when score >= 0.92, no dimension is below
   0.85, every pass row is complete or intentionally skipped with evidence,
-  every required API conflict row has a verdict, Slate/Plate boundary rows are
+  every required API conflict row has a verdict, Plite/Plate boundary rows are
   closed, proof gates are named, final handoff is emitted, and
   `node .agents/skills/autogoal/scripts/check-complete.mjs {{PLAN_PATH}}`
   passes.
@@ -29,8 +29,8 @@ Constraints:
 - Plate v2 may make breaking changes for best architecture, DX, performance,
   testability, and agent-maintainability.
 - Minimal breaking change means the smallest public break set that removes the
-  real Slate/Plate conflict. It does not mean keeping aliases or shims.
-- Slate APIs win when Plate APIs overlap with the Slate substrate.
+  real Plite/Plate conflict. It does not mean keeping aliases or shims.
+- Plite APIs win when Plate APIs overlap with the Plite substrate.
 - No public compatibility aliases, public runtime shims, or docs for old API
   names.
 - Private temporary bridges are allowed only with an owner, deletion gate, proof
@@ -40,11 +40,11 @@ Constraints:
 
 Boundaries:
 - Source of truth: latest user request, root `VISION.md`, relevant
-  `docs/vision/**`, `.agents/rules/plate-plan.mdc`, current Slate package APIs,
+  `docs/vision/**`, `.agents/rules/plate-plan.mdc`, current Plite package APIs,
   and current Plate source/docs/tests.
 - Allowed planning edit scope: `docs/plans/**`, `docs/research/**`,
   `docs/vision/**`, `docs/editor-behavior/**` when behavior law changes,
-  `docs/slate-v2/**` references when Slate migration evidence is required.
+  `docs/plite/**` references when Plite migration evidence is required.
 - Allowed execution edit scope: accepted-plan package/app/docs/tests/examples
   owners.
 - Browser surface: TODO or N/A.
@@ -87,7 +87,7 @@ Start Gates:
 | Prompt requirements captured before work | pending | pending |
 | Active goal checked or created | pending | pending |
 | Source of truth read before edits | pending | pending |
-| Slate/Plate boundary surface identified | pending | pending |
+| Plite/Plate boundary surface identified | pending | pending |
 | API conflict ledger needed | pending | pending |
 | Planning vs execution mode decided | pending | pending |
 | Browser proof needed | pending | pending |
@@ -99,13 +99,13 @@ Work Checklist:
 - [ ] Planning vs execution mode is explicit.
 - [ ] Live source grounding recorded for every current implementation/API/docs
       claim.
-- [ ] Slate/Plate boundary map is complete.
+- [ ] Plite/Plate boundary map is complete.
 - [ ] API conflict ledger is source-discovered and includes every public or
       exported Plate runtime accessor, product command surface, transform
-      namespace, plugin extension point, Slate transaction/read/update
+      namespace, plugin extension point, Plite transaction/read/update
       interaction point, runtime/default-route bridge, package export,
       declaration, docs/example API, and legacy substrate bridge that may
-      overlap with Slate.
+      overlap with Plite.
 - [ ] Minimal breaking-change matrix is complete.
 - [ ] Private bridges, if any, have owner, deletion gate, and proof route.
 - [ ] Public API target is concrete.
@@ -125,13 +125,13 @@ Completion Gates:
 | Gate | Applies | Required action | Evidence |
 |------|---------|-----------------|----------|
 | Named verification threshold | pending | Run the command, proof, source audit, or artifact check named in this plan | pending |
-| Slate/Plate boundary rows closed | pending | Every mixed owner split, moved, or explicitly deferred with evidence | pending |
+| Plite/Plate boundary rows closed | pending | Every mixed owner split, moved, or explicitly deferred with evidence | pending |
 | API conflict ledger closed | pending | Every required row has verdict and proof/adoption answer | pending |
 | Breaking changes accepted | pending | Every breaking change has objection row, adoption answer, docs/example answer, and proof route | pending |
 | Private bridges controlled | pending | Owner, deletion gate, and no public export/docs | pending |
 | Package/source execution changed | pending | Run focused owner typecheck/test/build and `pnpm brl` if exports changed | pending |
 | Docs/content changed | pending | Run docs checks and browser proof when route changed | pending |
-| Browser behavior claim | pending | Run Slate/browser or accepted Plate app proof command | pending |
+| Browser behavior claim | pending | Run Plite/browser or accepted Plate app proof command | pending |
 | Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
 | Autoreview for implementation changes | pending | Load `.agents/skills/autoreview/SKILL.md` and close accepted/actionable findings, or record N/A for planning-only | pending |
 | Final user-review handoff | pending | Emit final handoff or keep the plan pending with next pass | pending |
@@ -141,8 +141,8 @@ Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
 | Current-state read and initial score | in_progress | created plan | intent-boundary |
-| Intent, scope, boundary, non-goals | pending | | Slate/Plate boundary audit |
-| Slate/Plate boundary audit | pending | | API conflict inventory |
+| Intent, scope, boundary, non-goals | pending | | Plite/Plate boundary audit |
+| Plite/Plate boundary audit | pending | | API conflict inventory |
 | API conflict inventory | pending | | minimal breaking-change strategy |
 | Minimal breaking-change strategy | pending | | runtime/performance/testability |
 | Runtime, performance, testability pass | pending | | docs/examples/registry |
@@ -156,14 +156,14 @@ Phase / pass table:
 Scorecard:
 | Dimension | Weight | Score | Evidence |
 |-----------|-------:|------:|----------|
-| Slate/Plate boundary correctness | 0.20 | pending | |
+| Plite/Plate boundary correctness | 0.20 | pending | |
 | Plate API/DX quality | 0.20 | pending | |
 | Runtime, performance, and testability | 0.20 | pending | |
 | Minimal breaking-change strategy | 0.15 | pending | |
 | Product/plugin/docs/examples coherence | 0.15 | pending | |
 | Research, source evidence, and proof completeness | 0.10 | pending | |
 
-Slate/Plate boundary map:
+Plite/Plate boundary map:
 | Surface | Current owner | Target owner | Keep / move / cut / bridge / defer | Evidence | Verdict |
 |---------|---------------|--------------|------------------------------------|----------|---------|
 | pending | pending | pending | pending | pending | pending |
@@ -175,7 +175,7 @@ API conflict ledger:
 | product command surfaces | source-discover | pending | pending | pending | pending |
 | transform namespaces | source-discover | pending | pending | pending | pending |
 | plugin extension points | source-discover | pending | pending | pending | pending |
-| Slate transaction/read/update interaction points | source-discover | pending | pending | pending | pending |
+| Plite transaction/read/update interaction points | source-discover | pending | pending | pending | pending |
 | runtime/default-route bridges | source-discover | pending | pending | pending | pending |
 | package exports and declarations | source-discover | pending | pending | pending | pending |
 | docs/examples teaching public API | source-discover | pending | pending | pending | pending |
@@ -276,7 +276,7 @@ Final completion gates:
 |------|-------------------|--------|
 | score >= 0.92 and no dimension below 0.85 | scorecard rows cite evidence | pending |
 | all pass rows complete or skipped with evidence | phase/pass table closed | pending |
-| Slate/Plate boundary closed | boundary map closed | pending |
+| Plite/Plate boundary closed | boundary map closed | pending |
 | API conflict ledger closed | ledger rows have verdicts | pending |
 | live source grounding complete | source-backed rows cite current owners | pending |
 | workspace verification recorded | proof matrix closed | pending |

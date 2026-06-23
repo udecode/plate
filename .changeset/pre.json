@@ -42,7 +42,7 @@
     "@platejs/resizable": "53.0.0",
     "@platejs/selection": "53.1.6",
     "@platejs/slash-command": "53.0.0",
-    "@platejs/slate": "53.0.7",
+    "@platejs/plite": "53.0.7",
     "@platejs/suggestion": "53.0.3",
     "@platejs/tabbable": "53.0.0",
     "@platejs/table": "53.0.9",
@@ -66,6 +66,6 @@
     "auto-main-to-next-sync-platejs-utils",
     "auto-main-to-next-sync-platejs",
     "prepare-v54-beta-core",
-    "prepare-v54-beta-slate"
+    "prepare-v54-beta-plite"
   ]
 }

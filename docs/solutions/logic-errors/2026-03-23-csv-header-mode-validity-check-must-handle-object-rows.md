@@ -21,7 +21,7 @@ tags:
 
 ## Problem
 
-`CsvPlugin` is supposed to deserialize plain CSV into a Slate table.
+`CsvPlugin` is supposed to deserialize plain CSV into a Plite table.
 
 Valid input like `name,age\nAda,36` returned `undefined` on the default path because Papa Parse was configured with `header: true`, but the validity check still treated the parsed rows like arrays.
 

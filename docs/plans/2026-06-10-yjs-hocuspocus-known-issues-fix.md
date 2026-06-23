@@ -1,35 +1,35 @@
 # Yjs Hocuspocus Known Issues Fix
 
 Objective:
-Fix all known Hocuspocus/Yjs collaboration issues from the recorded Slate v2 soak summaries using TDD, then prove the fixes on focused package tests, old Hocuspocus seed windows, and a production-like Hocuspocus network soak.
+Fix all known Hocuspocus/Yjs collaboration issues from the recorded Plite soak summaries using TDD, then prove the fixes on focused package tests, old Hocuspocus seed windows, and a production-like Hocuspocus network soak.
 
 Completion threshold:
-- Known issues from `/Users/felixfeng/Desktop/repos/slate-v2/test-results/yjs-collaboration-soak/hocuspocus-3h-20260609-231052/summary.md` are mapped to root-cause classes.
+- Known issues from `/Users/felixfeng/Desktop/repos/plite/test-results/yjs-collaboration-soak/hocuspocus-3h-20260609-231052/summary.md` are mapped to root-cause classes.
 - Focused RED tests fail before implementation and pass after implementation.
 - Old failing Hocuspocus seed windows pass with `issues: 0`.
 - Production-like Hocuspocus soak passes with `PRODUCTION_SOAK_FAIL_ON_ISSUES=1`.
 - Modified TypeScript is formatted and typechecked.
 
 Verification surface:
-- `/Users/felixfeng/Desktop/repos/slate-v2/packages/slate-yjs/test/**`
-- `/Users/felixfeng/Desktop/repos/slate-v2/packages/slate-yjs/src/core/**`
-- `/Users/felixfeng/Desktop/repos/slate-v2/site/examples/ts/yjs-hocuspocus.tsx`
-- `/Users/felixfeng/Desktop/repos/slate-v2/scripts/proof/**`
-- `/Users/felixfeng/Desktop/repos/slate-v2/test-results/yjs-*`
+- `/Users/felixfeng/Desktop/repos/plite/packages/plite-yjs/test/**`
+- `/Users/felixfeng/Desktop/repos/plite/packages/plite-yjs/src/core/**`
+- `/Users/felixfeng/Desktop/repos/plite/site/examples/ts/yjs-hocuspocus.tsx`
+- `/Users/felixfeng/Desktop/repos/plite/scripts/proof/**`
+- `/Users/felixfeng/Desktop/repos/plite/test-results/yjs-*`
 
 Constraints:
 - Use TDD for product bugs.
-- Treat browser offline console noise, Next dev overlay click interception, and Slate DOM zero-width text as harness issues unless document data diverges.
+- Treat browser offline console noise, Next dev overlay click interception, and Plite DOM zero-width text as harness issues unless document data diverges.
 - Do not change public collaboration protocol details.
 - Do not commit, push, or open a PR.
 
 Boundaries:
-- Implementation lives in sibling repo `/Users/felixfeng/Desktop/repos/slate-v2`.
+- Implementation lives in sibling repo `/Users/felixfeng/Desktop/repos/plite`.
 - This file is the control-plane autogoal completion record for the `plate-copy` thread.
 - No unrelated Plate source files are in scope.
 
 Blocked condition:
-- None. The Slate v2 checker helper cannot run inside `slate-v2` because that checkout has no `AGENTS.md`; this control-plane plan exists so the autogoal checker can run from `plate-copy`.
+- None. The Plite checker helper cannot run inside `plite` because that checkout has no `AGENTS.md`; this control-plane plan exists so the autogoal checker can run from `plate-copy`.
 
 Start Gates:
 | Gate | Applies | Evidence |
@@ -65,12 +65,12 @@ Phase / pass table:
 | --- | --- | --- |
 | Scope | complete | Known summary and user requirements captured. |
 | RED tests | complete | Text-boundary and merge-placeholder regressions failed before fixes. |
-| Fixes | complete | Operation encoder and harness fixes implemented in `slate-v2`. |
+| Fixes | complete | Operation encoder and harness fixes implemented in `plite`. |
 | Browser proof | complete | Old Hocuspocus seed windows and production-like soak passed. |
 | Final audit | complete | Format, package typecheck, site typecheck, and focused tests passed. |
 
 Verification evidence:
-- `bun test packages/slate-yjs/test/document-id-contract.spec.ts packages/slate-yjs/test/insert-fragment-contract.spec.ts packages/slate-yjs/test/structural-soak-contract.spec.ts packages/slate-yjs/test/merge-node-contract.spec.ts packages/slate-yjs/test/split-merge-contract.spec.ts packages/slate-yjs/test/unwrap-nodes-contract.spec.ts packages/slate-yjs/test/move-node-contract.spec.ts packages/slate-yjs/test/simple-operations-contract.spec.ts` passed: 60 pass, 0 fail.
+- `bun test packages/plite-yjs/test/document-id-contract.spec.ts packages/plite-yjs/test/insert-fragment-contract.spec.ts packages/plite-yjs/test/structural-soak-contract.spec.ts packages/plite-yjs/test/merge-node-contract.spec.ts packages/plite-yjs/test/split-merge-contract.spec.ts packages/plite-yjs/test/unwrap-nodes-contract.spec.ts packages/plite-yjs/test/move-node-contract.spec.ts packages/plite-yjs/test/simple-operations-contract.spec.ts` passed: 60 pass, 0 fail.
 - Old Hocuspocus replay windows passed with `issues: 0`: `known-issues-all-seeds-1-20260610-1`, `known-issues-all-seeds-31-20260610-1`, `known-issues-all-seeds-41-20260610-1`, `known-issues-all-seeds-58-20260610-1`, `known-issues-all-seeds-68-20260610-1`, `known-issues-all-seeds-75-20260610-1`, `known-issues-all-seeds-85-20260610-1`, `known-issues-all-seeds-91-20260610-1`, `known-issues-all-seeds-99-20260610-1`, `known-issues-all-seeds-116-20260610-1`, `known-issues-all-seeds-131-20260610-1`.
 - `PRODUCTION_SOAK_FAIL_ON_ISSUES=1 PRODUCTION_SOAK_RUN_ID=known-issues-final-production-20260610-1 bun ./scripts/proof/yjs-hocuspocus-production-soak.mjs` exited 0 and reported issues 0.
 - `bunx biome check --write ...` passed.

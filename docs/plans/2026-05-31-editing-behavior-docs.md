@@ -113,7 +113,7 @@ Start Gates:
 | Target docs read | yes | `plugin-rules.mdx`, `table.mdx`, `editor-methods.mdx`, `plugin-input-rules.mdx`. |
 | Nearest sibling docs read | yes | Same as target docs read. |
 | Docs style doctrine read | yes | `docs-creator` structural and shadcn-dense guidance read. |
-| Documented source code read | yes | Core override, affinity, Slate merge/delete, and table plugin source read. |
+| Documented source code read | yes | Core override, affinity, Plite merge/delete, and table plugin source read. |
 | Ownership map drafted | yes | Core runtime / feature package / app config split recorded above. |
 | Plugin-page rules decision | yes | N/A: system guide, not plugin page. |
 | Browser/render proof decision | yes | Curl route proof because Browser tool was unavailable. |
@@ -216,7 +216,7 @@ Final handoff contract:
 - Issue / tracker line: no tracker update requested.
 - Confidence line: high.
 - Docs lane: guide/system.
-- Source-backed claims: checked against core override, affinity, Slate
+- Source-backed claims: checked against core override, affinity, Plite
   delete/merge, plugin type, and table source.
 - Content build / parser: `pnpm --filter www build:source` passed.
 - Links / demos / previews: route proof passed; no new previews.

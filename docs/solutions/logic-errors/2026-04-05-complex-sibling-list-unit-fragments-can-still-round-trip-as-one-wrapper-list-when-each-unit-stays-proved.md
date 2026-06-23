@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Complex sibling list-unit fragments can still round-trip as one wrapper list when each unit stays proved
 tags:
-  - slate-v2
+  - plite
   - list-item
   - sibling-units
   - clipboard

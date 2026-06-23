@@ -5,7 +5,7 @@ component: testing_framework
 root_cause: missing_workflow_step
 title: Workspace package subpath consumers may need a targeted build before Playwright
 tags:
-  - slate-browser
+  - plite-browser
   - playwright
   - yarn-pnp
   - workspace
@@ -17,10 +17,10 @@ severity: medium
 
 ## What happened
 
-After `slate-browser` moved into `packages/` and gained real subpath exports,
+After `plite-browser` moved into `packages/` and gained real subpath exports,
 repo Playwright tests started importing:
 
-- `slate-browser/playwright`
+- `plite-browser/playwright`
 
 That import resolved through the package `exports` map to built files under
 `dist/playwright/...`.
@@ -39,11 +39,11 @@ Instead:
 
 In `Plate repo root` that became:
 
-- `yarn build:slate-browser`
-- then `yarn test:slate-browser:e2e`
-- `yarn test:slate-browser:ime`
-- `yarn test:slate-browser:clipboard`
-- `yarn test:slate-browser:anchors`
+- `yarn build:plite-browser`
+- then `yarn test:plite-browser:e2e`
+- `yarn test:plite-browser:ime`
+- `yarn test:plite-browser:clipboard`
+- `yarn test:plite-browser:anchors`
 
 ## Reusable rule
 

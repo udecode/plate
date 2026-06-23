@@ -1,0 +1,152 @@
+name: Plite CI
+
+on:
+  push:
+    branches:
+      - main
+      - next
+    paths:
+      - 'packages/browser/**'
+      - 'packages/plite/**'
+      - 'packages/plite-dom/**'
+      - 'packages/plite-history/**'
+      - 'packages/plite-hyperscript/**'
+      - 'packages/plite-layout/**'
+      - 'packages/plite-react/**'
+      - 'packages/yjs/**'
+      - 'apps/plite/**'
+      - 'apps/www/src/app/(app)/examples/plite/**'
+      - 'apps/plite/tests/plite-browser/**'
+      - 'content/docs/plite/**'
+      - 'tooling/scripts/bench-targets.mjs'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'turbo.json'
+      - '.github/actions/pnpm-install/**'
+      - '.github/workflows/slate-ci.yml'
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    paths:
+      - 'packages/browser/**'
+      - 'packages/plite/**'
+      - 'packages/plite-dom/**'
+      - 'packages/plite-history/**'
+      - 'packages/plite-hyperscript/**'
+      - 'packages/plite-layout/**'
+      - 'packages/plite-react/**'
+      - 'packages/yjs/**'
+      - 'apps/plite/**'
+      - 'apps/www/src/app/(app)/examples/plite/**'
+      - 'apps/plite/tests/plite-browser/**'
+      - 'content/docs/plite/**'
+      - 'tooling/scripts/bench-targets.mjs'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'turbo.json'
+      - '.github/actions/pnpm-install/**'
+      - '.github/workflows/slate-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  packages:
+    name: Plite packages
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Monorepo install
+        uses: ./.github/actions/pnpm-install
+
+      - name: Typecheck packages
+        run: pnpm plite:typecheck
+
+      - name: Test packages
+        run: pnpm plite:test
+
+      - name: Test browser package
+        run: pnpm plite:browser:test
+
+  browser-chromium:
+    name: Plite browser chromium
+    runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_RETRIES: 2
+      PLAYWRIGHT_WORKERS: 6
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Monorepo install
+        uses: ./.github/actions/pnpm-install
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Chromium
+        run: pnpm --filter plite exec playwright install --with-deps chromium
+
+      - name: Run Chromium browser proof
+        run: pnpm --filter plite test:plite-browser:chromium
+
+  browser-matrix:
+    name: Plite browser matrix
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    env:
+      PLAYWRIGHT_RETRIES: 2
+      PLAYWRIGHT_WORKERS: 6
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Monorepo install
+        uses: ./.github/actions/pnpm-install
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright browsers
+        run: pnpm --filter plite exec playwright install --with-deps chromium firefox
+
+      - name: Run browser matrix
+        run: pnpm --filter plite test:plite-browser

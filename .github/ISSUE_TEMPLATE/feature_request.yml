@@ -1,5 +1,5 @@
 name: Feature request
-description: Propose a new Plate or Slate capability.
+description: Propose a new Plate or Plite capability.
 title: "[Feature]: "
 labels:
   - enhancement
@@ -25,7 +25,7 @@ body:
       label: Owner surface
       description: Choose the owner that best matches the request.
       options:
-        - Slate substrate
+        - Plite substrate
         - Plate framework or plugin
         - Docs, examples, templates, or registry
         - Unsure
@@ -35,7 +35,7 @@ body:
     id: vision_fit
     attributes:
       label: Vision fit
-      description: Does this fit Plate/Slate's current direction?
+      description: Does this fit Plate/Plite's current direction?
       options:
         - Yes
         - Unsure
@@ -69,7 +69,7 @@ body:
     attributes:
       label: What would make this not worth doing?
       description: Name the tradeoff, complexity, compatibility cost, or product boundary that should make maintainers reject or defer this.
-      placeholder: Not worth it if it requires putting product-specific UX into Slate core.
+      placeholder: Not worth it if it requires putting product-specific UX into Plite core.
     validations:
       required: true
   - type: textarea

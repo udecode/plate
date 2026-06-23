@@ -1,0 +1,462 @@
+import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
+
+const publicPackageNames = [
+  '@platejs/plite',
+  '@platejs/yjs',
+  '@platejs/browser',
+  '@platejs/plite-dom',
+  '@platejs/plite-history',
+  '@platejs/plite-hyperscript',
+  '@platejs/plite-layout',
+  '@platejs/plite-react',
+];
+
+const publicPackageDirectories: Record<string, string> = {
+  '@platejs/browser': 'browser',
+  '@platejs/plite': 'plite',
+  '@platejs/plite-dom': 'plite-dom',
+  '@platejs/plite-history': 'plite-history',
+  '@platejs/plite-hyperscript': 'plite-hyperscript',
+  '@platejs/plite-layout': 'plite-layout',
+  '@platejs/plite-react': 'plite-react',
+  '@platejs/yjs': 'yjs',
+};
+
+const readPackageJson = (packageName: string) =>
+  JSON.parse(
+    readFileSync(
+      new URL(
+        `../../${publicPackageDirectories[packageName]}/package.json`,
+        import.meta.url
+      ),
+      'utf8'
+    )
+  ) as { exports?: Record<string, unknown> };
+
+const getRuntimeSpecifierFromExportPath = (
+  packageName: string,
+  exportPath: string
+) => {
+  if (exportPath === '.') return packageName;
+
+  return `${packageName}/${exportPath.replace(/^\.\//, '')}`;
+};
+
+const exactPublicPackageRuntimeExportExpectations = {
+  '@platejs/plite': [
+    'Editor',
+    'ElementApi',
+    'LocationApi',
+    'NodeApi',
+    'OperationApi',
+    'PathApi',
+    'PathRefApi',
+    'PointApi',
+    'PointRefApi',
+    'RangeApi',
+    'RangeRefApi',
+    'SpanApi',
+    'TextApi',
+    'createEditor',
+    'createEditorRuntime',
+    'createEditorView',
+    'defineEditorExtension',
+    'defineStateField',
+    'elementProperty',
+    'isEditor',
+    'setDebugValueScrubber',
+  ],
+  '@platejs/yjs': [
+    'createYjsAwarenessSelection',
+    'createYjsExtension',
+    'readYjsAwarenessSelection',
+    'plitePointToYjsRelativePosition',
+    'pliteRangeToYjsRelativeRange',
+    'yjsAwarenessSelectionsEqual',
+    'yjsRelativePositionToPlitePoint',
+    'yjsRelativeRangeToPliteRange',
+    'yjsRelativeRangesEqual',
+  ],
+  '@platejs/yjs/core': [
+    'createYjsAwarenessSelection',
+    'createYjsExtension',
+    'readYjsAwarenessSelection',
+    'plitePointToYjsRelativePosition',
+    'pliteRangeToYjsRelativeRange',
+    'yjsAwarenessSelectionsEqual',
+    'yjsRelativePositionToPlitePoint',
+    'yjsRelativeRangeToPliteRange',
+    'yjsRelativeRangesEqual',
+  ],
+  '@platejs/yjs/react': [
+    'getYjsAwarenessRevision',
+    'getYjsProviderRevision',
+    'getYjsProviderStatus',
+    'getYjsProviderSynced',
+    'useYjsAwarenessRevision',
+    'useYjsProviderRevision',
+    'useYjsProviderStatus',
+    'useYjsProviderSynced',
+    'useYjsRemoteCursor',
+    'useYjsRemoteCursorDecorationSource',
+    'useYjsRemoteCursorOverlayPositions',
+    'useYjsRemoteCursors',
+  ],
+  '@platejs/browser/browser': [
+    'inspectZeroWidthPlaceholder',
+    'takeDOMSelectionSnapshot',
+    'takeEditorSelectionSnapshot',
+  ],
+  '@platejs/browser/core': [
+    'PLITE_BROWSER_FIRST_PARTY_FEATURE_CONTRACT_REGISTRY',
+    'PLITE_BROWSER_FIRST_PARTY_OPERATION_FAMILY_CONTRACTS',
+    'PLITE_BROWSER_FIRST_PARTY_PARITY_FAMILIES',
+    'PLITE_BROWSER_RELEASE_DISCIPLINE_GUARDS',
+    'assertPliteBrowserFirstPartyParityContracts',
+    'assertPliteBrowserReleaseProof',
+    'createBrowserMobileReleaseProofArtifact',
+    'createPersistentBrowserSoakProofArtifact',
+    'createReleaseDisciplineProofArtifact',
+    'createPliteBrowserFeatureContractRegistry',
+    'definePliteBrowserFeatureContract',
+    'evaluateImeInput',
+    'evaluatePlaceholderInput',
+    'extractAgentBrowserDebugSnapshot',
+    'extractAppiumDebugSnapshot',
+    'isCollapsed',
+    'parseAgentBrowserBatch',
+    'parseDebugSnapshot',
+    'serializePoint',
+    'serializeRange',
+    'validatePliteBrowserReleaseProof',
+  ],
+  '@platejs/browser/playwright': [
+    'assertNoIllegalKernelTransitions',
+    'assertPliteBrowserCaretVisibleInScrollableParent',
+    'assertPliteBrowserKernelTraceEntry',
+    'assertPliteBrowserSelectionContract',
+    'attachPageScreenshot',
+    'attachPliteBrowserJsonArtifact',
+    'attachPliteBrowserSelectionScreenshot',
+    'classifyScenarioTransportClaim',
+    'createScenarioReductionCandidates',
+    'createScenarioReplay',
+    'createPliteBrowserClipboardPasteGauntlet',
+    'createPliteBrowserCompositionGauntlet',
+    'createPliteBrowserDestructiveEditingGauntlet',
+    'createPliteBrowserDropDataGauntlet',
+    'createPliteBrowserEditorHarness',
+    'createPliteBrowserFeatureContractRegistry',
+    'createPliteBrowserInlineCutTypingGauntlet',
+    'createPliteBrowserInternalControlGauntlet',
+    'createPliteBrowserMarkClickTypingGauntlet',
+    'createPliteBrowserMarkTypingGauntlet',
+    'createPliteBrowserMixedEditingConformanceGauntlet',
+    'createPliteBrowserNavigationTypingGauntlet',
+    'createPliteBrowserSemanticEditingConformanceGauntlet',
+    'createPliteBrowserShellActivationGauntlet',
+    'createPliteBrowserTextInsertionGauntlet',
+    'createPliteBrowserToolbarMarkClickTypingGauntlet',
+    'createPliteBrowserWarmLoopSteps',
+    'createPliteBrowserWarmToolbarArrowGauntlet',
+    'definePliteBrowserFeatureContract',
+    'findPliteBrowserKernelTraceEntry',
+    'getIllegalKernelTransitions',
+    'getPliteReactRenderProfilerSnapshot',
+    'installPliteReactRenderProfiler',
+    'matchesPliteBrowserKernelTrace',
+    'normalizeScenarioMetadata',
+    'openExample',
+    'openExampleWithOptions',
+    'recordPliteBrowserRuntimeErrors',
+    'resetPliteBrowserNativeEventTrace',
+    'resetPliteReactRenderProfiler',
+    'serializeScenarioStepForReplay',
+    'startPliteBrowserNativeEventTrace',
+    'stopPliteBrowserNativeEventTrace',
+    'summarizeScenarioReductionCandidate',
+    'summarizeScenarioStep',
+    'takeDOMSelectionSnapshot',
+    'takeDisplayedSelectionSnapshotForRoot',
+    'takeSelectionSnapshot',
+    'takePliteBrowserNativeEventTrace',
+    'takePliteBrowserRenderStateSnapshot',
+    'withExclusiveClipboardAccess',
+  ],
+  '@platejs/browser/transports': [
+    'AGENT_BROWSER_IOS_DEVICE_DEFAULT',
+    'AGENT_BROWSER_IOS_SESSION_DEFAULT',
+    'ANDROID_SDK_ROOT_DEFAULT',
+    'APPIUM_ANDROID_EMULATOR_DEFAULT',
+    'APPIUM_IOS_DEVICE_DEFAULT',
+    'buildAgentBrowserIosBatch',
+    'classifyBrowserMobileTransportProof',
+    'createAgentBrowserIosDescriptor',
+    'createAppiumAndroidDescriptor',
+    'createAppiumIosDescriptor',
+    'createAppiumIosSessionPayload',
+    'createAppiumSessionPayload',
+    'createBrowserMobileUrl',
+    'getBrowserMobileTransportProofMatrix',
+    'resolveBrowserMobileSurface',
+  ],
+  '@platejs/plite-dom': [
+    'CAN_USE_DOM',
+    'DOMCoverage',
+    'HAS_BEFORE_INPUT_SUPPORT',
+    'Hotkeys',
+    'IS_ANDROID',
+    'IS_CHROME',
+    'IS_FIREFOX',
+    'IS_IOS',
+    'IS_UC_MOBILE',
+    'IS_WEBKIT',
+    'IS_WECHATBROWSER',
+    'Key',
+    'PliteDOMResolutionError',
+    'TRIPLE_CLICK',
+    'applyStringDiff',
+    'closestShadowAware',
+    'containsShadowAware',
+    'dom',
+    'getActiveElement',
+    'getDefaultView',
+    'getSelection',
+    'hasShadowRoot',
+    'isAfter',
+    'isBefore',
+    'isDOMElement',
+    'isDOMNode',
+    'isDOMSelection',
+    'isDOMText',
+    'isElementDecorationsEqual',
+    'isHotkey',
+    'isPlainTextOnlyPaste',
+    'isTextDecorationsEqual',
+    'isTrackedMutation',
+    'mergeStringDiffs',
+    'normalizeDOMPoint',
+    'normalizePoint',
+    'normalizeRange',
+    'normalizeStringDiff',
+    'splitDecorationsByChild',
+    'targetRange',
+    'verifyDiffState',
+  ],
+  '@platejs/plite-history': ['History', 'history'],
+  '@platejs/plite-hyperscript': [
+    'createEditor',
+    'createHyperscript',
+    'createText',
+    'jsx',
+  ],
+  '@platejs/plite-layout': [
+    'createEstimatedPageLayoutEngine',
+    'createPliteLayout',
+    'createPlitePage',
+    'createPlitePageBreakSnapshot',
+    'createPlitePageLayout',
+    'getPlitePageLayoutDecorations',
+    'getPlitePageLayoutFragments',
+    'getPlitePageLayoutGeometry',
+    'getPlitePageLayoutPathKey',
+    'getPlitePageLayoutProjection',
+    'getPlitePagePresetSize',
+    'normalizePlitePageSettings',
+    'paginatePlitePageLayoutBlocks',
+    'pretextPageLayoutEngine',
+  ],
+  '@platejs/plite-layout/react': [
+    'PagedEditable',
+    'usePliteLayout',
+    'usePliteLayoutFragments',
+    'usePliteLayoutFragmentsAtPath',
+    'usePliteLayoutSnapshot',
+    'usePlitePageLayout',
+    'usePlitePageLayoutSnapshot',
+  ],
+  '@platejs/plite-react': [
+    'Editable',
+    'EditableElement',
+    'Plite',
+    'PliteElement',
+    'PliteLeaf',
+    'PlitePlaceholder',
+    'PliteRuntime',
+    'PliteText',
+    'createReactEditor',
+    'defaultScrollSelectionIntoView',
+    'react',
+    'useDOMStrategyVirtualOffset',
+    'useDecorationSelector',
+    'useEditor',
+    'useEditorComposing',
+    'useEditorFocused',
+    'useEditorReadOnly',
+    'useEditorSelection',
+    'useEditorSelector',
+    'useEditorState',
+    'useElement',
+    'useElementPath',
+    'useElementSelected',
+    'useNodeSelector',
+    'useSetStateField',
+    'usePliteActiveEditor',
+    'usePliteActiveRoot',
+    'usePliteAnnotation',
+    'usePliteAnnotationStore',
+    'usePliteAnnotations',
+    'usePliteChildRoot',
+    'usePliteCommandCallback',
+    'usePliteContentRoot',
+    'usePliteDecorationSource',
+    'usePliteEditor',
+    'usePliteHistory',
+    'usePliteNodeRef',
+    'usePliteProjectionEntries',
+    'usePliteRangeDecorationSource',
+    'usePliteRootChrome',
+    'usePliteRootEditor',
+    'usePliteRootEffect',
+    'usePliteRootState',
+    'usePliteRuntime',
+    'usePliteRuntimeState',
+    'usePliteWidget',
+    'usePliteWidgetStore',
+    'usePliteWidgets',
+    'useStateFieldValue',
+    'useTextSelector',
+  ],
+};
+
+const internalBridgeRuntimeExportExpectations = {
+  '@platejs/plite/internal': [
+    'Editor',
+    'MAIN_ROOT_KEY',
+    'applyOperation',
+    'applyStatePatches',
+    'defineCommand',
+    'executeCommand',
+    'formatDebugValue',
+    'getCachedFullRootReplaceTopLevelRuntimeIds',
+    'getEditorCurrentMarks',
+    'getEditorExtensionRegistry',
+    'getEditorLiveNode',
+    'getEditorLiveSelection',
+    'getEditorLiveText',
+    'getEditorOperationRoot',
+    'getEditorRuntime',
+    'getEditorSelectionRoot',
+    'getEditorTransformRegistry',
+    'getOperationCount',
+    'getOperationRoot',
+    'getRangeRoot',
+    'getSnapshotVersion',
+    'hasEditorTransformMiddleware',
+    'inheritEditorExtensionRegistry',
+    'isObject',
+    'markInternalOwnedReplayOperation',
+    'projectRangeInSnapshot',
+    'registerCommand',
+    'setEditorChildren',
+    'setEditorMarks',
+    'setEditorRuntime',
+    'setEditorSelection',
+    'setEditorTargetRuntime',
+    'setEditorTransformRegistry',
+    'shouldSaveStatePatch',
+    'withOperationRootChildren',
+  ],
+  '@platejs/plite-dom/internal': [
+    'DOMCoverage',
+    'DOMEditor',
+    'EDITOR_TO_ELEMENT',
+    'EDITOR_TO_FORCE_RENDER',
+    'EDITOR_TO_KEY_TO_ELEMENT',
+    'EDITOR_TO_PENDING_ACTION',
+    'EDITOR_TO_PENDING_DIFFS',
+    'EDITOR_TO_PENDING_INSERTION_MARKS',
+    'EDITOR_TO_PENDING_SELECTION',
+    'EDITOR_TO_PLACEHOLDER_ELEMENT',
+    'EDITOR_TO_ROOT_VIEW_EDITORS',
+    'EDITOR_TO_SCHEDULE_FLUSH',
+    'EDITOR_TO_USER_MARKS',
+    'EDITOR_TO_USER_SELECTION',
+    'EDITOR_TO_WINDOW',
+    'ELEMENT_TO_NODE',
+    'IS_COMPOSING',
+    'IS_FOCUSED',
+    'IS_NODE_MAP_DIRTY',
+    'IS_READ_ONLY',
+    'MARK_PLACEHOLDER_SYMBOL',
+    'NODE_TO_ELEMENT',
+    'NODE_TO_INDEX',
+    'NODE_TO_KEY',
+    'NODE_TO_PARENT',
+    'NODE_TO_RUNTIME_ID',
+    'PLACEHOLDER_SYMBOL',
+    'createDOMEditorCapability',
+    'getDOMClipboardFormatKey',
+    'getPliteStringCoordinatePlacement',
+    'getPliteStringLength',
+    'getPliteStringLineEdgeTextOffset',
+    'installDOM',
+    'setDOMClipboardFormatKey',
+  ],
+};
+
+describe('public package imports', () => {
+  test('covers every public package export specifier with exact runtime smoke', () => {
+    const publicExportSpecifiers = publicPackageNames
+      .flatMap((packageName) =>
+        Object.keys(readPackageJson(packageName).exports ?? {}).map(
+          (exportPath) =>
+            getRuntimeSpecifierFromExportPath(packageName, exportPath)
+        )
+      )
+      .filter(
+        (specifier) =>
+          !specifier.endsWith('/internal') &&
+          !specifier.endsWith('/package.json')
+      )
+      .sort();
+
+    expect(
+      Object.keys(exactPublicPackageRuntimeExportExpectations).sort()
+    ).toEqual(publicExportSpecifiers);
+  });
+
+  for (const [specifier, names] of Object.entries(
+    exactPublicPackageRuntimeExportExpectations
+  )) {
+    test(`keeps ${specifier} runtime exports exact`, async () => {
+      const module = await import(specifier);
+      const exportedNames = Object.keys(module).sort();
+
+      expect(exportedNames).toEqual([...names].sort());
+    });
+  }
+
+  for (const [specifier, names] of Object.entries(
+    internalBridgeRuntimeExportExpectations
+  )) {
+    test(`keeps ${specifier} runtime exports exact`, async () => {
+      const module = await import(specifier);
+      const exportedNames = Object.keys(module).sort();
+
+      expect(exportedNames).toEqual([...names].sort());
+    });
+  }
+
+  test('keeps plite-browser root unavailable', async () => {
+    let importedRoot = false;
+
+    try {
+      await import('@platejs/browser');
+      importedRoot = true;
+    } catch {}
+
+    expect(importedRoot).toBe(false);
+  });
+});

@@ -2,7 +2,7 @@
 title: Source-scoped overlay invalidation proof must separate recompute selectivity from subscriber fan-out
 date: 2026-04-20
 category: performance-issues
-module: Slate v2 React runtime
+module: Plite React runtime
 problem_type: performance_issue
 component: testing_framework
 symptoms:
@@ -13,7 +13,7 @@ root_cause: missing_workflow_step
 resolution_type: workflow_improvement
 severity: medium
 tags:
-  - slate-v2
+  - plite
   - slate-react
   - performance
   - benchmarking
@@ -56,7 +56,7 @@ subscribers still fan out too broadly.
 ## Solution
 
 Extend the live
-[rerender-breadth.tsx](/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx)
+[rerender-breadth.tsx](/Users/zbeyens/git/plite/scripts/benchmarks/browser/react/rerender-breadth.tsx)
 owner with one explicit `sourceScopedInvalidation` row instead of inventing a
 second benchmark family.
 
@@ -69,17 +69,17 @@ The new row creates three projection stores on the same editor:
 Then it drives three operations and records recompute deltas separately:
 
 ```tsx
-const selectionStore = createSlateProjectionStore(editor, deriveSelectionRanges, {
+const selectionStore = createPliteProjectionStore(editor, deriveSelectionRanges, {
   dirtiness: 'selection',
   sourceId: 'selection-source',
 })
 
-const textStore = createSlateProjectionStore(editor, deriveTextTailRanges, {
+const textStore = createPliteProjectionStore(editor, deriveTextTailRanges, {
   dirtiness: 'text',
   sourceId: 'text-source',
 })
 
-const externalStore = createSlateProjectionStore(
+const externalStore = createPliteProjectionStore(
   editor,
   () => deriveExternalRanges(externalActiveRef.current),
   {
@@ -146,6 +146,6 @@ That is a much better checkpoint than either fake green or fake missing.
 
 ## Related Issues
 
-- [Slate React rerender breadth is mostly local and useSlate is the only broad hook left](/Users/zbeyens/git/plate-2/docs/solutions/performance-issues/2026-04-11-slate-react-rerender-breadth-is-mostly-local-and-useSlate-is-the-only-broad-hook-left.md)
+- [Plite React rerender breadth is mostly local and usePlite is the only broad hook left](/Users/zbeyens/git/plate-2/docs/solutions/performance-issues/2026-04-11-slate-react-rerender-breadth-is-mostly-local-and-usePlite-is-the-only-broad-hook-left.md)
 - [Overlay perf coverage must include annotation-backed widget churn](/Users/zbeyens/git/plate-2/docs/solutions/workflow-issues/2026-04-15-overlay-perf-coverage-must-include-annotation-widget-churn.md)
-- [Slate DOM + React Tranche 5/6 Execution](/Users/zbeyens/git/plate-2/docs/plans/2026-04-19-slate-dom-react-tranche-5-6-execution.md)
+- [Plite DOM + React Tranche 5/6 Execution](/Users/zbeyens/git/plate-2/docs/plans/2026-04-19-plite-dom-react-tranche-5-6-execution.md)

@@ -1,7 +1,7 @@
 # Core rich text operations AR perf
 
 Objective:
-Optimize `core-rich-text-operations-compare` under Slate AR until target
+Optimize `core-rich-text-operations-compare` under Plite AR until target
 evidence is green, plateaued, or blocked by correctness/architecture proof.
 
 Goal plan:
@@ -20,7 +20,7 @@ Applied packs:
 Task source:
 - type: user request
 - id / link: local chat request, 2026-06-01
-- title: Run Slate AR perf on `core-rich-text-operations-compare`
+- title: Run Plite AR perf on `core-rich-text-operations-compare`
 - acceptance criteria: initialize or resume the target-backed AR loop, run the
   rich-text compare benchmark, inspect the primary metric and correctness
   gate, optimize if a clear safe owner appears, and stop only when the metric
@@ -55,7 +55,7 @@ Constraints:
 - Do not add broad ceremony when the task is trivial or docs-only.
 
 Boundaries:
-- Source of truth: `benchmarks/targets/slate-v2.json` target
+- Source of truth: `benchmarks/targets/plite.json` target
   `core-rich-text-operations-compare` plus `Plate repo root/autoresearch.*`.
 - Allowed edit scope: `Plate repo root` core/runtime files if profiling points to
   a safe owner, benchmark target/session artifacts, and this plan.
@@ -101,9 +101,9 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Skill analysis before edits | yes | Loaded `autogoal`, `slate-ar-perf`, and `slate-ar`. |
+| Skill analysis before edits | yes | Loaded `autogoal`, `plite-ar-perf`, and `plite-ar`. |
 | Active goal checked or created | yes | `get_goal` returned none; created this goal. |
-| Source of truth read before edits | yes | Read target `core-rich-text-operations-compare` from `benchmarks/targets/slate-v2.json`. |
+| Source of truth read before edits | yes | Read target `core-rich-text-operations-compare` from `benchmarks/targets/plite.json`. |
 | Tracker comments and attachments read | no | N/A: no tracker item or attachment. |
 | Video transcript evidence required | no | N/A: no video evidence in this task. |
 | `docs/solutions` checked for non-trivial existing-code work | no | N/A: no code owner was changed; target was already green. |
@@ -333,7 +333,7 @@ Reboot status:
 |----------|--------|
 | Where am I? | Closeout |
 | Where am I going? | Final response after completion check |
-| What is the goal? | Optimize or prove green `core-rich-text-operations-compare` under Slate AR |
+| What is the goal? | Optimize or prove green `core-rich-text-operations-compare` under Plite AR |
 | What have I learned? | It is already green under p95 target; stale AR wrappers were the only setup bug |
 | What have I done? | Fixed target wrappers, ran baseline and promotion repeats, logged accepted measurements |
 

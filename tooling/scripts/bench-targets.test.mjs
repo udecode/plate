@@ -6,7 +6,7 @@ import { buildTargetHistory, renderMarkdownReport } from './bench-targets.mjs';
 const target = ({ id, path, required = true }) => ({
   id,
   question: `${id} question`,
-  owner: 'slate-v2',
+  owner: 'plite',
   family: 'test',
   kind: 'current',
   cwd: '.',

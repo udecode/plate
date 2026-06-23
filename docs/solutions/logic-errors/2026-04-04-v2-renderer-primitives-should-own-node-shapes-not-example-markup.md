@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: V2 renderer primitives should own node shapes not example markup
 tags:
-  - slate-v2
+  - plite
   - slate-react-v2
   - renderer
   - dom
@@ -20,24 +20,24 @@ severity: medium
 Once the browser proofs settled the zero-width policy, the remaining v2 proof
 surfaces were still hand-writing the low-level DOM contract:
 
-- `data-slate-node="text"`
-- `data-slate-leaf`
-- `data-slate-node="element"`
-- `data-slate-spacer`
+- `data-plite-node="text"`
+- `data-plite-leaf`
+- `data-plite-node="element"`
+- `data-plite-spacer`
 
 That is not a proof anymore.
 That is a renderer layer pretending not to be one.
 
 ## What fixed it
 
-`slate-react-v2` now owns the minimal renderer primitives directly:
+`plite-react-v2` now owns the minimal renderer primitives directly:
 
-- [SlateText](/Users/zbeyens/git/slate-v2/packages/slate-react-v2/src/components/slate-text.tsx)
-- [SlateLeaf](/Users/zbeyens/git/slate-v2/packages/slate-react-v2/src/components/slate-leaf.tsx)
-- [SlateElement](/Users/zbeyens/git/slate-v2/packages/slate-react-v2/src/components/slate-element.tsx)
-- [SlateSpacer](/Users/zbeyens/git/slate-v2/packages/slate-react-v2/src/components/slate-spacer.tsx)
-- [TextString](/Users/zbeyens/git/slate-v2/packages/slate-react-v2/src/components/text-string.tsx)
-- [ZeroWidthString](/Users/zbeyens/git/slate-v2/packages/slate-react-v2/src/components/zero-width-string.tsx)
+- [PliteText](/Users/zbeyens/git/plite/packages/plite-react-v2/src/components/slate-text.tsx)
+- [PliteLeaf](/Users/zbeyens/git/plite/packages/plite-react-v2/src/components/slate-leaf.tsx)
+- [PliteElement](/Users/zbeyens/git/plite/packages/plite-react-v2/src/components/slate-element.tsx)
+- [SlateSpacer](/Users/zbeyens/git/plite/packages/plite-react-v2/src/components/slate-spacer.tsx)
+- [TextString](/Users/zbeyens/git/plite/packages/plite-react-v2/src/components/text-string.tsx)
+- [ZeroWidthString](/Users/zbeyens/git/plite/packages/plite-react-v2/src/components/zero-width-string.tsx)
 
 The v2 proof surfaces and matrix routes now consume those primitives instead of
 restating the DOM shape by hand.
@@ -57,7 +57,7 @@ clever demo files.
 
 ## Reusable rule
 
-For `slate-react-v2`:
+For `plite-react-v2`:
 
 - if a DOM shape is required by more than one proof surface, it belongs in a
   package primitive

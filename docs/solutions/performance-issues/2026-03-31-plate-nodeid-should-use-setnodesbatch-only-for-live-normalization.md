@@ -7,8 +7,8 @@ problem_type: performance_issue
 component: tooling
 symptoms:
   - "Plate had a fast pure initial-value `nodeId` normalization path and a slower live transform path that still called `setNodes` once per node"
-  - "Porting the new Slate-side batch API into Plate risked collapsing those two paths into one abstraction and dragging editor operations into initialization"
-  - "The local `@platejs/slate` wrapper needed a production-safe batch seam without pretending it could transparently reuse Slate private internals"
+  - "Porting the new Plite-side batch API into Plate risked collapsing those two paths into one abstraction and dragging editor operations into initialization"
+  - "The local `@platejs/plite` wrapper needed a production-safe batch seam without pretending it could transparently reuse Plite private internals"
 root_cause: wrong_api
 resolution_type: code_fix
 severity: high
@@ -28,7 +28,7 @@ tags:
 ## Problem
 
 Plate needed the new batched `set_node` fast path inside its local
-`@platejs/slate` package, but `nodeId` had two different workloads:
+`@platejs/plite` package, but `nodeId` had two different workloads:
 
 - initial-value normalization, where the plugin already owns `editor.children`
 - live normalization, where the plugin intentionally uses editor transforms
@@ -42,10 +42,10 @@ honest.
 - `nodeId` already had a good pure initial-value path through
   `transformInitialValue`, but the live `nodeId.normalize()` transform still
   paid the per-node `setNodes` cost.
-- The new `setNodesBatch` API lived in Plate's local `packages/slate`, not only
+- The new `setNodesBatch` API lived in Plate's local `packages/plite`, not only
   in the separate `Plate repo root` prototype repo, so the adoption work could happen
   immediately.
-- Plate's local Slate wrapper does not expose Slate's private dirty-path weak
+- Plate's local Plite wrapper does not expose Plite's private dirty-path weak
   maps, so a direct copy of the upstream prototype would have been half true and
   half bullshit.
 
@@ -55,7 +55,7 @@ honest.
   `editor.tf.setNodesBatch(...)`. That would manufacture operations, history
   boundaries, and change notifications during initialization even though the
   plugin already owns the initial value.
-- Pretending the local `@platejs/slate` package could safely deep-import Slate
+- Pretending the local `@platejs/plite` package could safely deep-import Plite
   private internals for dirty-path updates. The published `slate` package ships
   a bundled runtime, not a clean public deep-import surface for those helpers.
 
@@ -63,16 +63,16 @@ honest.
 
 Keep the abstractions honest.
 
-### 1. Add `editor.tf.setNodesBatch(...)` to `@platejs/slate`
+### 1. Add `editor.tf.setNodesBatch(...)` to `@platejs/plite`
 
-The local Slate package now exposes an explicit exact-path batch API. It keeps
+The local Plite package now exposes an explicit exact-path batch API. It keeps
 the one-pass tree rewrite from the upstream prototype and records ordinary
 `set_node` operations for history and change detection.
 
 The focused tests live in:
 
-- [setNodesBatch.spec.tsx](/Users/zbeyens/git/plate-2/packages/slate/src/internal/transforms/setNodesBatch.spec.tsx)
-- [with-history.spec.tsx](/Users/zbeyens/git/plate-2/packages/slate/src/slate-history/with-history.spec.tsx)
+- [setNodesBatch.spec.tsx](/Users/zbeyens/git/plate-2/packages/plite/src/internal/transforms/setNodesBatch.spec.tsx)
+- [with-history.spec.tsx](/Users/zbeyens/git/plate-2/packages/plite/src/slate-history/with-history.spec.tsx)
 
 ### 2. Keep history behavior explicit
 
@@ -110,7 +110,7 @@ runtime transform surface. Initial normalization is not.
 
 The local Plate port keeps the fast rewrite, saves history explicitly, and runs
 a local dirty-path normalization queue for the batch. That keeps the feature
-production-safe without lying about access to Slate internals.
+production-safe without lying about access to Plite internals.
 
 The local micro-benchmark kept the real performance win on a flat huge-document
 shape:
@@ -126,8 +126,8 @@ shape:
   route that work back through editor operations just to reuse a runtime API.
 - Keep exact-path batch APIs explicit. They are valuable because they are
   stricter than broad traversal transforms, not because they hide inside them.
-- When porting upstream transform work into Plate's local Slate wrapper, verify
-  what private Slate machinery is actually reachable from the published package
+- When porting upstream transform work into Plate's local Plite wrapper, verify
+  what private Plite machinery is actually reachable from the published package
   before assuming parity.
 - Keep focused tests around history behavior. Undo bugs are where "fast"
   optimizations go to die.

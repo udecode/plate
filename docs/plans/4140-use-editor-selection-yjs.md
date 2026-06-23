@@ -15,7 +15,7 @@
 - `packages/yjs/src/react/YjsPlugin.tsx`
 - `packages/yjs/src/lib/BaseYjsPlugin.ts`
 - `packages/yjs/src/lib/withTYjs.ts`
-- `packages/core/src/react/hooks/useSlateProps.ts`
+- `packages/core/src/react/hooks/usePliteProps.ts`
 - `packages/core/src/react/stores/plate/createPlateStore.ts`
 
 ## Learnings
@@ -24,7 +24,7 @@
   - Yjs tests can fail for harness reasons before the real bug. Use explicit paths when running isolated Bun tests.
   - Selection bugs in Plate usually belong at the ownership seam, not in downstream UI.
 - `learnings-researcher` pointed at `docs/solutions/patterns/critical-patterns.md`, but that file does not exist in this checkout.
-- Issue comments include a concrete React repro and a prior unverified hypothesis that `@slate-yjs/core` swallows Slate `onChange` options.
+- Issue comments include a concrete React repro and a prior unverified hypothesis that `@slate-yjs/core` swallows Plite `onChange` options.
 
 ## Plan
 

@@ -1,7 +1,7 @@
 # sync plate plan methodology
 
 Objective:
-Sync plate-plan methodology with Slate v2; done when source rule, template,
+Sync plate-plan methodology with Plite; done when source rule, template,
 mirror, and audits align.
 
 Goal plan:
@@ -15,14 +15,14 @@ Task source:
 - id / link: local chat
 - title: sync plate-plan methodology with slate-plan for Plate v2
 - acceptance criteria: stale Plate editor-behavior-only framing removed; Plate
-  v2 planning aligns with Slate v2 methodology; breaking changes allowed for
-  best architecture/DX/perf/testability; Slate/Plate boundary explicit; no API
+  v2 planning aligns with Plite methodology; breaking changes allowed for
+  best architecture/DX/perf/testability; Plite/Plate boundary explicit; no API
   overlap; minimal breaking-change planning uses source-discovered conflict
   rows instead of hardcoded current API names.
 
 First checkpoint:
 - Captured before implementation: compare stale `plate-plan.mdc` to
-  `slate-plan.mdc`; rewrite the source rule; add the missing Plate Plan
+  `plite-plan.mdc`; rewrite the source rule; add the missing Plate Plan
   template; update routing; regenerate generated mirrors; audit source and
   mirror language; do not implement Plate runtime migration in this task.
 
@@ -34,10 +34,10 @@ Completion threshold:
   grounding, objection ledger, pressure passes, proof gates, and final handoff.
 - Plate v2 doctrine is explicit: breaking changes are allowed for best
   architecture, DX, performance, testability, and agent-maintainability.
-- Slate/Plate boundary is explicit: Slate owns substrate/runtime/editor core;
+- Plite/Plate boundary is explicit: Plite owns substrate/runtime/editor core;
   Plate owns product/plugin/UI/registry/app-level composition.
-- No-overlap rule is explicit: Plate must not re-create or conflict with Slate
-  APIs; Slate API wins unless a distinct Plate product owner is proven.
+- No-overlap rule is explicit: Plate must not re-create or conflict with Plite
+  APIs; Plite API wins unless a distinct Plate product owner is proven.
 - The skill defines minimal breaking-change planning through source-discovered
   conflict rows instead of hardcoded current API names.
 - A `docs/plans/templates/plate-plan.md` template exists and matches the new
@@ -49,7 +49,7 @@ Completion threshold:
 Verification surface:
 - `pnpm install`
 - `sed -n '1,220p' .agents/skills/plate-plan/SKILL.md`
-- `rg -n "Plate v2|Slate/Plate|minimal breaking|source-discovered|runtime accessors|plugin extension points|planning mode|Execution mode" .agents/rules/plate-plan.mdc .agents/skills/plate-plan/SKILL.md docs/plans/templates/plate-plan.md .agents/AGENTS.md AGENTS.md`
+- `rg -n "Plate v2|Plite/Plate|minimal breaking|source-discovered|runtime accessors|plugin extension points|planning mode|Execution mode" .agents/rules/plate-plan.mdc .agents/skills/plate-plan/SKILL.md docs/plans/templates/plate-plan.md .agents/AGENTS.md AGENTS.md`
 - `rg -n "description: Define or update Plate editor-behavior|This is the Plate editor-behavior planning|editor-behavior planning and law workflow|markdown-editing-spec|markdown-standards|markdown-parity-matrix" .agents/rules/plate-plan.mdc .agents/skills/plate-plan/SKILL.md docs/plans/templates/plate-plan.md .agents/AGENTS.md AGENTS.md`
 - `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-22-sync-plate-plan-methodology.md`
 
@@ -99,9 +99,9 @@ Current verdict:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Prompt requirements captured before work | yes | First checkpoint lists stale-vs-Slate sync, Plate v2 alignment, breaking-change authority, Slate/Plate boundary, no API overlap, and conflict APIs. |
+| Prompt requirements captured before work | yes | First checkpoint lists stale-vs-Plite sync, Plate v2 alignment, breaking-change authority, Plite/Plate boundary, no API overlap, and conflict APIs. |
 | Timed checkpoint parsed | no | User gave no duration. |
-| Skill analysis before edits | yes | Read generated `plate-plan` skill, source `plate-plan.mdc`, source `slate-plan.mdc`, and `slate-plan` template. |
+| Skill analysis before edits | yes | Read generated `plate-plan` skill, source `plate-plan.mdc`, source `plite-plan.mdc`, and `plite-plan` template. |
 | Active goal checked or created | yes | `get_goal` returned no active goal; created this goal. |
 | Source of truth read before edits | yes | Read source rules and AGENTS routing before edits. |
 | Tracker comments and attachments read | no | No tracker or attachment surface. |
@@ -135,11 +135,11 @@ Work Checklist:
 - [x] Agent-native review decision recorded by using source-rule regeneration
       and mirror audit.
 - [x] Output budget discipline recorded and followed.
-- [x] Plate Plan source rule synced to Slate Plan methodology without leaving it
+- [x] Plate Plan source rule synced to Plite Plan methodology without leaving it
       as an editor-behavior-only skill.
 - [x] Plate v2 API conflict planning is explicit and source-discovered, without
       hardcoded current API names.
-- [x] Slate/Plate boundary and no-overlap doctrine are explicit.
+- [x] Plite/Plate boundary and no-overlap doctrine are explicit.
 - [x] Plate Plan template exists and matches the source rule.
 - [x] Generated skill mirror updated by `pnpm install`, not manual edits.
 
@@ -177,7 +177,7 @@ Completion Gates:
 Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
-| Intake and source read | done | Read stale `plate-plan`, current `slate-plan`, AGENTS routing, and template state. | implementation done |
+| Intake and source read | done | Read stale `plate-plan`, current `plite-plan`, AGENTS routing, and template state. | implementation done |
 | Implementation | done | Rewrote source rule, added template, updated AGENTS routing, regenerated mirror. | verification done |
 | Verification | done | `pnpm install`; source/mirror/template `rg` audits. | closeout done |
 | PR / tracker sync | skipped | No PR/tracker requested. | closeout done |
@@ -185,7 +185,7 @@ Phase / pass table:
 
 Findings:
 - `plate-plan.mdc` was centered on markdown/editor-behavior law and lacked the
-  Slate v2-style planning/execution split, API conflict ledger, and Plate v2
+  Plite-style planning/execution split, API conflict ledger, and Plate v2
   boundary doctrine.
 - No `docs/plans/templates/plate-plan.md` existed, so future Plate Plan runs had
   no durable template.
@@ -196,7 +196,7 @@ Decisions and tradeoffs:
   of gravity was wrong.
 - Kept editor-behavior law as a sub-output for touched behavior surfaces.
 - Added source-discovered conflict rows for Plate runtime/plugin/bridge
-  surfaces that may overlap with Slate.
+  surfaces that may overlap with Plite.
 - Did not implement Plate runtime/API migration in this task.
 
 Implementation notes:
@@ -215,7 +215,7 @@ Verification evidence:
 - `pnpm install` passed.
 - Generated skill mirror begins with the new Plate v2 architecture/API
   description and `metadata.skiller.source: .agents/rules/plate-plan.mdc`.
-- Positive audit found Plate v2, Slate/Plate boundary, minimal breaking-change,
+- Positive audit found Plate v2, Plite/Plate boundary, minimal breaking-change,
   conflict API, and planning/execution language in source, generated mirror,
   template, and AGENTS docs.
 - Negative audit for stale editor-behavior-only framing returned no matches.
@@ -243,7 +243,7 @@ Reboot status:
 |----------|--------|
 | Where am I? | Closeout complete. |
 | Where am I going? | Final response after `check-complete`. |
-| What is the goal? | Sync `plate-plan` with Slate v2 methodology for Plate v2 API/boundary planning. |
+| What is the goal? | Sync `plate-plan` with Plite methodology for Plate v2 API/boundary planning. |
 | What have I learned? | The old skill was too behavior-law-specific and lacked the Plate v2 conflict-planning machinery. |
 | What have I done? | Rewrote source rule, added template, updated routing, regenerated and audited mirror. |
 

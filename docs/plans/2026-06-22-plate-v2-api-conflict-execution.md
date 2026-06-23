@@ -18,18 +18,18 @@ Applied packs:
 Automation source:
 - type: accepted Plate Plan execution through `auto`
 - prompt / link: `go [$auto] that plan. feel free to update the initial plan if required to achieve best typing, especially plugin typing; do not regress type inference.`
-- lane: Plate lane with shared Slate substrate typing gate
-- surface / route / package: `packages/core`, `packages/plate`, Slate extension typing only if needed, then feature packages package-by-package
+- lane: Plate lane with shared Plite substrate typing gate
+- surface / route / package: `packages/core`, `packages/plate`, Plite extension typing only if needed, then feature packages package-by-package
 - invocation mode: full-loop
 - minimum runtime / deadline: N/A: no duration requested
-- completion threshold summary: execute the accepted plan until the core API boundary is green, package/type/test gates pass for touched owners, or a proven Slate/Plate plan owner remains.
+- completion threshold summary: execute the accepted plan until the core API boundary is green, package/type/test gates pass for touched owners, or a proven Plite/Plate plan owner remains.
 
 First checkpoint:
 - Explicit prompt requirements copied before implementation:
   - run `auto` on `docs/plans/2026-06-22-plate-v2-api-conflict-plan.md`;
   - execute, not just plan;
   - update the accepted plan when evidence shows that is required for best typing;
-  - Slate package changes are allowed only when Plate implementation proves extension typing/runtime slots are too limited;
+  - Plite package changes are allowed only when Plate implementation proves extension typing/runtime slots are too limited;
   - protect plugin typing and type inference; do not replace typed surfaces with `any`;
   - implement package-by-package with focused proof;
   - no public compatibility aliases or runtime shims;
@@ -48,7 +48,7 @@ Completion threshold:
 - Core public API/runtime conflict packet is implemented or explicitly routed.
 - Touched packages pass focused typecheck/test/build gates.
 - Public declaration/source audits show no public legacy `tf`, `transforms`, `getTransforms`, `getPluginApi`, or `@platejs/slate-legacy` exposure for the touched boundary, unless a private bridge row owns it with deletion gate.
-- Plate plugins install feature APIs through Slate-native `api/state/tx` extension slots, or the accepted plan is updated with evidence that Slate substrate typing needs a patch.
+- Plate plugins install feature APIs through Plite-native `api/state/tx` extension slots, or the accepted plan is updated with evidence that Plite substrate typing needs a patch.
 - Plugin type inference is preserved by focused type contracts or package typecheck.
 - No public compat aliases or shims are introduced.
 - Docs/examples are updated only after the API target lands or explicitly deferred with owner.
@@ -65,31 +65,31 @@ Verification surface:
 - `pnpm --filter www check:docs` only when docs content changes
 - browser proof only when product-visible runtime behavior changes, not for pure type/API surgery
 - final `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-22-plate-v2-api-conflict-execution.md`
-- Slate package proof uses `pnpm slate:test` and `pnpm slate:typecheck`.
-- Slate daily proof uses `pnpm check:slate`.
-- Slate focused browser proof uses `pnpm --filter slate test:slate-browser:chromium <file-or--grep>`.
-- `apps/slate` reuses `apps/www` Slate examples; never maintain a second example source tree.
-- Slate release/deletion proof adds explicit closure gates such as package
+- Plite package proof uses `pnpm plite:test` and `pnpm plite:typecheck`.
+- Plite daily proof uses `pnpm check:plite`.
+- Plite focused browser proof uses `pnpm --filter plite test:plite-browser:chromium <file-or--grep>`.
+- `apps/plite` reuses `apps/www` Plite examples; never maintain a second example source tree.
+- Plite release/deletion proof adds explicit closure gates such as package
   build, docs checks, benchmark target audit, and
-  `pnpm check:slate:browser-matrix` when those claims are in scope.
+  `pnpm check:plite:browser-matrix` when those claims are in scope.
 
 Constraints:
-- Resolve lane first: Slate, Plate, or shared editor. Use `autoclosure` for post-merge/current-tree until-clean closure.
+- Resolve lane first: Plite, Plate, or shared editor. Use `autoclosure` for post-merge/current-tree until-clean closure.
 - Release, PR, and publish work are in scope only when the prompt explicitly asks for them or the active lane requires them.
-- Slate-lane proof runs from the Plate repo root against transplanted Slate packages and routes. Do not use donor-checkout proof.
-- Plate-lane proof runs in the owning Plate package, app, or docs route. Slate runtime proof does not prove Plate docs, registry, plugin, or package DX.
+- Plite-lane proof runs from the Plate repo root against transplanted Plite packages and routes. Do not use donor-checkout proof.
+- Plate-lane proof runs in the owning Plate package, app, or docs route. Plite runtime proof does not prove Plate docs, registry, plugin, or package DX.
 - Behavior proof beats perf. Native/visual proof beats model-only selection.
 - No hidden debounce or fake stress fixture wins.
-- No broad pagination/virtualization architecture unless the prompt or a stopping checkpoint routes to `slate-plan`.
-- Do not patch Plate when the run is scoped to Slate. Do not patch Slate runtime when the run is scoped to Plate docs/product unless a shared-editor owner row names that boundary.
+- No broad pagination/virtualization architecture unless the prompt or a stopping checkpoint routes to `plite-plan`.
+- Do not patch Plate when the run is scoped to Plite. Do not patch Plite runtime when the run is scoped to Plate docs/product unless a shared-editor owner row names that boundary.
 - Use root `VISION.md` and relevant `docs/vision/*.md` for durable taste.
 - Do not create compatibility aliases or runtime shims unless the checkpoint explicitly requires them.
 
 Boundaries:
 - Source of truth: latest user request, root `VISION.md`, `docs/vision/common.md`, `docs/vision/plate.md`, accepted plan `docs/plans/2026-06-22-plate-v2-api-conflict-plan.md`, and live source.
-- Allowed edit scope: `packages/core/**`, `packages/plate/**`, required feature packages one at a time, `packages/slate/**` only for proven extension typing/runtime gaps, docs only after API target lands, this execution plan.
+- Allowed edit scope: `packages/core/**`, `packages/plate/**`, required feature packages one at a time, `packages/plite/**` only for proven extension typing/runtime gaps, docs only after API target lands, this execution plan.
 - Browser surfaces: N/A until a product-visible behavior route changes.
-- Package/API surfaces: `@platejs/core`, `platejs`, Slate extension APIs, feature package plugin APIs.
+- Package/API surfaces: `@platejs/core`, `platejs`, Plite extension APIs, feature package plugin APIs.
 - Agent/skill surfaces: N/A unless workflow miss appears.
 - Docs/research surfaces: accepted plan may be updated when evidence changes; public docs deferred until API surface lands.
 - Non-goals: release/publish/PR, broad Plate v2 design beyond this accepted plan, pagination, mobile/raw-device proof, public compatibility aliases, public shims.
@@ -126,7 +126,7 @@ Current verdict:
 - confidence: 0.9 after focused package proof
 - next owner: auto Plate lane, facade-correction checkpoint
 - keep / revert / quarantine call: keep core typing, revert consumer import churn
-- reason: Slate-v2 runtime now infers installed Plate plugin `api` through `editor.api` and tx groups through `editor.update`; Plate feature packages should keep using the `platejs` product facade unless they intentionally need a low-level substrate owner.
+- reason: Plite-v2 runtime now infers installed Plate plugin `api` through `editor.api` and tx groups through `editor.update`; Plate feature packages should keep using the `platejs` product facade unless they intentionally need a low-level substrate owner.
 
 Completion rule:
 - Do not call `update_goal(status: complete)` while any required checklist item remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
@@ -150,8 +150,8 @@ Checkpoint supervisor:
 | supervision-mode | auto | N/A | P0 when timed runtime remains | No timed runtime was requested. | no-change |
 | consolidation | auto | complete | P1 | Move accepted reusable decisions to durable docs/rules. | Accepted plan corrected: `platejs` remains the Plate product facade; conflicts are fixed in the facade/API, not by broad consumer import churn. | update |
 | final-handoff | auto | complete | P0 | Emit changed list, review attention, queued checkpoints, commands, residual risks. | Handoff ledgers filled for this checkpoint. | update |
-| core-api-packet | auto / packages/core | complete | P0 | Remove public legacy API conflict while preserving Slate extension inference. | Core runtime typecheck/test/build passed; runtime declaration no longer exposes `getPluginApi/getTransforms` on `PlateRuntimeEditor`. | keep |
-| slate-extension-typing-gate | auto / packages/slate | N/A | P0 if core typing fails | Core typing passed without Slate substrate changes. | no-change |
+| core-api-packet | auto / packages/core | complete | P0 | Remove public legacy API conflict while preserving Plite extension inference. | Core runtime typecheck/test/build passed; runtime declaration no longer exposes `getPluginApi/getTransforms` on `PlateRuntimeEditor`. | keep |
+| slate-extension-typing-gate | auto / packages/plite | N/A | P0 if core typing fails | Core typing passed without Plite substrate changes. | no-change |
 | package-entrypoint-packet | auto / packages/plate | deferred | P1 | Curate `platejs` facade exports after core API conflict rows are stable. | Do not force feature packages around the facade; fix the facade itself. | update |
 | consumer-import-migration | auto / feature packages | reverted | P1 | Broad direct-owner import migration is not the right default for Plate feature packages. | `@platejs/autoformat` and `@platejs/juice` restored to `platejs` imports. | revert |
 | facade-correction | auto / packages/plate | complete | P0 | Keep the Plate product facade as the internal feature-package import surface. | `packages/plate/src/index.tsx` already exports core/slate/utils; package consumers restored to `platejs`. | keep |
@@ -162,7 +162,7 @@ Checkpoint mutation ledger:
 | 0 | seed | initial template rows | plan creation | starter topology only | complete |
 | 0 | update | status, gap-scan | accepted plan + latest prompt | execute API conflict plan, not generic editor behavior soak | complete |
 | 0 | add | core-api-packet, slate-extension-typing-gate, package-entrypoint-packet | accepted plan phases 1-2 | implementation starts at core public boundary | complete |
-| 1 | update | core-api-packet | core source audit | `tf/transforms/getTransforms/getPluginApi` are still used by private runtime bridge and legacy package internals; the first clean cut is the Slate-v2 public route plus tests proving `api/tx` inference, not a fake repo-wide deletion. | complete |
+| 1 | update | core-api-packet | core source audit | `tf/transforms/getTransforms/getPluginApi` are still used by private runtime bridge and legacy package internals; the first clean cut is the Plite-v2 public route plus tests proving `api/tx` inference, not a fake repo-wide deletion. | complete |
 | 1 | add | consumer-import-migration | `rg` over `platejs` imports | Initial thought was to migrate feature packages away from `platejs`; this was too strict. | reverted |
 | 2 | add | facade-correction | user challenge + `packages/plate/src/index.tsx` audit | `platejs` is the Plate product facade. Feature packages should keep the product import and the facade should be curated instead. | complete |
 
@@ -183,7 +183,7 @@ Start Gates:
 | `auto` source rule read or fallback recorded | yes | Read `.agents/skills/auto/SKILL.md`. |
 | `vision` read as checkpoint zero | yes | Read `.agents/skills/vision/SKILL.md`, root `VISION.md`, `docs/vision/common.md`, and `docs/vision/plate.md`. |
 | Active goal checked or created | yes | `get_goal` returned none; created this execution goal. |
-| Lane resolved | yes | Plate lane with shared Slate extension typing gate. |
+| Lane resolved | yes | Plate lane with shared Plite extension typing gate. |
 | Invocation mode and timebox recorded | yes | Full-loop; no duration requested. |
 | Dynamic checkpoint policy accepted | yes | Checkpoint supervisor rows updated before implementation. |
 | Source of truth and allowed workspaces recorded | yes | Boundaries section names plan, vision, and package scopes. |
@@ -198,7 +198,7 @@ Work Checklist:
 - [x] First checkpoint complete: every explicit prompt requirement, scope boundary, timing constraint, stop condition, deliverable, final handoff section, verification surface, and success criterion is copied into this plan as checkable checkpoints before implementation.
 - [x] Short objective, completion threshold, verification surface, constraints, boundaries, and blocked condition are concrete.
 - [x] Invocation mode, minimum runtime/deadline, stop-question policy, remaining backlog ladder, and supervision-mode fallback are recorded.
-- [x] Lane is resolved as Slate, Plate, or shared editor, with owning workspace/package/app proof named.
+- [x] Lane is resolved as Plite, Plate, or shared editor, with owning workspace/package/app proof named.
 - [x] Checkpoint supervisor table has been reconciled at least once after the initial seed.
 - [x] Post-merge/current-tree closure is routed to `autoclosure` when in scope, or marked N/A with reason.
 - [x] Each loop ends with a checkpoint mutation decision: add, update, split, merge, retire, remove, reopen, reprioritize, or no-change with reason.
@@ -263,7 +263,7 @@ Phase / pass table:
 Scenario matrix:
 | Surface | Topology | Viewport / strategy | Gesture | Assertion family | Status |
 |---------|----------|---------------------|---------|------------------|--------|
-| Plate runtime API typing | `createPlateRuntimeEditor` / `createPlateEditor({ runtime: 'slate-v2' })` | package type/test/build | N/A | inferred `editor.api.*` and `editor.update(tx => tx.*)` | complete |
+| Plate runtime API typing | `createPlateRuntimeEditor` / `createPlateEditor({ runtime: 'plite' })` | package type/test/build | N/A | inferred `editor.api.*` and `editor.update(tx => tx.*)` | complete |
 | Plate feature package imports | `@platejs/autoformat`, `@platejs/juice` | package type/test/build | N/A | use `platejs` product facade; no direct-owner churn unless package is intentionally low-level | complete |
 
 Packet ledger:
@@ -328,7 +328,7 @@ Stopping checkpoints to unblock:
 | next-facade-curation | soft checkpoint | Curate `platejs` exports after core API conflict rows are stable. | Keeps public Plate DX simple while still removing legacy/conflicting API. | Bypassing the facade for ordinary feature packages. | Package-by-package API migration can continue through the facade. | Keep feature packages on `platejs`; direct-import owners only in substrate/low-level code. | `docs/plans/2026-06-22-plate-v2-api-conflict-execution.md` |
 
 Findings:
-- Runtime plugin API inference was missing from `PlateRuntimeEditor`; adding `InferPlateRuntimePluginApi` preserves plugin typing without changing Slate substrate.
+- Runtime plugin API inference was missing from `PlateRuntimeEditor`; adding `InferPlateRuntimePluginApi` preserves plugin typing without changing Plite substrate.
 - `platejs` is the Plate product facade; feature packages should not bypass it by default.
 
 Decisions and tradeoffs:
@@ -378,7 +378,7 @@ Reboot status:
 | Where am I? | End of loop 2, facade-correction checkpoint. |
 | Where am I going? | Continue package-by-package API migration through the `platejs` product facade, then curate facade exports. |
 | What is the goal? | Execute the Plate v2 API conflict plan without regressing plugin inference. |
-| What have I learned? | Runtime API/tx inference can be fixed in core without Slate substrate changes; `platejs` should stay the Plate product facade and conflicts should be fixed there. |
+| What have I learned? | Runtime API/tx inference can be fixed in core without Plite substrate changes; `platejs` should stay the Plate product facade and conflicts should be fixed there. |
 | What have I done? | Patched core runtime typing/tests and restored `autoformat` plus `juice` to the `platejs` facade. |
 | What changed in the checkpoint plan? | Reverted consumer-import migration as the default and added facade-correction. |
 
@@ -389,7 +389,7 @@ Timeline:
 
 Open risks:
 - Legacy `PlateEditor/TPlateEditor` still expose old helper surfaces until feature package migration completes.
-- `packages/plate` still exports Slate substrate because internal consumers are not fully migrated yet.
+- `packages/plate` still exports Plite substrate because internal consumers are not fully migrated yet.
 - Autoreview was deferred; run it before commit.
 
 Open risks:
