@@ -1,6 +1,4 @@
-import type { PlateEditor } from 'platejs/react';
-
-import { type SerializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
+import type { SerializeMdOptions } from '@platejs/markdown';
 import {
   type Descendant,
   ElementApi,
@@ -9,6 +7,7 @@ import {
   TextApi,
 } from 'platejs';
 
+import type { AIChatPlateEditor } from '../internal/editorTypes';
 import {
   getChunkTrimmed,
   isCompleteCodeBlock,
@@ -20,10 +19,10 @@ const STREAM_LINE_BREAK_PLACEHOLDER = '\uE000platejs-stream-line-break\uE000';
 // fixes test: should serialize heading with tailing line break
 // fixes test: incomplete line breaks
 const trimEndHeading = (
-  editor: PlateEditor,
+  editor: AIChatPlateEditor,
   value: Descendant[]
 ): { trimmedText: string; value: Descendant[] } => {
-  const headingKeys = new Set([
+  const headingKeys = new Set<string>([
     KEYS.h1,
     KEYS.h2,
     KEYS.h3,
@@ -36,7 +35,7 @@ const trimEndHeading = (
   if (
     lastBlock &&
     headingKeys.has(
-      (getPluginKey(editor, lastBlock.type as string) ?? lastBlock.type) as any
+      String(getPluginKey(editor, lastBlock.type as string) ?? lastBlock.type)
     ) &&
     ElementApi.isElement(lastBlock)
   ) {
@@ -105,7 +104,7 @@ const escapeEmbeddedTextLineBreaks = (
 };
 
 export const streamSerializeMd = (
-  editor: PlateEditor,
+  editor: AIChatPlateEditor,
   options: SerializeMdOptions,
   chunk: string
 ) => {
@@ -118,7 +117,7 @@ export const streamSerializeMd = (
 
   let result = '';
 
-  result = editor.getApi(MarkdownPlugin).markdown.serialize({
+  result = editor.api.markdown.serialize({
     value,
     ...restOptions,
   });

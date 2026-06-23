@@ -141,14 +141,16 @@ export const aiChatPlugin = AIChatPlugin.extend({
           const { startBlock, startInEmptyParagraph } =
             getInsertPreviewStart(editor);
 
-          editor.getTransforms(BaseAIPlugin).ai.beginPreview({
-            originalBlocks:
-              startInEmptyParagraph &&
-              startBlock &&
-              ElementApi.isElement(startBlock)
-                ? [cloneDeep(startBlock)]
-                : [],
-          });
+          editor.update((tx) =>
+            tx.ai.beginPreview({
+              originalBlocks:
+                startInEmptyParagraph &&
+                startBlock &&
+                ElementApi.isElement(startBlock)
+                  ? [cloneDeep(startBlock)]
+                  : [],
+            })
+          );
 
           editor.setOption(AIChatPlugin, 'streaming', true);
 
@@ -303,7 +305,7 @@ Now you can submit prompts programmatically:
 ```tsx
 import { AIChatPlugin } from '@platejs/ai/react';
 
-editor.getApi(AIChatPlugin).aiChat.submit('', {
+editor.getPluginApi(AIChatPlugin).aiChat.submit('', {
   prompt: {
     default: 'Continue the document after {block}',
     selecting: 'Rewrite {selection} with a clearer tone',
@@ -324,7 +326,7 @@ editor.getApi(AIChatPlugin).aiChat.submit('', {
 ```tsx
 import { replacePlaceholders } from '@platejs/ai';
 
-editor.getApi(AIChatPlugin).aiChat.submit('Improve tone', {
+editor.getPluginApi(AIChatPlugin).aiChat.submit('Improve tone', {
   prompt: ({ isSelecting }) =>
     isSelecting
       ? replacePlaceholders(editor, 'Rewrite {blockSelection} using a friendly tone.')
@@ -406,7 +408,7 @@ Main plugin that powers the AI menu, chat state, and transforms.
     <APIItem name="triggerQuery" type="(editor: SlateEditor) => boolean" optional>Return `false` to cancel opening in specific contexts.</APIItem>
     <APIItem name="chat" type="UseChatHelpers&lt;ChatMessage&gt;" optional>Store helpers from `useChat` so API calls can access them.</APIItem>
     <APIItem name="chatNodes" type="TIdElement[]" optional>Snapshot of nodes used to diff edit suggestions (managed internally).</APIItem>
-    <APIItem name="chatSelection" type="TRange | null" optional>Selection captured before submitting a prompt (managed internally).</APIItem>
+    <APIItem name="chatSelection" type="Range | null" optional>Selection captured before submitting a prompt (managed internally).</APIItem>
     <APIItem name="mode" type="'chat' | 'insert'">Controls whether responses stream directly into the document or open a review panel. Defaults to `'insert'`.</APIItem>
     <APIItem name="open" type="boolean" optional>Whether the AI menu is visible. Defaults to `false`.</APIItem>
     <APIItem name="streaming" type="boolean" optional>True while a response is streaming. Defaults to `false`.</APIItem>
@@ -447,7 +449,7 @@ Retrieves the first AI node that matches the specified criteria.
 
 <API name="node">
 <APIParameters>
-  <APIItem name="options" type="EditorNodesOptions &amp; { anchor?: boolean; streaming?: boolean }" optional>Set `anchor: true` to get the anchor node or `streaming: true` to retrieve the node currently being streamed into.</APIItem>
+  <APIItem name="options" type="object &amp; { anchor?: boolean; streaming?: boolean }" optional>Set `anchor: true` to get the anchor node or `streaming: true` to retrieve the node currently being streamed into.</APIItem>
 </APIParameters>
 <APIReturns type="NodeEntry | undefined">Matching node entry, if found.</APIReturns>
 </API>
@@ -506,7 +508,7 @@ Removes the temporary anchor node used to position the AI menu.
 
 <API name="removeAnchor">
 <APIParameters>
-  <APIItem name="options" type="EditorNodesOptions" optional>Filters the nodes to remove.</APIItem>
+  <APIItem name="options" type="object" optional>Filters the nodes to remove.</APIItem>
 </APIParameters>
 </API>
 
@@ -614,7 +616,7 @@ Streams chat responses chunk-by-chunk and gives you full control over insertion.
 
 <API name="useChatChunk">
 <APIParameters>
-  <APIItem name="onChunk" type="(chunk: { chunk: string; isFirst: boolean; nodes: TText[]; text: string }) => void">Handle each streamed chunk.</APIItem>
+  <APIItem name="onChunk" type="(chunk: { chunk: string; isFirst: boolean; nodes: Text[]; text: string }) => void">Handle each streamed chunk.</APIItem>
   <APIItem name="onFinish" type="({ content }: { content: string }) => void" optional>Called when streaming finishes.</APIItem>
 </APIParameters>
 </API>
@@ -665,7 +667,7 @@ Fuzzy-search helper that uses LCS to find the closest match inside a block.
 
 <API name="findTextRangeInBlock">
 <APIParameters>
-  <APIItem name="node" type="TNode">Block node to search.</APIItem>
+  <APIItem name="node" type="Node">Block node to search.</APIItem>
   <APIItem name="searchText" type="string">Text snippet to locate.</APIItem>
 </APIParameters>
 <APIReturns type="{ start: { path: Path; offset: number }; end: { path: Path; offset: number } } | null">Matched range or `null`.</APIReturns>
@@ -712,7 +714,7 @@ summarizeInBullets: {
   label: 'Summarize in bullets',
   value: 'summarizeInBullets',
   onSelect: ({ editor }) => {
-    void editor.getApi(AIChatPlugin).aiChat.submit('', {
+    void editor.getPluginApi(AIChatPlugin).aiChat.submit('', {
       prompt: 'Summarize the current selection using bullet points',
       toolName: 'generate',
     });
@@ -737,7 +739,7 @@ generateTOC: {
         ? 'Create a realistic table of contents for this document'
         : 'Generate a table of contents that reflects the existing headings';
 
-    void editor.getApi(AIChatPlugin).aiChat.submit('', {
+    void editor.getPluginApi(AIChatPlugin).aiChat.submit('', {
       mode: 'insert',
       prompt,
       toolName: 'generate',

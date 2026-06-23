@@ -1,5 +1,7 @@
 import { createSlateEditor, KEYS } from 'platejs';
 
+import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
+import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
 import { BaseAudioPlugin } from './BaseAudioPlugin';
 import { BaseFilePlugin } from './BaseFilePlugin';
 import { BaseVideoPlugin } from './BaseVideoPlugin';
@@ -48,13 +50,12 @@ describe('Base media plugin contracts', () => {
     ['img', BaseImagePlugin, KEYS.img],
     ['media_embed', BaseMediaEmbedPlugin, KEYS.mediaEmbed],
   ])('deleteBackward from the next block selects the %s node instead of deleting through it', (_label, plugin, type) => {
-    const editor = createSlateEditor({
-      plugins: [plugin],
-      selection: {
+    const editor = createPlateRuntimeEditor({
+      initialSelection: {
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ text: '' }],
           type,
@@ -67,9 +68,10 @@ describe('Base media plugin contracts', () => {
           type: KEYS.p,
         },
       ],
+      plugins: [plugin],
     } as any);
 
-    editor.tf.deleteBackward('character');
+    getCurrentRuntimeTransforms(editor).deleteBackward('character');
 
     expect(editor.children).toHaveLength(2);
     expect(editor.selection).toEqual({

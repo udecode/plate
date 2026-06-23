@@ -48,12 +48,9 @@ describe('useBlockSelectable', () => {
       const editor = {
         api: {
           above: () => [{ id: 'a', type: 'p' }, [0]],
-          findPath: () => [0],
+          blockSelection: { add: mock() },
           isVoid: () => false,
         },
-        getPluginApi: () => ({
-          blockSelection: { add: mock() },
-        }),
         getOption: () => false,
         getOptions: () => ({
           enableContextMenu: true,
@@ -70,6 +67,7 @@ describe('useBlockSelectable', () => {
           stopPropagation,
           target: { dataset: {} },
         } as any,
+        path: [0],
       });
 
       expect(stopPropagation).toHaveBeenCalled();
@@ -80,12 +78,9 @@ describe('useBlockSelectable', () => {
       const editor = {
         api: {
           above: () => {},
-          findPath: () => [0],
+          blockSelection: { add },
           isVoid: () => false,
         },
-        getPluginApi: () => ({
-          blockSelection: { add },
-        }),
         getOptions: () => ({
           enableContextMenu: true,
           selectedIds: new Set<string>(),
@@ -108,12 +103,9 @@ describe('useBlockSelectable', () => {
       const editor = {
         api: {
           above: () => {},
-          findPath: () => [0],
+          blockSelection: { add: mock() },
           isVoid: () => false,
         },
-        getPluginApi: () => ({
-          blockSelection: { add: mock() },
-        }),
         getOptions: () => ({
           enableContextMenu: true,
           selectedIds: new Set(['b']),
@@ -139,12 +131,12 @@ describe('useBlockSelectable', () => {
   describe('useBlockSelectable', () => {
     it('returns selectable props when the block is selectable', async () => {
       const editor = {
-        getPluginApi: () => ({
+        api: {
           blockSelection: {
             add: mock(),
             isSelectable: () => true,
           },
-        }),
+        },
         getOptions: () => ({
           enableContextMenu: true,
           selectedIds: new Set<string>(),

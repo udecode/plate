@@ -5,5 +5,6 @@
 export * from './init';
 export * from './insertExitBreak';
 export * from './liftBlock';
+export * from './matchOptions';
 export * from './resetBlock';
 export * from './setValue';

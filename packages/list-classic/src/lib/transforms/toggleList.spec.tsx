@@ -2,8 +2,9 @@
 
 import { BaseImagePlugin } from '@platejs/media';
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, createSlateEditor } from '@platejs/core';
+import type { SlateEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
+import { createListClassicTestEditor as createSlateEditor } from '../__tests__/createListClassicTestEditor';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import { toggleList, toggleTaskList } from './toggleList';

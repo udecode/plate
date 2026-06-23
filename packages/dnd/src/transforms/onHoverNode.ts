@@ -1,7 +1,8 @@
+import type { Element } from '@platejs/slate';
+
+import { PathApi } from '@platejs/slate';
 import type { PlateEditor } from 'platejs/react';
 import type { DropTargetMonitor } from 'react-dnd';
-
-import { NodeApi, PathApi } from 'platejs';
 
 import type { UseDropNodeOptions } from '../hooks/useDropNode';
 import type { DragItemNode } from '../types';
@@ -62,13 +63,20 @@ export const onHoverNode = (
     }
 
     if (newDropTarget.line === 'top') {
-      const previousPath = PathApi.previous(editor.api.findPath(element)!);
+      const elementPath = editor.api.node<Element>({
+        at: [],
+        id: element.id as string,
+      })?.[1];
+      const previousPath =
+        elementPath && PathApi.hasPrevious(elementPath)
+          ? PathApi.previous(elementPath)
+          : undefined;
 
       if (!previousPath) {
         return editor.setOption(DndPlugin, 'dropTarget', newDropTarget);
       }
 
-      const nextNode = NodeApi.get(editor, previousPath!);
+      const nextNode = editor.api.node<Element>(previousPath)?.[0];
 
       editor.setOption(DndPlugin, 'dropTarget', {
         id: nextNode?.id as string,
@@ -81,7 +89,9 @@ export const onHoverNode = (
     editor.setOption(DndPlugin, 'dropTarget', newDropTarget);
   }
   if (direction && editor.api.isExpanded()) {
-    editor.tf.focus();
-    editor.tf.collapse();
+    editor.update((tx) => {
+      tx.selection.collapse();
+    });
+    editor.api.dom.focus();
   }
 };

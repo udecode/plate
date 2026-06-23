@@ -29,7 +29,7 @@ and cursor color, then initializes Yjs after mount.
 | Connection controls | Registry example | The status bar reads `_providers` and `_isConnected`, then calls `connect` or `disconnect`. |
 
 Set `skipInitialization: true` on the editor. Yjs owns the initial document
-load, and `editor.getApi(YjsPlugin).yjs.init()` seeds the value only when the
+load, and `editor.getPluginApi(YjsPlugin).yjs.init()` seeds the value only when the
 shared document is empty.
 
 ## Remote Cursors

@@ -179,14 +179,18 @@ describe('createSlatePlugin', () => {
         .extendTx(() => () => ({
           replace: (text: string) => text.length,
         }))
-        .extendTransforms(({ editor, plugin }) => ({
-          replace: (text: string) =>
+        .extend(({ editor, plugin }) => {
+          const replace = (text: string) =>
             editor.update((tx) => {
               const length = tx[plugin.key].replace(text);
 
               return length satisfies number;
-            }),
-        }));
+            });
+
+          replace('ok');
+
+          return {};
+        });
 
       expect(1).toBe(1);
     });
@@ -196,8 +200,8 @@ describe('createSlatePlugin', () => {
         .extendTxGroup('foreignTx', () => () => ({
           replace: (text: string) => text.length,
         }))
-        .extendTransforms(({ editor }) => ({
-          replace: (text: string) => {
+        .extend(({ editor }) => {
+          const replace = (text: string) => {
             // @ts-expect-error extendTxGroup does not add the plugin-owned group
             type _MissingPluginGroup = Parameters<
               Parameters<typeof editor.update>[0]
@@ -208,8 +212,12 @@ describe('createSlatePlugin', () => {
 
               return length satisfies number;
             });
-          },
-        }));
+          };
+
+          replace('ok');
+
+          return {};
+        });
 
       expect(1).toBe(1);
     });
@@ -293,7 +301,7 @@ describe('createSlatePlugin', () => {
       expect(parsedNode).toEqual({ type: 'custom-td' });
     });
 
-    it('reads configured types inside transform extensions', () => {
+    it('reads configured types inside tx extensions', () => {
       let observedType = 'defaultType';
 
       const configuredPlugin = createSlatePlugin({
@@ -303,8 +311,8 @@ describe('createSlatePlugin', () => {
         .configure({
           node: { type: 'customType' },
         })
-        .extendEditorTransforms(({ plugin }) => ({
-          insertText: () => {
+        .extendTx(({ plugin }) => () => ({
+          observeType: () => {
             observedType = plugin.node.type;
           },
         }));
@@ -313,7 +321,7 @@ describe('createSlatePlugin', () => {
         plugins: [configuredPlugin],
       });
 
-      editor.tf.insertText('');
+      editor.update((tx) => tx.testPlugin.observeType());
 
       expect(observedType).toBe('customType');
     });

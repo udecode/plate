@@ -17,8 +17,8 @@ Unique identifier used by Plate to store the plugins by key in `editor.plugins`.
 An object of API functions provided by the plugin. These functions are accessible via `editor.api[key]`.
 </APIItem>
 
-<APIItem name="transforms" type="Record<string, Function>">
-Transform functions provided by the plugin that modify the editor state. These are accessible via `editor.tf[key]`.
+<APIItem name="tx" type="Record<string, Function>">
+Transaction commands provided by the plugin. Call them inside `editor.update((tx) => tx[key].method())`.
 </APIItem>
 
 <APIItem name="options" type="Record<string, any>">
@@ -444,8 +444,8 @@ Creates a new plugin instance with overridden editor methods. Provides access to
 
 ```ts
 overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
-  transforms: {
-    // Override transforms
+  tf: {
+    // Override existing editor transform methods
     deleteForward(options) {
       deleteForward(options);
     },
@@ -461,7 +461,7 @@ overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
 
 - Preferred method for modifying editor behavior
 - Type-safe access to original methods
-- Clean separation between transforms and API
+- Clean separation between `tf` overrides and API overrides
 - Can be chained multiple times
 </APIItem>
 
@@ -481,19 +481,19 @@ Extends the editor's API with plugin-specific methods.
 ```
 </APIItem>
 
-<APIItem name="extendTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
-Extends the plugin's transforms.
+<APIItem name="extendTx" type="(tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin">
+Extends the plugin's transaction group. The group is available inside `editor.update` at `tx[plugin.key]`.
 
 ```ts
-(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+(tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin
 ```
 </APIItem>
 
-<APIItem name="extendEditorTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
-Extends the editor's transforms with plugin-specific methods.
+<APIItem name="extendTxGroup" type="(key: string, tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin">
+Extends a named transaction group. Use this when one plugin contributes commands to another plugin's tx namespace.
 
 ```ts
-(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+(key: string, tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin
 ```
 </APIItem>
 

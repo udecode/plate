@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
 import type { SlateEditor } from '@platejs/core';
+import { createListClassicTestEditor as createSlateEditor } from '../__tests__/createListClassicTestEditor';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from '@platejs/core';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 import { unwrapList } from './unwrapList';
@@ -195,6 +195,7 @@ describe('li list unwrapping', () => {
 
       return [{ children: [], type: 'ul' } as any, [0]];
     });
+    const unwrapNodes = mock();
 
     editor = {
       api: {
@@ -206,15 +207,16 @@ describe('li list unwrapping', () => {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 1] },
       },
-      tf: {
-        withoutNormalizing: (fn: () => void) => fn(),
-        unwrapNodes: mock(),
-      },
+      update: (fn: any) =>
+        fn({
+          nodes: { unwrap: unwrapNodes },
+          withoutNormalizing: (callback: () => void) => callback(),
+        }),
     } as any;
 
     unwrapList(editor);
 
     expect(node).toHaveBeenCalledWith([0]);
-    expect(editor.tf.unwrapNodes).toHaveBeenCalledTimes(4);
+    expect(unwrapNodes).toHaveBeenCalledTimes(4);
   });
 });

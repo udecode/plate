@@ -109,15 +109,17 @@ export default function MarkdownDemo() {
     {
       plugins: EditorKit,
       value: (editor) =>
-        editor.getPluginApi(MarkdownPlugin).markdown.deserialize(initialMarkdown, {
-          remarkPlugins: [
-            remarkMath,
-            remarkGfm,
-            remarkMdx,
-            remarkMention,
-            remarkEmoji as any,
-          ],
-        }),
+        editor
+          .getPluginApi(MarkdownPlugin)
+          .markdown.deserialize(initialMarkdown, {
+            remarkPlugins: [
+              remarkMath,
+              remarkGfm,
+              remarkMdx,
+              remarkMention,
+              remarkEmoji as any,
+            ],
+          }),
     },
     []
   );

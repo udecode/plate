@@ -1,26 +1,40 @@
-import {
-  type TriggerComboboxPluginOptions,
-  withTriggerCombobox,
-} from '@platejs/combobox';
+import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
+import type { EditorUpdateTransaction } from '@platejs/slate';
 import {
   type PluginConfig,
+  type SlatePlugin,
   type TMentionElement,
   createSlatePlugin,
   createTSlatePlugin,
   KEYS,
 } from 'platejs';
 
+export type MentionInsertOptions = {
+  key?: number | string;
+  search?: string;
+  trailingText?: string;
+  value: string;
+};
+
+type MentionElement = TMentionElement & {
+  key?: number | string;
+};
+
+type MentionTx = {
+  mention: {
+    insert: (options: MentionInsertOptions) => void;
+  };
+};
+
 export type MentionConfig = PluginConfig<
-  'mention',
+  typeof KEYS.mention,
   {
     insertSpaceAfterMention?: boolean;
   } & TriggerComboboxPluginOptions,
   {},
-  {
-    insert: {
-      mention: (options: { search: string; value: any; key?: any }) => void;
-    };
-  }
+  {},
+  {},
+  MentionTx
 >;
 
 export const BaseMentionInputPlugin = createSlatePlugin({
@@ -28,36 +42,47 @@ export const BaseMentionInputPlugin = createSlatePlugin({
   node: { isElement: true, isInline: true, isVoid: true },
 });
 
+const createMentionNode = (
+  type: string,
+  { key, value }: MentionInsertOptions
+): MentionElement => ({
+  key,
+  children: [{ text: '' }],
+  type,
+  value,
+});
+
 /** Enables support for autocompleting @mentions. */
-export const BaseMentionPlugin = createTSlatePlugin<MentionConfig>({
-  key: KEYS.mention,
-  node: {
-    isElement: true,
-    isInline: true,
-    isMarkableVoid: true,
-    isVoid: true,
-  },
-  options: {
-    trigger: '@',
-    triggerPreviousCharPattern: /^\s?$/,
-    createComboboxInput: (trigger) => ({
-      children: [{ text: '' }],
-      trigger,
-      type: KEYS.mentionInput,
-    }),
-  },
-  plugins: [BaseMentionInputPlugin],
-})
-  .extendEditorTransforms<MentionConfig['transforms']>(({ editor, type }) => ({
-    insert: {
-      mention: ({ key, value }: { key?: any; value: any }) => {
-        editor.tf.insertNodes<TMentionElement>({
-          key,
-          children: [{ text: '' }],
-          type,
-          value,
-        });
-      },
+const BaseMentionPluginBase: SlatePlugin<MentionConfig> =
+  createTSlatePlugin<MentionConfig>({
+    key: KEYS.mention,
+    node: {
+      isElement: true,
+      isInline: true,
+      isMarkableVoid: true,
+      isVoid: true,
     },
-  }))
-  .overrideEditor(withTriggerCombobox as any);
+    options: {
+      trigger: '@',
+      triggerPreviousCharPattern: /^\s?$/,
+      createComboboxInput: (trigger) => ({
+        children: [{ text: '' }],
+        trigger,
+        type: KEYS.mentionInput,
+      }),
+    },
+    plugins: [BaseMentionInputPlugin],
+  }).extendTx(({ type }) => (tx: EditorUpdateTransaction) => ({
+    insert: ({ trailingText = '', ...options }: MentionInsertOptions) => {
+      tx.nodes.insert([
+        createMentionNode(type, options),
+        { text: trailingText },
+      ]);
+    },
+  }));
+
+export const BaseMentionPlugin: SlatePlugin<MentionConfig> & {
+  runtimeTriggerCombobox: boolean;
+} = Object.assign(BaseMentionPluginBase, {
+  runtimeTriggerCombobox: true,
+});

@@ -1,6 +1,12 @@
-import type { SlateEditor, TLinkElement, WrapNodesOptions } from 'platejs';
+import type { EditorUpdateTransaction } from '@platejs/slate';
+
+import type { SlateEditor, TLinkElement } from 'platejs';
 
 import { KEYS } from 'platejs';
+
+type WrapNodesOptions = NonNullable<
+  Parameters<EditorUpdateTransaction['nodes']['wrap']>[1]
+>;
 
 export interface WrapLinkOptions extends WrapNodesOptions {
   url: string;
@@ -12,13 +18,15 @@ export const wrapLink = (
   editor: SlateEditor,
   { target, url, ...options }: WrapLinkOptions
 ) => {
-  editor.tf.wrapNodes<TLinkElement>(
-    {
-      children: [],
-      target,
-      type: editor.getType(KEYS.link),
-      url,
-    },
-    { split: true, ...options } as any
-  );
+  editor.update((tx) => {
+    tx.nodes.wrap(
+      {
+        children: [],
+        target,
+        type: editor.getType(KEYS.link),
+        url,
+      } satisfies TLinkElement,
+      { split: true, ...options }
+    );
+  });
 };

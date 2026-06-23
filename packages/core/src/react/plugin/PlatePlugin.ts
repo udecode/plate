@@ -3,16 +3,15 @@ import type React from 'react';
 import type {
   DecoratedRange,
   Descendant,
-  EditorApi,
-  EditorTransforms,
+  Element,
+  EditorExtensionInput,
   NodeEntry,
   NodeOperation,
   Path,
-  TElement,
   TextOperation,
-  TText,
+  Text,
   Value,
-} from '@platejs/slate-legacy';
+} from '@platejs/slate';
 import type {
   HotkeysEvent,
   HotkeysOptions,
@@ -32,25 +31,32 @@ import type {
   BaseSerializer,
   BaseTransformOptions,
   CorePluginApi,
-  CorePluginTransforms,
   EditableProps,
+  AnyPluginTx,
   GetInjectNodePropsOptions,
   GetInjectNodePropsReturnType,
   HandlerReturnType,
   InferApi,
   InferOptions,
+  InferPluginApi,
+  InferPluginTx,
   InferSelectors,
-  InferTransforms,
+  InferTx,
+  InferTxGroup,
   MatchRules,
   NodeComponent,
   NodeComponents,
   ParserOptions,
+  PlatePluginTxGroup,
+  PlatePluginTxGroups,
+  PluginTx,
   PluginConfig,
   SlatePlugin,
   SlatePluginConfig,
   SlatePluginContext,
   WithAnyKey,
 } from '../../lib';
+import type { CurrentRuntimeEditorApi as EditorApi } from '../../internal/currentRuntimeBridge';
 import type {
   InputRulesConfig,
   InputRulesDefinition,
@@ -112,26 +118,6 @@ export type ExtendEditorApi<
         : never;
   };
 
-export type ExtendEditorTransforms<
-  C extends AnyPluginConfig = PluginConfig,
-  ET = {},
-> = (ctx: PlatePluginContext<C>) => ET &
-  Deep2Partial<EditorTransforms & CorePluginTransforms> & {
-    [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
-      ...args: any[]
-    ) => any
-      ? (
-          ...args: Parameters<InferTransforms<C>[K]>
-        ) => ReturnType<InferTransforms<C>[K]>
-      : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
-        ? {
-            [N in keyof InferTransforms<C>[K]]?: (
-              ...args: Parameters<InferTransforms<C>[K][N]>
-            ) => ReturnType<InferTransforms<C>[K][N]>;
-          }
-        : never;
-  };
-
 export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
   BaseHtmlDeserializer & {
     parse?: (
@@ -146,7 +132,7 @@ export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
   };
 
 export type HtmlReactSerializer<C extends AnyPluginConfig = PluginConfig> = {
-  parse?: React.FC<PlateElementProps<TElement, C> & PlateLeafProps<TText, C>>;
+  parse?: React.FC<PlateElementProps<Element, C> & PlateLeafProps<Text, C>>;
   query?: (options: PlateElementProps) => boolean;
 };
 
@@ -202,7 +188,7 @@ export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
 // -----------------------------------------------------------------------------
 
 export type LeafNodeProps<C extends AnyPluginConfig = PluginConfig> =
-  | ((props: PlateLeafProps<TText, C>) => AnyObject | undefined)
+  | ((props: PlateLeafProps<Text, C>) => AnyObject | undefined)
   | AnyObject;
 
 /**
@@ -212,7 +198,7 @@ export type LeafNodeProps<C extends AnyPluginConfig = PluginConfig> =
  */
 export type NodeProps<C extends AnyPluginConfig = PluginConfig> =
   | ((
-      props: PlateElementProps<TElement, C> & PlateLeafProps<TText, C>
+      props: PlateElementProps<Element, C> & PlateLeafProps<Text, C>
     ) => AnyObject | undefined)
   | AnyObject;
 
@@ -224,14 +210,14 @@ export type NodeWrapperComponent<C extends AnyPluginConfig = PluginConfig> = (
 /** @deprecated Use {@link RenderNodeWrapperProps} instead. */
 export interface NodeWrapperComponentProps<
   C extends AnyPluginConfig = PluginConfig,
-> extends PlateElementProps<TElement, C> {
+> extends PlateElementProps<Element, C> {
   key: string;
 }
 
 /** @deprecated Use {@link RenderNodeWrapperFunction} instead. */
 export type NodeWrapperComponentReturnType<
   C extends AnyPluginConfig = PluginConfig,
-> = React.FC<PlateElementProps<TElement, C>> | undefined;
+> = React.FC<PlateElementProps<Element, C>> | undefined;
 
 export type TransformInitialValue<C extends AnyPluginConfig = PluginConfig> = (
   ctx: PlatePluginContext<C> & { value: Value }
@@ -293,22 +279,11 @@ export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
           }
         : never;
   };
-  transforms?: Deep2Partial<EditorTransforms & CorePluginTransforms> & {
-    [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
-      ...args: any[]
-    ) => any
-      ? (
-          ...args: Parameters<InferTransforms<C>[K]>
-        ) => ReturnType<InferTransforms<C>[K]>
-      : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
-        ? {
-            [N in keyof InferTransforms<C>[K]]?: (
-              ...args: Parameters<InferTransforms<C>[K][N]>
-            ) => ReturnType<InferTransforms<C>[K][N]>;
-          }
-        : never;
-  };
 };
+
+export type SlateExtensionFactory<C extends AnyPluginConfig = PluginConfig> = (
+  ctx: PlatePluginContext<C>
+) => EditorExtensionInput | readonly EditorExtensionInput[] | undefined;
 
 /**
  * Used by parser plugins like html to deserialize inserted data to a slate
@@ -323,8 +298,7 @@ export type Parser<C extends AnyPluginConfig = PluginConfig> = {
     options: ParserOptions & PlatePluginContext<C>
   ) => Descendant[] | undefined;
   /**
-   * Function called on `editor.tf.insertData` just before
-   * `editor.tf.insertFragment`. Default: if the block above the selection is
+   * Function called before inserting a parsed fragment. Default: if the block above the selection is
    * empty and the first fragment node type is not inline, set the selected node
    * type to the first fragment node type.
    *
@@ -353,6 +327,9 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
       decorate?: Decorate<WithAnyKey<C>>;
       /** @see {@link ExtendEditor} */
       extendEditor?: ExtendEditor<WithAnyKey<C>>;
+      slateExtensions?:
+        | readonly EditorExtensionInput[]
+        | SlateExtensionFactory<WithAnyKey<C>>;
       /** Transform the initial value before the editor is ready. */
       transformInitialValue?: TransformInitialValue<WithAnyKey<C>>;
       /** Normalize initial value before passing it into the editor. */
@@ -384,8 +361,8 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
         /**
          * Property that can be used by a plugin to allow other plugins to
          * inject code. For example, if multiple plugins have defined
-         * `inject.editor.tf.insertData.transformData` for `key=HtmlPlugin.key`,
-         * `insertData` plugin will call all of these `transformData` for
+         * `inject.plugins` for `key=HtmlPlugin.key`,
+         * the insert-data pipeline will call all of these `transformData` for
          * `HtmlPlugin.key` plugin. Differs from `override.plugins` as this is
          * not overriding any plugin.
          */
@@ -481,7 +458,7 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * their content will be rendered in sequence.
          */
         belowRootNodes?: (
-          props: PlateElementProps<TElement, C>
+          props: PlateElementProps<Element, C>
         ) => React.ReactNode;
       }>;
       rules: {
@@ -497,7 +474,7 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          */
         match?: (
           options: {
-            node: TElement;
+            node: Element;
             path: Path;
             rule: MatchRules;
           } & PlatePluginContext<C>
@@ -510,16 +487,12 @@ export type PlatePlugin<C extends AnyPluginConfig = PluginConfig> =
        */
       shortcuts: Partial<
         Record<
-          | (string & {})
-          | Exclude<
-              keyof InferApi<C>[C['key']],
-              keyof InferTransforms<C>[C['key']]
-            >
-          | keyof InferTransforms<C>[C['key']],
+          (string & {}) | keyof InferPluginApi<C> | keyof InferPluginTx<C>,
           Shortcut | null
         >
       >;
       inputRules: InputRulesDefinition | InputRulesConfig;
+      tx: PlatePluginTxGroups;
       useOptionsStore: TCreatedStoreType<
         C['options'],
         [['zustand/mutative-x', never]]
@@ -532,25 +505,23 @@ export type PlatePluginConfig<
   A = {},
   T = {},
   S = {},
+  Tx extends AnyPluginTx = {},
   EO = {},
   EA = {},
-  ET = {},
   ES = {},
 > = Partial<
   Omit<
-    PlatePlugin<PluginConfig<K, Partial<O>, A, T, S>>,
+    PlatePlugin<PluginConfig<K, Partial<O>, A, T, S, Tx>>,
     | keyof PlatePluginMethods
     | 'api'
     | 'node'
     | 'optionsStore'
-    | 'transforms'
     | 'useOptionsStore'
   > & {
     api: EA;
-    node: Partial<PlatePlugin<PluginConfig<K, O, A, T, S>>['node']>;
+    node: Partial<PlatePlugin<PluginConfig<K, O, A, T, S, Tx>>['node']>;
     options: EO;
     selectors: ES;
-    transforms: ET;
   }
 >;
 
@@ -562,11 +533,22 @@ export type PlatePluginContext<
   plugin: EditorPlatePlugin<C>;
 };
 
+export type PlateExtendTx<
+  C extends AnyPluginConfig = PluginConfig,
+  TGroup extends PlatePluginTxGroup = PlatePluginTxGroup,
+> = (ctx: PlatePluginContext<C>) => TGroup;
+
+export type PlateExtendTxGroups<
+  C extends AnyPluginConfig = PluginConfig,
+  ETx extends PlatePluginTxGroups = PlatePluginTxGroups,
+> = (ctx: PlatePluginContext<C>) => ETx;
+
 export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   __apiExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __configuration: ((ctx: PlatePluginContext<AnyPluginConfig>) => any) | null;
   __extensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
   __selectorExtensions: ((ctx: PlatePluginContext<AnyPluginConfig>) => any)[];
+  __txExtensions: PlateExtendTxGroups<AnyPluginConfig>[];
   clone: () => PlatePlugin<C>;
   configure: (
     config:
@@ -576,15 +558,17 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
           C['key'],
           InferOptions<C>,
           InferApi<C>,
-          InferTransforms<C>,
-          InferSelectors<C>
+          {},
+          InferSelectors<C>,
+          InferTx<C>
         >)
       | PlatePluginConfig<
           C['key'],
           InferOptions<C>,
           InferApi<C>,
-          InferTransforms<C>,
-          InferSelectors<C>
+          {},
+          InferSelectors<C>,
+          InferTx<C>
         >
   ) => PlatePlugin<C>;
   configurePlugin: <P extends AnyPlatePlugin | AnySlatePlugin>(
@@ -595,15 +579,17 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               any,
               InferOptions<P>,
               InferApi<P>,
-              InferTransforms<P>,
-              InferSelectors<P>
+              {},
+              InferSelectors<P>,
+              InferTx<P>
             >
           : SlatePluginConfig<
               any,
               InferOptions<P>,
               InferApi<P>,
-              InferTransforms<P>,
-              InferSelectors<P>
+              {},
+              InferSelectors<P>,
+              InferTx<P>
             >)
       | ((
           ctx: P extends AnyPlatePlugin
@@ -614,18 +600,20 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               any,
               InferOptions<P>,
               InferApi<P>,
-              InferTransforms<P>,
-              InferSelectors<P>
+              {},
+              InferSelectors<P>,
+              InferTx<P>
             >
           : SlatePluginConfig<
               any,
               InferOptions<P>,
               InferApi<P>,
-              InferTransforms<P>,
-              InferSelectors<P>
+              {},
+              InferSelectors<P>,
+              InferTx<P>
             >)
   ) => PlatePlugin<C>;
-  extend: <EO = {}, EA = {}, ET = {}, ES = {}>(
+  extend: <EO = {}, EA = {}, ES = {}>(
     extendConfig:
       | ((
           ctx: PlatePluginContext<C>
@@ -633,22 +621,22 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
           C['key'],
           InferOptions<C>,
           InferApi<C>,
-          InferTransforms<C>,
+          {},
           InferSelectors<C>,
+          InferTx<C>,
           EO,
           EA,
-          ET,
           ES
         >)
       | PlatePluginConfig<
           C['key'],
           InferOptions<C>,
           InferApi<C>,
-          InferTransforms<C>,
+          {},
           InferSelectors<C>,
+          InferTx<C>,
           EO,
           EA,
-          ET,
           ES
         >
   ) => PlatePlugin<
@@ -656,8 +644,9 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       C['key'],
       EO & InferOptions<C>,
       EA & InferApi<C>,
-      ET & InferTransforms<C>,
-      InferSelectors<C>
+      {},
+      InferSelectors<C>,
+      InferTx<C>
     >
   >;
   extendApi: <
@@ -669,8 +658,9 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       C['key'],
       InferOptions<C>,
       InferApi<C> & Record<C['key'], EA>,
-      InferTransforms<C>,
-      InferSelectors<C>
+      {},
+      InferSelectors<C>,
+      InferTx<C>
     >
   >;
   /**
@@ -726,39 +716,16 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               [N in keyof (EA & InferApi<C>)[K]]: (EA & InferApi<C>)[K][N];
             };
       },
-      InferTransforms<C>,
-      InferSelectors<C>
-    >
-  >;
-  extendEditorTransforms: <
-    ET extends Record<
-      string,
-      ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
-    > = Record<string, never>,
-  >(
-    extension: ExtendEditorTransforms<C, ET>
-  ) => PlatePlugin<
-    PluginConfig<
-      C['key'],
-      InferOptions<C>,
-      InferApi<C>,
-      {
-        [K in keyof (ET & InferTransforms<C>)]: (ET &
-          InferTransforms<C>)[K] extends (...args: any[]) => any
-          ? (ET & InferTransforms<C>)[K]
-          : {
-              [N in keyof (ET & InferTransforms<C>)[K]]: (ET &
-                InferTransforms<C>)[K][N];
-            };
-      },
-      InferSelectors<C>
+      {},
+      InferSelectors<C>,
+      InferTx<C>
     >
   >;
   extendPlugin: <
     P extends AnyPlatePlugin | AnySlatePlugin,
     EO = {},
     EA = {},
-    ET = {},
+    ES = {},
   >(
     plugin: Partial<P>,
     extendConfig:
@@ -767,21 +734,23 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               any,
               InferOptions<P>,
               InferApi<P>,
-              InferTransforms<P>,
+              {},
               InferSelectors<P>,
+              InferTx<P>,
               EO,
               EA,
-              ET
+              ES
             >
           : SlatePluginConfig<
               any,
               InferOptions<P>,
               InferApi<P>,
-              InferTransforms<P>,
+              {},
               InferSelectors<P>,
+              InferTx<P>,
               EO,
               EA,
-              ET
+              ES
             >)
       | ((
           ctx: P extends AnyPlatePlugin
@@ -792,21 +761,23 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
               any,
               InferOptions<P>,
               InferApi<P>,
-              InferTransforms<P>,
+              {},
               InferSelectors<P>,
+              InferTx<P>,
               EO,
               EA,
-              ET
+              ES
             >
           : SlatePluginConfig<
               any,
               InferOptions<P>,
               InferApi<P>,
-              InferTransforms<P>,
+              {},
               InferSelectors<P>,
+              InferTx<P>,
               EO,
               EA,
-              ET
+              ES
             >)
   ) => PlatePlugin<C>;
   extendSelectors: <
@@ -818,23 +789,44 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       C['key'],
       InferOptions<C>,
       InferApi<C>,
-      InferTransforms<C>,
-      ES & InferSelectors<C>
+      {},
+      ES & InferSelectors<C>,
+      InferTx<C>
     >
   >;
-  extendTransforms: <
-    ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
-  >(
-    extension: (ctx: PlatePluginContext<C>) => ET
+  extendTx: <TGroup extends PlatePluginTxGroup = PlatePluginTxGroup>(
+    extension: PlateExtendTx<C, TGroup>
   ) => PlatePlugin<
     PluginConfig<
       C['key'],
       InferOptions<C>,
       InferApi<C>,
-      InferTransforms<C> & Record<C['key'], ET>,
-      InferSelectors<C>
+      {},
+      InferSelectors<C>,
+      InferTx<C> & PluginTx<C['key'], InferTxGroup<TGroup>>
     >
   >;
+  extendTxGroup: <
+    K extends string,
+    TGroup extends PlatePluginTxGroup = PlatePluginTxGroup,
+  >(
+    key: K,
+    extension: PlateExtendTx<C, TGroup>
+  ) => PlatePlugin<
+    PluginConfig<
+      C['key'],
+      InferOptions<C>,
+      InferApi<C>,
+      {},
+      InferSelectors<C>,
+      InferTx<C> & PluginTx<K, InferTxGroup<TGroup>>
+    >
+  >;
+  extendTransforms: <
+    ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
+  >(
+    extension: (ctx: PlatePluginContext<C> & { tf: Record<string, any> }) => ET
+  ) => PlatePlugin<C>;
   overrideEditor: (override: OverrideEditor<C>) => PlatePlugin<C>;
   /** Returns a new instance of the plugin with the component. */
   withComponent: (component: NodeComponent) => PlatePlugin<C>;
@@ -853,7 +845,7 @@ export type RenderNodeWrapperFunction =
 
 export interface RenderNodeWrapperProps<
   C extends AnyPluginConfig = PluginConfig,
-> extends PlateElementProps<TElement, C> {
+> extends PlateElementProps<Element, C> {
   key: string;
 }
 
@@ -876,7 +868,7 @@ export type Shortcut = HotkeysOptions & {
 export type Shortcuts = Record<string, Shortcut | null>;
 
 export type TextNodeProps<C extends AnyPluginConfig = PluginConfig> =
-  | ((props: PlateLeafProps<TText, C>) => AnyObject | undefined)
+  | ((props: PlateLeafProps<Text, C>) => AnyObject | undefined)
   | AnyObject;
 
 export type TransformOptions<C extends AnyPluginConfig = PluginConfig> =

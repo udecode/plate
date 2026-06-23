@@ -19,13 +19,17 @@ export const TaskListRules = {
     trigger: ' ',
     match: ({ checked }) => (checked ? '[x]' : '[]'),
     apply: ({ editor, checked }, match) => {
-      editor.tf.delete({ at: match.range });
+      editor.update((tx) => {
+        tx.text.delete({ at: match.range });
+      });
       toggleList(editor, {
         listStyleType: KEYS.listTodo,
       });
-      editor.tf.setNodes({
-        checked,
-        listStyleType: KEYS.listTodo,
+      editor.update((tx) => {
+        tx.nodes.set({
+          checked,
+          listStyleType: KEYS.listTodo,
+        });
       });
 
       return true;

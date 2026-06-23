@@ -25,7 +25,9 @@ export const OrderedListRules = {
       start: Number((match as RegExpMatchArray)[1]),
     }),
     apply: ({ editor }, match) => {
-      editor.tf.delete({ at: match.range });
+      editor.update((tx) => {
+        tx.text.delete({ at: match.range });
+      });
       toggleList(editor, {
         listRestartPolite: match.start || 1,
         listStyleType: KEYS.ol,

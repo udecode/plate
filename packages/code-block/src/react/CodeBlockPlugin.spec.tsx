@@ -9,6 +9,7 @@ import {
   createSlatePlugin,
 } from 'platejs';
 
+import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
 import { CodeBlockPlugin } from './CodeBlockPlugin';
 
 jsxt;
@@ -53,7 +54,7 @@ describe('code block deserialization', () => {
         value: input.children,
       });
 
-      editor.tf.insertData({
+      getCurrentRuntimeTransforms(editor).insertData({
         getData: () => `<pre><code>test</code></pre>`,
       } as any);
 
@@ -85,7 +86,7 @@ describe('code block deserialization', () => {
         value: input.children,
       });
 
-      editor.tf.insertData({
+      getCurrentRuntimeTransforms(editor).insertData({
         getData: (format: string) =>
           format === 'text/html' && `<pre><code>test</code></pre>`,
       } as any);
@@ -126,7 +127,7 @@ describe('code block deserialization', () => {
         value: input.children,
       });
 
-      editor.tf.deleteBackward();
+      getCurrentRuntimeTransforms(editor).deleteBackward();
       expect(editor.children).toEqual(output.children);
     });
   });

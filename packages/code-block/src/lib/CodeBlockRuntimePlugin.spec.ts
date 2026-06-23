@@ -1,17 +1,27 @@
-import type { Value } from 'platejs';
+import type { Value } from '@platejs/slate';
+
 import { BaseLinkPlugin } from '@platejs/link';
 import { defineEditorExtension } from '@platejs/slate';
 import { createDataTransfer } from '@platejs/test-utils';
 import { createLowlight } from 'lowlight';
-import { BaseParagraphPlugin } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
+import { BaseParagraphPlugin } from '../../../core/src/lib/plugins/paragraph/BaseParagraphPlugin';
+import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 
-type CodeBlockRuntimePlugin =
-  | typeof BaseCodeBlockPlugin
-  | typeof BaseLinkPlugin
-  | typeof BaseParagraphPlugin;
+type CodeBlockRuntimeTransforms = {
+  deleteBackward: () => boolean;
+  insertBreak: () => boolean;
+  insertData: (data: DataTransfer) => boolean;
+  insertFragment: (fragment: unknown[]) => boolean;
+  resetBlock: () => boolean;
+  selectAll: () => boolean;
+  tab: (options: { reverse: boolean }) => boolean;
+};
+
+const runtimeTransforms = (editor: unknown) =>
+  getCurrentRuntimeTransforms(editor) as unknown as CodeBlockRuntimeTransforms;
 
 const createRuntimeDataTransfer = (data: Record<string, string>) =>
   createDataTransfer(new Map(Object.entries(data)));
@@ -36,14 +46,13 @@ const installRedecorateProbe = (editor: unknown, redecorate: () => void) => {
 
 describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   it('splits an indented code line on insertBreak', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 10, path: [0, 0, 0] },
         focus: { offset: 10, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { children: [{ text: '    beforeafter' }], type: 'code_line' },
@@ -53,7 +62,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(editor.tf.insertBreak()).toBe(true);
+    expect(runtimeTransforms(editor).insertBreak()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [
@@ -70,14 +79,13 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('replaces a code-line selection with a split line', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 2, path: [0, 0, 0] },
         focus: { offset: 4, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ children: [{ text: 'abcdef' }], type: 'code_line' }],
           type: 'code_block',
@@ -85,7 +93,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(editor.tf.insertBreak()).toBe(true);
+    expect(runtimeTransforms(editor).insertBreak()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [
@@ -102,14 +110,13 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('keeps deleteBackward local at the start of a non-empty first code line', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ children: [{ text: 'aa' }], type: 'code_line' }],
           type: 'code_block',
@@ -117,7 +124,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(editor.tf.deleteBackward()).toBe(true);
+    expect(runtimeTransforms(editor).deleteBackward()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [{ children: [{ text: 'aa' }], type: 'code_line' }],
@@ -131,14 +138,13 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('merges an empty non-first code line into the previous line on deleteBackward', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 0, path: [0, 1, 0] },
         focus: { offset: 0, path: [0, 1, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { children: [{ text: 'aa' }], type: 'code_line' },
@@ -149,7 +155,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(editor.tf.deleteBackward()).toBe(true);
+    expect(runtimeTransforms(editor).deleteBackward()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [{ children: [{ text: 'aa' }], type: 'code_line' }],
@@ -163,14 +169,13 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('unwraps an empty code block to a paragraph on deleteBackward', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ children: [{ text: '' }], type: 'code_line' }],
           type: 'code_block',
@@ -178,7 +183,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(editor.tf.deleteBackward()).toBe(true);
+    expect(runtimeTransforms(editor).deleteBackward()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: '' }], type: 'p' },
     ]);
@@ -189,14 +194,13 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('unwraps code lines into paragraphs on resetBlock', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 1, path: [0, 0, 0] },
         focus: { offset: 1, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { children: [{ text: 'aa' }], type: 'code_line' },
@@ -207,7 +211,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(editor.tf.resetBlock()).toBe(true);
+    expect(runtimeTransforms(editor).resetBlock()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'aa' }], type: 'p' },
       { children: [{ text: 'bb' }], type: 'p' },
@@ -219,10 +223,9 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('normalizes non-code-line children into code lines', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      value: [
+      initialValue: [
         {
           children: [
             { children: [{ text: 'line 1' }], type: 'p' },
@@ -249,14 +252,13 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('inserts code-block fragments as code lines inside a code block', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 5, path: [0, 1, 0] },
         focus: { offset: 5, path: [0, 1, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { children: [{ text: '' }], type: 'code_line' },
@@ -268,7 +270,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
     });
 
     expect(
-      editor.tf.insertFragment([
+      runtimeTransforms(editor).insertFragment([
         {
           children: [
             { children: [{ text: 'world' }], type: 'code_line' },
@@ -295,14 +297,13 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('converts non-code-block fragments to code lines inside a code block', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 5, path: [0, 1, 0] },
         focus: { offset: 5, path: [0, 1, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { children: [{ text: '' }], type: 'code_line' },
@@ -314,7 +315,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
     });
 
     expect(
-      editor.tf.insertFragment([
+      runtimeTransforms(editor).insertFragment([
         { children: [{ text: 'world' }], type: 'p' },
         { children: [{ text: '!' }], type: 'p' },
       ])
@@ -336,14 +337,13 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('inserts plain text data lines into the current code block', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 5, path: [0, 1, 0] },
         focus: { offset: 5, path: [0, 1, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { children: [{ text: '' }], type: 'code_line' },
@@ -355,7 +355,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
     });
 
     expect(
-      editor.tf.insertData(
+      runtimeTransforms(editor).insertData(
         createRuntimeDataTransfer({
           'text/plain': 'world\n!',
         })
@@ -378,18 +378,17 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('creates a code block from VSCode data outside code blocks', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
       },
-      value: [{ children: [{ text: '' }], type: 'p' }],
+      initialValue: [{ children: [{ text: '' }], type: 'p' }],
     });
 
     expect(
-      editor.tf.insertData(
+      runtimeTransforms(editor).insertData(
         createRuntimeDataTransfer({
           'text/plain': 'const a = "b";\nconst c = "d";',
           'vscode-editor-data': JSON.stringify({ mode: 'typescript' }),
@@ -414,14 +413,13 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('inserts VSCode data lines into the current code block', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ children: [{ text: '' }], type: 'code_line' }],
           type: 'code_block',
@@ -430,7 +428,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
     });
 
     expect(
-      editor.tf.insertData(
+      runtimeTransforms(editor).insertData(
         createRuntimeDataTransfer({
           'text/plain': 'const a = "b";\nconst c = "d";',
           'vscode-editor-data': JSON.stringify({ mode: 'typescript' }),
@@ -453,14 +451,13 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('keeps pasted comment text as code when link plugin is present', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin, BaseLinkPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 0, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ children: [{ text: '' }], type: 'code_line' }],
           type: 'code_block',
@@ -469,7 +466,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
     });
 
     expect(
-      editor.tf.insertData(
+      runtimeTransforms(editor).insertData(
         createRuntimeDataTransfer({
           'text/plain': '// comment\nconsole.log("hello");',
         })
@@ -492,10 +489,9 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
 
   it('redecorates when the code block language changes', () => {
     let redecorateCalls = 0;
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, createLowlightCodeBlockPlugin()],
-      runtime: 'slate-v2',
-      value: [
+      initialValue: [
         {
           children: [
             { children: [{ text: 'const a = 1;' }], type: 'code_line' },
@@ -518,10 +514,9 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
 
   it('does not redecorate for unrelated code block property changes', () => {
     let redecorateCalls = 0;
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, createLowlightCodeBlockPlugin()],
-      runtime: 'slate-v2',
-      value: [
+      initialValue: [
         {
           children: [
             { children: [{ text: 'const a = 1;' }], type: 'code_line' },
@@ -543,14 +538,13 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('selects the whole code block from an inner code line selection', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 2, path: [0, 0, 0] },
         focus: { offset: 4, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { children: [{ text: 'before' }], type: 'code_line' },
@@ -561,7 +555,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(editor.tf.selectAll()).toBe(true);
+    expect(runtimeTransforms(editor).selectAll()).toBe(true);
     expect(editor.read((state) => state.selection.get())).toEqual({
       anchor: { offset: 0, path: [0, 0, 0] },
       focus: { offset: 5, path: [0, 1, 0] },
@@ -569,14 +563,13 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('indents and outdents selected code lines on tab', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 0, path: [0, 0, 0] },
         focus: { offset: 2, path: [0, 1, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [
             { children: [{ text: 'aa' }], type: 'code_line' },
@@ -587,7 +580,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(editor.tf.tab({ reverse: false })).toBe(true);
+    expect(runtimeTransforms(editor).tab({ reverse: false })).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [
@@ -598,7 +591,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
       },
     ]);
 
-    expect(editor.tf.tab({ reverse: true })).toBe(true);
+    expect(runtimeTransforms(editor).tab({ reverse: true })).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [
@@ -611,14 +604,13 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
   });
 
   it('inserts spaces at the collapsed cursor when text exists before it', () => {
-    const editor = createPlateEditor<Value, CodeBlockRuntimePlugin>({
+    const editor = createPlateRuntimeEditor<Value>({
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
-      runtime: 'slate-v2',
-      selection: {
+      initialSelection: {
         anchor: { offset: 2, path: [0, 0, 0] },
         focus: { offset: 2, path: [0, 0, 0] },
       },
-      value: [
+      initialValue: [
         {
           children: [{ children: [{ text: 'aabb' }], type: 'code_line' }],
           type: 'code_block',
@@ -626,7 +618,7 @@ describe('BaseCodeBlockPlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(editor.tf.tab({ reverse: false })).toBe(true);
+    expect(runtimeTransforms(editor).tab({ reverse: false })).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [{ children: [{ text: 'aa  bb' }], type: 'code_line' }],

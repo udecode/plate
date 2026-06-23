@@ -126,16 +126,16 @@ export const LimitExclamationPlugin = createPlatePlugin({
 }));
 ```
 
-Use `.extendEditorApi()` or `.extendEditorTransforms()` when the plugin adds a new method.
+Use `.extendApi()` for editor-scoped read/service methods. Use `.extendTx()` for replayable document mutations.
 
 ```tsx title="components/editor/signature-plugin.tsx" showLineNumbers
 import { createPlatePlugin } from 'platejs/react';
 
 export const SignaturePlugin = createPlatePlugin({
   key: 'signature',
-}).extendEditorTransforms(({ editor }) => ({
+}).extendTx(() => (tx) => ({
   insertSignature() {
-    editor.tf.insertText(' - Plate');
+    tx.text.insert(' - Plate');
   },
 }));
 ```

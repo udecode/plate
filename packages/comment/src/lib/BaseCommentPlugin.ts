@@ -1,13 +1,13 @@
 import {
-  type EditorNodesOptions,
   type NodeEntry,
   type PluginConfig,
-  type SetNodesOptions,
+  type SlateEditor,
   type TCommentText,
   createTSlatePlugin,
   KEYS,
   TextApi,
 } from 'platejs';
+import type { EditorUpdateTransaction } from '@platejs/slate';
 
 import {
   getCommentCount,
@@ -19,7 +19,13 @@ import {
   isCommentKey,
   isCommentNodeById,
 } from './utils';
-import { withComment } from './withComments';
+
+type CommentNodeOptions = NonNullable<
+  Parameters<SlateEditor['api']['nodes']>[0]
+>;
+type CommentSetNodesOptions = NonNullable<
+  Parameters<EditorUpdateTransaction['nodes']['set']>[1]
+>;
 
 export type BaseCommentConfig = PluginConfig<
   'comment',
@@ -28,11 +34,11 @@ export type BaseCommentConfig = PluginConfig<
     comment: {
       has: (options: { id: string }) => boolean;
       node: (
-        options?: EditorNodesOptions & { id?: string; isDraft?: boolean }
+        options?: CommentNodeOptions & { id?: string; isDraft?: boolean }
       ) => NodeEntry<TCommentText> | undefined;
       nodeId: (leaf: TCommentText) => string | undefined;
       nodes: (
-        options?: EditorNodesOptions & {
+        options?: CommentNodeOptions & {
           id?: string;
           isDraft?: boolean;
           transient?: boolean;
@@ -40,10 +46,12 @@ export type BaseCommentConfig = PluginConfig<
       ) => NodeEntry<TCommentText>[];
     };
   },
+  {},
+  {},
   {
     comment: {
       removeMark: () => void;
-      setDraft: (options?: SetNodesOptions) => void;
+      setDraft: (options?: CommentSetNodesOptions) => void;
       unsetMark: (options: { id?: string; transient?: boolean }) => void;
     };
   }
@@ -56,7 +64,6 @@ export const BaseCommentPlugin = createTSlatePlugin<BaseCommentConfig>({
   },
   rules: { selection: { affinity: 'outward' } },
 })
-  .overrideEditor(withComment)
   .extendApi<BaseCommentConfig['api']['comment']>(({ editor, type }) => ({
     has: (options: { id: string }): boolean => {
       const { id } = options;
@@ -110,66 +117,55 @@ export const BaseCommentPlugin = createTSlatePlugin<BaseCommentConfig>({
       ];
     },
   }))
-  .extendTransforms<BaseCommentConfig['transforms']['comment']>(
-    ({ api, editor, tf, type }) => ({
-      removeMark: () => {
-        const nodeEntry = api.comment.node();
+  .extendTx(({ api, type }) => (tx: EditorUpdateTransaction) => ({
+    removeMark: () => {
+      const nodeEntry = api.comment.node();
 
-        if (!nodeEntry) return;
+      if (!nodeEntry) return;
 
-        const keys = getCommentKeys(nodeEntry[0]);
+      const keys = getCommentKeys(nodeEntry[0]);
 
-        editor.tf.withoutNormalizing(() => {
-          keys.forEach((key) => {
-            editor.tf.removeMark(key);
-          });
+      keys.forEach((key) => {
+        tx.marks.remove(key);
+      });
 
-          editor.tf.removeMark(KEYS.comment);
-        });
-      },
-      setDraft: (options = {}) => {
-        tf.setNodes(
-          {
-            [getDraftCommentKey()]: true,
-            [type]: true,
-          },
-          { match: TextApi.isText, split: true, ...options }
-        );
-      },
-      unsetMark: (options) => {
-        const { id, transient } = options;
+      tx.marks.remove(KEYS.comment);
+    },
+    setDraft: (options: CommentSetNodesOptions = {}) => {
+      tx.nodes.set(
+        {
+          [getDraftCommentKey()]: true,
+          [type]: true,
+        },
+        { match: TextApi.isText, split: true, ...options }
+      );
+    },
+    unsetMark: (options: { id?: string; transient?: boolean }) => {
+      const { id, transient } = options;
+      const nodes = api.comment.nodes({ id, at: [], transient });
 
-        const nodes = api.comment.nodes({ id, at: [], transient });
+      if (!nodes) return;
 
-        if (!nodes) return;
-
-        nodes.forEach(([node]) => {
-          const isOverlapping = getCommentCount(node) > 1;
-
-          let unsetKeys: string[] = [];
-
-          const removedId = id ?? api.comment.nodeId(node)!;
-
-          if (isOverlapping) {
-            unsetKeys = [
+      nodes.forEach(([node]) => {
+        const isOverlapping = getCommentCount(node) > 1;
+        const removedId = id ?? api.comment.nodeId(node)!;
+        const unsetKeys = isOverlapping
+          ? [
               getDraftCommentKey(),
               getCommentKey(removedId),
               getTransientCommentKey(),
-            ];
-          } else {
-            unsetKeys = [
+            ]
+          : [
               KEYS.comment,
               getDraftCommentKey(),
               getCommentKey(removedId),
               getTransientCommentKey(),
             ];
-          }
 
-          editor.tf.unsetNodes<TCommentText>(unsetKeys, {
-            at: [],
-            match: (n) => n === node,
-          });
+        tx.nodes.unset(unsetKeys, {
+          at: [],
+          match: (n) => n === node,
         });
-      },
-    })
-  );
+      });
+    },
+  }));

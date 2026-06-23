@@ -24,9 +24,6 @@ describe('CsvPlugin', () => {
       },
     });
     expect(typeof editor.api.csv.deserialize).toBe('function');
-    expect(typeof editor.getPluginApi(CsvPlugin).csv.deserialize).toBe(
-      'function'
-    );
     expect(plugin.parser?.format).toBe('text/plain');
     expect(plugin.parser?.deserialize?.(parserOptions as any)).toEqual(
       deserializeCsv(editor, { data })
@@ -38,13 +35,13 @@ describe('CsvPlugin', () => {
       plugins: [CsvPlugin],
       runtime: 'slate-v2',
     });
-    const api = editor.getPluginApi<{
+    const api = editor.api as typeof editor.api & {
       csv: {
         deserialize: (
           options: Parameters<typeof deserializeCsv>[1]
         ) => ReturnType<typeof deserializeCsv>;
       };
-    }>(CsvPlugin);
+    };
 
     expect(typeof api.csv.deserialize).toBe('function');
     expect(api.csv.deserialize({ data: 'name,age\nAda,36' })).toEqual([

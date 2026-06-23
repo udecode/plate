@@ -3,19 +3,20 @@ import type { createLowlight } from 'lowlight';
 import {
   type PluginConfig,
   type TCodeBlockElement,
-  type TElement,
   createSlatePlugin,
   createTSlatePlugin,
+  ElementApi,
   KEYS,
 } from 'platejs';
+import type { EditorUpdateTransaction, Element } from '@platejs/slate';
 
 import { htmlDeserializerCodeBlock } from './deserializer/htmlDeserializerCodeBlock';
 import { isCodeBlockEmpty } from './queries';
 import {
+  CODE_BLOCK_TO_DECORATION_LANGUAGE,
   CODE_LINE_TO_DECORATIONS,
   setCodeBlockToDecorations,
 } from './setCodeBlockToDecorations';
-import { withCodeBlock } from './withCodeBlock';
 
 export type CodeBlockConfig = PluginConfig<
   'code_block',
@@ -32,6 +33,12 @@ export type CodeBlockConfig = PluginConfig<
     lowlight?: ReturnType<typeof createLowlight> | null;
   }
 >;
+
+const isElementOfType = (node: unknown, type: string) =>
+  typeof node === 'object' &&
+  node !== null &&
+  'children' in node &&
+  (node as { type?: unknown }).type === type;
 
 export const BaseCodeLinePlugin = createTSlatePlugin({
   key: KEYS.codeLine,
@@ -82,22 +89,48 @@ export const BaseCodeBlockPlugin = createTSlatePlugin<CodeBlockConfig>({
 
     // Initialize decorations for the code block, we assume code line decorate will be called next.
     if (
+      ElementApi.isElement(node) &&
       node.type === type &&
-      !CODE_LINE_TO_DECORATIONS.get((node.children as TElement[])[0])
+      (!CODE_LINE_TO_DECORATIONS.get((node.children as Element[])[0]) ||
+        CODE_BLOCK_TO_DECORATION_LANGUAGE.get(node as TCodeBlockElement) !==
+          ((node as TCodeBlockElement).lang || getOptions().defaultLanguage))
     ) {
       setCodeBlockToDecorations(editor, [node as TCodeBlockElement, path]);
     }
 
-    if (node.type === codeLineType) {
-      return CODE_LINE_TO_DECORATIONS.get(node as TElement) || [];
+    if (ElementApi.isElement(node) && node.type === codeLineType) {
+      return CODE_LINE_TO_DECORATIONS.get(node as Element) || [];
     }
 
     return [];
   },
-})
-  .overrideEditor(withCodeBlock)
-  .extendTransforms(({ editor }) => ({
-    toggle: () => {
-      editor.tf.toggleBlock(editor.getType(KEYS.codeBlock));
-    },
-  }));
+}).extendTx(({ editor, type }) => (tx: EditorUpdateTransaction) => ({
+  toggle: () => {
+    const codeLineType = editor.getType(KEYS.codeLine);
+    const defaultType = editor.getType(KEYS.p);
+    const isActive = tx.nodes.some<Element>({
+      match: (node) => isElementOfType(node, type),
+    });
+    const codeBlockEntries = tx.nodes
+      .toArray<Element>({
+        match: (node) => isElementOfType(node, type),
+      })
+      .reverse();
+
+    for (const [codeBlock, codeBlockPath] of codeBlockEntries) {
+      codeBlock.children.forEach((_, index) => {
+        tx.nodes.set({ type: defaultType }, { at: [...codeBlockPath, index] });
+      });
+      tx.nodes.unwrap({
+        at: codeBlockPath,
+        match: (node) => isElementOfType(node, type),
+        split: true,
+      });
+    }
+
+    if (isActive) return;
+
+    tx.nodes.set<Element>({ type: codeLineType });
+    tx.nodes.wrap({ children: [], type });
+  },
+}));

@@ -1,4 +1,5 @@
-import type { Path, SlateEditor, TElement, TTableCellElement } from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { Path, SlateEditor, TTableCellElement } from 'platejs';
 
 import {
   type BorderDirection,
@@ -13,7 +14,8 @@ import {
   isSelectedCellBorder,
   setBorderSize,
 } from '../../../lib';
-import { TablePlugin } from '../../TablePlugin';
+import type { TableConfig } from '../../../lib/BaseTablePlugin';
+import { findTableNodePath } from '../../../lib/utils/findTableNodePath';
 
 /** Helper: sets one cell's specific border(s) to `size`. */
 function setCellBorderSize(
@@ -47,7 +49,7 @@ const getSelectedCellBorderTargets = (
   cells: TTableCellElement[]
 ): SelectedCellBorderTarget[] =>
   cells.map((cell) => {
-    const path = editor.api.findPath(cell) ?? null;
+    const path = findTableNodePath(editor, cell) ?? null;
     const { col, row } = getCellIndices(editor, cell);
 
     return {
@@ -200,9 +202,9 @@ export const getOnSelectTableBorderFactory =
   (editor: SlateEditor) =>
   (border: BorderDirection | 'none' | 'outer') =>
   () => {
-    let cells = editor.getApi(TablePlugin).table.getSelectedCells() as
-      | TElement[]
-      | null;
+    let cells = (
+      editor.api as unknown as TableConfig['api']
+    ).table.getSelectedCells() as Element[] | null;
 
     if (!cells || cells.length === 0) {
       const cell = editor.api.block({ match: { type: getCellTypes(editor) } });

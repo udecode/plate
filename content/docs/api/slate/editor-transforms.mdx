@@ -3,7 +3,7 @@ title: Editor Transforms
 description: API reference for editor transformation operations in Plate.
 ---
 
-Transforms are helper functions that manipulate a Plate document.
+Transforms are helper functions that manipulate a Slate document.
 
 ## Node Operations
 
@@ -13,7 +13,7 @@ Duplicates nodes at a location and inserts them after that location.
 
 <API name="duplicateNodes">
 <APIOptions type="DuplicateNodesOptions">
-  <APIItem name="...options" type="InsertNodesOptions" optional>
+  <APIItem name="...options" type="object" optional>
     `insertNodes` options.
   </APIItem>
   <APIItem name="at" type="At" optional>
@@ -62,7 +62,7 @@ Insert a single node atomically.
   <APIItem name="node" type="N">
     Node to insert.
   </APIItem>
-  <APIItem name="options" type="InsertNodesOptions" optional />
+  <APIItem name="options" type="object" optional />
 </APIParameters>
 </API>
 
@@ -75,10 +75,10 @@ Insert one or more nodes atomically.
   <APIItem name="nodes" type="N | N[]">
     Node(s) to insert.
   </APIItem>
-  <APIItem name="options" type="InsertNodesOptions" optional />
+  <APIItem name="options" type="object" optional />
 </APIParameters>
 
-<APIOptions type="InsertNodesOptions">
+<APIOptions type="object">
   <APIItem name="...options" type="QueryOptions" optional>
     Common query options.
   </APIItem>
@@ -148,7 +148,7 @@ Move the nodes from an origin to a destination.
 Remove nodes at a location.
 
 <API name="removeNodes">
-<APIOptions type="RemoveNodesOptions">
+<APIOptions type="object">
   <APIItem name="...options" type="QueryOptions" optional />
   <APIItem name="children" type="boolean" optional>
     When true, remove all children of the node at the specified location.
@@ -171,17 +171,17 @@ Replace nodes at a location with new nodes.
   <APIItem name="nodes" type="N | N[]">
     The new node(s) to insert.
   </APIItem>
-  <APIItem name="options" type="ReplaceNodesOptions" optional />
+  <APIItem name="options" type="object" optional />
 </APIParameters>
 
-<APIOptions type="ReplaceNodesOptions">
-  <APIItem name="...options" type="InsertNodesOptions" optional>
+<APIOptions type="object">
+  <APIItem name="...options" type="object" optional>
     `insertNodes` options.
   </APIItem>
   <APIItem name="children" type="boolean" optional>
     Replace all children of the node at the specified location instead of the node itself.
   </APIItem>
-  <APIItem name="removeNodes" type="Omit<RemoveNodesOptions, 'at'>" optional>
+  <APIItem name="removeNodes" type="Omit<object, 'at'>" optional>
     Options for removing nodes before the replacement.
   </APIItem>
 </APIOptions>
@@ -193,7 +193,7 @@ Reset the editor state including history, selection and children.
 
 <API name="reset">
 <APIOptions type="ResetOptions">
-  <APIItem name="...options" type="ReplaceNodesOptions" optional>
+  <APIItem name="...options" type="object" optional>
     `replaceNodes` options.
   </APIItem>
   <APIItem name="children" type="boolean" optional>
@@ -211,10 +211,10 @@ Set properties on nodes.
   <APIItem name="props" type="Partial<NodeProps<N>>">
     Properties to set. Use `undefined` to unset.
   </APIItem>
-  <APIItem name="options" type="SetNodesOptions" optional />
+  <APIItem name="options" type="object" optional />
 </APIParameters>
 
-<APIOptions type="SetNodesOptions">
+<APIOptions type="object">
   <APIItem name="...options" type="QueryOptions" optional />
   <APIItem name="compare" type="(prop: Partial<Descendant>, node: Partial<Descendant>) => boolean" optional />
   <APIItem name="hanging" type="boolean" optional />
@@ -255,13 +255,13 @@ Toggle the block type at a location.
 </APIParameters>
 
 <APIOptions type="ToggleBlockOptions">
-  <APIItem name="...options" type="SetNodesOptions" optional>
+  <APIItem name="...options" type="object" optional>
     Options to pass to `setNodes`.
   </APIItem>
   <APIItem name="defaultType" type="string" optional>
     The default block type when untoggling. Defaults to paragraph.
   </APIItem>
-  <APIItem name="someOptions" type="EditorNodesOptions" optional>
+  <APIItem name="options" type="object" optional>
     Options for determining if the block is active.
   </APIItem>
   <APIItem name="wrap" type="boolean" optional>
@@ -296,7 +296,7 @@ Remove properties from nodes.
 Unwrap a node at a location. If necessary, the parent node is split.
 
 <API name="unwrapNodes">
-<APIOptions type="UnwrapNodesOptions">
+<APIOptions type="object">
   <APIItem name="...options" type="QueryOptions" optional />
   <APIItem name="hanging" type="boolean" optional />
   <APIItem name="split" type="boolean" optional />
@@ -314,10 +314,10 @@ Wrap nodes at a location in the `element` container.
   <APIItem name="element" type="N">
     The wrapper element.
   </APIItem>
-  <APIItem name="options" type="WrapNodesOptions" optional />
+  <APIItem name="options" type="object" optional />
 </APIParameters>
 
-<APIOptions type="WrapNodesOptions">
+<APIOptions type="object">
   <APIItem name="...options" type="QueryOptions" optional />
   <APIItem name="children" type="boolean" optional>
     When true, wrap all children into a single container element.
@@ -407,7 +407,7 @@ Insert text at a location, optionally with marks. The behavior depends on the pr
 </APIParameters>
 
 <APIOptions type="InsertTextOptions">
-  <APIItem name="at" type="TLocation" optional>
+  <APIItem name="at" type="Location" optional>
     Location to insert text at. Takes precedence over current selection.
   </APIItem>
   <APIItem name="voids" type="boolean" optional>
@@ -537,7 +537,7 @@ editor.tf.removeMarks('bold', { at: range })
 
 <APIOptions type="RemoveMarksOptions">
   <APIItem name="...options" type="UnsetNodesOptions" optional />
-  <APIItem name="at" type="TRange" optional>
+  <APIItem name="at" type="Range" optional>
     Custom range to remove marks from. Takes precedence over current selection.
   </APIItem>
   <APIItem name="shouldChange" type="boolean" optional>
@@ -681,7 +681,7 @@ Set new properties on an active selection. Since the value is a `Partial<Range>`
 
 <API name="setSelection">
 <APIParameters>
-  <APIItem name="props" type="Partial<TRange>">
+  <APIItem name="props" type="Partial<Range>">
     A partial range to update existing selection properties.
   </APIItem>
 </APIParameters>
@@ -937,7 +937,7 @@ Handle `ArrowUp` and `ArrowDown` keyboard events.
 const plugin = createPlatePlugin({
   key: 'myPlugin',
 }).overrideEditor(() => ({
-  transforms: {
+  tf: {
     moveLine: ({ reverse }) => {
       // Custom line movement logic
       if (reverse) {
@@ -975,7 +975,7 @@ Handle `Tab` and `Shift+Tab` keyboard events.
 const plugin = createPlatePlugin({
   key: 'myPlugin',
 }).overrideEditor(() => ({
-  transforms: {
+  tf: {
     tab: ({ reverse }) => {
       if (reverse) {
         // Handle Shift+Tab (usually outdent)
@@ -1007,7 +1007,7 @@ Handle `Cmd+A` / `Ctrl+A` keyboard events.
 const plugin = createPlatePlugin({
   key: 'myPlugin',
 }).overrideEditor(() => ({
-  transforms: {
+  tf: {
     selectAll: () => {
       // Custom select all logic
       const blockEntry = editor.api.block();
@@ -1038,7 +1038,7 @@ Handle `Escape` keyboard events.
 const plugin = createPlatePlugin({
   key: 'myPlugin',
 }).overrideEditor(() => ({
-  transforms: {
+  tf: {
     escape: () => {
       // Custom escape logic (e.g., exit special mode)
       if (editor.api.inSpecialMode()) {

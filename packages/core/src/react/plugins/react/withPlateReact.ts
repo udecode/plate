@@ -1,6 +1,13 @@
-import type { DomConfig, ExtendEditor } from '../../../lib';
+import type { DomConfig, WithAnyKey } from '../../../lib';
 
-import { withReact } from '../../slate-react';
+import { withReact } from 'slate-react';
 
-export const withPlateReact: ExtendEditor<DomConfig> = ({ editor }) =>
-  withReact(editor as any);
+import type { ExtendEditor } from '../../plugin/PlatePlugin';
+
+export const withPlateReact: ExtendEditor<WithAnyKey<DomConfig>> = ({
+  editor,
+}) => {
+  withReact(editor as unknown as Parameters<typeof withReact>[0]);
+
+  return editor;
+};

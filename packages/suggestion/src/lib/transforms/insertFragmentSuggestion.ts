@@ -3,18 +3,23 @@ import { type Descendant, type SlateEditor, KEYS, TextApi } from 'platejs';
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { findSuggestionProps } from '../queries';
 import { getSuggestionKey, getSuggestionKeys } from '../utils/index';
+import { getSuggestionApi } from '../utils/getSuggestionApi';
 import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
 
 export const insertFragmentSuggestion = (
   editor: SlateEditor,
   fragment: Descendant[],
   {
-    insertFragment = editor.tf.insertFragment,
+    insertFragment = (nextFragment) => {
+      editor.update((tx) => {
+        tx.fragment.insert(nextFragment);
+      });
+    },
   }: {
     insertFragment?: (fragment: Descendant[]) => void;
   } = {}
 ) => {
-  editor.tf.withoutNormalizing(() => {
+  editor.update(() => {
     deleteFragmentSuggestion(editor);
 
     const { id, createdAt } = findSuggestionProps(editor, {
@@ -51,7 +56,7 @@ export const insertFragmentSuggestion = (
       }
     });
 
-    editor.getApi(BaseSuggestionPlugin).suggestion.withoutSuggestions(() => {
+    getSuggestionApi(editor).withoutSuggestions(() => {
       insertFragment(fragment);
     });
   });

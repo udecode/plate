@@ -94,7 +94,7 @@ export const aiChatPlugin = AIChatPlugin.extend({
         }
       },
       onFinish: () => {
-        editor.getApi(AIChatPlugin).aiChat.stop();
+        editor.getPluginApi(AIChatPlugin).aiChat.stop();
       },
     });
   },

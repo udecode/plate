@@ -1,6 +1,12 @@
-import { type InsertNodesOptions, type SlateEditor, KEYS } from 'platejs';
+import type { EditorUpdateTransaction } from '@platejs/slate';
+
+import { type SlateEditor, KEYS, PathApi } from 'platejs';
 
 import { insertCodeBlock } from './insertCodeBlock';
+
+type InsertNodesOptions = NonNullable<
+  Parameters<EditorUpdateTransaction['nodes']['insert']>[1]
+>;
 
 export type CodeBlockInsertOptions = {
   defaultType?: string;
@@ -23,14 +29,24 @@ export const insertEmptyCodeBlock = (
     editor.api.isExpanded() ||
     !editor.api.isEmpty(editor.selection, { block: true })
   ) {
-    editor.tf.insertNodes(
-      editor.api.create.block({ children: [{ text: '' }], type: defaultType }),
-      {
-        nextBlock: true,
-        select: true,
-        ...insertNodesOptions,
-      }
-    );
+    const insertAt = insertNodesOptions?.at ?? editor.selection;
+    const endPoint = editor.api.end(insertAt);
+    const blockEntry = editor.api.block({ at: endPoint });
+    const nextPath = blockEntry ? PathApi.next(blockEntry[1]) : undefined;
+
+    editor.update((tx) => {
+      tx.nodes.insert(
+        editor.api.create.block({
+          children: [{ text: '' }],
+          type: defaultType,
+        }),
+        {
+          at: nextPath,
+          select: true,
+          ...insertNodesOptions,
+        }
+      );
+    });
   }
 
   insertCodeBlock(editor, insertNodesOptions);

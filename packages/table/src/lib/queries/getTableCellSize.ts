@@ -13,6 +13,7 @@ import {
   getCellIndices,
   getTableOverriddenColSizes,
 } from '..';
+import { findTableNodePath } from '../utils/findTableNodePath';
 
 /** Get the width of a cell with colSpan support. */
 export const getTableCellSize = (
@@ -32,7 +33,11 @@ export const getTableCellSize = (
   const { api } = getEditorPlugin<TableConfig>(editor, {
     key: KEYS.table,
   });
-  const path = editor.api.findPath(element)!;
+  const path = findTableNodePath(editor, element);
+
+  if (!path) {
+    return { minHeight: rowSize ?? 0, width: 0 };
+  }
 
   if (!rowSize) {
     const [rowElement] = editor.api.parent<TTableRowElement>(path) ?? [];

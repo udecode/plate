@@ -1,7 +1,6 @@
 // Components
 export {
   type RenderPlaceholderProps,
-  DefaultPlaceholder,
   Editable,
   Slate,
 } from 'slate-react';
@@ -14,5 +13,4 @@ export {
   useSelected,
 } from 'slate-react';
 
-// Plugin
-export { withReact, useSlateStatic } from 'slate-react';
+export { useSlateHistory } from '@platejs/slate-react';

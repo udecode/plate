@@ -5,6 +5,7 @@ import { type SlateEditor, createSlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
 import { getTestTablePlugins } from '../__tests__/getTestTablePlugins';
+import { moveLineTable } from '../TableExtension';
 import { moveSelectionFromCell } from './moveSelectionFromCell';
 import { setTableColSize } from './setTableColSize';
 import { setTableRowSize } from './setTableRowSize';
@@ -387,7 +388,7 @@ describe('table sizing and selection helpers', () => {
 
       const editor = createTableEditor(input);
 
-      expect(editor.tf.moveLine({ reverse: false })).toBe(true);
+      expect(moveLineTable(editor, { reverse: false })).toBe(true);
       expect(editor.selection).toEqual(output.selection);
     });
   });

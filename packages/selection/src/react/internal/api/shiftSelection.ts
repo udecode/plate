@@ -1,7 +1,11 @@
+import { ElementApi } from '@platejs/slate';
 import { type TIdElement, PathApi } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
 import { BlockSelectionPlugin } from '../../BlockSelectionPlugin';
+
+const isBlockSelectionElement = (node: unknown): node is TIdElement =>
+  ElementApi.isElement(node) && typeof node.id === 'string';
 
 /**
  * SHIFT-based expand-or-shrink selection.
@@ -64,7 +68,8 @@ export const shiftSelection = (
         at: bottomPath,
         mode: 'highest',
         match: (n, p) =>
-          api.blockSelection.isSelectable(n as any, p) &&
+          isBlockSelectionElement(n) &&
+          api.blockSelection.isSelectable(n, p) &&
           !PathApi.isAncestor(p, bottomPath),
       });
 

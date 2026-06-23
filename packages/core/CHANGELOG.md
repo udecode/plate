@@ -347,11 +347,11 @@
 
 - [#4454](https://github.com/udecode/plate/pull/4454) by [@felixfeng33](https://github.com/felixfeng33) –
 
-  - Added `editor.tf.nodeId.normalize()` API to manually normalize node IDs in the document.
+  - Added `editor.transforms.nodeId.normalize()` API to manually normalize node IDs in the document.
 
     ```ts
     // Normalize all nodes in the document to ensure they have IDs
-    editor.tf.nodeId.normalize();
+    editor.transforms.nodeId.normalize();
     ```
 
   - Added `normalizeNodeId` pure function to normalize node IDs in a value without using editor operations.
@@ -586,7 +586,7 @@
     - When `true`, indicates that the plugin's elements are primarily containers for other content.
   - New plugin field: `node.isStrictSiblings` (boolean).
     - When `true`, indicates that the element enforces strict sibling type constraints and only allows specific siblings (e.g., `td` can only have `td` siblings, `column` can only have `column` siblings).
-    - Used by `editor.tf.insertExitBreak` functionality to determine appropriate exit points in nested structures.
+    - Used by `editor.transforms.insertExitBreak` functionality to determine appropriate exit points in nested structures.
   - New plugin field: `rules` (object).
     - Configures common editing behaviors declaratively instead of overriding editor methods. See documentation for more details.
     - `rules.break`: Controls Enter key behavior (`empty`, `default`, `emptyLineEnd`, `splitReset`)
@@ -597,15 +597,15 @@
     - `rules.match`: Conditional rule application based on node properties
   - Plugin shortcuts can now automatically leverage existing plugin transforms by specifying the transform name, in addition to custom handlers.
   - New editor transform methods for keyboard handling:
-    - `editor.tf.escape`: Handle Escape key events. Returns `true` if the event is handled.
-    - `editor.tf.moveLine`: Handle ArrowDown and ArrowUp key events with `reverse` option for direction. Returns `true` if the event is handled.
-    - `editor.tf.selectAll`: Handle Ctrl/Cmd+A key events for selecting all content. Returns `true` if the event is handled.
-    - `editor.tf.tab`: Handle Tab and Shift+Tab key events with `reverse` option for Shift+Tab. Returns `true` if the event is handled.
+    - `editor.transforms.escape`: Handle Escape key events. Returns `true` if the event is handled.
+    - `editor.transforms.moveLine`: Handle ArrowDown and ArrowUp key events with `reverse` option for direction. Returns `true` if the event is handled.
+    - `editor.transforms.selectAll`: Handle Ctrl/Cmd+A key events for selecting all content. Returns `true` if the event is handled.
+    - `editor.transforms.tab`: Handle Tab and Shift+Tab key events with `reverse` option for Shift+Tab. Returns `true` if the event is handled.
 
 ### Patch Changes
 
 - [#4327](https://github.com/udecode/plate/pull/4327) by [@zbeyens](https://github.com/zbeyens) –
-  - Fixed an issue where `editor.api` and `editor.tf` (transforms) were not consistently available in the props passed to default element components when no custom component was provided for a plugin.
+  - Fixed an issue where `editor.api` and `editor.transforms` (transforms) were not consistently available in the props passed to default element components when no custom component was provided for a plugin.
 
 # @udecode/plate-core
 
@@ -689,7 +689,7 @@
     - new `components` option, alias to `override.components`
     - new `skipInitialization` option, skip the initialization logic (`editor.children`, `editor.selection`, normalizing the initial value)
   - New api `editor.api.shouldNormalizeNode`: use case is to prevent normalizeNode from being called when the editor is not ready
-  - New transform `editor.tf.init`: initialize `editor.children`, `editor.selection`, normalizing the initial value. Use it when `skipInitialization` is `true`.
+  - New transform `editor.transforms.init`: initialize `editor.children`, `editor.selection`, normalizing the initial value. Use it when `skipInitialization` is `true`.
 
 ## 47.3.1
 
@@ -710,7 +710,7 @@
 
 ### Patch Changes
 
-- [`f4996e3`](https://github.com/udecode/plate/commit/f4996e3c3e606cb1dc0f6f66dc54364330a1655a) by [@felixfeng33](https://github.com/felixfeng33) – Extend `DomPlugin` to support `editor.tf.withScrolling`.
+- [`f4996e3`](https://github.com/udecode/plate/commit/f4996e3c3e606cb1dc0f6f66dc54364330a1655a) by [@felixfeng33](https://github.com/felixfeng33) – Extend `DomPlugin` to support `editor.transforms.withScrolling`.
 
 ## 47.1.1
 
@@ -940,11 +940,11 @@
 - [#3920](https://github.com/udecode/plate/pull/3920) by [@zbeyens](https://github.com/zbeyens) –
 
   - **Plugin `normalizeInitialValue`** now returns `void` instead of `Value`. When mutating nodes, keep their references (e.g., use `Object.assign` instead of spread).
-  - **Editor methods have moved** to `editor.tf` and `editor.api`. They still exist at the top level for **slate backward compatibility**, but are no longer redundantly typed. If you truly need the top-level method types, extend your editor type with `LegacyEditorMethods` (e.g. `editor as Editor & LegacyEditorMethods`). Since these methods can be overridden by `extendEditor`, `with...`, or slate plugins, consider migrating to the following approaches:
+  - **Editor methods have moved** to `editor.transforms` and `editor.api`. They still exist at the top level for **slate backward compatibility**, but are no longer redundantly typed. If you truly need the top-level method types, extend your editor type with `LegacyEditorMethods` (e.g. `editor as Editor & LegacyEditorMethods`). Since these methods can be overridden by `extendEditor`, `with...`, or slate plugins, consider migrating to the following approaches:
 
     ```tsx
     // For overriding existing methods only:
-    overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
+    overrideEditor(({ editor, transforms: { deleteForward }, api: { isInline } }) => ({
       transforms: {
         deleteForward(options) {
           // ...conditional override
@@ -960,7 +960,7 @@
     }));
     ```
 
-  This was previously done in `extendEditor` using top-level methods, which still works but now throws a type error due to the move to `editor.tf/editor.api`. A workaround is to extend your editor with `LegacyEditorMethods`.
+  This was previously done in `extendEditor` using top-level methods, which still works but now throws a type error due to the move to `editor.transforms/editor.api`. A workaround is to extend your editor with `LegacyEditorMethods`.
 
   **Why?** Having all methods at the top-level (next to `children`, `marks`, etc.) would clutter the editor interface. Slate splits transforms in three places (`editor`, `Editor`, and `Transforms`), which is also confusing. We've reorganized them into `tf` and `api` for better DX, but also to support transform-only middlewares in the future. This also lets us leverage `extendEditorTransforms`, `extendEditorApi`, and `overrideEditor` to modify those methods.
 
@@ -1307,8 +1307,8 @@
 ### Patch Changes
 
 - [#3512](https://github.com/udecode/plate/pull/3512) by [@zbeyens](https://github.com/zbeyens) –
-  - Add `editor.tf.setValue` to replace the editor value
-  - Fix: move `editor.api.reset` to `editor.tf.reset`
+  - Add `editor.transforms.setValue` to replace the editor value
+  - Fix: move `editor.api.reset` to `editor.transforms.reset`
 
 ## 37.0.7
 
@@ -1409,7 +1409,7 @@
     shortcuts: {
       toggleParagraph: {
         handler: () => {
-          editor.tf.toggle.block({ type });
+          editor.transforms.toggle.block({ type });
         },
         keys: [
           [Key.Mod, Key.Alt, '0'],
@@ -1421,7 +1421,7 @@
   })
   ```
 
-  - `toggleParagraph` is now a shortcut for `editor.tf.toggle.block({ type: 'p' })` for the given keys
+  - `toggleParagraph` is now a shortcut for `editor.transforms.toggle.block({ type: 'p' })` for the given keys
   - Multiple shortcuts can be defined per plugin, and any shortcut can be disabled by setting `shortcuts.toggleParagraph = null`
   - Note the typing support using `Key`
 
@@ -1641,8 +1641,8 @@
     - `eventEditorStore` -> `EventEditorStore`
   - `createDeserializeAstPlugin` -> `AstPlugin`
   - `createEditorProtocolPlugin` -> `SlateNextPlugin`
-    - NEW `editor.tf.toggle.block`
-    - NEW `editor.tf.toggle.mark`
+    - NEW `editor.transforms.toggle.block`
+    - NEW `editor.transforms.toggle.mark`
     - Remove `createNodeFactoryPlugin`, included in `SlateNextPlugin`.
     - Remove `createPrevSelectionPlugin`, included in `SlateNextPlugin`.
   - `createHistoryPlugin` -> `HistoryPlugin`
@@ -1701,7 +1701,7 @@
   `editor: PlateEditor`:
 
   - Move `redecorate` to `editor.api.redecorate`
-  - Move `reset` to `editor.tf.reset`
+  - Move `reset` to `editor.transforms.reset`
   - Move `plate.set` to `editor.setPlateState`
   - Move `blockFactory` to `editor.api.create.block`
   - Move `childrenFactory` to `editor.api.create.value`
@@ -1738,7 +1738,7 @@
   ```ts
   const editor = createPlateEditor({ plugins: [TablePlugin] });
   editor.api.htmlReact.serialize(); // core plugin is automatically inferred
-  editor.tf.insert.tableRow(); // table plugin is automatically inferred
+  editor.transforms.insert.tableRow(); // table plugin is automatically inferred
   ```
 
   **Plate Component**

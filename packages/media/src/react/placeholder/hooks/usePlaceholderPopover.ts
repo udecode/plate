@@ -1,4 +1,5 @@
 import { type TPlaceholderElement, KEYS } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 import {
   useEditorRef,
   useEditorSelector,
@@ -8,10 +9,29 @@ import {
   useSelected,
 } from 'platejs/react';
 
+import type {
+  PlaceholderStore,
+  PlaceholderStoreSetter,
+} from '../placeholderStore';
 import { usePlaceholderSet, usePlaceholderValue } from '../placeholderStore';
 
-export const usePlaceholderPopoverState = (): any => {
-  const editor = useEditorRef();
+export type PlaceholderPopoverState = {
+  editor: PlateEditor;
+  element: TPlaceholderElement;
+  focused: boolean;
+  id: TPlaceholderElement['id'];
+  mediaType: TPlaceholderElement['mediaType'];
+  readOnly: boolean;
+  selected: boolean;
+  selectionCollapsed: boolean;
+  setIsUploading: PlaceholderStoreSetter<'isUploading'>;
+  setProgresses: PlaceholderStoreSetter<'progresses'>;
+  setUpdatedFiles: PlaceholderStoreSetter<'updatedFiles'>;
+  size: PlaceholderStore['size'];
+};
+
+export const usePlaceholderPopoverState = (): PlaceholderPopoverState => {
+  const editor = useEditorRef<PlateEditor>();
   const readOnly = useReadOnly();
   const selected = useSelected();
   const focused = useFocused();

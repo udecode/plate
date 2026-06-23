@@ -1,14 +1,12 @@
 import cloneDeep from 'lodash/cloneDeep.js';
+import { PathApi, type Path } from '@platejs/slate';
 import {
-  type Path,
   type SlateEditor,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
   getEditorPlugin,
   KEYS,
-  NodeApi,
-  PathApi,
 } from 'platejs';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
@@ -39,10 +37,12 @@ export const insertTableMergeRow = (
   const { api, type } = getEditorPlugin(editor, BaseTablePlugin);
 
   if (at && !fromRow) {
-    const table = NodeApi.get<TTableElement>(editor, at);
+    const table = editor.api.node<TTableElement>(at)?.[0];
 
     if (table?.type === editor.getType(KEYS.table)) {
-      fromRow = NodeApi.lastChild(editor, at)![1];
+      if (table.children.length === 0) return;
+
+      fromRow = at.concat(table.children.length - 1);
       at = undefined;
     }
   }
@@ -144,7 +144,9 @@ export const insertTableMergeRow = (
       }
 
       // make higher
-      editor.tf.setNodes<TTableCellElement>(newCell, { at: currentCellPath });
+      editor.update((tx) => {
+        tx.nodes.set(newCell, { at: currentCellPath });
+      });
     } else {
       // add new
       const row = editor.api.parent(currentCellPath)!;
@@ -159,8 +161,8 @@ export const insertTableMergeRow = (
     }
   });
 
-  editor.tf.withoutNormalizing(() => {
-    editor.tf.insertNodes(
+  editor.update((tx) => {
+    tx.nodes.insert(
       {
         children: newRowChildren,
         type: editor.getType(KEYS.tr),
@@ -179,7 +181,7 @@ export const insertTableMergeRow = (
 
       if (cellEntry) {
         const [, nextCellPath] = cellEntry;
-        editor.tf.select(nextCellPath);
+        tx.selection.set(nextCellPath);
       }
     }
   });

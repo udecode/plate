@@ -38,7 +38,7 @@ export function ImportToolbarButton(props: DropdownMenuProps) {
     }
 
     if (type === 'markdown') {
-      return editor.getApi(MarkdownPlugin).markdown.deserialize(text);
+      return editor.getPluginApi(MarkdownPlugin).markdown.deserialize(text);
     }
 
     return [];

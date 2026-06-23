@@ -34,7 +34,7 @@ describe('getRenderNodeProps', () => {
 
     expect(result.api).toBe(editor.api);
     expect(result.editor).toBe(editor);
-    expect(result.tf).toBe(editor.transforms);
+    expect(result.tf).toBe(editor.tf);
     expect(result.attributes?.className).toContain('slate-p');
     expect(result.attributes?.className).toContain('attr-class');
     expect(result.attributes?.className).toContain('user-class');

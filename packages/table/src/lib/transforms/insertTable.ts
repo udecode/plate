@@ -1,13 +1,12 @@
-import {
-  type InsertNodesOptions,
-  type SlateEditor,
-  type TTableElement,
-  KEYS,
-  PathApi,
-} from 'platejs';
+import { type EditorUpdateTransaction, PathApi } from '@platejs/slate';
+import { type SlateEditor, KEYS } from 'platejs';
 
 import type { GetEmptyTableNodeOptions } from '../api/getEmptyTableNode';
 import type { TableConfig } from '../BaseTablePlugin';
+
+type InsertTableOptions = NonNullable<
+  Parameters<EditorUpdateTransaction['nodes']['insert']>[1]
+>;
 
 /**
  * Insert table. If selection in table and no 'at' specified, insert after
@@ -16,12 +15,12 @@ import type { TableConfig } from '../BaseTablePlugin';
 export const insertTable = (
   editor: SlateEditor,
   { colCount = 2, header, rowCount = 2 }: GetEmptyTableNodeOptions = {},
-  { select: shouldSelect, ...options }: InsertNodesOptions = {}
+  { select: shouldSelect, ...options }: InsertTableOptions = {}
 ) => {
   const { api } = editor.getPlugin<TableConfig>({ key: KEYS.table });
   const type = editor.getType(KEYS.table);
 
-  editor.tf.withoutNormalizing(() => {
+  editor.update((tx) => {
     const newTable = api.create.table({
       colCount,
       header,
@@ -38,24 +37,33 @@ export const insertTable = (
         const [, tablePath] = currentTableEntry;
         const insertPath = PathApi.next(tablePath);
 
-        editor.tf.insertNodes<TTableElement>(newTable, {
+        tx.nodes.insert(newTable, {
           at: insertPath,
-          ...(options as any),
+          ...options,
         });
 
         if (editor.selection) {
-          editor.tf.select(editor.api.start(insertPath)!);
+          tx.selection.set(editor.api.start(insertPath)!);
         }
 
         return;
       }
     }
 
-    // Use specified path or insert at current selection
-    editor.tf.insertNodes<TTableElement>(newTable, {
-      nextBlock: !options.at,
+    const insertOptions = { ...options };
+
+    if (!insertOptions.at) {
+      const blockEntry = editor.api.block();
+
+      if (blockEntry) {
+        insertOptions.at = PathApi.next(blockEntry[1]);
+      }
+    }
+
+    // Use specified path, the next block path, or the current selection.
+    tx.nodes.insert(newTable, {
       select: shouldSelect,
-      ...(options as any),
+      ...insertOptions,
     });
 
     if (shouldSelect) {
@@ -66,7 +74,7 @@ export const insertTable = (
 
       if (!tableEntry) return;
 
-      editor.tf.select(editor.api.start(tableEntry[1])!);
+      tx.selection.set(editor.api.start(tableEntry[1])!);
     }
   });
 };

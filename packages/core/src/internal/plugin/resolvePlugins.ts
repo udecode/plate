@@ -1,8 +1,10 @@
 import {
   assignCurrentRuntimeApi,
   assignCurrentRuntimeTransforms,
+  getCurrentRuntimeTransforms,
   syncCurrentRuntimeMethods,
 } from '../currentRuntimeBridge';
+import { installLegacyRuntimePluginTxTransformBridge } from '../editor/legacyRuntimeUpdateBridge';
 import { isDefined } from '@udecode/utils';
 import merge from 'lodash/merge.js';
 import { createVanillaStore } from 'zustand-x/vanilla';
@@ -237,6 +239,16 @@ const resolvePluginStores = (
 };
 
 const resolvePluginMethods = (editor: SlateEditor, plugin: any) => {
+  const legacyTransforms = getCurrentRuntimeTransforms(editor);
+  plugin.runtimeTransforms ??= {};
+  const hasTransformExtensions = plugin.__apiExtensions?.some(
+    (extension: any) => extension.isTransform
+  );
+
+  if (hasTransformExtensions) {
+    installLegacyRuntimePluginTxTransformBridge(editor, plugin);
+  }
+
   // Merge APIs
   Object.entries(plugin.api).forEach(([apiKey, apiFunction]) => {
     (editor.api as any)[apiKey] = apiFunction;
@@ -246,37 +258,43 @@ const resolvePluginMethods = (editor: SlateEditor, plugin: any) => {
   if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
     plugin.__apiExtensions.forEach(
       ({ extension, isOverride, isPluginSpecific, isTransform }: any) => {
-        const newExtensions = extension(getEditorPlugin(editor, plugin) as any);
+        const context = getEditorPlugin(editor, plugin) as any;
+
+        if (isOverride || isTransform) {
+          context.tf = legacyTransforms;
+        }
+
+        const newExtensions = extension(context);
 
         if (isOverride) {
-          // Handle combined API and transforms override
+          // Handle combined API and editor transform overrides
           if (newExtensions.api) {
             merge(editor.api, newExtensions.api);
             merge(plugin.api, newExtensions.api);
             assignCurrentRuntimeApi(editor, editor.api);
           }
-          if (newExtensions.transforms) {
-            merge(editor.transforms, newExtensions.transforms);
-            merge(plugin.transforms, newExtensions.transforms);
-            assignCurrentRuntimeTransforms(editor, newExtensions.transforms);
+          if (newExtensions.tf) {
+            merge(legacyTransforms, newExtensions.tf);
+            merge(plugin.runtimeTransforms, newExtensions.tf);
+            assignCurrentRuntimeTransforms(editor, newExtensions.tf);
           }
         } else if (isTransform) {
           // Handle transforms
           if (isPluginSpecific) {
             // Plugin-specific transform
-            if (!(editor.transforms as any)[plugin.key]) {
-              (editor.transforms as any)[plugin.key] = {};
+            if (!(legacyTransforms as any)[plugin.key]) {
+              (legacyTransforms as any)[plugin.key] = {};
             }
-            if (!(plugin.transforms as any)[plugin.key]) {
-              (plugin.transforms as any)[plugin.key] = {};
+            if (!(plugin.runtimeTransforms as any)[plugin.key]) {
+              (plugin.runtimeTransforms as any)[plugin.key] = {};
             }
 
-            merge((editor.transforms as any)[plugin.key], newExtensions);
-            merge((plugin.transforms as any)[plugin.key], newExtensions);
+            merge((legacyTransforms as any)[plugin.key], newExtensions);
+            merge((plugin.runtimeTransforms as any)[plugin.key], newExtensions);
           } else {
             // Editor-wide transform
-            merge(editor.transforms, newExtensions);
-            merge(plugin.transforms, newExtensions);
+            merge(legacyTransforms, newExtensions);
+            merge(plugin.runtimeTransforms, newExtensions);
             assignCurrentRuntimeTransforms(editor, newExtensions);
           }
         } else if (isPluginSpecific) {
@@ -325,16 +343,17 @@ const resolvePluginShortcuts = (editor: SlateEditor) => {
           SlatePlugin['shortcuts'][string]
         >;
 
-        // If no custom handler is provided, try to use plugin transform method as handler
+        // If no custom handler is provided, route plugin commands through tx.
         if (!resolvedHotkey.handler) {
-          const pluginSpecificTransforms = (plugin.transforms as any)?.[
-            plugin.key
-          ];
+          const pluginSpecificTx = (plugin.tx as any)?.[plugin.key];
           const pluginSpecificApi = (plugin.api as any)?.[plugin.key];
 
-          if (pluginSpecificTransforms?.[originalKey]) {
-            resolvedHotkey.handler = () =>
-              pluginSpecificTransforms[originalKey]();
+          if (pluginSpecificTx?.[originalKey] || plugin.__txExtensions.length) {
+            resolvedHotkey.handler = () => {
+              editor.update((tx: any) => {
+                tx[plugin.key]?.[originalKey]?.();
+              });
+            };
           } else if (pluginSpecificApi?.[originalKey]) {
             resolvedHotkey.handler = () => pluginSpecificApi[originalKey]();
           }
@@ -461,6 +480,27 @@ const flattenAndResolvePlugins = (
   plugins: SlatePlugins
 ): Map<string, SlatePlugin> => {
   const pluginMap = new Map<string, SlatePlugin>();
+  const mergeDuplicatePlugin = (
+    existingPlugin: SlatePlugin,
+    resolvedPlugin: SlatePlugin
+  ) => {
+    const mergedPlugin = mergePlugins(existingPlugin, resolvedPlugin);
+
+    mergedPlugin.__apiExtensions = [
+      ...(existingPlugin.__apiExtensions ?? []),
+      ...(resolvedPlugin.__apiExtensions ?? []),
+    ];
+    mergedPlugin.__selectorExtensions = [
+      ...(existingPlugin.__selectorExtensions ?? []),
+      ...(resolvedPlugin.__selectorExtensions ?? []),
+    ];
+    mergedPlugin.__txExtensions = [
+      ...(existingPlugin.__txExtensions ?? []),
+      ...(resolvedPlugin.__txExtensions ?? []),
+    ];
+
+    return mergedPlugin;
+  };
 
   const processPlugin = (plugin: SlatePlugin) => {
     const resolvedPlugin = resolvePlugin(editor, plugin);
@@ -471,7 +511,7 @@ const flattenAndResolvePlugins = (
       if (existingPlugin) {
         pluginMap.set(
           resolvedPlugin.key,
-          mergePlugins(existingPlugin, resolvedPlugin)
+          mergeDuplicatePlugin(existingPlugin, resolvedPlugin)
         );
       } else {
         pluginMap.set(resolvedPlugin.key, resolvedPlugin);

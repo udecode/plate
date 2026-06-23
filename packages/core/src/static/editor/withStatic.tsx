@@ -1,10 +1,16 @@
-import { type Editor, type Value, createEditor } from '@platejs/slate-legacy';
+import type { Value } from '@platejs/slate';
 
+import {
+  createCurrentRuntimeEditor,
+  type CurrentRuntimeEditor as Editor,
+} from '../../internal/currentRuntimeBridge';
 import type { AnyPluginConfig } from '../../lib/plugin';
 import type { CorePlugin } from '../../lib/plugins';
 
 import {
   type CreateSlateEditorOptions,
+  type InferPlugins,
+  type SlatePluginInput,
   type WithSlateOptions,
   withSlate,
 } from '../../lib/editor';
@@ -12,7 +18,7 @@ import { getStaticPlugins } from '../plugins/getStaticPlugins';
 
 type CreateStaticEditorOptions<
   V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
+  P extends readonly SlatePluginInput[] = readonly CorePlugin[],
 > = CreateSlateEditorOptions<V, P> & {};
 
 type WithStaticOptions<
@@ -38,8 +44,12 @@ const withStatic = <
 
 export const createStaticEditor = <
   V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
+  const P extends readonly SlatePluginInput[] = readonly CorePlugin[],
 >({
-  editor = createEditor(),
+  editor = createCurrentRuntimeEditor(),
   ...options
-}: CreateStaticEditorOptions<V, P> = {}) => withStatic<V, P>(editor, options);
+}: CreateStaticEditorOptions<V, P> = {}) =>
+  withStatic<V, InferPlugins<P>>(
+    editor,
+    options as WithStaticOptions<V, InferPlugins<P>>
+  );

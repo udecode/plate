@@ -1,6 +1,9 @@
-import { type Element, PathApi } from '@platejs/slate';
+import { PathApi } from '@platejs/slate';
 import type { SlateEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
+import { isEditorPointStart } from '../internal/editorQueries';
+import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
+import { getEditorMarks } from '../internal/getEditorMarks';
 
 export type InsertListItemOptions = {
   inheritCheckStateOnLineEndBreak?: boolean;
@@ -19,7 +22,9 @@ export const insertListItem = (
     return false;
   }
 
-  const licEntry = editor.api.above({ match: { type: licType } });
+  const licEntry = editor.api.above({
+    match: (node) => node.type === licType,
+  });
 
   if (!licEntry) return false;
 
@@ -38,87 +43,96 @@ export const insertListItem = (
 
   let success = false;
 
-  editor.tf.withoutNormalizing(() => {
-    if (!editor.api.isCollapsed()) {
-      editor.tf.delete();
-    }
-
-    const isStart = editor.api.isStart(editor.selection!.focus, paragraphPath);
-    const isEnd = editor.api.isEmpty(editor.selection, { after: true });
-
-    const nextParagraphPath = PathApi.next(paragraphPath);
-    const nextListItemPath = PathApi.next(listItemPath);
-
-    /** If start, insert a list item before */
-    if (isStart) {
-      if (optionalTasklistProps && options.inheritCheckStateOnLineStartBreak) {
-        optionalTasklistProps.checked = listItemNode.checked as boolean;
+  editor.update((tx) => {
+    runWithoutNormalizing(tx, () => {
+      if (!editor.api.isCollapsed()) {
+        tx.text.delete();
       }
 
-      editor.tf.insertNodes(
-        {
-          children: [{ children: [{ text: '' }], type: licType }],
-          ...optionalTasklistProps,
-          type: liType,
-        },
-        { at: listItemPath }
+      const isStart = isEditorPointStart(
+        editor,
+        editor.selection!.focus,
+        paragraphPath
       );
+      const isEnd = editor.api.isEmpty(editor.selection, { after: true });
 
-      success = true;
+      const nextParagraphPath = PathApi.next(paragraphPath);
+      const nextListItemPath = PathApi.next(listItemPath);
 
-      return;
-    }
-    /**
-     * If not end, split nodes, wrap a list item on the new paragraph and move
-     * it to the next list item
-     */
-    if (isEnd) {
-      /** If end, insert a list item after and select it */
-      const marks = editor.api.marks() || {};
+      /** If start, insert a list item before */
+      if (isStart) {
+        if (
+          optionalTasklistProps &&
+          options.inheritCheckStateOnLineStartBreak
+        ) {
+          optionalTasklistProps.checked = listItemNode.checked as boolean;
+        }
 
-      if (optionalTasklistProps && options.inheritCheckStateOnLineEndBreak) {
-        optionalTasklistProps.checked = listItemNode.checked as boolean;
-      }
-
-      editor.tf.insertNodes(
-        {
-          children: [{ children: [{ text: '', ...marks }], type: licType }],
-          ...optionalTasklistProps,
-          type: liType,
-        },
-        { at: nextListItemPath }
-      );
-      editor.tf.select(nextListItemPath);
-    } else {
-      editor.tf.withoutNormalizing(() => {
-        editor.tf.splitNodes();
-        editor.tf.wrapNodes<Element>(
+        tx.nodes.insert(
           {
-            children: [],
+            children: [{ children: [{ text: '' }], type: licType }],
             ...optionalTasklistProps,
             type: liType,
           },
-          { at: nextParagraphPath }
+          { at: listItemPath }
         );
-        editor.tf.moveNodes({
-          at: nextParagraphPath,
-          to: nextListItemPath,
-        });
-        editor.tf.select(nextListItemPath);
-        editor.tf.collapse({
-          edge: 'start',
-        });
-      });
-    }
-    /** If there is a list in the list item, move it to the next list item */
-    if (listItemNode.children.length > 1) {
-      editor.tf.moveNodes({
-        at: nextParagraphPath,
-        to: nextListItemPath.concat(1),
-      });
-    }
 
-    success = true;
+        success = true;
+
+        return;
+      }
+      /**
+       * If not end, split nodes, wrap a list item on the new paragraph and move
+       * it to the next list item
+       */
+      if (isEnd) {
+        /** If end, insert a list item after and select it */
+        const marks = getEditorMarks(editor);
+
+        if (optionalTasklistProps && options.inheritCheckStateOnLineEndBreak) {
+          optionalTasklistProps.checked = listItemNode.checked as boolean;
+        }
+
+        tx.nodes.insert(
+          {
+            children: [{ children: [{ text: '', ...marks }], type: licType }],
+            ...optionalTasklistProps,
+            type: liType,
+          },
+          { at: nextListItemPath }
+        );
+        tx.selection.set(nextListItemPath);
+      } else {
+        runWithoutNormalizing(tx, () => {
+          tx.nodes.split();
+          tx.nodes.wrap(
+            {
+              children: [],
+              ...optionalTasklistProps,
+              type: liType,
+            },
+            { at: nextParagraphPath }
+          );
+          tx.nodes.move({
+            at: nextParagraphPath,
+            to: nextListItemPath,
+          });
+          tx.selection.set(nextListItemPath);
+          tx.selection.collapse({
+            edge: 'start',
+          });
+        });
+      }
+      /** If there is a list in the list item, move it to the next list item */
+      if (listItemNode.children.length > 1) {
+        tx.nodes.move({
+          at: nextParagraphPath,
+          to: nextListItemPath.concat(1),
+        });
+      }
+
+      success = true;
+    });
   });
 
   return success;

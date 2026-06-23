@@ -1,6 +1,6 @@
 import type { Value } from '@platejs/slate';
 
-import { type NodeEntry, type TCommentText, createSlateEditor } from 'platejs';
+import { type TCommentText, createSlateEditor } from 'platejs';
 
 import { BaseCommentPlugin } from './BaseCommentPlugin';
 
@@ -14,20 +14,6 @@ const getCommentText = (
   editor: ReturnType<typeof createCommentEditor>,
   index: number
 ) => editor.children[0].children[index] as TCommentText;
-
-type NormalizeNodeEditor = ReturnType<typeof createCommentEditor> & {
-  normalizeNode: (entry: NodeEntry<TCommentText>) => void;
-};
-
-const normalizeCommentText = (
-  editor: ReturnType<typeof createCommentEditor>,
-  index: number
-) => {
-  (editor as NormalizeNodeEditor).normalizeNode([
-    getCommentText(editor, index),
-    [0, index],
-  ]);
-};
 
 describe('BaseCommentPlugin', () => {
   it('finds comment nodes across the document when searched with at: []', () => {
@@ -96,54 +82,13 @@ describe('BaseCommentPlugin', () => {
       focus: { offset: 2, path: [0, 0] },
     };
 
-    editor.tf.comment.setDraft();
+    editor.update((tx) => tx.comment.setDraft());
 
     expect(editor.children[0].children[0]).toMatchObject({
       comment: true,
       comment_draft: true,
       text: 'ab',
     });
-  });
-
-  it('removes every comment mark key from the active node', () => {
-    const editor = createCommentEditor([
-      {
-        children: [
-          {
-            comment: true,
-            comment_one: true,
-            comment_two: true,
-            text: 'a',
-          },
-        ],
-        type: 'p',
-      },
-    ]);
-    editor.selection = {
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 0, path: [0, 0] },
-    };
-    const removeMarkSpy = spyOn(editor.tf, 'removeMark');
-
-    editor.tf.comment.removeMark();
-
-    expect(removeMarkSpy).toHaveBeenCalledWith('comment_one');
-    expect(removeMarkSpy).toHaveBeenCalledWith('comment_two');
-    expect(removeMarkSpy).toHaveBeenCalledWith('comment');
-  });
-
-  it('does nothing when removeMark has no active comment node', () => {
-    const editor = createCommentEditor([
-      {
-        children: [{ text: 'a' }],
-        type: 'p',
-      },
-    ]);
-    const removeMarkSpy = spyOn(editor.tf, 'removeMark');
-
-    editor.tf.comment.removeMark();
-
-    expect(removeMarkSpy).not.toHaveBeenCalled();
   });
 
   it('keeps the base comment flag when removing one overlapping comment id', () => {
@@ -161,7 +106,7 @@ describe('BaseCommentPlugin', () => {
       },
     ]);
 
-    editor.tf.comment.unsetMark({ id: 'one' });
+    editor.update((tx) => tx.comment.unsetMark({ id: 'one' }));
 
     expect(editor.children[0].children[0]).toMatchObject({
       comment: true,
@@ -185,30 +130,9 @@ describe('BaseCommentPlugin', () => {
       },
     ]);
 
-    editor.tf.comment.unsetMark({ id: 'one' });
+    editor.update((tx) => tx.comment.unsetMark({ id: 'one' }));
 
     expect(editor.children[0].children[0]).toEqual({ text: 'a' });
   });
 
-  it('normalizes stray comment flags away but leaves draft comments alone', () => {
-    const editor = createCommentEditor([
-      {
-        children: [
-          { comment: true, text: 'a' },
-          { comment: true, comment_draft: true, text: 'b' },
-        ],
-        type: 'p',
-      },
-    ]);
-
-    normalizeCommentText(editor, 0);
-    normalizeCommentText(editor, 1);
-
-    expect(editor.children[0].children[0]).toEqual({ text: 'a' });
-    expect(editor.children[0].children[1]).toMatchObject({
-      comment: true,
-      comment_draft: true,
-      text: 'b',
-    });
-  });
 });

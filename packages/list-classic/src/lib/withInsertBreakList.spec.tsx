@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
 import type { SlateEditor } from '@platejs/core';
+import { createListClassicRuntimeTestEditor as createSlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from '@platejs/core';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
@@ -16,7 +16,7 @@ const createListEditor = (input: SlateEditor) =>
     value: input.children,
   });
 
-describe('withInsertBreakList', () => {
+describe('ListClassicExtension insertBreak', () => {
   it('moves an empty list item up and exits the list', () => {
     const input = (
       <editor>
@@ -39,7 +39,7 @@ describe('withInsertBreakList', () => {
 
     const editor = createListEditor(input);
 
-    editor.tf.insertBreak();
+    editor.update((tx) => tx.break.insert());
 
     expect(editor.children).toEqual(expected.children);
     expect(editor.selection).toEqual(expected.selection);
@@ -65,7 +65,7 @@ describe('withInsertBreakList', () => {
 
     const editor = createListEditor(input);
 
-    editor.tf.insertBreak();
+    editor.update((tx) => tx.break.insert());
 
     expect(editor.children).toEqual(expected.children);
     expect(editor.selection).toEqual(expected.selection);
@@ -101,7 +101,7 @@ describe('withInsertBreakList', () => {
 
     const editor = createListEditor(input);
 
-    editor.tf.insertBreak();
+    editor.update((tx) => tx.break.insert());
 
     expect(editor.children).toEqual(expected.children);
     expect(editor.selection).toEqual(expected.selection);
@@ -128,7 +128,7 @@ describe('withInsertBreakList', () => {
 
     const editor = createListEditor(input);
 
-    editor.tf.insertBreak();
+    editor.update((tx) => tx.break.insert());
 
     expect(editor.children).toEqual(expected.children);
     expect(editor.selection).toEqual(expected.selection);

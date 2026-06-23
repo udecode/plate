@@ -218,7 +218,7 @@ const EquationPopoverContent = ({
       editor.tf.select(element, { focus: true, next: true });
     } else {
       editor
-        .getApi(BlockSelectionPlugin)
+        .getPluginApi(BlockSelectionPlugin)
         .blockSelection.set(element.id as string);
     }
   };

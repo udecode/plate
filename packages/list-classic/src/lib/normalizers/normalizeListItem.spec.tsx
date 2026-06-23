@@ -1,7 +1,8 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, createSlateEditor } from '@platejs/core';
+import type { SlateEditor } from '@platejs/core';
+import { createListClassicTestEditor as createSlateEditor } from '../__tests__/createListClassicTestEditor';
 
 import { BaseListPlugin } from '../BaseListPlugin';
 
@@ -39,10 +40,7 @@ describe('clean up list items', () => {
       value: input.children,
     });
 
-    const path = [0, 0];
-    const node = editor.api.node(path)?.[0];
-
-    editor.tf.normalizeNode([node!, path]);
+    editor.update((tx) => tx.normalize({ force: true }));
 
     expect(editor.children).toEqual(output.children);
   });

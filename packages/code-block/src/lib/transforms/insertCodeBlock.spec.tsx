@@ -1,13 +1,9 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import {
-  type SlateEditor,
-  BaseParagraphPlugin,
-  createSlateEditor,
-  KEYS,
-} from 'platejs';
+import { type SlateEditor, BaseParagraphPlugin, KEYS } from 'platejs';
 
+import { createSlateEditor } from '../../../../core/src/lib/editor/withSlate';
 import { BaseCodeBlockPlugin } from '../BaseCodeBlockPlugin';
 import { CodeBlockPlugin } from '../../react/CodeBlockPlugin';
 import { insertCodeBlock } from './insertCodeBlock';
@@ -47,7 +43,7 @@ describe('insert code block', () => {
         value: input.children,
       });
 
-      insertCodeBlock(editor);
+      insertCodeBlock(editor as unknown as SlateEditor);
 
       expect(editor.children).toEqual(output.children);
     });
@@ -86,7 +82,7 @@ describe('insert code block', () => {
         value: input.children,
       });
 
-      insertCodeBlock(editor);
+      insertCodeBlock(editor as unknown as SlateEditor);
 
       expect(editor.children).toEqual(output.children);
     });
@@ -126,7 +122,7 @@ describe('insert code block', () => {
         value: input.children,
       });
 
-      insertCodeBlock(editor);
+      insertCodeBlock(editor as unknown as SlateEditor);
 
       expect(editor.children).toEqual(output.children);
     });
@@ -137,18 +133,14 @@ describe('insert code block', () => {
       plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
       value: [{ type: KEYS.p, children: [{ text: 'line 1' }] }],
     });
-    const insertBreak = spyOn(editor.tf, 'insertBreak');
-    const setNodes = spyOn(editor.tf, 'setNodes');
-    const wrapNodes = spyOn(editor.tf, 'wrapNodes');
+    const update = spyOn(editor, 'update');
 
-    insertCodeBlock(editor);
+    insertCodeBlock(editor as unknown as SlateEditor);
 
     expect(editor.children).toEqual([
       { type: KEYS.p, children: [{ text: 'line 1' }] },
     ]);
-    expect(insertBreak).not.toHaveBeenCalled();
-    expect(setNodes).not.toHaveBeenCalled();
-    expect(wrapNodes).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
   });
 
   it('does nothing when the selection is already in a code block', () => {
@@ -168,15 +160,11 @@ describe('insert code block', () => {
       value: input.children,
     });
     const before = editor.children;
-    const insertBreak = spyOn(editor.tf, 'insertBreak');
-    const setNodes = spyOn(editor.tf, 'setNodes');
-    const wrapNodes = spyOn(editor.tf, 'wrapNodes');
+    const update = spyOn(editor, 'update');
 
-    insertCodeBlock(editor);
+    insertCodeBlock(editor as unknown as SlateEditor);
 
     expect(editor.children).toBe(before);
-    expect(insertBreak).not.toHaveBeenCalled();
-    expect(setNodes).not.toHaveBeenCalled();
-    expect(wrapNodes).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,8 @@
-import type { History, SlateEditor } from 'platejs';
+import type { SlateEditor } from 'platejs';
 
-export type AIBatch = History['undos'][number] & { ai?: boolean };
+export type AIBatch = SlateEditor['history']['undos'][number] & {
+  ai?: boolean;
+};
 
 export const withAIBatch = (
   editor: SlateEditor,
@@ -12,9 +14,9 @@ export const withAIBatch = (
   } = {}
 ) => {
   if (split) {
-    editor.tf.withNewBatch(fn);
+    editor.api.history.withNewBatch(fn);
   } else {
-    editor.tf.withMerging(fn);
+    editor.api.history.withMerging(fn);
   }
 
   const lastBatch = editor.history.undos?.at(-1) as AIBatch | undefined;

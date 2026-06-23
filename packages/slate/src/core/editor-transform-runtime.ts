@@ -43,6 +43,7 @@ import {
 } from '../transforms-selection';
 import { deleteText } from '../transforms-text';
 import { insertFragment } from '../transforms-text/insert-fragment';
+import type { TextUnit } from '../types';
 import { executeTransformMiddleware } from './transform-middleware';
 
 export type EditorMethod = (editor: Editor, ...args: any[]) => unknown;
@@ -53,6 +54,22 @@ type BoundEditorMethod<T extends EditorMethod> = T extends (
 ) => infer Result
   ? (...args: Args) => Result
   : never;
+
+const isTextUnit = (unit: unknown): unit is TextUnit =>
+  unit === 'character' || unit === 'word' || unit === 'line' || unit === 'block';
+
+const toTextUnit = (unit: unknown): TextUnit => {
+  if (isTextUnit(unit)) return unit;
+
+  const optionUnit =
+    unit && typeof unit === 'object' && 'unit' in unit
+      ? (unit as { unit?: unknown }).unit
+      : undefined;
+
+  if (isTextUnit(optionUnit)) return optionUnit;
+
+  return 'character';
+};
 
 export const bindEditorMethod = <T extends EditorMethod>(
   getEditor: () => Editor,
@@ -90,11 +107,11 @@ export const createEditorTransformRegistry = <V extends Value>(
         deleteText(getRuntimeEditor(), args.options)
       ),
     deleteBackward: (unit) =>
-      runMiddleware('deleteBackward', { unit }, (args) =>
+      runMiddleware('deleteBackward', { unit: toTextUnit(unit) }, (args) =>
         deleteBackward(getEditor(), args.unit)
       ),
     deleteForward: (unit) =>
-      runMiddleware('deleteForward', { unit }, (args) =>
+      runMiddleware('deleteForward', { unit: toTextUnit(unit) }, (args) =>
         deleteForward(getEditor(), args.unit)
       ),
     deleteFragment: (options) =>

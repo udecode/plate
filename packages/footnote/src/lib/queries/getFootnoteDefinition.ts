@@ -1,6 +1,7 @@
-import type { NodeEntry, SlateEditor, TElement } from 'platejs';
+import type { NodeEntry, SlateEditor } from 'platejs';
 
 import { KEYS, PathApi } from 'platejs';
+import type { FootnoteElement } from '../types';
 
 import {
   getRegistryDefinition,
@@ -16,12 +17,13 @@ export const getFootnoteDefinition = (
 
 export const getFootnoteDefinitions = (editor: SlateEditor) =>
   [
-    ...editor.api.nodes<TElement>({
+    ...editor.api.nodes<FootnoteElement>({
       at: [],
       match: (node) =>
-        (node as TElement).type === editor.getType(KEYS.footnoteDefinition),
+        (node as FootnoteElement).type ===
+        editor.getType(KEYS.footnoteDefinition),
     }),
-  ] as NodeEntry<TElement>[];
+  ] as NodeEntry<FootnoteElement>[];
 
 export const getFootnoteDefinitionsByIdentifier = (
   editor: SlateEditor,
@@ -58,7 +60,7 @@ export const isDuplicateFootnoteDefinition = (
   editor: SlateEditor,
   { path }: { path: number[] }
 ) => {
-  const entry = editor.api.node<TElement>(path);
+  const entry = editor.api.node<FootnoteElement>(path);
 
   if (!entry) return false;
 
@@ -67,7 +69,7 @@ export const isDuplicateFootnoteDefinition = (
 
   if (node.type !== definitionType) return false;
 
-  const identifier = (node as TElement & { identifier?: string }).identifier;
+  const identifier = node.identifier;
 
   if (!identifier) return false;
 

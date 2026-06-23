@@ -76,10 +76,11 @@ export const shouldMoveSelectionFromCell = (
 
   if (!blockRange) return isAtBlockEdge;
 
+  const resolveDOMRange = editor.api.dom?.resolveDOMRange;
   const caretRects = getRangeClientRects(
-    editor.api.toDOMRange({ anchor: point, focus: point })
+    resolveDOMRange?.({ anchor: point, focus: point })
   );
-  const blockRects = getRangeClientRects(editor.api.toDOMRange(blockRange));
+  const blockRects = getRangeClientRects(resolveDOMRange?.(blockRange));
 
   if (caretRects.length === 0 || blockRects.length === 0) return isAtBlockEdge;
 

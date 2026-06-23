@@ -38,9 +38,13 @@ export const useResizableState = ({
     (w: number) => {
       if (w === nodeWidth) {
         // Focus the node if not resized
-        editor.tf.select(path);
+        editor.update((tx) => {
+          tx.selection.set(path);
+        });
       } else {
-        editor.tf.setNodes<TResizableElement>({ width: w }, { at: path });
+        editor.update((tx) => {
+          tx.nodes.set<TResizableElement>({ width: w }, { at: path });
+        });
       }
     },
     [editor, nodeWidth, path]

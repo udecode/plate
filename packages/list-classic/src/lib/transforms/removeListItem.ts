@@ -1,13 +1,15 @@
-import {
-  type ElementEntry,
-  type SlateEditor,
-  type TElement,
-  deleteMerge,
-  KEYS,
-  PathApi,
-} from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { ElementEntry } from '@platejs/slate';
+import { PathApi } from '@platejs/slate';
+import type { SlateEditor } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
+import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
 
-import { getPropsIfTaskListLiNode, hasListChild } from '../queries';
+import {
+  getPreviousSiblingPath,
+  getPropsIfTaskListLiNode,
+  hasListChild,
+} from '../queries';
 import { moveListItemsToList } from './moveListItemsToList';
 import { moveListItemSublistItemsToListItemSublist } from './moveListItemSublistItemsToListItemSublist';
 
@@ -29,83 +31,85 @@ export const removeListItem = (
     return false;
   }
 
-  const previousLiPath = PathApi.previous(liPath);
+  const previousLiPath = getPreviousSiblingPath(liPath);
 
   let success = false;
 
-  editor.tf.withoutNormalizing(() => {
-    /**
-     * If there is a previous li, we need to move sub-lis to the previous li. As
-     * we need to delete first, we will:
-     *
-     * 1. Insert a temporary li: tempLi
-     * 2. Move sub-lis to tempLi
-     * 3. Delete
-     * 4. Move sub-lis from tempLi to the previous li.
-     * 5. Remove tempLi
-     */
-    if (previousLiPath) {
-      const previousLi = editor.api.node<TElement>(previousLiPath);
+  editor.update((tx) => {
+    runWithoutNormalizing(tx, () => {
+      /**
+       * If there is a previous li, we need to move sub-lis to the previous li. As
+       * we need to delete first, we will:
+       *
+       * 1. Insert a temporary li: tempLi
+       * 2. Move sub-lis to tempLi
+       * 3. Delete
+       * 4. Move sub-lis from tempLi to the previous li.
+       * 5. Remove tempLi
+       */
+      if (previousLiPath) {
+        const previousLi = editor.api.node<Element>(previousLiPath);
 
-      if (!previousLi) return;
+        if (!previousLi) return;
 
-      // 1
-      let tempLiPath = PathApi.next(liPath);
-      editor.tf.insertNodes(
-        {
-          children: [
-            {
-              children: [{ text: '' }],
-              type: editor.getType(KEYS.lic),
-            },
-          ],
-          ...getPropsIfTaskListLiNode(editor, {
-            inherit: true,
-            liNode: previousLi[0],
-          }),
-          type: editor.getType(KEYS.li),
-        },
-        { at: tempLiPath }
-      );
+        // 1
+        let tempLiPath = PathApi.next(liPath);
+        tx.nodes.insert(
+          {
+            children: [
+              {
+                children: [{ text: '' }],
+                type: editor.getType(KEYS.lic),
+              },
+            ],
+            ...getPropsIfTaskListLiNode(editor, {
+              inherit: true,
+              liNode: previousLi[0],
+            }),
+            type: editor.getType(KEYS.li),
+          },
+          { at: tempLiPath }
+        );
 
-      const tempLi = editor.api.node<TElement>(tempLiPath);
+        const tempLi = editor.api.node<Element>(tempLiPath);
 
-      if (!tempLi) return;
+        if (!tempLi) return;
 
-      const tempLiPathRef = editor.api.pathRef(tempLi[1]);
+        const tempLiPathRef = editor.api.pathRef(tempLi[1]);
 
-      // 2
-      moveListItemSublistItemsToListItemSublist(editor, {
+        // 2
+        moveListItemSublistItemsToListItemSublist(editor, {
+          fromListItem: listItem,
+          toListItem: tempLi,
+        });
+
+        // 3
+        tx.text.delete({
+          reverse,
+        });
+
+        tempLiPath = tempLiPathRef.unref()!;
+
+        // 4
+        moveListItemSublistItemsToListItemSublist(editor, {
+          fromListItem: [tempLi[0], tempLiPath],
+          toListItem: previousLi,
+        });
+
+        // 5
+        tx.nodes.remove({ at: tempLiPath });
+
+        success = true;
+
+        return;
+      }
+
+      // If it's the first li, move the sublist to the parent list
+      moveListItemsToList(editor, {
         fromListItem: listItem,
-        toListItem: tempLi,
+        toList: list,
+        toListIndex: 1,
       });
-
-      // 3
-      deleteMerge(editor, {
-        reverse,
-      });
-
-      tempLiPath = tempLiPathRef.unref()!;
-
-      // 4
-      moveListItemSublistItemsToListItemSublist(editor, {
-        fromListItem: [tempLi[0], tempLiPath],
-        toListItem: previousLi,
-      });
-
-      // 5
-      editor.tf.removeNodes({ at: tempLiPath });
-
-      success = true;
-
-      return;
-    }
-
-    // If it's the first li, move the sublist to the parent list
-    moveListItemsToList(editor, {
-      fromListItem: listItem,
-      toList: list,
-      toListIndex: 1,
     });
   });
 

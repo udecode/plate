@@ -45,16 +45,18 @@ export const submitFloatingMedia = (
     urlParsers: [parseTwitterUrl, parseVideoUrl],
   });
 
-  editor.tf.setNodes<TMediaElement>({
-    id: normalized?.id,
-    provider: normalized?.provider,
-    sourceUrl: normalized?.sourceUrl,
-    url: normalized?.url ?? url,
+  editor.update((tx) => {
+    tx.nodes.set<TMediaElement>({
+      id: normalized?.id,
+      provider: normalized?.provider,
+      sourceUrl: normalized?.sourceUrl,
+      url: normalized?.url ?? url,
+    });
   });
 
   FloatingMediaStore.actions.reset();
 
-  editor.tf.focus({ at: editor.selection! });
+  editor.api.dom.focus();
 
   return true;
 };

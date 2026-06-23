@@ -1,13 +1,12 @@
-import {
-  type EditorAboveOptions,
-  combineMatchOptions,
-} from '@platejs/slate-legacy';
+import type { Location } from '@platejs/slate';
 
 import type { SlateEditor } from '../../../editor';
+import { getCurrentRuntimeTransforms } from '../../../../internal/currentRuntimeBridge';
+import { type PlateNodeMatch, combinePlateMatchOptions } from './matchOptions';
 
 export type LiftBlockOptions = {
-  at?: EditorAboveOptions['at'];
-  match?: EditorAboveOptions['match'];
+  at?: Location;
+  match?: PlateNodeMatch;
 };
 
 /**
@@ -28,16 +27,15 @@ export const liftBlock = (
   const [, blockPath] = block;
   const ancestor = editor.api.above({
     at: blockPath,
-    match: combineMatchOptions(
-      editor,
+    match: combinePlateMatchOptions(
       (_node, path) => path.length < blockPath.length,
-      { match }
+      match
     ),
   });
 
   if (!ancestor) return;
 
-  editor.tf.unwrapNodes({
+  getCurrentRuntimeTransforms(editor).unwrapNodes({
     at: blockPath,
     match,
     split: true,

@@ -10,7 +10,7 @@ const configuredTablePlugin = TablePlugin.configure((ctx) => {
   type _editorNotAny = AssertFalse<IsAny<typeof ctx.editor>>;
 
   const isSelectingCell: boolean = ctx.editor
-    .getApi(TablePlugin)
+    .getPluginApi(TablePlugin)
     .table.isSelectingCell();
 
   void isSelectingCell;

@@ -110,7 +110,7 @@ try {
 const LoggingPlugin = createPlatePlugin({
   key: 'logging',
 }).overrideEditor(({ editor, tf: { apply } }) => ({
-  transforms: {
+  tf: {
     apply(operation) {
       console.debug('Operation:', operation);
       apply(operation);

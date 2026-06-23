@@ -155,7 +155,7 @@ const editor = createPlateEditor({
   ],
   // Use deserialize in the value factory for initial content
   value: (editor) =>
-    editor.getApi(MarkdownPlugin).markdown.deserialize(markdownString),
+    editor.getPluginApi(MarkdownPlugin).markdown.deserialize(markdownString),
 });
 ```
 
@@ -1060,7 +1060,7 @@ export function PlateMarkdown({
   useEffect(() => {
     editor.tf.reset(); // Clear previous content
     editor.tf.setValue(
-      editor.getApi(MarkdownPlugin).markdown.deserialize(children)
+      editor.getPluginApi(MarkdownPlugin).markdown.deserialize(children)
     );
   }, [children, editor, remarkPlugins]); // Re-deserialize if markdown or plugins change
 

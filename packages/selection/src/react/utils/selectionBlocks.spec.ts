@@ -67,12 +67,19 @@ describe('selection block utils', () => {
       const getEditorPluginSpy = spyOn(platejs, 'getEditorPlugin');
       const setOption = mock();
 
-      const insertNodesSpy = spyOn(editor.tf, 'insertNodes').mockImplementation(
-        (() => {}) as any
-      );
-      const insertDataSpy = spyOn(editor.tf, 'insertData').mockImplementation(
-        (() => {}) as any
-      );
+      const insertNodes = mock();
+      const setSelection = mock();
+      const insertData = mock();
+      const targetPoint = { offset: 0, path: [1, 0] };
+
+      editor.update = mock((fn) =>
+        fn({
+          nodes: { insert: insertNodes },
+          selection: { set: setSelection },
+        } as any)
+      ) as any;
+      (editor.api as any).clipboard = { insertData };
+      editor.api.end = mock(() => targetPoint) as any;
       const createBlockSpy = spyOn(editor.api.create, 'block').mockReturnValue({
         children: [{ text: '' }],
         type: 'p',
@@ -94,14 +101,12 @@ describe('selection block utils', () => {
       pasteSelectedBlocks(editor, event);
 
       expect(createBlockSpy).toHaveBeenCalledWith({}, [1]);
-      expect(insertNodesSpy).toHaveBeenCalledWith(
+      expect(insertNodes).toHaveBeenCalledWith(
         { children: [{ text: '' }], type: 'p' },
-        {
-          at: [1],
-          select: true,
-        }
+        { at: [1] }
       );
-      expect(insertDataSpy).toHaveBeenCalledWith(event.clipboardData);
+      expect(setSelection).toHaveBeenCalledWith(targetPoint);
+      expect(insertData).toHaveBeenCalledWith(event.clipboardData);
       expect(setOption).toHaveBeenCalledWith('selectedIds', new Set());
     });
   });

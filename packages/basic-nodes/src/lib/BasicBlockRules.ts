@@ -32,13 +32,15 @@ export const BlockquoteRules = {
       }),
     match: ({ marker }) => marker,
     apply: ({ editor }, match) => {
-      editor.tf.delete({ at: match.range });
-      editor.tf.wrapNodes(
-        { children: [], type: editor.getType(KEYS.blockquote) },
-        {
-          match: (node) => editor.api.isBlock(node),
-        }
-      );
+      editor.update((tx) => {
+        tx.text.delete({ at: match.range });
+        tx.nodes.wrap(
+          { children: [], type: editor.getType(KEYS.blockquote) },
+          {
+            match: (node) => editor.api.isBlock(node),
+          }
+        );
+      });
 
       return true;
     },
@@ -52,14 +54,16 @@ export const HorizontalRuleRules = {
     match: ({ variant }) => (variant === '_' ? '___' : THEMATIC_BREAK_DASH_RE),
     trigger: ({ variant }) => (variant === '_' ? ' ' : '-'),
     apply: ({ editor, variant }) => {
-      if (variant === '_') {
-        editor.tf.deleteBackward('character');
-      }
+      editor.update((tx) => {
+        if (variant === '_') {
+          tx.text.deleteBackward({ unit: 'character' });
+        }
 
-      editor.tf.setNodes({ type: KEYS.hr });
-      editor.tf.insertNodes({
-        children: [{ text: '' }],
-        type: KEYS.p,
+        tx.nodes.set({ type: KEYS.hr });
+        tx.nodes.insert({
+          children: [{ text: '' }],
+          type: KEYS.p,
+        });
       });
 
       return true;

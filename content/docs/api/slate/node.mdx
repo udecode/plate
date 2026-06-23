@@ -3,10 +3,10 @@ title: Node
 description: API reference for nodes in Plate.
 ---
 
-Nodes are the building blocks of Plate documents. It can either be the Editor root node (highest), an Element node, or a Text node (lowest). This API provides utilities for interacting with nodes, including traversing, querying, and extracting data.
+Nodes are the building blocks of Slate documents. It can either be the Editor root node (highest), an Element node, or a Text node (lowest). This API provides utilities for interacting with nodes, including traversing, querying, and extracting data.
 
 ```ts
-type TNode = Editor | TElement | TText;
+type Node = Editor | Element | Text;
 
 type Descendant = Element | Text
 type Ancestor = Editor | Element
@@ -24,7 +24,7 @@ Get the node at a specific path, asserting that it's an ancestor node.
 
 <API name="ancestor">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node to start from.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -43,7 +43,7 @@ Return a generator of all the ancestor nodes above a specific path.
 
 <API name="ancestors">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node to start from.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -71,7 +71,7 @@ Get the child of a node at a specific index.
 
 <API name="child">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The parent node.
   </APIItem>
   <APIItem name="index" type="number">
@@ -79,7 +79,7 @@ Get the child of a node at a specific index.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="TNode | undefined">
+<APIReturns type="Node | undefined">
   The child node if found, or `undefined` otherwise.
 </APIReturns>
 </API>
@@ -90,7 +90,7 @@ Iterate over the children of a node at a specific path.
 
 <API name="children">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -113,7 +113,7 @@ Iterate over the children of a node at a specific path.
   </APIItem>
 </APIOptions>
 
-<APIReturns type="Generator<NodeEntry<TNode>, void, undefined>">
+<APIReturns type="Generator<NodeEntry<Node>, void, undefined>">
   A generator of child node entries.
 </APIReturns>
 </API>
@@ -124,7 +124,7 @@ Get an entry for the common ancestor node of two paths.
 
 <API name="common">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -146,7 +146,7 @@ Get the node at a specific path, asserting that it's a descendant node.
 
 <API name="descendant">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -165,7 +165,7 @@ Return a generator of all the descendant node entries inside a root node.
 
 <API name="descendants">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="options" type="NodeDescendantsOptions" optional>
@@ -199,7 +199,7 @@ Return a generator of all the element nodes inside a root node.
 
 <API name="elements">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="options" type="NodeElementsOptions" optional>
@@ -233,7 +233,7 @@ Get the first node entry in a root node from a path.
 
 <API name="first">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -252,7 +252,7 @@ Get the first child node entry of a node.
 
 <API name="firstChild">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The parent node.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -271,7 +271,7 @@ Get the first text node entry of a node.
 
 <API name="firstText">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The parent node.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -290,10 +290,10 @@ Get the sliced fragment represented by a range inside a root node.
 
 <API name="fragment">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The range to slice.
   </APIItem>
 </APIParameters>
@@ -309,7 +309,7 @@ Get the descendant node referred to by a specific path.
 
 <API name="get">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -317,7 +317,7 @@ Get the descendant node referred to by a specific path.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="TNode | undefined">
+<APIReturns type="Node | undefined">
   The node if found, or `undefined` otherwise.
 </APIReturns>
 </API>
@@ -328,7 +328,7 @@ Get the last node entry in a root node from a path.
 
 <API name="last">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -347,7 +347,7 @@ Get the last child node entry of a node.
 
 <API name="lastChild">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The parent node.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -366,7 +366,7 @@ Get the node at a specific path, ensuring it's a leaf text node.
 
 <API name="leaf">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -385,7 +385,7 @@ Return a generator of the in a branch of the tree, from a specific path.
 
 <API name="levels">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -404,7 +404,7 @@ Return a generator of all the node entries of a root node.
 
 <API name="nodes">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="options" type="NodeTextsOptions" optional>
@@ -423,7 +423,7 @@ Get the parent of a node at a specific path.
 
 <API name="parent">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -442,7 +442,7 @@ Return a generator of all leaf text nodes in a root node.
 
 <API name="texts">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="options" type="NodeTextsOptions" optional>
@@ -461,7 +461,7 @@ Get the props of a node.
 
 <API name="extractProps">
 <APIParameters>
-  <APIItem name="node" type="TNode">
+  <APIItem name="node" type="Node">
     The node to extract props from.
   </APIItem>
 </APIParameters>
@@ -477,7 +477,7 @@ Check if a descendant node exists at a specific path.
 
 <API name="has">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -496,7 +496,7 @@ Check if a node has a single child.
 
 <API name="hasSingleChild">
 <APIParameters>
-  <APIItem name="node" type="TNode">
+  <APIItem name="node" type="Node">
     The node to check.
   </APIItem>
 </APIParameters>
@@ -544,7 +544,7 @@ Check if a node is the last child of its parent.
 
 <API name="isLastChild">
 <APIParameters>
-  <APIItem name="root" type="TNode">
+  <APIItem name="root" type="Node">
     The root node.
   </APIItem>
   <APIItem name="path" type="Path">
@@ -559,7 +559,7 @@ Check if a node is the last child of its parent.
 
 ### `isNode`
 
-Check if a value implements the `TNode` interface.
+Check if a value implements the `Node` interface.
 
 <API name="isNode">
 <APIParameters>
@@ -569,7 +569,7 @@ Check if a value implements the `TNode` interface.
 </APIParameters>
 
 <APIReturns type="boolean">
-  `true` if the value implements the `TNode` interface.
+  `true` if the value implements the `Node` interface.
 </APIReturns>
 </API>
 
@@ -614,7 +614,7 @@ Get the concatenated text string of a node's content.
 
 <API name="string">
 <APIParameters>
-  <APIItem name="node" type="TNode">
+  <APIItem name="node" type="Node">
     The node to get text from.
   </APIItem>
 </APIParameters>
@@ -626,21 +626,19 @@ Get the concatenated text string of a node's content.
 
 ## Types
 
-### `TNode`
-
-`Node` is a type alias for `TNode`.
+### `Node`
 
 ```ts
-type TNode = Editor | TElement | TText;
+type Node = Editor | Element | Text;
 ```
 
 ### `NodeEntry`
 
-`NodeEntry` objects are returned when iterating over the nodes in a Plate document tree. They consist of an array with two elements: the `TNode` and its `Path` relative to the root node in the document.
+`NodeEntry` objects are returned when iterating over the nodes in a Slate document tree. They consist of an array with two elements: the `Node` and its `Path` relative to the root node in the document.
 
 <API name="NodeEntry">
 <APIAttributes>
-  <APIItem name="0" type="TNode">
+  <APIItem name="0" type="Node">
     The node itself.
   </APIItem>
   <APIItem name="1" type="Path">
@@ -654,7 +652,7 @@ type TNode = Editor | TElement | TText;
 The `Descendant` union type represents nodes that are descendants in the tree.
 
 ```ts
-type Descendant = TElement | TText;
+type Descendant = Element | Text;
 ```
 
 
@@ -663,14 +661,14 @@ type Descendant = TElement | TText;
 The `Ancestor` union type represents nodes that are ancestors in the tree.
 
 ```ts
-type Ancestor = Editor | TElement;
+type Ancestor = Editor | Element;
 ```
 
 ### `NodeOf<N>`
 
 <API name="NodeOf">
 <APIParameters>
-  <APIItem name="node" type="TNode">
+  <APIItem name="node" type="Node">
     The node to get the type of.
   </APIItem>
 </APIParameters>
@@ -814,7 +812,7 @@ Node child entries represent a child node and its path relative to its parent.
 
 <API name="NodeChildEntry">
 <APIAttributes>
-  <APIItem name="0" type="TNode">
+  <APIItem name="0" type="Node">
     The child node.
   </APIItem>
   <APIItem name="1" type="Path">

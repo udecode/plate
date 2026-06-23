@@ -10,6 +10,7 @@ import { useEditorSelector } from './useEditorSelector';
 describe('useEditorSelector', () => {
   it('skips rerenders when equalityFn treats the derived value as unchanged', async () => {
     const editor = createPlateEditor({
+      runtime: 'legacy',
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
     const renderValues: number[] = [];

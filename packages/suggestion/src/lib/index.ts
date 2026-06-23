@@ -3,9 +3,9 @@
  */
 
 export * from './BaseSuggestionPlugin';
+export * from './SuggestionExtension';
 export * from './diffToSuggestions';
 export * from './types';
-export * from './withSuggestion';
 export * from './queries/index';
 export * from './transforms/index';
 export * from './utils/index';

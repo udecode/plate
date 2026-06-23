@@ -1,7 +1,8 @@
 import type { DropTargetMonitor } from 'react-dnd';
 import type { Element } from '@platejs/slate';
 
-import { PathApi, RangeApi, createSlateEditor } from 'platejs';
+import { PathApi } from 'platejs';
+import type { PlateEditor } from 'platejs/react';
 
 import type { DragItemNode } from '../types';
 
@@ -10,7 +11,7 @@ import * as onDropNodeModule from './onDropNode';
 import { onHoverNode } from './onHoverNode';
 
 describe('onHoverNode', () => {
-  let editor: ReturnType<typeof createSlateEditor>;
+  let editor: PlateEditor;
   let dragItem: DragItemNode;
 
   const monitor = {} as DropTargetMonitor;
@@ -18,24 +19,30 @@ describe('onHoverNode', () => {
   const dragElement = { id: 'drag' } as unknown as Element;
   const hoverElement = { id: 'hover' } as unknown as Element;
 
-  let isExpandedSpy: ReturnType<typeof spyOn>;
-  let isExpandedMock: ReturnType<typeof mock>;
   let getDropPathSpy: ReturnType<typeof spyOn>;
   let getDropPathMock: ReturnType<typeof mock>;
   let previousPathSpy: ReturnType<typeof spyOn>;
   let previousPathMock: ReturnType<typeof mock>;
   let nodeMock: ReturnType<typeof mock>;
+  let collapseSelection: ReturnType<typeof mock>;
+  let focus: ReturnType<typeof mock>;
 
   beforeEach(() => {
-    editor = createSlateEditor();
-    editor.getOptions = mock() as any;
-    editor.selection = null;
-    editor.setOption = mock() as any;
-    editor.tf.collapse = mock();
-    editor.tf.focus = mock();
-    editor.api.findPath = mock(() => [1]) as any;
     nodeMock = mock();
-    editor.api.node = nodeMock as any;
+    collapseSelection = mock();
+    focus = mock();
+    editor = {
+      api: {
+        dom: { focus },
+        isExpanded: mock(() => false),
+        node: nodeMock,
+      },
+      getOptions: mock(),
+      id: 'editor',
+      selection: null,
+      setOption: mock(),
+      update: mock((fn) => fn({ selection: { collapse: collapseSelection } })),
+    } as any;
 
     dragItem = {
       id: 'drag',
@@ -47,11 +54,6 @@ describe('onHoverNode', () => {
       _isOver: true,
       dropTarget: { id: null, line: '' },
     });
-
-    isExpandedMock = mock();
-    isExpandedSpy = spyOn(RangeApi, 'isExpanded').mockImplementation(
-      isExpandedMock as unknown as typeof RangeApi.isExpanded
-    );
 
     getDropPathMock = mock();
     getDropPathSpy = spyOn(onDropNodeModule, 'getDropPath').mockImplementation(
@@ -65,7 +67,6 @@ describe('onHoverNode', () => {
   });
 
   afterEach(() => {
-    isExpandedSpy?.mockRestore();
     getDropPathSpy?.mockRestore();
     previousPathSpy?.mockRestore();
   });
@@ -76,8 +77,6 @@ describe('onHoverNode', () => {
       dragPath: [0],
       to: [1],
     });
-
-    isExpandedMock.mockReturnValue(false);
 
     onHoverNode(editor, {
       dragItem,
@@ -99,7 +98,9 @@ describe('onHoverNode', () => {
       to: [1],
     });
 
-    isExpandedMock.mockReturnValue(true);
+    (editor.api.isExpanded as unknown as ReturnType<typeof mock>).mockReturnValue(
+      true
+    );
 
     editor.selection = {
       anchor: { offset: 0, path: [0] },
@@ -113,8 +114,8 @@ describe('onHoverNode', () => {
       nodeRef,
     });
 
-    expect(editor.tf.collapse).toHaveBeenCalled();
-    expect(editor.tf.focus).toHaveBeenCalled();
+    expect(collapseSelection).toHaveBeenCalled();
+    expect(focus).toHaveBeenCalled();
   });
 
   it('handle horizontal orientation', () => {
@@ -123,8 +124,6 @@ describe('onHoverNode', () => {
       dragPath: [0],
       to: [1],
     });
-
-    isExpandedMock.mockReturnValue(false);
 
     onHoverNode(editor, {
       dragItem,
@@ -167,7 +166,9 @@ describe('onHoverNode', () => {
       to: [1],
     });
     previousPathMock.mockReturnValueOnce([0]);
-    nodeMock.mockReturnValueOnce([{ id: 'previous' }, [0]]);
+    nodeMock
+      .mockReturnValueOnce([{ id: 'hover' }, [1]])
+      .mockReturnValueOnce([{ id: 'previous' }, [0]]);
 
     onHoverNode(editor, {
       dragItem,

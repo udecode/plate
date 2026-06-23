@@ -4,12 +4,12 @@ export { defineStateField } from './core/state-field';
 export { createEditor } from './create-editor';
 export { isEditor } from './editor/is-editor';
 export { createEditorRuntime, createEditorView } from './editor-runtime-view';
+export { Editor } from './interfaces/editor';
 export * from './interfaces/bookmark';
 export type {
   BaseEditor,
   CreateEditorOptions,
   DirtyRegion,
-  Editor,
   EditorCanonicalUpdateTag,
   EditorCollaborationUpdateMetadata,
   EditorCommit,

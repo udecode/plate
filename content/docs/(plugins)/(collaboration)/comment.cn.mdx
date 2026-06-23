@@ -163,7 +163,7 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
 
 ### 扩展 Transforms
 
-扩展 `setDraft` transform 以增强功能:
+扩展 `setDraft` 事务命令以增强功能:
 
 ```tsx
 export const commentPlugin = toTPlatePlugin<CommentConfig>(
@@ -172,20 +172,17 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
     // ... previous configuration
   })
 )
-  .extendTransforms(
+  .extendTx(
     ({
       editor,
       setOption,
-      tf: {
-        comment: { setDraft },
-      },
-    }) => ({
+    }) => (tx) => ({
       setDraft: () => {
         if (editor.api.isCollapsed()) {
           editor.tf.select(editor.api.block()![1]);
         }
 
-        setDraft();
+        tx.comment.setDraft();
 
         editor.tf.collapse();
         setOption('activeId', getDraftCommentKey());

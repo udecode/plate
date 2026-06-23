@@ -65,7 +65,31 @@ const createEditor = () => {
     }
   };
 
+  const withoutSaving = mock((fn: () => void) => {
+    fn();
+  });
+  const withNewBatch = mock((fn: () => void) => {
+    fn();
+    editor.history.undos.push({ operations: [{}] });
+  });
+  const deselect = mock(() => {
+    editor.selection = null;
+  });
+  const setValue = mock((value: any) => {
+    editor.children = value;
+  });
   const editor = {
+    api: {
+      history: {
+        withNewBatch,
+        withoutSaving,
+      },
+    },
+    calls: {
+      deselect,
+      setValue,
+      withNewBatch,
+    },
     children: [createParagraph('start'), createParagraph('untouched')],
     getPlugin: ({ key }: { key: string }) => ({
       key,
@@ -79,56 +103,53 @@ const createEditor = () => {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     },
-    tf: {
-      deselect: mock(() => {
-        editor.selection = null;
-      }),
-      insertNodes: mock((nodes: any, options: any = {}) => {
-        insertNodesAtPath(
-          editor.children,
-          Array.isArray(nodes) ? nodes : [nodes],
-          options.at ?? [editor.children.length]
-        );
-      }),
-      removeNodes: mock((options: any = {}) => {
-        if (options.match) {
-          editor.children = editor.children.filter(
-            (node: any) => !options.match(node)
-          );
+    update: mock((fn: (tx: any) => void) => {
+      fn({
+        nodes: {
+          insert: (nodes: any, options: any = {}) => {
+            insertNodesAtPath(
+              editor.children,
+              Array.isArray(nodes) ? nodes : [nodes],
+              options.at ?? [editor.children.length]
+            );
+          },
+          remove: (options: any = {}) => {
+            if (options.match) {
+              editor.children = editor.children.filter(
+                (node: any) => !options.match(node)
+              );
 
-          return;
-        }
+              return;
+            }
 
-        removeNodeAtPath(editor.children, options.at);
-      }),
-      select: mock((selection: any) => {
-        editor.selection = selection;
-      }),
-      setValue: mock((value: any) => {
-        editor.children = value;
-      }),
-      unsetNodes: mock((props: string | string[], options: any = {}) => {
-        const keys = Array.isArray(props) ? props : [props];
-        const path = options.at;
+            removeNodeAtPath(editor.children, options.at);
+          },
+          unset: (props: string | string[], options: any = {}) => {
+            const keys = Array.isArray(props) ? props : [props];
+            const path = options.at;
 
-        if (path) {
-          unsetNodeProps(editor.children[path[0]], keys, options.match);
+            if (path) {
+              unsetNodeProps(editor.children[path[0]], keys, options.match);
 
-          return;
-        }
+              return;
+            }
 
-        editor.children.forEach((node: any) => {
-          unsetNodeProps(node, keys, options.match);
-        });
-      }),
-      withNewBatch: mock((fn: () => void) => {
-        fn();
-        editor.history.undos.push({ operations: [{}] });
-      }),
-      withoutSaving: mock((fn: () => void) => {
-        fn();
-      }),
-    },
+            editor.children.forEach((node: any) => {
+              unsetNodeProps(node, keys, options.match);
+            });
+          },
+        },
+        selection: {
+          clear: deselect,
+          set: (selection: any) => {
+            editor.selection = selection;
+          },
+        },
+        value: {
+          replace: setValue,
+        },
+      });
+    }),
   } as any;
 
   return editor;
@@ -160,7 +181,7 @@ describe('ai preview transforms', () => {
     expect(cancelAIPreview(editor)).toBe(true);
     expect(editor.children).toEqual(initialValue);
     expect(editor.selection).toEqual(initialSelection);
-    expect(editor.tf.setValue).not.toHaveBeenCalled();
+    expect(editor.calls.setValue).not.toHaveBeenCalled();
   });
 
   it('cancels safely when no preview exists', () => {
@@ -212,7 +233,7 @@ describe('ai preview transforms', () => {
     ];
 
     expect(cancelAIPreview(editor)).toBe(true);
-    expect(editor.tf.deselect).toHaveBeenCalledTimes(1);
+    expect(editor.calls.deselect).toHaveBeenCalledTimes(1);
     expect(editor.selection).toBeNull();
   });
 
@@ -233,8 +254,8 @@ describe('ai preview transforms', () => {
     ];
 
     expect(acceptAIPreview(editor)).toBe(true);
-    expect(editor.tf.withNewBatch).toHaveBeenCalledTimes(1);
-    expect(editor.tf.setValue).not.toHaveBeenCalled();
+    expect(editor.calls.withNewBatch).toHaveBeenCalledTimes(1);
+    expect(editor.calls.setValue).not.toHaveBeenCalled();
     expect(editor.children).toEqual([
       createParagraph('accepted'),
       createParagraph('untouched'),
@@ -255,37 +276,47 @@ describe('ai preview transforms', () => {
       value: [{ children: [{ text: 'start' }], type: 'p' }],
     });
     const initialValue = structuredClone(editor.children);
-    const ai = editor.getTransforms(BaseAIPlugin).ai;
     const aiType = getPluginType(editor, KEYS.ai);
     const aiChatType = getPluginType(editor, KEYS.aiChat);
+    let didBegin = false;
+    let didAccept = false;
 
-    expect(ai.hasPreview()).toBe(false);
-    expect(ai.beginPreview({ originalBlocks: [] })).toBe(true);
+    expect(hasAIPreview(editor)).toBe(false);
+    editor.update((tx) => {
+      didBegin = tx.ai.beginPreview({ originalBlocks: [] });
+    });
+    expect(didBegin).toBe(true);
+    const undoCountAfterBegin = editor.history.undos.length;
 
-    editor.tf.withoutSaving(() => {
-      editor.tf.insertNodes(
-        [
-          {
-            children: [{ text: 'accepted', [aiType]: true }],
-            [AI_PREVIEW_KEY]: true,
-            type: 'p',
-          },
-          {
-            children: [{ text: '' }],
-            type: aiChatType,
-          },
-        ],
-        { at: [1] }
-      );
+    editor.api.history.withoutSaving(() => {
+      editor.update((tx) => {
+        tx.nodes.insert(
+          [
+            {
+              children: [{ text: 'accepted', [aiType]: true }],
+              [AI_PREVIEW_KEY]: true,
+              type: 'p',
+            },
+            {
+              children: [{ text: '' }],
+              type: aiChatType,
+            },
+          ],
+          { at: [1] }
+        );
+      });
     });
 
-    expect(editor.history.undos).toHaveLength(0);
-    expect(ai.acceptPreview()).toBe(true);
+    expect(editor.history.undos).toHaveLength(undoCountAfterBegin);
+    editor.update((tx) => {
+      didAccept = tx.ai.acceptPreview();
+    });
+    expect(didAccept).toBe(true);
     expect(editor.children).toEqual([
       { children: [{ text: 'start' }], type: 'p' },
       { children: [{ text: 'accepted' }], type: 'p' },
     ]);
-    expect(editor.history.undos).toHaveLength(1);
+    expect(editor.history.undos).toHaveLength(undoCountAfterBegin + 1);
     expect(editor.history.undos[0]?.selectionBefore).toEqual({
       anchor: { offset: 5, path: [0, 0] },
       focus: { offset: 5, path: [0, 0] },

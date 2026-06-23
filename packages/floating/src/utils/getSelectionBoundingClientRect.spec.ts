@@ -28,10 +28,12 @@ describe('getSelectionBoundingClientRect', () => {
     });
     const editor: any = {
       api: {
+        dom: {
+          resolveDOMRange: () => ({
+            getBoundingClientRect: () => rect,
+          }),
+        },
         isExpanded: () => true,
-        toDOMRange: () => ({
-          getBoundingClientRect: () => rect,
-        }),
       },
       selection: {
         anchor: { offset: 0, path: [0, 0] },

@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 import { SingleBlockPlugin } from './SingleBlockPlugin';
 
@@ -30,15 +30,20 @@ describe('SingleBlockPlugin', () => {
   });
 
   it('merge all blocks into the first block with soft breaks', () => {
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
+      runtime: 'slate-v2',
       selection: input.selection,
       value: input.children,
     });
 
-    editor.tf.normalize({ force: true });
+    editor.update((tx) => {
+      tx.normalize({ force: true });
+    });
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read((state) => state.value.root())).toEqual(
+      output.children
+    );
   });
 
   it('convert hard breaks to soft breaks', () => {
@@ -50,17 +55,18 @@ describe('SingleBlockPlugin', () => {
         </hp>
       </editor>
     );
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
+      runtime: 'slate-v2',
       selection: input.selection,
       value: input.children,
     });
 
-    // Simulate pressing Enter
-    editor.tf.insertBreak();
+    editor.update((tx) => {
+      tx.break.insert();
+    });
 
-    // Should have inserted a soft break instead
-    expect(editor.children).toEqual([
+    expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'test\n' }], type: 'p' },
     ]);
   });
@@ -72,15 +78,19 @@ describe('SingleBlockPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
+      runtime: 'slate-v2',
       value: singleBlockInput.children,
     });
 
-    editor.tf.normalize({ force: true });
+    editor.update((tx) => {
+      tx.normalize({ force: true });
+    });
 
-    // Should remain unchanged
-    expect(editor.children).toEqual(singleBlockInput.children);
+    expect(editor.read((state) => state.value.root())).toEqual(
+      singleBlockInput.children
+    );
   });
 
   it('preserve existing line breaks in text', () => {
@@ -99,14 +109,19 @@ describe('SingleBlockPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
+      runtime: 'slate-v2',
       value: inputWithLineBreaks.children,
     });
 
-    editor.tf.normalize({ force: true });
+    editor.update((tx) => {
+      tx.normalize({ force: true });
+    });
 
-    expect(editor.children).toEqual(expectedOutput.children);
+    expect(editor.read((state) => state.value.root())).toEqual(
+      expectedOutput.children
+    );
   });
 
   it('handle empty blocks correctly', () => {
@@ -127,13 +142,18 @@ describe('SingleBlockPlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
+      runtime: 'slate-v2',
       value: emptyBlocksInput.children,
     });
 
-    editor.tf.normalize({ force: true });
+    editor.update((tx) => {
+      tx.normalize({ force: true });
+    });
 
-    expect(editor.children).toEqual(expectedOutput.children);
+    expect(editor.read((state) => state.value.root())).toEqual(
+      expectedOutput.children
+    );
   });
 });

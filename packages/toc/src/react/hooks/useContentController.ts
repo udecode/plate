@@ -2,7 +2,8 @@
 
 import React from 'react';
 
-import type { Path } from 'platejs';
+import type { Path } from '@platejs/slate';
+import type { NavigationFeedbackConfig } from 'platejs';
 import { useEditorRef } from 'platejs/react';
 
 import type { UseContentController } from '../types';
@@ -71,11 +72,13 @@ export const useContentController = ({
     }
 
     if (path) {
-      editor.tf.navigation.flashTarget({
-        target: {
-          path,
-          type: 'node',
-        },
+      editor.update<NavigationFeedbackConfig['tx']>((tx) => {
+        tx.navigation.flashTarget({
+          target: {
+            path,
+            type: 'node',
+          },
+        });
       });
     }
   };

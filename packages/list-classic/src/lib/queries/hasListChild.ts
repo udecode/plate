@@ -1,7 +1,11 @@
-import { type Ancestor, type SlateEditor, match } from 'platejs';
+import { type Element, ElementApi } from '@platejs/slate';
+import type { SlateEditor } from '@platejs/core';
 
 import { getListTypes } from './getListTypes';
 
 /** Is there a list child in the node. */
-export const hasListChild = (editor: SlateEditor, node: Ancestor) =>
-  node.children.some((n) => match(n, [], { type: getListTypes(editor) }));
+export const hasListChild = (editor: SlateEditor, node: Element) =>
+  node.children.some(
+    (child) =>
+      ElementApi.isElement(child) && getListTypes(editor).includes(child.type)
+  );

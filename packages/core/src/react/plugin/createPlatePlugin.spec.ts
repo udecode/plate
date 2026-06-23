@@ -90,20 +90,31 @@ describe('withComponent method', () => {
   });
 
   it('extendTx keeps the Plate plugin wrapper chain', () => {
-    const plugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(() => ({
-      txPlugin: () => ({ replace: () => undefined }),
-    }));
+    const plugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(
+      () => () => ({
+        replace: () => undefined,
+      })
+    );
 
     expect(plugin.__txExtensions).toHaveLength(1);
-    expect(plugin.extendTx(() => ({})).__txExtensions).toHaveLength(2);
+    expect(plugin.extendTx(() => () => ({})).__txExtensions).toHaveLength(2);
+  });
+
+  it('extendTransforms keeps the Plate plugin wrapper chain', () => {
+    const plugin = createPlatePlugin({ key: 'transformPlugin' })
+      .extendTransforms(() => ({
+        replace: () => undefined,
+      }))
+      .configure({ options: { enabled: true } });
+
+    expect(plugin.__apiExtensions).toHaveLength(1);
+    expect(plugin.extendTransforms(() => ({})).__apiExtensions).toHaveLength(2);
   });
 
   it('infers Plate tx groups on createPlateEditor update callbacks', () => {
     const TxPlugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(
-      ({ plugin }) => ({
-        [plugin.key]: () => ({
-          replace: (text: string) => text.length,
-        }),
+      () => () => ({
+        replace: (text: string) => text.length,
       })
     );
 
@@ -113,6 +124,32 @@ describe('withComponent method', () => {
 
     editor.update((tx) => {
       const length = tx.txPlugin.replace('text');
+
+      return length satisfies number;
+    });
+
+    expect(1).toBe(1);
+  });
+
+  it('infers explicit Plate tx groups on createPlateEditor update callbacks', () => {
+    const TxPlugin = createPlatePlugin({ key: 'sourcePlugin' }).extendTxGroup(
+      'foreignTx',
+      () => () => ({
+        replace: (text: string) => text.length,
+      })
+    );
+
+    const editor = createPlateEditor({
+      plugins: [TxPlugin],
+    });
+
+    // @ts-expect-error extendTxGroup does not add the plugin-owned group
+    type _MissingPluginGroup = Parameters<
+      Parameters<typeof editor.update>[0]
+    >[0]['sourcePlugin'];
+
+    editor.update((tx) => {
+      const length = tx.foreignTx.replace('text');
 
       return length satisfies number;
     });

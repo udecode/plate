@@ -2,7 +2,7 @@ import React from 'react';
 
 import type { Emoji } from '@emoji-mart/data';
 
-import { type EmojiCategoryList, EmojiCategory } from '../../lib';
+import { EmojiCategory, type EmojiCategoryList } from '../../lib/types';
 
 export type EmojiPickerStateDispatch = {
   type: string;

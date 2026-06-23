@@ -24,6 +24,8 @@ export const acceptCopilotNextWord = (editor: PlateEditor) => {
   });
 
   withoutAbort(editor, () => {
-    editor.tf.insertFragment(deserializeInlineMd(editor, firstWord));
+    editor.update((tx) => {
+      tx.fragment.insert(deserializeInlineMd(editor, firstWord));
+    });
   });
 };

@@ -949,6 +949,81 @@ describe('extension method hard cut', () => {
     );
   });
 
+  it('merges object API capabilities from shared API names', () => {
+    const editor = createEditor();
+
+    editor.extend([
+      defineEditorExtension({
+        api: {
+          host: {
+            focus: () => 'focus',
+          },
+        },
+        name: 'host-focus',
+      }),
+      defineEditorExtension({
+        api: {
+          host: {
+            blur: () => 'blur',
+          },
+        },
+        name: 'host-blur',
+      }),
+    ]);
+
+    const host = (editor.api as {
+      host: { blur: () => string; focus: () => string };
+    }).host;
+
+    assert.equal(host.focus(), 'focus');
+    assert.equal(host.blur(), 'blur');
+  });
+
+  it('uses latest callable API capability from shared API names', () => {
+    const editor = createEditor();
+    const installFallback = editor.extend(
+      defineEditorExtension({
+        api: {
+          redecorate: () => 'fallback',
+        },
+        name: 'fallback-redecorate',
+      })
+    );
+
+    assert.equal(
+      (editor.api as { redecorate: () => string }).redecorate(),
+      'fallback'
+    );
+
+    const installOverride = editor.extend(
+      defineEditorExtension({
+        api: {
+          redecorate: () => 'override',
+        },
+        name: 'mounted-redecorate',
+      })
+    );
+
+    assert.equal(
+      (editor.api as { redecorate: () => string }).redecorate(),
+      'override'
+    );
+
+    installOverride();
+
+    assert.equal(
+      (editor.api as { redecorate: () => string }).redecorate(),
+      'fallback'
+    );
+
+    installFallback();
+
+    assert.equal(
+      (editor.api as { redecorate?: unknown }).redecorate,
+      undefined
+    );
+  });
+
   it('keeps installed same-name extension when replacement validation fails', () => {
     const editor = createEditor();
     const installed = defineEditorExtension({

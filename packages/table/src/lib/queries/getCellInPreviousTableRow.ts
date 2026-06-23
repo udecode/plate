@@ -1,20 +1,16 @@
-import {
-  type Editor,
-  type NodeEntry,
-  type Path,
-  type TElement,
-  PathApi,
-} from 'platejs';
+import type { Element, NodeEntry, Path } from '@platejs/slate';
+import { PathApi } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 export const getCellInPreviousTableRow = (
-  editor: Editor,
+  editor: SlateEditor,
   currentRowPath: Path
 ): NodeEntry | undefined => {
+  if (!PathApi.hasPrevious(currentRowPath)) return;
+
   const prevPath = PathApi.previous(currentRowPath);
 
-  if (!prevPath) return;
-
-  const previousRow = editor.api.node<TElement>(prevPath);
+  const previousRow = editor.api.node<Element>(prevPath);
 
   if (!previousRow) return;
 

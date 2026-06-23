@@ -1,32 +1,40 @@
 import type { LengthConfig } from '../getCorePlugins';
 
+import { withLegacyTransformOverride } from '../../../internal/plugin/withLegacyTransformOverride';
 import { createTSlatePlugin } from '../../plugin';
 
-export const LengthPlugin = createTSlatePlugin<LengthConfig>({
-  key: 'length',
-}).overrideEditor(({ editor, getOptions, tf: { apply } }) => ({
-  transforms: {
-    apply(operation) {
-      editor.tf.withoutNormalizing(() => {
-        apply(operation);
+export const LengthPlugin = withLegacyTransformOverride(
+  createTSlatePlugin<LengthConfig>({
+    key: 'length',
+  }),
+  ({ editor, getOptions, tf }) => {
+    const { apply, delete: deleteText, withoutNormalizing } = tf;
 
-        const options = getOptions();
+    return {
+      tf: {
+        apply(operation) {
+          withoutNormalizing(() => {
+            apply(operation);
 
-        if (options.maxLength) {
-          const length = editor.api.string([]).length;
+            const options = getOptions();
 
-          // Make sure to remove overflow of text beyond character limit
-          if (length > options.maxLength) {
-            const overflowLength = length - options.maxLength;
+            if (options.maxLength) {
+              const length = editor.api.string([]).length;
 
-            editor.tf.delete({
-              distance: overflowLength,
-              reverse: true,
-              unit: 'character',
-            });
-          }
-        }
-      });
-    },
-  },
-}));
+              // Make sure to remove overflow of text beyond character limit
+              if (length > options.maxLength) {
+                const overflowLength = length - options.maxLength;
+
+                deleteText({
+                  distance: overflowLength,
+                  reverse: true,
+                  unit: 'character',
+                });
+              }
+            }
+          });
+        },
+      },
+    };
+  }
+);

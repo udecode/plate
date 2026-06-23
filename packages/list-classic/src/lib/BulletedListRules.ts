@@ -1,6 +1,7 @@
-import type { SlateEditor } from 'platejs';
+import type { SlateEditor } from '@platejs/core';
 
-import { createRuleFactory, KEYS } from 'platejs';
+import { createRuleFactory } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { toggleList } from './transforms';
 
@@ -19,7 +20,9 @@ export const BulletedListRules = {
     trigger: ' ',
     match: ({ variant }) => variant,
     apply: ({ editor }, match) => {
-      editor.tf.delete({ at: match.range });
+      editor.update((tx) => {
+        tx.text.delete({ at: match.range });
+      });
       toggleList(editor, {
         type: editor.getType(KEYS.ulClassic),
       });

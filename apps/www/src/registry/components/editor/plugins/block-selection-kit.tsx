@@ -28,7 +28,7 @@ export const BlockSelectionKit = [
         ),
       onKeyDownSelecting: (editor, e) => {
         if (isHotkey('mod+j')(e)) {
-          editor.getApi(AIChatPlugin).aiChat.show();
+          editor.getPluginApi(AIChatPlugin).aiChat.show();
         }
       },
     },

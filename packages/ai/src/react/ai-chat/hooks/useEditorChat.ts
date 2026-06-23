@@ -8,10 +8,11 @@ import { BlockSelectionPlugin } from '@platejs/selection/react';
 import { useEditorPlugin, usePluginOption } from 'platejs/react';
 
 import { AIChatPlugin } from '../AIChatPlugin';
+import type { AIChatPlateEditor } from '../internal/editorTypes';
 
 export type UseEditorChatOptions = {
   // @deprecated not used
-  chat?: any;
+  chat?: unknown;
   onOpenBlockSelection?: (blocks: NodeEntry[]) => void;
   onOpenChange?: (open: boolean) => void;
   onOpenCursor?: () => void;
@@ -25,6 +26,7 @@ export const useEditorChat = ({
   onOpenSelection,
 }: UseEditorChatOptions) => {
   const { editor } = useEditorPlugin(AIChatPlugin);
+  const aiEditor = editor as AIChatPlateEditor;
   const open = usePluginOption(AIChatPlugin, 'open');
 
   useEffect(() => {
@@ -32,8 +34,7 @@ export const useEditorChat = ({
 
     if (open) {
       if (onOpenBlockSelection) {
-        const blockSelectionApi =
-          editor.getApi(BlockSelectionPlugin).blockSelection;
+        const blockSelectionApi = aiEditor.api.blockSelection;
         const isBlockSelecting = editor.getOption(
           BlockSelectionPlugin,
           'isSelectingSome'
@@ -45,12 +46,12 @@ export const useEditorChat = ({
           return;
         }
       }
-      if (onOpenCursor && editor.api.isCollapsed()) {
+      if (onOpenCursor && aiEditor.api.isCollapsed()) {
         onOpenCursor();
 
         return;
       }
-      if (onOpenSelection && editor.api.isExpanded()) {
+      if (onOpenSelection && aiEditor.api.isExpanded()) {
         onOpenSelection();
 
         return;

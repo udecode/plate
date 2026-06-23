@@ -1,15 +1,16 @@
 import {
   type Descendant,
   type Editor,
+  type Element,
   ElementApi,
+  type Node,
   NodeApi,
+  type Range,
   RangeApi,
-  type TElement,
+  type Selection,
+  type Text,
   TextApi,
-  type TNode,
-  type TRange,
-  type TText,
-} from '@platejs/slate-legacy';
+} from '@platejs/slate';
 
 import {
   AnchorToken,
@@ -21,20 +22,18 @@ import {
   Token,
 } from './tokens';
 
-/**
- * Resolve the descedants of a node by normalizing the children that can be
- * passed into a hyperscript creator function.
- */
+export type TestEditor = Editor & {
+  children: Element[];
+  selection: Selection;
+};
 
-const STRINGS = new WeakSet<TText>();
+const STRINGS = new WeakSet<Text>();
 
 const resolveDescendants = (children: any[]): Descendant[] => {
   const nodes: Descendant[] = [];
 
-  const addChild = (child: TNode | Token): void => {
-    if (child == null) {
-      return;
-    }
+  const addChild = (child: Node | string | Token): void => {
+    if (child == null) return;
 
     const prev = nodes.at(-1);
 
@@ -45,7 +44,7 @@ const resolveDescendants = (children: any[]): Descendant[] => {
       node = text;
     }
     if (TextApi.isText(node)) {
-      const c = node; // HACK: fix typescript complaining
+      const c = node;
 
       if (
         TextApi.isText(prev) &&
@@ -64,7 +63,7 @@ const resolveDescendants = (children: any[]): Descendant[] => {
 
       if (!TextApi.isText(n)) {
         addChild('');
-        n = nodes.at(-1) as TText;
+        n = nodes.at(-1) as Text;
       }
       if (node instanceof AnchorToken) {
         addAnchorToken(n, node);
@@ -85,56 +84,50 @@ const resolveDescendants = (children: any[]): Descendant[] => {
   return nodes;
 };
 
-/** Create an anchor token. */
 export const createAnchor = (
   _tagName: string,
   attributes: Record<string, any>
 ): AnchorToken => new AnchorToken(attributes);
 
-/** Create an anchor and a focus token. */
 export const createCursor = (
   _tagName: string,
   attributes: Record<string, any>
 ): Token[] => [new AnchorToken(attributes), new FocusToken(attributes)];
 
-/** Create an `TElement` object. */
 export const createElement = (
   _tagName: string,
   attributes: Record<string, any>,
   children: any[]
-): TElement => ({
+): Element => ({
   ...(attributes as any),
   children: resolveDescendants(children),
 });
 
-/** Create a focus token. */
 export const createFocus = (
   _tagName: string,
   attributes: Record<string, any>
 ): FocusToken => new FocusToken(attributes);
 
-/** Create a fragment. */
 export const createFragment = (
   _tagName: string,
   _attributes: Record<string, any>,
   children: any[]
 ): Descendant[] => resolveDescendants(children);
 
-/** Create a `Selection` object. */
 export const createSelection = (
   _tagName: string,
   _attributes: Record<string, any>,
   children: any[]
-): TRange => {
+): Range => {
   const anchor: AnchorToken = children.find((c) => c instanceof AnchorToken)!;
   const focus: FocusToken = children.find((c) => c instanceof FocusToken)!;
 
-  if (!anchor?.offset || !anchor.path) {
+  if (anchor?.offset == null || !anchor.path) {
     throw new Error(
       'The <selection> hyperscript tag must have an <anchor> tag as a child with `path` and `offset` attributes defined.'
     );
   }
-  if (!focus?.offset || !focus.path) {
+  if (focus?.offset == null || !focus.path) {
     throw new Error(
       'The <selection> hyperscript tag must have a <focus> tag as a child with `path` and `offset` attributes defined.'
     );
@@ -153,12 +146,11 @@ export const createSelection = (
   };
 };
 
-/** Create a `TText` object. */
 export const createText = (
   _tagName: string,
   attributes: Record<string, any>,
   children: any[]
-): TText => {
+): Text => {
   const nodes = resolveDescendants(children);
 
   if (nodes.length > 1) {
@@ -177,8 +169,6 @@ export const createText = (
     The <text> hyperscript tag can only contain text content as children.`);
   }
 
-  // COMPAT: If they used the <text> tag we want to guarantee that it won't be
-  // merge with other string children.
   STRINGS.delete(node);
 
   Object.assign(node, attributes);
@@ -186,16 +176,15 @@ export const createText = (
   return node;
 };
 
-/** Create a top-level `Editor` object. */
 export const createEditor =
-  (makeEditor: () => Editor) =>
+  (makeEditor: () => Editor = () => ({}) as Editor) =>
   (
     _tagName: string,
     attributes: Record<string, any>,
     children: any[]
-  ): Editor => {
+  ): TestEditor => {
     const otherChildren: any[] = [];
-    let selectionChild: TRange | undefined;
+    let selectionChild: Range | undefined;
 
     for (const child of children) {
       if (RangeApi.isRange(child)) {
@@ -205,15 +194,14 @@ export const createEditor =
       }
     }
 
-    const descendants = resolveDescendants(otherChildren) as TElement[];
-    const selection: Partial<TRange> = {};
-    const editor = makeEditor();
+    const descendants = resolveDescendants(otherChildren) as Element[];
+    const selection: Partial<Range> = {};
+    const editor = makeEditor() as TestEditor;
     Object.assign(editor, attributes);
     editor.children = descendants;
+    editor.selection = null;
 
-    // Search the document's texts to see if any of them have tokens associated
-    // that need incorporated into the selection.
-    for (const [node, path] of NodeApi.texts(editor)) {
+    for (const [node, path] of NodeApi.texts(editor as unknown as Node)) {
       const anchor = getAnchorOffset(node);
       const focus = getFocusOffset(node);
 

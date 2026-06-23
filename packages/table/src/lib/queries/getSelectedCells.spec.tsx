@@ -99,9 +99,11 @@ describe('getSelectedCells helpers', () => {
     expect(getSelectedTables(editor)).toBeNull();
     expect(isSelectingCell(editor)).toBe(false);
 
-    editor.tf.select({
-      anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
-      focus: { offset: 0, path: [0, 0, 1, 0, 0] },
+    editor.update((tx) => {
+      tx.selection.set({
+        anchor: { offset: 0, path: [0, 0, 0, 0, 0] },
+        focus: { offset: 0, path: [0, 0, 1, 0, 0] },
+      });
     });
 
     expect(getSelectedCells(editor)).toHaveLength(2);

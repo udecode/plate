@@ -1,11 +1,14 @@
-import { type Path, type SlateEditor, TextApi } from 'platejs';
+import type { Path } from '@platejs/slate';
+import { type SlateEditor, TextApi } from 'platejs';
 
 export const removeAINodes = (
   editor: SlateEditor,
   { at = [] }: { at?: Path } = {}
 ) => {
-  editor.tf.removeNodes({
-    at,
-    match: (n) => TextApi.isText(n) && !!(n as any).ai,
+  editor.update((tx) => {
+    tx.nodes.remove({
+      at,
+      match: (n) => TextApi.isText(n) && !!(n as Record<string, unknown>).ai,
+    });
   });
 };

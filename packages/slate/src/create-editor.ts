@@ -65,6 +65,25 @@ import type {
   Value,
 } from './interfaces';
 
+const isMergeableApiCapability = (
+  capability: unknown
+): capability is Record<PropertyKey, unknown> =>
+  typeof capability === 'object' &&
+  capability !== null &&
+  !Array.isArray(capability);
+
+const resolveApiCapability = (capabilities: unknown[]) => {
+  if (capabilities.length === 1) {
+    return capabilities[0];
+  }
+
+  if (capabilities.every(isMergeableApiCapability)) {
+    return Object.freeze(Object.assign({}, ...capabilities));
+  }
+
+  return capabilities.at(-1);
+};
+
 /**
  * Create a mutable Slate editor with schema, command, query, state, and
  * extension runtime APIs installed.
@@ -146,11 +165,7 @@ export function createEditor<
         return;
       }
 
-      if (capabilities.length === 1) {
-        return capabilities[0];
-      }
-
-      return Object.freeze(Object.assign({}, ...capabilities));
+      return resolveApiCapability(capabilities);
     },
   }) as Editor<V, TExtensions>['api'];
 

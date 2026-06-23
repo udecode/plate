@@ -20,6 +20,9 @@ const createValue = (id?: string) =>
     },
   ] as any;
 
+const createLegacyPlateEditor = (options: any) =>
+  createPlateEditor({ runtime: 'legacy', ...options } as any);
+
 const createFallbackValue = () =>
   [
     {
@@ -70,7 +73,7 @@ const renderPipeBare = (editor: ReturnType<typeof createPlateEditor>) => {
 
 describe('pipeRenderElement', () => {
   it('renders the default paragraph element with the paragraph plugin class', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       navigationFeedback: false,
       plugins: [],
       value: createValue(),
@@ -84,24 +87,23 @@ describe('pipeRenderElement', () => {
     expect(element?.tagName).toBe('DIV');
   });
 
-  it('resolves one node path on the plain fast path to preserve element context', () => {
-    const editor = createPlateEditor({
+  it('resolves the node path on the plain fast path without editor.findPath', () => {
+    const editor = createLegacyPlateEditor({
       navigationFeedback: false,
       plugins: [],
       value: createValue(),
     } as any);
-    const findPath = editor.api.findPath;
-    const spy = mock(findPath);
 
-    editor.api.findPath = spy as any;
+    editor.api.findPath = () => {
+      throw new Error('unexpected findPath call');
+    };
 
-    renderPipeBare(editor);
+    expect(() => renderPipeBare(editor)).not.toThrow();
 
-    expect(spy).toHaveBeenCalledTimes(1);
   });
 
   it('keeps first-block composing state sync on the plain fast path', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       navigationFeedback: false,
       plugins: [],
       value: createValue(),
@@ -115,24 +117,23 @@ describe('pipeRenderElement', () => {
     expect(editor.store.get('composing')).toBe(false);
   });
 
-  it('resolves one node path on the block-id fast path to preserve element context', () => {
-    const editor = createPlateEditor({
+  it('resolves the node path on the block-id fast path without editor.findPath', () => {
+    const editor = createLegacyPlateEditor({
       navigationFeedback: false,
       plugins: [],
       value: createValue('block-1'),
     } as any);
-    const findPath = editor.api.findPath;
-    const spy = mock(findPath);
 
-    editor.api.findPath = spy as any;
+    editor.api.findPath = () => {
+      throw new Error('unexpected findPath call');
+    };
 
-    renderPipeBare(editor);
+    expect(() => renderPipeBare(editor)).not.toThrow();
 
-    expect(spy).toHaveBeenCalledTimes(1);
   });
 
   it('preserves non-string block ids on the block-id fast path', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       navigationFeedback: false,
       plugins: [],
       value: [
@@ -151,7 +152,7 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps plugin render.as behavior', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [
         createSlatePlugin({
           key: 'p',
@@ -183,7 +184,7 @@ describe('pipeRenderElement', () => {
         </section>
       );
     };
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [
         createSlatePlugin({
           key: 'p',
@@ -207,7 +208,7 @@ describe('pipeRenderElement', () => {
   });
 
   it('preserves Slate children for void render.as tags on the fast path', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [
         createSlatePlugin({
           key: 'hr',
@@ -257,7 +258,7 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps global aboveNodes wrappers', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [
         createSlatePlugin({
           key: 'above',
@@ -279,7 +280,7 @@ describe('pipeRenderElement', () => {
   });
 
   it('passes the node path to renderElement fallback props without editor findPath', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [],
       value: createFallbackValue(),
     });
@@ -311,7 +312,7 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps plugin node.props behavior', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [
         createSlatePlugin({
           key: 'p',
@@ -334,7 +335,7 @@ describe('pipeRenderElement', () => {
   });
 
   it('runs inactive belowNodes wrappers under element context', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       navigationFeedback: false,
       plugins: [
         createSlatePlugin({
@@ -360,7 +361,7 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps plain fast-path markup for inject.nodeProps', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       navigationFeedback: false,
       plugins: [
         createSlatePlugin({
@@ -383,20 +384,19 @@ describe('pipeRenderElement', () => {
         },
       ] as any,
     } as any);
-    const findPath = editor.api.findPath;
-    const spy = mock(findPath);
 
-    editor.api.findPath = spy as any;
+    editor.api.findPath = () => {
+      throw new Error('unexpected findPath call');
+    };
 
     const { container } = renderPipeBare(editor);
     const element = container.querySelector('[data-slate-node="element"]');
 
-    expect(spy).toHaveBeenCalledTimes(1);
     expect((element as HTMLElement).style.listStyleType).toBe('disc');
   });
 
   it('keeps element context for inject.nodeProps transform hooks', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [
         createSlatePlugin({
           inject: {
@@ -438,7 +438,7 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps element store context for inject.nodeProps transform hooks', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [
         createSlatePlugin({
           inject: {
@@ -479,7 +479,7 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps pathless inject.nodeProps on the wrapped directional path', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [
         createSlatePlugin({
           inject: {
@@ -531,7 +531,7 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps pathless inject.nodeProps when active belowNodes wrappers are present', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [
         createSlatePlugin({
           inject: {
@@ -593,7 +593,7 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps plugin selection affinity behavior on the plain fast path', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [
         createSlatePlugin({
           key: 'p',
@@ -619,7 +619,7 @@ describe('pipeRenderElement', () => {
   });
 
   it('keeps editOnly behavior on the plain fast path in read-only mode', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [
         createSlatePlugin({
           editOnly: true,

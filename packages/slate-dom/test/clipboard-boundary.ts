@@ -53,7 +53,7 @@ const getHistory = (editor: Editor) =>
   editor.read((state: any) => state.history.get());
 
 const undo = (editor: Editor) => {
-  editor.update((tx: any) => {
+  editor.update((tx) => {
     tx.history.undo();
   });
 };

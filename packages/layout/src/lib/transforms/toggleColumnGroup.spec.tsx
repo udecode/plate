@@ -1,12 +1,21 @@
-import type { Path } from 'platejs';
+import type { Path, Value } from 'platejs';
 
-import { createSlateEditor } from 'platejs';
+import { createPlateRuntimeEditor } from '../../../../core/src/react/editor/createPlateRuntimeEditor';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
+import type { ColumnEditor } from './ColumnEditor';
 import { toggleColumnGroup } from './toggleColumnGroup';
 
+type ColumnTestEditor = ColumnEditor & { children: Value };
+
+const createColumnTestEditor = (value: Value): ColumnTestEditor =>
+  createPlateRuntimeEditor({
+    initialValue: value,
+    plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
+  }) as unknown as ColumnTestEditor;
+
 describe('toggleColumnGroup', () => {
-  let editor: ReturnType<typeof createSlateEditor>;
+  let editor: ColumnTestEditor;
   let initialValue: any[];
 
   beforeEach(() => {
@@ -17,15 +26,14 @@ describe('toggleColumnGroup', () => {
       },
     ];
 
-    editor = createSlateEditor({
-      plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
-      value: initialValue,
-    });
+    editor = createColumnTestEditor(initialValue);
   });
 
   it('wrap a paragraph in a column group when toggling from a paragraph', () => {
     const at: Path = [0, 0]; // Inside the paragraph text
-    editor.tf.select(editor.api.start(at)!);
+    editor.update((tx) => {
+      tx.selection.set(editor.api.start(at)!);
+    });
 
     // Toggle to 2 columns
     toggleColumnGroup(editor, { columns: 2 });
@@ -45,7 +53,7 @@ describe('toggleColumnGroup', () => {
 
   it('update the number of columns if already a column group', () => {
     // Start with a column group of 2 columns
-    editor.children = [
+    editor = createColumnTestEditor([
       {
         children: [
           {
@@ -61,10 +69,12 @@ describe('toggleColumnGroup', () => {
         ],
         type: 'column_group',
       },
-    ];
+    ]);
 
     const columnGroupPath: Path = [0];
-    editor.tf.select(editor.api.start(columnGroupPath.concat([0, 0, 0]))!);
+    editor.update((tx) => {
+      tx.selection.set(editor.api.start(columnGroupPath.concat([0, 0, 0]))!);
+    });
 
     // Toggle to 3 columns (from 2 columns)
     toggleColumnGroup(editor, { columns: 3 });
@@ -90,7 +100,7 @@ describe('toggleColumnGroup', () => {
 
   it('preserve content when toggling between different column counts', () => {
     // Start with a column group of 2 columns
-    editor.children = [
+    editor = createColumnTestEditor([
       {
         children: [
           {
@@ -106,10 +116,12 @@ describe('toggleColumnGroup', () => {
         ],
         type: 'column_group',
       },
-    ];
+    ]);
 
     const columnGroupPath: Path = [0];
-    editor.tf.select(editor.api.start(columnGroupPath)!);
+    editor.update((tx) => {
+      tx.selection.set(editor.api.start(columnGroupPath)!);
+    });
 
     // Toggle to 3 columns
     toggleColumnGroup(editor, { columns: 3 });
@@ -117,10 +129,11 @@ describe('toggleColumnGroup', () => {
     expect(node.children).toHaveLength(3);
 
     // Insert content in the third column
-    editor.tf.apply({
-      node: { children: [{ text: 'Col3 extra text' }], type: 'p' },
-      path: [0, 2, 1],
-      type: 'insert_node',
+    editor.update((tx) => {
+      tx.nodes.insert(
+        { children: [{ text: 'Col3 extra text' }], type: 'p' },
+        { at: [0, 2, 1] }
+      );
     });
 
     // Toggle back to 2 columns
@@ -147,7 +160,7 @@ describe('toggleColumnGroup', () => {
 
   it('handle toggling from a selection inside a column as well', () => {
     // Start with a column group of 2 columns
-    editor.children = [
+    editor = createColumnTestEditor([
       {
         children: [
           {
@@ -163,10 +176,12 @@ describe('toggleColumnGroup', () => {
         ],
         type: 'column_group',
       },
-    ];
+    ]);
     const _columnGroupPath: Path = [0];
     // Select inside second column's paragraph
-    editor.tf.select(editor.api.start([0, 1, 0, 0])!);
+    editor.update((tx) => {
+      tx.selection.set(editor.api.start([0, 1, 0, 0])!);
+    });
 
     // Toggle to 3 columns
     toggleColumnGroup(editor, { columns: 3 });

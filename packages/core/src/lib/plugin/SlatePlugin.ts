@@ -1,18 +1,21 @@
 import type {
   DecoratedRange,
   Descendant,
-  EditorApi,
-  EditorTransforms,
+  Element,
   NodeEntry,
   NodeOperation,
   Path,
-  TElement,
   TextOperation,
-  TText,
+  Text,
   Value,
-} from '@platejs/slate-legacy';
+  EditorExtensionInput,
+  EditorUpdateContext,
+  EditorUpdateOptions,
+  EditorUpdateTransaction,
+} from '@platejs/slate';
 import type { AnyObject, Deep2Partial, Nullable } from '@udecode/utils';
 
+import type { CurrentRuntimeEditorApi as EditorApi } from '../../internal/currentRuntimeBridge';
 import type {
   SlateElementProps,
   SlateRenderElementProps,
@@ -20,13 +23,14 @@ import type {
   SlateRenderTextProps,
 } from '../../static';
 import type { SlateEditor } from '../editor';
-import type { CorePluginApi, CorePluginTransforms } from '../plugins';
+import type { CorePluginApi } from '../plugins';
 import type {
   InputRulesConfig,
   InputRulesDefinition,
 } from '../plugins/input-rules/types';
 import type {
   AnyPluginConfig,
+  AnyPluginTx,
   BaseDeserializer,
   BaseHtmlDeserializer,
   BaseInjectProps,
@@ -38,8 +42,10 @@ import type {
   GetInjectNodePropsReturnType,
   InferApi,
   InferOptions,
+  InferPluginApi,
+  InferPluginTx,
   InferSelectors,
-  InferTransforms,
+  InferTx,
   MatchRules,
   NodeComponent,
   NodeComponents,
@@ -100,26 +106,6 @@ export type ExtendEditorApi<
         : never;
   };
 
-export type ExtendEditorTransforms<
-  C extends AnyPluginConfig = PluginConfig,
-  EA = {},
-> = (ctx: SlatePluginContext<C>) => EA &
-  Deep2Partial<EditorTransforms & CorePluginTransforms> & {
-    [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
-      ...args: any[]
-    ) => any
-      ? (
-          ...args: Parameters<InferTransforms<C>[K]>
-        ) => ReturnType<InferTransforms<C>[K]>
-      : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
-        ? {
-            [N in keyof InferTransforms<C>[K]]?: (
-              ...args: Parameters<InferTransforms<C>[K][N]>
-            ) => ReturnType<InferTransforms<C>[K][N]>;
-          }
-        : never;
-  };
-
 export type HtmlDeserializer<C extends AnyPluginConfig = PluginConfig> =
   BaseHtmlDeserializer & {
     /**
@@ -163,13 +149,12 @@ export type InjectNodeProps<C extends AnyPluginConfig = PluginConfig> =
   };
 
 export type LeafStaticProps<C extends AnyPluginConfig = PluginConfig> =
-  | ((props: SlateRenderLeafProps<TText, C>) => AnyObject | undefined)
+  | ((props: SlateRenderLeafProps<Text, C>) => AnyObject | undefined)
   | AnyObject;
 
 export type NodeStaticProps<C extends AnyPluginConfig = PluginConfig> =
   | ((
-      props: SlateRenderElementProps<TElement, C> &
-        SlateRenderLeafProps<TText, C>
+      props: SlateRenderElementProps<Element, C> & SlateRenderLeafProps<Text, C>
     ) => AnyObject | undefined)
   | AnyObject;
 
@@ -183,7 +168,7 @@ export type NodeStaticWrapperComponent<
 /** @deprecated Use {@link RenderStaticNodeWrapperProps} instead. */
 export interface NodeStaticWrapperComponentProps<
   C extends AnyPluginConfig = PluginConfig,
-> extends SlateRenderElementProps<TElement, C> {
+> extends SlateRenderElementProps<Element, C> {
   key: string;
 }
 
@@ -192,7 +177,7 @@ export interface NodeStaticWrapperComponentProps<
 /** @deprecated Use {@link RenderStaticNodeWrapperFunction} instead. */
 export type NodeStaticWrapperComponentReturnType<
   C extends AnyPluginConfig = PluginConfig,
-> = React.FC<SlateRenderElementProps<TElement, C>> | undefined;
+> = React.FC<SlateRenderElementProps<Element, C>> | undefined;
 
 export type TransformInitialValue<C extends AnyPluginConfig = PluginConfig> = (
   ctx: SlatePluginContext<C> & { value: Value }
@@ -202,6 +187,10 @@ export type TransformInitialValue<C extends AnyPluginConfig = PluginConfig> = (
 export type NormalizeInitialValue<C extends AnyPluginConfig = PluginConfig> = (
   ctx: SlatePluginContext<C> & { value: Value }
 ) => Value | void;
+
+export type SlateExtensionFactory<C extends AnyPluginConfig = PluginConfig> = (
+  ctx: SlatePluginContext<C>
+) => EditorExtensionInput | readonly EditorExtensionInput[] | undefined;
 
 export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
   ctx: SlatePluginContext<C>
@@ -214,21 +203,6 @@ export type OverrideEditor<C extends AnyPluginConfig = PluginConfig> = (
             [N in keyof InferApi<C>[K]]?: (
               ...args: Parameters<InferApi<C>[K][N]>
             ) => ReturnType<InferApi<C>[K][N]>;
-          }
-        : never;
-  };
-  transforms?: Deep2Partial<EditorTransforms & CorePluginTransforms> & {
-    [K in keyof InferTransforms<C>]?: InferTransforms<C>[K] extends (
-      ...args: any[]
-    ) => any
-      ? (
-          ...args: Parameters<InferTransforms<C>[K]>
-        ) => ReturnType<InferTransforms<C>[K]>
-      : InferTransforms<C>[K] extends Record<string, (...args: any[]) => any>
-        ? {
-            [N in keyof InferTransforms<C>[K]]?: (
-              ...args: Parameters<InferTransforms<C>[K][N]>
-            ) => ReturnType<InferTransforms<C>[K][N]>;
           }
         : never;
   };
@@ -264,7 +238,7 @@ export type RenderStaticNodeWrapperFunction =
 
 export interface RenderStaticNodeWrapperProps<
   C extends AnyPluginConfig = PluginConfig,
-> extends SlateRenderElementProps<TElement, C> {
+> extends SlateRenderElementProps<Element, C> {
   key: string;
 }
 
@@ -278,12 +252,52 @@ export type Serializer<C extends AnyPluginConfig = PluginConfig> =
     ) => boolean;
   };
 
+export type PlatePluginTxGroup<TGroup extends object = object> = (
+  transaction: EditorUpdateTransaction,
+  editor: SlateEditor,
+  context: EditorUpdateContext
+) => TGroup;
+
+export type PlatePluginTxGroups = Record<
+  string,
+  PlatePluginTxGroup | undefined
+>;
+
+export type PluginTx<K extends string, Group extends object> = Record<K, Group>;
+
+export type ExtendTx<
+  C extends AnyPluginConfig = PluginConfig,
+  TGroup extends PlatePluginTxGroup = PlatePluginTxGroup,
+> = (ctx: SlatePluginContext<C>) => TGroup;
+
+export type ExtendTxGroups<
+  C extends AnyPluginConfig = PluginConfig,
+  ETx extends PlatePluginTxGroups = PlatePluginTxGroups,
+> = (ctx: SlatePluginContext<C>) => ETx;
+
+export type InferTxGroup<TGroup extends PlatePluginTxGroup> =
+  ReturnType<TGroup>;
+
+export type SlatePluginContextEditor<C extends AnyPluginConfig = PluginConfig> =
+  {
+    update: <TTx extends object = {}>(
+      fn: (
+        transaction: EditorUpdateTransaction & InferTx<C> & TTx,
+        context: EditorUpdateContext
+      ) => void,
+      options?: EditorUpdateOptions
+    ) => void;
+  } & SlateEditor;
+
 /** The `PlatePlugin` interface is a base interface for all plugins. */
 export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
   BasePlugin<C> &
     Nullable<{
       decorate?: Decorate<WithAnyKey<C>>;
       extendEditor?: ExtendEditor<WithAnyKey<C>>;
+      slateExtensions?:
+        | readonly EditorExtensionInput[]
+        | SlateExtensionFactory<WithAnyKey<C>>;
       transformInitialValue?: TransformInitialValue<WithAnyKey<C>>;
       /** @deprecated Use `transformInitialValue` instead. */
       normalizeInitialValue?: NormalizeInitialValue<WithAnyKey<C>>;
@@ -387,7 +401,7 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          * their content will be rendered in sequence.
          */
         belowRootNodes?: (
-          props: SlateElementProps<TElement, AnySlatePlugin>
+          props: SlateElementProps<Element, AnySlatePlugin>
         ) => React.ReactNode;
       }>;
       rules: {
@@ -403,7 +417,7 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
          */
         match?: (
           options: {
-            node: TElement;
+            node: Element;
             path: Path;
             rule: MatchRules;
           } & SlatePluginContext<C>
@@ -416,16 +430,12 @@ export type SlatePlugin<C extends AnyPluginConfig = PluginConfig> =
        */
       shortcuts: Partial<
         Record<
-          | (string & {})
-          | Exclude<
-              keyof InferApi<C>[C['key']],
-              keyof InferTransforms<C>[C['key']]
-            >
-          | keyof InferTransforms<C>[C['key']],
+          (string & {}) | keyof InferPluginApi<C> | keyof InferPluginTx<C>,
           SlateShortcut | null
         >
       >;
       inputRules: InputRulesDefinition | InputRulesConfig;
+      tx: PlatePluginTxGroups;
     };
 
 export type SlatePluginConfig<
@@ -434,31 +444,34 @@ export type SlatePluginConfig<
   A = {},
   T = {},
   S = {},
+  Tx extends AnyPluginTx = {},
   EO = {},
   EA = {},
-  ET = {},
   ES = {},
 > = Partial<
   Omit<
-    SlatePlugin<PluginConfig<K, Partial<O>, A, T, S>>,
-    keyof SlatePluginMethods | 'api' | 'node' | 'optionsStore' | 'transforms'
+    SlatePlugin<PluginConfig<K, Partial<O>, A, T, S, Tx>>,
+    keyof SlatePluginMethods | 'api' | 'node' | 'optionsStore'
   > & {
     api: EA;
     node: Partial<SlatePlugin['node']>;
     options: EO;
     selectors: ES;
-    transforms: ET;
   }
 >;
 
 export type SlatePluginContext<C extends AnyPluginConfig = PluginConfig> =
-  BasePluginContext<C> & { editor: SlateEditor; plugin: EditorPlugin<C> };
+  BasePluginContext<C> & {
+    editor: SlatePluginContextEditor<C>;
+    plugin: EditorPlugin<C>;
+  };
 
 export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
   __apiExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
   __configuration: ((ctx: SlatePluginContext<AnyPluginConfig>) => any) | null;
   __extensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
   __selectorExtensions: ((ctx: SlatePluginContext<AnyPluginConfig>) => any)[];
+  __txExtensions: ExtendTxGroups<AnyPluginConfig>[];
   clone: () => SlatePlugin<C>;
   configure: (
     config:
@@ -468,15 +481,17 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
           C['key'],
           InferOptions<C>,
           InferApi<C>,
-          InferTransforms<C>,
-          InferSelectors<C>
+          {},
+          InferSelectors<C>,
+          InferTx<C>
         >)
       | SlatePluginConfig<
           C['key'],
           InferOptions<C>,
           InferApi<C>,
-          InferTransforms<C>,
-          InferSelectors<C>
+          {},
+          InferSelectors<C>,
+          InferTx<C>
         >
   ) => SlatePlugin<C>;
   configurePlugin: <P extends AnySlatePlugin>(
@@ -488,18 +503,20 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
           any,
           InferOptions<P>,
           InferApi<P>,
-          InferTransforms<P>,
-          InferSelectors<P>
+          {},
+          InferSelectors<P>,
+          InferTx<P>
         >)
       | SlatePluginConfig<
           any,
           InferOptions<P>,
           InferApi<P>,
-          InferTransforms<P>,
-          InferSelectors<P>
+          {},
+          InferSelectors<P>,
+          InferTx<P>
         >
   ) => SlatePlugin<C>;
-  extend: <EO = {}, EA = {}, ET = {}, ES = {}>(
+  extend: <EO = {}, EA = {}, ES = {}>(
     extendConfig:
       | ((
           ctx: SlatePluginContext<C>
@@ -507,22 +524,22 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
           C['key'],
           InferOptions<C>,
           InferApi<C>,
-          InferTransforms<C>,
+          {},
           InferSelectors<C>,
+          InferTx<C>,
           EO,
           EA,
-          ET,
           ES
         >)
       | SlatePluginConfig<
           C['key'],
           InferOptions<C>,
           InferApi<C>,
-          InferTransforms<C>,
+          {},
           InferSelectors<C>,
+          InferTx<C>,
           EO,
           EA,
-          ET,
           ES
         >
   ) => SlatePlugin<
@@ -530,8 +547,9 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       C['key'],
       EO & InferOptions<C>,
       EA & InferApi<C>,
-      ET & InferTransforms<C>,
-      ES & InferSelectors<C>
+      {},
+      ES & InferSelectors<C>,
+      InferTx<C>
     >
   >;
   extendApi: <
@@ -543,8 +561,9 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       C['key'],
       InferOptions<C>,
       InferApi<C> & Record<C['key'], EA>,
-      InferTransforms<C>,
-      InferSelectors<C>
+      {},
+      InferSelectors<C>,
+      InferTx<C>
     >
   >;
   extendEditorApi: <
@@ -565,35 +584,12 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
           ? (EA & InferApi<C>)[K]
           : { [N in keyof (EA & InferApi<C>)[K]]: (EA & InferApi<C>)[K][N] };
       },
-      InferTransforms<C>,
-      InferSelectors<C>
+      {},
+      InferSelectors<C>,
+      InferTx<C>
     >
   >;
-  extendEditorTransforms: <
-    ET extends Record<
-      string,
-      ((...args: any[]) => any) | Record<string, (...args: any[]) => any>
-    > = Record<string, never>,
-  >(
-    extension: ExtendEditorTransforms<C, ET>
-  ) => SlatePlugin<
-    PluginConfig<
-      C['key'],
-      InferOptions<C>,
-      InferApi<C>,
-      {
-        [K in keyof (ET & InferTransforms<C>)]: (ET &
-          InferTransforms<C>)[K] extends (...args: any[]) => any
-          ? (ET & InferTransforms<C>)[K]
-          : {
-              [N in keyof (ET & InferTransforms<C>)[K]]: (ET &
-                InferTransforms<C>)[K][N];
-            };
-      },
-      InferSelectors<C>
-    >
-  >;
-  extendPlugin: <P extends AnySlatePlugin, EO = {}, EA = {}, ET = {}, ES = {}>(
+  extendPlugin: <P extends AnySlatePlugin, EO = {}, EA = {}, ES = {}>(
     plugin: Partial<P>,
     extendConfig:
       | ((
@@ -602,22 +598,22 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
           any,
           InferOptions<P>,
           InferApi<P>,
-          InferTransforms<P>,
+          {},
           InferSelectors<P>,
+          InferTx<P>,
           EO,
           EA,
-          ET,
           ES
         >)
       | SlatePluginConfig<
           any,
           InferOptions<P>,
           InferApi<P>,
-          InferTransforms<P>,
+          {},
           InferSelectors<P>,
+          InferTx<P>,
           EO,
           EA,
-          ET,
           ES
         >
   ) => SlatePlugin<C>;
@@ -630,23 +626,44 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       C['key'],
       InferOptions<C>,
       InferApi<C>,
-      InferTransforms<C>,
-      ES & InferSelectors<C>
+      {},
+      ES & InferSelectors<C>,
+      InferTx<C>
     >
   >;
-  extendTransforms: <
-    ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
-  >(
-    extension: (ctx: SlatePluginContext<C>) => ET
+  extendTx: <TGroup extends PlatePluginTxGroup = PlatePluginTxGroup>(
+    extension: ExtendTx<C, TGroup>
   ) => SlatePlugin<
     PluginConfig<
       C['key'],
       InferOptions<C>,
       InferApi<C>,
-      InferTransforms<C> & Record<C['key'], ET>,
-      InferSelectors<C>
+      {},
+      InferSelectors<C>,
+      InferTx<C> & PluginTx<C['key'], InferTxGroup<TGroup>>
     >
   >;
+  extendTxGroup: <
+    K extends string,
+    TGroup extends PlatePluginTxGroup = PlatePluginTxGroup,
+  >(
+    key: K,
+    extension: ExtendTx<C, TGroup>
+  ) => SlatePlugin<
+    PluginConfig<
+      C['key'],
+      InferOptions<C>,
+      InferApi<C>,
+      {},
+      InferSelectors<C>,
+      InferTx<C> & PluginTx<K, InferTxGroup<TGroup>>
+    >
+  >;
+  extendTransforms: <
+    ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
+  >(
+    extension: (ctx: SlatePluginContext<C> & { tf: Record<string, any> }) => ET
+  ) => SlatePlugin<C>;
   overrideEditor: (override: OverrideEditor<C>) => SlatePlugin<C>;
   /** Returns a new instance of the plugin with the component. */
   withComponent: (component: NodeComponent) => SlatePlugin<C>;
@@ -656,7 +673,7 @@ export type SlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
 export type SlatePlugins = AnySlatePlugin[];
 
 export type TextStaticProps<C extends AnyPluginConfig = PluginConfig> =
-  | ((props: SlateRenderTextProps<TText, C>) => AnyObject | undefined)
+  | ((props: SlateRenderTextProps<Text, C>) => AnyObject | undefined)
   | AnyObject;
 
 export type TransformOptions<C extends AnyPluginConfig = PluginConfig> =

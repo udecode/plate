@@ -51,7 +51,9 @@ Break between lists.
       },
     ]);
 
-    editor.tf.setValue(value);
+    editor.update((tx) => {
+      tx.value.replace({ children: value });
+    });
 
     expect(editor.children).toMatchObject([
       {

@@ -195,6 +195,7 @@ export type EditorTransactionMarksApi<V extends Value = Value> =
   EditorStateMarksApi<V> & {
     add: (key: string, value: unknown) => void;
     remove: (key: string) => void;
+    set: (marks: EditorMarks<V> | null) => void;
     toggle: (key: string, value?: unknown) => void;
   };
 
@@ -1411,7 +1412,8 @@ export type EditorExtensionTxGroup<
   TResult = unknown,
 > = (
   transaction: EditorUpdateTransaction<ValueOf<TEditor>>,
-  editor: TEditor
+  editor: TEditor,
+  context: EditorUpdateContext<TEditor>
 ) => TResult;
 
 export type EditorExtensionStateGroups<
@@ -2386,6 +2388,23 @@ export interface EditorStaticApi {
     listener: EditorCommitListener<V>
   ) => () => void;
 
+  /**
+   * Define a typed command token.
+   */
+  defineCommand: <TCommand extends EditorCommand>(
+    type: TCommand['type']
+  ) => EditorCommandDefinition<TCommand>;
+
+  /**
+   * Register a command middleware handler for the editor.
+   */
+  registerCommand: <TCommand extends EditorCommand>(
+    editor: Editor,
+    command: EditorCommandReference<TCommand>,
+    handler: EditorCommandHandler<TCommand>,
+    options?: EditorCommandOptions
+  ) => () => void;
+
   extend: <TEditor extends Editor>(
     editor: TEditor,
     extension: EditorExtensionInput<TEditor>
@@ -2514,24 +2533,7 @@ export interface EditorStaticApi {
   ) => boolean;
 }
 
-export interface InternalEditorStaticApi extends EditorStaticApi {
-  /**
-   * Define a typed internal command token.
-   */
-  defineCommand: <TCommand extends EditorCommand>(
-    type: TCommand['type']
-  ) => EditorCommandDefinition<TCommand>;
-
-  /**
-   * Register a command middleware handler for the editor.
-   */
-  registerCommand: <TCommand extends EditorCommand>(
-    editor: Editor,
-    command: EditorCommandReference<TCommand>,
-    handler: EditorCommandHandler<TCommand>,
-    options?: EditorCommandOptions
-  ) => () => void;
-}
+export interface InternalEditorStaticApi extends EditorStaticApi {}
 
 const getImplicitSelectionRoot = (editor: Editor) =>
   getCurrentSelection(editor) ? getCurrentSelectionRoot(editor) : undefined;

@@ -20,7 +20,7 @@ describe('BaseTagPlugin', () => {
       isVoid: true,
     });
 
-    editor.tf.insert.tag({ value: 'alpha' });
+    editor.update((tx) => tx.tag.insert({ value: 'alpha' }));
 
     const children = editor.children[0].children;
 

@@ -17,8 +17,8 @@ Plate 用于在 `editor.plugins` 中按 key 存储插件的唯一标识符。
 插件提供的 API 函数对象。这些函数可通过 `editor.api[key]` 访问。
 </APIItem>
 
-<APIItem name="transforms" type="Record<string, Function>">
-插件提供的用于修改编辑器状态的转换函数。可通过 `editor.tf[key]` 访问。
+<APIItem name="tx" type="Record<string, Function>">
+插件提供的事务命令。通过 `editor.update((tx) => tx[key].method())` 调用。
 </APIItem>
 
 <APIItem name="options" type="Record<string, any>">
@@ -444,8 +444,8 @@ editOnly: { render: false }
 
 ```ts
 overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
-  transforms: {
-    // 重写 transforms
+  tf: {
+    // 重写已有编辑器 transform 方法
     deleteForward(options) {
       deleteForward(options);
     },
@@ -461,7 +461,7 @@ overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
 
 - 修改编辑器行为的首选方法
 - 类型安全的原始方法访问
-- transforms 和 API 的清晰分离
+- `tf` 重写和 API 重写保持分离
 - 可以多次链式调用
 </APIItem>
 
@@ -481,19 +481,19 @@ overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
 ```
 </APIItem>
 
-<APIItem name="extendTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
-扩展插件的 transforms。
+<APIItem name="extendTx" type="(tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin">
+扩展插件自己的事务组。该组在 `editor.update` 内通过 `tx[plugin.key]` 使用。
 
 ```ts
-(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+(tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin
 ```
 </APIItem>
 
-<APIItem name="extendEditorTransforms" type="(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin">
-使用插件特定方法扩展编辑器的 transforms。
+<APIItem name="extendTxGroup" type="(key: string, tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin">
+扩展指定名称的事务组。一个插件需要给另一个插件的 tx 命名空间贡献命令时使用。
 
 ```ts
-(transforms: (ctx: PlatePluginContext) => Record<string, Function>) => PlatePlugin
+(key: string, tx: (ctx: PlatePluginContext) => (transaction) => Record<string, Function>) => PlatePlugin
 ```
 </APIItem>
 

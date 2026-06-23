@@ -1,12 +1,13 @@
 import {
   createTSlatePlugin,
   type PluginConfig,
+  type QueryNodeOptions,
   type SlateEditor,
+  type SlatePlugin,
 } from '@platejs/core';
-import type { Path, QueryNodeOptions } from '@platejs/slate-legacy';
+import type { Path } from '@platejs/slate';
 
 import { KEYS } from '../../plate-keys';
-import { withTrailingBlock } from './withTrailingBlock';
 
 export type TrailingBlockInsertOptions = {
   at: Path;
@@ -31,16 +32,16 @@ export type TrailingBlockConfig = PluginConfig<
   } & QueryNodeOptions
 >;
 
-/** @see {@link withTrailingBlock} */
-export const TrailingBlockPlugin = createTSlatePlugin<TrailingBlockConfig>({
+const trailingBlockPlugin = createTSlatePlugin<TrailingBlockConfig>({
   key: KEYS.trailingBlock,
   options: {
     level: 0,
   },
-})
-  .overrideEditor(withTrailingBlock)
-  .extend(({ editor }) => ({
-    options: {
-      type: editor.getType(KEYS.p),
-    },
-  }));
+}).extend(({ editor }) => ({
+  options: {
+    type: editor.getType(KEYS.p),
+  },
+})) as SlatePlugin<TrailingBlockConfig>;
+
+export const TrailingBlockPlugin: SlatePlugin<TrailingBlockConfig> =
+  Object.assign(trailingBlockPlugin, { runtimeTrailingBlock: true });

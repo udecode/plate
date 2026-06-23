@@ -8,9 +8,9 @@ import type {
 } from '@excalidraw/excalidraw/types';
 
 import { cloneDeep, isEqual } from 'lodash';
-import { useEditorRef, useReadOnly } from 'platejs/react';
+import { useEditorRef, useNodePath, useReadOnly } from 'platejs/react';
 
-import type { TExcalidrawElement } from '../../lib';
+import type { ExcalidrawElement } from '../../lib';
 import type { TExcalidrawProps } from '../types';
 
 export const useExcalidrawElement = ({
@@ -18,12 +18,13 @@ export const useExcalidrawElement = ({
   libraryItems = [],
   scrollToContent = true,
 }: {
-  element: TExcalidrawElement;
+  element: ExcalidrawElement;
   libraryItems?: LibraryItems;
   scrollToContent?: boolean;
 }) => {
   const [Excalidraw, setExcalidraw] = React.useState<any>(null);
   const editor = useEditorRef();
+  const path = useNodePath(element);
   const readOnly = useReadOnly();
 
   // Store last saved data for deduplication
@@ -59,16 +60,17 @@ export const useExcalidrawElement = ({
       }
 
       try {
-        const path = editor.api.findPath(element);
         if (path) {
           lastSavedDataRef.current = newData;
-          editor.tf.setNodes({ data: newData }, { at: path });
+          editor.update((tx) => {
+            tx.nodes.set({ data: newData }, { at: path });
+          });
         }
       } catch (error) {
         console.error('Failed to save Excalidraw data:', error);
       }
     },
-    [editor, element, readOnly]
+    [editor, path, readOnly]
   );
 
   // Create mutable copies of initial data to ensure Excalidraw can modify them

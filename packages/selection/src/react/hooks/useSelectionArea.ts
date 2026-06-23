@@ -29,10 +29,12 @@ export const useSelectionArea = () => {
 
   const onStart = () => {
     if (editor.api.isFocused()) {
-      editor.tf.blur();
+      editor.api.dom.blur();
     }
     if (editor.selection) {
-      editor.tf.deselect();
+      editor.update((tx) => {
+        tx.selection.clear();
+      });
     }
 
     setOption('isSelectionAreaVisible', true);

@@ -1,15 +1,59 @@
-import type { Element } from '@platejs/slate';
 import type { DropTargetMonitor } from 'react-dnd';
-
-import { createSlateEditor } from 'platejs';
+import type { Element, Path } from '@platejs/slate';
+import type { PlateEditor } from 'platejs/react';
 
 import type { DragItemNode } from '../types';
 
 import * as utils from '../utils';
 import { onDropNode } from './onDropNode';
 
+type TestTx = {
+  nodes: {
+    insert: ReturnType<typeof mock>;
+    move: ReturnType<typeof mock>;
+    remove: ReturnType<typeof mock>;
+  };
+};
+
+type TestEditor = PlateEditor & {
+  api: PlateEditor['api'] & {
+    node: ReturnType<typeof mock>;
+  };
+  update: ReturnType<typeof mock>;
+};
+
+const createEditor = (id = 'editor') => {
+  const tx: TestTx = {
+    nodes: {
+      insert: mock(),
+      move: mock(),
+      remove: mock(),
+    },
+  };
+  const editor = {
+    api: {
+      node: mock(),
+    },
+    id,
+    update: mock((fn) => fn(tx)),
+  } as unknown as TestEditor;
+
+  return { editor, tx };
+};
+
+const mockNodePaths = (editor: TestEditor, pathsById: Record<string, Path>) => {
+  editor.api.node.mockImplementation(({ id }: { id: string }) => {
+    const path = pathsById[id];
+
+    if (!path) return;
+
+    return [{ id } as unknown as Element, path];
+  });
+};
+
 describe('onDropNode', () => {
-  let editor: ReturnType<typeof createSlateEditor>;
+  let editor: TestEditor;
+  let tx: TestTx;
   let dragItem: DragItemNode;
 
   const monitor = { canDrop: () => true } as DropTargetMonitor;
@@ -21,11 +65,7 @@ describe('onDropNode', () => {
   let getHoverDirectionMock: ReturnType<typeof mock>;
 
   beforeEach(() => {
-    editor = createSlateEditor();
-    editor.tf.moveNodes = mock();
-    editor.tf.insertNodes = mock();
-    editor.tf.focus = mock();
-    editor.api.findPath = mock();
+    ({ editor, tx } = createEditor());
 
     dragItem = {
       id: 'drag',
@@ -43,314 +83,243 @@ describe('onDropNode', () => {
     getHoverDirectionSpy?.mockRestore();
   });
 
-  describe('when direction is undefined', () => {
-    it('returns early when no drop direction is available', () => {
-      getHoverDirectionMock.mockReturnValueOnce(undefined);
+  it('returns early when no drop direction is available', () => {
+    getHoverDirectionMock.mockReturnValueOnce(undefined);
 
-      onDropNode(editor, {
-        dragItem: dragItem as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-      });
+    onDropNode(editor, {
+      dragItem: dragItem as any,
+      element: hoverElement,
+      monitor,
+      nodeRef,
+    });
 
-      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
+    expect(editor.update).not.toHaveBeenCalled();
+  });
+
+  it('returns early when the drag node is missing', () => {
+    getHoverDirectionMock.mockReturnValueOnce('bottom');
+    mockNodePaths(editor, { hover: [1] });
+
+    onDropNode(editor, {
+      dragItem: dragItem as any,
+      element: hoverElement,
+      monitor,
+      nodeRef,
+    });
+
+    expect(editor.update).not.toHaveBeenCalled();
+  });
+
+  it('returns early when the hover node is missing', () => {
+    getHoverDirectionMock.mockReturnValueOnce('bottom');
+    mockNodePaths(editor, { drag: [0] });
+
+    onDropNode(editor, {
+      dragItem: dragItem as any,
+      element: hoverElement,
+      monitor,
+      nodeRef,
+    });
+
+    expect(editor.update).not.toHaveBeenCalled();
+  });
+
+  it('moves the node below when direction is bottom', () => {
+    getHoverDirectionMock.mockReturnValue('bottom');
+    mockNodePaths(editor, { drag: [0], hover: [1] });
+
+    onDropNode(editor, {
+      dragItem: dragItem as any,
+      element: hoverElement,
+      monitor,
+      nodeRef,
+    });
+
+    expect(tx.nodes.move).toHaveBeenCalledWith({
+      at: [0],
+      to: [1],
     });
   });
 
-  describe('when nodes are not found', () => {
-    it('returns early when the drag node is missing', () => {
-      getHoverDirectionMock.mockReturnValueOnce('bottom');
-      (editor.api.findPath as ReturnType<typeof mock>).mockReturnValueOnce(
-        undefined
-      );
+  it('moves the node above when direction is top', () => {
+    getHoverDirectionMock.mockReturnValue('top');
+    mockNodePaths(editor, { drag: [2], hover: [1] });
 
-      onDropNode(editor, {
-        dragItem: dragItem as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-      });
-
-      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
+    onDropNode(editor, {
+      dragItem: dragItem as any,
+      element: hoverElement,
+      monitor,
+      nodeRef,
     });
 
-    it('returns early when the hover node is missing', () => {
-      getHoverDirectionMock.mockReturnValueOnce('bottom');
-      (editor.api.findPath as ReturnType<typeof mock>)
-        .mockReturnValueOnce([0])
-        .mockReturnValueOnce(undefined);
-
-      onDropNode(editor, {
-        dragItem: dragItem as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-      });
-
-      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
+    expect(tx.nodes.move).toHaveBeenCalledWith({
+      at: [2],
+      to: [1],
     });
   });
 
-  describe('vertical orientation', () => {
-    it('move node below when direction is bottom', () => {
-      getHoverDirectionMock.mockReturnValue('bottom');
-      (editor.api.findPath as ReturnType<typeof mock>)
-        .mockReturnValueOnce([0])
-        .mockReturnValueOnce([1]);
+  it('does not move when already in the bottom position', () => {
+    getHoverDirectionMock.mockReturnValue('bottom');
+    mockNodePaths(editor, { drag: [1], hover: [0] });
 
-      onDropNode(editor, {
-        dragItem: dragItem as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-      });
-
-      expect(editor.tf.moveNodes).toHaveBeenCalledWith({
-        at: [0],
-        to: [1],
-      });
+    onDropNode(editor, {
+      dragItem: dragItem as any,
+      element: hoverElement,
+      monitor,
+      nodeRef,
     });
 
-    it('move node above when direction is top', () => {
-      getHoverDirectionMock.mockReturnValue('top');
-      (editor.api.findPath as ReturnType<typeof mock>)
-        .mockReturnValueOnce([2])
-        .mockReturnValueOnce([1]);
+    expect(editor.update).not.toHaveBeenCalled();
+  });
 
-      onDropNode(editor, {
-        dragItem: dragItem as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-      });
+  it('does not move when already in the top position', () => {
+    getHoverDirectionMock.mockReturnValue('top');
+    mockNodePaths(editor, { drag: [0], hover: [1] });
 
-      expect(editor.tf.moveNodes).toHaveBeenCalledWith({
-        at: [2],
-        to: [1],
-      });
+    onDropNode(editor, {
+      dragItem: dragItem as any,
+      element: hoverElement,
+      monitor,
+      nodeRef,
     });
 
-    it('does not move if already in position for bottom', () => {
-      getHoverDirectionMock.mockReturnValue('bottom');
-      (editor.api.findPath as ReturnType<typeof mock>)
-        .mockReturnValueOnce([1])
-        .mockReturnValueOnce([0]);
+    expect(editor.update).not.toHaveBeenCalled();
+  });
 
-      onDropNode(editor, {
-        dragItem: dragItem as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-      });
+  it('moves the node right in horizontal orientation', () => {
+    getHoverDirectionMock.mockReturnValue('right');
+    mockNodePaths(editor, { drag: [2, 0], hover: [2, 1] });
 
-      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
+    onDropNode(editor, {
+      dragItem: dragItem as any,
+      element: hoverElement,
+      monitor,
+      nodeRef,
+      orientation: 'horizontal',
     });
 
-    it('does not move if already in position for top', () => {
-      getHoverDirectionMock.mockReturnValue('top');
-      (editor.api.findPath as ReturnType<typeof mock>)
-        .mockReturnValueOnce([0])
-        .mockReturnValueOnce([1]);
-
-      onDropNode(editor, {
-        dragItem: dragItem as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-      });
-
-      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
+    expect(tx.nodes.move).toHaveBeenCalledWith({
+      at: [2, 0],
+      to: [2, 1],
     });
   });
 
-  describe('horizontal orientation', () => {
-    it('move node right when direction is right', () => {
-      getHoverDirectionMock.mockReturnValue('right');
-      (editor.api.findPath as ReturnType<typeof mock>)
-        .mockReturnValueOnce([2, 0])
-        .mockReturnValueOnce([2, 1]);
+  it('moves the node left in horizontal orientation', () => {
+    getHoverDirectionMock.mockReturnValue('left');
+    mockNodePaths(editor, { drag: [2, 2], hover: [2, 1] });
 
-      onDropNode(editor, {
-        dragItem: dragItem as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-        orientation: 'horizontal',
-      });
-
-      expect(editor.tf.moveNodes).toHaveBeenCalledWith({
-        at: [2, 0],
-        to: [2, 1],
-      });
+    onDropNode(editor, {
+      dragItem: dragItem as any,
+      element: hoverElement,
+      monitor,
+      nodeRef,
+      orientation: 'horizontal',
     });
 
-    it('move node left when direction is left', () => {
-      getHoverDirectionMock.mockReturnValue('left');
-      (editor.api.findPath as ReturnType<typeof mock>)
-        .mockReturnValueOnce([2, 2])
-        .mockReturnValueOnce([2, 1]);
-
-      onDropNode(editor, {
-        dragItem: dragItem as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-        orientation: 'horizontal',
-      });
-
-      expect(editor.tf.moveNodes).toHaveBeenCalledWith({
-        at: [2, 2],
-        to: [2, 1],
-      });
-    });
-
-    it('does not move if already in position for right', () => {
-      getHoverDirectionMock.mockReturnValue('right');
-      (editor.api.findPath as ReturnType<typeof mock>)
-        .mockReturnValueOnce([2, 1])
-        .mockReturnValueOnce([2, 0]);
-
-      onDropNode(editor, {
-        dragItem: dragItem as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-        orientation: 'horizontal',
-      });
-
-      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
-    });
-
-    it('does not move if already in position for left', () => {
-      getHoverDirectionMock.mockReturnValue('left');
-      (editor.api.findPath as ReturnType<typeof mock>)
-        .mockReturnValueOnce([2, 0])
-        .mockReturnValueOnce([2, 1]);
-
-      onDropNode(editor, {
-        dragItem: dragItem as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-        orientation: 'horizontal',
-      });
-
-      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
+    expect(tx.nodes.move).toHaveBeenCalledWith({
+      at: [2, 2],
+      to: [2, 1],
     });
   });
 
-  describe('drop guards', () => {
-    it('returns early when canDropNode rejects the drop', () => {
-      getHoverDirectionMock.mockReturnValue('bottom');
-      (editor.api.findPath as ReturnType<typeof mock>)
-        .mockReturnValueOnce([0])
-        .mockReturnValueOnce([1]);
+  it('does not move when the drop guard rejects the target', () => {
+    getHoverDirectionMock.mockReturnValue('bottom');
+    mockNodePaths(editor, { drag: [0], hover: [1] });
 
-      onDropNode(editor, {
-        canDropNode: () => false,
-        dragItem: dragItem as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-      });
-
-      expect(editor.tf.moveNodes).not.toHaveBeenCalled();
-      expect(editor.tf.insertNodes).not.toHaveBeenCalled();
+    onDropNode(editor, {
+      canDropNode: () => false,
+      dragItem: dragItem as any,
+      element: hoverElement,
+      monitor,
+      nodeRef,
     });
+
+    expect(editor.update).not.toHaveBeenCalled();
   });
 
-  describe('cross editor drop', () => {
-    it('remove nodes from the source editor after inserting into the target editor', () => {
-      getHoverDirectionMock.mockReturnValue('bottom');
+  it('removes nodes from the source editor after inserting into the target editor', () => {
+    getHoverDirectionMock.mockReturnValue('bottom');
 
-      const sourceEditor = createSlateEditor();
-      sourceEditor.tf.removeNodes = mock() as any;
-      sourceEditor.api.node = mock().mockReturnValue([dragElement, [0]]) as any;
+    const { editor: sourceEditor, tx: sourceTx } = createEditor('source');
 
-      (editor.api.findPath as ReturnType<typeof mock>)
-        .mockReturnValueOnce([1])
-        .mockReturnValueOnce([2]);
+    mockNodePaths(editor, { drag: [1], hover: [2] });
+    mockNodePaths(sourceEditor, { drag: [0] });
 
-      onDropNode(editor, {
-        dragItem: {
-          ...dragItem,
-          editor: sourceEditor,
-          editorId: sourceEditor.id,
-        } as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-      });
-
-      expect(editor.tf.insertNodes).toHaveBeenCalledWith(dragElement, {
-        at: [2],
-      });
-      expect(sourceEditor.api.node).toHaveBeenCalledWith({
-        id: 'drag',
-        at: [],
-      });
-      expect(sourceEditor.tf.removeNodes).toHaveBeenCalledWith({ at: [0] });
+    onDropNode(editor, {
+      dragItem: {
+        ...dragItem,
+        editor: sourceEditor,
+        editorId: sourceEditor.id,
+      } as any,
+      element: hoverElement,
+      monitor,
+      nodeRef,
     });
 
-    it('removes cross-editor multi-node paths from bottom to top', () => {
-      getHoverDirectionMock.mockReturnValue('bottom');
-
-      const sourceEditor = createSlateEditor();
-      const removeNodes = mock();
-
-      sourceEditor.tf.removeNodes = removeNodes as any;
-      sourceEditor.api.node = mock(({ id }) => {
-        if (id === 'drag-1') return [{ id: 'drag-1' } as any, [0]];
-        if (id === 'drag-2') return [{ id: 'drag-2' } as any, [2]];
-      }) as any;
-
-      (editor.api.findPath as ReturnType<typeof mock>)
-        .mockReturnValueOnce([0])
-        .mockReturnValueOnce([1]);
-
-      onDropNode(editor, {
-        dragItem: {
-          ...dragItem,
-          editor: sourceEditor,
-          editorId: sourceEditor.id,
-          id: ['drag-1', 'drag-2'],
-        } as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-      });
-
-      expect(removeNodes.mock.calls).toEqual([[{ at: [2] }], [{ at: [0] }]]);
+    expect(tx.nodes.insert).toHaveBeenCalledWith(dragElement, {
+      at: [2],
     });
+    expect(sourceEditor.api.node).toHaveBeenCalledWith({
+      id: 'drag',
+      at: [],
+    });
+    expect(sourceTx.nodes.remove).toHaveBeenCalledWith({ at: [0] });
   });
 
-  describe('same editor multi-node drop', () => {
-    it('moves all dragged ids with a match predicate', () => {
-      getHoverDirectionMock.mockReturnValue('bottom');
-      (editor.api.findPath as ReturnType<typeof mock>)
-        .mockReturnValueOnce([0])
-        .mockReturnValueOnce([2]);
-      editor.api.node = mock(({ id }) => [{ id } as any, [0]]) as any;
+  it('removes cross-editor multi-node paths from bottom to top', () => {
+    getHoverDirectionMock.mockReturnValue('bottom');
 
-      onDropNode(editor, {
-        dragItem: {
-          ...dragItem,
-          id: ['drag-1', 'drag-2'],
-        } as any,
-        element: hoverElement,
-        monitor,
-        nodeRef,
-      });
+    const { editor: sourceEditor, tx: sourceTx } = createEditor('source');
 
-      const options = (editor.tf.moveNodes as ReturnType<typeof mock>).mock
-        .calls[0]?.[0];
-
-      expect(options.at).toEqual([]);
-      expect(options.to).toEqual([2]);
-      expect(options.match({ id: 'drag-1' })).toBe(true);
-      expect(options.match({ id: 'drag-2' })).toBe(true);
-      expect(options.match({ id: 'other' })).toBe(false);
+    mockNodePaths(editor, { drag: [0], hover: [1] });
+    mockNodePaths(sourceEditor, {
+      'drag-1': [0],
+      'drag-2': [2],
     });
+
+    onDropNode(editor, {
+      dragItem: {
+        ...dragItem,
+        editor: sourceEditor,
+        editorId: sourceEditor.id,
+        id: ['drag-1', 'drag-2'],
+      } as any,
+      element: hoverElement,
+      monitor,
+      nodeRef,
+    });
+
+    expect(sourceTx.nodes.remove.mock.calls).toEqual([
+      [{ at: [2] }],
+      [{ at: [0] }],
+    ]);
+  });
+
+  it('moves all dragged ids with a match predicate', () => {
+    getHoverDirectionMock.mockReturnValue('bottom');
+    mockNodePaths(editor, {
+      drag: [0],
+      'drag-1': [0],
+      'drag-2': [1],
+      hover: [2],
+    });
+
+    onDropNode(editor, {
+      dragItem: {
+        ...dragItem,
+        id: ['drag-1', 'drag-2'],
+      } as any,
+      element: hoverElement,
+      monitor,
+      nodeRef,
+    });
+
+    const options = tx.nodes.move.mock.calls[0]?.[0];
+
+    expect(options.at).toEqual([]);
+    expect(options.to).toEqual([2]);
+    expect(options.match({ id: 'drag-1' })).toBe(true);
+    expect(options.match({ id: 'drag-2' })).toBe(true);
+    expect(options.match({ id: 'other' })).toBe(false);
   });
 });

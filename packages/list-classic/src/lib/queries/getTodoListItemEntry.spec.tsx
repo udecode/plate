@@ -1,5 +1,5 @@
-import { createSlateEditor } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
+import { createListClassicLegacyTestEditor as createSlateEditor } from '../__tests__/createListClassicLegacyTestEditor';
 
 import { getTodoListItemEntry } from './getTodoListItemEntry';
 

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import type { TCodeDrawingElement } from '@platejs/code-drawing';
+import type { CodeDrawingElement } from '@platejs/code-drawing';
 import type { SlateElementProps } from 'platejs/static';
 
 import { cn } from '@/lib/utils';
@@ -9,7 +9,7 @@ import { SlateElement } from 'platejs/static';
 export function CodeDrawingElementStatic({
   children,
   ...props
-}: SlateElementProps<TCodeDrawingElement>) {
+}: SlateElementProps<CodeDrawingElement>) {
   return (
     <SlateElement className="my-4 flex w-full items-stretch" {...props}>
       <div className={cn('flex w-full flex-col md:flex-row')}>

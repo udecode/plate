@@ -1,8 +1,7 @@
 /** @jsx jsxt */
 
-import { createSlateEditor } from '@platejs/core';
-
 import { jsxt } from '@platejs/test-utils';
+import { createListClassicTestEditor as createSlateEditor } from '../__tests__/createListClassicTestEditor';
 
 import { moveListSiblingsAfterCursor } from './moveListSiblingsAfterCursor';
 

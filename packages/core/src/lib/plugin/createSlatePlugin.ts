@@ -39,6 +39,32 @@ type TSlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
   keyof SlatePluginMethods | 'optionsStore'
 >;
 
+const extensionArrayKeys = [
+  '__apiExtensions',
+  '__selectorExtensions',
+  '__txExtensions',
+] as const;
+
+const preserveExtensionArrays = <P>(basePlugin: any, nextPlugin: P): P => {
+  const nextPluginRecord = nextPlugin as any;
+
+  for (const key of extensionArrayKeys) {
+    const baseExtensions = basePlugin[key] ?? [];
+    const nextExtensions = nextPluginRecord[key] ?? [];
+
+    if (baseExtensions.length === 0) continue;
+
+    nextPluginRecord[key] = [
+      ...baseExtensions,
+      ...nextExtensions.filter(
+        (extension: unknown) => !baseExtensions.includes(extension as never)
+      ),
+    ];
+  }
+
+  return nextPlugin;
+};
+
 /**
  * Creates a new Plate plugin with the given configuration.
  *
@@ -55,11 +81,9 @@ type TSlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
  *     'myPlugin',
  *     MyOptions,
  *     MyApi,
- *     MyTransforms
  *   >({
  *     key: 'myPlugin',
  *     options: { someOption: true },
- *     transforms: { someTransform: () => {} },
  *   });
  *
  *   const extendedPlugin = myPlugin.extend({
@@ -74,7 +98,7 @@ type TSlatePluginConfig<C extends AnyPluginConfig = PluginConfig> = Omit<
  * @template K - The literal type of the plugin key.
  * @template O - The type of the plugin options.
  * @template A - The type of the plugin utilities.
- * @template T - The type of the plugin transforms.
+ * @template T - Reserved legacy generic slot. New plugin commands use `tx`.
  * @template S - The type of the plugin storage.
  * @param {Partial<SlatePlugin<K, O, A, T, S>>} config - The configuration
  *   object for the plugin.
@@ -118,6 +142,7 @@ export function createSlatePlugin<
       __configuration: null,
       __extensions: initialExtension ? [initialExtension] : [],
       __selectorExtensions: [],
+      __txExtensions: [],
       api: {},
       dependencies: [],
       editor: {},
@@ -133,8 +158,9 @@ export function createSlatePlugin<
       render: {},
       rules: {},
       shortcuts: {},
+      slateExtensions: [],
       inputRules: [],
-      transforms: {},
+      tx: {},
     },
     config
   ) as unknown as SlatePlugin<PluginConfig<K, O, A, T, S>>;
@@ -148,7 +174,7 @@ export function createSlatePlugin<
     newPlugin.__configuration = (ctx) =>
       isFunction(config) ? config(ctx as any) : config;
 
-    return createSlatePlugin(newPlugin) as any;
+    return preserveExtensionArrays(plugin, createSlatePlugin(newPlugin) as any);
   };
 
   plugin.configurePlugin = (p, config) => {
@@ -163,11 +189,14 @@ export function createSlatePlugin<
         if (nestedPlugin.key === p.key) {
           found = true;
 
-          return createSlatePlugin({
-            ...nestedPlugin,
-            __configuration: (ctx: any) =>
-              isFunction(config) ? config(ctx) : config,
-          } as any);
+          return preserveExtensionArrays(
+            nestedPlugin,
+            createSlatePlugin({
+              ...nestedPlugin,
+              __configuration: (ctx: any) =>
+                isFunction(config) ? config(ctx) : config,
+            } as any)
+          );
         }
         if (nestedPlugin.plugins && nestedPlugin.plugins.length > 0) {
           const result = configureNestedPlugin(nestedPlugin.plugins);
@@ -190,7 +219,7 @@ export function createSlatePlugin<
 
     // We're not adding a new plugin if not found
 
-    return createSlatePlugin(newPlugin);
+    return preserveExtensionArrays(plugin, createSlatePlugin(newPlugin));
   };
 
   plugin.extendEditorApi = (extension) => {
@@ -200,7 +229,7 @@ export function createSlatePlugin<
       { extension, isPluginSpecific: false },
     ];
 
-    return createSlatePlugin(newPlugin) as any;
+    return preserveExtensionArrays(plugin, createSlatePlugin(newPlugin) as any);
   };
 
   plugin.extendSelectors = (extension) => {
@@ -210,7 +239,7 @@ export function createSlatePlugin<
       extension,
     ];
 
-    return createSlatePlugin(newPlugin) as any;
+    return preserveExtensionArrays(plugin, createSlatePlugin(newPlugin) as any);
   };
 
   plugin.extendApi = (extension) => {
@@ -220,17 +249,31 @@ export function createSlatePlugin<
       { extension, isPluginSpecific: true },
     ];
 
-    return createSlatePlugin(newPlugin) as any;
+    return preserveExtensionArrays(plugin, createSlatePlugin(newPlugin) as any);
   };
 
-  plugin.extendEditorTransforms = (extension) => {
+  plugin.extendTx = (extension) => {
     const newPlugin = { ...plugin };
-    newPlugin.__apiExtensions = [
-      ...(newPlugin.__apiExtensions as any),
-      { extension, isPluginSpecific: false, isTransform: true },
+    newPlugin.__txExtensions = [
+      ...(newPlugin.__txExtensions as any),
+      (ctx) => ({
+        [ctx.plugin.key]: extension(ctx),
+      }),
     ];
 
-    return createSlatePlugin(newPlugin) as any;
+    return preserveExtensionArrays(plugin, createSlatePlugin(newPlugin) as any);
+  };
+
+  plugin.extendTxGroup = (key, extension) => {
+    const newPlugin = { ...plugin };
+    newPlugin.__txExtensions = [
+      ...(newPlugin.__txExtensions as any),
+      (ctx) => ({
+        [key]: extension(ctx),
+      }),
+    ];
+
+    return preserveExtensionArrays(plugin, createSlatePlugin(newPlugin) as any);
   };
 
   plugin.extendTransforms = (extension) => {
@@ -240,7 +283,7 @@ export function createSlatePlugin<
       { extension, isPluginSpecific: true, isTransform: true },
     ];
 
-    return createSlatePlugin(newPlugin) as any;
+    return preserveExtensionArrays(plugin, createSlatePlugin(newPlugin) as any);
   };
 
   plugin.overrideEditor = (extension) => {
@@ -251,11 +294,11 @@ export function createSlatePlugin<
         extension,
         isOverride: true,
         isPluginSpecific: false,
-        isTransform: true,
+        isTransform: false,
       },
     ];
 
-    return createSlatePlugin(newPlugin) as any;
+    return preserveExtensionArrays(plugin, createSlatePlugin(newPlugin) as any);
   };
 
   plugin.extend = (extendConfig) => {
@@ -270,7 +313,7 @@ export function createSlatePlugin<
       newPlugin = mergePlugins(newPlugin, extendConfig as any);
     }
 
-    return createSlatePlugin(newPlugin) as any;
+    return preserveExtensionArrays(plugin, createSlatePlugin(newPlugin) as any);
   };
 
   plugin.clone = () => mergePlugins(plugin);
@@ -286,14 +329,17 @@ export function createSlatePlugin<
         if (nestedPlugin.key === p.key) {
           found = true;
 
-          return createSlatePlugin({
-            ...nestedPlugin,
-            __extensions: [
-              ...(nestedPlugin.__extensions as any),
-              (ctx: any) =>
-                isFunction(extendConfig) ? extendConfig(ctx) : extendConfig,
-            ],
-          } as any);
+          return preserveExtensionArrays(
+            nestedPlugin,
+            createSlatePlugin({
+              ...nestedPlugin,
+              __extensions: [
+                ...(nestedPlugin.__extensions as any),
+                (ctx: any) =>
+                  isFunction(extendConfig) ? extendConfig(ctx) : extendConfig,
+              ],
+            } as any)
+          );
         }
         if (nestedPlugin.plugins && nestedPlugin.plugins.length > 0) {
           const result = extendNestedPlugin(nestedPlugin.plugins);
@@ -329,7 +375,7 @@ export function createSlatePlugin<
       );
     }
 
-    return createSlatePlugin(newPlugin);
+    return preserveExtensionArrays(plugin, createSlatePlugin(newPlugin));
   };
 
   plugin.withComponent = (component) =>

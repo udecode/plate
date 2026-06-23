@@ -1,5 +1,4 @@
 import { renderHook } from '@testing-library/react';
-import * as platejsReact from 'platejs/react';
 import * as tableLib from '../../lib';
 
 const useEditorPluginMock = mock();
@@ -12,17 +11,14 @@ mock.module('../TablePlugin', () => ({
   TablePlugin: { key: 'table' },
 }));
 
+mock.module('platejs/react', () => ({
+  useEditorPlugin: useEditorPluginMock,
+  useEditorSelector: useEditorSelectorMock,
+  useReadOnly: useReadOnlyMock,
+}));
+
 describe('useTableMergeState', () => {
   beforeEach(() => {
-    spyOn(platejsReact, 'useEditorPlugin').mockImplementation(
-      useEditorPluginMock as any
-    );
-    spyOn(platejsReact, 'useEditorSelector').mockImplementation(
-      useEditorSelectorMock as any
-    );
-    spyOn(platejsReact, 'useReadOnly').mockImplementation(
-      useReadOnlyMock as any
-    );
     spyOn(tableLib, 'getSelectedCellEntries').mockImplementation(
       getSelectedCellEntriesMock as any
     );

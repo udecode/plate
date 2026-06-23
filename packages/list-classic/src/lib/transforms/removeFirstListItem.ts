@@ -1,4 +1,6 @@
-import type { ElementEntry, SlateEditor } from 'platejs';
+import type { ElementEntry } from '@platejs/slate';
+import { PathApi } from '@platejs/slate';
+import type { SlateEditor } from '@platejs/core';
 
 import { isListNested } from '../queries/isListNested';
 import { moveListItemUp } from './moveListItemUp';
@@ -15,8 +17,9 @@ export const removeFirstListItem = (
   }
 ) => {
   const [, listPath] = list;
+  const [, listItemPath] = listItem;
 
-  if (!isListNested(editor, listPath)) {
+  if (!isListNested(editor, listPath) && PathApi.hasPrevious(listItemPath)) {
     moveListItemUp(editor, { list, listItem });
 
     return true;

@@ -28,8 +28,17 @@ export const useMarkToolbarButton = (
     props: {
       pressed: state.pressed,
       onClick: () => {
-        editor.tf.toggleMark(state.nodeType, { remove: state.clear });
-        editor.tf.focus();
+        editor.update((tx) => {
+          const clearMarks = Array.isArray(state.clear)
+            ? state.clear
+            : state.clear
+              ? [state.clear]
+              : [];
+
+          clearMarks.forEach((mark) => tx.marks.remove(mark));
+          tx.marks.toggle(state.nodeType);
+        });
+        editor.api.dom.focus();
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

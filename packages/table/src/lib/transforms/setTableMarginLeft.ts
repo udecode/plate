@@ -1,11 +1,15 @@
-import type { EditorAboveOptions, SlateEditor, TTableElement } from 'platejs';
+import type { SlateEditor, TTableElement } from 'platejs';
 
 import { KEYS } from 'platejs';
+
+type TableNodeQueryOptions = NonNullable<
+  Parameters<SlateEditor['api']['node']>[0]
+>;
 
 export const setTableMarginLeft = (
   editor: SlateEditor,
   { marginLeft }: { marginLeft: number },
-  options: EditorAboveOptions = {}
+  options: TableNodeQueryOptions = {}
 ) => {
   const table = editor.api.node<TTableElement>({
     match: { type: KEYS.table },
@@ -16,5 +20,9 @@ export const setTableMarginLeft = (
 
   const [, tablePath] = table;
 
-  editor.tf.setNodes<TTableElement>({ marginLeft }, { at: tablePath });
+  editor.update((tx) => {
+    tx.nodes.set({ marginLeft } satisfies Partial<TTableElement>, {
+      at: tablePath,
+    });
+  });
 };

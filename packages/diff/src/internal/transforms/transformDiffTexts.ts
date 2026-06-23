@@ -4,14 +4,13 @@
  */
 
 import {
+  createEditor,
   type Descendant,
   type Operation,
-  type TText,
-  createEditor,
-  KEYS,
-  PathApi,
-  TextApi,
-} from 'platejs';
+  type Text,
+} from '@platejs/slate';
+
+import { KEYS, PathApi, TextApi } from 'platejs';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
@@ -112,19 +111,19 @@ export function transformDiffTexts(
   const nextTexts = nextNodes.map((n) => inlineNodeCharMap.nodeToText(n));
 
   const nodesEditor = withChangeTracking(createEditor(), options);
-  nodesEditor.children = [{ children: texts, type: KEYS.p }];
+  nodesEditor.replaceChildren([{ children: texts, type: KEYS.p }]);
 
-  nodesEditor.tf.withoutNormalizing(() => {
+  nodesEditor.withoutNormalizing(() => {
     // Start with the first node in the array, assuming all nodes are to be merged into one
     let node = texts[0];
 
     if (texts.length > 1) {
       // If there are multiple nodes, merge them into one, adding merge operations
       for (let i = 1; i < texts.length; i++) {
-        nodesEditor.tf.apply({
+        nodesEditor.apply({
           path: [0, 1],
-          position: 0, // Required by type; not actually used here
-          properties: {}, // Required by type; not actually used here
+          position: node.text.length,
+          properties: {},
           type: 'merge_node',
         });
         // Update the node's text with the merged text (for splitTextNodes)
@@ -137,22 +136,30 @@ export function transformDiffTexts(
       deletedLineBreakChar: deletedLineBreakProxyChar,
       insertedLineBreakChar: insertedLineBreakProxyChar,
     })) {
-      nodesEditor.tf.apply(op);
+      nodesEditor.apply(op);
     }
 
     nodesEditor.commitChangesToDiffs();
   });
 
-  let diffTexts: TText[] = (nodesEditor.children[0] as any).children;
+  let diffTexts: Text[] = nodesEditor.getTextChildren([0]);
 
   // Replace line break proxy chars with the actual line break char
   if (hasLineBreakChar) {
-    diffTexts = diffTexts.map((n) => ({
-      ...n,
-      text: n.text
+    diffTexts = diffTexts.map((n) => {
+      let text = n.text
         .replaceAll(insertedLineBreakProxyChar, `${lineBreakChar}\n`)
-        .replaceAll(deletedLineBreakProxyChar, lineBreakChar),
-    }));
+        .replaceAll(deletedLineBreakProxyChar, lineBreakChar);
+
+      if ((n as any).diffOperation?.type === 'delete') {
+        text = text.replaceAll('\n', lineBreakChar);
+      }
+
+      return {
+        ...n,
+        text,
+      };
+    });
   }
 
   // Restore the original inline nodes
@@ -168,7 +175,7 @@ type LineBreakCharsOptions = {
 function slateTextDiff(
   a: string,
   b: string,
-  { deletedLineBreakChar, insertedLineBreakChar }: LineBreakCharsOptions
+  { insertedLineBreakChar }: LineBreakCharsOptions
 ): Op[] {
   // Compute the diff between two strings
   const diff = dmp.diff_main(a, b);
@@ -191,10 +198,7 @@ function slateTextDiff(
         // For deletions, add a remove_text operation
         operations.push({
           offset,
-          text:
-            deletedLineBreakChar === undefined
-              ? text
-              : text.replaceAll('\n', deletedLineBreakChar),
+          text,
           type: 'remove_text',
         });
 
@@ -241,8 +245,8 @@ operations.
 */
 // Function to split a single text node into multiple nodes based on the desired target state
 function splitTextNodes(
-  node: TText,
-  split: TText[],
+  node: Text,
+  split: Text[],
   options: LineBreakCharsOptions
 ): Operation[] {
   if (split.length === 0) {
@@ -282,7 +286,7 @@ function splitTextNodes(
 
   if (getKeysLength(newProperties) > 0) {
     operations.push({
-      newProperties,
+      newProperties: omitUndefinedProperties(newProperties),
       path: [0, 0],
       properties: getProperties(node),
       type: 'set_node',
@@ -337,6 +341,12 @@ function getKeysLength(obj: object | null | undefined): number {
   }
 
   return Object.keys(obj).length;
+}
+
+function omitUndefinedProperties<T extends Record<string, unknown>>(obj: T): T {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([, value]) => value !== undefined)
+  ) as T;
 }
 
 type Op = {

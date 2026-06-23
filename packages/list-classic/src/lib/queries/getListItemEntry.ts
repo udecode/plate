@@ -28,7 +28,7 @@ export const getListItemEntry = (
     if (node) {
       const listItem = editor.api.above<Element>({
         at: _at,
-        match: { type: liType },
+        match: (node) => node.type === liType,
       });
 
       if (listItem) {

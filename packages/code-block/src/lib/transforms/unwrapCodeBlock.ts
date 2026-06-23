@@ -1,4 +1,6 @@
-import { type SlateEditor, type TLocation, KEYS, NodeApi } from 'platejs';
+import type { Location, Path } from '@platejs/slate';
+
+import { type SlateEditor, ElementApi, KEYS } from 'platejs';
 
 export const unwrapCodeBlock = (editor: SlateEditor) => {
   if (!editor.selection) return;
@@ -6,24 +8,28 @@ export const unwrapCodeBlock = (editor: SlateEditor) => {
   const codeBlockType = editor.getType(KEYS.codeBlock);
   const defaultType = editor.getType(KEYS.p);
 
-  editor.tf.withoutNormalizing(() => {
-    const codeBlockEntries = editor.api.nodes({
-      at: editor.selection as TLocation,
-      match: { type: codeBlockType },
-    });
+  const codeBlockEntries = editor.api.nodes({
+    at: editor.selection as Location,
+    match: { type: codeBlockType },
+  });
 
-    const reversedCodeBlockEntries = Array.from(codeBlockEntries).reverse();
+  const reversedCodeBlockEntries = Array.from(codeBlockEntries).reverse();
 
+  editor.update((tx) => {
     for (const codeBlockEntry of reversedCodeBlockEntries) {
-      const codeLineEntries = NodeApi.children(editor, codeBlockEntry[1]);
+      const [codeBlockNode, codeBlockPath] = codeBlockEntry;
 
-      for (const [, path] of codeLineEntries) {
-        editor.tf.setNodes({ type: defaultType }, { at: path });
+      if (!ElementApi.isElement(codeBlockNode)) continue;
+
+      for (const [index] of codeBlockNode.children.entries()) {
+        const path = [...codeBlockPath, index] as Path;
+        tx.nodes.set({ type: defaultType }, { at: path });
       }
 
-      editor.tf.unwrapNodes({
-        at: codeBlockEntry[1],
-        match: { type: codeBlockType },
+      tx.nodes.unwrap({
+        at: codeBlockPath,
+        match: (node) =>
+          ElementApi.isElement(node) && node.type === codeBlockType,
         split: true,
       });
     }

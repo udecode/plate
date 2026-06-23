@@ -91,10 +91,10 @@ const editor = createPlateEditor({
 
 ### Insert a Footnote
 
-Call `tf.insert.footnote` at the current selection. It inserts the reference, creates a matching definition at the end of the document, and moves the caret into the definition body so the reader can start writing:
+Call `tx.insert.footnote` at the current selection. It inserts the reference, creates a matching definition at the end of the document, and moves the caret into the definition body so the reader can start writing:
 
 ```tsx
-editor.tf.insert.footnote();
+editor.update((tx) => tx.insert.footnote());
 ```
 
 When the selection is expanded, the expanded fragment seeds the definition body so you can select text and "footnote-ify" it in one shot.
@@ -102,49 +102,57 @@ When the selection is expanded, the expanded fragment seeds the definition body 
 Pass `focusDefinition: false` when the reference should stay inline (for example, inside a larger template):
 
 ```tsx
-editor.tf.insert.footnote({ focusDefinition: false });
+editor.update((tx) => tx.insert.footnote({ focusDefinition: false }));
 ```
 
 Pass `identifier` to reuse an existing identifier; the transform skips creating a duplicate definition when one already exists.
 
 ### Repair an Unresolved Reference
 
-When a reference points at an identifier with no definition (e.g. pasted from elsewhere), use `tf.footnote.createDefinition` to create just the definition — without inserting another reference:
+When a reference points at an identifier with no definition (e.g. pasted from elsewhere), use `tx.footnote.createDefinition` to create just the definition — without inserting another reference:
 
 ```tsx
-editor.tf.footnote.createDefinition({ identifier: '3' });
+editor.update((tx) => tx.footnote.createDefinition({ identifier: '3' }));
 ```
 
 Pass `focus: false` when you want to leave the caret where it was:
 
 ```tsx
-editor.tf.footnote.createDefinition({ focus: false, identifier: '3' });
+editor.update((tx) =>
+  tx.footnote.createDefinition({ focus: false, identifier: '3' })
+);
 ```
 
 ### Navigate Between Reference and Definition
 
-`tf.footnote.focusDefinition` and `tf.footnote.focusReference` jump the selection, scroll the target into view, and flash it through [Navigation Feedback](/docs/navigation-feedback). No extra wiring needed:
+`tx.footnote.focusDefinition` and `tx.footnote.focusReference` jump the selection, scroll the target into view, and flash it through [Navigation Feedback](/docs/navigation-feedback). No extra wiring needed:
 
 ```tsx
-editor.tf.footnote.focusDefinition({ identifier: '3' });
-editor.tf.footnote.focusReference({ identifier: '3' });
+editor.update((tx) => tx.footnote.focusDefinition({ identifier: '3' }));
+editor.update((tx) => tx.footnote.focusReference({ identifier: '3' }));
 ```
 
 When a single definition is pointed at by multiple references, pass `index` to pick which one to land on:
 
 ```tsx
-editor.tf.footnote.focusReference({ identifier: '3', index: 1 });
+editor.update((tx) =>
+  tx.footnote.focusReference({ identifier: '3', index: 1 })
+);
 ```
 
-Both transforms return `false` when the identifier doesn't resolve, so you can branch on stale links without throwing.
+Both transaction commands return `false` when the identifier doesn't resolve, so you can branch on stale links without throwing.
 
 ### Handle Duplicate Definitions
 
 Two definitions with the same identifier is a resolvable edit state, not an error. The **first** definition in document order stays canonical; later ones are flagged as duplicates. Renumber a later duplicate with:
 
 ```tsx
-const nextIdentifier = editor.tf.footnote.normalizeDuplicateDefinition({
-  path: duplicatePath,
+let nextIdentifier: string | undefined;
+
+editor.update((tx) => {
+  nextIdentifier = tx.footnote.normalizeDuplicateDefinition({
+    path: duplicatePath,
+  });
 });
 ```
 
@@ -189,7 +197,7 @@ Inline void node rendered as `<sup>`. Owns the `[^` combobox trigger, identifier
     Only trigger when the previous character matches. The default requires `[` so bare `^` in prose doesn't open the combobox.
     - **Default:** `/^\[$/`
   </APIItem>
-  <APIItem name="createComboboxInput" type="(trigger: string) => TElement" optional>
+  <APIItem name="createComboboxInput" type="(trigger: string) => Element" optional>
     Factory for the node inserted when the combobox opens. Defaults to a `footnoteInput` element.
   </APIItem>
   <APIItem name="triggerQuery" type="(editor: SlateEditor) => boolean" optional>
@@ -225,7 +233,7 @@ Get the canonical (first-in-document-order) definition entry for an identifier.
   </APIItem>
 </APIParameters>
 <APIReturns>
-  <APIItem name="return" type="NodeEntry<TElement> | undefined">
+  <APIItem name="return" type="NodeEntry<Element> | undefined">
     Canonical definition entry, or `undefined` when nothing matches.
   </APIItem>
 </APIReturns>
@@ -242,7 +250,7 @@ Get every definition entry that shares an identifier, in document order. When du
   </APIItem>
 </APIParameters>
 <APIReturns>
-  <APIItem name="return" type="NodeEntry<TElement>[]">
+  <APIItem name="return" type="NodeEntry<Element>[]">
     Definition entries in document order.
   </APIItem>
 </APIReturns>
@@ -276,7 +284,7 @@ Get every reference entry that points at an identifier, in document order.
   </APIItem>
 </APIParameters>
 <APIReturns>
-  <APIItem name="return" type="NodeEntry<TElement>[]">
+  <APIItem name="return" type="NodeEntry<Element>[]">
     Reference entries in document order.
   </APIItem>
 </APIReturns>
@@ -334,7 +342,7 @@ Get every non-canonical definition entry for an identifier — that is, every de
   </APIItem>
 </APIParameters>
 <APIReturns>
-  <APIItem name="return" type="NodeEntry<TElement>[]">
+  <APIItem name="return" type="NodeEntry<Element>[]">
     Definition entries past the canonical one.
   </APIItem>
 </APIReturns>
@@ -403,7 +411,7 @@ When the selection is expanded, the expanded fragment seeds the new definition b
     Focus the definition body after insertion. Pass `false` to keep the caret inline after the reference.
     - **Default:** `true`
   </APIItem>
-  <APIItem name="...options" type="InsertNodesOptions" optional>
+  <APIItem name="...options" type="object" optional>
     Standard insert-nodes options (`at`, `select`, etc.) forwarded to the reference insert.
   </APIItem>
 </APIParameters>

@@ -1,7 +1,7 @@
 import { createSlateEditor } from 'platejs';
 
 import { BaseCalloutPlugin } from './BaseCalloutPlugin';
-import { CALLOUT_STORAGE_KEY } from './transforms/insertCallout';
+import { CALLOUT_STORAGE_KEY } from './transforms/calloutNode';
 
 describe('BaseCalloutPlugin', () => {
   it('exposes callout break/delete rules and inserts bound callout nodes', () => {
@@ -24,7 +24,7 @@ describe('BaseCalloutPlugin', () => {
       },
     });
 
-    editor.tf.insert.callout({ variant: 'info' });
+    editor.update((tx) => tx.callout.insert({ variant: 'info' }));
 
     expect(editor.children.at(-1)).toMatchObject({
       children: [{ text: '' }],

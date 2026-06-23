@@ -1,4 +1,13 @@
 import { createTSlatePlugin } from '../../../plugin';
+import { withLegacyTransformOverride } from '../../../../internal/plugin/withLegacyTransformOverride';
+import {
+  getEditorBlock,
+  getEditorPointAfter,
+  getEditorPointBefore,
+  getEditorRange,
+  getEditorString,
+  isEditorSelectionCollapsed,
+} from '../../../../internal/utils/runtimeEditorQueries';
 
 import type {
   InsertBreakInputRuleContext,
@@ -26,16 +35,16 @@ const createSelectionContext = ({
   editor: InsertTextInputRuleContext['editor'];
 }) => {
   const { selection } = editor;
-  const isCollapsed = !!selection && editor.api.isCollapsed();
+  const isCollapsed = !!selection && isEditorSelectionCollapsed(editor);
   const getBlockStartRange = createCachedGetter(() => {
     if (!selection) return;
 
-    return editor.api.range('start', selection);
+    return getEditorRange(editor, 'start', selection);
   });
   const getBlockStartText = createCachedGetter(() => {
     const range = getBlockStartRange();
 
-    return range ? editor.api.string(range) : undefined;
+    return range ? getEditorString(editor, range) : undefined;
   });
 
   return {
@@ -43,7 +52,7 @@ const createSelectionContext = ({
     getBlockEntry: createCachedGetter(() => {
       if (!selection) return;
 
-      return editor.api.block({ at: selection });
+      return getEditorBlock(editor, { at: selection });
     }),
     getBlockStartRange,
     getBlockStartText,
@@ -53,7 +62,7 @@ const createSelectionContext = ({
     getCharAfter: createCachedGetter(() => {
       if (!selection || !isCollapsed) return;
 
-      const afterPoint = editor.api.after(selection, {
+      const afterPoint = getEditorPointAfter(editor, selection, {
         distance: 1,
         unit: 'character',
       });
@@ -61,7 +70,7 @@ const createSelectionContext = ({
       if (!afterPoint) return;
 
       return (
-        editor.api.string({
+        getEditorString(editor, {
           anchor: selection.anchor,
           focus: afterPoint,
         }) || undefined
@@ -70,7 +79,7 @@ const createSelectionContext = ({
     getCharBefore: createCachedGetter(() => {
       if (!selection || !isCollapsed) return;
 
-      const beforePoint = editor.api.before(selection, {
+      const beforePoint = getEditorPointBefore(editor, selection, {
         distance: 1,
         unit: 'character',
       });
@@ -78,7 +87,7 @@ const createSelectionContext = ({
       if (!beforePoint) return;
 
       return (
-        editor.api.string({
+        getEditorString(editor, {
           anchor: beforePoint,
           focus: selection.anchor,
         }) || undefined
@@ -91,12 +100,13 @@ const createSelectionContext = ({
 const isTriggerMatch = (trigger: readonly string[] | string, text: string) =>
   Array.isArray(trigger) ? trigger.includes(text) : trigger === text;
 
-export const InputRulesPlugin = createTSlatePlugin({
-  editOnly: true,
-  key: 'inputRules',
-}).overrideEditor(
+export const InputRulesPlugin = withLegacyTransformOverride(
+  createTSlatePlugin({
+    editOnly: true,
+    key: 'inputRules',
+  }),
   ({ editor, tf: { insertBreak, insertData, insertText } }) => ({
-    transforms: {
+    tf: {
       insertBreak() {
         const selectionContext = createSelectionContext({ editor });
         let handled = false;
@@ -163,13 +173,21 @@ export const InputRulesPlugin = createTSlatePlugin({
       insertText(text, options) {
         const rules = editor.meta.inputRules.insertText.byTrigger[text] ?? [];
         const selectionContext = createSelectionContext({ editor });
+        const currentOptions = options as InsertTextInputRuleContext['options'];
+        const insertTextWithOptions: InsertTextInputRuleContext['insertText'] =
+          (nextText, nextOptions) => {
+            insertText(
+              nextText,
+              nextOptions as Parameters<typeof insertText>[1]
+            );
+          };
         let handled = false;
 
         for (const rule of rules) {
           const context: InsertTextInputRuleContext = {
             cause: 'insertText',
-            insertText,
-            options,
+            insertText: insertTextWithOptions,
+            options: currentOptions,
             pluginKey: rule.pluginKey,
             text,
             ...selectionContext,

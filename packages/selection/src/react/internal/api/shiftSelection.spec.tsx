@@ -1,5 +1,4 @@
 /** @jsx jsxt */
-import type { PlateEditor } from 'platejs/react';
 
 import { jsxt } from '@platejs/test-utils';
 import { createPlateEditor } from 'platejs/react';
@@ -10,7 +9,7 @@ import { shiftSelection } from './shiftSelection';
 jsxt;
 
 describe('shiftSelection', () => {
-  let editor: PlateEditor;
+  let editor: any;
 
   describe('Flat structure', () => {
     beforeEach(() => {
@@ -175,7 +174,7 @@ describe('shiftSelection', () => {
       });
 
       // For testing skipping, let's say child2 is not selectable or something
-      editor.setOption(BlockSelectionPlugin, 'isSelectable', (node) => {
+      editor.setOption(BlockSelectionPlugin, 'isSelectable', (node: any) => {
         // We'll skip if node.id === 'child2'
         return node.id !== 'child2';
       });
@@ -345,7 +344,7 @@ describe('shiftSelection', () => {
       editor.setOption(
         BlockSelectionPlugin,
         'isSelectable',
-        (node) => node.type === 'table' || node.type === 'tr'
+        (node: any) => node.type === 'table' || node.type === 'tr'
       );
     });
 
@@ -389,7 +388,6 @@ describe('shiftSelection', () => {
 
       shiftSelection(editor, 'up');
 
-      // We expect table1 included
       const selectedIds = editor.getOption(BlockSelectionPlugin, 'selectedIds');
       expect(Array.from(selectedIds!).sort()).toEqual(['table1'].sort());
     });
@@ -439,7 +437,7 @@ describe('shiftSelection', () => {
       editor.setOption(
         BlockSelectionPlugin,
         'isSelectable',
-        (node) =>
+        (node: any) =>
           node.type === 'table' || node.type === 'tr' || node.id === 'blockZ'
       );
       // Re-run shiftSelection to see if blockZ is included

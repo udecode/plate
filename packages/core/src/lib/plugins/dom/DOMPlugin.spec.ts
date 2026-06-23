@@ -1,5 +1,4 @@
 import { createSlateEditor } from '../../editor';
-import { DOMPlugin } from './DOMPlugin';
 
 describe('DOMPlugin', () => {
   afterEach(() => {
@@ -18,7 +17,7 @@ describe('DOMPlugin', () => {
       () => {}
     );
 
-    (editor.getTransforms(DOMPlugin) as any).withScrolling(
+    (editor.tf as any).withScrolling(
       () => {
         editor.tf.insertText('a');
         editor.tf.insertText('b');
@@ -54,7 +53,7 @@ describe('DOMPlugin', () => {
       () => {}
     );
 
-    (editor.getTransforms(DOMPlugin) as any).withScrolling(
+    (editor.tf as any).withScrolling(
       () => {
         editor.tf.insertText('a');
       },

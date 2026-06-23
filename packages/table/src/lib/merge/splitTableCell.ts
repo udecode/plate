@@ -1,5 +1,5 @@
+import type { Descendant } from '@platejs/slate';
 import type {
-  Descendant,
   Path,
   SlateEditor,
   TTableCellElement,
@@ -11,6 +11,7 @@ import { getEditorPlugin, KEYS } from 'platejs';
 import { getCellIndices } from '..';
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getTableGridAbove } from '../queries';
+import { findTableNodePath } from '../utils/findTableNodePath';
 
 export const splitTableCell = (editor: SlateEditor) => {
   const { api } = getEditorPlugin(editor, BaseTablePlugin);
@@ -19,7 +20,7 @@ export const splitTableCell = (editor: SlateEditor) => {
   const cellEntries = getTableGridAbove(editor, { format: 'cell' });
   const [[cellElem, path]] = cellEntries;
 
-  editor.tf.withoutNormalizing(() => {
+  editor.update((tx) => {
     // creating new object per iteration is essential here
     const createEmptyCell = (children?: Descendant[]) => ({
       ...api.create.tableCell({
@@ -47,7 +48,7 @@ export const splitTableCell = (editor: SlateEditor) => {
     const { col } = getCellIndices(editor, cellElem);
 
     // Remove the original merged cell from the editor
-    editor.tf.removeNodes({ at: path });
+    tx.nodes.remove({ at: path });
 
     const getClosestColPathForRow = (row: number, targetCol: number) => {
       const rowEntry = editor.api.node({
@@ -72,7 +73,7 @@ export const splitTableCell = (editor: SlateEditor) => {
 
         if (diff < smallestDiff) {
           smallestDiff = diff;
-          closestColPath = editor.api.findPath(cellElement)!;
+          closestColPath = findTableNodePath(editor, cellElement)!;
           isDirectionLeft = cellCol < targetCol;
         }
       });
@@ -114,14 +115,14 @@ export const splitTableCell = (editor: SlateEditor) => {
           const currentColPath = i === 0 ? colPaths[j] : pathForNextRows;
           const pathForNewCell = [...tablePath, currentRowPath, currentColPath];
 
-          editor.tf.insertNodes(cellToInsert, { at: pathForNewCell });
+          tx.nodes.insert(cellToInsert, { at: pathForNewCell });
         } else {
           newRowChildren.push(cellToInsert);
         }
       }
 
       if (!rowEntry) {
-        editor.tf.insertNodes(
+        tx.nodes.insert(
           {
             children: newRowChildren,
             type: editor.getType(KEYS.tr),
@@ -130,7 +131,7 @@ export const splitTableCell = (editor: SlateEditor) => {
         );
       }
     }
-  });
 
-  editor.tf.select(editor.api.end(path)!);
+    tx.selection.set(editor.api.end(path)!);
+  });
 };

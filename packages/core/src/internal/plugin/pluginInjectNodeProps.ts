@@ -55,6 +55,16 @@ export const pluginInjectNodeProps = (
 
   const injectMatch = getInjectMatch(editor, plugin);
   const shouldResolvePathForMatch = !!(excludeBelowPlugins || maxLevel);
+  const nodeValue = node[nodeKey!] as any;
+  const editorPluginContext = getEditorPlugin(editor, plugin) as any;
+  const transformOptions: TransformOptions = {
+    ...nodeProps,
+    ...editorPluginContext,
+    nodeValue,
+  };
+  const callTransformPropsForHookStability = () => {
+    transformProps?.({ ...transformOptions, props: {} });
+  };
 
   if (
     !injectMatch(
@@ -62,20 +72,22 @@ export const pluginInjectNodeProps = (
       shouldResolvePathForMatch ? getElementPath(node) : undefined
     )
   ) {
+    callTransformPropsForHookStability();
+
     return;
   }
 
   const queryResult = query?.({
     ...injectNodeProps,
-    ...(getEditorPlugin(editor, plugin) as any),
+    ...editorPluginContext,
     nodeProps,
   });
 
   if (query && !queryResult) {
+    callTransformPropsForHookStability();
+
     return;
   }
-
-  const nodeValue = node[nodeKey!] as any;
 
   // early return if there is no reason to inject props
   if (
@@ -87,11 +99,6 @@ export const pluginInjectNodeProps = (
     return;
   }
 
-  const transformOptions: TransformOptions = {
-    ...nodeProps,
-    ...(getEditorPlugin(editor, plugin) as any),
-    nodeValue,
-  };
   const value = transformNodeValue?.(transformOptions) ?? nodeValue;
   transformOptions.value = value;
 

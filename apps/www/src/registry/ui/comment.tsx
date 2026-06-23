@@ -507,7 +507,7 @@ export function CommentCreateForm({
     }
 
     const commentsNodeEntry = editor
-      .getApi(CommentPlugin)
+      .getPluginApi(CommentPlugin)
       .comment.nodes({ at: [], isDraft: true });
 
     if (commentsNodeEntry.length === 0) return;

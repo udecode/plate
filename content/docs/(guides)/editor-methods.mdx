@@ -147,24 +147,22 @@ editor.tf.insertNodes({
 
 ## Plugin Methods
 
-Plugin helpers let TypeScript infer APIs and transforms from the plugin you
-pass in.
+Plugin helpers let TypeScript infer APIs from the plugin you pass in. Plugin
+commands run through `editor.update`.
 
 ```ts title="table-methods.ts" showLineNumbers
 import { TablePlugin } from '@platejs/table/react';
 
-const api = editor.getApi(TablePlugin);
-const tf = editor.getTransforms(TablePlugin);
+const api = editor.getPluginApi(TablePlugin);
 
 const cell = api.create.tableCell();
 
-tf.insert.tableRow();
+editor.update((tx) => tx.insert.tableRow());
 ```
 
 | Method | Use for |
 | --- | --- |
-| `editor.getApi(plugin)` | Typed plugin APIs merged onto `editor.api`. |
-| `editor.getTransforms(plugin)` | Typed plugin transforms merged onto `editor.tf`. |
+| `editor.getPluginApi(plugin)` | Typed plugin APIs merged onto `editor.api`. |
 | `editor.getPlugin(plugin)` | The resolved plugin instance for a key or plugin object. |
 | `editor.getType(pluginKey)` | The node type registered for a plugin key. |
 | `editor.getInjectProps(plugin)` | Resolved injected node props for a plugin. |

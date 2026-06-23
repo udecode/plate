@@ -1,7 +1,8 @@
-import { type Path, NodeApi } from '@platejs/slate-legacy';
+import { type Path, NodeApi } from '@platejs/slate';
 
 import type { SlateEditor } from '../../../editor';
 
+import { getCurrentRuntimeTransforms } from '../../../../internal/currentRuntimeBridge';
 import { NodeIdPlugin } from '../../node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from '../../paragraph';
 
@@ -15,21 +16,25 @@ export const resetBlock = (editor: SlateEditor, { at }: { at?: Path } = {}) => {
 
   const [block, path] = entry;
   const idKey = editor.getOptions(NodeIdPlugin).idKey ?? 'id';
+  const tf = getCurrentRuntimeTransforms(editor);
 
-  editor.tf.withoutNormalizing(() => {
-    const { type, ...otherProps } = NodeApi.extractProps(block);
+  tf.withoutNormalizing(() => {
+    const { type, ...otherProps } = NodeApi.extractProps(block) as Record<
+      string,
+      unknown
+    > & { type?: unknown };
 
     delete otherProps[idKey];
 
     Object.keys(otherProps).forEach((key) => {
-      editor.tf.unsetNodes(key, { at: path });
+      tf.unsetNodes(key, { at: path });
     });
 
     const paragraphType = editor.getType(BaseParagraphPlugin.key);
 
     if (block.type !== paragraphType) {
       // Set the new type to paragraph
-      editor.tf.setNodes({ type: paragraphType }, { at: path });
+      tf.setNodes({ type: paragraphType }, { at: path });
     }
   });
 

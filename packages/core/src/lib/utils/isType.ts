@@ -1,10 +1,8 @@
 import castArray from 'lodash/castArray.js';
 
-import type { SlateEditor } from '../editor';
-
 /** Does the node match the type provided. */
 export const isType = (
-  editor: SlateEditor,
+  editor: { getType: (pluginKey: string) => string },
   node: any,
   key?: string[] | string
 ) => {

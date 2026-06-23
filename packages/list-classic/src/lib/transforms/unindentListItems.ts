@@ -1,4 +1,4 @@
-import type { SlateEditor } from 'platejs';
+import type { SlateEditor } from '@platejs/core';
 
 import { type MoveListItemsOptions, moveListItems } from './moveListItems';
 

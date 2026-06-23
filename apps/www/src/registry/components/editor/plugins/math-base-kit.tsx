@@ -8,4 +8,4 @@ import {
 export const BaseMathKit = [
   BaseInlineEquationPlugin.withComponent(InlineEquationElementStatic),
   BaseEquationPlugin.withComponent(EquationElementStatic),
-];
+] as const;

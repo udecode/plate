@@ -22,11 +22,10 @@ describe('useContentController', () => {
 
   it('scrolls the active content target without entering block-selection mode', async () => {
     const flashTarget = mock();
+    const update = mock((fn: any) => fn({ navigation: { flashTarget } }));
     const scrollTo = mock();
     const editor = {
-      tf: {
-        navigation: { flashTarget },
-      },
+      update,
     } as any;
     const container = document.createElement('div');
     Object.defineProperties(container, {
@@ -61,6 +60,7 @@ describe('useContentController', () => {
 
     expect(result.current.activeContentId).toBe('h1');
     expect(scrollTo).toHaveBeenCalledWith({ behavior: 'instant', top: 35 });
+    expect(update).toHaveBeenCalled();
     expect(flashTarget).toHaveBeenCalledWith({
       target: {
         path: [0],

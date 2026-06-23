@@ -172,6 +172,7 @@ describe('toPlatePlugin type tests', () => {
 
     const editor = createPlateEditor({
       plugins: [CodeBlockPlugin],
+      runtime: 'legacy',
     });
 
     editor.api.plugin.getSyntaxState();
@@ -345,6 +346,7 @@ describe('toTPlatePlugin type tests', () => {
 
     const editor = createPlateEditor({
       plugins: [CodeBlockPlugin],
+      runtime: 'legacy',
     });
 
     editor.api.plugin.getLanguage();

@@ -609,7 +609,7 @@ Inserts an image element into the editor.
   <APIItem name="url" type="string | ArrayBuffer">
     The URL or ArrayBuffer of the image.
   </APIItem>
-  <APIItem name="options" type="InsertNodesOptions" optional>
+  <APIItem name="options" type="object" optional>
     Additional options for inserting the image element.
   </APIItem>
 </APIParameters>
@@ -635,7 +635,7 @@ Inserts a media embed element at the current selection.
     The key of the media embed element.
     - **Default:** `KEYS.mediaEmbed`
   </APIItem>
-  <APIItem name="insertNodesOptions" type="InsertNodesOptions" optional>
+  <APIItem name="insertNodesOptions" type="object" optional>
     Additional options for inserting nodes.
   </APIItem>
 </APIOptions>
@@ -922,7 +922,7 @@ Enhances the editor instance with image-related functionality.
 ### `TMediaElement`
 
 ```tsx
-export interface TMediaElement extends TElement {
+export interface TMediaElement extends Element {
   url: string;
   id?: string;
   align?: 'center' | 'left' | 'right';
@@ -935,7 +935,7 @@ export interface TMediaElement extends TElement {
 ### `TPlaceholderElement`
 
 ```tsx
-export interface TPlaceholderElement extends TElement {
+export interface TPlaceholderElement extends Element {
   mediaType: string;
 }
 ```

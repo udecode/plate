@@ -3,4 +3,4 @@
  */
 
 export * from './BaseCaptionPlugin';
-export * from './withCaption';
+export * from './stringifyCaption';

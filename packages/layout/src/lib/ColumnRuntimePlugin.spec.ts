@@ -1,13 +1,28 @@
 import type { Value } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
+import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
+import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
 
 import { BaseColumnPlugin } from './BaseColumnPlugin';
 
+const createColumnRuntimeEditor = ({
+  selection,
+  value,
+}: {
+  selection?: {
+    anchor: { offset: number; path: number[] };
+    focus: { offset: number; path: number[] };
+  };
+  value: Value;
+}) =>
+  createPlateRuntimeEditor({
+    initialSelection: selection,
+    initialValue: value,
+    plugins: [BaseColumnPlugin],
+  });
+
 describe('BaseColumnPlugin Slate v2 runtime', () => {
   it('unwraps a single-column group back to plain blocks', () => {
-    const editor = createPlateEditor<Value, typeof BaseColumnPlugin>({
-      plugins: [BaseColumnPlugin],
-      runtime: 'slate-v2',
+    const editor = createColumnRuntimeEditor({
       value: [
         {
           children: [
@@ -32,9 +47,7 @@ describe('BaseColumnPlugin Slate v2 runtime', () => {
   });
 
   it('normalizes column widths so the group sums to one hundred percent', () => {
-    const editor = createPlateEditor<Value, typeof BaseColumnPlugin>({
-      plugins: [BaseColumnPlugin],
-      runtime: 'slate-v2',
+    const editor = createColumnRuntimeEditor({
       value: [
         {
           children: [
@@ -78,9 +91,7 @@ describe('BaseColumnPlugin Slate v2 runtime', () => {
   });
 
   it('unwraps column groups that contain only non-column children', () => {
-    const editor = createPlateEditor<Value, typeof BaseColumnPlugin>({
-      plugins: [BaseColumnPlugin],
-      runtime: 'slate-v2',
+    const editor = createColumnRuntimeEditor({
       value: [
         {
           children: [
@@ -103,9 +114,7 @@ describe('BaseColumnPlugin Slate v2 runtime', () => {
   });
 
   it('removes empty columns and unwraps the remaining single column', () => {
-    const editor = createPlateEditor<Value, typeof BaseColumnPlugin>({
-      plugins: [BaseColumnPlugin],
-      runtime: 'slate-v2',
+    const editor = createColumnRuntimeEditor({
       value: [
         {
           children: [
@@ -135,9 +144,7 @@ describe('BaseColumnPlugin Slate v2 runtime', () => {
   });
 
   it('selects the containing column and then the parent group', () => {
-    const editor = createPlateEditor<Value, typeof BaseColumnPlugin>({
-      plugins: [BaseColumnPlugin],
-      runtime: 'slate-v2',
+    const editor = createColumnRuntimeEditor({
       selection: {
         anchor: { offset: 1, path: [0, 0, 0, 0] },
         focus: { offset: 1, path: [0, 0, 0, 0] },
@@ -161,13 +168,13 @@ describe('BaseColumnPlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(editor.tf.selectAll()).toBe(true);
+    expect(getCurrentRuntimeTransforms(editor).selectAll()).toBe(true);
     expect(editor.read((state) => state.selection.get())).toEqual({
       anchor: { offset: 0, path: [0, 0, 0, 0] },
       focus: { offset: 3, path: [0, 0, 0, 0] },
     });
 
-    expect(editor.tf.selectAll()).toBe(true);
+    expect(getCurrentRuntimeTransforms(editor).selectAll()).toBe(true);
     expect(editor.read((state) => state.selection.get())).toEqual({
       anchor: { offset: 0, path: [0, 0, 0, 0] },
       focus: { offset: 3, path: [0, 1, 0, 0] },

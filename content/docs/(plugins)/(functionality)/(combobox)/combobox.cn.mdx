@@ -61,14 +61,11 @@ const TagInputPlugin = createSlatePlugin({
 
 ### 创建主插件
 
-使用`withTriggerCombobox`创建主插件：
+使用触发器元数据创建主插件：
 
 ```tsx
 import { createTSlatePlugin, type PluginConfig } from 'platejs';
-import { 
-  type TriggerComboboxPluginOptions, 
-  withTriggerCombobox 
-} from '@platejs/combobox';
+import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 
 type TagConfig = PluginConfig<'tag', TriggerComboboxPluginOptions>;
 
@@ -84,7 +81,7 @@ export const TagPlugin = createTSlatePlugin<TagConfig>({
     }),
   },
   plugins: [TagInputPlugin],
-}).overrideEditor(withTriggerCombobox);
+});
 ```
 
 - `node.isElement`: 定义此为元素节点(非文本)

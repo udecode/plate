@@ -37,9 +37,9 @@ describe('getEditorPlugin', () => {
         key: 'test',
         node: { type: 'test-type' },
       }),
-      tf: editor.transforms,
       type: 'test-type',
     });
+    expect('tf' in context).toBe(false);
   });
 
   it('work extendEditor', () => {
@@ -75,9 +75,9 @@ describe('getEditorPlugin', () => {
         key: 'test',
         node: { type: 'test-type' },
       }),
-      tf: editor.transforms,
       type: 'test-type',
     });
+    expect('tf' in context).toBe(false);
   });
 
   it('resolve unresolved plugin', () => {
@@ -98,8 +98,8 @@ describe('getEditorPlugin', () => {
         key: 'unresolved',
         node: { type: 'unresolved-type' },
       }),
-      tf: editor.transforms,
       type: 'unresolved-type',
     });
+    expect('tf' in context).toBe(false);
   });
 });

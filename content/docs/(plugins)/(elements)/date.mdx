@@ -17,7 +17,7 @@ Date adds inline void elements that display a date label inside text. Canonical 
 ## Features
 
 - Inline void `date` element.
-- Bound `editor.tf.insert.date` transform.
+- `date.insert` transaction command.
 - Direct `insertDate(editor, options)` helper.
 - Canonical `date` storage with `rawDate` fallback.
 - Calendar editing in the registry UI.
@@ -113,16 +113,18 @@ Use the base kit when rendering read-only output with `platejs/static`.
 
 ### Insert A Date
 
-`DatePlugin` binds `insertDate` to `editor.tf.insert.date`.
+`DatePlugin` exposes date insertion through the `date` transaction group.
 
 ```tsx
-editor.tf.insert.date({
-  date: '2026-03-23',
-  select: true,
-});
+editor.update((tx) =>
+  tx.date.insert({
+    date: '2026-03-23',
+    select: true,
+  })
+);
 ```
 
-Use the package helper directly when you are outside plugin-bound transform access.
+Use the package helper directly when you are outside editor transaction access.
 
 ```tsx
 import { insertDate } from '@platejs/date';
@@ -214,7 +216,7 @@ The deserializer also accepts child text such as `<date>Mon Mar 23 2026</date>` 
 | `BaseDatePlugin` | `@platejs/date` | Headless inline void date plugin. |
 | `DatePlugin` | `@platejs/date/react` | React date plugin. |
 | `insertDate(editor, options)` | `@platejs/date` | Inserts a date element plus a trailing text space. |
-| `editor.tf.insert.date(options)` | plugin-bound transform | Bound transform registered by `BaseDatePlugin`. |
+| `editor.update((tx) => tx.date.insert(options))` | `BaseDatePlugin` transaction | Inserts a date through the editor transaction. |
 | `normalizeDateValue(value)` | `@platejs/date` | Returns `{ date }`, `{ rawDate }`, or an empty object. |
 | `formatDateValue(date)` | `@platejs/date` | Formats a `Date` object as `YYYY-MM-DD`. |
 | `parseCanonicalDateValue(value)` | `@platejs/date` | Parses only valid canonical date strings. |

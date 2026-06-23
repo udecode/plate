@@ -1,9 +1,16 @@
-import { type Ancestor, NodeApi } from '@platejs/slate-legacy';
+import type { Ancestor } from '@platejs/slate';
 
 import type { PluginConfig } from '../../plugin/BasePlugin';
 
 import { createTSlatePlugin } from '../../plugin/createSlatePlugin';
 import { withChunking } from './withChunking';
+
+export const isCurrentEditorRoot = (ancestor: Ancestor) =>
+  typeof ancestor === 'object' &&
+  ancestor !== null &&
+  Array.isArray((ancestor as { children?: unknown }).children) &&
+  'api' in ancestor &&
+  'meta' in ancestor;
 
 export type ChunkingConfig = PluginConfig<
   'chunking',
@@ -26,7 +33,7 @@ export type ChunkingConfig = PluginConfig<
      * Determine which ancestors should have chunking applied to their children.
      * Only blocks containing other blocks can have chunking applied.
      *
-     * @default NodeApi.isEditor
+     * @default current editor root
      */
     query?: (ancestor: Ancestor) => boolean;
   }
@@ -37,6 +44,6 @@ export const ChunkingPlugin = createTSlatePlugin<ChunkingConfig>({
   options: {
     chunkSize: 1000,
     contentVisibilityAuto: true,
-    query: NodeApi.isEditor,
+    query: isCurrentEditorRoot,
   },
 }).overrideEditor(withChunking);

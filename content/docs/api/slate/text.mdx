@@ -3,10 +3,10 @@ title: Text
 description: API reference for text nodes in Plate.
 ---
 
-A Text node contains the actual text content of a Plate document along with any formatting properties. They are always leaf nodes in the document tree as they cannot contain any children.
+A Text node contains the actual text content of a Slate document along with any formatting properties. They are always leaf nodes in the document tree as they cannot contain any children.
 
 ```ts
-type TText = {
+type Text = {
   text: string
   [key: string]: unknown
 }
@@ -18,7 +18,7 @@ type TText = {
 
 <API name="decorations">
 <APIParameters>
-  <APIItem name="node" type="TText">
+  <APIItem name="node" type="Text">
     The text node to get leaves from.
   </APIItem>
   <APIItem name="decorations" type="DecoratedRange[]">
@@ -26,7 +26,7 @@ type TText = {
   </APIItem>
 </APIParameters>
 
-<APIReturns type="{ leaf: TText, position?: LeafPosition }[]">
+<APIReturns type="{ leaf: Text, position?: LeafPosition }[]">
   An array of leaves and their positions. The position is undefined if there is a single leaf.
 </APIReturns>
 </API>
@@ -35,10 +35,10 @@ type TText = {
 
 <API name="equals">
 <APIParameters>
-  <APIItem name="text" type="TText">
+  <APIItem name="text" type="Text">
     The first text node to compare.
   </APIItem>
-  <APIItem name="another" type="TText">
+  <APIItem name="another" type="Text">
     The second text node to compare.
   </APIItem>
   <APIItem name="options" type="TextEqualsOptions" optional>
@@ -105,10 +105,10 @@ type TText = {
 
 <API name="matches">
 <APIParameters>
-  <APIItem name="text" type="TText">
+  <APIItem name="text" type="Text">
     The text node to check.
   </APIItem>
-  <APIItem name="props" type="Partial<TText>">
+  <APIItem name="props" type="Partial<Text>">
     The properties to match against.
   </APIItem>
 </APIParameters>
@@ -120,11 +120,9 @@ type TText = {
 
 ## Types
 
-### `TText`
+### `Text`
 
-`Text` is a type alias for `TText`.
-
-<API name="TText">
+<API name="Text">
 <APIAttributes>
   <APIItem name="text" type="string">
     The text content of the node.
@@ -141,7 +139,7 @@ Text entries represent a Text node and its path.
 
 <API name="TextEntry">
 <APIAttributes>
-  <APIItem name="0" type="TText">
+  <APIItem name="0" type="Text">
     The Text node.
   </APIItem>
   <APIItem name="1" type="Path">
@@ -160,7 +158,7 @@ A utility type that extracts all possible text node types from a root node type.
 
 <API name="TextOf">
 <APIParameters>
-  <APIItem name="N" type="TNode">
+  <APIItem name="N" type="Node">
     The root node type to extract text types from.
   </APIItem>
 </APIParameters>
@@ -184,7 +182,7 @@ A utility type that extracts all possible mark types from a root node type. Mark
 
 <API name="MarksOf">
 <APIParameters>
-  <APIItem name="N" type="TNode">
+  <APIItem name="N" type="Node">
     The root node type to extract mark types from.
   </APIItem>
 </APIParameters>
@@ -208,7 +206,7 @@ A utility type that extracts all possible mark property keys from a node type.
 
 <API name="MarkKeysOf">
 <APIParameters>
-  <APIItem name="N" type="TNode">
+  <APIItem name="N" type="Node">
     The node type to extract mark keys from.
   </APIItem>
 </APIParameters>

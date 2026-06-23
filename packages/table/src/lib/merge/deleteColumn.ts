@@ -23,12 +23,11 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
 
   if (!tableEntry) return;
 
-  editor.tf.withoutNormalizing(() => {
-    const { api } = getEditorPlugin(editor, BaseTablePlugin);
+  const { api } = getEditorPlugin(editor, BaseTablePlugin);
 
-    if (editor.api.isExpanded()) {
-      return deleteColumnWhenExpanded(editor, tableEntry);
-    }
+  if (editor.api.isExpanded()) {
+    return deleteColumnWhenExpanded(editor, tableEntry);
+  }
 
     const table = tableEntry[0] as TTableElement;
 
@@ -46,7 +45,9 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
     const colsDeleteNumber = api.table.getColSpan(selectedCell);
 
     if (getTableMergedColumnCount(table) <= colsDeleteNumber) {
-      editor.tf.removeNodes({ at: tableEntry[1] });
+      editor.update((tx) => {
+        tx.nodes.remove({ at: tableEntry[1] });
+      });
 
       return;
     }
@@ -121,7 +122,9 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
         newCell.attributes.colspan = colSpan.toString();
       }
 
-      editor.tf.setNodes<TTableCellElement>(newCell, { at: curCellPath });
+      editor.update((tx) => {
+        tx.nodes.set(newCell, { at: curCellPath });
+      });
     });
 
     const trEntry = editor.api.above({
@@ -170,8 +173,10 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
       paths.forEach((cellPaths) => {
         const pathToDelete = cellPaths[0];
         cellPaths.forEach(() => {
-          editor.tf.removeNodes({
-            at: pathToDelete,
+          editor.update((tx) => {
+            tx.nodes.remove({
+              at: pathToDelete,
+            });
           });
         });
       });
@@ -182,11 +187,12 @@ export const deleteTableMergeColumn = (editor: SlateEditor) => {
         const newColSizes = [...colSizes];
         newColSizes.splice(deletingColIndex, 1);
 
-        editor.tf.setNodes<TTableElement>(
-          { colSizes: newColSizes },
-          { at: tablePath }
-        );
+        editor.update((tx) => {
+          tx.nodes.set(
+            { colSizes: newColSizes } satisfies Partial<TTableElement>,
+            { at: tablePath }
+          );
+        });
       }
     }
-  });
 };

@@ -12,10 +12,7 @@ import {
 
 const asPlaceholderEditor = (editor: {
   getType: (key: string) => string;
-  tf: {
-    insertNodes: ReturnType<typeof mock>;
-    withoutNormalizing: (fn: () => void) => void;
-  };
+  update: (fn: (tx: any) => void) => void;
 }) => editor as unknown as SlateEditor;
 
 describe('insertPlaceholder', () => {
@@ -24,13 +21,14 @@ describe('insertPlaceholder', () => {
     let withoutNormalizingCalls = 0;
     const editor = asPlaceholderEditor({
       getType: (key: string) => key,
-      tf: {
-        insertNodes,
-        withoutNormalizing: (fn) => {
-          withoutNormalizingCalls += 1;
-          fn();
-        },
-      },
+      update: (fn) =>
+        fn({
+          nodes: { insert: insertNodes },
+          withoutNormalizing: (callback: () => void) => {
+            withoutNormalizingCalls += 1;
+            callback();
+          },
+        }),
     });
 
     insertPlaceholder(editor, KEYS.img, { at: [0] });
@@ -50,10 +48,11 @@ describe('insertPlaceholder', () => {
     const insertNodes = mock();
     const editor = asPlaceholderEditor({
       getType: (key: string) => key,
-      tf: {
-        insertNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
+      update: (fn) =>
+        fn({
+          nodes: { insert: insertNodes },
+          withoutNormalizing: (callback: () => void) => callback(),
+        }),
     });
 
     insertImagePlaceholder(editor);

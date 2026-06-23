@@ -3,17 +3,19 @@ import React from 'react';
 import {
   type DecoratedRange,
   type Descendant,
+  type Element,
   type NodeEntry,
   type Path,
-  type TElement,
-  type TText,
+  type Text,
   type Value,
   ElementApi,
-  isElementDecorationsEqual,
-  isTextDecorationsEqual,
   RangeApi,
   TextApi,
-} from '@platejs/slate-legacy';
+} from '@platejs/slate';
+import {
+  isElementDecorationsEqual,
+  isTextDecorationsEqual,
+} from '@platejs/slate-dom';
 import clsx from 'clsx';
 
 import type { EditableProps, SlateEditor } from '../../lib';
@@ -34,7 +36,7 @@ function BaseElementStatic({
   decorate: EditableProps['decorate'];
   decorations: DecoratedRange[];
   editor: SlateEditor;
-  element: TElement;
+  element: Element;
   path: Path;
   style?: React.CSSProperties;
 }) {
@@ -104,7 +106,7 @@ function BaseLeafStatic({
   decorations: DecoratedRange[];
   editor: SlateEditor;
   path: Path;
-  text: TText;
+  text: Text;
 }) {
   const renderLeaf = pipeRenderLeafStatic(editor);
   const renderText = pipeRenderTextStatic(editor);
@@ -119,10 +121,10 @@ function BaseLeafStatic({
           {leaf.text === '' ? '\uFEFF' : leaf.text}
         </span>
       ),
-      leaf: leaf as TText,
+      leaf,
       leafPosition: position,
       path,
-      text: leaf as TText,
+      text: leaf,
     });
 
     return <React.Fragment key={index}>{leafElement}</React.Fragment>;
@@ -132,7 +134,7 @@ function BaseLeafStatic({
     attributes: { 'data-slate-node': 'text' as const, ref: null },
     children: leafElements,
     path,
-    text: text as TText,
+    text,
   });
 }
 

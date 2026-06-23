@@ -7,9 +7,14 @@ export const removeBlockSelectionNodes = (editor: SlateEditor) => {
 
   if (!selectedIds) return;
 
-  editor.tf.removeNodes({
-    at: [],
-    block: true,
-    match: (n: any) => !!n.id && selectedIds.has((n as any).id),
+  editor.update((tx) => {
+    tx.nodes.remove({
+      at: [],
+      match: (node) => {
+        const id = (node as { id?: unknown }).id;
+
+        return typeof id === 'string' && selectedIds.has(id);
+      },
+    });
   });
 };

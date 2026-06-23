@@ -1,12 +1,9 @@
 import type { JSX } from 'react';
 
-import type {
-  DOMRange,
-  Editor,
-  NodeEntry,
-  TRange,
-} from '@platejs/slate-legacy';
+import type { NodeEntry, Range } from '@platejs/slate';
+import type { DOMRange } from '@platejs/slate-dom';
 
+import type { SlateEditor } from '../editor';
 import type { RenderChunkFn } from './RenderChunkProps';
 import type { RenderElementFn } from './RenderElementProps';
 import type { RenderLeafFn } from './RenderLeafProps';
@@ -24,7 +21,7 @@ export type EditableProps = {
   renderText?: RenderTextFn;
   role?: string;
   style?: React.CSSProperties;
-  decorate?: (entry: NodeEntry) => TRange[];
+  decorate?: (entry: NodeEntry) => Range[];
   renderPlaceholder?: (props: {
     attributes: {
       contentEditable: boolean;
@@ -35,6 +32,6 @@ export type EditableProps = {
     };
     children: any;
   }) => JSX.Element;
-  scrollSelectionIntoView?: (editor: Editor, domRange: DOMRange) => void;
+  scrollSelectionIntoView?: (editor: SlateEditor, domRange: DOMRange) => void;
   onDOMBeforeInput?: (event: InputEvent) => void;
 } & React.TextareaHTMLAttributes<HTMLDivElement>;

@@ -4,7 +4,11 @@ import { atom } from 'jotai';
 import { useAtomStoreSet, useAtomStoreState, useAtomStoreValue } from 'jotai-x';
 
 import type { PlateEditor } from '../../editor/PlateEditor';
-import type { PlateChangeKey, PlateStoreState } from './PlateStore';
+import type {
+  PlateChangeKey,
+  PlateStoreEditor,
+  PlateStoreState,
+} from './PlateStore';
 
 import { createAtomStore } from '../../libs';
 import { createPlateFallbackEditor } from '../../utils';
@@ -19,7 +23,7 @@ export const PLATE_SCOPE = 'plate';
 
 export const GLOBAL_PLATE_SCOPE = Symbol('global-plate');
 
-export const createPlateStore = <E extends PlateEditor = PlateEditor>({
+export const createPlateStore = <E extends PlateStoreEditor = PlateEditor>({
   id,
   composing = false,
   containerRef = { current: null },
@@ -90,7 +94,7 @@ export const createPlateStore = <E extends PlateEditor = PlateEditor>({
   );
 
 const {
-  PlateProvider: PlateStoreProvider,
+  PlateProvider: BasePlateStoreProvider,
   plateStore,
   usePlateSet: usePlateLocalSet,
   usePlateState: usePlateLocalState,
@@ -99,6 +103,22 @@ const {
 } = createPlateStore();
 
 const { usePlateStore: useFallbackPlateStore } = createPlateStore();
+
+type BasePlateStoreProviderProps = React.ComponentProps<
+  typeof BasePlateStoreProvider
+>;
+
+export type PlateStoreProviderProps<E extends PlateStoreEditor = PlateEditor> =
+  Omit<BasePlateStoreProviderProps, keyof PlateStoreState | 'editor'> &
+    Partial<PlateStoreState<E>> & {
+      editor: E;
+    };
+
+const PlateStoreProvider = BasePlateStoreProvider as unknown as <
+  E extends PlateStoreEditor = PlateEditor,
+>(
+  props: PlateStoreProviderProps<E>
+) => React.ReactElement | null;
 
 export { plateStore, PlateStoreProvider, usePlateLocalStore };
 
@@ -210,12 +230,14 @@ export const useEditorComposing = (id?: string): boolean =>
  *   const editor = useEditorRef();
  *   const readOnly = useAtomStoreValue(editor.store, 'readOnly');
  */
-export const useEditorRef = <E extends PlateEditor = PlateEditor>(
+export const useEditorRef = <E extends PlateStoreEditor = PlateEditor>(
   id?: string
 ): E & { store: PlateStore } => {
   const store = usePlateStore(id);
-  const editor: any =
-    (useAtomStoreValue(store, 'editor') as E) ?? createPlateFallbackEditor();
+  const editor = ((useAtomStoreValue(store, 'editor') as E | undefined) ??
+    (createPlateFallbackEditor() as unknown as E)) as E & {
+    store: PlateStore;
+  };
 
   editor.store = store;
 
@@ -227,9 +249,9 @@ export const useEditorSelection = (id?: string) =>
   usePlateStore(id).useTrackedSelectionValue().selection;
 
 /** Get editor state which is updated on editor change. */
-export const useEditorState = <E extends PlateEditor = PlateEditor>(
+export const useEditorState = <E extends PlateStoreEditor = PlateEditor>(
   id?: string
-): E => usePlateStore(id).useTrackedEditorValue().editor;
+): E => usePlateStore(id).useTrackedEditorValue().editor as E;
 
 /** Version incremented on each editor change. */
 export const useEditorVersion = (id?: string) =>

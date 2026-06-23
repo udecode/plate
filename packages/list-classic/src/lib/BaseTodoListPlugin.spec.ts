@@ -1,7 +1,8 @@
 import type { Value } from 'platejs';
-import { BaseParagraphPlugin, createSlateEditor } from '@platejs/core';
+import { BaseParagraphPlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
 import { createPlateEditor } from 'platejs/react';
+import { createListClassicRuntimeTestEditor as createSlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
 
 import { BaseTodoListPlugin } from './BaseTodoListPlugin';
 
@@ -26,7 +27,7 @@ describe('BaseTodoListPlugin', () => {
       ],
     });
 
-    editor.tf.insertBreak();
+    editor.update((tx) => tx.break.insert());
 
     expect(editor.children).toEqual([
       {
@@ -56,7 +57,7 @@ describe('BaseTodoListPlugin', () => {
       value: [{ children: [{ text: 'task' }], type: KEYS.p }],
     });
 
-    editor.tf.insertBreak();
+    editor.update((tx) => tx.break.insert());
 
     expect(editor.children).toEqual([
       {
@@ -75,8 +76,12 @@ describe('BaseTodoListPlugin', () => {
   });
 
   it('exposes an inferred todo transaction group', () => {
-    const editor = createSlateEditor({
+    const editor = createPlateEditor<
+      Value,
+      typeof BaseParagraphPlugin | typeof BaseTodoListPlugin
+    >({
       plugins: [BaseParagraphPlugin, BaseTodoListPlugin],
+      runtime: 'slate-v2',
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
@@ -114,7 +119,7 @@ describe('BaseTodoListPlugin', () => {
       ],
     });
 
-    expect(editor.tf.insertBreak()).toBe(true);
+    editor.update((tx) => tx.break.insert());
     expect(editor.read((state) => state.value.root())).toEqual([
       {
         checked: true,
@@ -147,7 +152,7 @@ describe('BaseTodoListPlugin', () => {
       value: [{ children: [{ text: 'task' }], type: KEYS.p }],
     });
 
-    expect(editor.tf.insertBreak()).toBe(true);
+    editor.update((tx) => tx.break.insert());
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'task' }], type: KEYS.p },
       { children: [{ text: '' }], type: KEYS.p },

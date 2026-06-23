@@ -56,7 +56,7 @@ describe('insertDate', () => {
       ],
     });
 
-    editor.tf.insert.date({ date: 'Mon Mar 23 2026' });
+    editor.update((tx) => tx.date.insert({ date: 'Mon Mar 23 2026' }));
 
     expect(editor.children[0]).toMatchObject({
       children: [

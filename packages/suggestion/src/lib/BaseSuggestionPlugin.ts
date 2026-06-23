@@ -1,22 +1,49 @@
 import {
-  type EditorNodesOptions,
+  type Element,
+  type Node as SlateNode,
   type NodeEntry,
+  ElementApi,
+  NodeApi,
+  TextApi,
+} from '@platejs/slate';
+import {
   type PluginConfig,
-  type TElement,
+  type SlateEditor,
   type TInlineSuggestionData,
-  type TNode,
   type TSuggestionElement,
   type TSuggestionText,
   createTSlatePlugin,
-  ElementApi,
-  getAt,
   KEYS,
-  TextApi,
 } from 'platejs';
 
+import { createSuggestionExtension } from './SuggestionExtension';
 import { getSuggestionKey, getSuggestionKeyId } from './utils';
 import { getTransientSuggestionKey } from './utils/getTransientSuggestionKey';
-import { withSuggestion } from './withSuggestion';
+
+type SuggestionNodeOptions = NonNullable<
+  Parameters<SlateEditor['api']['node']>[0]
+>;
+type SuggestionNodesOptions = NonNullable<
+  Parameters<SlateEditor['api']['nodes']>[0]
+>;
+
+const resolveSuggestionAt = <TAt>(
+  editor: SlateEditor,
+  at: SlateNode | TAt | null | undefined
+): TAt | undefined => {
+  if (NodeApi.isNode(at)) {
+    const entry = [
+      ...editor.api.nodes({
+        at: [],
+        match: (node) => node === at,
+      }),
+    ][0];
+
+    return entry?.[1] as TAt | undefined;
+  }
+
+  return (at ?? undefined) as TAt | undefined;
+};
 
 export type BaseSuggestionConfig = PluginConfig<
   'suggestion',
@@ -30,16 +57,18 @@ export type BaseSuggestionConfig = PluginConfig<
   {
     suggestion: {
       dataList: (node: TSuggestionText) => TInlineSuggestionData[];
-      isBlockSuggestion: (node: TNode) => node is TSuggestionElement;
+      isBlockSuggestion: (node: unknown) => node is TSuggestionElement;
       node: (
-        options?: EditorNodesOptions & { id?: string; isText?: boolean }
+        options?: SuggestionNodeOptions & { id?: string; isText?: boolean }
       ) => NodeEntry<TSuggestionElement | TSuggestionText> | undefined;
-      nodeId: (node: TElement | TSuggestionText) => string | undefined;
+      nodeId: (
+        node: Element | TSuggestionElement | TSuggestionText
+      ) => string | undefined;
       nodes: (
-        options?: EditorNodesOptions & { transient?: boolean }
-      ) => NodeEntry<TElement | TSuggestionText>[];
+        options?: SuggestionNodesOptions & { transient?: boolean }
+      ) => NodeEntry<Element | TSuggestionElement | TSuggestionText>[];
       suggestionData: (
-        node: TElement | TSuggestionText
+        node: Element | TSuggestionElement | TSuggestionText
       ) => TInlineSuggestionData | TSuggestionElement['suggestion'] | undefined;
       withoutSuggestions: (fn: () => void) => void;
     };
@@ -55,7 +84,14 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
   },
   rules: { selection: { affinity: 'outward' } },
 })
-  .overrideEditor(withSuggestion)
+  .extend(({ editor, getOptions }) => ({
+    slateExtensions: [
+      createSuggestionExtension({
+        editor,
+        getOptions,
+      }),
+    ],
+  }))
   .extendApi<BaseSuggestionConfig['api']['suggestion']>(
     ({ api, editor, getOption, setOption, type }) => ({
       dataList: (node: TSuggestionText): TInlineSuggestionData[] =>
@@ -110,10 +146,14 @@ export const BaseSuggestionPlugin = createTSlatePlugin<BaseSuggestionConfig>({
       nodes: (options = {}) => {
         const { transient } = options;
 
-        const at = getAt(editor, options.at) ?? [];
+        const at =
+          resolveSuggestionAt<SuggestionNodesOptions['at']>(
+            editor,
+            options.at
+          ) ?? [];
 
         return [
-          ...editor.api.nodes<TElement | TSuggestionText>({
+          ...editor.api.nodes<Element | TSuggestionElement | TSuggestionText>({
             ...options,
             at,
             mode: 'all',

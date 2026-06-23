@@ -79,7 +79,7 @@ describe('heading input rules', () => {
       value: input,
     } as any);
 
-    editor.tf.insertText(' ');
+    editor.update((tx) => tx.text.insert(' '));
 
     expect(input.children).toEqual(output.children);
   });

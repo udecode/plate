@@ -1,10 +1,14 @@
-import type { AnyObject, EditorNodesOptions, SlateEditor } from 'platejs';
+import type { AnyObject, SlateEditor } from 'platejs';
 
 import { BaseIndentPlugin } from '../BaseIndentPlugin';
 
+export type IndentNodesOptions = NonNullable<
+  Parameters<SlateEditor['api']['nodes']>[0]
+>;
+
 export type SetIndentOptions = {
   /** GetNodeEntries options */
-  getNodesOptions?: EditorNodesOptions;
+  getNodesOptions?: IndentNodesOptions;
 
   /**
    * 1 to indent -1 to outdent
@@ -39,7 +43,7 @@ export const setIndent = (
   });
   const nodes = Array.from(_nodes);
 
-  editor.tf.withoutNormalizing(() => {
+  editor.update((tx) => {
     nodes.forEach(([node, path]) => {
       const blockIndent = (node[nodeKey!] as number) ?? 0;
       const newIndent = blockIndent + offset;
@@ -47,11 +51,11 @@ export const setIndent = (
       const props = setNodesProps?.({ indent: newIndent }) ?? {};
 
       if (newIndent <= 0) {
-        editor.tf.unsetNodes([nodeKey!, ...unsetNodesProps], {
+        tx.nodes.unset([nodeKey!, ...unsetNodesProps], {
           at: path,
         });
       } else {
-        editor.tf.setNodes({ [nodeKey!]: newIndent, ...props }, { at: path });
+        tx.nodes.set({ [nodeKey!]: newIndent, ...props }, { at: path });
       }
     });
   });

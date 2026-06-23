@@ -1,9 +1,13 @@
+import type {
+  EditorStateView,
+  EditorUpdateTransaction,
+  NodeInsertNodesOptions,
+} from '@platejs/slate';
+
 import {
-  type InsertNodesOptions,
+  ElementApi,
   type SlateEditor,
   type TLinkElement,
-  type UnwrapNodesOptions,
-  type WrapNodesOptions,
   isDefined,
   NodeApi,
   RangeApi,
@@ -15,6 +19,25 @@ import { insertLink } from './insertLink';
 import { unwrapLink } from './unwrapLink';
 import { upsertLinkText } from './upsertLinkText';
 import { wrapLink } from './wrapLink';
+
+type InsertNodesOptions = NonNullable<NodeInsertNodesOptions<TLinkElement>>;
+
+type UnwrapNodesOptions = NonNullable<
+  Parameters<EditorUpdateTransaction['nodes']['unwrap']>[0]
+>;
+
+type WrapNodesOptions = NonNullable<
+  Parameters<EditorUpdateTransaction['nodes']['wrap']>[1]
+>;
+
+type RuntimeReadableLinkEditor = SlateEditor & {
+  read: <T>(fn: (state: EditorStateView) => T) => T;
+};
+
+const readEditor = <T>(
+  editor: SlateEditor,
+  fn: (state: EditorStateView) => T
+) => (editor as RuntimeReadableLinkEditor).read(fn);
 
 export type UpsertLinkOptions = {
   insertNodesOptions?: InsertNodesOptions;
@@ -47,15 +70,20 @@ export const upsertLink = (
 
   if (!at) return;
 
+  const linkType = editor.getType(KEYS.link);
+  const matchLink = (node: unknown) =>
+    ElementApi.isElement(node) && node.type === linkType;
   const linkAbove = editor.api.above<TLinkElement>({
     at,
-    match: { type: editor.getType(KEYS.link) },
+    match: matchLink,
   });
 
   // anchor and focus in link -> insert text
   if (insertTextInLink && linkAbove) {
     // we don't want to insert marks in links
-    editor.tf.insertText(url);
+    editor.update((tx) => {
+      tx.text.insert(url);
+    });
 
     return true;
   }
@@ -66,12 +94,14 @@ export const upsertLink = (
   // edit the link url and/or target
   if (linkAbove) {
     if (url !== linkAbove[0]?.url || target !== linkAbove[0]?.target) {
-      editor.tf.setNodes<TLinkElement>(
-        { target, url },
-        {
-          at: linkAbove[1],
-        }
-      );
+      editor.update((tx) => {
+        tx.nodes.set<TLinkElement>(
+          { target, url },
+          {
+            at: linkAbove[1],
+          }
+        );
+      });
     }
 
     upsertLinkText(editor, { target, text, url });
@@ -82,7 +112,7 @@ export const upsertLink = (
   // selection contains at one edge edge or between the edges
   const linkEntry = editor.api.node<TLinkElement>({
     at,
-    match: { type: editor.getType(KEYS.link) },
+    match: matchLink,
   });
 
   const [linkNode] = linkEntry ?? [];
@@ -102,14 +132,16 @@ export const upsertLink = (
     return true;
   }
 
-  const props = NodeApi.extractProps(linkNode ?? ({} as any));
+  const props = linkNode ? NodeApi.extractProps(linkNode) : {};
 
   const path = editor.selection?.focus.path;
 
   if (!path) return;
 
   // link text should have the focused leaf marks
-  const leaf = NodeApi.leaf(editor, path);
+  const leaf =
+    editor.api.leaf?.(path)?.[0] ??
+    readEditor(editor, (state) => state.nodes.leaf(path)?.[0]);
 
   // if text is empty, text is url
   if (!text?.length) {

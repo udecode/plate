@@ -145,8 +145,8 @@ const blob = await editor.api.docxExport.exportToBlob({
 
 editor.api.docxExport.download(blob, 'document');
 
-// 或使用 transform 导出并下载
-await editor.tf.docxExport.exportAndDownload('document', {
+// 或一次调用完成导出和下载
+await editor.api.docxExport.exportAndDownload('document', {
   orientation: 'portrait',
 });
 ```

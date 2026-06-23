@@ -1,7 +1,5 @@
 import { type PluginConfig, createTSlatePlugin, KEYS } from 'platejs';
 
-import { withIndent } from './withIndent';
-
 export type IndentConfig = PluginConfig<
   'indent',
   {
@@ -41,4 +39,4 @@ export const BaseIndentPlugin = createTSlatePlugin<IndentConfig>({
     offset: 24,
     unit: 'px',
   },
-}).overrideEditor(withIndent);
+});

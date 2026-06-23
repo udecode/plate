@@ -1,8 +1,11 @@
-import { createTSlatePlugin, type PluginConfig } from '@platejs/core';
-import type { Path } from '@platejs/slate-legacy';
+import {
+  createTSlatePlugin,
+  type PluginConfig,
+  type SlatePlugin,
+} from '@platejs/core';
+import type { Path } from '@platejs/slate';
 
 import { KEYS } from '../../plate-keys';
-import { withNormalizeTypes } from './withNormalizeTypes';
 
 export type NormalizeTypesConfig = PluginConfig<
   'normalizeTypes',
@@ -15,7 +18,7 @@ export type NormalizeTypesConfig = PluginConfig<
      * `type`.
      */
     rules?: Rule[];
-    onError?: (err: any) => void;
+    onError?: (err: unknown) => void;
   }
 >;
 
@@ -28,10 +31,13 @@ type Rule = {
   type?: string;
 };
 
-/** @see {@link withNormalizeTypes} */
-export const NormalizeTypesPlugin = createTSlatePlugin<NormalizeTypesConfig>({
-  key: KEYS.normalizeTypes,
-  options: {
-    rules: [],
-  },
-}).overrideEditor(withNormalizeTypes);
+export const NormalizeTypesPlugin: SlatePlugin<NormalizeTypesConfig> =
+  Object.assign(
+    createTSlatePlugin<NormalizeTypesConfig>({
+      key: KEYS.normalizeTypes,
+      options: {
+        rules: [],
+      },
+    }),
+    { runtimeNormalizeTypes: true }
+  );

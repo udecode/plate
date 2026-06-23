@@ -1,6 +1,5 @@
 import React from 'react';
 
-import { NodeApi } from 'platejs';
 import { useEditorRef, useEditorSelector } from 'platejs/react';
 
 import { getHeadingList } from '../../internal/getHeadingList';
@@ -64,11 +63,11 @@ export const useContentObserver = ({
     headingList.forEach((item) => {
       const { path } = item;
 
-      const node = NodeApi.get(editor, path);
+      const node = editor.api.node(path)?.[0];
 
       if (!node) return;
 
-      const element = editor.api.toDOMNode(node);
+      const element = editor.api.dom.resolveDOMNode(node);
 
       if (element) {
         observer.observe(element);

@@ -46,6 +46,14 @@ export type NavigationNavigateOptions = {
   target: NavigationFeedbackTarget;
 };
 
+export type NavigationFeedbackTransforms = {
+  navigation: {
+    clear: () => void;
+    flashTarget: (options: NavigationFlashTargetOptions) => boolean;
+    navigate: (options: NavigationNavigateOptions) => boolean;
+  };
+};
+
 export type NavigationFeedbackConfig = PluginConfig<
   typeof NAVIGATION_FEEDBACK_KEY,
   {
@@ -59,11 +67,7 @@ export type NavigationFeedbackConfig = PluginConfig<
       isTarget: (path: Path) => boolean;
     };
   },
-  {
-    navigation: {
-      clear: () => void;
-      flashTarget: (options: NavigationFlashTargetOptions) => boolean;
-      navigate: (options: NavigationNavigateOptions) => boolean;
-    };
-  }
+  {},
+  {},
+  NavigationFeedbackTransforms
 >;

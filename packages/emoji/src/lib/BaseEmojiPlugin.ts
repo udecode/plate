@@ -1,11 +1,9 @@
 import type { Emoji, EmojiMartData } from '@emoji-mart/data';
 
-import {
-  type TriggerComboboxPluginOptions,
-  withTriggerCombobox,
-} from '@platejs/combobox';
+import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 import {
   type PluginConfig,
+  type SlatePlugin,
   createSlatePlugin,
   createTSlatePlugin,
   KEYS,
@@ -33,18 +31,25 @@ export const BaseEmojiInputPlugin = createSlatePlugin({
   node: { isElement: true, isInline: true, isVoid: true },
 });
 
-export const BaseEmojiPlugin = createTSlatePlugin<EmojiInputConfig>({
-  key: KEYS.emoji,
-  editOnly: true,
-  options: {
-    data: DEFAULT_EMOJI_LIBRARY,
-    trigger: ':',
-    triggerPreviousCharPattern: /^\s?$/,
-    createComboboxInput: () => ({
-      children: [{ text: '' }],
-      type: KEYS.emojiInput,
-    }),
-    createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
-  },
-  plugins: [BaseEmojiInputPlugin],
-}).overrideEditor(withTriggerCombobox);
+const BaseEmojiPluginBase: SlatePlugin<EmojiInputConfig> =
+  createTSlatePlugin<EmojiInputConfig>({
+    key: KEYS.emoji,
+    editOnly: true,
+    options: {
+      data: DEFAULT_EMOJI_LIBRARY,
+      trigger: ':',
+      triggerPreviousCharPattern: /^\s?$/,
+      createComboboxInput: () => ({
+        children: [{ text: '' }],
+        type: KEYS.emojiInput,
+      }),
+      createEmojiNode: ({ skins }) => ({ text: skins[0].native }),
+    },
+    plugins: [BaseEmojiInputPlugin],
+  });
+
+export const BaseEmojiPlugin: SlatePlugin<EmojiInputConfig> & {
+  runtimeTriggerCombobox: boolean;
+} = Object.assign(BaseEmojiPluginBase, {
+  runtimeTriggerCombobox: true,
+});

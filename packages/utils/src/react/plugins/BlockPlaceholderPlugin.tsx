@@ -1,120 +1,105 @@
 import type { PluginConfig } from '@platejs/core';
-import {
-  createTPlatePlugin,
-  type PlatePluginContext,
-  useEditorComposing,
-  useEditorReadOnly,
-  useEditorSelector,
-  useFocused,
-  usePluginOption,
-} from '@platejs/core/react';
-import type { Element, Path } from '@platejs/slate';
-import React from 'react';
+import type { PlatePlugin } from '@platejs/core/react';
+import { createTPlatePlugin } from '@platejs/core/react';
+import { type Element, type Path, PathApi } from '@platejs/slate';
 
 import { KEYS } from '../../lib';
 
 export type BlockPlaceholderConfig = PluginConfig<
   'blockPlaceholder',
   {
-    _target: { node: Element; placeholder: string } | null;
-    placeholders: Record<string, string>;
-    query: (
-      context: PlatePluginContext<BlockPlaceholderConfig> & {
-        node: Element;
-        path: Path;
-      }
-    ) => boolean;
+    placeholders?: Record<string, string>;
+    query?: (context: BlockPlaceholderQueryContext) => boolean;
     className?: string;
   }
 >;
 
-export const BlockPlaceholderPlugin =
+type BlockPlaceholderQueryContext = {
+  node: Element;
+  path: Path;
+} & Record<string, unknown>;
+
+type BlockPlaceholderQuery = NonNullable<
+  BlockPlaceholderConfig['options']['query']
+>;
+
+const getBlockPlaceholder = (
+  context: {
+    editor: any;
+    getOptions: () => BlockPlaceholderConfig['options'];
+    node: Element;
+    path?: Path;
+  } & Record<string, unknown>
+) => {
+  const { editor, getOptions, node } = context;
+
+  if (
+    editor.dom.readOnly ||
+    editor.dom.composing ||
+    !editor.selection ||
+    editor.api.isExpanded()
+  ) {
+    return;
+  }
+
+  const { path } = context;
+  const entry = editor.api.block();
+
+  if (!path || !entry) return;
+
+  const [, blockPath] = entry;
+
+  if (!PathApi.equals(path, blockPath)) return;
+
+  const { placeholders = {}, query = ({ path }) => path.length === 1 } =
+    getOptions();
+  const firstNode = editor.children[0] as Element;
+  const isPristineEmptyEditor =
+    editor.children.length === 1 &&
+    editor.api.isEmpty(firstNode) &&
+    editor.api.isElementStateEmpty(firstNode);
+
+  const placeholder = Object.keys(placeholders).find(
+    (key) => editor.getType(key) === node.type
+  );
+
+  if (
+    query({ ...context, node, path } as Parameters<BlockPlaceholderQuery>[0]) &&
+    placeholder &&
+    editor.api.isEmpty(node) &&
+    !isPristineEmptyEditor
+  ) {
+    return placeholders[placeholder];
+  }
+};
+
+export const BlockPlaceholderPlugin: PlatePlugin<BlockPlaceholderConfig> =
   createTPlatePlugin<BlockPlaceholderConfig>({
     key: KEYS.blockPlaceholder,
     editOnly: true,
     options: {
-      _target: null,
       className: undefined,
       placeholders: {
         [KEYS.p]: 'Type something...',
       },
       query: ({ path }) => path.length === 1,
     },
-    useHooks: (ctx) => {
-      const { editor, getOptions, setOption } = ctx;
-      const focused = useFocused();
-
-      const readOnly = useEditorReadOnly();
-      const composing = useEditorComposing();
-      const entry = useEditorSelector(() => {
-        if (
-          readOnly ||
-          composing ||
-          !focused ||
-          !editor.selection ||
-          editor.api.isExpanded()
-        )
-          return null;
-
-        return editor.api.block();
-      }, [readOnly, composing, focused]);
-
-      React.useEffect(() => {
-        if (!entry) {
-          setOption('_target', null);
-          return;
-        }
-
-        const { placeholders, query } = getOptions();
-
-        const [element, path] = entry;
-        const firstNode = editor.children[0] as Element;
-        const isPristineEmptyEditor =
-          editor.children.length === 1 &&
-          editor.api.isEmpty(firstNode) &&
-          editor.api.isElementStateEmpty(firstNode);
-
-        const placeholder = Object.keys(placeholders).find(
-          (key) => editor.getType(key) === element.type
-        );
-
-        if (
-          query({ ...ctx, node: element, path }) &&
-          placeholder &&
-          editor.api.isEmpty(element) &&
-          !isPristineEmptyEditor
-        ) {
-          setOption('_target', {
-            node: element,
-            placeholder: placeholders[placeholder],
-          });
-        } else {
-          setOption('_target', null);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [editor, entry, setOption, getOptions]);
-    },
   })
-    .extendSelectors(({ getOption }) => ({
-      placeholder: (node: Element) => {
-        const target = getOption('_target');
-
-        if (target?.node === node) {
-          return target.placeholder;
-        }
-      },
+    .extendSelectors((ctx) => ({
+      placeholder: (node: Element, path?: Path) =>
+        getBlockPlaceholder({ ...ctx, node, path }),
     }))
     .extend({
       inject: {
         isBlock: true,
         nodeProps: {
           transformProps: (props) => {
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-            const placeholder = usePluginOption(
-              props.plugin,
-              'placeholder',
-              props.element!
-            );
+            if (!props.element) return;
+
+            const placeholder = getBlockPlaceholder({
+              ...props,
+              node: props.element,
+            });
 
             if (placeholder) {
               return {

@@ -1,7 +1,8 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { type SlateEditor, createSlateEditor } from '@platejs/core';
+import type { SlateEditor } from '@platejs/core';
+import { createListClassicRuntimeTestEditor as createSlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
@@ -14,7 +15,7 @@ const testNormalize = (input: SlateEditor, output: SlateEditor): void => {
     value: input.children,
   });
 
-  editor.tf.normalize({ force: true });
+  editor.update((tx) => tx.normalize({ force: true }));
 
   expect(editor.children).toEqual(output.children);
 };

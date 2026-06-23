@@ -9,15 +9,12 @@ const createEditor = (code: string) => {
   let redecorateCalls = 0;
   const editor = {
     api: {
-      redecorate: () => {
+      redecorate: mock(() => {
         redecorateCalls += 1;
-      },
+      }),
       string: mock(() => code),
     },
     getType: (key: string) => key,
-    tf: {
-      replaceNodes: mock(),
-    },
   } as unknown as SlateEditor;
 
   return {
@@ -40,7 +37,7 @@ describe('formatter', () => {
   });
 
   it('does nothing when the block language is unsupported', () => {
-    const { editor } = createEditor('{"name":"plate"}');
+    const { editor, getRedecorateCalls } = createEditor('{"name":"plate"}');
 
     formatCodeBlock(editor, {
       element: {
@@ -50,11 +47,11 @@ describe('formatter', () => {
       } as unknown as TCodeBlockElement,
     });
 
-    expect(editor.tf.replaceNodes).not.toHaveBeenCalled();
+    expect(getRedecorateCalls()).toBe(0);
   });
 
   it('does nothing when the code is invalid for the language', () => {
-    const { editor } = createEditor('{name:"plate"}');
+    const { editor, getRedecorateCalls } = createEditor('{name:"plate"}');
 
     formatCodeBlock(editor, {
       element: {
@@ -64,31 +61,40 @@ describe('formatter', () => {
       } as unknown as TCodeBlockElement,
     });
 
-    expect(editor.tf.replaceNodes).not.toHaveBeenCalled();
+    expect(getRedecorateCalls()).toBe(0);
   });
 
   it('formats valid json code blocks in place', () => {
-    const { editor, getRedecorateCalls } = createEditor(
-      '{"name":"plate","type":"editor"}'
-    );
-    const element = {
-      children: [],
-      lang: 'json',
-      type: 'code_block',
-    } as unknown as TCodeBlockElement;
+    const editor = createSlateEditor({
+      plugins: [BaseParagraphPlugin, BaseCodeBlockPlugin],
+      value: [
+        {
+          children: [
+            {
+              children: [{ text: '{"name":"plate","type":"editor"}' }],
+              type: 'code_line',
+            },
+          ],
+          lang: 'json',
+          type: 'code_block',
+        },
+      ],
+    } as any);
+    const element = editor.children[0] as TCodeBlockElement;
+    let redecorateCalls = 0;
+
+    editor.api.redecorate = () => {
+      redecorateCalls += 1;
+    };
 
     formatCodeBlock(editor, { element });
 
-    expect(editor.tf.replaceNodes).toHaveBeenCalledWith(
-      [
-        { children: [{ text: '{' }], type: 'code_line' },
-        { children: [{ text: '  "name": "plate",' }], type: 'code_line' },
-        { children: [{ text: '  "type": "editor"' }], type: 'code_line' },
-        { children: [{ text: '}' }], type: 'code_line' },
-      ],
-      { at: element, children: true }
-    );
-    expect(getRedecorateCalls()).toBe(1);
+    expect(
+      (editor.children[0] as TCodeBlockElement).children.map(
+        (line: any) => line.children[0].text
+      )
+    ).toEqual(['{', '  "name": "plate",', '  "type": "editor"', '}']);
+    expect(redecorateCalls).toBe(1);
   });
 
   it('formats json into separate code lines and redecorates', () => {

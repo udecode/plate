@@ -108,6 +108,7 @@ describe('TPlateEditor', () => {
       const plugins = [TextFormattingPlugin, ListPlugin];
       const editor1 = createPlateEditor({
         plugins,
+        runtime: 'legacy',
       });
 
       const editor = withPlate<

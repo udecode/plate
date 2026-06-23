@@ -1,10 +1,11 @@
 import {
-  type EditorAboveOptions,
+  type Element,
+  ElementApi,
   type ElementEntry,
-  type SlateEditor,
-  KEYS,
+  type Location,
   PathApi,
-} from 'platejs';
+} from '@platejs/slate';
+import { type SlateEditor, KEYS } from 'platejs';
 
 import type { TableConfig } from '../BaseTablePlugin';
 
@@ -14,8 +15,47 @@ import {
   getTableGridByRange,
 } from './getTableGridByRange';
 
-export type GetTableGridAboveOptions = EditorAboveOptions &
+type TableBlockOptions = NonNullable<
+  Parameters<SlateEditor['api']['block']>[0]
+>;
+
+export type GetTableGridAboveOptions = Omit<TableBlockOptions, 'match'> &
   Pick<GetTableGridByRangeOptions, 'format'>;
+
+const matchesCellType = (editor: SlateEditor, node: unknown): node is Element =>
+  ElementApi.isElement(node) && getCellTypes(editor).includes(node.type);
+
+const getEdgeCellBlocks = (
+  editor: SlateEditor,
+  options: GetTableGridAboveOptions
+) => {
+  const at = (options.at ?? editor.selection) as Location | null;
+
+  if (!at) return null;
+
+  const edges = editor.api.edges(at);
+
+  if (!edges) return null;
+
+  const [start, end] = edges;
+  const startBlock = editor.api.above<Element>({
+    ...options,
+    at: start,
+    match: (node) => matchesCellType(editor, node),
+  });
+
+  if (!startBlock) return null;
+
+  const endBlock = editor.api.above<Element>({
+    ...options,
+    at: end,
+    match: (node) => matchesCellType(editor, node),
+  });
+
+  if (!endBlock) return null;
+
+  return [startBlock, endBlock] as const;
+};
 
 /** Get sub table above anchor and focus. Format: tables or cells. */
 export const getTableGridAbove = (
@@ -24,12 +64,7 @@ export const getTableGridAbove = (
 ): ElementEntry[] => {
   const { api } = editor.getPlugin<TableConfig>({ key: KEYS.table });
 
-  const edges = editor.api.edgeBlocks({
-    match: {
-      type: getCellTypes(editor),
-    },
-    ...options,
-  });
+  const edges = getEdgeCellBlocks(editor, options);
 
   if (edges) {
     const [start, end] = edges;

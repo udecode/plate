@@ -20,8 +20,9 @@ export const BaseItalicPlugin = createSlatePlugin({
     },
   },
   render: { as: 'em' },
-}).extendTransforms(({ editor, type }) => ({
-  toggle: () => {
-    editor.tf.toggleMark(type);
-  },
-}));
+})
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      tx.marks.toggle(type);
+    },
+  }));

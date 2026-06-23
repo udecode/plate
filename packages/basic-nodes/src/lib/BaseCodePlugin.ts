@@ -23,8 +23,9 @@ export const BaseCodePlugin = createSlatePlugin({
   },
   render: { as: 'code' },
   rules: { selection: { affinity: 'hard' } },
-}).extendTransforms(({ editor, type }) => ({
-  toggle: () => {
-    editor.tf.toggleMark(type);
-  },
-}));
+})
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      tx.marks.toggle(type);
+    },
+  }));

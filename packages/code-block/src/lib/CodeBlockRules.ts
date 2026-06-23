@@ -15,24 +15,28 @@ const insertCodeBlockAtPath = (
   editor: Parameters<typeof insertEmptyCodeBlock>[0],
   path: number[]
 ) => {
-  editor.tf.removeNodes({ at: path });
-  editor.tf.insertNodes(
-    {
-      children: [
-        {
-          children: [{ text: '' }],
-          type: editor.getType(KEYS.codeLine),
-        },
-      ],
-      type: editor.getType(KEYS.codeBlock),
-    },
-    { at: path }
-  );
+  editor.update((tx) => {
+    tx.nodes.remove({ at: path });
+    tx.nodes.insert(
+      {
+        children: [
+          {
+            children: [{ text: '' }],
+            type: editor.getType(KEYS.codeLine),
+          },
+        ],
+        type: editor.getType(KEYS.codeBlock),
+      },
+      { at: path }
+    );
+  });
 
   const start = editor.api.start([...path, 0]);
 
   if (start) {
-    editor.tf.select(start);
+    editor.update((tx) => {
+      tx.selection.set({ anchor: start, focus: start });
+    });
   }
 };
 

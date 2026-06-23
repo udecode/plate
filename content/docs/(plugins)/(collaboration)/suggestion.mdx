@@ -301,7 +301,7 @@ Checks if a node is a block suggestion element.
 
 <API name="isBlockSuggestion">
 <APIParameters>
-  <APIItem name="node" type="TElement">
+  <APIItem name="node" type="Element">
     The node to check.
   </APIItem>
 </APIParameters>
@@ -315,7 +315,7 @@ Checks if a node is a block suggestion element.
 Gets a suggestion node entry.
 
 <API name="node">
-<APIOptions type="EditorNodesOptions & { id?: string; isText?: boolean }" optional>
+<APIOptions type="object & { id?: string; isText?: boolean }" optional>
   Options for finding the node.
 </APIOptions>
 <APIReturns type="NodeEntry<TSuggestionElement | TSuggestionText> | undefined">
@@ -329,7 +329,7 @@ Gets the ID of a suggestion from a node.
 
 <API name="nodeId">
 <APIParameters>
-  <APIItem name="node" type="TElement | TSuggestionText">
+  <APIItem name="node" type="Element | TSuggestionText">
     The node to get ID from.
   </APIItem>
 </APIParameters>
@@ -343,10 +343,10 @@ Gets the ID of a suggestion from a node.
 Gets all suggestion node entries matching the options.
 
 <API name="nodes">
-<APIOptions type="EditorNodesOptions" optional>
+<APIOptions type="object" optional>
   Options for finding the nodes.
 </APIOptions>
-<APIReturns type="NodeEntry<TElement | TSuggestionText>[]">
+<APIReturns type="NodeEntry<Element | TSuggestionText>[]">
   Array of suggestion node entries.
 </APIReturns>
 </API>
@@ -357,7 +357,7 @@ Gets suggestion data from a node.
 
 <API name="suggestionData">
 <APIParameters>
-  <APIItem name="node" type="TElement | TSuggestionText">
+  <APIItem name="node" type="Element | TSuggestionText">
     The node to get suggestion data from.
   </APIItem>
 </APIParameters>

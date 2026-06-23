@@ -1,11 +1,10 @@
+import { type OmitFirst, bindFirst } from '@udecode/utils';
 import {
-  type OmitFirst,
   type PluginConfig,
-  bindFirst,
   createSlatePlugin,
   createTSlatePlugin,
-  KEYS,
-} from 'platejs';
+} from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import {
   toggleBulletedList,
@@ -13,7 +12,7 @@ import {
   toggleNumberedList,
   toggleTaskList,
 } from './transforms';
-import { withList } from './withList';
+import { createListClassicExtension } from './ListClassicExtension';
 
 export type ListConfig = PluginConfig<
   'listClassic',
@@ -26,6 +25,8 @@ export type ListConfig = PluginConfig<
     /** Valid children types for list items, in addition to p and ul types. */
     validLiChildrenTypes?: string[];
   },
+  {},
+  {},
   {},
   {
     toggle: {
@@ -52,7 +53,7 @@ export const BaseBulletedListPlugin = createSlatePlugin({
     },
   },
   render: { as: 'ul' },
-}).extendTransforms(({ editor }) => ({
+}).extendTx(({ editor }) => () => ({
   toggle: () => {
     toggleBulletedList(editor);
   },
@@ -63,7 +64,7 @@ export const BaseNumberedListPlugin = createSlatePlugin({
   node: { isContainer: true, isElement: true },
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'OL' }] } } },
   render: { as: 'ol' },
-}).extendTransforms(({ editor }) => ({
+}).extendTx(({ editor }) => () => ({
   toggle: () => {
     toggleNumberedList(editor);
   },
@@ -77,7 +78,7 @@ export const BaseTaskListPlugin = createSlatePlugin({
     inheritCheckStateOnLineStartBreak: false,
   },
   render: { as: 'ul' },
-}).extendTransforms(({ editor }) => ({
+}).extendTx(({ editor }) => () => ({
   toggle: () => {
     toggleTaskList(editor);
   },
@@ -89,7 +90,8 @@ export const BaseListItemPlugin = createSlatePlugin({
     plugins: {
       [KEYS.html]: {
         parser: {
-          preInsert: ({ editor, type }) => editor.api.some({ match: { type } }),
+          preInsert: ({ editor, type }) =>
+            editor.api.some({ match: (node) => node.type === type }),
         },
       },
     },
@@ -117,12 +119,12 @@ export const BaseListPlugin = createTSlatePlugin<ListConfig>({
     BaseListItemContentPlugin,
   ],
 })
-  .overrideEditor(withList)
-  .extendEditorTransforms(({ editor }) => ({
-    toggle: {
-      bulletedList: bindFirst(toggleBulletedList, editor),
-      list: bindFirst(toggleList, editor),
-      numberedList: bindFirst(toggleNumberedList, editor),
-      taskList: bindFirst(toggleTaskList, editor),
-    },
+  .extend(({ editor, getOptions }) => ({
+    slateExtensions: [createListClassicExtension({ editor, getOptions })],
+  }))
+  .extendTxGroup('toggle', ({ editor }) => () => ({
+    bulletedList: bindFirst(toggleBulletedList, editor),
+    list: bindFirst(toggleList, editor),
+    numberedList: bindFirst(toggleNumberedList, editor),
+    taskList: bindFirst(toggleTaskList, editor),
   }));

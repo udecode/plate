@@ -1,29 +1,38 @@
-import type { SlateEditor, TSuggestionText } from 'platejs';
+import type {
+  EditorUpdateTransaction,
+  SlateEditor,
+  TSuggestionText,
+} from "platejs";
 
-import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
-import { findSuggestionProps } from '../queries';
-import { getSuggestionKey } from '../utils';
-import { deleteFragmentSuggestion } from './deleteFragmentSuggestion';
+import { BaseSuggestionPlugin } from "../BaseSuggestionPlugin";
+import { findSuggestionProps } from "../queries";
+import { getSuggestionKey } from "../utils";
+import { getSuggestionApi } from "../utils/getSuggestionApi";
+import { deleteFragmentSuggestion } from "./deleteFragmentSuggestion";
 
-export const insertTextSuggestion = (editor: SlateEditor, text: string) => {
-  editor.tf.withoutNormalizing(() => {
+export const insertTextSuggestion = (
+  editor: SlateEditor,
+  text: string,
+  activeTx?: EditorUpdateTransaction
+) => {
+  const applyInsertTextSuggestion = (tx: EditorUpdateTransaction) => {
     let resId: string | undefined;
     const { id, createdAt } = findSuggestionProps(editor, {
       at: editor.selection!,
-      type: 'insert',
+      type: "insert",
     });
 
     if (editor.api.isExpanded()) {
-      resId = deleteFragmentSuggestion(editor);
+      resId = deleteFragmentSuggestion(editor, { tx });
     }
 
-    editor.getApi(BaseSuggestionPlugin).suggestion.withoutSuggestions(() => {
-      editor.tf.insertNodes<TSuggestionText>(
+    getSuggestionApi(editor).withoutSuggestions(() => {
+      tx.nodes.insert<TSuggestionText>(
         {
           [getSuggestionKey(resId ?? id)]: {
             id: resId ?? id,
             createdAt,
-            type: 'insert',
+            type: "insert",
             userId: editor.getOptions(BaseSuggestionPlugin).currentUserId!,
           },
           suggestion: true,
@@ -35,5 +44,13 @@ export const insertTextSuggestion = (editor: SlateEditor, text: string) => {
         }
       );
     });
-  });
+
+    tx.normalize({ force: true });
+  };
+
+  if (activeTx) {
+    applyInsertTextSuggestion(activeTx);
+  } else {
+    editor.update(applyInsertTextSuggestion);
+  }
 };

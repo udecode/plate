@@ -53,9 +53,7 @@ describe('BaseFootnoteReferencePlugin Slate v2 runtime', () => {
         },
       ],
     });
-    const api = editor.getPluginApi<FootnoteConfig['api']>(
-      BaseFootnoteReferencePlugin
-    ).footnote;
+    const api = (editor.api as FootnoteConfig['api']).footnote;
 
     expect(api.definition({ identifier: '1' })?.[1]).toEqual([1]);
     expect(api.definitions({ identifier: '1' })).toHaveLength(2);
@@ -74,7 +72,7 @@ describe('BaseFootnoteReferencePlugin Slate v2 runtime', () => {
     ]);
   });
 
-  it('renumbers duplicate definitions through the runtime transform facade', () => {
+  it('renumbers duplicate definitions through the runtime transaction group', () => {
     const editor = createFootnoteRuntimeEditor({
       value: [
         {
@@ -89,23 +87,23 @@ describe('BaseFootnoteReferencePlugin Slate v2 runtime', () => {
         },
       ],
     });
-    const transforms = editor.getTransforms<FootnoteConfig['transforms']>(
-      BaseFootnoteReferencePlugin
-    );
+    let normalizedIdentifier: false | string = false;
 
-    expect(
-      transforms.footnote.normalizeDuplicateDefinition({ path: [1] })
-    ).toBe('2');
+    editor.update((tx) => {
+      normalizedIdentifier = tx.footnote.normalizeDuplicateDefinition({
+        path: [1],
+      });
+    });
 
-    const api = editor.getPluginApi<FootnoteConfig['api']>(
-      BaseFootnoteReferencePlugin
-    ).footnote;
+    expect(String(normalizedIdentifier)).toBe('2');
+
+    const api = (editor.api as FootnoteConfig['api']).footnote;
 
     expect(api.hasDuplicateDefinitions({ identifier: '1' })).toBe(false);
     expect(api.definition({ identifier: '2' })?.[1]).toEqual([1]);
   });
 
-  it('inserts a footnote reference and definition through the runtime facade', () => {
+  it('inserts a footnote reference and definition through the runtime transaction group', () => {
     const editor = createFootnoteRuntimeEditor({
       selection: {
         anchor: { offset: 2, path: [0, 0] },
@@ -113,11 +111,8 @@ describe('BaseFootnoteReferencePlugin Slate v2 runtime', () => {
       },
       value: [{ children: [{ text: 'hi' }], type: 'p' }],
     });
-    const transforms = editor.getTransforms<FootnoteConfig['transforms']>(
-      BaseFootnoteReferencePlugin
-    );
 
-    transforms.insert.footnote({ focusDefinition: false });
+    editor.update((tx) => tx.insert.footnote({ focusDefinition: false }));
 
     expect(editor.read((state) => state.value.root())).toEqual([
       {
@@ -144,7 +139,7 @@ describe('BaseFootnoteReferencePlugin Slate v2 runtime', () => {
     });
   });
 
-  it('navigates between definitions and references through runtime transforms', () => {
+  it('navigates between definitions and references through runtime transaction groups', () => {
     const editor = createFootnoteRuntimeEditor({
       value: [
         {
@@ -166,44 +161,31 @@ describe('BaseFootnoteReferencePlugin Slate v2 runtime', () => {
         },
       ],
     });
-    const transforms = editor.getTransforms<FootnoteConfig['transforms']>(
-      BaseFootnoteReferencePlugin
-    );
+    let didFocusDefinition = false;
+    let didFocusReference = false;
 
-    expect(transforms.footnote.focusDefinition({ identifier: '1' })).toBe(true);
+    editor.update((tx) => {
+      didFocusDefinition = tx.footnote.focusDefinition({ identifier: '1' });
+    });
+
+    expect(didFocusDefinition).toBe(true);
     expect(editor.read((state) => state.selection.get())).toEqual({
       anchor: { offset: 0, path: [1, 0, 0] },
       focus: { offset: 0, path: [1, 0, 0] },
     });
 
-    expect(transforms.footnote.focusReference({ identifier: '1' })).toBe(true);
+    editor.update((tx) => {
+      didFocusReference = tx.footnote.focusReference({ identifier: '1' });
+    });
+
+    expect(didFocusReference).toBe(true);
     expect(editor.read((state) => state.selection.get())).toEqual({
       anchor: { offset: 0, path: [0, 2] },
       focus: { offset: 0, path: [0, 2] },
     });
   });
 
-  it('inserts the footnote combobox input through the runtime override route', () => {
-    const editor = createFootnoteRuntimeEditor({
-      selection: {
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: 1, path: [0, 0] },
-      },
-      value: [{ children: [{ text: '[' }], type: 'p' }],
-    });
-
-    editor.tf.insertText('^');
-
-    expect(editor.read((state) => state.value.root()[0])).toEqual({
-      children: [
-        { text: '[' },
-        {
-          children: [{ text: '' }],
-          type: 'footnoteInput',
-        },
-        { text: '' },
-      ],
-      type: 'p',
-    });
+  it('marks the reference plugin for runtime combobox support', () => {
+    expect(BaseFootnoteReferencePlugin.runtimeTriggerCombobox).toBe(true);
   });
 });

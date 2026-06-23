@@ -484,6 +484,38 @@ describe('slate transforms contract', () => {
     }, /Cannot remove the editor root/);
   });
 
+  it('removeNodes can match children from the editor root', () => {
+    const editor = createEditor();
+
+    Editor.replace(editor, {
+      children: [
+        {
+          type: 'paragraph',
+          children: [{ text: 'one' }],
+        } as Descendant,
+        {
+          type: 'slash_input',
+          children: [{ text: '' }],
+        } as Descendant,
+      ],
+      selection: null,
+      marks: null,
+    });
+
+    Editor.removeNodes(editor, {
+      at: [],
+      match: (node) =>
+        'type' in node && node.type === 'slash_input',
+    });
+
+    assert.deepEqual(editor.read((state) => state.value.root()), [
+      {
+        type: 'paragraph',
+        children: [{ text: 'one' }],
+      },
+    ]);
+  });
+
   it('setNodes can target the highest matching inline when mode is highest', () => {
     const editor = createEditor();
     editor.extend(

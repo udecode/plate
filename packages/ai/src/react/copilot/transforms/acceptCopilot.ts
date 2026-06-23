@@ -12,5 +12,7 @@ export const acceptCopilot = (editor: PlateEditor) => {
 
   if (!suggestionText?.length) return false;
 
-  editor.tf.insertFragment(deserializeInlineMd(editor, suggestionText));
+  editor.update((tx) => {
+    tx.fragment.insert(deserializeInlineMd(editor, suggestionText));
+  });
 };

@@ -1,4 +1,4 @@
-import { KEYS } from 'platejs';
+import { KEYS, createSlateEditor } from 'platejs';
 
 import * as outdentListModule from './outdentList';
 import { toggleListUnset } from './toggleListUnset';
@@ -13,18 +13,23 @@ describe('toggleListUnset', () => {
       outdentListModule,
       'outdentList'
     ).mockImplementation(() => {});
-    const unsetNodes = mock();
-    const editor = {
-      tf: { unsetNodes },
-    } as any;
+    const editor = createSlateEditor({
+      value: [
+        {
+          [KEYS.listChecked]: false,
+          children: [{ text: 'Todo' }],
+          type: KEYS.p,
+        },
+      ],
+    });
 
     expect(
-      toggleListUnset(editor, [{ [KEYS.listChecked]: false }, [0]] as any, {
+      toggleListUnset(editor, [editor.children[0], [0]] as any, {
         listStyleType: KEYS.listTodo,
       })
     ).toBe(true);
 
-    expect(unsetNodes).toHaveBeenCalledWith(KEYS.listChecked, { at: [0] });
+    expect(editor.children[0]).not.toHaveProperty(KEYS.listChecked);
     expect(outdentSpy).toHaveBeenCalledWith(editor, {
       listStyleType: KEYS.listTodo,
     });
@@ -35,18 +40,19 @@ describe('toggleListUnset', () => {
       outdentListModule,
       'outdentList'
     ).mockImplementation(() => {});
-    const unsetNodes = mock();
-    const editor = {
-      tf: { unsetNodes },
-    } as any;
+    const editor = createSlateEditor({
+      value: [
+        { [KEYS.listType]: 'disc', children: [{ text: 'Item' }], type: KEYS.p },
+      ],
+    });
 
     expect(
-      toggleListUnset(editor, [{ [KEYS.listType]: 'disc' }, [1]] as any, {
+      toggleListUnset(editor, [editor.children[0], [0]] as any, {
         listStyleType: 'disc',
       })
     ).toBe(true);
 
-    expect(unsetNodes).toHaveBeenCalledWith([KEYS.listType], { at: [1] });
+    expect(editor.children[0]).not.toHaveProperty(KEYS.listType);
     expect(outdentSpy).toHaveBeenCalledWith(editor, {
       listStyleType: 'disc',
     });
@@ -57,17 +63,23 @@ describe('toggleListUnset', () => {
       outdentListModule,
       'outdentList'
     ).mockImplementation(() => {});
-    const unsetNodes = mock();
+    const editor = createSlateEditor({
+      value: [
+        {
+          [KEYS.listType]: 'circle',
+          children: [{ text: 'Item' }],
+          type: KEYS.p,
+        },
+      ],
+    });
 
     expect(
-      toggleListUnset(
-        { tf: { unsetNodes } } as any,
-        [{ [KEYS.listType]: 'circle' }, [1]] as any,
-        { listStyleType: 'disc' }
-      )
+      toggleListUnset(editor, [editor.children[0], [0]] as any, {
+        listStyleType: 'disc',
+      })
     ).toBeUndefined();
 
-    expect(unsetNodes).not.toHaveBeenCalled();
+    expect(editor.children[0]).toHaveProperty(KEYS.listType, 'circle');
     expect(outdentSpy).not.toHaveBeenCalled();
   });
 });

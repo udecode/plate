@@ -24,7 +24,7 @@ import {
   useHTMLInputCursorState,
 } from '@platejs/combobox/react';
 import { cva } from 'class-variance-authority';
-import { useComposedRef, useEditorRef } from 'platejs/react';
+import { useComposedRef, useEditorRef, useNodePath } from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
@@ -82,6 +82,7 @@ const InlineCombobox = ({
   value: valueProp,
 }: InlineComboboxProps) => {
   const editor = useEditorRef();
+  const path = useNodePath(element);
   const inputRef = React.useRef<HTMLInputElement>(null);
   const cursorState = useHTMLInputCursorState(inputRef);
 
@@ -121,8 +122,6 @@ const InlineCombobox = ({
     insertPointRef.current?.unref();
     insertPointRef.current = null;
 
-    const path = editor.api.findPath(element);
-
     if (!path) return;
 
     const point = editor.api.before(path);
@@ -138,7 +137,7 @@ const InlineCombobox = ({
       }
       pointRef.unref();
     };
-  }, [editor, element]);
+  }, [editor, path]);
 
   const { props: inputProps, removeInput } = useComboboxInput({
     cancelInputOnBlur: true,
@@ -147,14 +146,18 @@ const InlineCombobox = ({
     ref: inputRef,
     onCancelInput: (cause) => {
       if (cause !== 'backspace') {
-        editor.tf.insertText(trigger + value, {
-          at: insertPointRef.current?.current ?? undefined,
+        editor.update((tx) => {
+          tx.text.insert(trigger + value, {
+            at: insertPointRef.current?.current ?? undefined,
+          });
         });
       }
       if (cause === 'arrowLeft' || cause === 'arrowRight') {
-        editor.tf.move({
-          distance: 1,
-          reverse: cause === 'arrowLeft',
+        editor.update((tx) => {
+          tx.selection.move({
+            distance: 1,
+            reverse: cause === 'arrowLeft',
+          });
         });
       }
     },

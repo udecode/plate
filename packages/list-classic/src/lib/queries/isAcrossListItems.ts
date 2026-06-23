@@ -17,6 +17,6 @@ export const isAcrossListItems = (
 
   return editor.api.some({
     at,
-    match: { type: editor.getType(KEYS.li) },
+    match: (node) => node.type === editor.getType(KEYS.li),
   });
 };

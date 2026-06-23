@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from '@platejs/core';
 import { createSlatePlugin } from '@platejs/core';
 import { KEYS } from '@platejs/utils';
+import { createListClassicLegacyTestEditor as createSlateEditor } from './__tests__/createListClassicLegacyTestEditor';
 
 import { BaseListPlugin } from './BaseListPlugin';
 import { BulletedListRules } from './BulletedListRules';
@@ -28,7 +28,7 @@ describe('BaseListPlugin input rules', () => {
       value: [{ children: [{ text: '-hello' }], type: 'p' }],
     } as any);
 
-    editor.tf.insertText(' ');
+    editor.update((tx) => tx.text.insert(' '));
 
     expect(editor.children).toEqual([
       { children: [{ text: '- hello' }], type: 'p' },
@@ -70,7 +70,7 @@ describe('BaseListPlugin input rules', () => {
       value: input,
     } as any);
 
-    editor.tf.insertText(' ');
+    editor.update((tx) => tx.text.insert(' '));
 
     expect(editor.children).toEqual([
       {
@@ -137,7 +137,7 @@ describe('BaseListPlugin input rules', () => {
       value: input,
     } as any);
 
-    editor.tf.insertText(' ');
+    editor.update((tx) => tx.text.insert(' '));
 
     expect(editor.children).toEqual([
       {
@@ -185,7 +185,7 @@ describe('BaseListPlugin input rules', () => {
       ],
     } as any);
 
-    editor.tf.insertText(' ');
+    editor.update((tx) => tx.text.insert(' '));
 
     expect(editor.children).toEqual([
       {

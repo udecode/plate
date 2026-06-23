@@ -127,9 +127,13 @@ export class SelectionArea extends EventTarget<SelectionEvents> {
 
     // Bind locale functions to instance
 
+    const instance = this as unknown as Record<string, unknown>;
+
     for (const key of Object.getOwnPropertyNames(Object.getPrototypeOf(this))) {
-      if (typeof (this as any)[key] === 'function') {
-        (this as any)[key] = (this as any)[key].bind(this);
+      const method = instance[key];
+
+      if (typeof method === 'function') {
+        instance[key] = (method as (...args: unknown[]) => unknown).bind(this);
       }
     }
 

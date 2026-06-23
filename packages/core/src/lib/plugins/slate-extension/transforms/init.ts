@@ -1,16 +1,13 @@
-import type {
-  EditorTransforms,
-  TSelection,
-  Value,
-} from '@platejs/slate-legacy';
+import type { Selection, Value } from '@platejs/slate';
 
 import type { SlateEditor } from '../../../editor';
 
+import { getCurrentRuntimeTransforms } from '../../../../internal/currentRuntimeBridge';
 import { pipeTransformInitialValue } from '../../../../internal/plugin/pipeTransformInitialValue';
 
 export type InitOptions = {
   autoSelect?: boolean | 'end' | 'start';
-  selection?: TSelection;
+  selection?: Selection;
   shouldNormalizeEditor?: boolean;
   value?: any;
   onReady?: (ctx: {
@@ -24,9 +21,11 @@ export const init = (
   editor: SlateEditor,
   { autoSelect, selection, shouldNormalizeEditor, value, onReady }: InitOptions
 ) => {
+  const tf = getCurrentRuntimeTransforms(editor);
+
   const onValueLoaded = (isAsync = false) => {
     if (!editor.children || editor.children?.length === 0) {
-      editor.children = editor.api.create.value();
+      editor.children = editor.api.create.value() as Value;
     }
 
     if (selection) {
@@ -36,13 +35,13 @@ export const init = (
       const target =
         edge === 'start' ? editor.api.start([]) : editor.api.end([]);
 
-      editor.tf.select(target!);
+      tf.select(target!);
     }
     if (editor.children.length > 0) {
       pipeTransformInitialValue(editor);
     }
     if (shouldNormalizeEditor) {
-      (editor.tf as EditorTransforms).normalize({ force: true });
+      tf.normalize({ force: true });
     }
 
     // Only trigger React re-render for async initialization

@@ -1,27 +1,47 @@
-import type { PlateEditor } from 'platejs/react';
-
 import {
-  type InsertNodesOptions,
   type Path,
   type TPlaceholderElement,
   KEYS,
   nanoid,
   PathApi,
 } from 'platejs';
+import type { NodeInsertNodesOptions } from '@platejs/slate';
+import type { PlateEditor } from 'platejs/react';
 
-import { PlaceholderPlugin } from '../PlaceholderPlugin';
+import { type PlaceholderApi, PlaceholderPlugin } from '../PlaceholderPlugin';
 import { UploadErrorCode } from '../type';
 import { createUploadError, isUploadError } from '../utils/createUploadError';
 import { getMediaType } from '../utils/getMediaType';
-import { withHistoryMark } from '../utils/history';
 import { validateFiles } from '../utils/validateFiles';
+
+type InsertNodesOptions = NodeInsertNodesOptions<TPlaceholderElement> & {
+  nextBlock?: boolean;
+};
+
+type PlaceholderEditor = PlateEditor & {
+  api: PlateEditor['api'] & { placeholder: PlaceholderApi };
+};
+
+const getNextBlockInsertLocation = (
+  editor: PlateEditor,
+  at: InsertNodesOptions['at']
+) => {
+  const location = at ?? editor.selection;
+
+  if (!location) return at;
+
+  const endPoint = editor.api.end(location);
+  const blockEntry = endPoint ? editor.api.block({ at: endPoint }) : undefined;
+
+  return blockEntry ? PathApi.next(blockEntry[1]) : at;
+};
 
 export const insertMedia = (
   editor: PlateEditor,
   files: FileList,
   options?: Omit<InsertNodesOptions, 'at'> & { at?: Path }
-): any => {
-  const api = editor.getApi(PlaceholderPlugin);
+): void => {
+  const placeholderApi = (editor as PlaceholderEditor).api.placeholder;
   const uploadConfig = editor.getOption(PlaceholderPlugin, 'uploadConfig');
   const multiple = editor.getOption(PlaceholderPlugin, 'multiple');
 
@@ -30,11 +50,13 @@ export const insertMedia = (
   } catch (error) {
     if (!isUploadError(error)) throw error;
 
-    return editor.setOption(PlaceholderPlugin, 'error', error);
+    editor.setOption(PlaceholderPlugin, 'error', error);
+
+    return;
   }
 
   if (!multiple && files.length > 1) {
-    return editor.setOption(
+    editor.setOption(
       PlaceholderPlugin,
       'error',
       createUploadError(UploadErrorCode.TOO_MANY_FILES, {
@@ -43,12 +65,14 @@ export const insertMedia = (
         maxFileCount: 1,
       })
     );
+
+    return;
   }
 
   const maxFileCount = editor.getOption(PlaceholderPlugin, 'maxFileCount') ?? 3;
 
   if (files.length > maxFileCount) {
-    return editor.setOption(
+    editor.setOption(
       PlaceholderPlugin,
       'error',
       createUploadError(UploadErrorCode.TOO_MANY_FILES, {
@@ -57,6 +81,8 @@ export const insertMedia = (
         maxFileCount,
       })
     );
+
+    return;
   }
 
   let currentAt: Path | undefined;
@@ -73,18 +99,46 @@ export const insertMedia = (
 
     const id = nanoid();
 
-    api.placeholder.addUploadingFile(id, file);
+    placeholderApi.addUploadingFile(id, file);
 
-    const insert = () => {
-      editor.tf.insertNodes<TPlaceholderElement>(
-        {
-          id,
-          children: [{ text: '' }],
-          mediaType: getMediaType(file, uploadConfig)!,
-          type: editor.getType(KEYS.placeholder),
-        },
-        { at: currentAt, nextBlock, ...restOptions }
-      );
+    const insert = (metadata?: Parameters<PlateEditor['update']>[1]) => {
+      editor.update((tx) => {
+        tx.nodes.insert<TPlaceholderElement>(
+          {
+            id,
+            children: [{ text: '' }],
+            mediaType: getMediaType(file, uploadConfig)!,
+            type: editor.getType(KEYS.placeholder),
+          },
+          {
+            ...restOptions,
+            at: nextBlock
+              ? getNextBlockInsertLocation(editor, currentAt)
+              : currentAt,
+          }
+        );
+      }, metadata);
+    };
+
+    const insertWithoutNormalizing = () => {
+      editor.update((tx) => {
+        tx.withoutNormalizing(() => {
+          tx.nodes.insert<TPlaceholderElement>(
+            {
+              id,
+              children: [{ text: '' }],
+              mediaType: getMediaType(file, uploadConfig)!,
+              type: editor.getType(KEYS.placeholder),
+            },
+            {
+              ...restOptions,
+              at: nextBlock
+                ? getNextBlockInsertLocation(editor, currentAt)
+                : currentAt,
+            }
+          );
+        });
+      });
     };
 
     const disableEmptyPlaceholder = editor.getOption(
@@ -93,11 +147,9 @@ export const insertMedia = (
     );
 
     if (disableEmptyPlaceholder) {
-      editor.tf.withoutMerging(() => {
-        withHistoryMark(editor, insert);
-      });
+      insert({ metadata: { history: { mode: 'push' } } });
     } else {
-      editor.tf.withoutNormalizing(insert);
+      insertWithoutNormalizing();
     }
   });
 };

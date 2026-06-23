@@ -32,13 +32,13 @@ const getHistory = (editor: SlateEditor) =>
   editor.read((state: any) => state.history.get());
 
 const undo = (editor: SlateEditor) => {
-  editor.update((tx: any) => {
+  editor.update((tx) => {
     tx.history.undo();
   });
 };
 
 const redo = (editor: SlateEditor) => {
-  editor.update((tx: any) => {
+  editor.update((tx) => {
     tx.history.redo();
   });
 };

@@ -67,9 +67,9 @@ export const BlockMenuPlugin = createTPlatePlugin<BlockMenuConfig>({
   .extendApi<Partial<BlockMenuConfig['api']['blockMenu']>>(
     ({ api, editor }) => ({
       showContextMenu: (blockId, position) => {
-        editor
-          .getApi<BlockSelectionConfig>({ key: KEYS.blockSelection })
-          .blockSelection?.set(blockId);
+        (
+          editor.api as unknown as BlockSelectionConfig['api']
+        ).blockSelection?.set(blockId);
         api.blockMenu.show(BLOCK_CONTEXT_MENU_ID, position);
       },
     })

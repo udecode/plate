@@ -22,6 +22,8 @@ export type BaseAIPluginConfig = PluginConfig<
   'ai',
   {},
   {},
+  {},
+  {},
   {
     ai: {
       /** Commit the active preview as one fresh undoable batch. */
@@ -57,8 +59,9 @@ const getAITransforms = (editor: SlateEditor) => ({
 export const BaseAIPlugin = createTSlatePlugin<BaseAIPluginConfig>({
   key: KEYS.ai,
   node: { isDecoration: false, isLeaf: true },
-})
-  .extendTransforms(({ editor }) => getAITransforms(editor))
-  .extendEditorTransforms<BaseAIPluginConfig['transforms']>(({ editor }) => ({
-    ai: getAITransforms(editor),
-  }));
+}).extendTxGroup(
+  'ai',
+  ({ editor }) =>
+    () =>
+      getAITransforms(editor)
+);

@@ -68,7 +68,7 @@ export const editor = createPlateEditor({
 |-------|-------|--------------|
 | `@platejs/mention` | Package | Exports `BaseMentionPlugin`, `BaseMentionInputPlugin`, and `getMentionOnSelectItem`. |
 | `@platejs/mention/react` | Package | Exports `MentionPlugin` and `MentionInputPlugin`. |
-| `@platejs/combobox` | Package | Provides `withTriggerCombobox`, trigger options, and combobox input hooks. |
+| `@platejs/combobox` | Package | Provides trigger options and combobox input hooks. |
 | `mention-kit` | Registry | Adds mention plugins with editable mention and input components. |
 | `mention-base-kit` | Registry | Adds `BaseMentionPlugin.withComponent(MentionElementStatic)`. |
 | `mention-node` | Registry UI | Renders mention atoms, the inline combobox input, and demo items. |
@@ -162,7 +162,7 @@ The mention node is `isMarkableVoid`, so marks on its empty child can style the 
 
 ## Trigger Flow
 
-`withTriggerCombobox` overrides `insertText`. It creates a combobox input only when every gate passes.
+The runtime creates a combobox input from trigger metadata only when every gate passes.
 
 | Gate | Source |
 |------|--------|
@@ -202,7 +202,6 @@ Deserialization supports link-style mentions and bare `@alice` text. Normal link
 | `BaseMentionInputPlugin` | `@platejs/mention` | Inline void input node inserted while the combobox is active. |
 | `MentionPlugin` | `@platejs/mention/react` | React mention plugin. |
 | `MentionInputPlugin` | `@platejs/mention/react` | React mention input plugin. |
-| `editor.tf.insert.mention({ key, value })` | `BaseMentionPlugin` transform | Inserts the mention node at the current selection. |
+| `editor.update((tx) => tx.mention.insert({ key, value }))` | `BaseMentionPlugin` transaction | Inserts the mention node at the current selection. |
 | `getMentionOnSelectItem({ key? })` | `@platejs/mention` | Returns an item handler for mention combobox selection. |
-| `withTriggerCombobox` | `@platejs/combobox` | Creates temporary combobox input nodes from trigger text. |
 | `useComboboxInput` | `@platejs/combobox/react` | Handles focus, cancellation, arrow/backspace/escape behavior, and undo/redo forwarding for custom input UI. |

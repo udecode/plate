@@ -61,14 +61,11 @@ const TagInputPlugin = createSlatePlugin({
 
 ### Create Main Plugin
 
-Create your main plugin using `withTriggerCombobox`:
+Create your main plugin with trigger metadata:
 
 ```tsx
 import { createTSlatePlugin, type PluginConfig } from 'platejs';
-import { 
-  type TriggerComboboxPluginOptions, 
-  withTriggerCombobox 
-} from '@platejs/combobox';
+import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 
 type TagConfig = PluginConfig<'tag', TriggerComboboxPluginOptions>;
 
@@ -84,7 +81,7 @@ export const TagPlugin = createTSlatePlugin<TagConfig>({
     }),
   },
   plugins: [TagInputPlugin],
-}).overrideEditor(withTriggerCombobox);
+});
 ```
 
 - `node.isElement`: Defines this as an element node (not text)
@@ -130,11 +127,12 @@ export function TagInputElement({ element, ...props }) {
               key={tag.id}
               value={tag.name}
               onClick={() => {
-                // Insert actual tag element
-                editor.tf.insertNodes({
-                  type: 'tag',
-                  tagId: tag.id,
-                  children: [{ text: tag.name }],
+                editor.update((tx) => {
+                  tx.nodes.insert({
+                    children: [{ text: tag.name }],
+                    tagId: tag.id,
+                    type: 'tag',
+                  });
                 });
               }}
             >

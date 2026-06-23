@@ -283,11 +283,13 @@ describe('Plate', () => {
 
       const plugins: SlatePlugins = memoize(
         (): SlatePlugins => [
-          createSlatePlugin({ key: 'a' }).extendEditorTransforms(
+          createSlatePlugin({ key: 'a' }).overrideEditor(
             ({ editor, tf: { normalizeNode } }) => ({
-              normalizeNode(node) {
-                fn(editor, node);
-                normalizeNode(node);
+              tf: {
+                normalizeNode(node) {
+                  fn(editor, node);
+                  normalizeNode(node);
+                },
               },
             })
           ),

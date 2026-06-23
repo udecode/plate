@@ -3,6 +3,7 @@
  */
 
 export * from './computeCellIndices';
+export * from './findTableNodePath';
 export * from './getCellIndices';
 export * from './getCellRowIndexByPath';
 export * from './getCellType';

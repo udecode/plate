@@ -1,23 +1,41 @@
-import type { NodeProps, SetNodesOptions, TElement, TText } from 'platejs';
+import type {
+  EditorUpdateTransaction,
+  Element,
+  NodeProps,
+  Path,
+  Text,
+} from '@platejs/slate';
+import { TextApi } from '@platejs/slate';
 import type { PlateEditor } from 'platejs/react';
 
-import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
+import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
+
+type TxSetNodesOptions = NonNullable<
+  Parameters<EditorUpdateTransaction['nodes']['set']>[1]
+>;
+
+type BlockSelectionSetNodesOptions = Omit<TxSetNodesOptions, 'at'>;
+
+const toTxSetNodesOptions = (
+  options: BlockSelectionSetNodesOptions | undefined,
+  at: Path
+): TxSetNodesOptions => ({
+  ...options,
+  at,
+});
 
 export const setBlockSelectionNodes = (
   editor: PlateEditor,
-  props: Partial<NodeProps<TElement>>,
-  options?: SetNodesOptions
+  props: Partial<NodeProps<Element>>,
+  options?: BlockSelectionSetNodesOptions
 ) => {
-  editor.tf.withoutNormalizing(() => {
-    const blocks = editor
-      .getApi(BlockSelectionPlugin)
-      .blockSelection.getNodes();
+  const api = editor.api as unknown as BlockSelectionConfig['api'];
+
+  editor.update((tx) => {
+    const blocks = api.blockSelection.getNodes();
 
     blocks.forEach(([, path]) => {
-      editor.tf.setNodes(props, {
-        ...options,
-        at: path,
-      });
+      tx.nodes.set(props, toTxSetNodesOptions(options, path));
     });
   });
 };
@@ -25,24 +43,21 @@ export const setBlockSelectionNodes = (
 export const setBlockSelectionIndent = (
   editor: PlateEditor,
   indent: number,
-  options?: SetNodesOptions
+  options?: BlockSelectionSetNodesOptions
 ) => {
-  const api = editor.getApi(BlockSelectionPlugin);
+  const api = editor.api as unknown as BlockSelectionConfig['api'];
 
-  editor.tf.withoutNormalizing(() => {
+  editor.update((tx) => {
     const blocks = api.blockSelection.getNodes();
 
     blocks.forEach(([node, path]) => {
-      const prevIndent = (node as any).indent ?? 0;
+      const prevIndent = (node as { indent?: number }).indent ?? 0;
 
       const currentIndent = prevIndent + indent;
 
-      editor.tf.setNodes(
+      tx.nodes.set(
         { indent: Math.max(currentIndent, 0) },
-        {
-          ...options,
-          at: path,
-        }
+        toTxSetNodesOptions(options, path)
       );
     });
   });
@@ -50,11 +65,26 @@ export const setBlockSelectionIndent = (
 
 export const setBlockSelectionTexts = (
   editor: PlateEditor,
-  props: Partial<NodeProps<TText>>,
-  options?: Omit<SetNodesOptions, 'at'>
+  props: Partial<NodeProps<Text>>,
+  options?: BlockSelectionSetNodesOptions
 ) => {
-  setBlockSelectionNodes(editor, props, {
-    mode: 'lowest',
-    ...options,
+  const api = editor.api as unknown as BlockSelectionConfig['api'];
+
+  editor.update((tx) => {
+    const blocks = api.blockSelection.getNodes();
+
+    blocks.forEach(([, path]) => {
+      tx.nodes.set<Text>(
+        props,
+        toTxSetNodesOptions(
+          {
+            mode: 'lowest',
+            match: TextApi.isText,
+            ...options,
+          },
+          path
+        )
+      );
+    });
   });
 };

@@ -11,8 +11,10 @@ export const deleteTable = (editor: SlateEditor) => {
     });
 
     if (tableItem) {
-      editor.tf.removeNodes({
-        at: tableItem[1],
+      editor.update((tx) => {
+        tx.nodes.remove({
+          at: tableItem[1],
+        });
       });
     }
   }

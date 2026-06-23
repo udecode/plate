@@ -1,15 +1,13 @@
-import {
-  type EditorAboveOptions,
-  combineMatchOptions,
-  PathApi,
-} from '@platejs/slate-legacy';
+import { PathApi } from '@platejs/slate';
 
 import type { SlateEditor } from '../../../editor';
 
+import { getCurrentRuntimeTransforms } from '../../../../internal/currentRuntimeBridge';
 import { getPluginByType } from '../../../plugin/getSlatePlugin';
+import { type PlateNodeMatch, combinePlateMatchOptions } from './matchOptions';
 
 export type InsertExitBreakOptions = {
-  match?: EditorAboveOptions['match'];
+  match?: PlateNodeMatch;
   reverse?: boolean;
 };
 
@@ -41,14 +39,16 @@ export const insertExitBreak = (
   // We traverse up the tree until we find an element that can have paragraph siblings
   const target = editor.api.above({
     at: block[1],
-    match: combineMatchOptions(
-      editor,
+    match: combinePlateMatchOptions(
       (n, p) =>
         p.length === 1 ||
         (p.length > 1 &&
-          !!n.type &&
-          !getPluginByType(editor, n.type as string)?.node.isStrictSiblings),
-      { match }
+          typeof n === 'object' &&
+          n !== null &&
+          'type' in n &&
+          typeof n.type === 'string' &&
+          !getPluginByType(editor, n.type)?.node.isStrictSiblings),
+      match
     ),
   });
 
@@ -58,7 +58,7 @@ export const insertExitBreak = (
 
   if (!targetPath) return;
 
-  editor.tf.insertNodes(editor.api.create.block(), {
+  getCurrentRuntimeTransforms(editor).insertNodes(editor.api.create.block(), {
     at: targetPath,
     select: true,
   });

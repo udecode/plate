@@ -1,35 +1,15 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
 
+import { getCurrentRuntimeTransforms } from '../../../../core/src/internal/currentRuntimeBridge';
+import { InputRulesPlugin } from '../../../../core/src/lib/plugins/input-rules/internal/InputRulesPlugin';
+import { createPlateRuntimeEditor } from '../../../../core/src/react/editor/createPlateRuntimeEditor';
 import { BaseImagePlugin } from './BaseImagePlugin';
 
 jsxt;
 
-describe('withImageUpload', () => {
-  let warnSpy: ReturnType<typeof spyOn>;
-
-  afterEach(() => {
-    warnSpy?.mockRestore();
-  });
-
-  const suppressInsertDataOverrideWarning = () => {
-    const originalWarn = console.warn;
-
-    warnSpy = spyOn(console, 'warn').mockImplementation((message, ...args) => {
-      if (
-        typeof message === 'string' &&
-        message.includes('[OVERRIDE_MISSING]') &&
-        message.includes('editor.insertData()')
-      ) {
-        return;
-      }
-
-      originalWarn(message, ...args);
-    });
-  };
-
+describe('ImageRules.upload', () => {
   describe('when inserting a png image', () => {
     const input = (
       <editor>
@@ -44,12 +24,10 @@ describe('withImageUpload', () => {
     ) as any;
 
     it('ignores image files without changing the editor', () => {
-      suppressInsertDataOverrideWarning();
-
-      const editor = createSlateEditor({
-        plugins: [BaseImagePlugin],
-        selection: input.selection,
-        value: input.children,
+      const editor = createPlateRuntimeEditor({
+        initialSelection: input.selection,
+        initialValue: input.children,
+        plugins: [InputRulesPlugin, BaseImagePlugin],
       });
 
       const data = {
@@ -60,7 +38,7 @@ describe('withImageUpload', () => {
         ],
         getData: () => '',
       };
-      editor.tf.insertData(data as any);
+      getCurrentRuntimeTransforms(editor).insertData(data as any);
 
       expect(editor.children).toEqual(output.children);
     });
@@ -80,22 +58,20 @@ describe('withImageUpload', () => {
     ) as any;
 
     it('falls back to the default insertData behavior', () => {
-      suppressInsertDataOverrideWarning();
-
       const jsonParseSpy = spyOn(JSON, 'parse').mockReturnValue(
         <fragment>image.png</fragment>
       );
 
-      const editor = createSlateEditor({
-        plugins: [BaseImagePlugin],
-        selection: input.selection,
-        value: input.children,
+      const editor = createPlateRuntimeEditor({
+        initialSelection: input.selection,
+        initialValue: input.children,
+        plugins: [InputRulesPlugin, BaseImagePlugin],
       });
 
       const data = {
         getData: () => '',
       };
-      editor.tf.insertData(data as any);
+      getCurrentRuntimeTransforms(editor).insertData(data as any);
 
       expect(editor.children).toEqual(output.children);
 
@@ -117,19 +93,17 @@ describe('withImageUpload', () => {
     ) as any;
 
     it('ignores non-image files without changing the editor', () => {
-      suppressInsertDataOverrideWarning();
-
-      const editor = createSlateEditor({
-        plugins: [BaseImagePlugin],
-        selection: input.selection,
-        value: input.children,
+      const editor = createPlateRuntimeEditor({
+        initialSelection: input.selection,
+        initialValue: input.children,
+        plugins: [InputRulesPlugin, BaseImagePlugin],
       });
 
       const data = {
         files: [new File(['test'], 'not-an-image')],
         getData: () => '',
       };
-      editor.tf.insertData(data as any);
+      getCurrentRuntimeTransforms(editor).insertData(data as any);
 
       expect(editor.children).toEqual(output.children);
     });

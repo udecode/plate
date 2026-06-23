@@ -26,14 +26,12 @@ describe('DocxExportPlugin', () => {
     const download: DocxExportApiMethods['download'] = (value, filename) => {
       downloadCalls.push([value, filename]);
     };
-    const api = editor.getPluginApi<DocxExportPluginConfig>(DocxExportPlugin);
-    const transforms =
-      editor.getTransforms<DocxExportPluginConfig>(DocxExportPlugin);
+    const api = editor.api as typeof editor.api & DocxExportPluginConfig['api'];
 
     api.docxExport.exportToBlob = exportToBlob;
     api.docxExport.download = download;
 
-    await transforms.docxExport.exportAndDownload('document', {
+    await api.docxExport.exportAndDownload('document', {
       orientation: 'landscape',
     });
 

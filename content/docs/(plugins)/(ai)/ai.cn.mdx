@@ -141,14 +141,16 @@ export const aiChatPlugin = AIChatPlugin.extend({
           const { startBlock, startInEmptyParagraph } =
             getInsertPreviewStart(editor);
 
-          editor.getTransforms(BaseAIPlugin).ai.beginPreview({
-            originalBlocks:
-              startInEmptyParagraph &&
-              startBlock &&
-              ElementApi.isElement(startBlock)
-                ? [cloneDeep(startBlock)]
-                : [],
-          });
+          editor.update((tx) =>
+            tx.ai.beginPreview({
+              originalBlocks:
+                startInEmptyParagraph &&
+                startBlock &&
+                ElementApi.isElement(startBlock)
+                  ? [cloneDeep(startBlock)]
+                  : [],
+            })
+          );
 
           editor.setOption(AIChatPlugin, 'streaming', true);
 

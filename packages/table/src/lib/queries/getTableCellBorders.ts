@@ -11,6 +11,7 @@ import { KEYS } from 'platejs';
 import type { BorderDirection } from '../types';
 
 import { type CellIndices, getCellIndices } from '../utils/getCellIndices';
+import { findTableNodePath } from '../utils/findTableNodePath';
 
 export type BorderStylesDefault = {
   bottom: TTableCellBorder;
@@ -33,7 +34,13 @@ export const getTableCellBorders = (
     defaultBorder?: TTableCellBorder;
   }
 ): BorderStylesDefault => {
-  const cellPath = editor.api.findPath(element)!;
+  const cellPath = findTableNodePath(editor, element);
+  if (!cellPath) {
+    return {
+      bottom: defaultBorder,
+      right: defaultBorder,
+    };
+  }
   const [rowNode, rowPath] =
     editor.api.parent<TTableRowElement>(cellPath) ?? [];
   if (!rowNode || !rowPath) {

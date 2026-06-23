@@ -1557,7 +1557,8 @@ const mdxChunks = [
 ];
 
 const createCommentChunks = (editor: PlateEditor) => {
-  const selectedBlocksApi = editor.getPluginApi(BlockSelectionPlugin).blockSelection;
+  const selectedBlocksApi =
+    editor.getPluginApi(BlockSelectionPlugin).blockSelection;
 
   const selectedBlocks = selectedBlocksApi
     .getNodes({

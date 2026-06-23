@@ -334,7 +334,7 @@ For more details, see the [HTML Serialization guide](/docs/html).
 
 ```ts
 import type React from 'react';
-import type { Descendant } from 'slate';
+import type { Value } from 'platejs';
 import type { PlateEditor } from 'platejs/core'; // Adjust imports as per your setup
 
 interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -345,10 +345,10 @@ interface PlateStaticProps extends React.HTMLAttributes<HTMLDivElement> {
   editor: PlateEditor;
 
   /**
-   * Optional Plate `Value` (array of `Descendant` nodes).
+   * Optional Plate `Value`.
    * If provided, this will be used for rendering instead of `editor.children`.
    */
-  value?: Descendant[];
+  value?: Value;
 
   /** Inline CSS styles for the root `div` element. */
   style?: React.CSSProperties;

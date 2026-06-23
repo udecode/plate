@@ -1,7 +1,10 @@
-import { type SlateEditor, type TNode, KEYS, nanoid, TextApi } from 'platejs';
+import type { Node } from "@platejs/slate";
 
-import { getInlineSuggestionData, getSuggestionKey } from '../..';
-import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { type SlateEditor, KEYS, nanoid, TextApi } from "platejs";
+
+import { getInlineSuggestionData, getSuggestionKey } from "../..";
+import { BaseSuggestionPlugin } from "../BaseSuggestionPlugin";
+import { getSuggestionApi } from "../utils/getSuggestionApi";
 
 const getAddMarkProps = () => {
   const defaultProps = {
@@ -17,16 +20,16 @@ export const addMarkSuggestion = (
   key: string,
   value: any
 ) => {
-  editor.getApi(BaseSuggestionPlugin).suggestion.withoutSuggestions(() => {
+  getSuggestionApi(editor).withoutSuggestions(() => {
     const { id, createdAt } = getAddMarkProps();
 
-    const match = (n: TNode) => {
+    const match = (n: Node) => {
       if (!TextApi.isText(n)) return false;
       // if the node is already marked as a suggestion, we don't want to remove it unless it's a removeMark suggestion
       if (n[KEYS.suggestion]) {
         const data = getInlineSuggestionData(n);
 
-        if (data?.type === 'update') {
+        if (data?.type === "update") {
           return true;
         }
 
@@ -36,24 +39,26 @@ export const addMarkSuggestion = (
       return true;
     };
 
-    editor.tf.setNodes(
-      {
-        [key]: value,
-        [getSuggestionKey(id)]: {
-          id,
-          createdAt,
-          newProperties: {
-            [key]: value,
+    editor.update((tx) => {
+      tx.nodes.set(
+        {
+          [key]: value,
+          [getSuggestionKey(id)]: {
+            id,
+            createdAt,
+            newProperties: {
+              [key]: value,
+            },
+            type: "update",
+            userId: editor.getOptions(BaseSuggestionPlugin).currentUserId,
           },
-          type: 'update',
-          userId: editor.getOptions(BaseSuggestionPlugin).currentUserId,
+          [KEYS.suggestion]: true,
         },
-        [KEYS.suggestion]: true,
-      },
-      {
-        match,
-        split: true,
-      }
-    );
+        {
+          match,
+          split: true,
+        }
+      );
+    });
   });
 };

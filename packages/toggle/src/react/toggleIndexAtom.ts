@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 
 import type { Atom } from 'jotai';
-import type { TIndentElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 import {
@@ -13,16 +12,22 @@ import {
 } from 'platejs/react';
 
 import { TogglePlugin } from './TogglePlugin';
+import { isToggleIndexElement } from './internal/toggleElement';
 
 // Duplicate constant instead of importing from "plate-list" to avoid a dependency.
 const ListPluginKey = 'listStyleType';
 
 // Returns, for each child, the enclosing toggle ids
-export const buildToggleIndex = (elements: any[]): Map<string, string[]> => {
+export const buildToggleIndex = (
+  elements: readonly unknown[]
+): Map<string, string[]> => {
   const result = new Map<string, string[]>();
   let currentEnclosingToggles: [string, number][] = []; // [toggleId, indent][]
-  elements.forEach((element: any) => {
-    const elementIndent = (element[KEYS.indent] as number) || 0;
+
+  elements.forEach((element) => {
+    if (!isToggleIndexElement(element)) return;
+
+    const elementIndent = element[KEYS.indent] || 0;
     // For some reason, indent lists have a min indent of 1, even though they are not indented
     const elementIndentWithListCorrection =
       element[ListPluginKey] && element[KEYS.indent]
@@ -34,12 +39,12 @@ export const buildToggleIndex = (elements: any[]): Map<string, string[]> => {
     );
     currentEnclosingToggles = enclosingToggles;
     result.set(
-      element.id as string,
+      element.id,
       enclosingToggles.map(([toggleId]) => toggleId)
     );
 
     if (element.type === KEYS.toggle) {
-      currentEnclosingToggles.push([element.id as string, elementIndent]);
+      currentEnclosingToggles.push([element.id, elementIndent]);
     }
   });
 
@@ -47,7 +52,7 @@ export const buildToggleIndex = (elements: any[]): Map<string, string[]> => {
 };
 
 export const editorAtom = plateStore.atom.trackedEditor as Atom<{
-  editor: { children: TIndentElement[] };
+  editor: { children: readonly unknown[] };
   version: number;
 }>;
 
@@ -73,7 +78,7 @@ export const useIsVisible = (elementId: string) => {
 };
 
 export const toggleIndexAtom: Atom<Map<string, string[]>> = atom((get) =>
-  buildToggleIndex(get(editorAtom).editor.children as TIndentElement[])
+  buildToggleIndex(get(editorAtom).editor.children)
 );
 
 export const useToggleIndex = () =>

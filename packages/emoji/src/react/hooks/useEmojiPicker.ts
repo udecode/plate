@@ -4,20 +4,18 @@ import type { Emoji } from '@emoji-mart/data';
 
 import { useEditorRef } from 'platejs/react';
 
-import {
-  type AIndexSearch,
-  type EmojiCategoryList,
-  type EmojiIconList,
-  type EmojiSettingsType,
-  type i18nProps,
-  i18n,
-  insertEmoji,
-} from '../../lib';
-import {
-  type IEmojiFloatingLibrary,
-  type SetFocusedAndVisibleSectionsType,
-  observeCategories,
-} from '../utils';
+import { i18n } from '../../lib/constants';
+import type {
+  EmojiCategoryList,
+  EmojiIconList,
+  EmojiSettingsType,
+  i18nProps,
+} from '../../lib/types';
+import { insertEmoji } from '../../lib/transforms/insertEmoji';
+import type { AIndexSearch } from '../../lib/utils/IndexSearch/IndexSearch';
+import { observeCategories } from '../utils/EmojiObserver';
+import type { IEmojiFloatingLibrary } from '../utils/EmojiLibrary/EmojiFloatingLibrary.types';
+import type { SetFocusedAndVisibleSectionsType } from '../utils/EmojiObserver';
 import {
   useEmojiPickerState,
   type MapEmojiCategoryList,

@@ -1,7 +1,7 @@
 import { KEYS } from 'platejs';
 import { type PlateEditor, getEditorPlugin } from 'platejs/react';
 
-import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
+import { discardAIPreview, undoAI } from '../../../lib/transforms';
 import type { AIChatPluginConfig } from '../AIChatPlugin';
 
 export const resetAIChat = (
@@ -31,8 +31,8 @@ export const resetAIChat = (
   });
 
   if (undo) {
-    editor.getTransforms(BaseAIPlugin).ai.undo();
+    undoAI(editor);
   } else {
-    editor.getTransforms(BaseAIPlugin).ai.discardPreview();
+    discardAIPreview(editor);
   }
 };

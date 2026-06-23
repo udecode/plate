@@ -1,4 +1,4 @@
-import type { Editor, ElementEntry } from 'platejs';
+import type { ElementEntry, SlateEditor } from 'platejs';
 
 const nonWhitespaceRegex = /\S/;
 
@@ -16,7 +16,7 @@ export type IndentCodeLineOptions = {
  *   spaces.
  */
 export const indentCodeLine = (
-  editor: Editor,
+  editor: SlateEditor,
   { codeLine, indentDepth = 2 }: IndentCodeLineOptions
 ) => {
   const [, codeLinePath] = codeLine;
@@ -29,11 +29,15 @@ export const indentCodeLine = (
     const text = editor.api.string(range);
 
     if (nonWhitespaceRegex.test(text)) {
-      editor.tf.insertText(indent, { at: editor.selection! });
+      editor.update((tx) => {
+        tx.text.insert(indent, { at: editor.selection! });
+      });
 
       return;
     }
   }
 
-  editor.tf.insertText(indent, { at: codeLineStart });
+  editor.update((tx) => {
+    tx.text.insert(indent, { at: codeLineStart });
+  });
 };

@@ -2,6 +2,10 @@ import React from 'react';
 
 import type { PlateEditor } from '../editor/PlateEditor';
 
+import {
+  findEditorPath,
+  isEditorBlock,
+} from '../../internal/utils/runtimeEditorQueries';
 import { type EditableProps, getPluginByType, getSlateClass } from '../../lib';
 import { pipeInjectNodeProps } from '../../internal/plugin/pipeInjectNodeProps';
 import { isEditOnly } from '../../internal/plugin/isEditOnlyDisabled';
@@ -76,8 +80,9 @@ function useFastInjectedAttributes({
       {
         attributes,
         element,
+        path,
       },
-      (node) => (node === element ? path : editor.api.findPath(node)!),
+      (node) => (node === element ? path : findEditorPath(editor, node)!),
       readOnly
     ) as any
   ).attributes;
@@ -344,7 +349,7 @@ export const pipeRenderElement = (
         if (isEditOnly(readOnly, plugin as any, 'render')) return null;
 
         const blockId =
-          props.element.id && editor.api.isBlock(props.element)
+          props.element.id && isEditorBlock(editor, props.element)
             ? props.element.id
             : undefined;
         const inset = plugin.rules.selection?.affinity === 'directional';

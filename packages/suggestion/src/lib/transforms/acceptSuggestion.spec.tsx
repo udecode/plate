@@ -3,13 +3,20 @@
 import type { SlateEditor } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
 
+import { createPlateRuntimeEditor } from '../../../../core/src/react/editor/createPlateRuntimeEditor';
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getSuggestionKey } from '../utils';
 import { acceptSuggestion } from './acceptSuggestion';
 
 jsxt;
+
+const createSlateEditor = ({ selection, value, ...options }: any = {}) =>
+  createPlateRuntimeEditor({
+    ...options,
+    initialSelection: selection,
+    initialValue: value,
+  }) as any as SlateEditor;
 
 const suggestionPlugin = BaseSuggestionPlugin.configure({
   options: {
@@ -228,7 +235,7 @@ describe('acceptSuggestion', () => {
 
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-    editor.tf.deleteBackward('character');
+    editor.update((tx) => tx.text.deleteBackward({ unit: 'character' }));
 
     const lineBreakData = (editor.children[0] as any).suggestion;
 

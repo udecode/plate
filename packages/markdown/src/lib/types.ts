@@ -1,14 +1,13 @@
 export type * as unistLib from 'unist';
 
 import type { StrictExtract } from 'ts-essentials';
+import type { Element, Text } from '@platejs/slate';
 
 import {
+  type NodeMap,
   type NodeKey,
   type Nullable,
   type SlateEditor,
-  type TElement,
-  type TNodeMap,
-  type TText,
   getPluginKey,
 } from 'platejs';
 
@@ -142,7 +141,7 @@ export type StrictPlateType =
 export type PlateType = (string & {}) | StrictPlateType;
 
 type PlateNodeMap = Pick<
-  TNodeMap,
+  NodeMap,
   | 'a'
   | 'audio'
   | 'blockquote'
@@ -176,9 +175,9 @@ type PlateNodeMap = Pick<
   | 'video'
 > & {
   /** Markdown only */
-  text: TText;
+  text: Text;
   list: any;
-  heading: TElement;
+  heading: Element;
   footnoteReference: any;
   definition: any;
   footnoteDefinition: any;

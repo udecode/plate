@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TExcalidrawElement } from '@platejs/excalidraw';
+import type { ExcalidrawElement } from '@platejs/excalidraw';
 import type { PlateElementProps } from 'platejs/react';
 
 import { useExcalidrawElement } from '@platejs/excalidraw/react';
@@ -12,9 +12,7 @@ import { cn } from '@/lib/utils';
 
 import '@excalidraw/excalidraw/index.css';
 
-export function ExcalidrawElement(
-  props: PlateElementProps<TExcalidrawElement>
-) {
+export function ExcalidrawElement(props: PlateElementProps<ExcalidrawElement>) {
   const { children, element } = props;
   const readOnly = useReadOnly();
 

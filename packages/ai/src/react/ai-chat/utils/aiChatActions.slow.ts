@@ -100,20 +100,44 @@ describe('ai chat action utils', () => {
           [0, 0, 0],
         ],
       },
-      tf: {
-        replaceNodes,
-      },
+      children: [
+        {
+          children: [
+            {
+              children: [
+                { children: [{ text: 'old' }], id: 'cell-1', type: 'td' },
+              ],
+              type: 'tr',
+            },
+          ],
+          type: 'table',
+        },
+      ],
+      update: (fn: any) =>
+        fn({
+          value: {
+            replace: replaceNodes,
+          },
+        }),
     } as any;
 
     applyTableCellSuggestion(editor, { content: 'ai', id: 'cell-1' });
 
-    expect(replaceNodes).toHaveBeenCalledWith(
-      [{ __transient: true, text: 'ai' }],
-      {
-        at: [0, 0, 0],
-        children: true,
-      }
-    );
+    expect(replaceNodes).toHaveBeenCalledWith({
+      children: [
+        {
+          children: [
+            {
+              children: [{ __transient: true, text: 'ai' }],
+              id: 'cell-1',
+              type: 'td',
+            },
+          ],
+          type: 'tr',
+        },
+      ],
+      type: 'table',
+    });
   });
 
   it('accepts transient suggestions and clears transient marks', async () => {
@@ -128,13 +152,18 @@ describe('ai chat action utils', () => {
       },
     };
     const editor = {
-      getPluginApi: () => ({
+      api: {
         suggestion: {
           nodes: () => [[suggestionNode, [0]]],
           suggestionData: () => suggestionNode.suggestion,
         },
-      }),
-      tf: { unsetNodes },
+      },
+      update: (fn: any) =>
+        fn({
+          nodes: {
+            unset: unsetNodes,
+          },
+        }),
     } as any;
 
     acceptAISuggestions(editor);
@@ -164,13 +193,18 @@ describe('ai chat action utils', () => {
       },
     };
     const editor = {
-      getPluginApi: () => ({
+      api: {
         suggestion: {
           nodes: () => [[suggestionNode, [0]]],
           suggestionData: () => suggestionNode.suggestion,
         },
-      }),
-      tf: { unsetNodes },
+      },
+      update: (fn: any) =>
+        fn({
+          nodes: {
+            unset: unsetNodes,
+          },
+        }),
     } as any;
 
     rejectAISuggestions(editor);
@@ -193,7 +227,6 @@ describe('ai chat action utils', () => {
     const setMessages = mock();
     const stop = mock();
     const setOptions = mock();
-    const discardPreview = mock();
     const undo = mock();
 
     getEditorPluginMock.mockReturnValue({
@@ -210,9 +243,10 @@ describe('ai chat action utils', () => {
     });
 
     const editor = {
-      getTransforms: () => ({
-        ai: { discardPreview, undo },
-      }),
+      api: { some: () => true },
+      children: [],
+      history: { redos: [{}], undos: [{ ai: true }] },
+      undo,
     } as any;
 
     resetAIChat(editor);
@@ -226,14 +260,12 @@ describe('ai chat action utils', () => {
       toolName: null,
     });
     expect(undo).toHaveBeenCalled();
-    expect(discardPreview).not.toHaveBeenCalled();
   });
 
   it('discards preview bookkeeping instead of undoing when requested', async () => {
     const { resetAIChat } = await loadReset();
     const stop = mock();
     const setOptions = mock();
-    const discardPreview = mock();
     const undo = mock();
 
     getEditorPluginMock.mockReturnValue({
@@ -250,16 +282,13 @@ describe('ai chat action utils', () => {
     });
 
     const editor = {
-      getTransforms: () => ({
-        ai: { discardPreview, undo },
-      }),
+      undo,
     } as any;
 
     resetAIChat(editor, { undo: false });
 
     expect(stop).toHaveBeenCalled();
     expect(undo).not.toHaveBeenCalled();
-    expect(discardPreview).toHaveBeenCalled();
   });
 
   it('detects single-cell tables and extracts their cell children', async () => {

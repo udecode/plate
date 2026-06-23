@@ -33,7 +33,7 @@ describe('basic block input rules', () => {
       value: input,
     } as any);
 
-    editor.tf.insertText(' ');
+    editor.update((tx) => tx.text.insert(' '));
 
     expect(input.children).toEqual(
       (
@@ -66,7 +66,7 @@ describe('basic block input rules', () => {
       ],
     } as any);
 
-    editor.tf.insertText(' ');
+    editor.update((tx) => tx.text.insert(' '));
 
     expect(editor.children).toMatchObject([
       {
@@ -100,7 +100,7 @@ describe('basic block input rules', () => {
       value: [{ children: [{ text: '--' }], type: KEYS.p }],
     } as any);
 
-    editor.tf.insertText('-');
+    editor.update((tx) => tx.text.insert('-'));
 
     expect(editor.children).toMatchObject([
       {

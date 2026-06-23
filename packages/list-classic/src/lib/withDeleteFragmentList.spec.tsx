@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
 import type { SlateEditor } from '@platejs/core';
+import { createListClassicRuntimeTestEditor as createSlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from '@platejs/core';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
@@ -16,7 +16,7 @@ const createListEditor = (input: SlateEditor) =>
     value: input.children,
   });
 
-describe('withDeleteFragmentList', () => {
+describe('ListClassicExtension deleteFragment', () => {
   it('falls back to normal deleteFragment when the selection is not across list items', () => {
     const input = (
       <editor>
@@ -35,7 +35,7 @@ describe('withDeleteFragmentList', () => {
 
     const editor = createListEditor(input);
 
-    editor.tf.deleteFragment();
+    editor.update((tx) => tx.fragment.delete());
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -77,7 +77,7 @@ describe('withDeleteFragmentList', () => {
 
     const editor = createListEditor(input);
 
-    editor.tf.deleteFragment();
+    editor.update((tx) => tx.fragment.delete());
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -121,7 +121,7 @@ describe('withDeleteFragmentList', () => {
 
     const editor = createListEditor(input);
 
-    editor.tf.deleteFragment();
+    editor.update((tx) => tx.fragment.delete());
 
     expect(editor.children).toEqual(expected.children);
   });

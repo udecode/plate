@@ -3,18 +3,31 @@ import type { StandardBehaviorOptions } from 'scroll-into-view-if-needed';
 
 import { bindFirst } from '@udecode/utils';
 
-import type { SlateEditor } from '../../';
-
+import { withLegacyTransformOverride } from '../../../internal/plugin/withLegacyTransformOverride';
 import { type PluginConfig, createTSlatePlugin } from '../../plugin';
 import { withScrolling } from './withScrolling';
 
-export const AUTO_SCROLL = new WeakMap<SlateEditor, boolean>();
+export const AUTO_SCROLL = new WeakMap<object, boolean>();
 
 export type AutoScrollOperationsMap = Partial<
   Record<Operation['type'], boolean>
 >;
 
 export type ScrollIntoViewOptions = StandardBehaviorOptions | boolean;
+
+const getOperationScrollTarget = (operation: Operation) => {
+  const candidate = operation as Operation & {
+    offset?: unknown;
+    path?: unknown;
+  };
+
+  if (!Array.isArray(candidate.path)) return null;
+
+  return {
+    offset: typeof candidate.offset === 'number' ? candidate.offset : 0,
+    path: candidate.path,
+  };
+};
 
 export type DomConfig = PluginConfig<
   'dom',
@@ -38,7 +51,7 @@ export type ScrollMode = 'first' | 'last';
  * Placeholder plugin for DOM interaction, that could be replaced with
  * ReactPlugin.
  */
-export const DOMPlugin = createTSlatePlugin<DomConfig>({
+const BaseDOMPlugin = createTSlatePlugin<DomConfig>({
   key: 'dom',
   options: {
     scrollMode: 'last',
@@ -50,23 +63,27 @@ export const DOMPlugin = createTSlatePlugin<DomConfig>({
       scrollMode: 'if-needed',
     },
   },
-})
-  .extendEditorApi(({ editor }) => ({
-    isScrolling: () => AUTO_SCROLL.get(editor) ?? false,
-  }))
-  .extendEditorTransforms(({ editor }) => ({
-    withScrolling: bindFirst(withScrolling, editor),
-  }))
-  .overrideEditor(({ api, editor, getOption, tf: { apply } }) => ({
-    transforms: {
-      apply(operation) {
+}).extendEditorApi(({ editor }) => ({
+  isScrolling: () => AUTO_SCROLL.get(editor) ?? false,
+}));
+
+const DOMPluginWithScrolling = withLegacyTransformOverride(
+  BaseDOMPlugin,
+  ({ api, editor, getOption, tf: { apply } }) => ({
+    tf: {
+      withScrolling: bindFirst(withScrolling, editor),
+      apply(operation: unknown) {
+        const slateOperation = operation as Operation;
+
         if (api.isScrolling()) {
-          apply(operation);
+          apply(slateOperation as never);
 
           // Check if this op type is enabled (default true)
-          const scrollOperations = getOption('scrollOperations')!;
+          const scrollOperations = getOption(
+            'scrollOperations'
+          ) as AutoScrollOperationsMap;
 
-          if (!scrollOperations[operation.type]) return;
+          if (!scrollOperations[slateOperation.type]) return;
 
           // Gather enabled ops in this batch
           const matched = editor.operations.filter(
@@ -75,47 +92,49 @@ export const DOMPlugin = createTSlatePlugin<DomConfig>({
 
           if (matched.length === 0) return;
 
-          const mode = getOption('scrollMode')!;
+          const mode = getOption('scrollMode') as ScrollMode;
 
           // Pick target
           const targetOp = mode === 'first' ? matched[0] : matched.at(-1);
 
           if (!targetOp) return;
 
-          const { offset, path } = (targetOp as any).path
-            ? (targetOp as any as { path: number[]; offset?: number })
-            : {};
+          const target = getOperationScrollTarget(targetOp);
 
-          if (!path) return;
+          if (!target) return;
 
-          const scrollOptions = getOption('scrollOptions')!;
+          const scrollOptions = getOption(
+            'scrollOptions'
+          ) as ScrollIntoViewOptions;
 
-          const scrollTarget = {
-            offset: offset ?? 0,
-            path,
-          };
-
-          api.scrollIntoView(scrollTarget, scrollOptions);
+          api.scrollIntoView(target, scrollOptions);
 
           return;
         }
 
-        return apply(operation);
+        return apply(slateOperation as never);
       },
     },
-  }))
-  .overrideEditor(({ editor, tf: { apply } }) => ({
-    transforms: {
-      apply(operation) {
-        if (operation.type === 'set_selection') {
-          const { properties } = operation;
+  })
+);
+
+export const DOMPlugin = withLegacyTransformOverride(
+  DOMPluginWithScrolling,
+  ({ editor, tf: { apply } }) => ({
+    tf: {
+      apply(operation: unknown) {
+        const slateOperation = operation as Operation;
+
+        if (slateOperation.type === 'set_selection') {
+          const { properties } = slateOperation;
           editor.dom.prevSelection = properties as Range | null;
-          apply(operation);
+          apply(slateOperation as never);
           editor.dom.currentKeyboardEvent = null;
           return;
         }
 
-        apply(operation);
+        apply(slateOperation as never);
       },
     },
-  }));
+  })
+);

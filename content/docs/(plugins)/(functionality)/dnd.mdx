@@ -106,9 +106,9 @@ DndPlugin.configure({
   options: {
     enableScroller: true,
     onDropFiles: ({ dragItem, editor, target }) => {
-      editor
-        .getTransforms(PlaceholderPlugin)
-        .insert.media(dragItem.files, { at: target, nextBlock: false });
+      editor.update((tx) =>
+        tx.insert.media(dragItem.files, { at: target, nextBlock: false })
+      );
     },
   },
   render: {
@@ -182,7 +182,7 @@ Selects the start of a block by ID and focuses the editor.
 Returns an array of blocks that have an ID.
 
 <API name="getBlocksWithId">
-<APIOptions type="EditorNodesOptions">
+<APIOptions type="object">
   The options for getting node entries.
 </APIOptions>
 
@@ -211,7 +211,7 @@ A custom hook that combines the `useDragNode` and `useDropNode` hooks to enable 
 
 <API name="useDndNode">
 <APIOptions type="UseDndNodeOptions">
-  <APIItem name="element" type="TElement">
+  <APIItem name="element" type="Element">
     The node to be dragged.
   </APIItem>
   <APIItem name="type" type="string" optional>
@@ -261,7 +261,7 @@ A custom hook that enables dragging of a node from the editor using the `useDrag
 
 <API name="useDragNode">
 <APIOptions type="UseDragNodeOptions">
-  <APIItem name="element" type="TElement">
+  <APIItem name="element" type="Element">
     The node to be dragged.
   </APIItem>
   <APIItem name="item" type="DragObject | DragObjectFactory<DragObject>" optional>
@@ -276,7 +276,7 @@ A custom hook that enables draggable behavior for a given element. It provides a
 
 <API name="useDraggable">
 <APIOptions type="object">
-  <APIItem name="element" type="TElement">
+  <APIItem name="element" type="Element">
     The element to make draggable.
   </APIItem>
   <APIItem name="orientation" type="'horizontal' | 'vertical'" optional>
@@ -314,7 +314,7 @@ A custom hook that enables dropping a node on the editor. It uses the `useDrop` 
   <APIItem name="nodeRef" type="any">
     Reference to the node being dragged.
   </APIItem>
-  <APIItem name="element" type="TElement">
+  <APIItem name="element" type="Element">
     The node to which the drop line is attached.
   </APIItem>
   <APIItem name="dropLine" type="string">

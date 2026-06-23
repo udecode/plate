@@ -14,11 +14,15 @@ import {
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import * as reactHotkeysModule from '@udecode/react-hotkeys';
 
+import { getCurrentRuntimeTransforms } from '../../internal/currentRuntimeBridge';
+import {
+  type LegacyTransformOverride,
+  withLegacyTransformOverride,
+} from '../../internal/plugin/withLegacyTransformOverride';
 import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
 import { AffinityPlugin } from '../../lib/plugins/affinity/AffinityPlugin';
 import { ChunkingPlugin } from '../../lib/plugins/chunking/ChunkingPlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
-import { DOMPlugin } from '../../lib/plugins/dom/DOMPlugin';
 import { HistoryPlugin } from '../../lib/plugins/HistoryPlugin';
 import { HtmlPlugin } from '../../lib/plugins/html/HtmlPlugin';
 import { InputRulesPlugin } from '../../lib/plugins/input-rules/internal/InputRulesPlugin';
@@ -26,13 +30,11 @@ import { LengthPlugin } from '../../lib/plugins/length/LengthPlugin';
 import { NodeIdPlugin } from '../../lib/plugins/node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { ParserPlugin } from '../../lib/plugins/ParserPlugin';
-import {
-  withBreakRules,
-  withDeleteRules,
-  withMergeRules,
-  withNormalizeRules,
-  withOverrides,
-} from '../../lib/plugins/override';
+import { withBreakRules } from '../../lib/plugins/override/internal/withBreakRules';
+import { withDeleteRules } from '../../lib/plugins/override/internal/withDeleteRules';
+import { withMergeRules } from '../../lib/plugins/override/internal/withMergeRules';
+import { withNormalizeRules } from '../../lib/plugins/override/internal/withNormalizeRules';
+import { withOverrides } from '../../lib/plugins/override/OverridePlugin';
 import { SlateExtensionPlugin } from '../../lib/plugins/slate-extension/SlateExtensionPlugin';
 import { NavigationFeedbackPlugin } from '../plugins/navigation-feedback/NavigationFeedbackPlugin';
 import { ReactPlugin } from '../plugins/react/ReactPlugin';
@@ -54,18 +56,6 @@ describe('createPlateRuntimeEditor', () => {
     let id = start;
 
     return () => `id-${id++}`;
-  };
-
-  type TxPluginTransforms = {
-    txPlugin: {
-      replace: () => void;
-    };
-  };
-
-  type TransformPluginTransforms = {
-    transform: {
-      replace: () => void;
-    };
   };
 
   type RuntimeDomTransforms = {
@@ -132,40 +122,64 @@ describe('createPlateRuntimeEditor', () => {
     };
   };
 
+  const getRuntimeTransforms = <T>(editor: PlateRuntimeEditor) =>
+    getCurrentRuntimeTransforms(editor) as T;
+
+  const createRuntimeOverridePlugin = (
+    ...overrides: LegacyTransformOverride[]
+  ) => {
+    let plugin = createSlatePlugin({ key: 'override' }).overrideEditor(
+      withOverrides
+    );
+
+    overrides.forEach((override) => {
+      plugin = withLegacyTransformOverride(plugin, override);
+    });
+
+    return plugin;
+  };
+
   const createRuntimeBlockquotePlugin = () =>
-    createSlatePlugin({
-      key: 'blockquote',
-      node: { isElement: true, type: 'blockquote' },
-    }).overrideEditor(({ tf: { normalizeNode, tab } }) => ({
-      transforms: { normalizeNode, tab },
-    }));
+    withLegacyTransformOverride(
+      createSlatePlugin({
+        key: 'blockquote',
+        node: { isElement: true, type: 'blockquote' },
+      }),
+      ({ tf: { normalizeNode, tab } }) => ({
+        tf: { normalizeNode, tab },
+      })
+    );
 
   const createRuntimeCaptionPlugin = () =>
-    createSlatePlugin({
-      key: 'caption',
-      options: {
-        focusEndPath: null,
-        focusStartPath: null,
-        query: { allow: ['media'] },
-        visibleId: null,
-      },
-    }).overrideEditor(({ tf: { apply, moveLine } }) => ({
-      transforms: { apply, moveLine },
-    }));
+    withLegacyTransformOverride(
+      createSlatePlugin({
+        key: 'caption',
+        options: {
+          focusEndPath: null,
+          focusStartPath: null,
+          query: { allow: ['media'] },
+          visibleId: null,
+        },
+      }),
+      ({ tf: { apply, moveLine } }) => ({
+        tf: { apply, moveLine },
+      })
+    );
 
   const createRuntimeMultiSelectPlugin = () =>
-    createSlatePlugin({
-      key: 'tag',
-      node: {
-        isElement: true,
-        isInline: true,
-        isVoid: true,
-        type: 'tag',
-      },
-    }).overrideEditor(
+    withLegacyTransformOverride(
+      createSlatePlugin({
+        key: 'tag',
+        node: {
+          isElement: true,
+          isInline: true,
+          isVoid: true,
+          type: 'tag',
+        },
+      }),
       ({ api: { onChange }, tf: { deleteBackward, normalizeNode } }) => ({
         api: { onChange },
-        transforms: { deleteBackward, normalizeNode },
+        tf: { deleteBackward, normalizeNode },
       })
     );
 
@@ -360,9 +374,7 @@ describe('createPlateRuntimeEditor', () => {
       ],
     });
 
-    editor
-      .getTransforms<NodeIdRuntimeTransforms>(NodeIdPlugin)
-      .nodeId.normalize();
+    getRuntimeTransforms<NodeIdRuntimeTransforms>(editor).nodeId.normalize();
 
     const root = editor.read((state) => state.value.root()) as Array<{
       children: Array<{ id?: string; text?: string; type?: string }>;
@@ -585,8 +597,8 @@ describe('createPlateRuntimeEditor', () => {
       runtime: 'slate-v2',
       value: [{ children: [{ text: 'target' }], type: 'p' }],
     });
-    const navigationTf = editor.tf as typeof editor.tf &
-      NavigationRuntimeTransforms;
+    const navigationTf =
+      getRuntimeTransforms<NavigationRuntimeTransforms>(editor);
 
     expect(
       navigationTf.navigation.flashTarget({
@@ -869,6 +881,23 @@ describe('createPlateRuntimeEditor', () => {
     expect(element.textContent).toBe('override text');
   });
 
+  it('routes createPlateEditor slate-v2 root enabled overrides', () => {
+    const RuntimePlugin = createSlatePlugin({
+      key: 'runtimeElement',
+      node: { isElement: true, type: 'runtime_element' },
+    });
+    const editor = createPlateEditor({
+      override: { enabled: { runtimeElement: false } },
+      plugins: [RuntimePlugin],
+      runtime: 'slate-v2',
+      value: [
+        { children: [{ text: 'override text' }], type: 'runtime_element' },
+      ],
+    });
+
+    expect(editor.plugins.runtimeElement).toBeUndefined();
+  });
+
   it('pipes runtime plugin onChange handlers through the v2 provider', async () => {
     const handledValues: Value[] = [];
     const propsOnChange = mock();
@@ -947,10 +976,8 @@ describe('createPlateRuntimeEditor', () => {
     ];
     const TxPlugin = createSlatePlugin({
       key: 'txPlugin',
-    }).extendTx(() => ({
-      txPlugin: (tx: EditorUpdateTransaction<Value>) => ({
-        replace: () => tx.value.replace({ children: nextValue }),
-      }),
+    }).extendTx(() => (tx: EditorUpdateTransaction<Value>) => ({
+      replace: () => tx.value.replace({ children: nextValue }),
     }));
     let replace: () => void = () => {
       throw new Error('runtime hook editor was not captured');
@@ -1030,16 +1057,16 @@ describe('createPlateRuntimeEditor', () => {
     );
   });
 
-  it('rejects root api and transforms on the explicit v2 route', () => {
+  it('rejects root api on the explicit v2 route', () => {
     expect(() =>
       createPlateEditor({
         api: { root: { command: () => null } },
         runtime: 'slate-v2',
-        transforms: { root: { command: () => null } },
+        tf: { root: { command: () => null } },
         value,
       } as never)
     ).toThrow(
-      "[Plate] createPlateEditor({ runtime: 'slate-v2' }) does not support these options yet: api, transforms."
+      "[Plate] createPlateEditor({ runtime: 'slate-v2' }) does not support these options yet: api."
     );
   });
 
@@ -1051,19 +1078,19 @@ describe('createPlateRuntimeEditor', () => {
       ],
     });
 
-    editor.tf.focus({ edge: 'endEditor', retries: 1 });
+    getRuntimeTransforms(editor).focus({ edge: 'endEditor', retries: 1 });
     expect(editor.read((state) => state.selection.get())).toEqual({
       anchor: { offset: 4, path: [1, 0] },
       focus: { offset: 4, path: [1, 0] },
     });
 
-    editor.tf.focus({ edge: 'startEditor', retries: 1 });
+    getRuntimeTransforms(editor).focus({ edge: 'startEditor', retries: 1 });
     expect(editor.read((state) => state.selection.get())).toEqual({
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 0, path: [0, 0] },
     });
 
-    editor.tf.focus({ at: [0], edge: 'end', retries: 1 });
+    getRuntimeTransforms(editor).focus({ at: [0], edge: 'end', retries: 1 });
     expect(editor.read((state) => state.selection.get())).toEqual({
       anchor: { offset: 5, path: [0, 0] },
       focus: { offset: 5, path: [0, 0] },
@@ -1622,6 +1649,28 @@ describe('createPlateRuntimeEditor', () => {
     expect((editor.api as { extended?: unknown }).extended).toBeUndefined();
   });
 
+  it('lets later plugin config read earlier runtime plugin options', () => {
+    const SourcePlugin = createSlatePlugin({
+      key: 'source',
+      options: { currentUserId: 'alice' },
+    });
+    const DependentPlugin = createSlatePlugin({
+      key: 'dependent',
+      options: { currentUserId: null as string | null },
+    }).configure(({ editor }) => ({
+      options: {
+        currentUserId: editor.getOption(SourcePlugin, 'currentUserId'),
+      },
+    }));
+
+    const editor = createPlateRuntimeEditor({
+      initialValue: value,
+      plugins: [SourcePlugin, DependentPlugin],
+    });
+
+    expect(editor.getOption(DependentPlugin, 'currentUserId')).toBe('alice');
+  });
+
   it('routes InputRulesPlugin insert transforms through runtime rule buckets', () => {
     const calls: string[] = [];
     const RulePlugin = createSlatePlugin({
@@ -1668,11 +1717,13 @@ describe('createPlateRuntimeEditor', () => {
       ),
     } satisfies Pick<DataTransfer, 'files' | 'getData'>;
 
-    editor.tf.focus({ edge: 'endEditor', retries: 1 });
+    getRuntimeTransforms(editor).focus({ edge: 'endEditor', retries: 1 });
 
-    expect(editor.tf.insertText('!')).toBe(true);
-    expect(editor.tf.insertBreak()).toBe(true);
-    expect(editor.tf.insertData(dataTransfer as DataTransfer)).toBe(true);
+    expect(getRuntimeTransforms(editor).insertText('!')).toBe(true);
+    expect(getRuntimeTransforms(editor).insertBreak()).toBe(true);
+    expect(
+      getRuntimeTransforms(editor).insertData(dataTransfer as DataTransfer)
+    ).toBe(true);
 
     expect(calls).toEqual(['text:hi', 'break:hi?', 'data:paste']);
     expect(editor.read((state) => state.value.root())).toEqual([
@@ -1687,16 +1738,18 @@ describe('createPlateRuntimeEditor', () => {
       plugins: [LengthPlugin.configure({ options: { maxLength: 5 } })],
     });
 
-    editor.tf.focus({ edge: 'endEditor', retries: 1 });
-    editor.tf.insertText('Hello, World!');
+    getRuntimeTransforms(editor).focus({ edge: 'endEditor', retries: 1 });
+    getRuntimeTransforms(editor).insertText('Hello, World!');
 
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'Hello' }], type: 'p' },
     ]);
 
-    editor.tf.setValue([{ children: [{ text: '' }], type: 'p' }]);
-    editor.tf.focus({ edge: 'endEditor', retries: 1 });
-    editor.tf.insertFragment([
+    getRuntimeTransforms(editor).setValue([
+      { children: [{ text: '' }], type: 'p' },
+    ]);
+    getRuntimeTransforms(editor).focus({ edge: 'endEditor', retries: 1 });
+    getRuntimeTransforms(editor).insertFragment([
       { children: [{ text: 'This is a long pasted text' }], type: 'p' },
     ]);
 
@@ -1725,7 +1778,7 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 4, path: [0, 0] });
     });
 
-    expect(editor.tf.insertText('x')).toBe(true);
+    expect(getRuntimeTransforms(editor).insertText('x')).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [
@@ -1758,8 +1811,8 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 0, path: [0, 1] });
     });
 
-    expect(editor.tf.deleteBackward('character')).toBe(true);
-    expect(editor.tf.insertText('x')).toBe(true);
+    expect(getRuntimeTransforms(editor).deleteBackward('character')).toBe(true);
+    expect(getRuntimeTransforms(editor).insertText('x')).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [{ bold: true, text: 'ax' }, { text: 'cd' }],
@@ -1788,8 +1841,10 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 1, path: [0, 0] });
     });
 
-    expect(editor.tf.move({ distance: 1, unit: 'character' })).toBe(true);
-    expect(editor.tf.insertText('x')).toBe(true);
+    expect(
+      getRuntimeTransforms(editor).move({ distance: 1, unit: 'character' })
+    ).toBe(true);
+    expect(getRuntimeTransforms(editor).insertText('x')).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [{ bold: true, text: 'ax' }, { text: 'b' }],
@@ -1815,21 +1870,9 @@ describe('createPlateRuntimeEditor', () => {
       plugins: [ApiPlugin],
     });
 
-    type ApiPluginApi = {
-      apiPlugin: {
-        answer: () => number;
-        setAnswer: (answer: number) => void;
-      };
-    };
-
-    expect((editor.api as ApiPluginApi).apiPlugin.answer()).toBe(42);
-    expect(
-      editor.getPluginApi<ApiPluginApi>(ApiPlugin).apiPlugin.answer()
-    ).toBe(42);
-    editor.getPluginApi<ApiPluginApi>(ApiPlugin).apiPlugin.setAnswer(43);
-    expect(
-      editor.getPluginApi<ApiPluginApi>(ApiPlugin).apiPlugin.answer()
-    ).toBe(43);
+    expect(editor.api.apiPlugin.answer()).toBe(42);
+    editor.api.apiPlugin.setAnswer(43);
+    expect(editor.api.apiPlugin.answer()).toBe(43);
     expect(editor.getOption(ApiPlugin, 'answer')).toBe(43);
     expect(Object.hasOwn(editor.api as object, 'apiPlugin')).toBe(false);
     expect(editor.getType('apiPlugin')).toBe('api-node');
@@ -1841,17 +1884,11 @@ describe('createPlateRuntimeEditor', () => {
       initialValue: value,
       plugins: [HtmlPlugin, BaseParagraphPlugin],
     });
-    const api = editor.getPluginApi<{
-      html: {
-        deserialize: (options: { element: HTMLElement | string }) => Value;
-      };
-    }>(HtmlPlugin);
-
-    expect(api.html.deserialize({ element: '<p>Hello</p>' })).toEqual([
+    expect(editor.api.html.deserialize({ element: '<p>Hello</p>' })).toEqual([
       { children: [{ text: 'Hello' }], type: 'p' },
     ]);
 
-    editor.tf.setValue('<p>Changed</p>');
+    getRuntimeTransforms(editor).setValue('<p>Changed</p>');
 
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'Changed' }], type: 'p' },
@@ -1873,14 +1910,7 @@ describe('createPlateRuntimeEditor', () => {
       plugins: [DebugPlugin],
     });
 
-    expect(
-      (editor.api as { debug: { label: () => string } }).debug.label()
-    ).toBe('runtime:debug');
-    expect(
-      editor
-        .getPluginApi<{ debug: { label: () => string } }>(DebugPlugin)
-        .debug.label()
-    ).toBe('runtime:debug');
+    expect(editor.api.debug.label()).toBe('runtime:debug');
     expect(Object.hasOwn(editor.api as object, 'debug')).toBe(false);
   });
 
@@ -1899,11 +1929,7 @@ describe('createPlateRuntimeEditor', () => {
         }),
       ],
     });
-    const debugApi = editor.getPluginApi<{
-      debug: { warn: (message: string, type?: string) => void };
-    }>(DebugPlugin);
-
-    debugApi.debug.warn('runtime warning', 'OVERRIDE_MISSING');
+    editor.api.debug.warn('runtime warning', 'OVERRIDE_MISSING');
 
     expect(warn).toHaveBeenCalledWith(
       'runtime warning',
@@ -1963,7 +1989,7 @@ describe('createPlateRuntimeEditor', () => {
     ).toBe('function');
 
     let wasScrolling = false;
-    editor.getTransforms<RuntimeDomTransforms>(DOMPlugin).withScrolling(
+    getRuntimeTransforms<RuntimeDomTransforms>(editor).withScrolling(
       () => {
         wasScrolling = (
           editor.api as { isScrolling: () => boolean }
@@ -2000,7 +2026,7 @@ describe('createPlateRuntimeEditor', () => {
       plugins: [SlateReactExtensionPlugin],
     });
 
-    editor.tf.moveLine = moveLine;
+    getRuntimeTransforms(editor).moveLine = moveLine;
 
     const { container } = render(
       React.createElement(PlateRuntimeContent, { editor })
@@ -2025,7 +2051,7 @@ describe('createPlateRuntimeEditor', () => {
     });
 
     act(() => {
-      editor.tf.reset();
+      getRuntimeTransforms(editor).reset();
     });
 
     expect(editor.read((state) => state.value.root())).toEqual([
@@ -2104,13 +2130,15 @@ describe('createPlateRuntimeEditor', () => {
       plugins: [SlateExtensionPlugin],
     });
 
-    editor.tf.setValue([{ children: [{ text: 'new' }], type: 'p' }]);
+    getRuntimeTransforms(editor).setValue([
+      { children: [{ text: 'new' }], type: 'p' },
+    ]);
 
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'new' }], type: 'p' },
     ]);
 
-    editor.tf.setValue([]);
+    getRuntimeTransforms(editor).setValue([]);
 
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: '' }], type: 'p' },
@@ -2130,7 +2158,7 @@ describe('createPlateRuntimeEditor', () => {
       plugins: [SlateExtensionPlugin],
     });
 
-    expect(editor.tf.resetBlock({ at: [0] })).toBe(true);
+    expect(getRuntimeTransforms(editor).resetBlock({ at: [0] })).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'custom' }], id: 'keep', type: 'p' },
     ]);
@@ -2140,7 +2168,7 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 0, path: [0, 0] });
     });
 
-    expect(editor.tf.resetBlock()).toBe(true);
+    expect(getRuntimeTransforms(editor).resetBlock()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'custom' }], id: 'keep', type: 'p' },
     ]);
@@ -2161,7 +2189,9 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 0, path: [0, 0, 0] });
     });
 
-    expect(editor.tf.liftBlock({ match: { type: 'blockquote' } })).toBe(true);
+    expect(
+      getRuntimeTransforms(editor).liftBlock({ match: { type: 'blockquote' } })
+    ).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'Quote' }], type: 'p' },
     ]);
@@ -2217,7 +2247,7 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 0, path: [0, 0, 0] });
     });
 
-    expect(editor.tf.tab({ reverse: true })).toBe(true);
+    expect(getRuntimeTransforms(editor).tab({ reverse: true })).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'Quote' }], type: 'p' },
       {
@@ -2267,29 +2297,33 @@ describe('createPlateRuntimeEditor', () => {
       plugins: [MediaPlugin, CaptionPlugin],
     });
 
-    expect(editor.tf.moveLine({ reverse: false })).toBe(true);
+    expect(getRuntimeTransforms(editor).moveLine({ reverse: false })).toBe(
+      true
+    );
     expect(editor.getOption(CaptionPlugin, 'focusEndPath')).toEqual([0]);
   });
 
-  it('routes trigger-combobox overrides through v2 insertText', () => {
-    const withTriggerCombobox = () => ({ transforms: {} });
+  it('routes trigger-combobox plugins through v2 insertText', () => {
     const TriggerInputPlugin = createSlatePlugin({
       key: 'trigger_input',
       node: { isElement: true, isInline: true, isVoid: true },
     });
-    const TriggerComboboxPlugin = createSlatePlugin({
-      key: 'triggerCombobox',
-      options: {
-        trigger: '@',
-        triggerPreviousCharPattern: /^$|^\s$/,
-        createComboboxInput: (trigger: string) => ({
-          children: [{ text: '' }],
-          trigger,
-          type: 'trigger_input',
-        }),
-      },
-      plugins: [TriggerInputPlugin],
-    }).overrideEditor(withTriggerCombobox);
+    const TriggerComboboxPlugin = Object.assign(
+      createSlatePlugin({
+        key: 'triggerCombobox',
+        options: {
+          trigger: '@',
+          triggerPreviousCharPattern: /^$|^\s$/,
+          createComboboxInput: (trigger: string) => ({
+            children: [{ text: '' }],
+            trigger,
+            type: 'trigger_input',
+          }),
+        },
+        plugins: [TriggerInputPlugin],
+      }),
+      { runtimeTriggerCombobox: true }
+    );
     const editor = createPlateRuntimeEditor({
       initialValue: [{ children: [{ text: 'hello ' }], type: 'p' }],
       plugins: [TriggerComboboxPlugin],
@@ -2303,7 +2337,7 @@ describe('createPlateRuntimeEditor', () => {
       });
     });
 
-    expect(editor.tf.insertText('@')).toBe(true);
+    expect(getRuntimeTransforms(editor).insertText('@')).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [
@@ -2322,22 +2356,27 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('falls back to plain text when trigger-combobox gates reject input', () => {
-    const withTriggerCombobox = () => ({ transforms: {} });
-    const TriggerComboboxPlugin = createSlatePlugin({
-      key: 'triggerCombobox',
-      options: {
-        trigger: '@',
-        triggerPreviousCharPattern: /^$|^\s$/,
-      },
-    }).overrideEditor(withTriggerCombobox);
-    const QueryComboboxPlugin = createSlatePlugin({
-      key: 'queryCombobox',
-      options: {
-        trigger: '@',
-        triggerPreviousCharPattern: /^$|^\s$/,
-        triggerQuery: () => false,
-      },
-    }).overrideEditor(withTriggerCombobox);
+    const TriggerComboboxPlugin = Object.assign(
+      createSlatePlugin({
+        key: 'triggerCombobox',
+        options: {
+          trigger: '@',
+          triggerPreviousCharPattern: /^$|^\s$/,
+        },
+      }),
+      { runtimeTriggerCombobox: true }
+    );
+    const QueryComboboxPlugin = Object.assign(
+      createSlatePlugin({
+        key: 'queryCombobox',
+        options: {
+          trigger: '@',
+          triggerPreviousCharPattern: /^$|^\s$/,
+          triggerQuery: () => false,
+        },
+      }),
+      { runtimeTriggerCombobox: true }
+    );
     const wordEditor = createPlateRuntimeEditor({
       initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
       plugins: [TriggerComboboxPlugin],
@@ -2364,10 +2403,12 @@ describe('createPlateRuntimeEditor', () => {
       });
     });
 
-    expect(wordEditor.tf.insertText('@')).toBe(true);
-    expect(queryEditor.tf.insertText('@')).toBe(true);
+    expect(getRuntimeTransforms(wordEditor).insertText('@')).toBe(true);
+    expect(getRuntimeTransforms(queryEditor).insertText('@')).toBe(true);
     expect(
-      atEditor.tf.insertText('@', { at: { offset: 0, path: [0, 0] } })
+      getRuntimeTransforms(atEditor).insertText('@', {
+        at: { offset: 0, path: [0, 0] },
+      })
     ).toBe(true);
 
     expect(wordEditor.read((state) => state.value.root())).toEqual([
@@ -2465,7 +2506,7 @@ describe('createPlateRuntimeEditor', () => {
       plugins: [MultiSelectPlugin],
     });
 
-    expect(editor.tf.deleteBackward('character')).toBe(true);
+    expect(getRuntimeTransforms(editor).deleteBackward('character')).toBe(true);
     expect(editor.read((state) => state.selection.get())).not.toEqual({
       anchor: { offset: 0, path: [0, 1] },
       focus: { offset: 0, path: [0, 1] },
@@ -2482,7 +2523,7 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 4, path: [0, 0] });
     });
 
-    expect(editor.tf.insertExitBreak()).toBe(true);
+    expect(getRuntimeTransforms(editor).insertExitBreak()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'test' }], type: 'p' },
       { children: [{ text: '' }], type: 'p' },
@@ -2503,7 +2544,9 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 0, path: [0, 0] });
     });
 
-    expect(editor.tf.insertExitBreak({ reverse: true })).toBe(true);
+    expect(
+      getRuntimeTransforms(editor).insertExitBreak({ reverse: true })
+    ).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: '' }], type: 'p' },
       { children: [{ text: 'test' }], type: 'p' },
@@ -2552,7 +2595,7 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 4, path: [0, 0, 0] });
     });
 
-    expect(editor.tf.insertExitBreak()).toBe(true);
+    expect(getRuntimeTransforms(editor).insertExitBreak()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [
@@ -2576,7 +2619,7 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 3, path: [0, 0] });
     });
 
-    expect(editor.tf.insertBreak()).toBe(true);
+    expect(getRuntimeTransforms(editor).insertBreak()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'run' }], type: 'p' },
       { children: [{ text: 'time' }], type: 'p' },
@@ -2588,11 +2631,8 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes OverridePlugin empty break reset through runtime node transactions', () => {
-    const RuntimeOverrideBreakPlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withBreakRules);
+    const RuntimeOverrideBreakPlugin =
+      createRuntimeOverridePlugin(withBreakRules);
     const HeadingPlugin = createSlatePlugin({
       key: 'heading',
       node: { isElement: true, type: 'heading' },
@@ -2607,18 +2647,15 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 0, path: [0, 0] });
     });
 
-    expect(editor.tf.insertBreak()).toBe(true);
+    expect(getRuntimeTransforms(editor).insertBreak()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: '' }], type: 'p' },
     ]);
   });
 
   it('preserves Plate lineBreak rules as newline insertion', () => {
-    const RuntimeOverrideBreakPlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withBreakRules);
+    const RuntimeOverrideBreakPlugin =
+      createRuntimeOverridePlugin(withBreakRules);
     const CalloutPlugin = createSlatePlugin({
       key: 'callout',
       node: { isElement: true, type: 'callout' },
@@ -2633,7 +2670,7 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 3, path: [0, 0] });
     });
 
-    expect(editor.tf.insertBreak()).toBe(true);
+    expect(getRuntimeTransforms(editor).insertBreak()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'one\ntwo' }], type: 'callout' },
     ]);
@@ -2644,11 +2681,8 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes emptyLineEnd deleteExit break rules through v2 delete and insert transactions', () => {
-    const RuntimeOverrideBreakPlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withBreakRules);
+    const RuntimeOverrideBreakPlugin =
+      createRuntimeOverridePlugin(withBreakRules);
     const CalloutPlugin = createSlatePlugin({
       key: 'callout',
       node: { isElement: true, type: 'callout' },
@@ -2663,7 +2697,7 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 4, path: [0, 0] });
     });
 
-    expect(editor.tf.insertBreak()).toBe(true);
+    expect(getRuntimeTransforms(editor).insertBreak()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'one' }], type: 'callout' },
       { children: [{ text: '' }], type: 'p' },
@@ -2675,11 +2709,8 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('resets splitReset continuations after the v2 break transaction', () => {
-    const RuntimeOverrideBreakPlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withBreakRules);
+    const RuntimeOverrideBreakPlugin =
+      createRuntimeOverridePlugin(withBreakRules);
     const HeadingPlugin = createSlatePlugin({
       key: 'heading',
       node: { isElement: true, type: 'heading' },
@@ -2694,7 +2725,7 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 2, path: [0, 0] });
     });
 
-    expect(editor.tf.insertBreak()).toBe(true);
+    expect(getRuntimeTransforms(editor).insertBreak()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'Ti' }], type: 'heading' },
       { children: [{ text: 'tle' }], type: 'p' },
@@ -2702,12 +2733,10 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes OverridePlugin start delete reset through runtime node transactions', () => {
-    const RuntimeOverrideDeletePlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withBreakRules)
-      .overrideEditor(withDeleteRules);
+    const RuntimeOverrideDeletePlugin = createRuntimeOverridePlugin(
+      withBreakRules,
+      withDeleteRules
+    );
     const CalloutPlugin = createSlatePlugin({
       key: 'callout',
       node: { isElement: true, type: 'callout' },
@@ -2722,19 +2751,17 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 0, path: [0, 0] });
     });
 
-    expect(editor.tf.deleteBackward()).toBe(true);
+    expect(getRuntimeTransforms(editor).deleteBackward()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'Callout' }], type: 'p' },
     ]);
   });
 
   it('routes OverridePlugin empty delete reset after start falls through', () => {
-    const RuntimeOverrideDeletePlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withBreakRules)
-      .overrideEditor(withDeleteRules);
+    const RuntimeOverrideDeletePlugin = createRuntimeOverridePlugin(
+      withBreakRules,
+      withDeleteRules
+    );
     const EmptyPlugin = createSlatePlugin({
       key: 'emptyBlock',
       node: { isElement: true, type: 'emptyBlock' },
@@ -2749,19 +2776,17 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 0, path: [0, 0] });
     });
 
-    expect(editor.tf.deleteBackward()).toBe(true);
+    expect(getRuntimeTransforms(editor).deleteBackward()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: '' }], type: 'p' },
     ]);
   });
 
   it('lifts matched delete rules through the runtime liftBlock route', () => {
-    const RuntimeOverrideDeletePlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withBreakRules)
-      .overrideEditor(withDeleteRules);
+    const RuntimeOverrideDeletePlugin = createRuntimeOverridePlugin(
+      withBreakRules,
+      withDeleteRules
+    );
     const BlockquotePlugin = createSlatePlugin({
       key: 'blockquote',
       node: { isElement: true, type: 'blockquote' },
@@ -2784,7 +2809,7 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 0, path: [0, 0, 0] });
     });
 
-    expect(editor.tf.deleteBackward()).toBe(true);
+    expect(getRuntimeTransforms(editor).deleteBackward()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'Quote' }], type: 'p' },
     ]);
@@ -2799,19 +2824,45 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 0, path: [0, 0] });
     });
 
-    expect(editor.tf.deleteBackward()).toBe(true);
+    expect(getRuntimeTransforms(editor).deleteBackward()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'Heading' }], type: 'p' },
     ]);
   });
 
+  it('selects the previous keyboard-selectable block void before backward deletion removes it', () => {
+    const VoidBlockPlugin = createSlatePlugin({
+      key: 'voidBlock',
+      node: { isElement: true, isVoid: true, type: 'voidBlock' },
+    });
+    const editor = createPlateRuntimeEditor({
+      initialValue: [
+        { children: [{ text: '' }], type: 'voidBlock' },
+        { children: [{ text: 'after' }], type: 'p' },
+      ],
+      plugins: [VoidBlockPlugin],
+    });
+
+    editor.update((tx) => {
+      tx.selection.set({ offset: 0, path: [1, 0] });
+    });
+
+    expect(getRuntimeTransforms(editor).deleteBackward()).toBe(true);
+    expect(editor.read((state) => state.value.root())).toEqual([
+      { children: [{ text: '' }], type: 'voidBlock' },
+      { children: [{ text: 'after' }], type: 'p' },
+    ]);
+    expect(editor.read((state) => state.selection.get())).toEqual({
+      anchor: { offset: 0, path: [0, 0] },
+      focus: { offset: 0, path: [0, 0] },
+    });
+  });
+
   it('uses normal v2 backward deletion away from the block start', () => {
-    const RuntimeOverrideDeletePlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withBreakRules)
-      .overrideEditor(withDeleteRules);
+    const RuntimeOverrideDeletePlugin = createRuntimeOverridePlugin(
+      withBreakRules,
+      withDeleteRules
+    );
     const HeadingPlugin = createSlatePlugin({
       key: 'heading',
       node: { isElement: true, type: 'heading' },
@@ -2826,7 +2877,7 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 4, path: [0, 0] });
     });
 
-    expect(editor.tf.deleteBackward()).toBe(true);
+    expect(getRuntimeTransforms(editor).deleteBackward()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'Heaing' }], type: 'heading' },
     ]);
@@ -2851,7 +2902,7 @@ describe('createPlateRuntimeEditor', () => {
       });
     });
 
-    expect(editor.tf.deleteFragment()).toBe(true);
+    expect(getRuntimeTransforms(editor).deleteFragment()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: '' }], type: 'p' },
     ]);
@@ -2862,11 +2913,8 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes OverridePlugin merge removeEmpty rules through the Slate v2 merge query', () => {
-    const RuntimeOverrideMergePlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withMergeRules);
+    const RuntimeOverrideMergePlugin =
+      createRuntimeOverridePlugin(withMergeRules);
     const ParagraphPlugin = createSlatePlugin({
       key: 'paragraph',
       node: { isElement: true, type: 'p' },
@@ -2884,7 +2932,7 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 0, path: [1, 0] });
     });
 
-    expect(editor.tf.deleteBackward()).toBe(true);
+    expect(getRuntimeTransforms(editor).deleteBackward()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'content' }], type: 'p' },
     ]);
@@ -2895,11 +2943,8 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('keeps empty custom merge targets by default in the runtime merge query', () => {
-    const RuntimeOverrideMergePlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withMergeRules);
+    const RuntimeOverrideMergePlugin =
+      createRuntimeOverridePlugin(withMergeRules);
     const CustomPlugin = createSlatePlugin({
       key: 'custom',
       node: { isElement: true, type: 'custom' },
@@ -2916,7 +2961,7 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 0, path: [1, 0] });
     });
 
-    expect(editor.tf.deleteBackward()).toBe(true);
+    expect(getRuntimeTransforms(editor).deleteBackward()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'content' }], type: 'custom' },
     ]);
@@ -2927,11 +2972,8 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('lets match override rules veto runtime empty-target merge removal', () => {
-    const RuntimeOverrideMergePlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withMergeRules);
+    const RuntimeOverrideMergePlugin =
+      createRuntimeOverridePlugin(withMergeRules);
     const ParagraphPlugin = createSlatePlugin({
       key: 'paragraph',
       node: { isElement: true, type: 'p' },
@@ -2969,7 +3011,7 @@ describe('createPlateRuntimeEditor', () => {
       tx.selection.set({ offset: 0, path: [1, 0] });
     });
 
-    expect(editor.tf.deleteBackward()).toBe(true);
+    expect(getRuntimeTransforms(editor).deleteBackward()).toBe(true);
     expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [{ text: 'content' }],
@@ -2984,11 +3026,8 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes OverridePlugin normalize removeEmpty rules through v2 node normalizers', () => {
-    const RuntimeOverrideNormalizePlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withNormalizeRules);
+    const RuntimeOverrideNormalizePlugin =
+      createRuntimeOverridePlugin(withNormalizeRules);
     const EmptyBlockPlugin = createSlatePlugin({
       key: 'emptyBlock',
       node: { isElement: true, type: 'emptyBlock' },
@@ -3012,11 +3051,8 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('keeps empty normalized targets by default on the runtime route', () => {
-    const RuntimeOverrideNormalizePlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withNormalizeRules);
+    const RuntimeOverrideNormalizePlugin =
+      createRuntimeOverridePlugin(withNormalizeRules);
     const EmptyBlockPlugin = createSlatePlugin({
       key: 'emptyBlock',
       node: { isElement: true, type: 'emptyBlock' },
@@ -3040,11 +3076,8 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('lets match override rules force runtime empty-target normalization', () => {
-    const RuntimeOverrideNormalizePlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withNormalizeRules);
+    const RuntimeOverrideNormalizePlugin =
+      createRuntimeOverridePlugin(withNormalizeRules);
     const ParagraphPlugin = createSlatePlugin({
       key: 'paragraph',
       node: { isElement: true, type: 'paragraph' },
@@ -3083,11 +3116,8 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('lets match override rules veto runtime empty-target normalization', () => {
-    const RuntimeOverrideNormalizePlugin = createSlatePlugin({
-      key: 'override',
-    })
-      .overrideEditor(withOverrides)
-      .overrideEditor(withNormalizeRules);
+    const RuntimeOverrideNormalizePlugin =
+      createRuntimeOverridePlugin(withNormalizeRules);
     const ParagraphPlugin = createSlatePlugin({
       key: 'paragraph',
       node: { isElement: true, type: 'paragraph' },
@@ -3134,8 +3164,8 @@ describe('createPlateRuntimeEditor', () => {
     });
     const navigationApi = editor.api as typeof editor.api &
       NavigationRuntimeApi;
-    const navigationTf = editor.tf as typeof editor.tf &
-      NavigationRuntimeTransforms;
+    const navigationTf =
+      getRuntimeTransforms<NavigationRuntimeTransforms>(editor);
 
     expect(navigationApi.navigation.activeTarget()).toBeNull();
 
@@ -3225,7 +3255,9 @@ describe('createPlateRuntimeEditor', () => {
       ),
     } satisfies Pick<DataTransfer, 'files' | 'getData'>;
 
-    expect(editor.tf.insertData(dataTransfer as DataTransfer)).toBe(true);
+    expect(
+      getRuntimeTransforms(editor).insertData(dataTransfer as DataTransfer)
+    ).toBe(true);
     expect(preInsert).toHaveBeenCalledOnce();
     expect(editor.read((state) => state.value.root())).toEqual([
       createParagraph('hello-world'),
@@ -3233,21 +3265,15 @@ describe('createPlateRuntimeEditor', () => {
     ]);
   });
 
-  it('registers plugin tx groups and the Plate transform facade', () => {
+  it('registers plugin tx groups with inferred update transactions', () => {
     const nextValue: Value = [
       { children: [{ text: 'changed through tx' }], type: 'p' },
     ];
     const TxPlugin = createSlatePlugin({
       key: 'txPlugin',
-    })
-      .extendTx(() => ({
-        txPlugin: (tx: EditorUpdateTransaction<Value>) => ({
-          replace: () => tx.value.replace({ children: nextValue }),
-        }),
-      }))
-      .extendTransforms(({ editor }) => ({
-        replace: () => editor.update((tx) => tx.txPlugin.replace()),
-      }));
+    }).extendTx(() => (tx: EditorUpdateTransaction<Value>) => ({
+      replace: () => tx.value.replace({ children: nextValue }),
+    }));
     const DirectTxPlugin = {
       key: 'directTxPlugin',
       tx: {
@@ -3276,14 +3302,12 @@ describe('createPlateRuntimeEditor', () => {
     });
 
     expect(editor.read((state) => state.value.root())).toEqual(nextValue);
-    expect(editor.tf.txPlugin.replace).toBe(
-      editor.getTransforms<TxPluginTransforms>(TxPlugin).txPlugin.replace
-    );
-
     editor.update((tx) => {
       tx.value.replace({ children: value });
     });
-    editor.getTransforms<TxPluginTransforms>(TxPlugin).txPlugin.replace();
+    editor.update((tx) => {
+      tx.txPlugin.replace();
+    });
     expect(editor.read((state) => state.value.root())).toEqual(nextValue);
 
     const publicEditor = createPlateEditor<Value, typeof TxPlugin>({
@@ -3317,6 +3341,31 @@ describe('createPlateRuntimeEditor', () => {
     });
 
     expect(directEditor.read((state) => state.value.root())).toEqual(nextValue);
+  });
+
+  it('aggregates shared Plate plugin tx groups into one Slate runtime group', () => {
+    const FirstPlugin = createSlatePlugin({
+      key: 'firstTx',
+    }).extendTxGroup('insert', () => () => ({
+      first: () => 'first',
+    }));
+    const SecondPlugin = createSlatePlugin({
+      key: 'secondTx',
+    }).extendTxGroup('insert', () => () => ({
+      second: () => 'second',
+    }));
+    const editor = createPlateRuntimeEditor({
+      initialValue: value,
+      plugins: [FirstPlugin, SecondPlugin],
+    });
+    const calls: string[] = [];
+
+    editor.update((tx) => {
+      calls.push(tx.insert.first());
+      calls.push(tx.insert.second());
+    });
+
+    expect(calls).toEqual(['first', 'second']);
   });
 
   it('resolves nested configurePlugin metadata', () => {
@@ -3425,7 +3474,7 @@ describe('createPlateRuntimeEditor', () => {
     });
 
     expect(
-      editor.tf.init({
+      getRuntimeTransforms(editor).init({
         autoSelect: 'end',
         onReady,
         shouldNormalizeEditor: true,
@@ -3462,7 +3511,7 @@ describe('createPlateRuntimeEditor', () => {
     });
 
     expect(
-      editor.tf.init({
+      getRuntimeTransforms(editor).init({
         autoSelect: 'end',
         onReady,
         selection,
@@ -3484,9 +3533,14 @@ describe('createPlateRuntimeEditor', () => {
   it('rejects plugins that need global command-surface packets', () => {
     const CommandPlugin = createSlatePlugin({
       key: 'command',
-    }).extendEditorTransforms(() => ({
-      command: () => false,
-    }));
+    });
+    CommandPlugin.__apiExtensions.push({
+      extension: () => ({
+        command: () => false,
+      }),
+      isPluginSpecific: false,
+      isTransform: true,
+    } as any);
 
     expect(() =>
       createPlateRuntimeEditor({
@@ -3508,27 +3562,56 @@ describe('createPlateRuntimeEditor', () => {
       })
     ).toThrow('uses extendEditor');
 
-    const TransformPlugin = createSlatePlugin({
+    const TxPlugin = createSlatePlugin({
       key: 'transform',
-    }).extendTransforms(({ editor }) => ({
+    }).extendTx(() => (tx) => ({
       replace: () =>
-        editor.update((tx) =>
-          tx.value.replace({
-            children: [{ children: [{ text: 'ok' }], type: 'p' }],
-          })
-        ),
+        tx.value.replace({
+          children: [{ children: [{ text: 'ok' }], type: 'p' }],
+        }),
     }));
 
     const transformEditor = createPlateRuntimeEditor({
       initialValue: value,
-      plugins: [TransformPlugin],
+      plugins: [TxPlugin],
     });
 
-    transformEditor
-      .getTransforms<TransformPluginTransforms>(TransformPlugin)
-      .transform.replace();
+    transformEditor.update((tx) => tx.transform.replace());
     expect(transformEditor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'ok' }], type: 'p' },
+    ]);
+  });
+
+  it('lets plugin-specific transform facades wrap tx groups', () => {
+    let wrapped = false;
+    const FacadePlugin = createSlatePlugin({
+      key: 'facade',
+    })
+      .extendTx(() => (tx) => ({
+        replace: () => {
+          tx.value.replace({
+            children: [{ children: [{ text: 'wrapped' }], type: 'p' }],
+          });
+        },
+      }))
+      .extendTransforms(({ tf }) => ({
+        replace: () => {
+          wrapped = true;
+
+          return (tf.facade as any).replace();
+        },
+      }));
+
+    const editor = createPlateRuntimeEditor({
+      initialValue: value,
+      plugins: [FacadePlugin],
+    });
+
+    (getRuntimeTransforms(editor).facade as any).replace();
+
+    expect(wrapped).toBe(true);
+    expect(editor.read((state) => state.value.root())).toEqual([
+      { children: [{ text: 'wrapped' }], type: 'p' },
     ]);
   });
 });

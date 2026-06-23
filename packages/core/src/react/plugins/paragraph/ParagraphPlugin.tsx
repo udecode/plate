@@ -1,5 +1,6 @@
 import { Key } from '@udecode/react-hotkeys';
 
+import { getCurrentRuntimeTransforms } from '../../../internal/currentRuntimeBridge';
 import { BaseParagraphPlugin } from '../../../lib';
 import { toPlatePlugin } from '../../plugin/toPlatePlugin';
 
@@ -14,7 +15,7 @@ export const ParagraphPlugin = toPlatePlugin(
         ],
         preventDefault: true,
         handler: () => {
-          editor.tf.toggleBlock(type);
+          getCurrentRuntimeTransforms(editor).toggleBlock(type);
         },
       },
     },

@@ -33,9 +33,6 @@ describe('MarkdownPlugin', () => {
     expect(typeof editor.api.markdown.deserialize).toBe('function');
     expect(typeof editor.api.markdown.deserializeInline).toBe('function');
     expect(typeof editor.api.markdown.serialize).toBe('function');
-    expect(
-      typeof editor.getPluginApi(MarkdownPlugin).markdown.deserialize
-    ).toBe('function');
     expect(plugin.parser.format).toBe('text/plain');
     expect(
       plugin.parser.deserialize?.({
@@ -49,11 +46,11 @@ describe('MarkdownPlugin', () => {
       plugins: [MarkdownPlugin],
       runtime: 'slate-v2',
     });
-    const api = editor.getPluginApi<{
+    const api = editor.api as typeof editor.api & {
       markdown: {
         deserialize: (data: string) => unknown;
       };
-    }>(MarkdownPlugin);
+    };
 
     expect(typeof api.markdown.deserialize).toBe('function');
     expect(api.markdown.deserialize('plain text')).toEqual([

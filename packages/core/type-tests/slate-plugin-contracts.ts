@@ -1,10 +1,8 @@
-import { createEditor } from '@platejs/slate-legacy';
-
 import {
   type PluginConfig,
+  createSlateEditor,
   createSlatePlugin,
   createTSlatePlugin,
-  withSlate,
 } from '@platejs/core';
 
 const BoldPlugin = createSlatePlugin({
@@ -50,7 +48,7 @@ const ConfiguredCalloutPlugin = CalloutPlugin.configure({
   },
 });
 
-const slateEditor = withSlate(createEditor(), {
+const slateEditor = createSlateEditor({
   plugins: [BoldPlugin, ConfiguredCalloutPlugin],
 });
 

@@ -1,6 +1,8 @@
-import type { TCommentText, TNode } from 'platejs';
+import type { TCommentText } from 'platejs';
 
 import { KEYS } from 'platejs';
 
-export const isCommentText = (node: TNode): node is TCommentText =>
-  !!node[KEYS.comment];
+export const isCommentText = (node: unknown): node is TCommentText =>
+  typeof node === 'object' &&
+  node !== null &&
+  !!(node as Record<string, unknown>)[KEYS.comment];

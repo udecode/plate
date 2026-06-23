@@ -1,6 +1,13 @@
 import { getContainerTypes } from '@platejs/core';
 import { useEditorSelector } from '@platejs/core/react';
-import type { EditorPropOptions, TElement } from '@platejs/slate-legacy';
+import type { Descendant, Element } from '@platejs/slate';
+
+type SelectionFragmentPropOptions = {
+  defaultValue?: string;
+  getProp?: (node: Descendant) => any;
+  key?: string;
+  mode?: 'all' | 'block' | 'text';
+};
 
 export const useSelectionFragment = () =>
   useEditorSelector(
@@ -12,10 +19,10 @@ export const useSelectionFragment = () =>
   );
 
 export const useSelectionFragmentProp = (
-  options: Omit<EditorPropOptions, 'nodes'> = {}
+  options: SelectionFragmentPropOptions = {}
 ) =>
   useEditorSelector((editor) => {
-    const fragment = editor.api.fragment<TElement>(editor.selection, {
+    const fragment = editor.api.fragment<Element>(editor.selection, {
       unwrap: getContainerTypes(editor),
     });
 

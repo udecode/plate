@@ -192,8 +192,8 @@ The `overrideEditor` method provides a way to override existing editor methods w
 const CustomPlugin = createPlatePlugin({
   key: 'custom',
 }).overrideEditor(({ editor, tf: { deleteForward }, api: { isInline } }) => ({
-  // Override transforms
-  transforms: {
+  // Override existing editor transform methods
+  tf: {
     deleteForward(options) {
       // Custom logic before deletion
       console.info('Deleting forward...');
@@ -220,9 +220,9 @@ const CustomPlugin = createPlatePlugin({
 }));
 ```
 
-- Access to original methods via destructured `tf` (transforms) and `api` parameters
+- Access to original methods via destructured `tf` and `api` parameters
 - Type-safe overrides of existing methods
-- Clean separation between transforms and API methods
+- Clean separation between `tf` overrides and API methods
 - Plugin context and options access
 
 Example with typed options:
@@ -237,7 +237,7 @@ const CustomPlugin = createTPlatePlugin<CustomConfig>({
   key: 'custom',
   options: { allowDelete: true },
 }).overrideEditor(({ editor, tf: { deleteForward }, getOptions }) => ({
-  transforms: {
+  tf: {
     deleteForward(options) {
       // Use typed options to control behavior
       if (!getOptions().allowDelete) {
@@ -415,11 +415,15 @@ type CodeBlockConfig = PluginConfig<
     };
     toggleSyntax: () => void;
   },
-  // transforms
+  // legacy transform slot
+  {},
+  // selectors
+  {},
+  // tx
   {
     insert: {
-      codeBlock: (options: { language: string }) => void;
-    }
+      codeBlock: () => void;
+    };
   }
 >;
 
@@ -431,11 +435,13 @@ const CodeBlockPlugin = createTPlatePlugin<CodeBlockConfig>({
     getSyntaxState: () => true,
   },
   toggleSyntax: () => {},
-})).extendEditorTransforms<CodeBlockConfig['transforms']>(() => ({
-  insert: {
-    codeBlock: ({ editor, getOptions }) => {
-      editor.tf.insertBlock({ type: 'code_block', language: getOptions().language });
-    },
+})).extendTxGroup('insert', ({ getOptions }) => (tx) => ({
+  codeBlock: () => {
+    tx.nodes.insert({
+      type: 'code_block',
+      language: getOptions().language,
+      children: [{ text: '' }],
+    });
   },
 }));
 ```
@@ -461,8 +467,8 @@ editor.api.plugin.getSyntaxState();
 editor.api.plugin2.setLanguage('python');
 editor.api.plugin.getLanguage();
 
-// Type-safe Transforms
-editor.tf.insert.codeBlock({ language: 'typescript' });
+// Type-safe transactions
+editor.update((tx) => tx.insert.codeBlock());
 ```
 
 ## See also

@@ -71,7 +71,7 @@ console.info(plainText);
 ### Read and Write Markdown
 
 Add `MarkdownPlugin` when the script needs Markdown helpers through
-`editor.getApi(MarkdownPlugin)`. You can also call `deserializeMd` and
+`editor.getPluginApi(MarkdownPlugin)`. You can also call `deserializeMd` and
 `serializeMd` directly.
 
 ```ts showLineNumbers title="scripts/markdown-io.ts"

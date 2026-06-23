@@ -1,14 +1,23 @@
 import isUndefined from 'lodash/isUndefined.js';
 import omitBy from 'lodash/omitBy.js';
 
-import type { SlateEditor } from '../../editor';
 import type {
   AutoScrollOperationsMap,
+  DomConfig,
   ScrollIntoViewOptions,
   ScrollMode,
 } from './DOMPlugin';
 
-import { AUTO_SCROLL, DOMPlugin } from './DOMPlugin';
+import { AUTO_SCROLL } from './DOMPlugin';
+
+type DomPluginOptions = DomConfig['options'];
+
+const DOM_PLUGIN = { key: 'dom' } as const;
+
+type DomScrollingEditor = {
+  getOptions: (plugin: typeof DOM_PLUGIN) => DomPluginOptions;
+  setOptions: (plugin: typeof DOM_PLUGIN, options: DomPluginOptions) => void;
+};
 
 export type WithAutoScrollOptions = {
   mode?: ScrollMode;
@@ -17,11 +26,11 @@ export type WithAutoScrollOptions = {
 };
 
 export const withScrolling = (
-  editor: SlateEditor,
+  editor: DomScrollingEditor,
   fn: () => void,
   options?: WithAutoScrollOptions
 ) => {
-  const prevOptions = editor.getOptions(DOMPlugin);
+  const prevOptions = editor.getOptions(DOM_PLUGIN);
   const prevAutoScroll = AUTO_SCROLL.get(editor) ?? false;
 
   if (options) {
@@ -50,7 +59,7 @@ export const withScrolling = (
       ),
     };
 
-    editor.setOptions(DOMPlugin, ops);
+    editor.setOptions(DOM_PLUGIN, ops);
   }
 
   AUTO_SCROLL.set(editor, true);
@@ -59,6 +68,6 @@ export const withScrolling = (
     fn();
   } finally {
     AUTO_SCROLL.set(editor, prevAutoScroll);
-    editor.setOptions(DOMPlugin, prevOptions);
+    editor.setOptions(DOM_PLUGIN, prevOptions);
   }
 };

@@ -2,6 +2,7 @@ import type { SlateEditor } from '@platejs/core';
 import type { Element, ElementEntry, Location, Path } from '@platejs/slate';
 import { RangeApi } from '@platejs/slate';
 import { KEYS } from '@platejs/utils';
+import { hasEditorPath } from '../internal/editorQueries';
 
 /**
  * Returns the nearest li and ul / ol wrapping node entries for a given path
@@ -15,6 +16,8 @@ export const getTodoListItemEntry = (
 
   let _at: Path;
 
+  if (!at) return;
+
   if (RangeApi.isRange(at) && !RangeApi.isCollapsed(at)) {
     _at = at.focus.path;
   } else if (RangeApi.isRange(at)) {
@@ -22,13 +25,13 @@ export const getTodoListItemEntry = (
   } else {
     _at = at as Path;
   }
-  if (_at) {
+  if (_at && hasEditorPath(editor, _at)) {
     const node = editor.api.node<Element>(_at)?.[0];
 
     if (node) {
       const listItem = editor.api.above<Element>({
         at: _at,
-        match: { type: todoType },
+        match: (node) => node.type === todoType,
       });
 
       if (listItem) {

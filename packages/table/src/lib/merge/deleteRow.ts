@@ -16,10 +16,11 @@ import {
   getCellTypes,
   getTableColumnCount,
 } from '..';
+import { findTableNodePath } from '../utils/findTableNodePath';
 import { deleteRowWhenExpanded } from './deleteRowWhenExpanded';
 
 export const deleteTableMergeRow = (editor: SlateEditor) => {
-  const { api, tf, type } = getEditorPlugin<TableConfig>(editor, {
+  const { api, type } = getEditorPlugin<TableConfig>(editor, {
     key: KEYS.table,
   });
 
@@ -94,7 +95,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
       | undefined;
 
     if (nextRow === undefined && deletingRowIndex === 0) {
-      tf.remove.table();
+      editor.update<TableConfig['tx']>((tx) => tx.remove.table());
 
       return;
     }
@@ -115,7 +116,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
 
         if (startingCellIndex === -1) {
           const startingCell = nextRow.children.at(-1) as TTableCellElement;
-          const startingCellPath = editor.api.findPath(startingCell)!;
+          const startingCellPath = findTableNodePath(editor, startingCell)!;
           const tablePath = startingCellPath.slice(0, -2);
           const colPath = startingCellPath.at(-1)! + index + 1;
           const nextRowStartCellPath = [...tablePath, nextRowIndex, colPath];
@@ -128,8 +129,10 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
             newCell.attributes.rowspan = rowSpan.toString();
           }
 
-          editor.tf.insertNodes(newCell, {
-            at: nextRowStartCellPath,
+          editor.update((tx) => {
+            tx.nodes.insert(newCell, {
+              at: nextRowStartCellPath,
+            });
           });
 
           continue;
@@ -148,7 +151,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
           incrementBy += 1;
         }
 
-        const startingCellPath = editor.api.findPath(startingCell)!;
+        const startingCellPath = findTableNodePath(editor, startingCell)!;
         const tablePath = startingCellPath.slice(0, -2);
         const colPath = startingCellPath.at(-1)!;
 
@@ -166,8 +169,10 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
           newCell.attributes.rowspan = rowSpan.toString();
         }
 
-        editor.tf.insertNodes(newCell, {
-          at: nextRowStartCellPath,
+        editor.update((tx) => {
+          tx.nodes.insert(newCell, {
+            at: nextRowStartCellPath,
+          });
         });
       }
     }
@@ -177,7 +182,7 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
       const { row: curRowCellRowIndex } = getCellIndices(editor, curRowCell);
       const curRowCellRowSpan = api.table.getRowSpan(curRowCell);
 
-      const curCellPath = editor.api.findPath(curRowCell)!;
+      const curCellPath = findTableNodePath(editor, curRowCell)!;
 
       const curCellEndingRowIndex = Math.min(
         curRowCellRowIndex + curRowCellRowSpan - 1,
@@ -191,14 +196,18 @@ export const deleteTableMergeRow = (editor: SlateEditor) => {
         newCell.attributes.rowspan = rowSpan.toString();
       }
 
-      editor.tf.setNodes<TTableCellElement>(newCell, { at: curCellPath });
+      editor.update((tx) => {
+        tx.nodes.set(newCell, { at: curCellPath });
+      });
     });
 
     const rowToDelete = table.children[deletingRowIndex] as TTableRowElement;
-    const rowPath = editor.api.findPath(rowToDelete);
+    const rowPath = findTableNodePath(editor, rowToDelete);
     Array.from({ length: rowsDeleteNumber }).forEach(() => {
-      editor.tf.removeNodes({
-        at: rowPath,
+      editor.update((tx) => {
+        tx.nodes.remove({
+          at: rowPath,
+        });
       });
     });
   }

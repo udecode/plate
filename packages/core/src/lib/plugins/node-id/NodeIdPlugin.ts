@@ -1,20 +1,17 @@
-import {
-  type Descendant,
-  type QueryNodeOptions,
-  type Value,
-  ElementApi,
-  queryNode,
-} from '@platejs/slate-legacy';
+import { type Descendant, type Value, ElementApi } from '@platejs/slate';
 import { nanoid } from 'nanoid';
 
 import type { PluginConfig } from '../../plugin/BasePlugin';
 
+import { getCurrentRuntimeTransforms } from '../../../internal/currentRuntimeBridge';
+import { withLegacyTransformOverride } from '../../../internal/plugin/withLegacyTransformOverride';
 import { createTSlatePlugin } from '../../plugin/createSlatePlugin';
-import { withNodeId } from './withNodeId';
+import { type QueryNodeOptions, queryNode } from '../../utils/queryNode';
+import { withNodeId } from './internal/withNodeId';
 
 export type NodeIdOptions = {
   /**
-   * By default, when a node inserted using editor.tf.insertNode(s) has an id,
+   * By default, when a node inserted with the legacy insert-node transform has an id,
    * it will be used instead of the id generator, except if it already exists in
    * the document. Set this option to true to disable this behavior.
    */
@@ -48,16 +45,6 @@ export type NodeIdOptions = {
    * @default 'if-needed'
    */
   initialValueIds?: false | 'always' | 'if-needed';
-  /**
-   * Legacy alias for `initialValueIds`.
-   *
-   * - `false`: only check the first and last top-level nodes
-   * - `true`: walk the whole initial value and fill missing ids
-   * - `null`: skip initial-value id assignment
-   *
-   * @deprecated Use `initialValueIds` instead.
-   */
-  normalizeInitialValue?: boolean | null;
   /**
    * Reports duplicate-id scan cost during inserted-node normalization.
    */
@@ -97,6 +84,15 @@ type NormalizeNodeIdRuntimeOptions = NormalizeNodeIdOptions & {
   isBlock?: (node: Descendant) => boolean;
 };
 
+type InlineFlagElement = Descendant & {
+  inline?: boolean;
+};
+
+type NodeIdBatchUpdate = {
+  at: number[];
+  props: Record<string, unknown>;
+};
+
 const defaultNodeIdFilter = () => true;
 
 const isDefaultNodeIdFastPath = ({
@@ -117,7 +113,7 @@ const isBlockCandidate = (
   isBlock?: (node: Descendant) => boolean
 ) =>
   ElementApi.isElement(node) &&
-  (isBlock ? isBlock(node) : (node as any).inline !== true);
+  (isBlock ? isBlock(node) : (node as InlineFlagElement).inline !== true);
 
 const shouldAssignNodeId = (
   entry: [Descendant, number[]],
@@ -148,7 +144,9 @@ const shouldAssignNodeId = (
         if (
           filterInline &&
           ElementApi.isElement(entryNode) &&
-          !(isBlock ? isBlock(entryNode) : (entryNode as any).inline !== true)
+          !(isBlock
+            ? isBlock(entryNode)
+            : (entryNode as InlineFlagElement).inline !== true)
         ) {
           return false;
         }
@@ -160,22 +158,8 @@ const shouldAssignNodeId = (
 };
 
 const resolveInitialValueIds = (
-  options: Pick<NodeIdOptions, 'initialValueIds' | 'normalizeInitialValue'>
-): false | 'always' | 'if-needed' => {
-  if (options.initialValueIds !== undefined) {
-    return options.initialValueIds;
-  }
-
-  if (options.normalizeInitialValue === null) {
-    return false;
-  }
-
-  if (options.normalizeInitialValue === true) {
-    return 'always';
-  }
-
-  return 'if-needed';
-};
+  options: Pick<NodeIdOptions, 'initialValueIds'>
+): false | 'always' | 'if-needed' => options.initialValueIds ?? 'if-needed';
 
 /**
  * Normalize node IDs in a value without using editor operations. This is a pure
@@ -321,7 +305,7 @@ export type NodeIdConfig = PluginConfig<
 >;
 
 /** @see {@link withNodeId} */
-export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
+const BaseNodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
   key: 'nodeId',
   options: {
     filterInline: true,
@@ -336,11 +320,11 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
       isMetadataProp: ({ key }) => key === (getOptions().idKey ?? 'id'),
     },
   }))
-  .extendTransforms(({ editor, getOptions }) => ({
+  .extendTx(({ editor, getOptions }) => () => ({
     normalize() {
       const options = getOptions();
       const { idCreator, idKey } = options;
-      const updates: { at: number[]; props: Record<string, unknown> }[] = [];
+      const updates: NodeIdBatchUpdate[] = [];
 
       if (
         isDefaultNodeIdFastPath({ ...options, isBlock: editor.api.isBlock })
@@ -358,7 +342,7 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
             });
           }
 
-          node.children.forEach((child: any, index: number) => {
+          node.children.forEach((child, index) => {
             path.push(index);
             visitFast(child);
             path.pop();
@@ -373,8 +357,10 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
 
         if (updates.length === 0) return;
 
-        editor.tf.withoutSaving(() => {
-          editor.tf.setNodesBatch(updates as any);
+        const tf = getCurrentRuntimeTransforms(editor);
+
+        tf.withoutSaving(() => {
+          tf.setNodesBatch(updates);
         });
 
         return;
@@ -394,7 +380,7 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
 
         // Only traverse children if this is an Element node
         if (ElementApi.isElement(node)) {
-          node.children.forEach((child: any, index: number) => {
+          node.children.forEach((child, index) => {
             addNodeId([child, [...path, index]]);
           });
         }
@@ -407,8 +393,10 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
 
       if (updates.length === 0) return;
 
-      editor.tf.withoutSaving(() => {
-        editor.tf.setNodesBatch(updates as any);
+      const tf = getCurrentRuntimeTransforms(editor);
+
+      tf.withoutSaving(() => {
+        tf.setNodesBatch(updates);
       });
     },
   }))
@@ -434,5 +422,9 @@ export const NodeIdPlugin = createTSlatePlugin<NodeIdConfig>({
 
       return normalizeNodeIdWithEditor(editor, value, options);
     },
-  })
-  .overrideEditor(withNodeId);
+  });
+
+export const NodeIdPlugin = withLegacyTransformOverride(
+  BaseNodeIdPlugin,
+  withNodeId
+);

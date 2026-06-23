@@ -1,12 +1,13 @@
-import type { Editor, NodeEntry } from 'platejs';
+import type { Node, NodeEntry } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 import { ListStyleType } from '../types';
 
 export const areEqListStyleType = (
-  _editor: Editor,
-  entries: NodeEntry[],
+  _editor: SlateEditor,
+  entries: NodeEntry<Node>[],
   {
     listStyleType = ListStyleType.Disc,
   }: {
@@ -17,9 +18,10 @@ export const areEqListStyleType = (
 
   for (const entry of entries) {
     const [block] = entry;
+    const blockProps = block as Record<string, unknown>;
 
     if (listStyleType === KEYS.listTodo) {
-      if (!Object.hasOwn(block, KEYS.listChecked)) {
+      if (!Object.hasOwn(blockProps, KEYS.listChecked)) {
         eqListStyleType = false;
 
         break;
@@ -27,7 +29,10 @@ export const areEqListStyleType = (
 
       continue;
     }
-    if (!block[KEYS.listType] || block[KEYS.listType] !== listStyleType) {
+    if (
+      !blockProps[KEYS.listType] ||
+      blockProps[KEYS.listType] !== listStyleType
+    ) {
       eqListStyleType = false;
 
       break;

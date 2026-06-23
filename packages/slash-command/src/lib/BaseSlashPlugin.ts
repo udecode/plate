@@ -1,9 +1,7 @@
-import {
-  type TriggerComboboxPluginOptions,
-  withTriggerCombobox,
-} from '@platejs/combobox';
+import type { TriggerComboboxPluginOptions } from '@platejs/combobox';
 import {
   type PluginConfig,
+  type SlatePlugin,
   createSlatePlugin,
   createTSlatePlugin,
   KEYS,
@@ -20,16 +18,23 @@ export const BaseSlashInputPlugin = createSlatePlugin({
   node: { isElement: true, isInline: true, isVoid: true },
 });
 
-export const BaseSlashPlugin = createTSlatePlugin<SlashConfig>({
-  key: KEYS.slashCommand,
-  editOnly: true,
-  options: {
-    trigger: '/',
-    triggerPreviousCharPattern: /^\s?$/,
-    createComboboxInput: () => ({
-      children: [{ text: '' }],
-      type: KEYS.slashInput,
-    }),
-  },
-  plugins: [BaseSlashInputPlugin],
-}).overrideEditor(withTriggerCombobox);
+const BaseSlashPluginBase: SlatePlugin<SlashConfig> =
+  createTSlatePlugin<SlashConfig>({
+    key: KEYS.slashCommand,
+    editOnly: true,
+    options: {
+      trigger: '/',
+      triggerPreviousCharPattern: /^\s?$/,
+      createComboboxInput: () => ({
+        children: [{ text: '' }],
+        type: KEYS.slashInput,
+      }),
+    },
+    plugins: [BaseSlashInputPlugin],
+  });
+
+export const BaseSlashPlugin: SlatePlugin<SlashConfig> & {
+  runtimeTriggerCombobox: boolean;
+} = Object.assign(BaseSlashPluginBase, {
+  runtimeTriggerCombobox: true,
+});

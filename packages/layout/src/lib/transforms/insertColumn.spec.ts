@@ -1,25 +1,32 @@
-import { createSlateEditor } from 'platejs';
+import type { Value } from 'platejs';
+import { createPlateRuntimeEditor } from '../../../../core/src/react/editor/createPlateRuntimeEditor';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
+import type { ColumnEditor } from './ColumnEditor';
 import { insertColumn } from './insertColumn';
+
+type ColumnTestEditor = ColumnEditor & { children: Value };
+
+const createColumnTestEditor = (value: Value): ColumnTestEditor =>
+  createPlateRuntimeEditor({
+    initialValue: value,
+    plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
+  }) as unknown as ColumnTestEditor;
 
 describe('insertColumn', () => {
   it('insert a column with the default width and an empty block', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
-      value: [
-        {
-          children: [
-            {
-              children: [{ children: [{ text: 'First' }], type: 'p' }],
-              type: 'column',
-              width: '67%',
-            },
-          ],
-          type: 'column_group',
-        },
-      ],
-    });
+    const editor = createColumnTestEditor([
+      {
+        children: [
+          {
+            children: [{ children: [{ text: 'First' }], type: 'p' }],
+            type: 'column',
+            width: '67%',
+          },
+        ],
+        type: 'column_group',
+      },
+    ]);
 
     insertColumn(editor, { at: [0, 1] });
 
@@ -34,21 +41,18 @@ describe('insertColumn', () => {
   });
 
   it('respect a custom width and insertion path', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
-      value: [
-        {
-          children: [
-            {
-              children: [{ children: [{ text: 'Existing' }], type: 'p' }],
-              type: 'column',
-              width: '75%',
-            },
-          ],
-          type: 'column_group',
-        },
-      ],
-    });
+    const editor = createColumnTestEditor([
+      {
+        children: [
+          {
+            children: [{ children: [{ text: 'Existing' }], type: 'p' }],
+            type: 'column',
+            width: '75%',
+          },
+        ],
+        type: 'column_group',
+      },
+    ]);
 
     insertColumn(editor, { at: [0, 0], width: '25%' });
 

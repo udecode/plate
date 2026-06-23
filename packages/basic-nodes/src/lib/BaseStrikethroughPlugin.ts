@@ -21,8 +21,9 @@ export const BaseStrikethroughPlugin = createSlatePlugin({
   },
   render: { as: 's' },
   rules: { selection: { affinity: 'directional' } },
-}).extendTransforms(({ editor, type }) => ({
-  toggle: () => {
-    editor.tf.toggleMark(type);
-  },
-}));
+})
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      tx.marks.toggle(type);
+    },
+  }));

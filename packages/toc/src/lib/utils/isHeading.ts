@@ -1,4 +1,7 @@
-import { type TNode, KEYS } from 'platejs';
+import type { Element } from '@platejs/slate';
 
-export const isHeading = (node: TNode) =>
-  node.type && KEYS.heading.includes(node.type as any);
+import { ElementApi } from '@platejs/slate';
+import { KEYS } from 'platejs';
+
+export const isHeading = (node: unknown): node is Element =>
+  ElementApi.isElement(node) && KEYS.heading.includes(node.type as any);

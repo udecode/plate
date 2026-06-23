@@ -1,44 +1,40 @@
-import {
-  type Editor,
-  type ElementEntryOf,
-  type ElementOf,
-  type ElementOrTextOf,
-  type NodeEntry,
-  type TNode,
-  isDefined,
-  KEYS,
-} from 'platejs';
+import type { Element, NodeEntry, Text } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
-export type GetSiblingListOptions<
-  N extends ElementOf<E>,
-  E extends Editor = Editor,
-> = {
+import { isDefined, KEYS } from 'platejs';
+
+type ListSiblingNode = Element | Text;
+
+export type GetSiblingListOptions<N extends Element = Element> = {
   breakOnEqIndentNeqListStyleType?: boolean;
   breakOnListRestart?: boolean;
   breakOnLowerIndent?: boolean;
-  breakQuery?: (siblingNode: TNode, currentNode: TNode) => boolean | undefined;
+  breakQuery?: (
+    siblingNode: ListSiblingNode,
+    currentNode: ListSiblingNode
+  ) => boolean | undefined;
   getNextEntry?: (
-    entry: NodeEntry<ElementOrTextOf<E>>
+    entry: NodeEntry<ListSiblingNode>
   ) => NodeEntry<N> | undefined;
   getPreviousEntry?: (
-    entry: NodeEntry<ElementOrTextOf<E>>
+    entry: NodeEntry<ListSiblingNode>
   ) => NodeEntry<N> | undefined;
   /** Query to break lookup */
   eqIndent?: boolean;
   /** Query to validate lookup. If false, check the next sibling. */
-  query?: (siblingNode: TNode, currentNode: TNode) => boolean | undefined;
+  query?: (
+    siblingNode: ListSiblingNode,
+    currentNode: ListSiblingNode
+  ) => boolean | undefined;
 };
 
 /**
  * Get the next sibling indent list node. Default query: the sibling node should
  * have the same listStyleType.
  */
-export const getSiblingList = <
-  N extends ElementOf<E>,
-  E extends Editor = Editor,
->(
-  _editor: E,
-  [node, path]: ElementEntryOf<E>,
+export const getSiblingList = <N extends Element = Element>(
+  _editor: SlateEditor,
+  [node, path]: NodeEntry<Element>,
   {
     breakOnEqIndentNeqListStyleType = true,
     breakOnListRestart = false,
@@ -48,7 +44,7 @@ export const getSiblingList = <
     getNextEntry,
     getPreviousEntry,
     query,
-  }: GetSiblingListOptions<N, E>
+  }: GetSiblingListOptions<N>
 ): NodeEntry<N> | undefined => {
   if (!getPreviousEntry && !getNextEntry) return;
 

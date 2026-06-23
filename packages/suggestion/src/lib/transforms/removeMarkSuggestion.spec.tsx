@@ -3,12 +3,20 @@
 import type { SlateEditor, TUpdateSuggestionData } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
 
+import { createPlateRuntimeEditor } from '../../../../core/src/react/editor/createPlateRuntimeEditor';
 import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
 import { getInlineSuggestionData } from '../utils';
+import { getSuggestionApi } from '../utils/getSuggestionApi';
 
 jsxt;
+
+const createSlateEditor = ({ selection, value, ...options }: any = {}) =>
+  createPlateRuntimeEditor({
+    ...options,
+    initialSelection: selection,
+    initialValue: value,
+  }) as any as SlateEditor;
 
 const suggestionPlugin = BaseSuggestionPlugin.configure({
   options: {
@@ -37,7 +45,7 @@ describe('removeMarkSuggestion', () => {
     });
 
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
-    editor.tf.removeMark('bold');
+    editor.update((tx) => tx.marks.remove('bold'));
 
     const data = getInlineSuggestionData(
       editor.children[0].children[0] as any
@@ -82,13 +90,11 @@ describe('removeMarkSuggestion', () => {
     });
 
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
-    editor.tf.removeMark('bold');
+    editor.update((tx) => tx.marks.remove('bold'));
 
-    const dataList = editor
-      .getPluginApi(BaseSuggestionPlugin)
-      .suggestion.dataList(
-        editor.children[0].children[0] as any
-      ) as TUpdateSuggestionData[];
+    const dataList = getSuggestionApi(editor).dataList(
+      editor.children[0].children[0] as any
+    ) as TUpdateSuggestionData[];
 
     expect(dataList).toHaveLength(2);
     expect(dataList[0]).toEqual(existingData);
@@ -125,13 +131,13 @@ describe('removeMarkSuggestion', () => {
     });
 
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
-    editor.tf.removeMark('bold');
+    editor.update((tx) => tx.marks.remove('bold'));
 
     const node = editor.children[0].children[0] as any;
 
     expect(node.bold).toBe(true);
-    expect(
-      editor.getPluginApi(BaseSuggestionPlugin).suggestion.dataList(node)
-    ).toEqual([existingData] as any);
+    expect(getSuggestionApi(editor).dataList(node)).toEqual([
+      existingData,
+    ] as any);
   });
 });

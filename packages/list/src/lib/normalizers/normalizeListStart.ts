@@ -1,11 +1,7 @@
-import {
-  type Editor,
-  type ElementEntryOf,
-  type ElementOf,
-  type NodeEntry,
-  isDefined,
-  KEYS,
-} from 'platejs';
+import type { Element, NodeEntry } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
+
+import { isDefined, KEYS } from 'platejs';
 
 import type { GetSiblingListOptions } from '../queries/getSiblingList';
 
@@ -19,9 +15,12 @@ export const getListExpectedListStart = (
 ): number => {
   const [node] = entry;
   const [prevNode] = prevEntry ?? [null];
+  const nodeProps = node as Record<string, unknown>;
+  const prevNodeProps = prevNode as Record<string, unknown> | null;
 
-  const restart = (node[KEYS.listRestart] as number | null) ?? null;
-  const restartPolite = (node[KEYS.listRestartPolite] as number | null) ?? null;
+  const restart = (nodeProps[KEYS.listRestart] as number | null) ?? null;
+  const restartPolite =
+    (nodeProps[KEYS.listRestartPolite] as number | null) ?? null;
 
   if (restart) {
     return restart;
@@ -31,32 +30,31 @@ export const getListExpectedListStart = (
     return restartPolite;
   }
 
-  if (prevNode) {
-    const prevListStart = (prevNode[KEYS.listStart] as number) ?? 1;
+  if (prevNodeProps) {
+    const prevListStart = (prevNodeProps[KEYS.listStart] as number) ?? 1;
     return prevListStart + 1;
   }
 
   return 1;
 };
 
-export const normalizeListStart = <
-  N extends ElementOf<E>,
-  E extends Editor = Editor,
->(
-  editor: E,
-  entry: ElementEntryOf<E>,
-  options?: Partial<GetSiblingListOptions<N, E>>
+export const normalizeListStart = <N extends Element = Element>(
+  editor: SlateEditor,
+  entry: NodeEntry<Element>,
+  options?: Partial<GetSiblingListOptions<N>>
 ) =>
-  editor.tf.withoutNormalizing(() => {
+  editor.update((tx) => {
     const [node, path] = entry;
     const listStyleType = (node as any)[KEYS.listType];
-    const listStart = node[KEYS.listStart] as number | undefined;
+    const listStart = (node as Record<string, unknown>)[KEYS.listStart] as
+      | number
+      | undefined;
 
     if (!listStyleType) return;
 
     if (ULIST_STYLE_TYPES.includes(listStyleType)) {
       if (isDefined(listStart)) {
-        editor.tf.unsetNodes(KEYS.listStart, { at: path });
+        tx.nodes.unset(KEYS.listStart, { at: path });
 
         return true;
       }
@@ -75,13 +73,13 @@ export const normalizeListStart = <
     const expectedListStart = getListExpectedListStart(entry, prevEntry);
 
     if (isDefined(listStart) && expectedListStart === 1) {
-      editor.tf.unsetNodes(KEYS.listStart, { at: path });
+      tx.nodes.unset(KEYS.listStart, { at: path });
 
       return true;
     }
 
     if (listStart !== expectedListStart && expectedListStart > 1) {
-      editor.tf.setNodes({ [KEYS.listStart]: expectedListStart }, { at: path });
+      tx.nodes.set({ [KEYS.listStart]: expectedListStart }, { at: path });
 
       return true;
     }

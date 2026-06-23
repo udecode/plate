@@ -1,8 +1,11 @@
-import { type Editor, type ElementOf, type TNode, KEYS } from 'platejs';
+import type { Descendant, Element } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
+
+import { KEYS } from 'platejs';
 
 import type { GetSiblingListOptions } from '../queries/getSiblingList';
 
-const getHeadingType = (editor: Editor, headingKey: string) => {
+const getHeadingType = (editor: SlateEditor, headingKey: string) => {
   const getType = (editor as any).getType;
 
   return typeof getType === 'function'
@@ -10,7 +13,7 @@ const getHeadingType = (editor: Editor, headingKey: string) => {
     : headingKey;
 };
 
-const isHeadingListNode = (editor: Editor, node: TNode) => {
+const isHeadingListNode = (editor: SlateEditor, node: Descendant) => {
   const type = (node as any).type;
 
   return (
@@ -22,18 +25,18 @@ const isHeadingListNode = (editor: Editor, node: TNode) => {
 };
 
 export const isSameListSequence = (
-  editor: Editor,
-  siblingNode: TNode,
-  currentNode: TNode
+  editor: SlateEditor,
+  siblingNode: Descendant,
+  currentNode: Descendant
 ) =>
   (siblingNode as any)[KEYS.listType] === (currentNode as any)[KEYS.listType] &&
   isHeadingListNode(editor, siblingNode) ===
     isHeadingListNode(editor, currentNode);
 
 export const isListSequenceBoundary = (
-  editor: Editor,
-  siblingNode: TNode,
-  currentNode: TNode
+  editor: SlateEditor,
+  siblingNode: Descendant,
+  currentNode: Descendant
 ) => {
   const siblingListType = (siblingNode as any)[KEYS.listType];
 
@@ -46,13 +49,10 @@ export const isListSequenceBoundary = (
   );
 };
 
-export const getListSequenceSiblingOptions = <
-  N extends ElementOf<E>,
-  E extends Editor = Editor,
->(
-  editor: E,
-  options?: Partial<GetSiblingListOptions<N, E>>
-): Partial<GetSiblingListOptions<N, E>> => {
+export const getListSequenceSiblingOptions = <N extends Element = Element>(
+  editor: SlateEditor,
+  options?: Partial<GetSiblingListOptions<N>>
+): Partial<GetSiblingListOptions<N>> => {
   const { breakQuery, query, ...rest } = options ?? {};
 
   return {

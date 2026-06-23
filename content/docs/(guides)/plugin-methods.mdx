@@ -29,8 +29,8 @@ Plugin methods return new plugin instances, so you can keep a base plugin stable
 | `.extendSelectors()` | Add computed option selectors. | `getOption()` and `usePluginOption()`. |
 | `.extendApi()` | Add plugin-specific API methods. | `editor.api[plugin.key]`. |
 | `.extendEditorApi()` | Add editor-wide API methods. | `editor.api`. |
-| `.extendTransforms()` | Add plugin-specific transforms. | `editor.tf[plugin.key]`. |
-| `.extendEditorTransforms()` | Add editor-wide transforms. | `editor.tf`. |
+| `.extendTx()` | Add plugin-owned transaction commands. | `editor.update((tx) => tx[plugin.key])`. |
+| `.extendTxGroup()` | Add commands to a named transaction group. | `editor.update((tx) => tx[groupKey])`. |
 | `.overrideEditor()` | Wrap existing editor API or transform methods. | `editor.api` and `editor.tf`. |
 | `.withComponent()` | Attach a node component to a plugin. | `plugin.node.component` and `plugin.render.node`. |
 | `.clone()` | Copy a plugin definition. | A new plugin object. |
@@ -69,7 +69,7 @@ Object configs are merged with the plugin through Plate's plugin merge rules: ob
 
 <Callout type="info" title="Configure does not widen types">
   `.configure()` is for existing plugin fields. If you need TypeScript to know
-  about a new option, API method, transform, selector, handler, or renderer,
+  about a new option, API method, transaction command, selector, handler, or renderer,
   use `.extend()` or the narrower `.extend*()` method.
 </Callout>
 
@@ -202,16 +202,16 @@ export function CounterValue() {
 
 Selectors are the right place for derived state. Use `.extendApi()` when the method is a query or utility that should not subscribe React components to option changes.
 
-## API And Transforms
+## API And Transactions
 
-Use API methods for reads and utilities. Use transforms for operations that mutate editor state.
+Use API methods for reads and utilities. Use transaction commands for operations that mutate editor state.
 
 | Method | Access path | Typical use |
 | --- | --- | --- |
 | `.extendApi()` | `editor.api.counter.isEmpty()` | Plugin-specific query or utility. |
 | `.extendEditorApi()` | `editor.api.counterLabel()` | Editor-wide query or utility. |
-| `.extendTransforms()` | `editor.tf.counter.increment()` | Plugin-specific mutation. |
-| `.extendEditorTransforms()` | `editor.tf.resetCounter()` | Editor-wide mutation. |
+| `.extendTx()` | `editor.update((tx) => tx.counter.increment())` | Plugin-specific mutation. |
+| `.extendTxGroup()` | `editor.update((tx) => tx.insert.tableRow())` | Mutation in a shared namespace. |
 
 ```tsx title="counter-plugin.tsx" showLineNumbers
 import { type PluginConfig } from 'platejs';
@@ -227,14 +227,11 @@ type CounterPluginApi = {
 
 type CounterEditorApi = {
   counterLabel: () => string;
-};
-
-type CounterPluginTransforms = {
-  increment: () => void;
-};
-
-type CounterEditorTransforms = {
   resetCounter: () => void;
+};
+
+type CounterPluginTx = {
+  increment: () => void;
 };
 
 type CounterConfig = PluginConfig<'counter', CounterOptions>;
@@ -248,14 +245,12 @@ export const CounterPlugin = createTPlatePlugin<CounterConfig>({
   .extendApi<CounterPluginApi>(({ getOption }) => ({
     isEmpty: () => getOption('value') === 0,
   }))
-  .extendEditorApi<CounterEditorApi>(({ getOption }) => ({
+  .extendEditorApi<CounterEditorApi>(({ getOption, setOption }) => ({
     counterLabel: () => `Count: ${getOption('value')}`,
-  }))
-  .extendTransforms<CounterPluginTransforms>(({ getOption, setOption }) => ({
-    increment: () => setOption('value', getOption('value') + 1),
-  }))
-  .extendEditorTransforms<CounterEditorTransforms>(({ setOption }) => ({
     resetCounter: () => setOption('value', 0),
+  }))
+  .extendTx<CounterPluginTx>(({ getOption, setOption }) => () => ({
+    increment: () => setOption('value', getOption('value') + 1),
   }));
 ```
 
@@ -264,11 +259,11 @@ After the plugin resolves in an editor, call those methods from their resolved s
 ```ts
 editor.api.counter.isEmpty();
 editor.api.counterLabel();
-editor.tf.counter.increment();
-editor.tf.resetCounter();
+editor.api.resetCounter();
+editor.update((tx) => tx.counter.increment());
 ```
 
-`editor.tf` is the short alias for `editor.transforms`; both access the same transform tree.
+Transaction commands run inside `editor.update`. Keep app services and reads on `editor.api`.
 
 ## Override Editor Methods
 
@@ -280,7 +275,7 @@ import { createPlatePlugin } from 'platejs/react';
 export const LimitExclamationPlugin = createPlatePlugin({
   key: 'limitExclamation',
 }).overrideEditor(({ tf: { insertText } }) => ({
-  transforms: {
+  tf: {
     insertText(text, options) {
       insertText(text === '!' ? '.' : text, options);
     },
@@ -302,7 +297,7 @@ const TrimStringPlugin = createPlatePlugin({
 }));
 ```
 
-Keep new editor methods in `.extendEditorApi()` or `.extendEditorTransforms()`. `.overrideEditor()` is for changing behavior while preserving the original call path.
+Keep new editor methods in `.extendApi()`, `.extendEditorApi()`, `.extendTx()`, or `.extendTxGroup()`. `.overrideEditor()` is for changing behavior while preserving the original call path.
 
 ## Components
 
@@ -357,10 +352,10 @@ export const MentionPlugin = toPlatePlugin(BaseMentionPlugin, {
 | `.extendSelectors(callback)` | Callback returning selector functions. | Extends the plugin option store selectors. |
 | `.extendApi(callback)` | Callback returning functions. | Merges into `editor.api[plugin.key]` and `plugin.api[plugin.key]`. |
 | `.extendEditorApi(callback)` | Callback returning functions or one-level nested function objects. | Merges into `editor.api` and `plugin.api`. |
-| `.extendTransforms(callback)` | Callback returning functions. | Merges into `editor.tf[plugin.key]` and `plugin.transforms[plugin.key]`. |
-| `.extendEditorTransforms(callback)` | Callback returning functions or one-level nested function objects. | Merges into `editor.tf` and `plugin.transforms`. |
-| `.overrideEditor(callback)` | Callback returning `{ api?, transforms? }`. | Deep-merges overrides into editor and plugin API/transform objects. |
+| `.extendTx(callback)` | Callback returning a transaction factory. | Merges into `tx[plugin.key]` inside `editor.update`. |
+| `.extendTxGroup(key, callback)` | Named transaction group and transaction factory. | Merges into `tx[key]` inside `editor.update`. |
+| `.overrideEditor(callback)` | Callback returning `{ api?, tf? }`. | Deep-merges overrides into editor and plugin API/transform objects. |
 | `.withComponent(component)` | A node component. | Sets `node.component` and `render.node`. |
 | `.clone()` | No arguments. | Returns a merged copy of the plugin definition. |
 
-Done. Use configuration for existing fields, extension methods for new typed surface, and overrides only when the editor method already exists.
+Done. Use configuration for existing fields, API extensions for callable services, tx extensions for mutations, and overrides only when the editor method already exists.

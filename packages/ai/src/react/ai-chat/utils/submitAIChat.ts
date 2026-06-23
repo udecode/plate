@@ -1,7 +1,6 @@
 import type { ChatRequestOptions } from 'ai';
 
 import { isSelecting } from '@platejs/selection';
-import { BlockSelectionPlugin } from '@platejs/selection/react';
 import {
   type Descendant,
   KEYS,
@@ -9,19 +8,20 @@ import {
   type Range,
   type TIdElement,
 } from 'platejs';
-import { type PlateEditor, getEditorPlugin } from 'platejs/react';
+import { getEditorPlugin } from 'platejs/react';
 
 import type { AIMode, AIToolName } from '../../../lib/types';
 import type { AIChatPluginConfig } from '../AIChatPlugin';
+import type { AIChatPlateEditor } from '../internal/editorTypes';
 
-import { BaseAIPlugin } from '../../../lib/BaseAIPlugin';
+import { undoAI } from '../../../lib/transforms';
 import {
   type EditorPrompt,
   getEditorPrompt,
 } from '../../../lib/utils/getEditorPrompt';
 
 export const submitAIChat = (
-  editor: PlateEditor,
+  editor: AIChatPlateEditor,
   input: string,
   {
     mode,
@@ -56,16 +56,14 @@ export const submitAIChat = (
     mode = isSelecting(editor) ? 'chat' : 'insert';
   }
   if (mode === 'insert') {
-    editor.getTransforms(BaseAIPlugin).ai.undo();
+    undoAI(editor);
   }
 
   setOption('mode', mode);
 
   setOption('toolName', toolName);
 
-  const blocks: NodeEntry<TIdElement>[] = editor
-    .getApi(BlockSelectionPlugin)
-    .blockSelection.getNodes();
+  const blocks: NodeEntry<TIdElement>[] = editor.api.blockSelection.getNodes();
   const blocksRange = editor.api.nodesRange(blocks);
 
   const promptText = getEditorPrompt(editor, {
@@ -79,10 +77,12 @@ export const submitAIChat = (
   if (blocks.length > 0) {
     chatNodes = blocks.map((block) => block[0]) as TIdElement[];
   } else {
-    const selectionBlocks = editor.api.blocks({ mode: 'highest' });
+    const selectionBlocks = editor.api.blocks({
+      mode: 'highest',
+    }) as NodeEntry<TIdElement>[];
 
     if (selectionBlocks.length > 1) {
-      chatNodes = selectionBlocks.map((block) => block[0]) as TIdElement[];
+      chatNodes = selectionBlocks.map((block) => block[0]);
     } else {
       chatNodes = editor.api.fragment<TIdElement>();
     }

@@ -2,7 +2,7 @@ import { KEYS } from 'platejs';
 import { useEditorRef, useEditorSelector } from 'platejs/react';
 
 import { someToggle } from '../../lib';
-import { openNextToggles } from '../transforms';
+import { openNextToggles } from '../transforms/openNextToggles';
 
 export const useToggleToolbarButtonState = () => {
   const pressed = useEditorSelector((editor) => someToggle(editor), []);
@@ -22,9 +22,19 @@ export const useToggleToolbarButton = ({
       pressed,
       onClick: () => {
         openNextToggles(editor);
-        editor.tf.toggleBlock(KEYS.toggle);
-        editor.tf.collapse();
-        editor.tf.focus();
+        const entry = editor.api.block();
+
+        if (entry) {
+          const [node, path] = entry;
+          const type = node.type === KEYS.toggle ? KEYS.p : KEYS.toggle;
+
+          editor.update((tx) => {
+            tx.nodes.set({ type }, { at: path });
+            tx.selection.collapse();
+          });
+        }
+
+        editor.api.dom.focus();
       },
       onMouseDown: (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();

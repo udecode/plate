@@ -1,7 +1,5 @@
 /** @jsx jsxt */
 
-import type { PlateEditor } from 'platejs/react';
-
 import { jsxt } from '@platejs/test-utils';
 import { createPlateEditor } from 'platejs/react';
 
@@ -12,7 +10,7 @@ import { moveSelection } from './moveSelection';
 jsxt;
 
 describe('moveSelection', () => {
-  let editor: PlateEditor;
+  let editor: any;
   let querySelectorSelectableSpy: ReturnType<typeof spyOn>;
   let querySelectorSelectableMock: ReturnType<typeof mock>;
 
@@ -301,7 +299,7 @@ describe('moveSelection', () => {
         ],
       });
 
-      editor.setOption(BlockSelectionPlugin, 'isSelectable', (node) => {
+      editor.setOption(BlockSelectionPlugin, 'isSelectable', (node: any) => {
         // Only table and tr are selectable
         return node.type === 'table' || node.type === 'tr';
       });
@@ -414,7 +412,7 @@ describe('moveSelection', () => {
       editor.setOption(
         BlockSelectionPlugin,
         'isSelectable',
-        (node) => node.type !== 'column'
+        (node: any) => node.type !== 'column'
       );
     });
 
@@ -461,7 +459,7 @@ describe('moveSelection', () => {
       editor.setOption(
         BlockSelectionPlugin,
         'isSelectable',
-        (node) => node.type !== 'column' && node.type !== 'column_group'
+        (node: any) => node.type !== 'column' && node.type !== 'column_group'
       );
 
       // Select grandchild1

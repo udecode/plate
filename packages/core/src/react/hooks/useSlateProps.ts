@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Value } from '@platejs/slate-legacy';
+import type { Value } from '@platejs/slate';
 
 import { useAtomStoreValue } from 'jotai-x';
 

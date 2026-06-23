@@ -1,7 +1,17 @@
-import { applyOperation, runEditorTransaction } from '../core/public-state';
+import {
+  applyOperation,
+  getChildren,
+  runEditorTransaction,
+} from '../core/public-state';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
-import { type Descendant, LocationApi, NodeApi } from '../interfaces';
+import {
+  type Descendant,
+  type Location,
+  LocationApi,
+  NodeApi,
+  type Span,
+} from '../interfaces';
 import { Editor } from '../interfaces/editor';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
 import { matchPath } from '../utils/match-path';
@@ -13,6 +23,7 @@ export const removeNodes: NodeMutationMethods['removeNodes'] = (
   if (
     options.at !== undefined &&
     LocationApi.isPath(options.at) &&
+    !LocationApi.isSpan(options.at) &&
     options.at.length > 0
   ) {
     const [node] = getNode(editor, options.at);
@@ -32,21 +43,33 @@ export const removeNodes: NodeMutationMethods['removeNodes'] = (
   runEditorTransaction(editor, (tx) => {
     const { hanging = false, voids = false, mode = 'lowest' } = options;
     let { match } = options;
-    let at = tx.resolveTarget({ at: options.at });
+    let at: Location | Span | null | undefined = tx.resolveTarget({
+      at: options.at,
+    });
 
     if (!at) {
       return;
     }
 
-    if (LocationApi.isPath(at) && at.length === 0) {
-      throw new Error('Cannot remove the editor root.');
+    if (LocationApi.isPath(at) && !LocationApi.isSpan(at) && at.length === 0) {
+      if (match == null) {
+        throw new Error('Cannot remove the editor root.');
+      }
+
+      const children = getChildren(editor);
+
+      if (children.length === 0) {
+        return;
+      }
+
+      at = [[0], [children.length - 1]];
     }
 
-    if (!hanging && LocationApi.isRange(at)) {
+    if (!hanging && !LocationApi.isSpan(at) && LocationApi.isRange(at)) {
       at = Editor.unhangRange(editor, at, { voids });
     }
 
-    if (LocationApi.isPath(at)) {
+    if (!LocationApi.isSpan(at) && LocationApi.isPath(at)) {
       const [node] = getNode(editor, at);
       const pathMatch = match ?? matchPath(editor, at);
 

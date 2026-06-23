@@ -61,7 +61,8 @@ const runBlockToggleTx = (
     {
       nodes: { set, some, unwrap, wrap },
     } as unknown as EditorUpdateTransaction,
-    createSlateEditor() as SlateEditor
+    createSlateEditor() as SlateEditor,
+    { afterCommit: () => {} }
   ) as {
     toggle: () => void;
   };

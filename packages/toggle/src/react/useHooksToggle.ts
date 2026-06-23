@@ -1,18 +1,18 @@
 import { useEffect } from 'react';
 
-import type { UseHooks } from 'platejs/react';
-
-import type { ToggleConfig } from './TogglePlugin';
-
 import { useToggleIndex } from './toggleIndexAtom';
 
-export const useHooksToggle: UseHooks<ToggleConfig> = ({
-  editor,
-  setOption,
-}) => {
+type ToggleHooksContext = {
+  setOption: (
+    key: 'toggleIndex',
+    value: ReturnType<typeof useToggleIndex>
+  ) => void;
+};
+
+export const useHooksToggle = ({ setOption }: ToggleHooksContext) => {
   const toggleIndex = useToggleIndex();
 
   useEffect(() => {
     setOption('toggleIndex', toggleIndex);
-  }, [editor, setOption, toggleIndex]);
+  }, [setOption, toggleIndex]);
 };

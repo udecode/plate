@@ -1,9 +1,22 @@
-import type { Element, NodeEntry, Text } from '@platejs/slate';
-import { ElementApi, NodeApi, PathApi } from '@platejs/slate-legacy';
+import {
+  type Element,
+  type NodeEntry,
+  type Text,
+  ElementApi,
+  PathApi,
+  RangeApi,
+} from '@platejs/slate';
 
 import type { SlateEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';
 
+import {
+  getEditorNode,
+  getEditorParent,
+  getEditorRange,
+  isEditorEnd,
+  isEditorSelectionCollapsed,
+} from '../../../../internal/utils/runtimeEditorQueries';
 import { getPluginByType } from '../../../plugin/getSlatePlugin';
 
 /**
@@ -13,24 +26,27 @@ import { getPluginByType } from '../../../plugin/getSlatePlugin';
  * text, then the node after the text is returned. Otherwise, null is returned.
  */
 export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
-  if (!editor.api.isCollapsed()) return null;
+  if (!isEditorSelectionCollapsed(editor)) return null;
 
   const cursor = editor.selection!.anchor;
 
-  const textRange = editor.api.range(cursor.path);
+  const textRange = getEditorRange(editor, cursor.path);
 
   if (!textRange) return null;
 
-  const edge = editor.api.isStart(cursor, textRange)
+  const edge = RangeApi.isCollapsed({
+    anchor: cursor,
+    focus: textRange.anchor,
+  })
     ? 'start'
-    : editor.api.isEnd(cursor, textRange)
+    : isEditorEnd(editor, cursor, textRange)
       ? 'end'
       : null;
 
   if (!edge) return null;
 
-  const parent: Element | null = (NodeApi.parent(editor, cursor.path) ??
-    null) as Element | null;
+  const parentEntry = getEditorParent<Element>(editor, cursor.path);
+  const parent = parentEntry?.[0] ?? null;
 
   /** Inline elements */
 
@@ -43,9 +59,11 @@ export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
     return parentAffinity === 'hard' || parentAffinity === 'directional';
   })();
 
-  const nodeEntry: NodeEntry<Element | Text> = isAffinityInlineElement
-    ? [parent!, PathApi.parent(cursor.path)]
-    : [NodeApi.get(editor, cursor.path)!, cursor.path];
+  const nodeEntry: NodeEntry<Element | Text> | null = isAffinityInlineElement
+    ? (parentEntry ?? null)
+    : (getEditorNode<Element | Text>(editor, cursor.path) ?? null);
+
+  if (!nodeEntry) return null;
 
   if (
     edge === 'start' &&
@@ -58,11 +76,13 @@ export const getEdgeNodes = (editor: SlateEditor): EdgeNodes | null => {
   const siblingPath =
     edge === 'end'
       ? PathApi.next(nodeEntry[1])
-      : PathApi.previous(nodeEntry[1]);
+      : PathApi.hasPrevious(nodeEntry[1])
+        ? PathApi.previous(nodeEntry[1])
+        : undefined;
   if (!siblingPath) {
     return edge === 'end' ? [nodeEntry, null] : [null, nodeEntry];
   }
-  const siblingNode = NodeApi.get<Text>(editor, siblingPath);
+  const siblingNode = getEditorNode<Text>(editor, siblingPath)?.[0];
 
   const siblingEntry: NodeEntry<Text> | null = siblingNode
     ? [siblingNode, siblingPath]

@@ -3,6 +3,7 @@ import {
   type PlatePluginTxGroup,
   type SlateEditor,
 } from 'platejs';
+import { createPlateRuntimeEditor } from 'platejs/react';
 import type { EditorUpdateTransaction, Value } from '@platejs/slate';
 
 import { BaseBlockquotePlugin } from './BaseBlockquotePlugin';
@@ -22,7 +23,8 @@ const runBlockquoteToggleTx = (isActive: boolean) => {
     {
       nodes: { set, some, unwrap, wrap },
     } as unknown as EditorUpdateTransaction,
-    createSlateEditor() as SlateEditor
+    createSlateEditor() as SlateEditor,
+    { afterCommit: () => {} }
   ) as { toggle: () => void };
 
   commands.toggle();
@@ -67,24 +69,19 @@ describe('BaseBlockquotePlugin', () => {
   });
 
   it('normalizes legacy flat blockquote children into paragraphs', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseBlockquotePlugin],
-      value: [
+    const editor = createPlateRuntimeEditor<Value>({
+      initialValue: [
         {
           children: [{ text: 'Quote' }],
           type: 'blockquote',
         },
-      ] satisfies Value,
+      ] as unknown as Value,
+      plugins: [BaseBlockquotePlugin],
     });
 
-    const path = [0];
-    const node = editor.api.node(path)?.[0];
+    editor.update((tx) => tx.normalize({ force: true }));
 
-    expect(node).toBeDefined();
-
-    editor.tf.normalizeNode([node!, path]);
-
-    expect(editor.children).toEqual([
+    expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [
           {
@@ -98,9 +95,8 @@ describe('BaseBlockquotePlugin', () => {
   });
 
   it('wraps inline runs when a legacy blockquote mixes inline and block children', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseBlockquotePlugin],
-      value: [
+    const editor = createPlateRuntimeEditor<Value>({
+      initialValue: [
         {
           children: [
             { text: 'Lead' },
@@ -112,17 +108,13 @@ describe('BaseBlockquotePlugin', () => {
           ],
           type: 'blockquote',
         },
-      ] satisfies Value,
+      ] as unknown as Value,
+      plugins: [BaseBlockquotePlugin],
     });
 
-    const path = [0];
-    const node = editor.api.node(path)?.[0];
+    editor.update((tx) => tx.normalize({ force: true }));
 
-    expect(node).toBeDefined();
-
-    editor.tf.normalizeNode([node!, path]);
-
-    expect(editor.children).toEqual([
+    expect(editor.read((state) => state.value.root())).toEqual([
       {
         children: [
           {

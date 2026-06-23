@@ -1,4 +1,5 @@
-import type { ElementEntryOf, ElementOf, SlateEditor, TElement } from 'platejs';
+import type { Element, NodeEntry } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 import { getInjectMatch, KEYS } from 'platejs';
 
@@ -11,6 +12,7 @@ import {
   getPreviousList,
 } from '../queries';
 import { getListSequenceSiblingOptions } from '../internal/isSameListSequence';
+import { normalizeListSequence } from '../normalizers/normalizeListSequence';
 import { areEqListStyleType } from '../queries/areEqListStyleType';
 import { setListNodes } from './setListNodes';
 import { setListSiblingNodes } from './setListSiblingNodes';
@@ -18,13 +20,10 @@ import { toggleListSet } from './toggleListSet';
 import { toggleListUnset } from './toggleListUnset';
 
 /** Toggle indent list. */
-export const toggleList = <
-  N extends ElementOf<E>,
-  E extends SlateEditor = SlateEditor,
->(
-  editor: E,
+export const toggleList = (
+  editor: SlateEditor,
   options: ListOptions,
-  getSiblingListOptions?: GetSiblingListOptions<N, E>
+  getSiblingListOptions?: GetSiblingListOptions<Element>
 ) => {
   const { listRestart, listRestartPolite, listStyleType } = options;
   const { getSiblingListOptions: pluginGetSiblingListOptions } =
@@ -32,7 +31,7 @@ export const toggleList = <
   const mergedGetSiblingListOptions = {
     ...pluginGetSiblingListOptions,
     ...getSiblingListOptions,
-  } as GetSiblingListOptions<ElementOf<E>, E>;
+  } as GetSiblingListOptions<Element>;
 
   /**
    * True - One or more blocks were converted to lists or changed such that they
@@ -44,7 +43,7 @@ export const toggleList = <
    */
   const setList = ((): boolean | null => {
     if (editor.api.isCollapsed()) {
-      const entry = editor.api.block<TElement>();
+      const entry = editor.api.block<Element>();
 
       if (!entry) return null;
       if (toggleListSet(editor, entry, options)) {
@@ -54,7 +53,7 @@ export const toggleList = <
         return false;
       }
 
-      setListSiblingNodes(editor, entry as ElementEntryOf<E>, {
+      setListSiblingNodes(editor, entry as NodeEntry<Element>, {
         getSiblingListOptions: mergedGetSiblingListOptions,
         listStyleType,
       });
@@ -66,7 +65,7 @@ export const toggleList = <
         editor,
         editor.getPlugin({ key: KEYS.list })
       );
-      const _entries = editor.api.nodes<TElement>({ block: true, match });
+      const _entries = editor.api.nodes<Element>({ block: true, match });
       const entries = [..._entries];
 
       const eqListStyleType = areEqListStyleType(editor, entries, {
@@ -74,18 +73,18 @@ export const toggleList = <
       });
 
       if (eqListStyleType) {
-        editor.tf.withoutNormalizing(() => {
+        editor.update((tx) => {
           entries.forEach((entry) => {
             const [node, path] = entry;
 
             const indent = node[KEYS.indent] as number;
 
-            editor.tf.unsetNodes(KEYS.listType, { at: path });
+            tx.nodes.unset(KEYS.listType, { at: path });
 
             if (indent > 1) {
-              editor.tf.setNodes({ [KEYS.indent]: indent - 1 }, { at: path });
+              tx.nodes.set({ [KEYS.indent]: indent - 1 }, { at: path });
             } else {
-              editor.tf.unsetNodes([KEYS.indent, KEYS.listChecked], {
+              tx.nodes.unset([KEYS.indent, KEYS.listChecked], {
                 at: path,
               });
             }
@@ -96,6 +95,11 @@ export const toggleList = <
             // });
           });
         });
+        normalizeListSequence(
+          editor,
+          entries[0][1],
+          mergedGetSiblingListOptions
+        );
 
         return false;
       }
@@ -129,13 +133,24 @@ export const toggleList = <
      * Only apply listRestartPolite if this is the first item and restartValue >
      * 1.
      */
-    if (!isRestart && (!isFirst || restartValue <= 0)) return;
+    if (!isRestart && (!isFirst || restartValue <= 0)) {
+      normalizeListSequence(editor, entry[1], mergedGetSiblingListOptions);
+
+      return;
+    }
 
     // If restartValue is 1, only apply listRestart if this is not the first
-    if (isRestart && restartValue === 1 && isFirst) return;
+    if (isRestart && restartValue === 1 && isFirst) {
+      normalizeListSequence(editor, entry[1], mergedGetSiblingListOptions);
+
+      return;
+    }
 
     const prop = isRestart ? KEYS.listRestart : KEYS.listRestartPolite;
 
-    editor.tf.setNodes({ [prop]: restartValue }, { at: entry[1] });
+    editor.update((tx) => {
+      tx.nodes.set({ [prop]: restartValue }, { at: entry[1] });
+    });
+    normalizeListSequence(editor, entry[1], mergedGetSiblingListOptions);
   }
 };

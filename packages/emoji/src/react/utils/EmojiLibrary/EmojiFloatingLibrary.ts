@@ -5,14 +5,16 @@ import type {
 } from './EmojiFloatingLibrary.types';
 
 import {
-  type EmojiCategoryList,
-  type EmojiLibrary,
-  type EmojiSettingsType,
   DEFAULT_EMOJI_LIBRARY,
   defaultCategories,
+} from '../../../lib/constants';
+import {
+  type EmojiCategoryList,
+  type EmojiSettingsType,
   EmojiCategory,
-  EmojiInlineLibrary,
-} from '../../../lib';
+} from '../../../lib/types';
+import type { EmojiLibrary } from '../../../lib/utils/EmojiLibrary/EmojiLibrary.types';
+import { EmojiInlineLibrary } from '../../../lib/utils/EmojiLibrary/EmojiInlineLibrary';
 import { EmojiFloatingGridBuilder } from './EmojiFloatingGridBuilder';
 
 export class EmojiFloatingLibrary

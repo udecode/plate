@@ -1877,6 +1877,7 @@ const getUpdateView = <
         runSelectionMutation(() => transforms.addMark(key, value)),
       remove: (key: string) =>
         runSelectionMutation(() => transforms.removeMark(key)),
+      set: (marks) => runSelectionMutation(() => setCurrentMarks(editor, marks)),
       toggle: (key: string, value = true) =>
         runSelectionMutation(() => transforms.toggleMark(key, value)),
     }),
@@ -2039,7 +2040,8 @@ const getUpdateView = <
     .txGroups) {
     txRecord[groupName] = registration.factory(
       txRecord as never,
-      editor as never
+      editor as never,
+      getUpdateContext(editor) as never
     );
   }
 

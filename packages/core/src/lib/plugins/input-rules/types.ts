@@ -1,14 +1,20 @@
 import type {
-  InsertTextOptions,
+  Element,
   NodeEntry,
   Path,
   Point,
-  TRange,
-} from '@platejs/slate-legacy';
+  Range,
+  TextInsertTextOptions,
+} from '@platejs/slate';
 
 import type { SlateEditor } from '../../editor';
 
 export type InputRuleTarget = 'insertBreak' | 'insertData' | 'insertText';
+
+export type InsertTextOptions = TextInsertTextOptions & {
+  /** @default true */
+  marks?: boolean;
+};
 
 type BivariantCallback<TArgs extends unknown[], TResult> = {
   bivarianceHack: (...args: TArgs) => TResult;
@@ -18,8 +24,8 @@ export type SelectionInputRuleContext<
   TEditor extends SlateEditor = SlateEditor,
 > = {
   editor: TEditor;
-  getBlockEntry: () => NodeEntry | undefined;
-  getBlockStartRange: () => TRange | undefined;
+  getBlockEntry: () => NodeEntry<Element> | undefined;
+  getBlockStartRange: () => Range | undefined;
   getBlockStartText: () => string | undefined;
   getBlockTextBeforeSelection: () => string;
   getCharAfter: () => string | undefined;
@@ -70,7 +76,7 @@ export type MarkInputRuleConfig = BaseInputRule<InsertTextInputRuleContext> & {
 };
 
 export type BlockStartInputRuleMatch = {
-  range: TRange;
+  range: Range;
   text: string;
 };
 
@@ -81,7 +87,7 @@ export type MatchBlockStartOptions<
   match: RegExp | string | ((context: TContext) => RegExp | string | undefined);
   resolveMatch?: (args: {
     match: RegExpMatchArray | string;
-    range: TRange;
+    range: Range;
     text: string;
   }) => TMatch | undefined;
 };
@@ -108,7 +114,7 @@ export type MatchBlockFenceOptions<TMatch = BlockFenceInputRuleMatch> = {
   resolveMatch?: (args: {
     fence: string;
     path: Path;
-    range: TRange;
+    range: Range;
     text: string;
   }) => TMatch | undefined;
 };
@@ -125,7 +131,7 @@ export type BlockFenceInputRuleConfig<TMatch = BlockFenceInputRuleMatch> =
 
 export type DelimitedInlineInputRuleMatch = {
   content: string;
-  deleteRange: TRange;
+  deleteRange: Range;
 };
 
 export type MatchDelimitedInlineOptions = {

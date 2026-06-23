@@ -10,9 +10,9 @@ describe('Plate test hyperscript helpers', () => {
   });
 
   it('keeps jsxt as the plain-text creator alias', () => {
-    expect(jsxt('fragment', {}, jsxt('hp', {}, jsxt('htext', {}, 'A')))).toEqual(
-      [{ children: [{ text: 'A' }], type: 'p' }]
-    );
+    expect(
+      jsxt('fragment', {}, jsxt('hp', {}, jsxt('htext', {}, 'A')))
+    ).toEqual([{ children: [{ text: 'A' }], type: 'p' }]);
   });
 
   it('creates explicit htext nodes through the Plate factory', () => {
@@ -25,8 +25,6 @@ describe('Plate test hyperscript helpers', () => {
   it('keeps editor fixtures readable through direct children', () => {
     const editor = jsx('editor', {}, jsx('hp', {}, 'A'));
 
-    expect(editor.children).toEqual([
-      { children: [{ text: 'A' }], type: 'p' },
-    ]);
+    expect(editor.children).toEqual([{ children: [{ text: 'A' }], type: 'p' }]);
   });
 });

@@ -11,19 +11,19 @@ describe('BaseTogglePlugin', () => {
 
     expect(editor.getOptions(BaseTogglePlugin).openIds).toEqual(new Set());
 
-    editor.getPluginApi(BaseTogglePlugin).toggle.toggleIds(['a', 'b']);
+    editor.api.toggle.toggleIds(['a', 'b']);
 
     expect(
       [...(editor.getOptions(BaseTogglePlugin).openIds ?? new Set())].sort()
     ).toEqual(['a', 'b']);
 
-    editor.getPluginApi(BaseTogglePlugin).toggle.toggleIds(['b'], false);
+    editor.api.toggle.toggleIds(['b'], false);
 
     expect([
       ...(editor.getOptions(BaseTogglePlugin).openIds ?? new Set()),
     ]).toEqual(['a']);
 
-    editor.getPluginApi(BaseTogglePlugin).toggle.toggleIds(['a', 'c'], true);
+    editor.api.toggle.toggleIds(['a', 'c'], true);
 
     expect(
       [...(editor.getOptions(BaseTogglePlugin).openIds ?? new Set())].sort()
@@ -35,24 +35,19 @@ describe('BaseTogglePlugin', () => {
       plugins: [BaseTogglePlugin],
       runtime: 'slate-v2',
     });
-    const api = editor.getPluginApi<{
-      toggle: {
-        toggleIds: (ids: string[], force?: boolean | null) => void;
-      };
-    }>(BaseTogglePlugin);
     const getOpenIds = () =>
       editor.getOptions<{ openIds?: Set<string> }>(BaseTogglePlugin).openIds ??
       new Set<string>();
 
-    api.toggle.toggleIds(['a', 'b']);
+    editor.api.toggle.toggleIds(['a', 'b']);
 
     expect([...getOpenIds()].sort()).toEqual(['a', 'b']);
 
-    api.toggle.toggleIds(['b'], false);
+    editor.api.toggle.toggleIds(['b'], false);
 
     expect([...getOpenIds()]).toEqual(['a']);
 
-    api.toggle.toggleIds(['a', 'c'], true);
+    editor.api.toggle.toggleIds(['a', 'c'], true);
 
     expect([...getOpenIds()].sort()).toEqual(['a', 'c']);
   });

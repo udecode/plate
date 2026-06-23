@@ -3,10 +3,10 @@ title: Element
 description: API reference for elements in Slate.
 ---
 
-`TElement` objects are a type of `Node` in a Plate document that contain other `TElement` nodes or `Text` nodes.
+`Element` objects are a type of `Node` in a Slate document that contain other `Element` nodes or `Text` nodes.
 
 ```typescript
-interface TElement {
+interface Element {
   children: Descendant[]
   type: string
   [key: string]: unknown
@@ -39,7 +39,7 @@ Some void elements can support marks through plugin `node.markableVoid`. For exa
 
 ### `isElementType`
 
-Check if a value implements the `TElement` interface and has `elementKey` matching a specified value. Defaults to checking the `'type'` key.
+Check if a value implements the `Element` interface and has `elementKey` matching a specified value. Defaults to checking the `'type'` key.
 
 <API name="isElementType">
 <APIParameters>
@@ -77,7 +77,7 @@ Check if a value implements the `Ancestor` interface.
 
 ### `isElement`
 
-Check if a value implements the `TElement` interface.
+Check if a value implements the `Element` interface.
 
 <API name="isElement">
 <APIParameters>
@@ -87,13 +87,13 @@ Check if a value implements the `TElement` interface.
 </APIParameters>
 
 <APIReturns type="boolean">
-  `true` if the value is a Plate element.
+  `true` if the value is a Slate element.
 </APIReturns>
 </API>
 
 ### `isElementList`
 
-Check if a value is an array of `TElement` objects.
+Check if a value is an array of `Element` objects.
 
 <API name="isElementList">
 <APIParameters>
@@ -109,7 +109,7 @@ Check if a value is an array of `TElement` objects.
 
 ### `isElementProps`
 
-Check if a set of props is a partial of `TElement`.
+Check if a set of props is a partial of `Element`.
 
 <API name="isElementProps">
 <APIParameters>
@@ -129,10 +129,10 @@ Check if an element matches a set of properties.
 
 <API name="matches">
 <APIParameters>
-  <APIItem name="element" type="TElement">
+  <APIItem name="element" type="Element">
     The element to check.
   </APIItem>
-  <APIItem name="props" type="Partial<TElement>">
+  <APIItem name="props" type="Partial<Element>">
     The properties to match against.
   </APIItem>
 </APIParameters>
@@ -144,13 +144,11 @@ Check if an element matches a set of properties.
 
 ## Types
 
-### `TElement`
+### `Element`
 
-`TElement` objects are a type of node in a Plate document that contain other element nodes or text nodes. They can be either "blocks" or "inlines" depending on the editor's configuration.
+`Element` objects are a type of node in a Slate document that contain other element nodes or text nodes. They can be either "blocks" or "inlines" depending on the editor's configuration.
 
-`Element` is a type alias for `TElement`.
-
-<API name="TElement">
+<API name="Element">
 <APIAttributes>
   <APIItem name="children" type="Descendant[]">
     An array of child nodes that can be either elements or text nodes.

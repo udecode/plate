@@ -87,21 +87,19 @@ describe('submitAIChat', () => {
 
     const editor = {
       api: {
-        blocks: () => [],
-        fragment: () => [{ id: 'frag-1', type: 'p' }],
-        nodesRange: () => ({ anchor: 'a', focus: 'b' }),
-      },
-      children: [{ id: 'root', type: 'p' }],
-      getPluginApi: () => ({
         blockSelection: {
           getNodes: () => blocks,
         },
-      }),
+        blocks: () => [],
+        fragment: () => [{ id: 'frag-1', type: 'p' }],
+        nodesRange: () => ({ anchor: 'a', focus: 'b' }),
+        some: () => true,
+      },
+      children: [{ id: 'root', type: 'p' }],
       getOption: () => false,
-      getTransforms: () => ({
-        ai: { undo },
-      }),
+      history: { redos: [{}], undos: [{ ai: true }] },
       selection: { anchor: { path: [0, 0], offset: 0 } },
+      undo,
     } as any;
 
     const { submitAIChat } = await loadModule();

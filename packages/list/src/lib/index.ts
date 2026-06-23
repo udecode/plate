@@ -7,8 +7,6 @@ export * from './BulletedListRules';
 export * from './OrderedListRules';
 export * from './TaskListRules';
 export * from './types';
-export * from './withList';
-export * from './withNormalizeList';
 export * from './normalizers/index';
 export * from './queries/index';
 export * from './transforms/index';

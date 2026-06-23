@@ -1,8 +1,4 @@
-import type {
-  Descendant,
-  EditorTransforms,
-  Value,
-} from '@platejs/slate-legacy';
+import type { Value } from '@platejs/slate';
 
 import type { SlateEditor } from '../../../editor';
 
@@ -10,18 +6,17 @@ export const setValue = <V extends Value>(
   editor: SlateEditor,
   value?: V | string
 ) => {
-  let children: Descendant[] = value as any;
+  let children = value as V;
 
   if (typeof value === 'string') {
     children = editor.api.html.deserialize({
       element: value,
-    });
+    }) as V;
   } else if (!value || value.length === 0) {
-    children = editor.api.create.value();
+    children = editor.api.create.value() as V;
   }
 
-  (editor.tf as EditorTransforms).replaceNodes(children, {
-    at: [],
-    children: true,
+  editor.update((tx) => {
+    tx.value.replace({ children });
   });
 };

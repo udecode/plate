@@ -19,8 +19,10 @@ export const selectBlocksBySelectionOrId = (
   );
 
   if (isBlockSelected) {
-    editor.tf.select(editor.api.nodesRange(blockEntries)!);
-    editor.tf.focus();
+    editor.update((tx) => {
+      tx.selection.set(editor.api.nodesRange(blockEntries)!);
+    });
+    editor.api.dom.focus();
   } else {
     selectBlockById(editor, id);
   }

@@ -1,9 +1,11 @@
 import type { Element } from '@platejs/slate';
 import type { SlateEditor } from 'platejs';
 
+import { findTableNodePath } from '../utils/findTableNodePath';
+
 /** Get table column index of a cell node. */
 export const getTableColumnIndex = (editor: SlateEditor, cellNode: Element) => {
-  const path = editor.api.findPath(cellNode);
+  const path = findTableNodePath(editor, cellNode);
 
   if (!path) return -1;
 

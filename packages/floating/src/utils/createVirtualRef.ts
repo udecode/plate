@@ -1,6 +1,7 @@
 import type React from 'react';
 
-import type { Editor, TLocation } from 'platejs';
+import type { Location } from '@platejs/slate';
+import type { PlateEditor } from 'platejs/react';
 
 import { getBoundingClientRect } from './getBoundingClientRect';
 
@@ -10,8 +11,8 @@ export type VirtualRef = React.RefObject<Pick<
 > | null>;
 
 export const createVirtualRef = (
-  editor: Editor,
-  at?: TLocation | TLocation[],
+  editor: PlateEditor,
+  at?: Location | Location[],
   {
     fallbackRect,
   }: {

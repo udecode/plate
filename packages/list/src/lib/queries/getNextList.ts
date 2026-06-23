@@ -1,24 +1,19 @@
-import {
-  type Editor,
-  type ElementEntryOf,
-  type ElementOf,
-  type NodeEntry,
-  NodeApi,
-  PathApi,
-} from 'platejs';
+import type { Element, NodeEntry } from '@platejs/slate';
+import { NodeApi, PathApi } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 import { type GetSiblingListOptions, getSiblingList } from './getSiblingList';
 
 /** Get the next indent list. */
-export const getNextList = <N extends ElementOf<E>, E extends Editor = Editor>(
-  editor: E,
-  entry: ElementEntryOf<E>,
-  options?: Partial<GetSiblingListOptions<N, E>>
+export const getNextList = <N extends Element = Element>(
+  editor: SlateEditor,
+  entry: NodeEntry<Element>,
+  options?: Partial<GetSiblingListOptions<N>>
 ): NodeEntry<N> | undefined =>
   getSiblingList(editor, entry, {
     getNextEntry: ([, currPath]) => {
       const nextPath = PathApi.next(currPath);
-      const nextNode = NodeApi.get<N>(editor, nextPath);
+      const nextNode = NodeApi.getIf(editor as any, nextPath) as N | undefined;
 
       if (!nextNode) return;
 

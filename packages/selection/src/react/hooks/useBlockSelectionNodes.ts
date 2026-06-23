@@ -1,18 +1,24 @@
 import { useMemo } from 'react';
 
-import type { EditorPropOptions, TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
 
-import { useEditorRef, usePluginOption } from 'platejs/react';
+import { KEYS } from 'platejs';
+import { type PlateEditor, useEditorRef, usePluginOption } from 'platejs/react';
 
-import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
+const blockSelectionPlugin = { key: KEYS.blockSelection };
+
+export type BlockSelectionFragmentPropOptions = Omit<
+  NonNullable<Parameters<PlateEditor['api']['prop']>[0]>,
+  'nodes'
+>;
 
 export function useBlockSelectionNodes() {
   const editor = useEditorRef();
-  const selectedIds = usePluginOption(BlockSelectionPlugin, 'selectedIds');
+  const selectedIds = usePluginOption(blockSelectionPlugin, 'selectedIds');
 
   return useMemo(
     () =>
-      editor.api.blocks<TElement>({
+      editor.api.blocks<Element>({
         at: [],
         match: (n) => !!n.id && selectedIds?.has(n.id as string),
       }),
@@ -27,7 +33,7 @@ export function useBlockSelectionFragment() {
 }
 
 export function useBlockSelectionFragmentProp(
-  options?: Omit<EditorPropOptions, 'nodes'>
+  options?: BlockSelectionFragmentPropOptions
 ) {
   const editor = useEditorRef();
   const fragment = useBlockSelectionFragment();

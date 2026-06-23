@@ -1,9 +1,9 @@
 /** @jsx jsxt */
 
 import type { SlateEditor } from '@platejs/core';
+import { createListClassicRuntimeTestEditor as createSlateEditor } from './__tests__/createListClassicRuntimeTestEditor';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from '@platejs/core';
 
 import { BaseListPlugin } from './BaseListPlugin';
 
@@ -41,7 +41,7 @@ describe('li > lic * 2 with selection at second child start', () => {
       value: input.children,
     });
 
-    editor.tf.deleteBackward();
+    editor.update((tx) => tx.text.deleteBackward());
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -82,7 +82,7 @@ describe('li with selection at start', () => {
       value: input.children,
     });
 
-    editor.tf.deleteBackward();
+    editor.update((tx) => tx.text.deleteBackward());
 
     expect(editor.children).toEqual(expected.children);
   });
@@ -143,7 +143,7 @@ describe('list + sublist where second item has multiple children', () => {
       value: input.children,
     });
 
-    editor.tf.deleteBackward();
+    editor.update((tx) => tx.text.deleteBackward());
 
     expect(editor.children).toEqual(expected.children);
   });

@@ -159,14 +159,14 @@ const MyEditorComponent = ({ documentId, initialValue }) => {
     if (!mounted) return;
 
     // Initialize Yjs connection, sync document, and set initial editor state
-    editor.getApi(YjsPlugin).yjs.init({
+    editor.getPluginApi(YjsPlugin).yjs.init({
       id: documentId,          // Unique identifier for the Yjs document
       value: initialValue,     // Initial content if the Y.Doc is empty
     });
 
     // Clean up: Destroy connection when component unmounts
     return () => {
-      editor.getApi(YjsPlugin).yjs.destroy();
+      editor.getPluginApi(YjsPlugin).yjs.destroy();
     };
   }, [editor, mounted]);
 

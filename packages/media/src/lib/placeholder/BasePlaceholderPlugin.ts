@@ -1,38 +1,45 @@
+import type { EditorUpdateTransaction } from '@platejs/slate';
 import {
   type PluginConfig,
-  bindFirst,
+  type SlatePlugin,
   createTSlatePlugin,
   KEYS,
 } from 'platejs';
 
 import {
-  insertAudioPlaceholder,
-  insertFilePlaceholder,
-  insertImagePlaceholder,
-  insertVideoPlaceholder,
+  type InsertPlaceholderOptions,
+  createPlaceholderNode,
 } from './transforms';
 
 export type MediaPlaceholderOptions = {
   rules?: PlaceholderRule[];
 };
 
+type PlaceholderTx = {
+  placeholder: {
+    insert: (mediaType: string, options?: InsertPlaceholderOptions) => void;
+  };
+};
+
 export type PlaceholderConfig = PluginConfig<
-  'placeholder',
-  MediaPlaceholderOptions
+  typeof KEYS.placeholder,
+  MediaPlaceholderOptions,
+  {},
+  {},
+  {},
+  PlaceholderTx
 >;
 
 export type PlaceholderRule = {
   mediaType: string;
 };
 
-export const BasePlaceholderPlugin = createTSlatePlugin<PlaceholderConfig>({
-  key: KEYS.placeholder,
-  node: { isElement: true, isVoid: true },
-}).extendEditorTransforms(({ editor }) => ({
-  insert: {
-    audioPlaceholder: bindFirst(insertAudioPlaceholder, editor),
-    filePlaceholder: bindFirst(insertFilePlaceholder, editor),
-    imagePlaceholder: bindFirst(insertImagePlaceholder, editor),
-    videoPlaceholder: bindFirst(insertVideoPlaceholder, editor),
-  },
-}));
+export const BasePlaceholderPlugin: SlatePlugin<PlaceholderConfig> =
+  createTSlatePlugin<PlaceholderConfig>({
+    key: KEYS.placeholder,
+    node: { isElement: true, isVoid: true },
+  }).extendTx(({ type }) => (tx: EditorUpdateTransaction) => ({
+    insert: (mediaType: string, options?: InsertPlaceholderOptions) => {
+      tx.nodes.insert(createPlaceholderNode(type, mediaType), options);
+    },
+  }));

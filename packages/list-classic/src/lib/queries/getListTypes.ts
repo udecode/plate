@@ -1,6 +1,6 @@
-import type { SlateEditor } from 'platejs';
+import type { SlateEditor } from '@platejs/core';
 
-import { KEYS } from 'platejs';
+import { KEYS } from '@platejs/utils';
 
 export const getListTypes = (editor: SlateEditor) => [
   editor.getType(KEYS.olClassic),

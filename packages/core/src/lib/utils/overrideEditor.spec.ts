@@ -10,14 +10,16 @@ describe('overrideEditor method', () => {
       .extendEditorApi(() => ({
         method1: () => 'original-api' as string,
       }))
-      .extendEditorTransforms(() => ({
-        transform1: () => 'original-transform' as string,
+      .overrideEditor(() => ({
+        tf: {
+          transform1: () => 'original-transform' as string,
+        },
       }))
       .overrideEditor(() => ({
         api: {
           method1: () => 'override-api',
         },
-        transforms: {
+        tf: {
           transform1: () => 'override-transform',
         },
       }));
@@ -37,8 +39,10 @@ describe('overrideEditor method', () => {
       .extendEditorApi(() => ({
         method1: () => 'original-api' as string,
       }))
-      .extendEditorTransforms(() => ({
-        transform1: () => 'original-transform' as string,
+      .overrideEditor(() => ({
+        tf: {
+          transform1: () => 'original-transform' as string,
+        },
       }))
       .overrideEditor(() => ({
         api: {
@@ -46,7 +50,7 @@ describe('overrideEditor method', () => {
         },
       }))
       .overrideEditor(() => ({
-        transforms: {
+        tf: {
           transform1: () => 'override-transform',
         },
       }));
@@ -66,14 +70,16 @@ describe('overrideEditor method', () => {
       .extendEditorApi(() => ({
         apiMethod: (x: number) => x.toString(),
       }))
-      .extendEditorTransforms(() => ({
-        transformMethod: (x: number) => x * 2,
+      .overrideEditor(() => ({
+        tf: {
+          transformMethod: (x: number) => x * 2,
+        },
       }))
       .overrideEditor(() => ({
         api: {
           apiMethod: (x: number) => (x + 1).toString(),
         },
-        transforms: {
+        tf: {
           transformMethod: (x: number) => x * 3,
         },
       }));
@@ -94,16 +100,18 @@ describe('overrideEditor method', () => {
         method1: () => 'base-api' as string,
         method2: () => 'original-api' as string,
       }))
-      .extendEditorTransforms(() => ({
-        transform1: () => 'base-transform' as string,
-        transform2: () => 'original-transform' as string,
+      .overrideEditor(() => ({
+        tf: {
+          transform1: () => 'base-transform' as string,
+          transform2: () => 'original-transform' as string,
+        },
       }))
-      .overrideEditor(({ plugin: { api, transforms } }) => ({
+      .overrideEditor(({ api, tf }) => ({
         api: {
           method2: () => `override-${api.method1()}`,
         },
-        transforms: {
-          transform2: () => `override-${transforms.transform1()}`,
+        tf: {
+          transform2: () => `override-${tf.transform1()}`,
         },
       }));
 
@@ -125,10 +133,12 @@ describe('overrideEditor method', () => {
           method2: () => 'original-api2' as string,
         },
       }))
-      .extendEditorTransforms(() => ({
-        nested: {
-          transform1: () => 'original-transform1' as string,
-          transform2: () => 'original-transform2' as string,
+      .overrideEditor(() => ({
+        tf: {
+          nested: {
+            transform1: () => 'original-transform1' as string,
+            transform2: () => 'original-transform2' as string,
+          },
         },
       }))
       .overrideEditor(() => ({
@@ -137,7 +147,7 @@ describe('overrideEditor method', () => {
             method1: () => 'override-api1',
           },
         },
-        transforms: {
+        tf: {
           nested: {
             transform1: () => 'override-transform1',
           },
@@ -163,16 +173,18 @@ describe('overrideEditor method', () => {
         method2: () => 'original-api2' as string,
         method3: () => 'original-api3' as string,
       }))
-      .extendEditorTransforms(() => ({
-        transform1: () => 'original-transform1' as string,
-        transform2: () => 'original-transform2' as string,
-        transform3: () => 'original-transform3' as string,
+      .overrideEditor(() => ({
+        tf: {
+          transform1: () => 'original-transform1' as string,
+          transform2: () => 'original-transform2' as string,
+          transform3: () => 'original-transform3' as string,
+        },
       }))
       .overrideEditor(() => ({
         api: {
           method1: () => 'override-api1',
         },
-        transforms: {
+        tf: {
           transform1: () => 'override-transform1',
         },
       }))
@@ -180,7 +192,7 @@ describe('overrideEditor method', () => {
         api: {
           method2: () => 'override-api2',
         },
-        transforms: {
+        tf: {
           transform2: () => 'override-transform2',
         },
       }));
@@ -205,15 +217,17 @@ describe('overrideEditor method', () => {
         method1: () => 'original-api' as string,
         method2: () => 'untouched-api' as string,
       }))
-      .extendEditorTransforms(() => ({
-        transform1: () => 'original-transform' as string,
-        transform2: () => 'untouched-transform' as string,
+      .overrideEditor(() => ({
+        tf: {
+          transform1: () => 'original-transform' as string,
+          transform2: () => 'untouched-transform' as string,
+        },
       }))
       .overrideEditor(() => ({
         api: {
           method1: () => 'override-api',
         },
-        transforms: {
+        tf: {
           transform1: () => 'override-transform',
         },
       }));

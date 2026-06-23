@@ -1,12 +1,12 @@
 import * as React from 'react';
 
-import type { TFootnoteElement } from '@platejs/footnote';
+import type { FootnoteElement } from '@platejs/footnote';
 import type { SlateElementProps } from 'platejs/static';
 
 import { SlateElement } from 'platejs/static';
 
 export function FootnoteReferenceElementStatic(
-  props: SlateElementProps<TFootnoteElement>
+  props: SlateElementProps<FootnoteElement>
 ) {
   const { element } = props;
 
@@ -22,7 +22,7 @@ export function FootnoteReferenceElementStatic(
 }
 
 export function FootnoteDefinitionElementStatic(
-  props: SlateElementProps<TFootnoteElement>
+  props: SlateElementProps<FootnoteElement>
 ) {
   const { element } = props;
 

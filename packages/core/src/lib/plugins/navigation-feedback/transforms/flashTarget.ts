@@ -1,5 +1,3 @@
-import { NodeApi } from '@platejs/slate-legacy';
-
 import type { SlateEditor } from '../../../editor';
 import type {
   NavigationFeedbackActiveTarget,
@@ -46,12 +44,28 @@ const getNavigationElement = (
   editor: SlateEditor,
   target: NavigationFeedbackActiveTarget | { path: number[] }
 ) => {
-  const node = NodeApi.get(editor, target.path);
+  const node = editor.api.node(target.path)?.[0];
 
   if (!node) return;
 
   try {
-    return editor.api.toDOMNode(node) as HTMLElement | undefined;
+    const domApi = (
+      editor.api as {
+        dom?: {
+          assertDOMNode?: (node: unknown) => HTMLElement;
+          resolveDOMNode?: (node: unknown) => HTMLElement | null | undefined;
+        };
+        toDOMNode?: (node: unknown) => HTMLElement;
+      }
+    ).dom;
+
+    return (
+      domApi?.resolveDOMNode?.(node) ??
+      domApi?.assertDOMNode?.(node) ??
+      (
+        editor.api as { toDOMNode?: (node: unknown) => HTMLElement }
+      ).toDOMNode?.(node)
+    );
   } catch {
     return;
   }
@@ -109,6 +123,14 @@ const nextPulse = (editor: SlateEditor) => {
   return pulse;
 };
 
+const redecorateNavigationFeedback = (editor: SlateEditor) => {
+  const redecorate = (editor.api as { redecorate?: unknown }).redecorate;
+
+  if (typeof redecorate === 'function') {
+    redecorate();
+  }
+};
+
 export const clearNavigationFeedbackTarget = (
   editor: SlateEditor,
   pulse?: number
@@ -126,6 +148,7 @@ export const clearNavigationFeedbackTarget = (
   clearNavigationElement(editor, activeTarget);
   clearNavigationPathRef(storedTarget);
   editor.setOption(NavigationFeedbackPluginKey, 'activeTarget', null);
+  redecorateNavigationFeedback(editor);
 
   return true;
 };
@@ -165,6 +188,7 @@ export const flashTarget = (
   };
 
   editor.setOption(NavigationFeedbackPluginKey, 'activeTarget', activeTarget);
+  redecorateNavigationFeedback(editor);
   setNavigationElement(
     editor,
     resolveNavigationFeedbackTarget(activeTarget) ?? {

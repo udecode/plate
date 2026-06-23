@@ -1,4 +1,7 @@
-import type { SetNodesOptions, SlateEditor } from 'platejs';
+import type { EditorUpdateTransaction } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
+
+type SetNodesOptions = Parameters<EditorUpdateTransaction['nodes']['set']>[1];
 
 type props = {
   type: string;
@@ -16,4 +19,8 @@ export const setMediaNode = (
   editor: SlateEditor,
   props: props,
   options?: SetNodesOptions
-) => editor.tf.setNodes(props, options);
+) => {
+  editor.update((tx) => {
+    tx.nodes.set(props, options);
+  });
+};

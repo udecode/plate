@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 
-import type { TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
 
 import { toUnitLess } from '@platejs/basic-styles';
 import { FontSizePlugin } from '@platejs/basic-styles/react';
@@ -56,7 +56,7 @@ export function FontSizeToolbarButton() {
       return toUnitLess(fontSize as string);
     }
 
-    const [block] = editor.api.block<TElement>() || [];
+    const [block] = editor.api.block<Element>() || [];
 
     if (!block?.type) return DEFAULT_FONT_SIZE;
 
@@ -77,7 +77,7 @@ export function FontSizeToolbarButton() {
       return;
     }
     if (newSize !== toUnitLess(cursorFontSize)) {
-      tf.fontSize.addMark(`${newSize}px`);
+      tf.fontSize.set(`${newSize}px`);
     }
 
     editor.tf.focus();
@@ -85,7 +85,7 @@ export function FontSizeToolbarButton() {
 
   const handleFontSizeChange = (delta: number) => {
     const newSize = Number(displayValue) + delta;
-    tf.fontSize.addMark(`${newSize}px`);
+    tf.fontSize.set(`${newSize}px`);
     editor.tf.focus();
   };
 
@@ -134,7 +134,7 @@ export function FontSizeToolbarButton() {
                 'flex h-8 w-full items-center justify-center text-sm hover:bg-accent data-[highlighted=true]:bg-accent'
               )}
               onClick={() => {
-                tf.fontSize.addMark(`${size}px`);
+                tf.fontSize.set(`${size}px`);
                 setIsFocused(false);
               }}
               data-highlighted={size === displayValue}

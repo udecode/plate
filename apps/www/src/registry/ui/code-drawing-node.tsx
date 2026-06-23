@@ -3,8 +3,8 @@
 import * as React from 'react';
 
 import type {
+  CodeDrawingElement as CodeDrawingElementNode,
   CodeDrawingType,
-  TCodeDrawingElement,
   ViewMode,
 } from '@platejs/code-drawing';
 import {
@@ -24,6 +24,7 @@ import {
   useEditorSelector,
   useElement,
   useFocusedLast,
+  useNodePath,
   useReadOnly,
   useSelected,
 } from 'platejs/react';
@@ -92,9 +93,14 @@ function createDebouncedCodeDrawingRenderer(
   );
 }
 
-function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
+function useCodeDrawingElement({
+  element,
+}: {
+  element: CodeDrawingElementNode;
+}) {
   const editor = useEditorRef();
   const readOnly = useReadOnly();
+  const path = useNodePath(element);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [image, setImage] = React.useState<string>('');
@@ -115,9 +121,10 @@ function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
   const removeNode = () => {
     if (readOnly) return;
 
-    const path = editor.api.findPath(element);
     if (path) {
-      editor.tf.removeNodes({ at: path });
+      editor.update((tx) => {
+        tx.nodes.remove({ at: path });
+      });
     }
   };
 
@@ -130,7 +137,7 @@ function useCodeDrawingElement({ element }: { element: TCodeDrawingElement }) {
 }
 
 export function CodeDrawingElement(
-  props: PlateElementProps<TCodeDrawingElement>
+  props: PlateElementProps<CodeDrawingElementNode>
 ) {
   const { children } = props;
   const isMobile = useIsMobile();
@@ -138,7 +145,8 @@ export function CodeDrawingElement(
   const readOnly = useReadOnly();
   const selected = useSelected();
   const isFocusedLast = useFocusedLast();
-  const element = useElement<TCodeDrawingElement>();
+  const element = useElement<CodeDrawingElementNode>();
+  const path = useNodePath(element);
   const { removeNode, image, loading } = useCodeDrawingElement({ element });
 
   const handleDownload = React.useCallback(() => {
@@ -148,56 +156,59 @@ export function CodeDrawingElement(
 
   const handleCodeChange = React.useCallback(
     (code: string) => {
-      const path = editor.api.findPath(element);
       if (path) {
-        editor.tf.setNodes(
-          {
-            data: {
-              ...element.data,
-              code,
+        editor.update((tx) => {
+          tx.nodes.set(
+            {
+              data: {
+                ...element.data,
+                code,
+              },
             },
-          },
-          { at: path }
-        );
+            { at: path }
+          );
+        });
       }
     },
-    [editor, element]
+    [editor, element.data, path]
   );
 
   const handleDrawingTypeChange = React.useCallback(
     (drawingType: CodeDrawingType) => {
-      const path = editor.api.findPath(element);
       if (path) {
-        editor.tf.setNodes(
-          {
-            data: {
-              ...element.data,
-              drawingType,
+        editor.update((tx) => {
+          tx.nodes.set(
+            {
+              data: {
+                ...element.data,
+                drawingType,
+              },
             },
-          },
-          { at: path }
-        );
+            { at: path }
+          );
+        });
       }
     },
-    [editor, element]
+    [editor, element.data, path]
   );
 
   const handleDrawingModeChange = React.useCallback(
     (drawingMode: ViewMode) => {
-      const path = editor.api.findPath(element);
       if (path) {
-        editor.tf.setNodes(
-          {
-            data: {
-              ...element.data,
-              drawingMode,
+        editor.update((tx) => {
+          tx.nodes.set(
+            {
+              data: {
+                ...element.data,
+                drawingMode,
+              },
             },
-          },
-          { at: path }
-        );
+            { at: path }
+          );
+        });
       }
     },
-    [editor, element]
+    [editor, element.data, path]
   );
 
   const code = element.data?.code ?? '';

@@ -10,8 +10,9 @@ import { createPlateEditor } from '../editor/withPlate';
 import { useNodePath } from './useNodePath';
 
 describe('useNodePath', () => {
-  it('resolves the initial path with a single findPath call', () => {
+  it('resolves the initial path without editor.findPath', () => {
     const editor = createPlateEditor({
+      runtime: 'legacy',
       value: [
         {
           children: [{ text: 'Body' }],
@@ -20,14 +21,10 @@ describe('useNodePath', () => {
       ] as any,
     });
     const node = editor.children[0] as any;
-    const originalFindPath = editor.api.findPath.bind(editor.api);
-    let findPathCalls = 0;
 
-    editor.api.findPath = ((target: any) => {
-      findPathCalls += 1;
-
-      return originalFindPath(target);
-    }) as any;
+    editor.api.findPath = () => {
+      throw new Error('unexpected findPath call');
+    };
 
     const Probe = () => {
       const path = useNodePath(node);
@@ -44,6 +41,5 @@ describe('useNodePath', () => {
     );
 
     expect(getByTestId('path-probe')).toHaveTextContent('0');
-    expect(findPathCalls).toBe(1);
   });
 });

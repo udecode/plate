@@ -169,10 +169,7 @@ export const normalize: EditorStaticApi['normalize'] = (
 
           if (beforeMutation !== afterMutation) {
             changed = true;
-
-            if (!explicit) {
-              break;
-            }
+            break;
           }
         }
 

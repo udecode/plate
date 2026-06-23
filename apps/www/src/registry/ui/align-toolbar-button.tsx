@@ -67,7 +67,7 @@ export function AlignToolbarButton(props: DropdownMenuProps) {
         <DropdownMenuRadioGroup
           value={value}
           onValueChange={(value) => {
-            tf.textAlign.setNodes(value as Alignment);
+            tf.textAlign.set(value as Alignment);
             editor.tf.focus();
           }}
         >

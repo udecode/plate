@@ -1,6 +1,6 @@
 import {
-  type EditorBeforeOptions,
   type PluginConfig,
+  type SlateEditor,
   type TLinkElement,
   createTSlatePlugin,
   isUrl,
@@ -8,7 +8,10 @@ import {
 } from 'platejs';
 
 import { getLinkAttributes, validateUrl } from './utils/index';
-import { withLink } from './withLink';
+
+type RangeBeforeOptions = NonNullable<
+  Parameters<SlateEditor['api']['range']>[2]
+>['before'];
 
 export type BaseLinkConfig = PluginConfig<
   'a',
@@ -43,7 +46,7 @@ export type BaseLinkConfig = PluginConfig<
      *     "afterMatch": true
      *   }
      */
-    rangeBeforeOptions?: EditorBeforeOptions;
+    rangeBeforeOptions?: RangeBeforeOptions;
     /**
      * Hotkeys to trigger floating link.
      *
@@ -131,4 +134,4 @@ export const BaseLinkPlugin = createTSlatePlugin<BaseLinkConfig>({
     normalize: { removeEmpty: true },
     selection: { affinity: 'directional' },
   },
-}).overrideEditor(withLink);
+});

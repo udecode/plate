@@ -1,21 +1,18 @@
-import type { PlateEditor } from 'platejs/react';
-
 import {
   acceptSuggestion,
   getSuggestionKey,
   getTransientSuggestionKey,
 } from '@platejs/suggestion';
-import { SuggestionPlugin } from '@platejs/suggestion/react';
 
-export const acceptAISuggestions = (editor: PlateEditor) => {
-  const suggestions = editor.getApi(SuggestionPlugin).suggestion.nodes({
+import type { AIChatPlateEditor } from '../internal/editorTypes';
+
+export const acceptAISuggestions = (editor: AIChatPlateEditor) => {
+  const suggestions = editor.api.suggestion.nodes({
     transient: true,
   });
 
   suggestions.forEach(([suggestionNode]: [any, any]) => {
-    const suggestionData = editor
-      .getApi(SuggestionPlugin)
-      .suggestion.suggestionData(suggestionNode);
+    const suggestionData = editor.api.suggestion.suggestionData(suggestionNode);
 
     if (!suggestionData) return;
 
@@ -30,9 +27,12 @@ export const acceptAISuggestions = (editor: PlateEditor) => {
     acceptSuggestion(editor, description);
   });
 
-  editor.tf.unsetNodes([getTransientSuggestionKey()], {
-    at: [],
-    mode: 'all',
-    match: (n) => !!n[getTransientSuggestionKey()],
+  editor.update((tx) => {
+    tx.nodes.unset([getTransientSuggestionKey()], {
+      at: [],
+      mode: 'all',
+      match: (n) =>
+        Boolean((n as Record<string, unknown>)[getTransientSuggestionKey()]),
+    });
   });
 };

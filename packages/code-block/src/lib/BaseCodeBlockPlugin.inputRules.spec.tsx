@@ -3,6 +3,7 @@
 import { jsxt } from '@platejs/test-utils';
 import { createSlateEditor } from 'platejs';
 
+import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 import { CodeBlockRules } from './CodeBlockRules';
 
@@ -28,8 +29,8 @@ describe('BaseCodeBlockPlugin input rules', () => {
       value: input,
     } as any);
 
-    editor.tf.insertText('`');
-    editor.tf.insertText('code');
+    getCurrentRuntimeTransforms(editor).insertText('`');
+    getCurrentRuntimeTransforms(editor).insertText('code');
 
     expect(input.children).toEqual(
       (
@@ -56,7 +57,7 @@ describe('BaseCodeBlockPlugin input rules', () => {
       value: [{ children: [{ text: '``' }], type: 'p' }],
     } as any);
 
-    editor.tf.insertText('`');
+    getCurrentRuntimeTransforms(editor).insertText('`');
 
     expect(editor.children).toMatchObject([
       {
@@ -90,11 +91,11 @@ describe('BaseCodeBlockPlugin input rules', () => {
       value: input,
     } as any);
 
-    editor.tf.select({
+    getCurrentRuntimeTransforms(editor).select({
       anchor: { offset: 3, path: [0, 0] },
       focus: { offset: 3, path: [0, 0] },
     });
-    editor.tf.insertBreak();
+    getCurrentRuntimeTransforms(editor).insertBreak();
 
     expect(editor.children).toMatchObject([
       {

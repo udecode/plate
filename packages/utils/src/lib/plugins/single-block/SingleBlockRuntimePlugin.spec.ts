@@ -27,7 +27,9 @@ describe('single-block runtime plugins', () => {
       { children: [{ text: 'first\nsecond\nthird' }], type: 'p' },
     ]);
 
-    editor.tf.insertBreak();
+    editor.update((tx) => {
+      tx.break.insert();
+    });
 
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'firs\nt\nsecond\nthird' }], type: 'p' },
@@ -56,8 +58,10 @@ describe('single-block runtime plugins', () => {
       { children: [{ text: 'firstsecondthird' }], type: 'p' },
     ]);
 
-    editor.tf.insertBreak();
-    editor.tf.insertSoftBreak();
+    editor.update((tx) => {
+      tx.break.insert();
+      tx.break.insertSoft();
+    });
 
     expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'firstsecondthird' }], type: 'p' },

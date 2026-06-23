@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 
 import { type TEquationElement, isHotkey } from 'platejs';
-import { useEditorRef, useElement } from 'platejs/react';
+import { useEditorRef, useElement, useNodePath } from 'platejs/react';
 
 export const useEquationInput = ({
   isInline,
@@ -14,6 +14,7 @@ export const useEquationInput = ({
 }) => {
   const editor = useEditorRef();
   const element = useElement<TEquationElement>();
+  const path = useNodePath(element);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const [expressionInput, setExpressionInput] = React.useState<string>(
     element.texExpression
@@ -39,11 +40,18 @@ export const useEquationInput = ({
 
   useEffect(() => {
     const setExpression = () => {
-      editor.tf.setNodes<TEquationElement>(
-        {
-          texExpression: expressionInput || '',
+      if (!path) return;
+
+      editor.update(
+        (tx) => {
+          tx.nodes.set<TEquationElement>(
+            {
+              texExpression: expressionInput || '',
+            },
+            { at: path }
+          );
         },
-        { at: element }
+        isInline ? { tag: 'history-merge' } : undefined
       );
     };
     // When the cursor is inside an inline equation, the popover needs to open.
@@ -51,26 +59,24 @@ export const useEquationInput = ({
     // So we need to remove the inline equation focus in one times undo.
     // block equation will not block the undo process because it will not open the popover by focus.
     // The disadvantage of this approach for block equation is that the popover cannot be opened using the keyboard.
-    if (isInline) {
-      editor.tf.withMerging(setExpression);
-    } else {
-      setExpression();
-    }
+    setExpression();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expressionInput]);
+  }, [expressionInput, path]);
 
   const onSubmit = () => {
     onClose?.();
   };
 
   const onDismiss = () => {
-    if (isInline) {
-      editor.tf.setNodes(
-        {
-          texExpression: initialExpressionRef.current,
-        },
-        { at: element }
-      );
+    if (isInline && path) {
+      editor.update((tx) => {
+        tx.nodes.set(
+          {
+            texExpression: initialExpressionRef.current,
+          },
+          { at: path }
+        );
+      });
     }
 
     onClose?.();
@@ -101,10 +107,15 @@ export const useEquationInput = ({
             isHotkey('ArrowLeft')(e)
           ) {
             e.preventDefault();
-            editor.tf.select(element, {
-              focus: true,
-              previous: true,
-            });
+            if (path) {
+              const point = editor.api.before(path);
+
+              if (point) {
+                editor.update((tx) => {
+                  tx.selection.set(point);
+                });
+              }
+            }
           }
           // at the right edge
           if (
@@ -113,10 +124,15 @@ export const useEquationInput = ({
             isHotkey('ArrowRight')(e)
           ) {
             e.preventDefault();
-            editor.tf.select(element, {
-              focus: true,
-              next: true,
-            });
+            if (path) {
+              const point = editor.api.after(path);
+
+              if (point) {
+                editor.update((tx) => {
+                  tx.selection.set(point);
+                });
+              }
+            }
           }
         }
       },

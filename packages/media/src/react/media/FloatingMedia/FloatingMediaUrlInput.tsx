@@ -38,7 +38,7 @@ export const useFloatingMediaUrlInputState = ({
     () => {
       if (FloatingMediaStore.get('isEditing')) {
         FloatingMediaStore.actions.reset();
-        editor.tf.focus({ at: editor.selection! });
+        editor.api.dom.focus();
       }
     },
     {

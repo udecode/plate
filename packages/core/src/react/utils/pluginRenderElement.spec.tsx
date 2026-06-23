@@ -11,6 +11,9 @@ import { createPlateEditor } from '../editor/withPlate';
 import { useElement } from '../stores/element/useElement';
 import { pluginRenderElement } from './pluginRenderElement';
 
+const createLegacyPlateEditor = (options: any) =>
+  createPlateEditor({ runtime: 'legacy', ...options } as any);
+
 const createValue = () =>
   [
     {
@@ -44,7 +47,7 @@ const renderPlugin = (editor: ReturnType<typeof createPlateEditor>) => {
 
 describe('pluginRenderElement', () => {
   it('renders the default paragraph element with the paragraph plugin class', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [],
       value: createValue(),
     });
@@ -57,7 +60,7 @@ describe('pluginRenderElement', () => {
   });
 
   it('keeps element context available for custom node components', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [
         createSlatePlugin({
           key: 'p',
@@ -91,7 +94,7 @@ describe('pluginRenderElement', () => {
   });
 
   it('preserves Slate children for void render.as tags', () => {
-    const editor = createPlateEditor({
+    const editor = createLegacyPlateEditor({
       plugins: [
         createSlatePlugin({
           key: 'hr',

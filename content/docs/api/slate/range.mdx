@@ -3,10 +3,10 @@ title: Range
 description: API reference for ranges in Plate.
 ---
 
-A Range is a set of points that refer to a specific span of a Plate document. They can define a span inside a single node or span across multiple nodes. A range consists of two points: an anchor (start) and a focus (end).
+A Range is a set of points that refer to a specific span of a Slate document. They can define a span inside a single node or span across multiple nodes. A range consists of two points: an anchor (start) and a focus (end).
 
 ```typescript
-type TRange = {
+type Range = {
   anchor: Point
   focus: Point
 }
@@ -22,7 +22,7 @@ Transform a range by an operation.
 
 <API name="transform">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The range to transform.
   </APIItem>
   <APIItem name="op" type="Operation">
@@ -39,7 +39,7 @@ Transform a range by an operation.
   </APIItem>
 </APIOptions>
 
-<APIReturns type="TRange | null">
+<APIReturns type="Range | null">
   The transformed range, or `null` if the range was deleted.
 </APIReturns>
 </API>
@@ -50,7 +50,7 @@ Get the start and end points of a range.
 
 <API name="edges">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The range to get edges from.
   </APIItem>
   <APIItem name="options" type="RangeEdgesOptions" optional>
@@ -75,7 +75,7 @@ Get the end point of a range.
 
 <API name="end">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The range to get the end point from.
   </APIItem>
 </APIParameters>
@@ -91,10 +91,10 @@ Check if two ranges are exactly equal.
 
 <API name="equals">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The first range to compare.
   </APIItem>
-  <APIItem name="another" type="TRange">
+  <APIItem name="another" type="Range">
     The second range to compare.
   </APIItem>
 </APIParameters>
@@ -110,10 +110,10 @@ Check if a range includes a path, point, or part of another range.
 
 <API name="includes">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The range to check.
   </APIItem>
-  <APIItem name="target" type="Path | Point | TRange">
+  <APIItem name="target" type="Path | Point | Range">
     The target to check for inclusion.
   </APIItem>
 </APIParameters>
@@ -129,15 +129,15 @@ Get the intersection of two ranges.
 
 <API name="intersection">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The first range.
   </APIItem>
-  <APIItem name="another" type="TRange">
+  <APIItem name="another" type="Range">
     The second range.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="TRange | null">
+<APIReturns type="Range | null">
   The intersecting range, or `null` if there is no intersection.
 </APIReturns>
 </API>
@@ -148,7 +148,7 @@ Check if a range is backward (anchor point appears after focus point).
 
 <API name="isBackward">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The range to check.
   </APIItem>
 </APIParameters>
@@ -164,7 +164,7 @@ Check if a range is collapsed (both points refer to the same position).
 
 <API name="isCollapsed">
 <APIParameters>
-  <APIItem name="range" type="TRange | null" optional>
+  <APIItem name="range" type="Range | null" optional>
     The range to check.
   </APIItem>
 </APIParameters>
@@ -180,7 +180,7 @@ Check if a range is expanded (not collapsed).
 
 <API name="isExpanded">
 <APIParameters>
-  <APIItem name="range" type="TRange | null" optional>
+  <APIItem name="range" type="Range | null" optional>
     The range to check.
   </APIItem>
 </APIParameters>
@@ -196,7 +196,7 @@ Check if a range is forward (anchor point appears before focus point).
 
 <API name="isForward">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The range to check.
   </APIItem>
 </APIParameters>
@@ -208,7 +208,7 @@ Check if a range is forward (anchor point appears before focus point).
 
 ### `isRange`
 
-Check if a value implements the `TRange` interface.
+Check if a value implements the `Range` interface.
 
 <API name="isRange">
 <APIParameters>
@@ -228,7 +228,7 @@ Iterate through all point entries in a range.
 
 <API name="points">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The range to iterate through.
   </APIItem>
 </APIParameters>
@@ -244,7 +244,7 @@ Get the start point of a range.
 
 <API name="start">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The range to get the start point from.
   </APIItem>
 </APIParameters>
@@ -260,10 +260,10 @@ Check if a range completely surrounds another range.
 
 <API name="surrounds">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The range that might surround the target.
   </APIItem>
-  <APIItem name="target" type="TRange">
+  <APIItem name="target" type="Range">
     The target range that might be surrounded.
   </APIItem>
 </APIParameters>
@@ -275,14 +275,12 @@ Check if a range completely surrounds another range.
 
 ## Types
 
-### `TRange`
+### `Range`
 
-`TRange` objects are a set of points that refer to a specific span of a Plate document. They can define a span inside a 
+`Range` objects are a set of points that refer to a specific span of a Slate document. They can define a span inside a 
 single node or span across multiple nodes.
 
-`Range` is a type alias for `TRange`.
-
-<API name="TRange">
+<API name="Range">
 <APIAttributes>
   <APIItem name="anchor" type="Point">
     The start point of the range.

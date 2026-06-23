@@ -1,40 +1,47 @@
 import React from 'react';
 
+import { type Element, type Path, PathApi, type Text } from '@platejs/slate';
+
+import type {
+  NavigationFeedbackActiveTarget,
+  NavigationFeedbackStoredTarget,
+} from '../../../lib/plugins/navigation-feedback/types';
+import { NavigationFeedbackPluginKey } from '../../../lib/plugins/navigation-feedback/types';
 import {
-  type Path,
-  PathApi,
-  type TElement,
-  type TText,
-} from '@platejs/slate-legacy';
+  useEditorPluginOption,
+  useEditorRef,
+  useElementContext,
+} from '../../stores';
 
-import { useEditorSelector } from '../../stores';
-
-type NavigationHighlightTarget = Path | TElement | TText | null | undefined;
+type NavigationHighlightTarget = Path | Element | Text | null | undefined;
 
 export const useNavigationHighlight = (target?: NavigationHighlightTarget) => {
-  const targetRef = React.useRef(target);
+  const editor = useEditorRef();
+  const currentElementPath = useElementContext()?.path ?? null;
+  const storedTarget = useEditorPluginOption(
+    editor,
+    NavigationFeedbackPluginKey,
+    'activeTarget'
+  ) as NavigationFeedbackStoredTarget | null;
 
-  targetRef.current = target;
+  return React.useMemo<NavigationFeedbackActiveTarget | null>(() => {
+    const path = storedTarget?.pathRef.current;
 
-  return useEditorSelector(
-    (editor) => {
-      const activeTarget = editor.api.navigation.activeTarget();
+    if (!storedTarget || !path) return null;
 
-      if (!activeTarget) return null;
+    const currentTarget = target;
 
-      const currentTarget = targetRef.current;
+    if (!currentTarget) return null;
 
-      if (!currentTarget) return null;
+    const resolvedPath = Array.isArray(currentTarget)
+      ? currentTarget
+      : currentElementPath;
 
-      const resolvedPath = Array.isArray(currentTarget)
-        ? currentTarget
-        : editor.api.findPath(currentTarget);
+    if (!resolvedPath) return null;
+    if (!PathApi.equals(path, resolvedPath)) return null;
 
-      if (!resolvedPath) return null;
-      if (!PathApi.equals(activeTarget.path, resolvedPath)) return null;
+    const { pathRef: _pathRef, ...activeTarget } = storedTarget;
 
-      return activeTarget;
-    },
-    [target]
-  );
+    return { ...activeTarget, path };
+  }, [currentElementPath, editor, storedTarget, target]);
 };

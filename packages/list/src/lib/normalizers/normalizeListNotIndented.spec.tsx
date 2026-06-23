@@ -6,6 +6,7 @@ import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
 
 import { BaseListPlugin } from '../BaseListPlugin';
+import { normalizeListNotIndented } from './normalizeListNotIndented';
 
 jsxt;
 
@@ -29,9 +30,10 @@ describe('normalizeList', () => {
       const editor = createSlateEditor({
         plugins: [BaseListPlugin, BaseIndentPlugin],
         selection: input.selection,
-        shouldNormalizeEditor: true,
         value: input.children,
       });
+
+      normalizeListNotIndented(editor, [editor.children[0], [0]]);
 
       expect(editor.children).toEqual(output.children);
     });

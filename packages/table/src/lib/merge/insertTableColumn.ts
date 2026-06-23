@@ -1,14 +1,12 @@
 import cloneDeep from 'lodash/cloneDeep.js';
+import { PathApi, type Path } from '@platejs/slate';
 import {
-  type Path,
   type SlateEditor,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
   getEditorPlugin,
   KEYS,
-  NodeApi,
-  PathApi,
 } from 'platejs';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
@@ -40,10 +38,14 @@ export const insertTableMergeColumn = (
   const { initialTableWidth, minColumnWidth } = getOptions();
 
   if (at && !fromCell) {
-    const table = NodeApi.get<TTableElement>(editor, at);
+    const table = editor.api.node<TTableElement>(at)?.[0];
 
     if (table?.type === editor.getType(KEYS.table)) {
-      fromCell = NodeApi.lastChild(editor, at.concat([0]))![1];
+      const firstRow = table.children[0] as TTableRowElement | undefined;
+
+      if (!firstRow) return;
+
+      fromCell = at.concat([0, firstRow.children.length - 1]);
       at = undefined;
     }
   }
@@ -132,7 +134,9 @@ export const insertTableMergeColumn = (
         newCell.attributes.colspan = colSpan.toString();
       }
 
-      editor.tf.setNodes<TTableCellElement>(newCell, { at: currentCellPath });
+      editor.update((tx) => {
+        tx.nodes.set(newCell, { at: currentCellPath });
+      });
     } else {
       const curRowPath = currentCellPath.slice(0, -1);
       const curColPath = currentCellPath.at(-1)!;
@@ -148,14 +152,16 @@ export const insertTableMergeColumn = (
         colSpan: 1,
         rowSpan: curRowSpan,
       };
-      editor.tf.insertNodes(emptyCell, {
-        at: placementPath,
-        select: shouldSelect,
+      editor.update((tx) => {
+        tx.nodes.insert(emptyCell, {
+          at: placementPath,
+          select: shouldSelect,
+        });
       });
     }
   });
 
-  editor.tf.withoutNormalizing(() => {
+  editor.update((tx) => {
     const { colSizes } = tableNode;
 
     if (colSizes) {
@@ -183,10 +189,8 @@ export const insertTableMergeColumn = (
         }
       }
 
-      editor.tf.setNodes<TTableElement>(
-        {
-          colSizes: newColSizes,
-        },
+      tx.nodes.set(
+        { colSizes: newColSizes } satisfies Partial<TTableElement>,
         {
           at: tablePath,
         }

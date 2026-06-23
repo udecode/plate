@@ -1,23 +1,29 @@
 import type { PlateEditor } from 'platejs/react';
 
 import {
-  type RemoveNodesOptions,
   ElementApi,
+  type EditorUpdateTransaction,
   getPluginType,
   KEYS,
 } from 'platejs';
 
+export type RemoveAnchorAIChatOptions = NonNullable<
+  Parameters<EditorUpdateTransaction['nodes']['remove']>[0]
+>;
+
 export const removeAnchorAIChat = (
   editor: PlateEditor,
-  options?: RemoveNodesOptions
+  options?: RemoveAnchorAIChatOptions
 ) => {
-  editor.tf.withoutSaving(() => {
-    editor.tf.removeNodes({
-      at: [],
-      match: (n) =>
-        ElementApi.isElement(n) &&
-        n.type === getPluginType(editor, KEYS.aiChat),
-      ...options,
+  editor.api.history.withoutSaving(() => {
+    editor.update((tx) => {
+      tx.nodes.remove({
+        at: [],
+        match: (n) =>
+          ElementApi.isElement(n) &&
+          n.type === getPluginType(editor, KEYS.aiChat),
+        ...options,
+      });
     });
   });
 };

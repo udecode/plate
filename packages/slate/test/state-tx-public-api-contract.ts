@@ -617,6 +617,80 @@ describe('state/tx public API contract', () => {
     assert.deepEqual(marks, { bold: true });
   });
 
+  it('sets exact insertion marks through the update transaction', () => {
+    const editor = createEditor();
+
+    replaceEditorValue(editor, {
+      children: [paragraph('one')],
+      selection: {
+        anchor: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+      marks: null,
+    });
+    editor.update((tx) => {
+      tx.marks.set({ bold: true });
+      tx.text.insert('!');
+    });
+
+    assert.deepEqual(Editor.getSnapshot(editor).children, [
+      {
+        children: [{ text: 'one' }, { bold: true, text: '!' }],
+        type: 'paragraph',
+      },
+    ]);
+
+    replaceEditorValue(editor, {
+      children: [
+        {
+          children: [{ bold: true, text: 'one' }],
+          type: 'paragraph',
+        },
+      ],
+      selection: {
+        anchor: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+      marks: null,
+    });
+    editor.update((tx) => {
+      tx.marks.set({});
+      tx.text.insert('!');
+    });
+
+    assert.deepEqual(Editor.getSnapshot(editor).children, [
+      {
+        children: [{ bold: true, text: 'one' }, { text: '!' }],
+        type: 'paragraph',
+      },
+    ]);
+
+    replaceEditorValue(editor, {
+      children: [
+        {
+          children: [{ bold: true, text: 'one' }],
+          type: 'paragraph',
+        },
+      ],
+      selection: {
+        anchor: { path: [0, 0], offset: 3 },
+        focus: { path: [0, 0], offset: 3 },
+      },
+      marks: null,
+    });
+    editor.update((tx) => {
+      tx.marks.set(null);
+      tx.text.insert('!');
+    });
+
+    assert.deepEqual(Editor.getSnapshot(editor).children, [
+      {
+        children: [{ bold: true, text: 'one!' }],
+        type: 'paragraph',
+      },
+    ]);
+  });
+
   it('replays operation batches through the update transaction', () => {
     const editor = createSeededEditor();
 

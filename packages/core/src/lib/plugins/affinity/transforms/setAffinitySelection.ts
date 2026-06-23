@@ -3,6 +3,8 @@ import { ElementApi, NodeApi, type Point } from '@platejs/slate';
 import type { SlateEditor } from '../../../editor';
 import type { EdgeNodes } from '../types';
 
+import { getCurrentRuntimeTransforms } from '../../../../internal/currentRuntimeBridge';
+
 export const setAffinitySelection = (
   editor: SlateEditor,
   edgeNodes: EdgeNodes,
@@ -14,7 +16,10 @@ export const setAffinitySelection = (
   };
 
   const select = (point: Point) => {
-    editor.tf.setSelection({ anchor: point, focus: point });
+    getCurrentRuntimeTransforms(editor).setSelection({
+      anchor: point,
+      focus: point,
+    });
   };
 
   const [before, after] = edgeNodes;

@@ -1,6 +1,11 @@
-import type { InsertNodesOptions, SlateEditor, TElement } from 'platejs';
+import type { EditorUpdateTransaction, Element } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
+
+type InsertNodesOptions = NonNullable<
+  Parameters<EditorUpdateTransaction['nodes']['insert']>[1]
+>;
 
 /**
  * Insert a code block: set the node to code line and wrap it with a code block.
@@ -12,7 +17,7 @@ export const insertCodeBlock = (
 ) => {
   if (!editor.selection || editor.api.isExpanded()) return;
 
-  const matchCodeElements = (node: TElement) =>
+  const matchCodeElements = (node: Element) =>
     node.type === KEYS.codeBlock || node.type === KEYS.codeLine;
 
   if (
@@ -23,22 +28,26 @@ export const insertCodeBlock = (
     return;
   }
   if (!editor.api.isAt({ start: true })) {
-    editor.tf.insertBreak();
+    editor.update((tx) => {
+      tx.break.insert();
+    });
   }
 
-  editor.tf.setNodes(
-    {
-      children: [{ text: '' }],
-      type: KEYS.codeLine,
-    },
-    insertNodesOptions
-  );
+  editor.update((tx) => {
+    tx.nodes.set(
+      {
+        children: [{ text: '' }],
+        type: KEYS.codeLine,
+      },
+      insertNodesOptions
+    );
 
-  editor.tf.wrapNodes<TElement>(
-    {
-      children: [],
-      type: KEYS.codeBlock,
-    },
-    insertNodesOptions
-  );
+    tx.nodes.wrap(
+      {
+        children: [],
+        type: KEYS.codeBlock,
+      },
+      insertNodesOptions
+    );
+  });
 };

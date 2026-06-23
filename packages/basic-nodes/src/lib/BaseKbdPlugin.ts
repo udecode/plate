@@ -13,8 +13,9 @@ export const BaseKbdPlugin = createSlatePlugin({
   },
   render: { as: 'kbd' },
   rules: { selection: { affinity: 'hard' } },
-}).extendTransforms(({ editor, type }) => ({
-  toggle: () => {
-    editor.tf.toggleMark(type);
-  },
-}));
+})
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      tx.marks.toggle(type);
+    },
+  }));

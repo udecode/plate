@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { render } from '@testing-library/react';
-import { createSlateEditor } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 import { DndScroller } from './components/Scroller';
 import { DndPlugin } from './DndPlugin';
@@ -90,7 +90,7 @@ describe('DndPlugin', () => {
   });
 
   it('clears drop targets on document drop and on dragleave outside the editor', () => {
-    const editor = createSlateEditor({ plugins: [DndPlugin] }) as any;
+    const editor = createPlateEditor({ plugins: [DndPlugin] }) as any;
     const setOption = mock();
     const editorNode = document.createElement('div');
     const inside = document.createElement('div');
@@ -103,7 +103,7 @@ describe('DndPlugin', () => {
     editorNode.append(inside);
     editorNode.append(block);
     document.body.append(editorNode, outside);
-    editor.api.toDOMNode = mock(() => editorNode);
+    editor.api.dom.resolveDOMNode = mock(() => editorNode);
 
     const TestComponent = () => {
       (DndPlugin as any).useHooks({ editor, setOption });
@@ -160,7 +160,7 @@ describe('DndPlugin', () => {
   });
 
   it('only exposes the scroller render hook when enabled', () => {
-    const enabledEditor = createSlateEditor({
+    const enabledEditor = createPlateEditor({
       plugins: [
         DndPlugin.configure({
           options: {
@@ -171,13 +171,15 @@ describe('DndPlugin', () => {
       ],
     });
     const enabledPlugin = enabledEditor.getPlugin(DndPlugin);
-    const disabledPlugin = createSlateEditor({
+    const disabledPlugin = createPlateEditor({
       plugins: [DndPlugin],
     }).getPlugin(DndPlugin);
-    const scroller = enabledPlugin.render.afterEditable?.({} as any) as any;
+    const scroller = (enabledPlugin.render as any).afterEditable?.(
+      {} as any
+    ) as any;
 
     expect(scroller.type).toBe(DndScroller);
     expect(scroller.props.height).toBe(40);
-    expect(disabledPlugin.render.afterEditable).toBeUndefined();
+    expect((disabledPlugin.render as any)?.afterEditable).toBeUndefined();
   });
 });

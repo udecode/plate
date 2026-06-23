@@ -1,19 +1,20 @@
-import type { OverrideEditor } from 'platejs/react';
+import {
+  type EditorExtensionInput,
+  ElementApi,
+  KEYS,
+  defineEditorExtension,
+  getPluginType,
+} from 'platejs';
+import type { PlatePluginContext } from 'platejs/react';
 
-import { ElementApi, KEYS } from 'platejs';
+import type { AIChatPluginConfig } from './AIChatPlugin';
 
-import { BaseAIPlugin } from '../../lib/BaseAIPlugin';
-import { type AIChatPluginConfig, AIChatPlugin } from './AIChatPlugin';
-
-export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
+export const createAIChatExtension = ({
   api,
   editor,
   getOptions,
-  tf: { insertText, normalizeNode },
   type,
-}) => {
-  const ai = editor.getTransforms(BaseAIPlugin).ai;
-
+}: PlatePluginContext<AIChatPluginConfig>): EditorExtensionInput => {
   const matchesTrigger = (text: string) => {
     const { trigger } = getOptions();
 
@@ -27,9 +28,42 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
     return text === trigger;
   };
 
-  return {
+  return defineEditorExtension({
+    name: 'plate:ai-chat',
+    normalizers: {
+      node({ entry, next, tx }) {
+        const [node, path] = entry;
+
+        if (
+          Boolean((node as Record<string, unknown>)[KEYS.ai]) &&
+          !getOptions().open
+        ) {
+          const nodeType = getPluginType(editor, KEYS.ai);
+
+          tx.nodes.unset(nodeType, {
+            at: path,
+            match: (candidate) =>
+              Boolean((candidate as Record<string, unknown>)[nodeType]),
+          });
+
+          return;
+        }
+
+        if (
+          ElementApi.isElement(node) &&
+          node.type === type &&
+          !getOptions().open
+        ) {
+          tx.nodes.remove({ at: path });
+
+          return;
+        }
+
+        next();
+      },
+    },
     transforms: {
-      insertText(text, options) {
+      insertText({ next, options, text }) {
         const { triggerPreviousCharPattern, triggerQuery } = getOptions();
 
         const fn = () => {
@@ -60,31 +94,10 @@ export const withAIChat: OverrideEditor<AIChatPluginConfig> = ({
           return true;
         };
 
-        if (fn()) return;
+        if (fn()) return true;
 
-        return insertText(text, options);
-      },
-      normalizeNode(entry) {
-        const [node, path] = entry;
-
-        if (node[KEYS.ai] && !getOptions().open) {
-          ai.removeMarks({ at: path });
-
-          return;
-        }
-
-        if (
-          ElementApi.isElement(node) &&
-          node.type === type &&
-          !getOptions().open
-        ) {
-          editor.getTransforms(AIChatPlugin).aiChat.removeAnchor({ at: path });
-
-          return;
-        }
-
-        return normalizeNode(entry);
+        return next({ options, text });
       },
     },
-  };
+  });
 };

@@ -937,7 +937,7 @@ Handle `ArrowUp` and `ArrowDown` keyboard events.
 const plugin = createPlatePlugin({
   key: 'myPlugin',
 }).overrideEditor(() => ({
-  transforms: {
+  tf: {
     moveLine: ({ reverse }) => {
       // Custom line movement logic
       if (reverse) {
@@ -975,7 +975,7 @@ Handle `Tab` and `Shift+Tab` keyboard events.
 const plugin = createPlatePlugin({
   key: 'myPlugin',
 }).overrideEditor(() => ({
-  transforms: {
+  tf: {
     tab: ({ reverse }) => {
       if (reverse) {
         // Handle Shift+Tab (usually outdent)
@@ -1007,7 +1007,7 @@ Handle `Cmd+A` / `Ctrl+A` keyboard events.
 const plugin = createPlatePlugin({
   key: 'myPlugin',
 }).overrideEditor(() => ({
-  transforms: {
+  tf: {
     selectAll: () => {
       // Custom select all logic
       const blockEntry = editor.api.block();
@@ -1038,7 +1038,7 @@ Handle `Escape` keyboard events.
 const plugin = createPlatePlugin({
   key: 'myPlugin',
 }).overrideEditor(() => ({
-  transforms: {
+  tf: {
     escape: () => {
       // Custom escape logic (e.g., exit special mode)
       if (editor.api.inSpecialMode()) {

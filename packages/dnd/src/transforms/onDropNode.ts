@@ -41,8 +41,14 @@ export const getDropPath = (
   let dropEntry: NodeEntry<Element> | undefined;
 
   if ('element' in dragItem) {
-    const dragPath = editor.api.findPath(dragItem.element);
-    const hoveredPath = editor.api.findPath(element);
+    const dragPath = editor.api.node<Element>({
+      at: [],
+      id: dragItem.element.id as string,
+    })?.[1];
+    const hoveredPath = editor.api.node<Element>({
+      at: [],
+      id: element.id as string,
+    })?.[1];
 
     if (!dragPath || !hoveredPath) return;
 
@@ -139,20 +145,27 @@ export const onDropNode = (
         }
       });
 
-      editor.tf.moveNodes({
-        at: [],
-        to,
-        match: (n) => elements.some((element) => element.id === n.id),
+      editor.update((tx) => {
+        tx.nodes.move({
+          at: [],
+          to,
+          match: (n) =>
+            elements.some((element) => element.id === (n as Element).id),
+        });
       });
     } else {
       // Single node drop
-      editor.tf.moveNodes({
-        at: dragPath,
-        to,
+      editor.update((tx) => {
+        tx.nodes.move({
+          at: dragPath,
+          to,
+        });
       });
     }
   } else {
-    editor.tf.insertNodes(dragItem.element, { at: to });
+    editor.update((tx) => {
+      tx.nodes.insert(dragItem.element, { at: to });
+    });
 
     const sourceEditor = dragItem.editor;
 
@@ -170,7 +183,9 @@ export const onDropNode = (
         .sort((a, b) => PathApi.compare(b, a));
 
       paths.forEach((path) => {
-        sourceEditor.tf.removeNodes({ at: path });
+        sourceEditor.update((tx) => {
+          tx.nodes.remove({ at: path });
+        });
       });
     }
   }

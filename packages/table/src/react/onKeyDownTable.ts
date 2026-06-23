@@ -6,7 +6,10 @@ import {
   type TableConfig,
   getCellTypes,
   KEY_SHIFT_EDGES,
+  moveLineTable,
   moveSelectionFromCell,
+  selectAllTable,
+  tabTable,
 } from '../lib';
 import {
   getTableMoveSelectionContext,
@@ -72,43 +75,83 @@ export const onKeyDownTable: KeyboardHandler<TableConfig> = ({
     );
 
     if (tdEntries.length > 1) {
-      editor.tf.collapse({
-        edge: 'end',
+      editor.update((tx) => {
+        tx.selection.collapse({
+          edge: 'end',
+        });
       });
 
       return;
     }
   }
 
-  const isKeyDown: any = {
-    'shift+down': Hotkeys.isExtendDownward(event),
-    'shift+left': Hotkeys.isExtendBackward(event),
-    'shift+right': Hotkeys.isExtendForward(event),
-    'shift+up': Hotkeys.isExtendUpward(event),
+  const markHandled = () => {
+    event.preventDefault();
+    event.stopPropagation();
   };
 
-  Object.keys(isKeyDown).forEach((key) => {
-    if (!isKeyDown[key]) return;
+  const shiftKeyMatches = [
+    ['shift+down', Hotkeys.isExtendDownward(event)],
+    ['shift+left', Hotkeys.isExtendBackward(event)],
+    ['shift+right', Hotkeys.isExtendForward(event)],
+    ['shift+up', Hotkeys.isExtendUpward(event)],
+  ] satisfies [keyof typeof KEY_SHIFT_EDGES, boolean][];
+
+  shiftKeyMatches.forEach(([key, isPressed]) => {
+    if (!isPressed) return;
 
     const handled =
       moveSelectionFromCell(editor, {
-        edge: (KEY_SHIFT_EDGES as any)[key],
+        edge: KEY_SHIFT_EDGES[key],
         reverse: key === 'shift+up',
       }) ||
-      (shouldMoveSingleCellSelection(
-        editor,
-        key as keyof typeof KEY_SHIFT_EDGES
-      ) &&
+      (shouldMoveSingleCellSelection(editor, key) &&
         moveSelectionFromCell(editor, {
           at: editor.selection!,
-          edge: (KEY_SHIFT_EDGES as any)[key],
+          edge: KEY_SHIFT_EDGES[key],
           fromOneCell: true,
           reverse: key === 'shift+up',
         }));
 
     if (handled) {
-      event.preventDefault();
-      event.stopPropagation();
+      markHandled();
     }
   });
+
+  if (event.defaultPrevented) return;
+
+  if (Hotkeys.isMoveUpward(event)) {
+    if (moveLineTable(editor, { reverse: true })) {
+      markHandled();
+    }
+
+    return;
+  }
+
+  if (Hotkeys.isMoveDownward(event)) {
+    if (moveLineTable(editor, { reverse: false })) {
+      markHandled();
+    }
+
+    return;
+  }
+
+  if (
+    Hotkeys.isTab(editor as never, event) ||
+    Hotkeys.isUntab(editor as never, event)
+  ) {
+    if (
+      tabTable(editor, {
+        reverse: Hotkeys.isUntab(editor as never, event),
+      })
+    ) {
+      markHandled();
+    }
+
+    return;
+  }
+
+  if (Hotkeys.isSelectAll(event) && selectAllTable(editor)) {
+    markHandled();
+  }
 };

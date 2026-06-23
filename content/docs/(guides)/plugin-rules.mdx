@@ -619,7 +619,7 @@ const plugins = [
 
 ## Custom Reset Logic
 
-Some plugins need special reset behavior beyond the standard paragraph conversion. You can override the `resetBlock` transform:
+Some plugins need special reset behavior beyond the standard paragraph conversion. You can override the existing `resetBlock` transform method:
 
 **List plugin reset (outdents instead of converting to paragraph):**
 
@@ -628,7 +628,7 @@ const ListPlugin = createPlatePlugin({
   key: 'list',
   // ... other config
 }).overrideEditor(({ editor, tf: { resetBlock } }) => ({
-  transforms: {
+  tf: {
     resetBlock(options) {
       if (editor.api.block(options)?.[0]?.listStyleType) {
         outdentList();
@@ -648,7 +648,7 @@ const CodeBlockPlugin = createPlatePlugin({
   key: 'code_block',
   // ... other config
 }).overrideEditor(({ editor, tf: { resetBlock } }) => ({
-  transforms: {
+  tf: {
     resetBlock(options) {
       if (editor.api.block({
         at: options?.at,
@@ -731,14 +731,14 @@ After `Backspace`:
 
 ## Advanced
 
-For complex scenarios beyond simple rules, you can override editor transforms directly using [`.overrideEditor`](/docs/plugin-methods#overrideeditor). This gives you complete control over transforms like [`resetBlock`](/docs/plugin-methods#extendtransforms) and [`insertExitBreak`](/docs/plugin-methods#extendtransforms):
+For complex scenarios beyond simple rules, you can override existing editor transform methods with [`.overrideEditor`](/docs/plugin-methods#overrideeditor). This gives you control over methods like `resetBlock` and `insertExitBreak`:
 
 ```tsx
 const CustomPlugin = createPlatePlugin({
   key: 'custom',
   // ... other config
 }).overrideEditor(({ editor, tf: { insertBreak, deleteBackward, resetBlock } }) => ({
-  transforms: {
+  tf: {
     insertBreak() {
       const block = editor.api.block();
       

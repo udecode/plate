@@ -6,6 +6,7 @@ import type { Value } from '@platejs/slate';
 
 import { act, render, waitFor } from '@testing-library/react';
 
+import { getCurrentRuntimeTransforms } from '../../internal/currentRuntimeBridge';
 import { SlateExtensionPlugin } from '../../lib';
 import { createSlatePlugin } from '../../lib/plugin/createSlatePlugin';
 import { createPlateEditor } from '../editor';
@@ -105,8 +106,9 @@ describe('PlateContent', () => {
   it('focuses the editor end when autoFocusOnEditable flips readOnly off', async () => {
     const editor = createPlateEditor({ value });
     const focus = mock();
+    const runtimeTransforms = getCurrentRuntimeTransforms(editor);
 
-    editor.tf.focus = focus as typeof editor.tf.focus;
+    runtimeTransforms.focus = focus as typeof runtimeTransforms.focus;
 
     const Shell = ({ readOnly }: { readOnly: boolean }) => (
       <Plate editor={editor}>
@@ -121,7 +123,11 @@ describe('PlateContent', () => {
     rerender(<Shell readOnly={false} />);
 
     await waitFor(() => {
-      expect(focus).toHaveBeenCalledWith({ edge: 'endEditor' });
+      expect(focus).toHaveBeenCalledWith();
+    });
+    expect(editor.selection).toEqual({
+      anchor: { offset: 3, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
     });
   });
 
@@ -138,12 +144,13 @@ describe('PlateContent', () => {
       plugins: [RuntimeSlateExtensionPlugin],
       readOnly: true,
     });
-    const originalFocus = editor.tf.focus;
+    const runtimeTransforms = getCurrentRuntimeTransforms(editor);
+    const originalFocus = runtimeTransforms.focus;
     const focus = mock((options?: Parameters<typeof originalFocus>[0]) => {
       originalFocus(options);
     });
 
-    editor.tf.focus = focus;
+    runtimeTransforms.focus = focus;
 
     const Shell = ({ readOnly }: { readOnly: boolean }) => (
       <PlateStoreProvider
@@ -181,7 +188,11 @@ describe('PlateContent', () => {
 
     await waitFor(() => {
       expect(getByTestId('read-only')).toHaveTextContent('false');
-      expect(focus).toHaveBeenCalledWith({ edge: 'endEditor' });
+      expect(focus).toHaveBeenCalledWith();
+    });
+    expect(editor.selection).toEqual({
+      anchor: { offset: 3, path: [0, 0] },
+      focus: { offset: 3, path: [0, 0] },
     });
   });
 

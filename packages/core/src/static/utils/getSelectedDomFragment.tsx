@@ -1,4 +1,4 @@
-import { type Descendant, ElementApi, NodeApi } from '@platejs/slate-legacy';
+import { type Descendant, ElementApi, NodeApi } from '@platejs/slate';
 
 import type { SlateEditor } from '../../lib';
 

@@ -1,35 +1,45 @@
-import type { Editor, NodeEntry } from 'platejs';
+import type { Element, NodeEntry } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
+import { normalizeListSequence } from '../normalizers/normalizeListSequence';
 import { ListStyleType } from '../types';
 import { outdentList } from './outdentList';
 
 /** Unset list style type if already set. */
 export const toggleListUnset = (
-  editor: Editor,
-  [node, path]: NodeEntry,
+  editor: SlateEditor,
+  [node, path]: NodeEntry<Element>,
   {
     listStyleType = ListStyleType.Disc,
   }: {
     listStyleType?: string;
   }
 ) => {
+  const nodeProps = node as Record<string, unknown>;
+
   if (
     listStyleType === KEYS.listTodo &&
-    Object.hasOwn(node, KEYS.listChecked)
+    Object.hasOwn(nodeProps, KEYS.listChecked)
   ) {
-    editor.tf.unsetNodes(KEYS.listChecked, { at: path });
-    outdentList(editor as any, { listStyleType });
+    editor.update((tx) => {
+      tx.nodes.unset(KEYS.listChecked, { at: path });
+    });
+    outdentList(editor, { listStyleType });
+    normalizeListSequence(editor, [node, path]);
 
     return true;
   }
-  if (listStyleType === node[KEYS.listType]) {
-    editor.tf.unsetNodes([KEYS.listType], {
-      at: path,
+  if (listStyleType === nodeProps[KEYS.listType]) {
+    editor.update((tx) => {
+      tx.nodes.unset([KEYS.listType], {
+        at: path,
+      });
     });
 
-    outdentList(editor as any, { listStyleType });
+    outdentList(editor, { listStyleType });
+    normalizeListSequence(editor, [node, path]);
 
     return true;
   }

@@ -3,7 +3,7 @@ import { KEYS, createSlateEditor } from 'platejs';
 import { BaseEquationPlugin } from './BaseEquationPlugin';
 
 describe('BaseEquationPlugin', () => {
-  it('configures equation as a void element and exposes insert.equation', () => {
+  it('configures equation as a void element and exposes tx.equation.insert', () => {
     const editor = createSlateEditor({
       plugins: [BaseEquationPlugin],
     });
@@ -13,7 +13,9 @@ describe('BaseEquationPlugin', () => {
       isElement: true,
       isVoid: true,
     });
-    expect(typeof editor.tf.insert.equation).toBe('function');
+    editor.update((tx) => {
+      expect(typeof tx.equation.insert).toBe('function');
+    });
   });
 
   it('deleteBackward from the next block selects the equation instead of deleting through it', () => {
@@ -36,7 +38,9 @@ describe('BaseEquationPlugin', () => {
       ],
     });
 
-    editor.tf.deleteBackward('character');
+    editor.update((tx) => {
+      tx.text.deleteBackward({ unit: 'character' });
+    });
 
     expect(editor.children).toHaveLength(2);
     expect(editor.selection).toEqual({

@@ -2,7 +2,10 @@ import type { SlateEditor } from 'platejs';
 
 import copyToClipboard from 'copy-to-clipboard';
 
-import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
+import {
+  type BlockSelectionConfig,
+  BlockSelectionPlugin,
+} from '../BlockSelectionPlugin';
 
 const writeSelectedBlocksToDataTransfer = (
   editor: SlateEditor,
@@ -11,9 +14,9 @@ const writeSelectedBlocksToDataTransfer = (
   if (!data) return false;
 
   const { selectedIds } = editor.getOptions(BlockSelectionPlugin);
-  const selectedEntries = editor
-    .getApi(BlockSelectionPlugin)
-    .blockSelection.getNodes({ collapseTableRows: true });
+  const selectedEntries = (
+    editor.api as unknown as BlockSelectionConfig['api']
+  ).blockSelection.getNodes({ collapseTableRows: true });
   const selectedFragment = selectedEntries.map(([node]) => node);
 
   if (selectedEntries.length === 0) return false;
@@ -21,10 +24,10 @@ const writeSelectedBlocksToDataTransfer = (
   let textPlain = '';
   const div = document.createElement('div');
 
-  editor.tf.withoutNormalizing(() => {
+  editor.update((tx) => {
     selectedEntries.forEach(([, path]) => {
       // select block by block
-      editor.tf.select({
+      tx.selection.set({
         anchor: editor.api.start(path)!,
         focus: editor.api.end(path)!,
       });
@@ -34,14 +37,14 @@ const writeSelectedBlocksToDataTransfer = (
       if (isEmpty) {
         const after = editor.api.after(editor.selection!);
 
-        editor.tf.select({
+        tx.selection.set({
           anchor: editor.api.start(path)!,
           focus: after!,
         });
       }
 
       if (!isEmpty) {
-        editor.tf.setFragmentData(data);
+        editor.api.clipboard.writeSelection(data);
       }
 
       // get plain text
@@ -64,7 +67,7 @@ const writeSelectedBlocksToDataTransfer = (
     });
 
     // deselect and select back selectedIds
-    editor.tf.deselect();
+    tx.selection.clear();
     editor.setOption(BlockSelectionPlugin, 'selectedIds', selectedIds);
   });
 

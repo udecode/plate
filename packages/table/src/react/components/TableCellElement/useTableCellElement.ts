@@ -3,6 +3,7 @@ import type { TTableCellElement } from 'platejs';
 import { useEditorPlugin, useEditorSelector, useElement } from 'platejs/react';
 
 import type { BorderStylesDefault } from '../../../lib';
+import type { TableConfig } from '../../../lib/BaseTablePlugin';
 
 import { useCellIndices } from '../../hooks/useCellIndices';
 import { useTableValue } from '../../stores';
@@ -27,7 +28,8 @@ export const useTableCellElement = (): TableCellElementState => {
   const element = useElement<TTableCellElement>();
   const isCellSelected = useIsCellSelected(element);
   const isSelectingCell = useEditorSelector(
-    (editor) => editor.getApi(TablePlugin).table.isSelectingCell(),
+    (editor) =>
+      (editor.api as unknown as TableConfig['api']).table.isSelectingCell(),
     []
   );
 

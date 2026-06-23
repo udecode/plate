@@ -24,6 +24,7 @@ describe('usePluginOption', () => {
     }));
 
     const editor = createPlateEditor({
+      runtime: 'legacy',
       plugins: [CounterPlugin],
     });
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -67,6 +68,7 @@ describe('usePluginOption', () => {
       },
     });
     const editor = createPlateEditor({
+      runtime: 'legacy',
       plugins: [CounterPlugin],
     });
     const externalPlugin = createPlatePlugin({
@@ -96,6 +98,38 @@ describe('usePluginOption', () => {
       'usePluginOption: missing option is not defined in plugin counter',
       'OPTION_UNDEFINED'
     );
+    expect(missingStore.result.current).toEqual({
+      option: undefined,
+      selected: undefined,
+    });
+  });
+
+  it('returns undefined for missing runtime plugin option stores', () => {
+    const CounterPlugin = createPlatePlugin({
+      key: 'counter',
+      options: {
+        value: 1,
+      },
+    });
+    const externalPlugin = createPlatePlugin({
+      key: 'external',
+      options: {
+        value: 5,
+      },
+    });
+    const editor = createPlateEditor({
+      plugins: [CounterPlugin],
+    });
+
+    const missingStore = renderHook(() => ({
+      option: useEditorPluginOption(editor, externalPlugin, 'value'),
+      selected: useEditorPluginOptions(
+        editor,
+        externalPlugin,
+        (state) => state
+      ),
+    }));
+
     expect(missingStore.result.current).toEqual({
       option: undefined,
       selected: undefined,

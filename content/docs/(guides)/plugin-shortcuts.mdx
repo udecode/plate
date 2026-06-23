@@ -24,9 +24,9 @@ If neither method exists and no `handler` is provided, the shortcut is ignored b
 | `preventDefault` | Passed through to `useHotkeys`. When omitted, Plate calls `event.preventDefault()` and `event.stopPropagation()` after handled shortcuts. |
 | `null` | Removes that named shortcut from the plugin. |
 
-## Linked Transform Shortcuts
+## Linked Transaction Shortcuts
 
-Use a linked transform when the shortcut name and plugin transform name are the same.
+Use a linked transaction command when the shortcut name and plugin tx command name are the same.
 
 ```tsx title="plugins/signature-plugin.tsx" showLineNumbers
 import { Key, createPlatePlugin } from 'platejs/react';
@@ -34,9 +34,9 @@ import { Key, createPlatePlugin } from 'platejs/react';
 export const SignaturePlugin = createPlatePlugin({
   key: 'signature',
 })
-  .extendTransforms(({ editor }) => ({
+  .extendTx(() => (tx) => ({
     insertSignature: () => {
-      editor.tf.insertText(' - Plate');
+      tx.text.insert(' - Plate');
     },
   }))
   .extend({
@@ -48,7 +48,7 @@ export const SignaturePlugin = createPlatePlugin({
   });
 ```
 
-Pressing `Mod+Shift+S` calls `editor.tf.signature.insertSignature()`.
+Pressing `Mod+Shift+S` runs `editor.update((tx) => tx.signature.insertSignature())`.
 
 ## Linked API Shortcuts
 
@@ -163,9 +163,9 @@ import { Key, createPlatePlugin } from 'platejs/react';
 export const ReviewPlugin = createPlatePlugin({
   key: 'review',
 })
-  .extendTransforms(({ editor }) => ({
-    accept: () => editor.tf.insertText('Accepted'),
-    reject: () => editor.tf.insertText('Rejected'),
+  .extendTx(() => (tx) => ({
+    accept: () => tx.text.insert('Accepted'),
+    reject: () => tx.text.insert('Rejected'),
   }))
   .extend({
     shortcuts: {

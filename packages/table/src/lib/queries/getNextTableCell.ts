@@ -1,9 +1,10 @@
-import { type Editor, type NodeEntry, type Path, PathApi } from 'platejs';
+import { type NodeEntry, type Path, PathApi } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 import { getCellInNextTableRow } from './getCellInNextTableRow';
 
 export const getNextTableCell = (
-  editor: Editor,
+  editor: SlateEditor,
   _currentCell: NodeEntry,
   currentPath: Path,
   currentRow: NodeEntry

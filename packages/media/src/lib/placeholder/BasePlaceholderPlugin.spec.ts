@@ -8,7 +8,7 @@ describe('BasePlaceholderPlugin', () => {
     ['filePlaceholder', KEYS.file],
     ['imagePlaceholder', KEYS.img],
     ['videoPlaceholder', KEYS.video],
-  ] as const)('configures %s and inserts %s placeholders', (transform, mediaType) => {
+  ] as const)('configures %s and inserts %s placeholders', (_label, mediaType) => {
     const editor = createSlateEditor({
       plugins: [BasePlaceholderPlugin],
       value: [{ children: [{ text: 'one' }], type: 'p' }],
@@ -20,7 +20,7 @@ describe('BasePlaceholderPlugin', () => {
       isVoid: true,
     });
 
-    editor.tf.insert[transform]({ at: [1] });
+    editor.update((tx) => tx.placeholder.insert(mediaType, { at: [1] }));
 
     expect(editor.children[1]).toMatchObject({
       mediaType,

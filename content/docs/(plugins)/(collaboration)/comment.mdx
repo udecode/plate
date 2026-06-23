@@ -163,7 +163,7 @@ The click handler tracks which comment is currently active:
 
 ### Extend Transforms
 
-Extend the `setDraft` transform for enhanced functionality:
+Extend the `setDraft` transaction command for enhanced functionality:
 
 ```tsx
 export const commentPlugin = toTPlatePlugin<CommentConfig>(
@@ -172,20 +172,17 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
     // ... previous configuration
   })
 )
-  .extendTransforms(
+  .extendTx(
     ({
       editor,
       setOption,
-      tf: {
-        comment: { setDraft },
-      },
-    }) => ({
+    }) => (tx) => ({
       setDraft: () => {
         if (editor.api.isCollapsed()) {
           editor.tf.select(editor.api.block()![1]);
         }
 
-        setDraft();
+        tx.comment.setDraft();
 
         editor.tf.collapse();
         setOption('activeId', getDraftCommentKey());
@@ -290,7 +287,7 @@ Gets a comment node entry.
 
 <API name="node">
   <APIOptions
-    type="EditorNodesOptions & { id?: string; isDraft?: boolean }"
+    type="object & { id?: string; isDraft?: boolean }"
     optional
   >
     Options for finding the node.
@@ -319,7 +316,7 @@ Gets all comment node entries matching the options.
 
 <API name="nodes">
   <APIOptions
-    type="EditorNodesOptions & { id?: string; isDraft?: boolean }"
+    type="object & { id?: string; isDraft?: boolean }"
     optional
   >
     Options for finding the nodes.
@@ -342,7 +339,7 @@ Removes the comment mark from the current selection or a specified location.
 Sets a draft comment mark at the current selection.
 
 <API name="setDraft">
-  <APIOptions type="SetNodesOptions" optional>
+  <APIOptions type="object" optional>
     Options for setting the draft comment.
   </APIOptions>
 </API>
@@ -450,7 +447,7 @@ Checks if a given node is a comment with the specified ID.
 
 <API name="isCommentNodeById">
   <APIParameters>
-    <APIItem name="node" type="TNode">
+    <APIItem name="node" type="Node">
       The node to check.
     </APIItem>
     <APIItem name="id" type="string">

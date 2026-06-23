@@ -1,6 +1,7 @@
 import { act, renderHook } from '@testing-library/react';
 
 const useEditorRefMock = mock();
+const useNodePathMock = mock();
 const useReadOnlyMock = mock();
 const cloneDeepMock = mock((value: any) => structuredClone(value));
 const isEqualMock = mock(
@@ -14,12 +15,14 @@ mock.module('lodash', () => ({
 
 mock.module('platejs/react', () => ({
   useEditorRef: useEditorRefMock,
+  useNodePath: useNodePathMock,
   useReadOnly: useReadOnlyMock,
 }));
 
 describe('useExcalidrawElement', () => {
   beforeEach(() => {
     useEditorRefMock.mockReset();
+    useNodePathMock.mockReset();
     useReadOnlyMock.mockReset();
     cloneDeepMock.mockClear();
     isEqualMock.mockClear();
@@ -34,13 +37,10 @@ describe('useExcalidrawElement', () => {
       `./useExcalidrawElement?test=${Math.random().toString(36).slice(2)}`
     );
     const setNodes = mock();
+    const update = mock((fn: any) => fn({ nodes: { set: setNodes } }));
 
-    useEditorRefMock.mockReturnValue({
-      api: {
-        findPath: () => [0],
-      },
-      tf: { setNodes },
-    });
+    useEditorRefMock.mockReturnValue({ update });
+    useNodePathMock.mockReturnValue([0]);
     useReadOnlyMock.mockReturnValue(false);
 
     const element = {
@@ -72,6 +72,15 @@ describe('useExcalidrawElement', () => {
       libraryItems: [{ id: 'lib' }],
       scrollToContent: true,
     });
-    expect(setNodes).toHaveBeenCalledTimes(1);
+    expect(update).toHaveBeenCalledTimes(1);
+    expect(setNodes).toHaveBeenCalledWith(
+      {
+        data: {
+          elements: [{ id: 'el-2' }],
+          state: { zoom: 2 },
+        },
+      },
+      { at: [0] }
+    );
   });
 });

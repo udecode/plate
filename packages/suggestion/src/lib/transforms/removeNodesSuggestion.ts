@@ -16,16 +16,18 @@ export const removeNodesSuggestion = (
     type: 'remove',
   });
 
-  nodes.forEach(([, blockPath]) => {
-    editor.tf.setNodes(
-      {
-        [KEYS.suggestion]: {
-          id,
-          createdAt,
-          type: 'remove',
+  editor.update((tx) => {
+    nodes.forEach(([, blockPath]) => {
+      tx.nodes.set(
+        {
+          [KEYS.suggestion]: {
+            id,
+            createdAt,
+            type: 'remove',
+          },
         },
-      },
-      { at: blockPath }
-    );
+        { at: blockPath }
+      );
+    });
   });
 };

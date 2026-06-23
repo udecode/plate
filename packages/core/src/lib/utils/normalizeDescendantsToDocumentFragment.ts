@@ -1,16 +1,11 @@
-import {
-  type Descendant,
-  type Editor,
-  ElementApi,
-  TextApi,
-} from '@platejs/slate-legacy';
+import { type Descendant, ElementApi, TextApi } from '@platejs/slate';
 
 import type { SlateEditor } from '../editor';
 import type { WithRequiredKey } from '../plugin';
 
 import { BaseParagraphPlugin } from '../plugins';
 
-const isInlineNode = (editor: Editor) => (node: Descendant) =>
+const isInlineNode = (editor: SlateEditor) => (node: Descendant) =>
   TextApi.isText(node) ||
   (ElementApi.isElement(node) && editor.api.isInline(node));
 

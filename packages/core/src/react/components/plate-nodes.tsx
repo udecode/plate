@@ -14,6 +14,7 @@ import type {
   RenderLeafProps,
   RenderTextProps,
 } from '../../lib';
+import { isEditorBlock } from '../../internal/utils/runtimeEditorQueries';
 import type { PlatePluginContext } from '../plugin';
 
 const VOID_HTML_TAGS = new Set<keyof HTMLElementTagNameMap>([
@@ -132,7 +133,7 @@ export const PlateElement = React.forwardRef(function PlateElement(
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
   const blockId =
-    props.element.id && props.editor.api.isBlock(props.element)
+    props.element.id && isEditorBlock(props.editor, props.element)
       ? props.element.id
       : undefined;
   const blockIdRef = useBlockIdAttributeRef(blockId, ref);

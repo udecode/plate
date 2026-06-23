@@ -36,11 +36,12 @@ describe('insertTodoListItem', () => {
           : {},
       getType: (key: string) => key,
       selection: { focus: { offset: 0, path: [0] } },
-      tf: {
-        delete: mock(),
-        insertNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
+      update: (fn: any) =>
+        fn({
+          nodes: { insert: insertNodes },
+          text: { delete: mock() },
+          withoutNormalizing: (callback: () => void) => callback(),
+        }),
     } as any;
 
     expect(insertTodoListItem(editor)).toBe(true);
@@ -74,12 +75,13 @@ describe('insertTodoListItem', () => {
       }),
       getType: (key: string) => key,
       selection: { focus: { offset: 1, path: [0] } },
-      tf: {
-        delete: mock(),
-        insertNodes,
-        select,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
+      update: (fn: any) =>
+        fn({
+          nodes: { insert: insertNodes },
+          selection: { set: select },
+          text: { delete: mock() },
+          withoutNormalizing: (callback: () => void) => callback(),
+        }),
     } as any;
 
     expect(insertTodoListItem(editor)).toBe(true);
@@ -111,11 +113,12 @@ describe('insertTodoListItem', () => {
       }),
       getType: (key: string) => key,
       selection: { focus: { offset: 1, path: [0] } },
-      tf: {
-        delete: deleteSelection,
-        splitNodes,
-        withoutNormalizing: (fn: () => void) => fn(),
-      },
+      update: (fn: any) =>
+        fn({
+          nodes: { split: splitNodes },
+          text: { delete: deleteSelection },
+          withoutNormalizing: (callback: () => void) => callback(),
+        }),
     } as any;
 
     expect(insertTodoListItem(editor)).toBe(true);

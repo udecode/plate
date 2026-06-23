@@ -3,36 +3,79 @@ import {
   type NodeEntry,
   type SlateEditor,
   type TCodeBlockElement,
-  type TElement,
   KEYS,
   NodeApi,
 } from 'platejs';
+import type { Element } from '@platejs/slate';
 
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 import { ensureStablePythonGrammar } from './ensureStablePythonGrammar';
 
 // Cache for storing decorations per code line element
-export const CODE_LINE_TO_DECORATIONS: WeakMap<TElement, DecoratedRange[]> =
+export const CODE_LINE_TO_DECORATIONS: WeakMap<Element, DecoratedRange[]> =
   new WeakMap();
+export const CODE_BLOCK_TO_DECORATION_LANGUAGE: WeakMap<
+  TCodeBlockElement,
+  string | undefined
+> = new WeakMap();
+
+type HighlightNode = Record<string, unknown>;
+
+const EMPTY_HIGHLIGHT = { value: [] };
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
+const getClassNames = (properties: unknown) => {
+  if (!isRecord(properties)) return [];
+
+  const rawClassName = properties.className;
+
+  if (Array.isArray(rawClassName)) {
+    return rawClassName.filter(
+      (item): item is string => typeof item === 'string'
+    );
+  }
+
+  if (typeof rawClassName === 'string') {
+    return [rawClassName];
+  }
+
+  return [];
+};
+
+const toHighlightNodes = (value: unknown): HighlightNode[] => {
+  if (!Array.isArray(value)) return [];
+
+  return value.filter(isRecord);
+};
 
 // Helper function to get highlight nodes from Lowlight result
-function getHighlightNodes(result: any) {
-  return result.value || result.children || [];
+function getHighlightNodes(result: unknown): HighlightNode[] {
+  if (!isRecord(result)) return [];
+
+  const value = toHighlightNodes(result.value);
+
+  return value.length > 0 ? value : toHighlightNodes(result.children);
 }
 
 // Helper function to parse nodes from Lowlight's hast tree
 function parseNodes(
-  nodes: any[],
+  nodes: HighlightNode[],
   className: string[] = []
 ): { classes: string[]; text: string }[] {
   return nodes.flatMap((node) => {
-    const classes = [
-      ...className,
-      ...(node.properties ? node.properties.className : []),
-    ];
-    if (node.children) {
-      return parseNodes(node.children, classes);
+    const classes = [...className, ...getClassNames(node.properties)];
+    const children = toHighlightNodes(node.children);
+
+    if (children.length > 0) {
+      return parseNodes(children, classes);
     }
+
+    if (typeof node.value !== 'string') {
+      return [];
+    }
+
     return { classes, text: node.value };
   });
 }
@@ -54,8 +97,8 @@ function normalizeTokens(tokens: { classes: string[]; text: string }[]) {
 
       // Create a new line unless we're on the last line
       if (i < tokenLines.length - 1) {
-        lines.push([]);
-        currentLine = lines.at(-1) as any;
+        currentLine = [];
+        lines.push(currentLine);
       }
     }
   }
@@ -67,7 +110,7 @@ function normalizeTokens(tokens: { classes: string[]; text: string }[]) {
 export function codeBlockToDecorations(
   editor: SlateEditor,
   [block, blockPath]: NodeEntry<TCodeBlockElement>
-): Map<TElement, DecoratedRange[]> {
+): Map<Element, DecoratedRange[]> {
   const { defaultLanguage, ...options } =
     editor.getOptions(BaseCodeBlockPlugin);
   const lowlight = options.lowlight!;
@@ -79,11 +122,11 @@ export function codeBlockToDecorations(
 
   ensureStablePythonGrammar(lowlight, effectiveLanguage);
 
-  let highlighted: any;
+  let highlighted: unknown;
   try {
     // Skip highlighting for plaintext or when no language is specified
     if (!effectiveLanguage || effectiveLanguage === 'plaintext') {
-      highlighted = { value: [] }; // Empty result for plaintext
+      highlighted = EMPTY_HIGHLIGHT;
     } else if (effectiveLanguage === 'auto') {
       highlighted = lowlight.highlightAuto(text);
     } else {
@@ -100,22 +143,22 @@ export function codeBlockToDecorations(
         'CODE_HIGHLIGHT',
         error
       );
-      highlighted = { value: [] }; // Empty result on error
+      highlighted = EMPTY_HIGHLIGHT;
     } else {
       editor.api.debug.warn(
         `Language "${effectiveLanguage}" is not registered. Falling back to plaintext`
       );
-      highlighted = { value: [] };
+      highlighted = EMPTY_HIGHLIGHT;
     }
   }
 
   // Parse and normalize tokens
   const tokens = parseNodes(getHighlightNodes(highlighted));
   const normalizedTokens = normalizeTokens(tokens);
-  const blockChildren = block.children as TElement[];
+  const blockChildren = block.children as Element[];
 
   // Create decorations map
-  const nodeToDecorations = new Map<TElement, DecoratedRange[]>();
+  const nodeToDecorations = new Map<Element, DecoratedRange[]>();
 
   // Safety check: don't process more lines than we have children
   const numLines = Math.min(normalizedTokens.length, blockChildren.length);
@@ -136,7 +179,7 @@ export function codeBlockToDecorations(
 
       const end = start + length;
 
-      const decoration: DecoratedRange = {
+      const decoration: DecoratedRange & Record<string, unknown> = {
         anchor: {
           offset: start,
           path: [...blockPath, index, 0],
@@ -147,7 +190,7 @@ export function codeBlockToDecorations(
           path: [...blockPath, index, 0],
         },
         [KEYS.codeSyntax]: true,
-      } as any;
+      };
 
       nodeToDecorations.get(element)!.push(decoration);
       start = end;
@@ -161,7 +204,13 @@ export function setCodeBlockToDecorations(
   editor: SlateEditor,
   [block, blockPath]: NodeEntry<TCodeBlockElement>
 ) {
+  const { defaultLanguage } = editor.getOptions(BaseCodeBlockPlugin);
   const decorations = codeBlockToDecorations(editor, [block, blockPath]);
+
+  CODE_BLOCK_TO_DECORATION_LANGUAGE.set(
+    block,
+    block.lang || defaultLanguage || undefined
+  );
 
   // Update the global cache with the new decorations
   for (const [node, decs] of decorations.entries()) {
@@ -170,7 +219,9 @@ export function setCodeBlockToDecorations(
 }
 
 export function resetCodeBlockDecorations(codeBlock: TCodeBlockElement) {
+  CODE_BLOCK_TO_DECORATION_LANGUAGE.delete(codeBlock);
+
   codeBlock.children.forEach((line) => {
-    CODE_LINE_TO_DECORATIONS.delete(line as TElement);
+    CODE_LINE_TO_DECORATIONS.delete(line as Element);
   });
 }

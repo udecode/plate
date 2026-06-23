@@ -39,8 +39,10 @@ export const deleteRow = (editor: SlateEditor) => {
       // Cannot delete the last row
       currentTableItem[0].children.length > 1
     ) {
-      editor.tf.removeNodes({
-        at: currentRowItem[1],
+      editor.update((tx) => {
+        tx.nodes.remove({
+          at: currentRowItem[1],
+        });
       });
     }
   }

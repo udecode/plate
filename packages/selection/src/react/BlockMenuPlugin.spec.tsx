@@ -28,7 +28,7 @@ describe('BlockMenuPlugin', () => {
       plugins: [BlockSelectionApiFixture, BlockMenuPlugin],
       runtime: 'slate-v2',
     });
-    const api = editor.getPluginApi<BlockMenuConfig['api']>(BlockMenuPlugin);
+    const api = editor.api as BlockMenuConfig['api'];
 
     api.blockMenu.show('block-a', { x: 12, y: 34 });
 

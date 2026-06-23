@@ -31,8 +31,9 @@ function parseHtmlElement(html: string): HTMLElement | undefined {
  * const arrayBuffer = await file.arrayBuffer();
  * const result = await importDocx(editor, arrayBuffer);
  *
- * // Insert nodes into editor
- * editor.tf.insertNodes(result.nodes);
+ * editor.update((tx) => {
+ *   tx.nodes.insert(result.nodes);
+ * });
  *
  * // Handle comments separately
  * for (const comment of result.comments) {

@@ -9,7 +9,7 @@ describe('insertMediaEmbed', () => {
       api: { parent: mock() },
       getType: (key: string) => key,
       selection: null,
-      tf: { insertNodes },
+      update: mock((fn: any) => fn({ nodes: { insert: insertNodes } })),
     } as any;
 
     insertMediaEmbed(editor, { url: 'https://platejs.org/embed' });
@@ -24,7 +24,7 @@ describe('insertMediaEmbed', () => {
       api: { parent },
       getType: (key: string) => key,
       selection: { anchor: { offset: 0, path: [0, 0] } },
-      tf: { insertNodes },
+      update: mock((fn: any) => fn({ nodes: { insert: insertNodes } })),
     } as any;
 
     insertMediaEmbed(editor, { url: 'https://platejs.org/embed' });
@@ -42,7 +42,7 @@ describe('insertMediaEmbed', () => {
         anchor: { offset: 0, path: [1, 0] },
         focus: { offset: 0, path: [1, 0] },
       },
-      tf: { insertNodes },
+      update: mock((fn: any) => fn({ nodes: { insert: insertNodes } })),
     } as any;
 
     insertMediaEmbed(editor, { url: 'https://platejs.org/embed' }, { at: [9] });
@@ -55,7 +55,6 @@ describe('insertMediaEmbed', () => {
       },
       {
         at: [9],
-        nextBlock: true,
       }
     );
   });

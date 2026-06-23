@@ -4,7 +4,7 @@ import type { AnyEditorPlugin } from '../../lib/plugin/SlatePlugin';
 
 import { getEditorPlugin } from '../../lib/plugin';
 
-/** Pipe editor.tf.insertData.transformData */
+/** Pipe insert-data transformData hooks. */
 export const pipeTransformData = (
   editor: SlateEditor,
   plugins: Partial<AnyEditorPlugin>[],

@@ -1,6 +1,7 @@
 import { act, fireEvent, render } from '@testing-library/react';
 import { TextApi } from '@platejs/slate';
 import { Editor } from '@platejs/slate/internal';
+import { createRef } from 'react';
 import {
   createReactEditor,
   defaultScrollSelectionIntoView,
@@ -22,6 +23,23 @@ describe('slate-react editable behavior', () => {
     expect(
       rendered.container.querySelector('[data-slate-editor]')
     ).toHaveTextContent('test');
+  });
+
+  test('forwards ref to the editable DOM root', () => {
+    const initialValue = [{ type: 'block', children: [{ text: 'test' }] }];
+    const editor = createReactEditor({ initialValue });
+    const editableRef = createRef<HTMLDivElement>();
+
+    const rendered = render(
+      <Slate editor={editor}>
+        <Editable ref={editableRef} />
+      </Slate>
+    );
+
+    const editable = rendered.container.querySelector('[data-slate-editor]');
+
+    expect(editableRef.current).toBe(editable);
+    expect(editableRef.current).toHaveAttribute('contenteditable', 'true');
   });
 
   test('applies visible root defaults as CSS', () => {

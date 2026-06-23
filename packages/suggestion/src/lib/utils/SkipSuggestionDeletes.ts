@@ -1,14 +1,7 @@
-import {
-  type Node,
-  type SlateEditor,
-  type TSuggestionText,
-  ElementApi,
-  KEYS,
-  NodeApi,
-  TextApi,
-} from 'platejs';
+import { type Node, ElementApi, NodeApi, TextApi } from '@platejs/slate';
+import { type SlateEditor, type TSuggestionText, KEYS } from 'platejs';
 
-import { BaseSuggestionPlugin } from '../BaseSuggestionPlugin';
+import { getSuggestionApi } from './getSuggestionApi';
 
 /**
  * Recursively extracts text content from a node tree, excluding any text marked
@@ -28,14 +21,17 @@ export const SkipSuggestionDeletes = (
     }
     if (!node[KEYS.suggestion]) return node.text;
 
-    const suggestionData = editor
-      .getApi(BaseSuggestionPlugin)
-      .suggestion.suggestionData(node as TSuggestionText);
+    const suggestionData = getSuggestionApi(editor).suggestionData(
+      node as TSuggestionText
+    );
 
     if (suggestionData?.type === 'remove') return '';
 
     return node.text;
   }
+
+  if (!ElementApi.isElement(node)) return '';
+
   return node.children
     .map((child) => SkipSuggestionDeletes(editor, child))
     .join('');

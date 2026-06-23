@@ -8,9 +8,16 @@ import {
   TextApi,
 } from 'platejs';
 
-import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
+import {
+  type BaseSuggestionConfig,
+} from './BaseSuggestionPlugin';
 import { getSuggestionProps } from './transforms';
 import { getSuggestionKey } from './utils';
+import { getSuggestionApi } from './utils/getSuggestionApi';
+
+type SuggestionDataNode = Parameters<
+  BaseSuggestionConfig['api']['suggestion']['suggestionData']
+>[0];
 
 export function diffToSuggestions<E extends SlateEditor>(
   editor: E,
@@ -71,15 +78,19 @@ function unifyAdjacentSuggestionIds<E extends SlateEditor>(
   nodes: Descendant[],
   editor: E
 ): Descendant {
-  const api = editor.getApi(BaseSuggestionPlugin);
-  const currentNodeData = api.suggestion.suggestionData(node as any);
+  const suggestionApi = getSuggestionApi(editor);
+  const currentNodeData = suggestionApi.suggestionData(
+    node as SuggestionDataNode
+  );
 
   if (currentNodeData?.type === 'insert') {
     // Get the previous node if it exists
     const previousNode = index > 0 ? nodes[index - 1] : null;
 
     if (previousNode?.[KEYS.suggestion]) {
-      const previousData = api.suggestion.suggestionData(previousNode as any);
+      const previousData = suggestionApi.suggestionData(
+        previousNode as SuggestionDataNode
+      );
 
       if (previousData?.type === 'remove') {
         // Create a new node with the updated suggestion data

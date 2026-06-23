@@ -115,7 +115,7 @@ import { TrailingBlockPlugin } from 'platejs';
 TrailingBlockPlugin.configure({
   options: {
     insert: (editor, { insert }) => {
-      editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(insert);
+      editor.getPluginApi(SuggestionPlugin).suggestion.withoutSuggestions(insert);
     },
   },
 });

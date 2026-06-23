@@ -19,7 +19,9 @@ export const BulletedListRules = {
     trigger: ' ',
     match: ({ variant }) => variant,
     apply: ({ editor }, match) => {
-      editor.tf.delete({ at: match.range });
+      editor.update((tx) => {
+        tx.text.delete({ at: match.range });
+      });
       toggleList(editor, {
         listStyleType: KEYS.ul,
       });

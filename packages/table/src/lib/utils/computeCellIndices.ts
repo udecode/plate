@@ -1,3 +1,4 @@
+import { ElementApi, NodeApi, type Node } from '@platejs/slate';
 import {
   type SlateEditor,
   type TTableCellElement,
@@ -8,6 +9,37 @@ import {
 } from 'platejs';
 
 import type { BaseTablePlugin } from '../BaseTablePlugin';
+import { findTableNodePath } from './findTableNodePath';
+
+const findTableNodeByCellId = (
+  editor: SlateEditor,
+  nodes: readonly unknown[],
+  cellId: string | undefined
+): TTableElement | undefined => {
+  if (!cellId) return;
+
+  for (const node of nodes) {
+    if (!ElementApi.isElement(node)) continue;
+
+    if (node.type === editor.getType(KEYS.table)) {
+      const table = node as TTableElement;
+
+      for (const row of table.children as TTableRowElement[]) {
+        if (
+          (row.children as TTableCellElement[]).some(
+            (cell) => cell.id === cellId
+          )
+        ) {
+          return table;
+        }
+      }
+    }
+
+    const nestedTable = findTableNodeByCellId(editor, node.children, cellId);
+
+    if (nestedTable) return nestedTable;
+  }
+};
 
 export function computeCellIndices(
   editor: SlateEditor,
@@ -30,10 +62,14 @@ export function computeCellIndices(
   if (!tableNode) {
     if (!cellNode) return;
 
-    tableNode = editor.api.above<TTableElement>({
-      at: cellNode,
-      match: { type: editor.getType(KEYS.table) },
-    })?.[0];
+    const cellPath = findTableNodePath(editor, cellNode);
+    const tablePath = cellPath?.slice(0, -2);
+
+    tableNode = tablePath
+      ? (NodeApi.get(editor as unknown as Node, tablePath) as TTableElement)
+      : undefined;
+
+    tableNode ??= findTableNodeByCellId(editor, editor.children, cellNode.id);
 
     if (!tableNode) return;
   }

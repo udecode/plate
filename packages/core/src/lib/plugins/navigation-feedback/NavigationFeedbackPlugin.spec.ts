@@ -1,5 +1,6 @@
 import { createSlateEditor } from '../../editor';
 import { NavigationFeedbackPlugin } from './NavigationFeedbackPlugin';
+import { getCurrentRuntimeTransforms } from '../../../internal/currentRuntimeBridge';
 
 describe('NavigationFeedbackPlugin', () => {
   afterEach(() => {
@@ -17,12 +18,14 @@ describe('NavigationFeedbackPlugin', () => {
     const editor = createSlateEditor({
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
-    editor.tf.navigation.flashTarget({
-      duration: 25,
-      target: {
-        path: [0],
-        type: 'node',
-      },
+    editor.update((tx) => {
+      tx.navigation.flashTarget({
+        duration: 25,
+        target: {
+          path: [0],
+          type: 'node',
+        },
+      });
     });
 
     expect(editor.api.navigation.activeTarget()).toEqual({
@@ -53,17 +56,21 @@ describe('NavigationFeedbackPlugin', () => {
     const editor = createSlateEditor({
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
-    editor.tf.navigation.flashTarget({
-      target: {
-        path: [0],
-        type: 'node',
-      },
+    editor.update((tx) => {
+      tx.navigation.flashTarget({
+        target: {
+          path: [0],
+          type: 'node',
+        },
+      });
     });
-    editor.tf.navigation.flashTarget({
-      target: {
-        path: [0],
-        type: 'node',
-      },
+    editor.update((tx) => {
+      tx.navigation.flashTarget({
+        target: {
+          path: [0],
+          type: 'node',
+        },
+      });
     });
 
     expect(clearTimeoutSpy).toHaveBeenCalledWith(1);
@@ -85,23 +92,28 @@ describe('NavigationFeedbackPlugin', () => {
       },
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
-    const focusSpy = spyOn(editor.tf, 'focus').mockImplementation(() => {});
+    const focusSpy = spyOn(
+      getCurrentRuntimeTransforms(editor),
+      'focus'
+    ).mockImplementation(() => {});
     const scrollSpy = spyOn(editor.api, 'scrollIntoView').mockImplementation(
       () => {}
     );
-    editor.tf.navigation.navigate({
-      scrollTarget: {
-        offset: 1,
-        path: [0, 0],
-      },
-      select: {
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: 1, path: [0, 0] },
-      },
-      target: {
-        path: [0],
-        type: 'node',
-      },
+    editor.update((tx) => {
+      tx.navigation.navigate({
+        scrollTarget: {
+          offset: 1,
+          path: [0, 0],
+        },
+        select: {
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 1, path: [0, 0] },
+        },
+        target: {
+          path: [0],
+          type: 'node',
+        },
+      });
     });
 
     expect(editor.selection).toEqual({
@@ -128,15 +140,19 @@ describe('NavigationFeedbackPlugin', () => {
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
 
-    editor.tf.navigation.flashTarget({
-      target: {
-        path: [0],
-        type: 'node',
-      },
+    editor.update((tx) => {
+      tx.navigation.flashTarget({
+        target: {
+          path: [0],
+          type: 'node',
+        },
+      });
     });
 
-    editor.tf.insertNodes({ children: [{ text: 'zero' }], type: 'p' } as any, {
-      at: [0],
+    editor.update((tx) => {
+      tx.nodes.insert({ children: [{ text: 'zero' }], type: 'p' } as any, {
+        at: [0],
+      });
     });
 
     expect(editor.api.navigation.activeTarget()).toEqual({
@@ -169,14 +185,18 @@ describe('NavigationFeedbackPlugin', () => {
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
 
-    editor.tf.navigation.flashTarget({
-      target: {
-        path: [0],
-        type: 'node',
-      },
+    editor.update((tx) => {
+      tx.navigation.flashTarget({
+        target: {
+          path: [0],
+          type: 'node',
+        },
+      });
     });
 
-    editor.tf.removeNodes({ at: [0] });
+    editor.update((tx) => {
+      tx.nodes.remove({ at: [0] });
+    });
 
     expect(editor.api.navigation.activeTarget()).toBeNull();
     expect(
@@ -204,6 +224,5 @@ describe('NavigationFeedbackPlugin', () => {
       NavigationFeedbackPlugin.key
     );
     expect(editor.api.navigation).toBeUndefined();
-    expect(editor.tf.navigation).toBeUndefined();
   });
 });

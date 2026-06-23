@@ -72,7 +72,9 @@ const getResolvedSuggestions = (editor: any) =>
     getSuggestionId: (node: any) =>
       editor.getPluginApi(BaseSuggestionPlugin).suggestion.nodeId(node),
     isBlockSuggestion: (node: any) =>
-      editor.getPluginApi(BaseSuggestionPlugin).suggestion.isBlockSuggestion(node),
+      editor
+        .getPluginApi(BaseSuggestionPlugin)
+        .suggestion.isBlockSuggestion(node),
   }).suggestionsByBlock.get('0') ?? [];
 
 describe('buildBlockDiscussionIndex', () => {

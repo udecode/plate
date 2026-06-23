@@ -1,4 +1,6 @@
-import { type Descendant, type SlateEditor, ElementApi } from 'platejs';
+import type { Descendant } from '@platejs/slate';
+import type { SlateEditor } from '@platejs/core';
+import { ElementApi } from '@platejs/slate';
 
 import { getListTypes } from './getListTypes';
 

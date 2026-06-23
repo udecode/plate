@@ -674,6 +674,7 @@ export type EditableProps<
   onPaste?: React.ClipboardEventHandler<HTMLDivElement>;
   placeholder?: ReactNode;
   readOnly?: boolean;
+  ref?: React.Ref<HTMLDivElement>;
   renderElement?: RenderElementRenderer<TElement>;
   renderLeaf?: (props: RenderLeafProps<T>) => ReactNode;
   renderPlaceholder?: (props: RenderPlaceholderProps) => ReactNode;
@@ -1054,6 +1055,7 @@ const EditableInner = <T, TElement extends SlateElementNode>({
   renderSegment,
   renderText,
   renderVoid,
+  ref: forwardedRef,
   scrollSelectionIntoView,
   spellCheck,
   style,
@@ -1201,6 +1203,20 @@ const EditableInner = <T, TElement extends SlateElementNode>({
       domStrategyVirtualizedOverscan,
       domStrategyVirtualizedThreshold,
     ]
+  );
+  const editableRootRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      if (virtualizedDOMStrategyConfig) {
+        setDOMStrategyRootElement(node);
+      }
+
+      if (typeof forwardedRef === 'function') {
+        forwardedRef(node);
+      } else if (forwardedRef) {
+        forwardedRef.current = node;
+      }
+    },
+    [forwardedRef, virtualizedDOMStrategyConfig]
   );
   const {
     segmentPlan,
@@ -1761,8 +1777,8 @@ const EditableInner = <T, TElement extends SlateElementNode>({
             onPaste={onPaste}
             readOnly={effectiveReadOnly}
             ref={
-              virtualizedDOMStrategyConfig
-                ? setDOMStrategyRootElement
+              virtualizedDOMStrategyConfig || forwardedRef
+                ? editableRootRef
                 : undefined
             }
             scrollSelectionIntoView={scrollSelectionIntoView}

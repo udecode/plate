@@ -2,6 +2,7 @@ import { type SlateEditor, getEditorPlugin } from 'platejs';
 
 import { upsertLink, validateUrl } from '../../lib';
 import { LinkPlugin } from '../LinkPlugin';
+import { focusEditorAtSelection } from '../utils';
 
 /**
  * Insert link if url is valid. Text is url if empty. Close floating link. Focus
@@ -36,7 +37,7 @@ export const submitFloatingLink = (editor: SlateEditor) => {
   });
 
   setTimeout(() => {
-    editor.tf.focus({ at: editor.selection! });
+    focusEditorAtSelection(editor);
   }, 0);
 
   return true;

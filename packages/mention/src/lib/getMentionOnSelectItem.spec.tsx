@@ -1,4 +1,6 @@
-import { createSlateEditor, KEYS } from 'platejs';
+import { KEYS } from 'platejs';
+
+import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
 
 import { BaseMentionPlugin } from './BaseMentionPlugin';
 import { getMentionOnSelectItem } from './getMentionOnSelectItem';
@@ -8,18 +10,18 @@ describe('getMentionOnSelectItem', () => {
     const MentionPlugin = BaseMentionPlugin.configure({
       options: { insertSpaceAfterMention: true },
     });
-    const editor = createSlateEditor({
-      plugins: [MentionPlugin],
-      selection: {
+    const editor = createPlateRuntimeEditor({
+      initialSelection: {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'hi' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hi' }], type: 'p' }],
+      plugins: [MentionPlugin],
     });
 
-    getMentionOnSelectItem()(editor, { key: 'u1', text: 'Ada' }, 'ad');
+    getMentionOnSelectItem()(editor as never, { key: 'u1', text: 'Ada' }, 'ad');
 
-    const children = editor.children[0].children;
+    const children = editor.read((state) => state.value.root())[0].children;
 
     expect(children[1]).toMatchObject({
       children: [{ text: '' }],
@@ -28,7 +30,7 @@ describe('getMentionOnSelectItem', () => {
       value: 'Ada',
     });
     expect(children[2]).toEqual({ text: ' ' });
-    expect(editor.selection).toEqual({
+    expect(editor.read((state) => state.selection.get())).toEqual({
       anchor: { offset: 1, path: [0, 2] },
       focus: { offset: 1, path: [0, 2] },
     });
@@ -38,18 +40,18 @@ describe('getMentionOnSelectItem', () => {
     const MentionPlugin = BaseMentionPlugin.configure({
       options: { insertSpaceAfterMention: true },
     });
-    const editor = createSlateEditor({
-      plugins: [MentionPlugin],
-      selection: {
+    const editor = createPlateRuntimeEditor({
+      initialSelection: {
         anchor: { offset: 2, path: [0, 0] },
         focus: { offset: 2, path: [0, 0] },
       },
-      value: [{ children: [{ text: 'hello' }], type: 'p' }],
+      initialValue: [{ children: [{ text: 'hello' }], type: 'p' }],
+      plugins: [MentionPlugin],
     });
 
-    getMentionOnSelectItem()(editor, { key: 'u1', text: 'Ada' }, 'ad');
+    getMentionOnSelectItem()(editor as never, { key: 'u1', text: 'Ada' }, 'ad');
 
-    const children = editor.children[0].children;
+    const children = editor.read((state) => state.value.root())[0].children;
 
     expect(children[0]).toEqual({ text: 'he' });
     expect(children[1]).toMatchObject({

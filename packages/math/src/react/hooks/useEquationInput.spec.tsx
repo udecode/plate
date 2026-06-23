@@ -7,6 +7,7 @@ const useElementMock = mock();
 const getEditorPluginMock = mock();
 const useEditorPluginMock = mock();
 const useEditorSelectorMock = mock();
+const useNodePathMock = mock();
 const usePluginOptionMock = mock();
 const useReadOnlyMock = mock();
 const useSelectedMock = mock();
@@ -42,6 +43,7 @@ mock.module('platejs/react', () => ({
   useEditorRef: useEditorRefMock,
   useEditorSelector: useEditorSelectorMock,
   useElement: useElementMock,
+  useNodePath: useNodePathMock,
   usePluginOption: usePluginOptionMock,
   useReadOnly: useReadOnlyMock,
   useSelected: useSelectedMock,
@@ -51,6 +53,7 @@ describe('useEquationInput', () => {
   beforeEach(() => {
     useEditorRefMock.mockReset();
     useElementMock.mockReset();
+    useNodePathMock.mockReset();
   });
 
   afterAll(() => {
@@ -61,14 +64,20 @@ describe('useEquationInput', () => {
     const { useEquationInput } = await import(
       `./useEquationInput?test=${Math.random().toString(36).slice(2)}`
     );
-    const select = mock();
     const setNodes = mock();
-    const withMerging = mock((fn: Function) => fn());
+    const setSelection = mock();
+    const update = mock((fn: any) =>
+      fn({ nodes: { set: setNodes }, selection: { set: setSelection } })
+    );
     const onClose = mock();
 
     useElementMock.mockReturnValue({ texExpression: 'x+1', type: 'equation' });
+    useNodePathMock.mockReturnValue([0, 1]);
     useEditorRefMock.mockReturnValue({
-      tf: { select, setNodes, withMerging },
+      api: {
+        before: mock(() => ({ offset: 3, path: [0, 0] })),
+      },
+      update,
     });
 
     const { result } = renderHook(() =>
@@ -89,15 +98,12 @@ describe('useEquationInput', () => {
 
     result.current.onDismiss();
 
-    expect(withMerging).toHaveBeenCalled();
+    expect(update).toHaveBeenCalled();
     expect(setNodes).toHaveBeenCalledWith(
       { texExpression: 'x+2' },
-      { at: { texExpression: 'x+1', type: 'equation' } }
+      { at: [0, 1] }
     );
-    expect(select).toHaveBeenCalledWith(
-      { texExpression: 'x+1', type: 'equation' },
-      { focus: true, previous: true }
-    );
+    expect(setSelection).toHaveBeenCalledWith({ offset: 3, path: [0, 0] });
     expect(onClose).toHaveBeenCalled();
   });
 });

@@ -221,7 +221,7 @@ Inserts a link node into the editor.
   <APIItem name="createLinkNodeOptions" type="CreateLinkNodeOptions">
     Options for creating the link node.
   </APIItem>
-  <APIItem name="insertOptions" type="InsertNodesOptions" optional>
+  <APIItem name="insertOptions" type="object" optional>
     Additional options for inserting nodes.
   </APIItem>
  </APIOptions>
@@ -285,7 +285,7 @@ Inserts a link node into the editor.
   <APIItem name="createLinkNodeOptions" type="CreateLinkNodeOptions">
     Options for creating link node.
   </APIItem>
-  <APIItem name="options" type="InsertNodesOptions" optional>
+  <APIItem name="options" type="object" optional>
     Additional options for node insertion.
   </APIItem>
 </APIParameters>
@@ -394,7 +394,7 @@ Insert or update a link node. The behavior depends on the current selection and 
   <APIItem name="insertTextInLink" type="boolean" optional>
     If `true`, insert the URL as text in the link.
   </APIItem>
-  <APIItem name="insertNodesOptions" type="InsertNodesOptions" optional>
+  <APIItem name="insertNodesOptions" type="object" optional>
     The options for inserting nodes.
   </APIItem>
   <APIItem name="skipValidation" type="boolean" optional>
@@ -470,7 +470,7 @@ Options for creating a new link node.
     - `_parent`: parent frame
     - `_top`: full window
   </APIItem>
-  <APIItem name="children" type="TText[]" optional>
+  <APIItem name="children" type="Text[]" optional>
     An array of text nodes that represent the link content.
   </APIItem>
 </APIOptions>

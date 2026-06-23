@@ -12,10 +12,10 @@ The Editor API provides a set of helper functions for querying and manipulating 
 A location reference in the editor. Can be either a Location or a Node.
 
 ```ts
-type At = TLocation | TNode
+type At = Location | Node
 ```
 
-When a Node is passed, its path will be found using [`editor.api.findPath()`](/docs/api/slate/editor-api#findpath). This allows you to reference a location by either:
+When a Node is passed, Slate resolves the node's current path internally. This allows you to reference a location by either:
 - A [Location](/docs/api/slate/location) ([Path](/docs/api/slate/path), [Point](/docs/api/slate/point), or [Range](/docs/api/slate/range))
 - A [Node](/docs/api/slate/node)
 
@@ -198,7 +198,7 @@ editor.api.block({ highest: true }) // Get highest block at selection
 Returns all matching blocks.
 
 <API name="blocks">
-<APIOptions type="EditorNodesOptions<V>">
+<APIOptions type="object<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
     Common query options for matching blocks.
   </APIItem>
@@ -233,7 +233,7 @@ Returns the edge blocks above a location (default: selection).
 Useful for retrieving the start and end block of a range.
 
 <API name="edgeBlocks">
-<APIOptions type="EditorNodesOptions<V>">
+<APIOptions type="object<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
     Common query options for matching blocks.
   </APIItem>
@@ -578,7 +578,7 @@ Check if a path is selected by the current selection.
 
 <API name="isSelected">
 <APIParameters>
-  <APIItem name="target" type="Path | TRange">
+  <APIItem name="target" type="Path | Range">
     The path or range to check.
   </APIItem>
   <APIItem name="options" type="EditorIsSelectedOptions" optional>
@@ -757,7 +757,7 @@ Get the node at a location or find the first node that matches options.
 Iterate through all nodes in the editor that match the given options.
 
 <API name="nodes">
-<APIOptions type="EditorNodesOptions<V>">
+<APIOptions type="object<V>">
   <APIItem name="...options" type="QueryOptions<V>" optional>
     Common query options for matching nodes.
   </APIItem>
@@ -852,8 +852,8 @@ Get the matching node in the branch of the document before a location.
 Get a property value from a list of nodes. Returns `undefined` if the property value is not consistent across all nodes.
 
 <API name="prop">
-<APIOptions type="EditorPropOptions<V>">
-  <APIItem name="nodes" type="TElement[]">
+<APIOptions type="object<V>">
+  <APIItem name="nodes" type="Element[]">
     The list of nodes to get the property value from.
   </APIItem>
   <APIItem name="key" type="string" optional>
@@ -924,45 +924,6 @@ Match a void node in the current branch of the editor.
 </API>
 
 ## Location
-
-### `findPath`
-
-Find the path of a Plate node in the editor.
-
-<API name="findPath">
-<APIParameters>
-  <APIItem name="node" type="TNode">
-    The node to find the path for in the editor tree.
-  </APIItem>
-  <APIItem name="options" type="EditorFindPathOptions" optional>
-    Options for finding the node's path.
-  </APIItem>
-</APIParameters>
-<APIOptions type="EditorFindPathOptions">
-  <APIItem name="...options" type="QueryOptions<Value>" optional>
-    Common query options for finding nodes.
-  </APIItem>
-  <APIItem name="ignoreNonSelectable" type="boolean" optional>
-    Whether to ignore non-selectable nodes during traversal.
-  </APIItem>
-  <APIItem name="reverse" type="boolean" optional>
-    Whether to traverse in reverse order.
-  </APIItem>
-  <APIItem name="universal" type="boolean" optional>
-    Whether to ensure the operation works universally across all nodes.
-  </APIItem>
-  <APIItem name="mode" type="QueryMode" optional>
-    Query mode for finding nodes.
-  </APIItem>
-  <APIItem name="voids" type="boolean" optional>
-    Whether to include void nodes in the search.
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="Path | undefined">
-  The path of the node if found, undefined otherwise.
-</APIReturns>
-</API>
 
 ### `path`
 
@@ -1046,7 +1007,7 @@ Returns the range spanning the given node entries.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="TRange | undefined">
+<APIReturns type="Range | undefined">
   The range spanning the nodes, or undefined if no valid range can be created.
 </APIReturns>
 </API>
@@ -1068,7 +1029,7 @@ Create a range between two locations.
   </APIItem>
 </APIOptions>
 
-<APIReturns type="TRange">
+<APIReturns type="Range">
   A new range between the specified points.
 </APIReturns>
 </API>
@@ -1110,7 +1071,7 @@ Note that `unhangRange` is designed for the specific purpose of fixing triple-cl
 
 <API name="unhangRange">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The range to unhang.
   </APIItem>
   <APIItem name="options" type="EditorUnhangRangeOptions" optional>
@@ -1123,7 +1084,7 @@ Note that `unhangRange` is designed for the specific purpose of fixing triple-cl
   </APIItem>
 </APIOptions>
 
-<APIReturns type="TRange">
+<APIReturns type="Range">
   A new range with the end point moved backwards if it was hanging.
 </APIReturns>
 </API>
@@ -1308,7 +1269,7 @@ Create a mutable ref for a `Range`.
 
 <API name="rangeRef">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The range to reference.
   </APIItem>
   <APIItem name="options" type="EditorRangeRefOptions" optional>
@@ -1364,7 +1325,7 @@ Get the target range from a DOM event.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="TRange | null">
+<APIReturns type="Range | null">
   The range at the event target, or null if no valid range found.
 </APIReturns>
 </API>
@@ -1375,7 +1336,7 @@ Find a key for a Plate node. Returns an instance of `Key` which looks like `{ id
 
 <API name="findKey">
 <APIParameters>
-  <APIItem name="node" type="TNode">
+  <APIItem name="node" type="Node">
     The node to find the key for.
   </APIItem>
 </APIParameters>
@@ -1441,7 +1402,7 @@ Check if the editor has a range.
 
 <API name="hasRange">
 <APIParameters>
-  <APIItem name="range" type="TRange">
+  <APIItem name="range" type="Range">
     The range to check.
   </APIItem>
 </APIParameters>
@@ -1518,8 +1479,8 @@ Check if the editor is in read-only mode.
 Find the native DOM element from a Plate node.
 
 <API name="toDOMNode">
-<APIOptions type="TNode">
-  <APIItem name="node" type="TNode">
+<APIOptions type="Node">
+  <APIItem name="node" type="Node">
     The Plate node to convert to a DOM element.
   </APIItem>
 </APIOptions>
@@ -1550,8 +1511,8 @@ Find a native DOM selection point from a Plate point.
 Find a native DOM range from a Plate range.
 
 <API name="toDOMRange">
-<APIOptions type="TRange">
-  <APIItem name="range" type="TRange">
+<APIOptions type="Range">
+  <APIItem name="range" type="Range">
     The Plate range to convert to a DOM range.
   </APIItem>
 </APIOptions>
@@ -1572,7 +1533,7 @@ Find a Plate node from a native DOM element.
   </APIItem>
 </APIOptions>
 
-<APIReturns type="TNode | undefined">
+<APIReturns type="Node | undefined">
   The corresponding Plate node if found, undefined otherwise.
 </APIReturns>
 </API>
@@ -1604,7 +1565,7 @@ Find a Plate range from a DOM range.
   </APIItem>
 </APIOptions>
 
-<APIReturns type="TRange | undefined">
+<APIReturns type="Range | undefined">
   The corresponding Plate range if found, undefined otherwise.
 </APIReturns>
 </API>
@@ -1757,7 +1718,7 @@ Default block factory for creating new block elements.
 
 <API name="create.block">
 <APIParameters>
-  <APIItem name="node" type="Partial<TElement>" optional>
+  <APIItem name="node" type="Partial<Element>" optional>
     Partial element properties to merge into the new block.
   </APIItem>
   <APIItem name="path" type="Path" optional>
@@ -1765,7 +1726,7 @@ Default block factory for creating new block elements.
   </APIItem>
 </APIParameters>
 
-<APIReturns type="TElement">
+<APIReturns type="Element">
   A new block element.
 </APIReturns>
 </API>

@@ -44,11 +44,13 @@ describe('NavigationFeedbackPlugin', () => {
     expect(typeof editor.api.redecorate).toBe('function');
 
     act(() => {
-      editor.tf.navigation.flashTarget({
-        target: {
-          path: [0],
-          type: 'node',
-        },
+      editor.update((tx) => {
+        tx.navigation.flashTarget({
+          target: {
+            path: [0],
+            type: 'node',
+          },
+        });
       });
     });
 
@@ -63,7 +65,9 @@ describe('NavigationFeedbackPlugin', () => {
     expect(getHighlightedElement().getAttribute('data-nav-pulse')).toBe('1');
 
     act(() => {
-      editor.tf.navigation.clear();
+      editor.update((tx) => {
+        tx.navigation.clear();
+      });
     });
     expect(editor.api.navigation.activeTarget()).toBeNull();
 

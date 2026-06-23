@@ -16,9 +16,11 @@ describe('createVirtualRef', () => {
     const editor: any = {
       selection,
       api: {
-        toDOMRange: () => ({
-          getBoundingClientRect: () => rect,
-        }),
+        dom: {
+          resolveDOMRange: () => ({
+            getBoundingClientRect: () => rect,
+          }),
+        },
       },
     };
 
@@ -37,7 +39,9 @@ describe('createVirtualRef', () => {
     const editor: any = {
       selection: null,
       api: {
-        toDOMRange: () => {},
+        dom: {
+          resolveDOMRange: () => {},
+        },
       },
     };
 
@@ -52,7 +56,9 @@ describe('createVirtualRef', () => {
     const editor: any = {
       selection: null,
       api: {
-        toDOMRange: () => {},
+        dom: {
+          resolveDOMRange: () => {},
+        },
       },
     };
 

@@ -82,7 +82,7 @@ describe('getRenderNodeStaticProps', () => {
 
     expect(result.api).toBe(editor.api);
     expect(result.editor).toBe(editor);
-    expect(result.tf).toBe(editor.transforms);
+    expect(result).not.toHaveProperty('tf');
     expect(result.style).toBeUndefined();
   });
 });

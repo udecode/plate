@@ -1,51 +1,60 @@
 import type { PlateEditor } from '../../editor/PlateEditor';
 
+import { getCurrentRuntimeTransforms } from '../../../internal/currentRuntimeBridge';
+import { withLegacyTransformOverride } from '../../../internal/plugin/withLegacyTransformOverride';
 import { createPlateEditor } from '../../../react/editor/withPlate';
 import { createPlatePlugin } from '../../plugin/createPlatePlugin';
 
 type CurrentRuntimeInsertDataEditor = PlateEditor & {
-  insertData: PlateEditor['tf']['insertData'];
+  insertData: ReturnType<typeof getCurrentRuntimeTransforms>['insertData'];
 };
 
 describe('ReactPlugin', () => {
   let editor: PlateEditor;
 
   beforeEach(() => {
-    editor = createPlateEditor();
+    editor = createPlateEditor({ runtime: 'legacy' });
+    const runtimeTransforms = getCurrentRuntimeTransforms(editor);
     editor.api.isFocused = mock();
-    editor.tf.focus = mock();
+    runtimeTransforms.focus = mock();
 
     // Reset mocks
     (editor.api.isFocused as ReturnType<typeof mock>).mockReset();
-    (editor.tf.focus as ReturnType<typeof mock>).mockReset();
+    (runtimeTransforms.focus as ReturnType<typeof mock>).mockReset();
   });
 
   it('allows overriding both legacy and new APIs', () => {
     const fn = mock();
     const fn2 = mock();
     editor = createPlateEditor({
+      runtime: 'legacy',
       plugins: [
-        createPlatePlugin({
-          key: 'reactText',
-          extendEditor: ({ editor }) => {
-            const e = editor as CurrentRuntimeInsertDataEditor;
-            const { insertData } = e;
+        withLegacyTransformOverride(
+          createPlatePlugin({
+            key: 'reactText',
+            extendEditor: ({ editor }) => {
+              const e = editor as CurrentRuntimeInsertDataEditor;
+              const { insertData } = e;
 
-            e.insertData = (data: any) => {
-              fn();
+              e.insertData = (data: any) => {
+                fn();
 
-              return insertData(data);
-            };
+                return insertData(data);
+              };
 
-            return editor;
-          },
-        }).extendEditorTransforms(({ tf: { insertData } }) => ({
-          insertData: (data: any) => {
-            fn2();
+              return editor;
+            },
+          }),
+          ({ tf: { insertData } }) => ({
+            tf: {
+              insertData: (data: any) => {
+                fn2();
 
-            return insertData(data);
-          },
-        })),
+                return insertData(data);
+              },
+            },
+          })
+        ),
       ],
     });
 
@@ -54,7 +63,7 @@ describe('ReactPlugin', () => {
     } as DataTransfer;
 
     (editor as CurrentRuntimeInsertDataEditor).insertData(mockDataTransfer);
-    editor.tf.insertData(mockDataTransfer);
+    getCurrentRuntimeTransforms(editor).insertData(mockDataTransfer);
 
     expect(fn).toHaveBeenCalledTimes(2);
     expect(fn2).toHaveBeenCalledTimes(2);
@@ -63,16 +72,18 @@ describe('ReactPlugin', () => {
   it('override reset method', () => {
     (editor.api.isFocused as ReturnType<typeof mock>).mockReturnValue(true);
 
-    editor.tf.reset();
+    getCurrentRuntimeTransforms(editor).reset();
 
-    expect(editor.tf.focus).toHaveBeenCalledWith({ edge: 'startEditor' });
+    expect(getCurrentRuntimeTransforms(editor).focus).toHaveBeenCalledWith({
+      edge: 'startEditor',
+    });
   });
 
   it('does not focus editor if it was not focused before reset', () => {
     (editor.api.isFocused as ReturnType<typeof mock>).mockReturnValue(false);
 
-    editor.tf.reset();
+    getCurrentRuntimeTransforms(editor).reset();
 
-    expect(editor.tf.focus).not.toHaveBeenCalled();
+    expect(getCurrentRuntimeTransforms(editor).focus).not.toHaveBeenCalled();
   });
 });

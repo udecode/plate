@@ -185,22 +185,20 @@ describe('resolvePlugins', () => {
     expect(editor.meta.pluginCache.useHooks).toContain('cachey');
   });
 
-  it('creates a shortcut handler from plugin-specific transforms', () => {
+  it('creates a shortcut handler from plugin-specific tx commands', () => {
     const toggle = mock();
     const editor = createEditor({
       plugins: [
         createSlatePlugin({
-          key: 'shortcutTransforms',
+          key: 'shortcutTx',
           shortcuts: {
             toggle: { keys: 'mod+k' },
           },
-        }).extendTransforms(() => ({
-          toggle,
-        })),
+        }).extendTx(() => () => ({ toggle })),
       ],
     });
 
-    editor.meta.shortcuts['shortcutTransforms.toggle']?.handler?.({} as any);
+    editor.meta.shortcuts['shortcutTx.toggle']?.handler?.({} as any);
 
     expect(toggle).toHaveBeenCalledTimes(1);
   });

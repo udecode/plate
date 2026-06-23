@@ -4,6 +4,7 @@ import type { SlateEditor, TTableCellElement } from 'platejs';
 import type { BorderDirection } from '../types';
 
 import { getCellIndices, getCellTypes } from '../utils';
+import { findTableNodePath } from '../utils/findTableNodePath';
 import { getColSpan } from './getColSpan';
 import { getLeftTableCell } from './getLeftTableCell';
 import { getRowSpan } from './getRowSpan';
@@ -84,7 +85,7 @@ export const getSelectedCellsBorders = (
   // Single pass through cells to check all border conditions
   for (const cell of cellElements) {
     const { col, row } = getCellIndices(editor, cell);
-    const cellPath = editor.api.findPath(cell);
+    const cellPath = findTableNodePath(editor, cell);
     const cSpan = getColSpan(cell);
     const rSpan = getRowSpan(cell);
     const isFirstRow = row === 0;
@@ -225,7 +226,7 @@ export function isSelectedCellBordersNone(
   return cells.every((cell) => {
     const { borders } = cell;
     const { col, row } = getCellIndices(editor, cell);
-    const cellPath = editor.api.findPath(cell);
+    const cellPath = findTableNodePath(editor, cell);
 
     if (!cellPath) return true;
 
@@ -316,7 +317,7 @@ export function isSelectedCellBorder(
     const { col, row } = getCellIndices(editor, cell);
     const cSpan = getColSpan(cell);
     const rSpan = getRowSpan(cell);
-    const cellPath = editor.api.findPath(cell);
+    const cellPath = findTableNodePath(editor, cell);
 
     if (!cellPath) return true;
 

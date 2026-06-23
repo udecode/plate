@@ -4,6 +4,7 @@ import { jsx } from '@platejs/test-utils';
 import { type SlateEditor, createSlateEditor } from 'platejs';
 
 import * as setBorderSizeModule from '../../../lib/transforms/setBorderSize';
+import * as findTableNodePathModule from '../../../lib/utils/findTableNodePath';
 import * as utilsModule from '../../../lib/utils';
 import * as getTopTableCellModule from '../../../lib/queries/getTopTableCell';
 import * as getLeftTableCellModule from '../../../lib/queries/getLeftTableCell';
@@ -18,11 +19,13 @@ describe('setSelectedCellsBorder', () => {
   let getCellTypesSpy: ReturnType<typeof spyOn>;
   let getTopTableCellSpy: ReturnType<typeof spyOn>;
   let getLeftTableCellSpy: ReturnType<typeof spyOn>;
+  let findTableNodePathSpy: ReturnType<typeof spyOn>;
   let setBorderSizeMock: ReturnType<typeof mock>;
   let getCellIndicesMock: ReturnType<typeof mock>;
   let getCellTypesMock: ReturnType<typeof mock>;
   let getTopTableCellMock: ReturnType<typeof mock>;
   let getLeftTableCellMock: ReturnType<typeof mock>;
+  let findTableNodePathMock: ReturnType<typeof mock>;
 
   beforeEach(() => {
     // Create mocks
@@ -49,6 +52,7 @@ describe('setSelectedCellsBorder', () => {
     getCellTypesMock = mock(() => ['td']);
     getTopTableCellMock = mock();
     getLeftTableCellMock = mock();
+    findTableNodePathMock = mock(() => [0]);
 
     // Create spies
     setBorderSizeSpy = spyOn(
@@ -69,10 +73,12 @@ describe('setSelectedCellsBorder', () => {
       getLeftTableCellModule,
       'getLeftTableCell'
     ).mockImplementation(getLeftTableCellMock as any);
+    findTableNodePathSpy = spyOn(
+      findTableNodePathModule,
+      'findTableNodePath'
+    ).mockImplementation(findTableNodePathMock as any);
 
     editor = createSlateEditor({ nodeId: true });
-    const findPathMock = mock(() => [0]);
-    (editor.api as any).findPath = findPathMock;
   });
 
   afterEach(() => {
@@ -81,6 +87,7 @@ describe('setSelectedCellsBorder', () => {
     getCellTypesSpy?.mockRestore();
     getTopTableCellSpy?.mockRestore();
     getLeftTableCellSpy?.mockRestore();
+    findTableNodePathSpy?.mockRestore();
   });
 
   describe('when border is "outer"', () => {

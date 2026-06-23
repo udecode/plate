@@ -1,12 +1,10 @@
+import type { Element } from '@platejs/slate';
+import { PathApi, type Path } from '@platejs/slate';
 import {
-  type Path,
   type SlateEditor,
-  type TElement,
   type TTableElement,
   getEditorPlugin,
   KEYS,
-  NodeApi,
-  PathApi,
 } from 'platejs';
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
@@ -40,10 +38,12 @@ export const insertTableRow = (
   let { at, fromRow } = options;
 
   if (at && !fromRow) {
-    const table = NodeApi.get<TTableElement>(editor, at);
+    const table = editor.api.node<TTableElement>(at)?.[0];
 
     if (table?.type === editor.getType(KEYS.table)) {
-      fromRow = NodeApi.lastChild(editor, at)![1];
+      if (table.children.length === 0) return;
+
+      fromRow = at.concat(table.children.length - 1);
       at = undefined;
     }
   }
@@ -66,11 +66,11 @@ export const insertTableRow = (
   if (!tableEntry) return;
 
   const getEmptyRowNode = () => ({
-    children: (trNode.children as TElement[]).map((_, i) => {
+    children: (trNode.children as Element[]).map((_, i) => {
       const hasSingleRow = tableEntry[0].children.length === 1;
       const isHeaderColumn =
         !hasSingleRow &&
-        (tableEntry[0].children as TElement[]).every(
+        (tableEntry[0].children as Element[]).every(
           (n) => n.children[i].type === editor.getType(KEYS.th)
         );
 
@@ -81,8 +81,8 @@ export const insertTableRow = (
     type: editor.getType(KEYS.tr),
   });
 
-  editor.tf.withoutNormalizing(() => {
-    editor.tf.insertNodes(getEmptyRowNode(), {
+  editor.update((tx) => {
+    tx.nodes.insert(getEmptyRowNode(), {
       at: PathApi.isPath(at) ? at : before ? trPath : PathApi.next(trPath),
     });
   });
@@ -104,6 +104,8 @@ export const insertTableRow = (
         : nextCellPath.at(-2)! + 1;
     }
 
-    editor.tf.select(nextCellPath);
+    editor.update((tx) => {
+      tx.selection.set(nextCellPath);
+    });
   }
 };

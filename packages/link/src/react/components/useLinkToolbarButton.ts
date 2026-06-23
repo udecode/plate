@@ -2,6 +2,7 @@ import { type TLinkElement, KEYS } from 'platejs';
 import { useEditorRef, useEditorSelector } from 'platejs/react';
 
 import { triggerFloatingLink } from '../index';
+import { focusEditorAtSelection } from '../utils';
 
 export const useLinkToolbarButtonState = () => {
   const pressed = useEditorSelector(
@@ -35,9 +36,13 @@ export const useLinkToolbarButton = (
 
           const endPoint = editor.api.end(node![1]);
 
-          editor.tf.setSelection({ anchor: endPoint, focus: endPoint });
+          if (!endPoint) return;
+
+          editor.update((tx) => {
+            tx.selection.set(endPoint);
+          });
         } else {
-          editor.tf.focus();
+          focusEditorAtSelection(editor);
           triggerFloatingLink(editor, { focused: true });
         }
       },

@@ -15,7 +15,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           moveLine: moveLineMock,
         },
       }));
@@ -35,7 +35,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           moveLine: moveLineMock,
         },
       }));
@@ -55,7 +55,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           moveLine: moveLineMock,
         },
       }));
@@ -76,7 +76,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           moveLine: moveLineMock,
         },
       }));
@@ -99,7 +99,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           tab: tabMock,
         },
       }));
@@ -119,7 +119,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           tab: tabMock,
         },
       }));
@@ -139,7 +139,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           tab: tabMock,
         },
       }));
@@ -160,7 +160,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           tab: tabMock,
         },
       }));
@@ -183,7 +183,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           selectAll: selectAllMock,
         },
       }));
@@ -203,7 +203,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           selectAll: selectAllMock,
         },
       }));
@@ -224,7 +224,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           selectAll: selectAllMock,
         },
       }));
@@ -247,7 +247,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           escape: escapeMock,
         },
       }));
@@ -267,7 +267,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           escape: escapeMock,
         },
       }));
@@ -288,7 +288,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           escape: escapeMock,
         },
       }));
@@ -354,7 +354,7 @@ describe('SlateReactExtensionPlugin keyboard shortcuts', () => {
       const testPlugin = createPlatePlugin({
         key: 'testPlugin',
       }).overrideEditor(() => ({
-        transforms: {
+        tf: {
           escape: escapeMock,
           moveLine: moveLineMock,
           selectAll: selectAllMock,

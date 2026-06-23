@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
-import type { Path } from 'platejs';
+import type { Path } from '@platejs/slate';
 
-import { ElementApi } from 'platejs';
+import { ElementApi } from '@platejs/slate';
 import { getNodeByPath } from './getNodeByPath';
 import type { EditorHandle } from './types';
 

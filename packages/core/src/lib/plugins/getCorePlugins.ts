@@ -12,6 +12,7 @@ import { InputRulesPlugin } from './input-rules/internal/InputRulesPlugin';
 import { LengthPlugin } from './length';
 import {
   type NavigationFeedbackConfig,
+  type NavigationFeedbackTransforms,
   NavigationFeedbackPlugin,
 } from './navigation-feedback';
 import { AffinityPlugin } from './affinity';
@@ -19,6 +20,7 @@ import { type NodeIdConfig, NodeIdPlugin } from './node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from './paragraph';
 import {
   type SlateExtensionConfig,
+  type SlateExtensionTransforms,
   SlateExtensionPlugin,
 } from './slate-extension';
 import { type ChunkingConfig, ChunkingPlugin } from './chunking/ChunkingPlugin';
@@ -112,8 +114,8 @@ export const getCorePlugins = ({
   return corePlugins;
 };
 
-export type CorePluginTransforms = SlateExtensionConfig['transforms'] &
-  NavigationFeedbackConfig['transforms'];
+export type CorePluginTransforms = SlateExtensionTransforms &
+  NavigationFeedbackTransforms;
 export type CorePluginApi = SlateExtensionConfig['api'] &
   NavigationFeedbackConfig['api'];
 

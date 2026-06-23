@@ -2,7 +2,18 @@ import type { AnyPlatePlugin, PlatePluginContext } from './PlatePlugin';
 
 export const omitPluginContext = <T extends PlatePluginContext<AnyPlatePlugin>>(
   ctx: T
-) => {
+): Omit<
+  T,
+  | 'api'
+  | 'editor'
+  | 'getOption'
+  | 'getOptions'
+  | 'plugin'
+  | 'setOption'
+  | 'setOptions'
+  | 'tf'
+  | 'type'
+> => {
   const {
     api,
     editor,
@@ -11,10 +22,21 @@ export const omitPluginContext = <T extends PlatePluginContext<AnyPlatePlugin>>(
     plugin,
     setOption,
     setOptions,
-    tf,
+    tf: _tf,
     type,
     ...rest
-  } = ctx;
+  } = ctx as T & { tf?: unknown };
 
-  return rest;
+  return rest as Omit<
+    T,
+    | 'api'
+    | 'editor'
+    | 'getOption'
+    | 'getOptions'
+    | 'plugin'
+    | 'setOption'
+    | 'setOptions'
+    | 'tf'
+    | 'type'
+  >;
 };

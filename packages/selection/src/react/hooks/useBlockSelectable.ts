@@ -1,6 +1,8 @@
 import type React from 'react';
 
-import { type TElement, KEYS, PathApi } from 'platejs';
+import type { Element, Path } from '@platejs/slate';
+
+import { KEYS, PathApi } from 'platejs';
 import {
   type PlateEditor,
   useEditorPlugin,
@@ -24,9 +26,11 @@ export const addOnContextMenu = (
     disabledWhenFocused = true,
     element,
     event,
+    path,
   }: {
-    element: TElement;
+    element: Element;
     event: React.MouseEvent<HTMLDivElement, MouseEvent>;
+    path?: Path | null;
     disabledWhenFocused?: boolean;
   }
 ) => {
@@ -36,13 +40,12 @@ export const addOnContextMenu = (
   if (!enableContextMenu) return;
 
   if (editor.selection?.focus && disabledWhenFocused) {
-    const nodeEntry = editor.api.above<TElement>();
-    const elementPath = editor.api.findPath(element);
+    const nodeEntry = editor.api.above<Element>();
 
     if (
       nodeEntry &&
-      elementPath &&
-      PathApi.isCommon(elementPath, nodeEntry[1])
+      path &&
+      PathApi.isCommon(path, nodeEntry[1])
     ) {
       const id = nodeEntry[0].id as string | undefined;
       const isSelected = editor.getOption(
@@ -67,7 +70,9 @@ export const addOnContextMenu = (
 
   if (id) {
     if (event?.shiftKey) {
-      editor.getApi(BlockSelectionPlugin).blockSelection.add(id);
+      (editor.api as unknown as BlockSelectionConfig['api']).blockSelection.add(
+        id
+      );
     } else {
       const clickAlreadySelected = selectedIds?.has(id);
 
@@ -95,6 +100,7 @@ export const useBlockSelectable = () => {
             addOnContextMenu(editor, {
               element,
               event,
+              path,
             }),
         }
       : {},

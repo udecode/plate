@@ -22,14 +22,12 @@ export const deleteColumn = (editor: SlateEditor) => {
 
   if (!tableEntry) return;
 
-  editor.tf.withoutNormalizing(() => {
-    if (!disableMerge) {
-      deleteTableMergeColumn(editor);
+  if (!disableMerge) {
+    deleteTableMergeColumn(editor);
 
-      return;
-    }
-    if (editor.api.isExpanded())
-      return deleteColumnWhenExpanded(editor, tableEntry);
+    return;
+  }
+  if (editor.api.isExpanded()) return deleteColumnWhenExpanded(editor, tableEntry);
 
     const tdEntry = editor.api.above({
       match: { type: getCellTypes(editor) },
@@ -39,7 +37,9 @@ export const deleteColumn = (editor: SlateEditor) => {
     });
 
     if (tdEntry && trEntry && getTableColumnCount(tableEntry[0]) <= 1) {
-      editor.tf.removeNodes({ at: tableEntry[1] });
+      editor.update((tx) => {
+        tx.nodes.remove({ at: tableEntry[1] });
+      });
 
       return;
     }
@@ -71,7 +71,9 @@ export const deleteColumn = (editor: SlateEditor) => {
         )
           return;
 
-        editor.tf.removeNodes({ at: pathToDelete });
+        editor.update((tx) => {
+          tx.nodes.remove({ at: pathToDelete });
+        });
       });
 
       const { colSizes } = tableNode;
@@ -80,13 +82,14 @@ export const deleteColumn = (editor: SlateEditor) => {
         const newColSizes = [...colSizes];
         newColSizes.splice(colIndex, 1);
 
-        editor.tf.setNodes<TTableElement>(
-          { colSizes: newColSizes },
-          { at: tablePath }
-        );
+        editor.update((tx) => {
+          tx.nodes.set(
+            { colSizes: newColSizes } satisfies Partial<TTableElement>,
+            { at: tablePath }
+          );
+        });
       }
     }
-  });
 
   // computeCellIndices(editor, {
   //   tableNode: tableEntry[0],

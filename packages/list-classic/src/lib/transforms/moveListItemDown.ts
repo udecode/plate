@@ -1,12 +1,8 @@
-import {
-  type ElementEntry,
-  type SlateEditor,
-  type TElement,
-  match,
-  PathApi,
-} from 'platejs';
+import type { SlateEditor } from '@platejs/core';
+import type { Element, ElementEntry } from '@platejs/slate';
+import { runWithoutNormalizing } from '../internal/runWithoutNormalizing';
 
-import { getListTypes } from '../queries/index';
+import { getListTypes, getPreviousSiblingPath } from '../queries/index';
 
 export type MoveListItemDownOptions = {
   list: ElementEntry;
@@ -22,7 +18,7 @@ export const moveListItemDown = (
   const [listNode] = list;
   const [, listItemPath] = listItem;
 
-  const previousListItemPath = PathApi.previous(listItemPath);
+  const previousListItemPath = getPreviousSiblingPath(listItemPath);
 
   if (!previousListItemPath) {
     return;
@@ -34,29 +30,31 @@ export const moveListItemDown = (
   if (previousSiblingItem) {
     const [previousNode, previousPath] = previousSiblingItem;
 
-    const sublist = (previousNode.children as TElement[]).find((n) =>
-      match(n, [], { type: getListTypes(editor) })
+    const sublist = (previousNode.children as Element[]).find((node) =>
+      getListTypes(editor).includes(node.type)
     );
     const newPath = previousPath.concat(
       sublist ? [1, sublist.children.length] : [1]
     );
 
-    editor.tf.withoutNormalizing(() => {
-      if (!sublist) {
-        // Create new sublist
-        editor.tf.wrapNodes<TElement>(
-          { children: [], type: listNode.type },
-          { at: listItemPath }
-        );
-      }
+    editor.update((tx) => {
+      runWithoutNormalizing(tx, () => {
+        if (!sublist) {
+          // Create new sublist
+          tx.nodes.wrap(
+            { children: [], type: listNode.type },
+            { at: listItemPath }
+          );
+        }
 
-      // Move the current item to the sublist
-      editor.tf.moveNodes({
-        at: listItemPath,
-        to: newPath,
+        // Move the current item to the sublist
+        tx.nodes.move({
+          at: listItemPath,
+          to: newPath,
+        });
+
+        moved = true;
       });
-
-      moved = true;
     });
   }
 

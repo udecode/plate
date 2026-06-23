@@ -3,9 +3,9 @@ title: Slate
 description: API reference for @platejs/slate.
 ---
 
-`@platejs/slate` is Plate's framework-free Slate layer. It exports the editor
-factory, editor APIs, transforms, node/location types, DOM helpers from
-`slate-dom`, history helpers, and small query utilities.
+`@platejs/slate` is the framework-free editor runtime. It owns document values,
+roots, operations, schema extensions, state fields, read APIs, transaction
+groups, and pure node/location helper namespaces.
 
 ## Installation
 
@@ -14,68 +14,61 @@ npm install @platejs/slate
 ```
 
 Use `@platejs/slate` in package code that should not import React or Plate core.
-Use `platejs` in app code when the umbrella package is already available.
+Framework packages such as `@platejs/slate-react` and `@platejs/core/react`
+mount this runtime instead of replacing it.
 
 ## Quick Use
 
 ```ts title="Create a framework-free editor"
-import { createEditor, withHistory } from '@platejs/slate';
+import { createEditor } from '@platejs/slate';
 
-const editor = withHistory(
-  createEditor({
-    children: [{ children: [{ text: 'Hello' }], type: 'p' }],
-  })
-);
+const editor = createEditor({
+  initialValue: [{ children: [{ text: 'Hello' }], type: 'p' }],
+});
 
-editor.tf.insertText(' world');
+editor.update((tx) => {
+  tx.text.insert(' world');
+});
 
-const text = editor.api.string([]);
+const text = editor.read((state) => state.text.string([]));
 ```
 
-`createEditor` returns an editor with `api`, `tf`, and legacy direct methods.
-`withHistory` replaces `undo`, `redo`, `apply`, and `writeHistory` with real
-history behavior.
+`createEditor` returns an editor with explicit `read(...)` and `update(...)`
+boundaries. Reads observe committed state. Writes run inside transaction groups.
 
 ## Package Surface
 
 | Surface | Export | Use |
 | --- | --- | --- |
-| Editor factory | `createEditor` | Creates a Slate editor and binds Plate's `api` and `tf` namespaces. |
-| Editor types | `Editor`, `Value`, `ValueOf` | Type editor instances and document values. |
-| Editor API | `EditorApi` | Read/query editor state through `editor.api`. |
-| Editor transforms | `EditorTransforms` | Change editor state through `editor.tf`. |
+| Editor factory | `createEditor` | Creates a framework-free Slate editor. |
+| Runtime views | `createEditorRuntime`, `createEditorView` | Create one committed runtime and optional root-scoped editor views. |
+| Editor types | `Editor`, `BaseEditor`, `Value`, `InitialValue`, `Selection`, `ValueOf` | Type editor instances, document values, and selection state. |
+| Read API | `EditorStateView`, `EditorStateValueApi`, `EditorStateSelectionApi`, `EditorStateTextApi` | Read committed state inside `editor.read(...)`. |
+| Transaction API | `EditorUpdateTransaction`, `EditorTransactionValueApi`, `EditorTransactionNodesApi`, `EditorTransactionSelectionApi` | Mutate editor state inside `editor.update(...)`. |
 | Interfaces | `ElementApi`, `NodeApi`, `TextApi`, `PathApi`, `PointApi`, `RangeApi`, `OperationApi` | Typed helpers for Slate data structures. |
 | Refs | `PathRef`, `PointRef`, `RangeRef` | Mutable location refs that track editor operations. |
-| History | `HistoryApi`, `withHistory` | Undo/redo stacks and history batching flags. |
-| DOM helpers | `slate-dom` re-exports | DOM selection, browser, and diff helpers used by editable surfaces. |
-| Utilities | `getAt`, `match`, `queryEditor`, `queryNode`, `deleteMerge` | Shared query and transform predicates. |
+| Extensions | `defineEditorExtension`, `defineStateField`, `elementProperty` | Register schema facts, state groups, tx groups, normalizers, middleware, and commit hooks. |
 
 ## Editor Shape
 
-An `Editor` contains the Slate document state plus Plate's namespaced helpers.
+An `Editor` contains committed document state plus explicit read and update
+entrypoints.
 
 | Field | Type | Use |
 | --- | --- | --- |
-| `children` | `Value` | Document nodes. |
-| `selection` | `TRange \| null` | Current selection. |
+| `children` | `Value` | Primary document children. |
+| `selection` | `Selection` | Current selection. |
 | `operations` | `Operation[]` | Operations applied since the last change flush. |
-| `marks` | `Record<string, any> \| null` | Marks applied to the next inserted text. |
-| `history` | `History` | Undo and redo stacks. |
-| `meta` | `UnknownObject & { isNormalizing?: boolean }` | Custom metadata and normalization state. |
-| `api` | `EditorApi` | Query methods. |
-| `tf` | `EditorTransforms` | Transform methods. |
-| `transforms` | `EditorTransforms` | Alias of `tf` for compatibility. |
-
-`createEditor` also syncs legacy direct methods, so existing Slate-style calls
-such as `editor.insertText()` continue to route to the current transform
-implementation.
+| `marks` | `EditorMarks \| null` | Marks applied to the next inserted text. |
+| `read` | `<T>(fn: (state) => T) => T` | Read committed state. |
+| `update` | `(fn: (tx, context) => void, options?) => void` | Commit model, selection, mark, root, operation, and state-field writes. |
 
 ## API Map
 
 | Page | Covers |
 | --- | --- |
-| [Editor API](/docs/api/slate/editor-api) | Query methods on `editor.api`, including locations, DOM lookup, marks, blocks, and selection predicates. |
-| [Editor Transforms](/docs/api/slate/editor-transforms) | Mutation methods on `editor.tf`, including text, node, mark, selection, history, and keyboard transforms. |
+| [Editor API](/docs/api/slate/editor-api) | Read methods on `editor.read(...)` state groups. |
+| [Editor Transforms](/docs/api/slate/editor-transforms) | Transaction methods on `editor.update(...)` tx groups. |
 | [Node](/docs/api/slate/node) | Node, descendant, ancestor, and node-entry helpers. |
 | [Element](/docs/api/slate/element) | Element types, element props, and element guards. |
 | [Text](/docs/api/slate/text) | Text node types, mark objects, and text guards. |
@@ -89,41 +82,47 @@ implementation.
 ## History
 
 ```ts title="Batch history"
-editor.tf.withNewBatch(() => {
-  editor.tf.insertText('Title');
-  editor.tf.insertBreak();
-});
+editor.update((tx) => {
+  tx.history.withNewBatch(() => {
+    tx.text.insert('Title');
+    tx.text.insertBreak();
+  });
 
-editor.tf.withoutSaving(() => {
-  editor.tf.select([]);
+  tx.history.withoutSaving(() => {
+    tx.selection.select([]);
+  });
 });
 ```
 
-`withHistory` stores undo batches in `history.undos` and redo batches in
-`history.redos`. Selection-only operations are not saved. Adjacent text inserts
-or removals on the same path merge into one batch unless a history transform
-sets a different batching mode.
+History is a Slate extension. It stores undo and redo batches, exposes history
+state through read groups, and exposes undo/redo plus batching helpers through
+transaction groups.
 
-## DOM Helpers
+## Extension Authoring
 
-`@platejs/slate` re-exports selected `slate-dom` helpers, including browser
-flags, DOM point/range types, DOM selection helpers, string diff helpers, and
-`withDOM`.
+Extensions register schema facts, state groups, transaction groups,
+normalizers, operation middleware, commit listeners, and runtime APIs.
 
-Use these exports when a package already depends on `@platejs/slate`; import
-from `slate-dom` directly only for code that is intentionally independent of
-Plate's Slate layer.
+Use `api` for mounted host/runtime services. Use `tx` for feature commands that
+change Slate model state.
 
-## Utilities
+```ts
+import {
+  defineEditorExtension,
+  defineStateField,
+  elementProperty,
+} from '@platejs/slate';
+```
 
-| Utility | Use |
-| --- | --- |
-| `getAt` | Normalizes editor locations and node inputs before query/transform calls. |
-| `match` | Builds node predicates from match options. |
-| `queryEditor` | Checks editor state before running a transform. |
-| `queryNode` | Checks a node against type, path, and predicate options. |
-| `deleteMerge` | Shared delete/merge behavior for text deletion transforms. |
-| `assignLegacyTransforms` / `syncLegacyMethods` | Keeps legacy direct editor methods wired to `editor.tf`. |
+## Helper Namespaces
+
+Pure data helpers live on `ElementApi`, `LocationApi`, `NodeApi`,
+`OperationApi`, `PathApi`, `PathRefApi`, `PointApi`, `PointRefApi`, `RangeApi`,
+`RangeRefApi`, `SpanApi`, and `TextApi`.
+
+Inside `editor.read(...)` and `editor.update(...)`, prefer grouped `state.*`
+and `tx.*` APIs. Use helper namespaces when library code needs pure operations
+on Slate data outside an editor transaction.
 
 ## Related APIs
 

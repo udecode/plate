@@ -4,6 +4,7 @@ import { BaseCodeBlockPlugin } from '@platejs/code-block';
 import { BaseTablePlugin } from '@platejs/table';
 import { jsxt } from '@platejs/test-utils';
 
+import { getCurrentRuntimeTransforms } from '../../../internal/currentRuntimeBridge';
 import { type SlateEditor, createSlateEditor } from '../../editor';
 import { createSlatePlugin } from '../../plugin/createSlatePlugin';
 
@@ -84,7 +85,8 @@ describe('withMergeRules', () => {
       ) as any;
 
       const editor = getEditorAfterAction({
-        action: (editor) => editor.tf.deleteBackward('character'),
+        action: (editor) =>
+          getCurrentRuntimeTransforms(editor).deleteBackward('character'),
         input,
         plugins: [
           createElementPlugin({
@@ -120,7 +122,8 @@ describe('withMergeRules', () => {
       ) as any;
 
       const editor = getEditorAfterAction({
-        action: (editor) => editor.tf.deleteBackward('character'),
+        action: (editor) =>
+          getCurrentRuntimeTransforms(editor).deleteBackward('character'),
         input,
         plugins: [
           createElementPlugin({
@@ -154,7 +157,8 @@ describe('withMergeRules', () => {
       ) as any;
 
       const editor = getEditorAfterAction({
-        action: (editor) => editor.tf.deleteBackward('character'),
+        action: (editor) =>
+          getCurrentRuntimeTransforms(editor).deleteBackward('character'),
         input,
         plugins: [
           createElementPlugin({
@@ -196,7 +200,8 @@ describe('withMergeRules', () => {
       ) as any;
 
       const editor = getEditorAfterAction({
-        action: (editor) => editor.tf.deleteBackward('character'),
+        action: (editor) =>
+          getCurrentRuntimeTransforms(editor).deleteBackward('character'),
         input,
         plugins: [
           createElementPlugin({
@@ -235,7 +240,8 @@ describe('withMergeRules', () => {
       ) as any;
 
       const editor = getEditorAfterAction({
-        action: (editor) => editor.tf.deleteBackward('character'),
+        action: (editor) =>
+          getCurrentRuntimeTransforms(editor).deleteBackward('character'),
         input,
         plugins: [
           createElementPlugin({
@@ -278,7 +284,8 @@ describe('withMergeRules', () => {
       ) as any;
 
       const editor = getEditorAfterAction({
-        action: (editor) => editor.tf.deleteBackward('character'),
+        action: (editor) =>
+          getCurrentRuntimeTransforms(editor).deleteBackward('character'),
         input,
         plugins: [
           createElementPlugin({
@@ -322,7 +329,8 @@ describe('withMergeRules', () => {
       ) as any;
 
       const editor = getEditorAfterAction({
-        action: (editor) => editor.tf.deleteForward('character'),
+        action: (editor) =>
+          getCurrentRuntimeTransforms(editor).deleteForward('character'),
         input,
         plugins: [BaseCodeBlockPlugin],
       });
@@ -371,7 +379,7 @@ describe('withMergeRules', () => {
           </editor>
         ) as any as SlateEditor,
         (editor: ReturnType<typeof createSlateEditor>) =>
-          editor.tf.deleteBackward(),
+          getCurrentRuntimeTransforms(editor).deleteBackward(),
       ],
       [
         'moves backward from after a table with an empty last cell into that cell',
@@ -383,9 +391,7 @@ describe('withMergeRules', () => {
                   <hp>11</hp>
                 </htd>
                 <htd>
-                  <hp>
-                    <htext />
-                  </hp>
+                  <htext />
                 </htd>
               </htr>
             </htable>
@@ -402,16 +408,14 @@ describe('withMergeRules', () => {
                   <hp>11</hp>
                 </htd>
                 <htd>
-                  <hp>
-                    <cursor />a
-                  </hp>
+                  <cursor />a
                 </htd>
               </htr>
             </htable>
           </editor>
         ) as any as SlateEditor,
         (editor: ReturnType<typeof createSlateEditor>) =>
-          editor.tf.deleteBackward(),
+          getCurrentRuntimeTransforms(editor).deleteBackward(),
       ],
       [
         'moves forward from before a table into the first cell',
@@ -442,9 +446,7 @@ describe('withMergeRules', () => {
             <htable>
               <htr>
                 <htd>
-                  <hp>
-                    <htext />
-                  </hp>
+                  <htext />
                 </htd>
                 <htd>
                   <hp>12</hp>
@@ -454,7 +456,7 @@ describe('withMergeRules', () => {
           </editor>
         ) as any as SlateEditor,
         (editor: ReturnType<typeof createSlateEditor>) =>
-          editor.tf.deleteForward(),
+          getCurrentRuntimeTransforms(editor).deleteForward(),
       ],
       [
         'moves forward from the last cell into the next block',
@@ -495,7 +497,7 @@ describe('withMergeRules', () => {
           </editor>
         ) as any as SlateEditor,
         (editor: ReturnType<typeof createSlateEditor>) =>
-          editor.tf.deleteForward(),
+          getCurrentRuntimeTransforms(editor).deleteForward(),
       ],
       [
         'moves backward from the first table cell into the previous block',
@@ -527,9 +529,7 @@ describe('withMergeRules', () => {
             <htable>
               <htr>
                 <htd>
-                  <hp>
-                    <htext />
-                  </hp>
+                  <htext />
                 </htd>
                 <htd>
                   <hp>12</hp>
@@ -539,7 +539,7 @@ describe('withMergeRules', () => {
           </editor>
         ) as any as SlateEditor,
         (editor: ReturnType<typeof createSlateEditor>) =>
-          editor.tf.deleteBackward(),
+          getCurrentRuntimeTransforms(editor).deleteBackward(),
       ],
     ])('%s', (_label, input, output, action) => {
       const editor = getEditorAfterAction({
@@ -578,7 +578,8 @@ describe('withMergeRules', () => {
       ) as any;
 
       const editor = getEditorAfterAction({
-        action: (editor) => editor.tf.deleteBackward('character'),
+        action: (editor) =>
+          getCurrentRuntimeTransforms(editor).deleteBackward('character'),
         input,
         plugins: [],
       });
@@ -622,7 +623,8 @@ describe('withMergeRules', () => {
       ) as any;
 
       const editor = getEditorAfterAction({
-        action: (editor) => editor.tf.deleteBackward('character'),
+        action: (editor) =>
+          getCurrentRuntimeTransforms(editor).deleteBackward('character'),
         input,
         plugins: [
           VoidPlugin,

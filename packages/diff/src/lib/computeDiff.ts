@@ -3,7 +3,7 @@
  * contributors. See /packages/diff/LICENSE for more information.
  */
 
-import type { Descendant, EditorApi, TElement } from 'platejs';
+import type { Descendant, Element } from '@platejs/slate';
 
 import type { DiffProps } from './types';
 
@@ -12,7 +12,7 @@ import { dmp } from '../internal/utils/dmp';
 import { StringCharMapping } from '../internal/utils/string-char-mapping';
 
 export type ComputeDiffOptions = {
-  isInline: EditorApi['isInline'];
+  isInline: (element: Element) => boolean;
   getDeleteProps: (node: Descendant) => any;
   getInsertProps: (node: Descendant) => any;
   getUpdateProps: (
@@ -23,8 +23,8 @@ export type ComputeDiffOptions = {
   ignoreProps?: string[];
   lineBreakChar?: string;
   elementsAreRelated?: (
-    element: TElement,
-    nextElement: TElement
+    element: Element,
+    nextElement: Element
   ) => boolean | null;
 };
 

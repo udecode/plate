@@ -1,8 +1,14 @@
-import type { Range, Text } from '@platejs/slate';
+import type { EditorStateView, Location, Range, Text } from '@platejs/slate';
 
 import type { SlateEditor } from 'platejs';
 
-import { createRuleFactory, KEYS, PathApi } from 'platejs';
+import {
+  createRuleFactory,
+  ElementApi,
+  KEYS,
+  PathApi,
+  RangeApi,
+} from 'platejs';
 
 import { BaseLinkPlugin } from './BaseLinkPlugin';
 import { upsertLink } from './transforms';
@@ -25,24 +31,127 @@ type LinkTextAutolinkMatch = {
   url: string;
 };
 
+type MatchBeforeOptions = {
+  afterMatch?: boolean;
+  matchBlockStart?: boolean;
+  matchString?: string[] | string;
+};
+
+type RuntimeReadableLinkEditor = SlateEditor & {
+  read: <T>(fn: (state: EditorStateView) => T) => T;
+};
+
 const LINK_AUTOMD_REGEX = /\[([^\]\n]+)]\((\S+)$/;
 const MARKDOWN_LINK_SOURCE_RE = /!?\[[^\]\n]*]\([^)\n]*$/;
+
+const readEditor = <T>(
+  editor: SlateEditor,
+  fn: (state: EditorStateView) => T
+) => (editor as RuntimeReadableLinkEditor).read(fn);
+
+const isCollapsed = (editor: SlateEditor) =>
+  !!editor.selection && RangeApi.isCollapsed(editor.selection);
+
+const isType = (types: string[]) => (node: unknown) =>
+  ElementApi.isElement(node) && types.includes(node.type);
+
+const hasAncestorType = (editor: SlateEditor, types: string[]) =>
+  !!editor.api.above({
+    at: editor.selection ?? undefined,
+    match: isType(types),
+  });
+
+const hasTypeInRange = (editor: SlateEditor, range: Range, types: string[]) =>
+  Array.from(
+    editor.api.nodes({
+      at: range,
+      match: isType(types),
+    })
+  ).length > 0;
+
+const getBlockStartRange = (
+  editor: SlateEditor,
+  location: Location
+): Range | undefined => {
+  const focus = RangeApi.isRange(location)
+    ? RangeApi.start(location)
+    : Array.isArray(location)
+      ? editor.api.start(location)
+      : location;
+
+  if (!focus) return;
+
+  const blockEntry = editor.api.block({ at: focus });
+  const anchor = blockEntry
+    ? editor.api.start(blockEntry[1])
+    : editor.api.start([]);
+
+  if (!anchor) return;
+
+  return {
+    anchor,
+    focus,
+  };
+};
+
+const getBeforeMatchRange = (
+  editor: SlateEditor,
+  location: Location,
+  options?: MatchBeforeOptions
+): Range | undefined => {
+  const focus = RangeApi.isRange(location)
+    ? RangeApi.start(location)
+    : Array.isArray(location)
+      ? editor.api.start(location)
+      : location;
+
+  if (!focus) return;
+
+  const blockRange = getBlockStartRange(editor, location);
+
+  if (!blockRange) return;
+
+  const matchStrings = Array.isArray(options?.matchString)
+    ? options.matchString
+    : options?.matchString
+      ? [options.matchString]
+      : [];
+
+  if (matchStrings.length === 0) return blockRange;
+
+  const textBefore = editor.api.string(blockRange);
+  let best: { index: number; text: string } | undefined;
+
+  for (const matchText of matchStrings) {
+    const index = textBefore.lastIndexOf(matchText);
+
+    if (index >= 0 && (!best || index > best.index)) {
+      best = { index, text: matchText };
+    }
+  }
+
+  if (!best) {
+    return options?.matchBlockStart ? blockRange : undefined;
+  }
+
+  return {
+    anchor: {
+      ...focus,
+      offset: best.index + (options?.afterMatch ? best.text.length : 0),
+    },
+    focus,
+  };
+};
 
 const shouldAutoLinkPasteByDefault = (
   editor: SlateEditor,
   { textBefore }: { textBefore: string }
 ) => {
-  if (
-    editor.api.some({
-      match: {
-        type: [editor.getType(KEYS.codeBlock)],
-      },
-    })
-  ) {
+  if (hasAncestorType(editor, [editor.getType(KEYS.codeBlock)])) {
     return false;
   }
 
-  if (!editor.api.isCollapsed()) return true;
+  if (!isCollapsed(editor)) return true;
 
   return !MARKDOWN_LINK_SOURCE_RE.test(textBefore);
 };
@@ -52,18 +161,17 @@ const getLinkAutomdMatch = (
 ): LinkAutomdMatch | undefined => {
   const { selection } = editor;
 
-  if (!selection || !editor.api.isCollapsed()) return;
+  if (!selection || !isCollapsed(editor)) return;
   if (
-    editor.api.some({
-      match: {
-        type: [editor.getType(KEYS.codeBlock), editor.getType(KEYS.link)],
-      },
-    })
+    hasAncestorType(editor, [
+      editor.getType(KEYS.codeBlock),
+      editor.getType(KEYS.link),
+    ])
   ) {
     return;
   }
 
-  const blockRange = editor.api.range('start', selection);
+  const blockRange = getBlockStartRange(editor, selection);
 
   if (!blockRange) return;
 
@@ -102,21 +210,22 @@ const getAutolinkMatch = (
     editor.getOptions(BaseLinkPlugin);
   const { selection } = editor;
 
-  if (!selection || !editor.api.isCollapsed()) return;
+  if (!selection || !isCollapsed(editor)) return;
 
-  let beforeWordRange = editor.api.range('before', selection, {
-    before: rangeBeforeOptions,
-  });
+  let beforeWordRange = getBeforeMatchRange(
+    editor,
+    selection,
+    rangeBeforeOptions
+  );
 
   if (!beforeWordRange) {
-    beforeWordRange = editor.api.range('start', selection);
+    beforeWordRange = getBlockStartRange(editor, selection);
   }
   if (!beforeWordRange) return;
 
-  const hasLink = editor.api.some({
-    at: beforeWordRange,
-    match: { type: editor.getType(KEYS.link) },
-  });
+  const hasLink = hasTypeInRange(editor, beforeWordRange, [
+    editor.getType(KEYS.link),
+  ]);
 
   if (hasLink) return;
 
@@ -136,7 +245,9 @@ const applyAutolinkMatch = (
   editor: SlateEditor,
   match: LinkTextAutolinkMatch
 ) => {
-  editor.tf.select(match.range);
+  editor.update((tx) => {
+    tx.selection.set(match.range);
+  });
 
   const inserted = upsertLink(editor, {
     url: match.url,
@@ -144,7 +255,9 @@ const applyAutolinkMatch = (
 
   if (!inserted) return false;
 
-  editor.tf.collapse({ edge: 'end' });
+  editor.update((tx) => {
+    tx.selection.collapse({ edge: 'end' });
+  });
 
   return true;
 };
@@ -152,30 +265,43 @@ const applyAutolinkMatch = (
 const moveSelectionAfterLink = (editor: SlateEditor) => {
   const { selection } = editor;
 
-  if (!selection || !editor.api.isCollapsed()) return;
+  if (!selection || !isCollapsed(editor)) return;
 
   const linkEntry = editor.api.above({
-    match: { type: editor.getType(KEYS.link) },
+    match: isType([editor.getType(KEYS.link)]),
   });
 
   if (!linkEntry) return;
 
   const [, linkPath] = linkEntry;
 
-  if (!editor.api.isEnd(selection.focus, linkPath)) return;
-
-  const nextPoint = editor.api.start(linkPath, { next: true });
-
-  if (nextPoint) {
-    editor.tf.select(nextPoint);
-
+  if (
+    !readEditor(editor, (state) =>
+      state.points.isEnd(selection.focus, linkPath)
+    )
+  ) {
     return;
   }
 
   const nextPath = PathApi.next(linkPath);
+  const nextPoint = readEditor(editor, (state) =>
+    state.nodes.hasPath(nextPath) ? state.points.start(nextPath) : undefined
+  );
 
-  editor.tf.insertNodes({ text: '' } as Text, { at: nextPath });
-  editor.tf.select(nextPath);
+  if (nextPoint) {
+    editor.update((tx) => {
+      tx.selection.set({ anchor: nextPoint, focus: nextPoint });
+    });
+
+    return;
+  }
+
+  editor.update((tx) => {
+    tx.nodes.insert({ text: '' } as Text, { at: nextPath });
+    const nextPoint = { offset: 0, path: nextPath };
+
+    tx.selection.set({ anchor: nextPoint, focus: nextPoint });
+  });
 };
 
 export const LinkRules = {
@@ -215,13 +341,13 @@ export const LinkRules = {
         ? {
             type: 'insertBreak',
             resolve: ({ editor }) => getAutolinkMatch(editor),
-            apply: ({ editor }, match) => {
+            apply: ({ editor, insertBreak }, match) => {
               const autolinkMatch = match as LinkTextAutolinkMatch;
 
               if (!applyAutolinkMatch(editor, autolinkMatch)) return;
 
               moveSelectionAfterLink(editor);
-              editor.tf.insertBreak();
+              insertBreak();
 
               return true;
             },
@@ -263,7 +389,9 @@ export const LinkRules = {
                   if (inserted) return true;
                 }
 
-                context.editor.tf.insertText(autolinkMatch.text);
+                context.editor.update((tx) => {
+                  tx.text.insert(autolinkMatch.text);
+                });
 
                 return true;
               },

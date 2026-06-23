@@ -9,6 +9,10 @@ export const getEmptyCellNode = (
   editor: SlateEditor,
   { children, header, row }: CreateCellOptions = {}
 ) => {
+  const createBlock = (
+    editor.api.create as { block?: typeof editor.api.create.block }
+  ).block;
+
   header =
     header ??
     (row
@@ -18,7 +22,12 @@ export const getEmptyCellNode = (
       : false);
 
   return {
-    children: children ?? [editor.api.create.block()],
+    children: children ?? [
+      createBlock?.() ?? {
+        children: [{ text: '' }],
+        type: editor.getType(KEYS.p),
+      },
+    ],
     type: header ? editor.getType(KEYS.th) : editor.getType(KEYS.td),
   };
 };

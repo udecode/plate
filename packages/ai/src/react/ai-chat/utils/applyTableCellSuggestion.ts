@@ -1,6 +1,6 @@
 import { deserializeMd } from '@platejs/markdown';
 import { diffToSuggestions } from '@platejs/suggestion';
-import type { Element } from '@platejs/slate';
+import type { Descendant, Element, Value } from '@platejs/slate';
 import { type SlateEditor, ElementApi } from 'platejs';
 
 import {
@@ -11,6 +11,31 @@ import {
 export type TableCellUpdate = {
   content: string;
   id: string;
+};
+
+const replaceChildrenAtPath = (
+  nodes: Descendant[],
+  path: number[],
+  children: Descendant[]
+): Descendant[] => {
+  const [index, ...restPath] = path;
+
+  if (index === undefined) return nodes;
+
+  return nodes.map((node, nodeIndex) => {
+    if (nodeIndex !== index) return node;
+
+    if (!ElementApi.isElement(node)) return node;
+
+    if (restPath.length === 0) {
+      return { ...node, children };
+    }
+
+    return {
+      ...node,
+      children: replaceChildrenAtPath(node.children, restPath, children),
+    };
+  });
 };
 
 /**
@@ -52,8 +77,13 @@ export const applyTableCellSuggestion = (
   const transientDiffNodes = withTransient(diffNodes);
 
   // Replace cell children with diff nodes
-  editor.tf.replaceNodes(transientDiffNodes, {
-    at: cellPath,
-    children: true,
+  editor.update((tx) => {
+    tx.value.replace({
+      children: replaceChildrenAtPath(
+        editor.children,
+        cellPath,
+        transientDiffNodes
+      ) as Value,
+    });
   });
 };

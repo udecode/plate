@@ -23,4 +23,9 @@ export const BaseTocPlugin = createTSlatePlugin<TocConfig>({
     isScroll: true,
     topOffset: 80,
   },
+  rules: {
+    break: {
+      default: 'none',
+    },
+  },
 });

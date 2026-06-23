@@ -618,7 +618,7 @@ const plugins = [
 
 ## 自定义重置逻辑
 
-某些插件需要超出标准段落转换的特殊重置行为。您可以覆盖 `resetBlock` 转换：
+某些插件需要超出标准段落转换的特殊重置行为。你可以覆盖已有的 `resetBlock` transform 方法：
 
 **列表插件重置（缩进而非转换为段落）：**
 
@@ -627,7 +627,7 @@ const ListPlugin = createPlatePlugin({
   key: 'list',
   // ... 其他配置
 }).overrideEditor(({ editor, tf: { resetBlock } }) => ({
-  transforms: {
+  tf: {
     resetBlock(options) {
       if (editor.api.block(options)?.[0]?.listStyleType) {
         outdentList();
@@ -647,7 +647,7 @@ const CodeBlockPlugin = createPlatePlugin({
   key: 'code_block',
   // ... 其他配置
 }).overrideEditor(({ editor, tf: { resetBlock } }) => ({
-  transforms: {
+  tf: {
     resetBlock(options) {
       if (editor.api.block({
         at: options?.at,
@@ -730,14 +730,14 @@ const plugins = [
 
 ## 高级用法
 
-对于超出简单规则的复杂场景，您可以直接使用 [`.overrideEditor`](/docs/plugin-methods#overrideeditor) 覆盖编辑器转换。这使您可以完全控制 [`resetBlock`](/docs/plugin-methods#extendtransforms) 和 [`insertExitBreak`](/docs/plugin-methods#extendtransforms) 等转换：
+对于超出简单规则的复杂场景，可以使用 [`.overrideEditor`](/docs/plugin-methods#overrideeditor) 覆盖已有编辑器 transform 方法。这让你控制 `resetBlock` 和 `insertExitBreak` 等方法：
 
 ```tsx
 const CustomPlugin = createPlatePlugin({
   key: 'custom',
   // ... 其他配置
 }).overrideEditor(({ editor, tf: { insertBreak, deleteBackward, resetBlock } }) => ({
-  transforms: {
+  tf: {
     insertBreak() {
       const block = editor.api.block();
       

@@ -1,10 +1,11 @@
 import { type OverrideEditor, getPluginByType } from '../../plugin';
 import { createSlatePlugin } from '../../plugin/createSlatePlugin';
+import { withLegacyTransformOverride } from '../../../internal/plugin/withLegacyTransformOverride';
 import { BaseParagraphPlugin } from '../paragraph';
-import { withBreakRules } from './withBreakRules';
-import { withDeleteRules } from './withDeleteRules';
-import { withMergeRules } from './withMergeRules';
-import { withNormalizeRules } from './withNormalizeRules';
+import { withBreakRules } from './internal/withBreakRules';
+import { withDeleteRules } from './internal/withDeleteRules';
+import { withMergeRules } from './internal/withMergeRules';
+import { withNormalizeRules } from './internal/withNormalizeRules';
 
 /**
  * Merge and register all the inline types and void types from the plugins and
@@ -52,11 +53,17 @@ export const withOverrides: OverrideEditor = ({
 };
 
 /** Override the editor api and transforms based on the plugins. */
-export const OverridePlugin = createSlatePlugin({
+const OverridePluginBase = createSlatePlugin({
   key: 'override',
-})
-  .overrideEditor(withOverrides)
-  .overrideEditor(withBreakRules)
-  .overrideEditor(withDeleteRules)
-  .overrideEditor(withMergeRules)
-  .overrideEditor(withNormalizeRules);
+}).overrideEditor(withOverrides);
+
+export const OverridePlugin = withLegacyTransformOverride(
+  withLegacyTransformOverride(
+    withLegacyTransformOverride(
+      withLegacyTransformOverride(OverridePluginBase, withBreakRules),
+      withDeleteRules
+    ),
+    withMergeRules
+  ),
+  withNormalizeRules
+);

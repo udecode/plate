@@ -2,7 +2,10 @@ type AnyFunction = (...args: any[]) => any;
 type EventMap = Record<string, AnyFunction>;
 
 export class EventTarget<Events extends EventMap> {
-  private readonly _listeners = new Map<keyof Events, Set<AnyFunction>>();
+  private readonly _listeners = new Map<
+    keyof Events,
+    Set<Events[keyof Events]>
+  >();
 
   emit = this.dispatchEvent;
 
@@ -13,7 +16,7 @@ export class EventTarget<Events extends EventMap> {
   addEventListener<K extends keyof Events>(event: K, cb: Events[K]): this {
     const set = this._listeners.get(event) ?? new Set();
     this._listeners.set(event, set);
-    set.add(cb as AnyFunction);
+    set.add(cb as Events[keyof Events]);
 
     return this;
   }
@@ -25,14 +28,18 @@ export class EventTarget<Events extends EventMap> {
   ): unknown {
     let ok = true;
 
-    for (const cb of this._listeners.get(event) ?? []) {
+    const callbacks = (this._listeners.get(event) ?? new Set()) as Set<
+      Events[K]
+    >;
+
+    for (const cb of callbacks) {
       ok = cb(...data) !== false && ok;
     }
 
     return ok;
   }
   removeEventListener<K extends keyof Events>(event: K, cb: Events[K]): this {
-    this._listeners.get(event)?.delete(cb as AnyFunction);
+    this._listeners.get(event)?.delete(cb as Events[keyof Events]);
 
     return this;
   }

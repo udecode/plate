@@ -2,7 +2,7 @@
 
 import { jsxt } from '@platejs/test-utils';
 import type { SlateEditor } from '@platejs/core';
-import { createSlateEditor } from '@platejs/core';
+import { createListClassicTestEditor as createSlateEditor } from '../__tests__/createListClassicTestEditor';
 
 import { moveListItemsToList } from './moveListItemsToList';
 

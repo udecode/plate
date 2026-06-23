@@ -41,7 +41,7 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
   const handleTurnInto = React.useCallback(
     (type: string) => {
       editor
-        .getApi(BlockSelectionPlugin)
+        .getPluginApi(BlockSelectionPlugin)
         .blockSelection.getNodes()
         .forEach(([, path]) => {
           setBlockType(editor, type, { at: path });
@@ -98,10 +98,10 @@ export function BlockContextMenu({ children }: { children: React.ReactNode }) {
           className="w-64"
           onCloseAutoFocus={(e) => {
             e.preventDefault();
-            editor.getApi(BlockSelectionPlugin).blockSelection.focus();
+            editor.getPluginApi(BlockSelectionPlugin).blockSelection.focus();
 
             if (value === 'askAI') {
-              editor.getApi(AIChatPlugin).aiChat.show();
+              editor.getPluginApi(AIChatPlugin).aiChat.show();
             }
 
             setValue(null);

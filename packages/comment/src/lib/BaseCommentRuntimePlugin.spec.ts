@@ -1,7 +1,7 @@
 import type { NodeEntry, TCommentText, Value } from 'platejs';
 import { createPlateEditor } from 'platejs/react';
 
-import { type BaseCommentConfig, BaseCommentPlugin } from './BaseCommentPlugin';
+import { BaseCommentPlugin } from './BaseCommentPlugin';
 
 type CommentRuntimeApi = {
   comment: {
@@ -58,7 +58,7 @@ describe('BaseCommentPlugin Slate v2 runtime', () => {
         },
       ],
     });
-    const api = editor.getPluginApi<CommentRuntimeApi>(BaseCommentPlugin);
+    const api: CommentRuntimeApi = editor.api;
 
     expect(api.comment.has({ id: 'one' })).toBe(true);
     expect(api.comment.node({ at: [], id: 'one' })?.[1]).toEqual([0, 0]);
@@ -82,9 +82,7 @@ describe('BaseCommentPlugin Slate v2 runtime', () => {
       value: [{ children: [{ text: 'ab' }], type: 'p' }],
     });
 
-    editor
-      .getTransforms<BaseCommentConfig['transforms']>(BaseCommentPlugin)
-      .comment.setDraft();
+    editor.update((tx) => tx.comment.setDraft());
 
     expect(editor.read((state) => state.value.root()[0])).toEqual({
       children: [{ comment: true, comment_draft: true, text: 'ab' }],
@@ -109,9 +107,7 @@ describe('BaseCommentPlugin Slate v2 runtime', () => {
       ],
     });
 
-    editor
-      .getTransforms<BaseCommentConfig['transforms']>(BaseCommentPlugin)
-      .comment.unsetMark({ id: 'one' });
+    editor.update((tx) => tx.comment.unsetMark({ id: 'one' }));
 
     expect(editor.read((state) => state.value.root()[0])).toEqual({
       children: [{ comment: true, comment_two: true, text: 'a' }],
@@ -140,9 +136,7 @@ describe('BaseCommentPlugin Slate v2 runtime', () => {
       ],
     });
 
-    editor
-      .getTransforms<BaseCommentConfig['transforms']>(BaseCommentPlugin)
-      .comment.removeMark();
+    editor.update((tx) => tx.comment.removeMark());
 
     expect(editor.read((state) => state.value.root()[0])).toEqual({
       children: [{ text: 'a' }],

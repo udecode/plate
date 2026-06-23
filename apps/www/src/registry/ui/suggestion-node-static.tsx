@@ -1,7 +1,9 @@
 import * as React from 'react';
 
+import type { Element as SlateElement } from '@platejs/slate';
+
 import { cva } from 'class-variance-authority';
-import type { TElement, TSuggestionText } from 'platejs';
+import type { TSuggestionText } from 'platejs';
 import type { SlateLeafProps } from 'platejs/static';
 
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
@@ -39,9 +41,9 @@ export const voidRemoveSuggestionVariants = cva('', {
   },
 });
 
-export function isStaticVoidRemoveSuggestion(element: TElement) {
+export function isStaticVoidRemoveSuggestion(element: SlateElement) {
   return (
-    (element as TElement & { suggestion?: { type?: string } }).suggestion
+    (element as SlateElement & { suggestion?: { type?: string } }).suggestion
       ?.type === 'remove'
   );
 }
@@ -51,7 +53,7 @@ export function VoidRemoveSuggestionOverlayStatic({
   element,
 }: {
   editor: any;
-  element: TElement;
+  element: SlateElement;
 }) {
   const active =
     editor.api.isVoid(element) &&
@@ -73,7 +75,7 @@ export function SuggestionLeafStatic(props: SlateLeafProps<TSuggestionText>) {
   const { editor, leaf } = props;
 
   const dataList = editor
-    .getApi(BaseSuggestionPlugin)
+    .getPluginApi(BaseSuggestionPlugin)
     .suggestion.dataList(leaf);
   const hasRemove = dataList.some((data) => data.type === 'remove');
   const diffOperation = { type: hasRemove ? 'delete' : 'insert' } as const;

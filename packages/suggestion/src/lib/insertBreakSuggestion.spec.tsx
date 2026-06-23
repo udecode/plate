@@ -3,11 +3,19 @@
 import type { SlateEditor, TSuggestionData, TSuggestionElement } from 'platejs';
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
 
+import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
 import { BaseSuggestionPlugin } from './BaseSuggestionPlugin';
 import { getInlineSuggestionData } from './utils';
+import { getSuggestionApi } from './utils/getSuggestionApi';
 jsxt;
+
+const createSlateEditor = ({ selection, value, ...options }: any = {}) =>
+  createPlateRuntimeEditor({
+    ...options,
+    initialSelection: selection,
+    initialValue: value,
+  }) as any as SlateEditor;
 
 const suggestionPlugin = BaseSuggestionPlugin.configure({
   options: {
@@ -50,7 +58,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
 
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-    editor.tf.insertBreak();
+    editor.update((tx) => tx.break.insert());
 
     const data = editor.children[0][
       BaseSuggestionPlugin.key
@@ -83,7 +91,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
 
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-    editor.tf.insertText('1');
+    editor.update((tx) => tx.text.insert('1'));
 
     const data = getInlineSuggestionData(editor.children[1].children[0] as any);
 
@@ -123,7 +131,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
 
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-    editor.tf.deleteBackward();
+    editor.update((tx) => tx.text.deleteBackward());
 
     expect(editor.children).toEqual(output.children);
   });
@@ -157,7 +165,7 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
 
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-    editor.tf.deleteBackward();
+    editor.update((tx) => tx.text.deleteBackward());
 
     expect(editor.children).toEqual(output.children);
   });
@@ -181,12 +189,12 @@ describe('insertBreakSuggestion when isSuggesting is true', () => {
 
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', true);
 
-    editor.tf.deleteBackward('line');
-    editor.tf.deleteBackward('character');
+    editor.update((tx) => tx.text.deleteBackward({ unit: 'line' }));
+    editor.update((tx) => tx.text.deleteBackward({ unit: 'character' }));
 
-    const lineBreakData = editor
-      .getPluginApi(BaseSuggestionPlugin)
-      .suggestion.isBlockSuggestion(editor.children[0] as any)
+    const lineBreakData = getSuggestionApi(editor).isBlockSuggestion(
+      editor.children[0] as any
+    )
       ? (editor.children[0].suggestion as TSuggestionElement)
       : undefined;
 
@@ -231,7 +239,7 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
 
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
 
-    editor.tf.deleteBackward();
+    editor.update((tx) => tx.text.deleteBackward());
 
     expect(editor.children).toEqual(output.children);
   });
@@ -265,7 +273,7 @@ describe('insertBreakSuggestion when isSuggesting is false', () => {
 
     editor.setOption(BaseSuggestionPlugin, 'isSuggesting', false);
 
-    editor.tf.deleteBackward();
+    editor.update((tx) => tx.text.deleteBackward());
 
     expect(editor.children).toEqual(output.children);
   });

@@ -1,25 +1,35 @@
-import {
-  type Editor,
-  type TSelection,
-  type Value,
-  createEditor,
-} from '@platejs/slate-legacy';
+import type { Selection, Value } from '@platejs/slate';
 import { nanoid } from 'nanoid';
 
+import type { NoInfer } from '../../internal/types';
 import type { PluginStoreFactory } from '../../internal/plugin/resolvePlugins';
-import type { AnyPluginConfig, NodeComponents } from '../plugin/BasePlugin';
+import {
+  createCurrentRuntimeEditor,
+  getCurrentRuntimeTransforms,
+  type CurrentRuntimeEditor as Editor,
+} from '../../internal/currentRuntimeBridge';
+import type { NodeComponents } from '../plugin/BasePlugin';
 import type { AnySlatePlugin } from '../plugin/SlatePlugin';
 import type { ChunkingConfig } from '../plugins/chunking';
 import type { NavigationFeedbackConfig } from '../plugins/navigation-feedback';
 import type { NodeIdConfig } from '../plugins/node-id/NodeIdPlugin';
-import type { InferPlugins, SlateEditor, TSlateEditor } from './SlateEditor';
+import type {
+  InferPlugins,
+  SlateEditor,
+  SlatePluginInput,
+  TSlateEditor,
+} from './SlateEditor';
 
 import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
 import { createSlatePlugin } from '../plugin/createSlatePlugin';
 import { getPluginType, getSlatePlugin } from '../plugin/getSlatePlugin';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
+import {
+  installLegacyRuntimeTxTransformBridge,
+  installLegacyRuntimeUpdateBridge,
+} from '../../internal/editor/legacyRuntimeUpdateBridge';
 
-export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
+export type BaseWithSlateOptions<P extends SlatePluginInput = CorePlugin> = {
   /**
    * Unique identifier for the editor instance.
    *
@@ -116,7 +126,7 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * Array of plugins to be loaded into the editor. Plugins extend the editor's
    * functionality and define custom behavior.
    */
-  plugins?: P[];
+  plugins?: readonly P[];
   /**
    * Editor read-only initial state. For dynamic read-only control, use the
    * `Plate.readOnly` prop instead.
@@ -128,7 +138,7 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
    * Initial selection state for the editor. Defines where the cursor should be
    * positioned when the editor loads.
    */
-  selection?: TSelection;
+  selection?: Selection;
   /**
    * When `true`, normalizes the initial `value` passed to the editor. This is
    * useful when adding normalization rules to already existing content or when
@@ -152,7 +162,7 @@ export type BaseWithSlateOptions<P extends AnyPluginConfig = CorePlugin> = {
 
 export type WithSlateOptions<
   V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
+  P extends SlatePluginInput = CorePlugin,
 > = BaseWithSlateOptions<P> &
   Pick<
     Partial<AnySlatePlugin>,
@@ -164,7 +174,6 @@ export type WithSlateOptions<
     | 'normalizeInitialValue'
     | 'options'
     | 'override'
-    | 'transforms'
   > & {
     // override?: {
     //   /** Enable or disable plugins */
@@ -188,7 +197,11 @@ export type WithSlateOptions<
      *
      * @default [{ type: 'p'; children: [{ text: '' }] }]
      */
-    value?: ((editor: SlateEditor) => Promise<V> | V) | V | string | null;
+    value?:
+      | ((editor: SlateEditor) => Promise<NoInfer<V>> | NoInfer<V>)
+      | NoInfer<V>
+      | string
+      | null;
     /** Function to configure the root plugin */
     rootPlugin?: (plugin: AnySlatePlugin) => AnySlatePlugin;
     /**
@@ -198,7 +211,7 @@ export type WithSlateOptions<
     onReady?: (ctx: {
       editor: SlateEditor;
       isAsync: boolean;
-      value: V;
+      value: NoInfer<V>;
     }) => void;
   };
 
@@ -215,7 +228,7 @@ export type WithSlateOptions<
  */
 export const withSlate = <
   V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
+  P extends SlatePluginInput = CorePlugin,
 >(
   e: Editor,
   {
@@ -239,7 +252,7 @@ export const withSlate = <
     ...pluginConfig
   }: WithSlateOptions<V, P> = {}
 ): TSlateEditor<V, InferPlugins<P[]>> => {
-  const editor = e as SlateEditor;
+  const editor = e as unknown as SlateEditor;
 
   editor.id = id ?? editor.id ?? nanoid();
   editor.meta.key = editor.meta.key ?? nanoid();
@@ -253,10 +266,10 @@ export const withSlate = <
     readOnly,
   };
 
-  editor.getApi = () => editor.api as any;
-  editor.getTransforms = () => editor.transforms as any;
-  editor.getPlugin = (plugin) => getSlatePlugin(editor, plugin) as any;
+  editor.getPlugin = ((plugin) =>
+    getSlatePlugin(editor, plugin)) as SlateEditor['getPlugin'];
   editor.getType = (pluginKey) => getPluginType(editor, pluginKey);
+  installLegacyRuntimeUpdateBridge(editor);
   editor.getInjectProps = (plugin) => {
     const nodeProps =
       editor.getPlugin<AnySlatePlugin>(plugin).inject?.nodeProps ?? ({} as any);
@@ -266,11 +279,12 @@ export const withSlate = <
 
     return nodeProps;
   };
-  editor.getOptionsStore = (plugin) => editor.getPlugin(plugin).optionsStore;
+  editor.getOptionsStore = (plugin) =>
+    getSlatePlugin(editor, plugin).optionsStore;
   editor.getOptions = (plugin) => {
     const store = editor.getOptionsStore(plugin);
 
-    if (!store) return editor.getPlugin(plugin).options;
+    if (!store) return getSlatePlugin(editor, plugin).options;
 
     return editor.getOptionsStore(plugin).get('state');
   };
@@ -289,42 +303,43 @@ export const withSlate = <
 
     return (store.get as any)(key, ...args);
   };
-  editor.setOption = (plugin: any, key: any, ...args: any) => {
+  editor.setOption = ((plugin, key, value) => {
     const store = editor.getOptionsStore(plugin);
 
     if (!store) return;
 
     if (!(key in store.get('state'))) {
       editor.api.debug.error(
-        `editor.setOption: ${key} option is not defined in plugin ${plugin.key}.`,
+        `editor.setOption: ${String(key)} option is not defined in plugin ${plugin.key}.`,
         'OPTION_UNDEFINED'
       );
       return;
     }
 
-    (store.set as any)(key, ...args);
-  };
-  editor.setOptions = (plugin: any, options: any) => {
+    store.set(key, value);
+  }) as SlateEditor['setOption'];
+  editor.setOptions = ((plugin, options) => {
     const store = editor.getOptionsStore(plugin);
 
     if (!store) return;
     if (typeof options === 'object') {
-      store.set('state', (draft: any) => {
+      store.set('state', (draft) => {
         Object.assign(draft, options);
       });
     } else if (typeof options === 'function') {
       store.set('state', options);
     }
-  };
+  }) as SlateEditor['setOptions'];
 
   // Plugin initialization code
+  const pluginList = [...plugins];
   const corePlugins = getCorePlugins({
     affinity,
     chunking,
     maxLength,
     navigationFeedback,
     nodeId,
-    plugins,
+    plugins: pluginList,
   });
 
   let rootPluginInstance = createSlatePlugin({
@@ -338,7 +353,7 @@ export const withSlate = <
         ...pluginConfig.override?.components,
       },
     },
-    plugins: [...corePlugins, ...plugins],
+    plugins: [...corePlugins, ...pluginList],
   });
 
   // Apply rootPlugin configuration if provided
@@ -347,20 +362,42 @@ export const withSlate = <
   }
 
   resolvePlugins(editor, [rootPluginInstance], optionsStoreFactory);
+  installLegacyRuntimeTxTransformBridge(editor);
 
   /** Ignore normalizeNode overrides if shouldNormalizeNode returns false */
-  const normalizeNode = editor.tf.normalizeNode;
-  editor.tf.normalizeNode = (...args: Parameters<typeof normalizeNode>) => {
-    if (!editor.api.shouldNormalizeNode(args[0])) {
+  const legacyTransforms = getCurrentRuntimeTransforms(editor) as unknown as {
+    normalizeNode: (...args: any[]) => any;
+    init: (options: {
+      autoSelect?: boolean | 'end' | 'start';
+      onReady?: (ctx: {
+        editor: SlateEditor;
+        isAsync: boolean;
+        value: Value;
+      }) => void;
+      selection?: Selection;
+      shouldNormalizeEditor?: boolean;
+      value?:
+        | string
+        | Value
+        | null
+        | ((editor: SlateEditor) => Value | Promise<Value>);
+    }) => void;
+  };
+  const normalizeNode = legacyTransforms.normalizeNode;
+  legacyTransforms.normalizeNode = (
+    ...args: Parameters<typeof normalizeNode>
+  ) => {
+    if (!editor.api.shouldNormalizeNode(args[0] as never)) {
       return;
     }
 
     return normalizeNode(...args);
   };
-  editor.normalizeNode = editor.tf.normalizeNode;
+  editor.normalizeNode =
+    legacyTransforms.normalizeNode as SlateEditor['normalizeNode'];
 
   if (!skipInitialization) {
-    editor.tf.init({
+    legacyTransforms.init({
       autoSelect,
       selection,
       shouldNormalizeEditor,
@@ -374,14 +411,19 @@ export const withSlate = <
 
 export type CreateSlateEditorOptions<
   V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
-> = WithSlateOptions<V, P> & {
+  P extends readonly SlatePluginInput[] = readonly CorePlugin[],
+> = Omit<WithSlateOptions<V, InferPlugins<P>>, 'plugins'> & {
   /**
    * Initial editor to be extended with `withSlate`.
    *
    * @default createEditor()
    */
   editor?: Editor;
+  /**
+   * Array of plugins to be loaded into the editor. Plugins extend the editor's
+   * functionality and define custom behavior.
+   */
+  plugins?: P;
 };
 
 /**
@@ -421,8 +463,12 @@ export type CreateSlateEditorOptions<
  */
 export const createSlateEditor = <
   V extends Value = Value,
-  P extends AnyPluginConfig = CorePlugin,
+  const P extends readonly SlatePluginInput[] = readonly CorePlugin[],
 >({
-  editor = createEditor(),
+  editor = createCurrentRuntimeEditor(),
   ...options
-}: CreateSlateEditorOptions<V, P> = {}) => withSlate<V, P>(editor, options);
+}: CreateSlateEditorOptions<V, P> = {}) =>
+  withSlate<V, InferPlugins<P>>(
+    editor,
+    options as WithSlateOptions<V, InferPlugins<P>>
+  );

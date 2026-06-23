@@ -1,18 +1,18 @@
 import type { CSSProperties } from 'react';
 import type React from 'react';
 
+import { type Element, ElementApi } from '@platejs/slate';
 import type {
   NodeEntry,
   OmitFirst,
   Path,
   PluginConfig,
   SlateEditor,
-  TElement,
   TIdElement,
 } from 'platejs';
 
 import { bindFirst, KEYS, PathApi } from 'platejs';
-import { type PlatePluginContext, createTPlatePlugin } from 'platejs/react';
+import { createTPlatePlugin } from 'platejs/react';
 
 import type { PartialSelectionOptions } from '../internal';
 
@@ -36,6 +36,15 @@ import {
   setBlockSelectionTexts,
 } from './transforms/setBlockSelectionNodes';
 
+const isBlockSelectionElement = (node: unknown): node is TIdElement =>
+  ElementApi.isElement(node) && typeof node.id === 'string';
+
+function* toNodeEntryGenerator<N>(
+  entries: NodeEntry<TIdElement>[]
+): Generator<NodeEntry<N>, void, undefined> {
+  yield* entries as NodeEntry<N>[];
+}
+
 export type BlockSelectionConfig = PluginConfig<
   'blockSelection',
   {
@@ -54,7 +63,7 @@ export type BlockSelectionConfig = PluginConfig<
     selectedIds?: Set<string>;
     shadowInputRef?: React.RefObject<HTMLInputElement | null>;
     /** Check if a block is selectable */
-    isSelectable?: (element: TElement, path: Path) => boolean;
+    isSelectable?: (element: Element, path: Path) => boolean;
     onKeyDownSelecting?: (editor: SlateEditor, e: KeyboardEvent) => void;
   },
   {
@@ -104,7 +113,7 @@ export type BlockSelectionConfig = PluginConfig<
       /** Check if a block is selected. */
       has: (id: string[] | string) => boolean;
       /** Check if a block is selectable. */
-      isSelectable: (element: TElement, path: Path) => boolean;
+      isSelectable: (element: Element, path: Path) => boolean;
       /** Arrow-based move selection */
       moveSelection: (direction: 'down' | 'up') => void;
       /** Reset selected block ids. @deprecated Use `clear` instead. */
@@ -125,6 +134,26 @@ export type BlockSelectionConfig = PluginConfig<
     isSelected?: (id?: string) => boolean;
     /** Check if any blocks are selected */
     isSelectingSome?: () => boolean;
+  },
+  {
+    blockSelection: {
+      /** Duplicate selected blocks */
+      duplicate: OmitFirst<typeof duplicateBlockSelectionNodes>;
+      /** Insert blocks and select */
+      insertBlocksAndSelect: OmitFirst<typeof insertBlocksAndSelect>;
+      /** Remove selected blocks */
+      removeNodes: OmitFirst<typeof removeBlockSelectionNodes>;
+      /** Set selection based on block selection */
+      select: OmitFirst<typeof selectBlockSelectionNodes>;
+      /** Select blocks by id. */
+      selectBlocks: OmitFirst<typeof selectBlocks>;
+      /** Set block indent */
+      setIndent: OmitFirst<typeof setBlockSelectionIndent>;
+      /** Set nodes on selected blocks */
+      setNodes: OmitFirst<typeof setBlockSelectionNodes>;
+      /** Set texts on selected blocks */
+      setTexts: OmitFirst<typeof setBlockSelectionTexts>;
+    };
   }
 >;
 
@@ -324,11 +353,12 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       addSelectedRow: bindFirst(addSelectedRow, editor),
       selectAll: () => {
         const ids = api
-          .blocks({
+          .blocks<TIdElement>({
             at: [],
             mode: 'highest',
             match: (n, p) =>
-              !!n.id && api.blockSelection.isSelectable(n as any, p),
+              isBlockSelectionElement(n) &&
+              api.blockSelection.isSelectable(n, p),
           })
           .map((n) => n[0].id as string);
 
@@ -337,7 +367,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
       },
     })
   )
-  .extendTransforms(({ editor }) => ({
+  .extendTxGroup('blockSelection', ({ editor }) => () => ({
     /** Duplicate selected blocks */
     duplicate: bindFirst(duplicateBlockSelectionNodes, editor),
     /** Insert blocks and select */
@@ -366,19 +396,7 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
     const {
       api,
       api: { nodes },
-      editor,
       getOption,
-      getOptions,
-      tf: {
-        addMark,
-        // biome-ignore lint/suspicious/noShadowRestrictedNames: extending the escape transform
-        escape,
-        focus,
-        selectAll,
-        setNodes,
-        setSelection,
-        toggleMark,
-      },
     } = ctx;
 
     return {
@@ -386,114 +404,11 @@ export const BlockSelectionPlugin = createTPlatePlugin<BlockSelectionConfig>({
         // turn-into-dropdown-menu
         nodes(options) {
           if (!options?.at && getOption('isSelectingSome')) {
-            return api.blockSelection.getNodes();
+            return toNodeEntryGenerator(api.blockSelection.getNodes());
           }
 
-          return nodes(options) as any;
-        },
-      },
-      transforms: {
-        addMark(key, value) {
-          withBlockSelection(ctx as any, () => {
-            addMark(key, value);
-          });
-        },
-        escape: () => {
-          const apply = () => {
-            const ancestorNode = editor.api.block({ highest: true });
-
-            if (!ancestorNode) return;
-
-            const id = ancestorNode[0].id as string;
-
-            if (!id) return;
-
-            api.blockSelection.set(id);
-
-            return true;
-          };
-
-          if (apply()) return true;
-
-          return escape();
-        },
-        focus() {
-          if (!editor.meta._forceFocus && getOption('isSelectingSome')) return;
-          focus();
-        },
-        selectAll: () => {
-          if (getOptions().disableSelectAll) {
-            return selectAll();
-          }
-
-          const apply = () => {
-            const ancestorNode = editor.api.block({ highest: true });
-
-            if (!ancestorNode) return;
-
-            const [, path] = ancestorNode;
-
-            if (editor.api.isAt({ block: true, end: true, start: true })) {
-              api.blockSelection.selectAll();
-              return true;
-            }
-            // TODO： should select the blocks then selected all should exclude table and columns
-            if (!editor.api.isAt({ block: true })) {
-              api.blockSelection.selectAll();
-              return true;
-            }
-
-            editor.tf.select(path);
-
-            return true;
-          };
-
-          if (apply()) return true;
-
-          return selectAll();
-        },
-        setNodes(props, options) {
-          withBlockSelection(ctx as any, () => {
-            setNodes(props, options);
-          });
-        },
-        setSelection(props) {
-          if (
-            getOptions().selectedIds!.size > 0 &&
-            !editor.getOption(BlockMenuPlugin, 'openId')
-          ) {
-            api.blockSelection.deselect();
-          }
-
-          setSelection(props);
-        },
-        toggleMark(key, options) {
-          withBlockSelection(ctx as any, () => {
-            toggleMark(key, options);
-          });
+          return nodes(options);
         },
       },
     };
   });
-
-const withBlockSelection = (
-  { api, editor, getOption }: PlatePluginContext<BlockSelectionConfig>,
-  callback: any
-) => {
-  if (getOption('isSelectingSome')) {
-    editor.tf.withoutNormalizing(() => {
-      const blocks = editor
-        .getApi(BlockSelectionPlugin)
-        .blockSelection.getNodes();
-
-      editor.tf.select(editor.api.nodesRange(blocks));
-
-      callback();
-
-      api.blockSelection.set(blocks.map(([node]) => node.id));
-    });
-    return;
-  }
-
-  callback();
-};

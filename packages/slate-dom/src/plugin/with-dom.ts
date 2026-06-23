@@ -6,7 +6,6 @@ import {
   type Path,
   PathApi,
   type PathRef,
-  RangeApi,
   type Editor as SlateEditor,
 } from '@platejs/slate';
 import {
@@ -22,7 +21,6 @@ import {
   transformTextDiff,
 } from '../utils/diff-text';
 import type { Key } from '../utils/key';
-import { findCurrentLineRange } from '../utils/lines';
 import {
   EDITOR_TO_KEY_TO_ELEMENT,
   EDITOR_TO_PENDING_ACTION,
@@ -119,33 +117,7 @@ export const installDOM = <
     },
 
     deleteBackward: (unit) => {
-      if (unit !== 'line') {
-        return transforms.deleteBackward(unit);
-      }
-
-      const selection = e.read((state) => state.selection.get());
-
-      if (selection && RangeApi.isCollapsed(selection)) {
-        const parentBlockEntry = Editor.above(e, {
-          match: (n) => NodeApi.isElement(n) && Editor.isBlock(e, n),
-          at: selection,
-        });
-
-        if (parentBlockEntry) {
-          const [, parentBlockPath] = parentBlockEntry;
-          const parentElementRange = Editor.range(
-            e,
-            parentBlockPath,
-            selection.anchor
-          );
-
-          const currentLineRange = findCurrentLineRange(e, parentElementRange);
-
-          if (!RangeApi.isCollapsed(currentLineRange)) {
-            transforms.delete({ at: currentLineRange });
-          }
-        }
-      }
+      return transforms.deleteBackward(unit);
     },
   });
 

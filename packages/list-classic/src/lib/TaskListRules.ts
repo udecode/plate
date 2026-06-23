@@ -1,6 +1,7 @@
-import type { SlateEditor } from 'platejs';
+import type { SlateEditor } from '@platejs/core';
 
-import { createRuleFactory, KEYS } from 'platejs';
+import { createRuleFactory } from '@platejs/core';
+import { KEYS } from '@platejs/utils';
 
 import { toggleTaskList } from './transforms';
 
@@ -19,7 +20,9 @@ export const TaskListRules = {
     trigger: ' ',
     match: ({ checked }) => (checked ? '[x]' : '[]'),
     apply: ({ editor, checked }, match) => {
-      editor.tf.delete({ at: match.range });
+      editor.update((tx) => {
+        tx.text.delete({ at: match.range });
+      });
       toggleTaskList(editor, checked);
 
       return true;

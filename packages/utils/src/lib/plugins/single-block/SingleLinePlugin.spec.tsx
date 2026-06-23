@@ -1,7 +1,7 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 
 import { SingleLinePlugin } from './SingleLinePlugin';
 
@@ -29,14 +29,19 @@ describe('SingleLinePlugin', () => {
   });
 
   it('merge all blocks into the first block', () => {
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
+      runtime: 'slate-v2',
       value: input.children,
     });
 
-    editor.tf.normalize({ force: true });
+    editor.update((tx) => {
+      tx.normalize({ force: true });
+    });
 
-    expect(editor.children).toEqual(output.children);
+    expect(editor.read((state) => state.value.root())).toEqual(
+      output.children
+    );
   });
 
   it('filter out line break characters from text', () => {
@@ -55,14 +60,19 @@ describe('SingleLinePlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
+      runtime: 'slate-v2',
       value: inputWithLineBreaks.children,
     });
 
-    editor.tf.normalize({ force: true });
+    editor.update((tx) => {
+      tx.normalize({ force: true });
+    });
 
-    expect(editor.children).toEqual(expectedOutput.children);
+    expect(editor.read((state) => state.value.root())).toEqual(
+      expectedOutput.children
+    );
   });
 
   it('prevent insertBreak', () => {
@@ -75,16 +85,18 @@ describe('SingleLinePlugin', () => {
       </editor>
     );
 
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
+      runtime: 'slate-v2',
       selection: singleLineInput.selection,
       value: singleLineInput.children,
     });
 
-    editor.tf.insertBreak();
+    editor.update((tx) => {
+      tx.break.insert();
+    });
 
-    // Should remain unchanged
-    expect(editor.children).toEqual([
+    expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'test' }], type: 'p' },
     ]);
   });
@@ -99,16 +111,18 @@ describe('SingleLinePlugin', () => {
       </editor>
     );
 
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
+      runtime: 'slate-v2',
       selection: singleLineInput.selection,
       value: singleLineInput.children,
     });
 
-    editor.tf.insertSoftBreak();
+    editor.update((tx) => {
+      tx.break.insertSoft();
+    });
 
-    // Should remain unchanged
-    expect(editor.children).toEqual([
+    expect(editor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'test' }], type: 'p' },
     ]);
   });
@@ -128,13 +142,18 @@ describe('SingleLinePlugin', () => {
       </editor>
     ) as any;
 
-    const editor = createSlateEditor({
+    const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
+      runtime: 'slate-v2',
       value: emptyBlocksInput.children,
     });
 
-    editor.tf.normalize({ force: true });
+    editor.update((tx) => {
+      tx.normalize({ force: true });
+    });
 
-    expect(editor.children).toEqual(expectedOutput.children);
+    expect(editor.read((state) => state.value.root())).toEqual(
+      expectedOutput.children
+    );
   });
 });

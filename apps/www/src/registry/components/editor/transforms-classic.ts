@@ -3,10 +3,10 @@
 import type { PlateEditor } from 'platejs/react';
 import type { Element, NodeEntry, Path } from '@platejs/slate';
 
-import { insertCallout } from '@platejs/callout';
+import type { CalloutConfig } from '@platejs/callout';
 import { insertCodeBlock, toggleCodeBlock } from '@platejs/code-block';
 import { insertDate } from '@platejs/date';
-import { insertFootnote } from '@platejs/footnote';
+import type { FootnoteConfig } from '@platejs/footnote';
 import { insertColumnGroup, toggleColumnGroup } from '@platejs/layout';
 import { triggerFloatingLink } from '@platejs/link/react';
 import { toggleList } from '@platejs/list-classic';
@@ -25,6 +25,21 @@ import { KEYS, PathApi } from 'platejs';
 const ACTION_THREE_COLUMNS = 'action_three_columns';
 const ACTION_FOOTNOTE = 'action_footnote';
 
+type FootnoteTx = FootnoteConfig['tx'];
+type CalloutTx = CalloutConfig['tx'];
+
+const runCalloutAction = (editor: PlateEditor) => {
+  editor.update((tx) => {
+    (tx as typeof tx & CalloutTx).callout.insert({ select: true });
+  });
+};
+
+const runFootnoteAction = (editor: PlateEditor) => {
+  editor.update((tx) => {
+    (tx as typeof tx & FootnoteTx).insert.footnote({ select: true });
+  });
+};
+
 const insertBlockMap: Record<
   string,
   (editor: PlateEditor, type: string) => void
@@ -32,7 +47,7 @@ const insertBlockMap: Record<
   [ACTION_THREE_COLUMNS]: (editor) =>
     insertColumnGroup(editor, { columns: 3, select: true }),
   [KEYS.audio]: (editor) => insertAudioPlaceholder(editor, { select: true }),
-  [KEYS.callout]: (editor) => insertCallout(editor, { select: true }),
+  [KEYS.callout]: runCalloutAction,
   [KEYS.codeBlock]: (editor) => insertCodeBlock(editor, { select: true }),
   [KEYS.equation]: (editor) => insertEquation(editor, { select: true }),
   [KEYS.file]: (editor) => insertFilePlaceholder(editor, { select: true }),
@@ -57,7 +72,7 @@ const insertInlineMap: Record<
   (editor: PlateEditor, type: string) => void
 > = {
   [KEYS.date]: (editor) => insertDate(editor, { select: true }),
-  [ACTION_FOOTNOTE]: (editor) => insertFootnote(editor, { select: true }),
+  [ACTION_FOOTNOTE]: runFootnoteAction,
   [KEYS.inlineEquation]: (editor) =>
     insertInlineEquation(editor, '', { select: true }),
   [KEYS.link]: (editor) => triggerFloatingLink(editor, { focused: true }),
@@ -77,9 +92,11 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
       });
     }
     if (getBlockType(block[0]) !== type) {
-      editor.getPluginApi(SuggestionPlugin).suggestion.withoutSuggestions(() => {
-        editor.tf.removeNodes({ previousEmptyBlock: true });
-      });
+      editor
+        .getPluginApi(SuggestionPlugin)
+        .suggestion.withoutSuggestions(() => {
+          editor.tf.removeNodes({ previousEmptyBlock: true });
+        });
     }
   });
 };

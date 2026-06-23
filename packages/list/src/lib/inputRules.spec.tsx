@@ -4,6 +4,7 @@ import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
 import { KEYS, createSlateEditor } from 'platejs';
 
+import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
 import { BaseListPlugin } from './BaseListPlugin';
 import { BulletedListRules } from './BulletedListRules';
 import { OrderedListRules } from './OrderedListRules';
@@ -35,7 +36,7 @@ describe('list input rules', () => {
   it('creates a bullet list item when markdown group is enabled', () => {
     const editor = createEditor('-', 1);
 
-    editor.tf.insertText(' ');
+    getCurrentRuntimeTransforms(editor).insertText(' ');
 
     expect(editor.children[0]).toMatchObject({
       children: [{ text: '' }],
@@ -52,7 +53,7 @@ describe('list input rules', () => {
   it('creates an ordered list item from markdown shorthand', () => {
     const editor = createEditor('3.', 2);
 
-    editor.tf.insertText(' ');
+    getCurrentRuntimeTransforms(editor).insertText(' ');
 
     expect(editor.children[0]).toMatchObject({
       children: [{ text: '' }],
@@ -71,7 +72,7 @@ describe('list input rules', () => {
   it('creates a checked todo item from [x]', () => {
     const editor = createEditor('[x]', 3);
 
-    editor.tf.insertText(' ');
+    getCurrentRuntimeTransforms(editor).insertText(' ');
 
     expect(editor.children[0]).toMatchObject({
       checked: true,

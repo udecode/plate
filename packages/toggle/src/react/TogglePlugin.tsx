@@ -10,7 +10,6 @@ import {
 } from '../lib/BaseTogglePlugin';
 import { renderToggleAboveNodes } from './renderToggleAboveNodes';
 import { useHooksToggle } from './useHooksToggle';
-import { withToggle } from './withToggle';
 
 export type ToggleConfig = ExtendConfig<
   BaseToggleConfig,
@@ -27,5 +26,5 @@ export const TogglePlugin = toTPlatePlugin<ToggleConfig>(BaseTogglePlugin, {
   render: {
     aboveNodes: renderToggleAboveNodes,
   },
-  useHooks: useHooksToggle as any,
-}).overrideEditor(withToggle);
+  useHooks: useHooksToggle,
+});

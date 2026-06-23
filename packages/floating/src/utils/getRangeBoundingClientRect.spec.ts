@@ -4,15 +4,15 @@ import { getRangeBoundingClientRect } from './getRangeBoundingClientRect';
 
 describe('getRangeBoundingClientRect', () => {
   it('returns the default rect when the range is null', () => {
-    const editor: any = { api: { toDOMRange: () => {} } };
+    const editor: any = { api: { dom: { resolveDOMRange: () => {} } } };
 
     expect(getRangeBoundingClientRect(editor, null)).toEqual(
       getDefaultBoundingClientRect()
     );
   });
 
-  it('returns the default rect when toDOMRange fails', () => {
-    const editor: any = { api: { toDOMRange: () => {} } };
+  it('returns the default rect when DOM range resolution fails', () => {
+    const editor: any = { api: { dom: { resolveDOMRange: () => {} } } };
     const range = {
       anchor: { offset: 0, path: [0, 0] },
       focus: { offset: 1, path: [0, 0] },
@@ -32,9 +32,11 @@ describe('getRangeBoundingClientRect', () => {
     });
     const editor: any = {
       api: {
-        toDOMRange: () => ({
-          getBoundingClientRect: () => rect,
-        }),
+        dom: {
+          resolveDOMRange: () => ({
+            getBoundingClientRect: () => rect,
+          }),
+        },
       },
     };
     const range = {

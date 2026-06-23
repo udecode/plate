@@ -66,7 +66,7 @@ const groups: Group[] = [
         icon: <SparklesIcon />,
         value: 'AI',
         onSelect: (editor) => {
-          editor.getApi(AIChatPlugin).aiChat.show();
+          editor.getPluginApi(AIChatPlugin).aiChat.show();
         },
       },
     ],

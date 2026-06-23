@@ -9,6 +9,7 @@ export * from './EditorRefEffect';
 export * from './Plate';
 export * from './PlateContainer';
 export * from './PlateContent';
+export * from './PlateContentEffects';
 export * from './PlateControllerEffect';
 export * from './PlateSlate';
 export * from './PlateTest';

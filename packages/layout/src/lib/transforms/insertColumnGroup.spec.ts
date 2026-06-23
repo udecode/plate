@@ -1,14 +1,23 @@
-import { createSlateEditor } from 'platejs';
+import type { Value } from 'platejs';
+import { createPlateRuntimeEditor } from '../../../../core/src/react/editor/createPlateRuntimeEditor';
 
 import { BaseColumnItemPlugin, BaseColumnPlugin } from '../BaseColumnPlugin';
+import type { ColumnEditor } from './ColumnEditor';
 import { insertColumnGroup } from './insertColumnGroup';
+
+type ColumnTestEditor = ColumnEditor & { children: Value };
+
+const createColumnTestEditor = (value: Value): ColumnTestEditor =>
+  createPlateRuntimeEditor({
+    initialValue: value,
+    plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
+  }) as unknown as ColumnTestEditor;
 
 describe('insertColumnGroup', () => {
   it('insert a column group with evenly sized columns', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
-      value: [{ children: [{ text: 'Before' }], type: 'p' }],
-    });
+    const editor = createColumnTestEditor([
+      { children: [{ text: 'Before' }], type: 'p' },
+    ]);
 
     insertColumnGroup(editor, { at: [1], columns: 3 });
 
@@ -23,10 +32,9 @@ describe('insertColumnGroup', () => {
   });
 
   it('select the first inserted block when asked', () => {
-    const editor = createSlateEditor({
-      plugins: [BaseColumnItemPlugin, BaseColumnPlugin],
-      value: [{ children: [{ text: 'Before' }], type: 'p' }],
-    });
+    const editor = createColumnTestEditor([
+      { children: [{ text: 'Before' }], type: 'p' },
+    ]);
 
     insertColumnGroup(editor, { at: [1], columns: 2, select: true });
 

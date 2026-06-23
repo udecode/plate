@@ -1,7 +1,11 @@
 import React from 'react';
 
-import { NodeApi } from 'platejs';
-import { useEditorRef, useEditorSelector, useScrollRef } from 'platejs/react';
+import {
+  type PlateEditor,
+  useEditorRef,
+  useEditorSelector,
+  useScrollRef,
+} from 'platejs/react';
 
 import type { Heading } from '../../lib/types';
 import type { TocSideBarProps } from '../types';
@@ -12,7 +16,7 @@ import { checkIn } from '../utils';
 
 type TocSideBarState = {
   activeContentId: string | null;
-  editor: ReturnType<typeof useEditorRef>;
+  editor: PlateEditor;
   headingList: Heading[];
   mouseInToc: boolean;
   onContentScroll: ReturnType<typeof useContentController>['onContentScroll'];
@@ -52,7 +56,7 @@ export const useTocSideBarState = ({
 
   return {
     activeContentId,
-    editor,
+    editor: editor as PlateEditor,
     headingList,
     mouseInToc,
     open,
@@ -89,11 +93,11 @@ export const useTocSideBar = ({
     ) => {
       e.preventDefault();
       const { id, path } = item;
-      const node = NodeApi.get(editor, path);
+      const node = editor.api.node(path)?.[0];
 
       if (!node) return;
 
-      const el = editor.api.toDOMNode(node);
+      const el = editor.api.dom.resolveDOMNode(node);
 
       if (!el) return;
 

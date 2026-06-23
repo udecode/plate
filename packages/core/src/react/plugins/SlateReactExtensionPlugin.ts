@@ -1,76 +1,102 @@
 import { isDefined } from '@udecode/utils';
+import type { KeyboardEvent } from 'react';
 
+import { getCurrentRuntimeTransforms } from '../../internal/currentRuntimeBridge';
+import { withLegacyTransformOverride } from '../../internal/plugin/withLegacyTransformOverride';
 import { Hotkeys, SlateExtensionPlugin } from '../../lib';
 import { toPlatePlugin } from '../plugin';
 
-export const SlateReactExtensionPlugin = toPlatePlugin(SlateExtensionPlugin, {
+type SlateReactKeyDownEditor = {
+  dom: {
+    currentKeyboardEvent: unknown | null;
+  };
+};
+
+type SlateReactKeyDownContext = {
+  editor: SlateReactKeyDownEditor;
+  event: KeyboardEvent;
+};
+
+const onSlateReactKeyDown = ({ editor, event }: SlateReactKeyDownContext) => {
+  // React 16.x needs this event to be persistented due to it's event pooling implementation.
+  // https://reactjs.org/docs/legacy-event-pooling.html
+  event.persist();
+  editor.dom.currentKeyboardEvent = event;
+  const tf = getCurrentRuntimeTransforms(editor);
+
+  if (Hotkeys.isMoveUpward(event)) {
+    if (tf.moveLine({ reverse: true })) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  } else if (Hotkeys.isMoveDownward(event)) {
+    if (tf.moveLine({ reverse: false })) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  } else if (
+    Hotkeys.isTab(editor as never, event) ||
+    Hotkeys.isUntab(editor as never, event)
+  ) {
+    if (
+      tf.tab({
+        reverse: Hotkeys.isUntab(editor as never, event),
+      })
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  } else if (Hotkeys.isSelectAll(event)) {
+    if (tf.selectAll()) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  } else if (Hotkeys.isEscape(event) && tf.escape()) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+};
+
+const BaseSlateReactExtensionPlugin = toPlatePlugin(SlateExtensionPlugin, {
   handlers: {
-    onKeyDown: ({ editor, event }: any) => {
-      // React 16.x needs this event to be persistented due to it's event pooling implementation.
-      // https://reactjs.org/docs/legacy-event-pooling.html
-      event.persist();
-      editor.dom.currentKeyboardEvent = event;
-
-      if (Hotkeys.isMoveUpward(event)) {
-        if (editor.tf.moveLine({ reverse: true })) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      } else if (Hotkeys.isMoveDownward(event)) {
-        if (editor.tf.moveLine({ reverse: false })) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      } else if (
-        Hotkeys.isTab(editor, event) ||
-        Hotkeys.isUntab(editor, event)
-      ) {
-        if (editor.tf.tab({ reverse: Hotkeys.isUntab(editor, event) })) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      } else if (Hotkeys.isSelectAll(event)) {
-        if (editor.tf.selectAll()) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-      } else if (Hotkeys.isEscape(event) && editor.tf.escape()) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    },
+    onKeyDown: onSlateReactKeyDown as never,
   },
-})
-  .extendEditorApi(({ editor }) => ({
-    redecorate: () => {
-      editor.api.debug.warn(
-        'The method editor.api.redecorate() has not been overridden. ' +
-          'This may cause unexpected behavior. Please ensure that all required editor methods are properly defined.',
-        'OVERRIDE_MISSING'
-      );
-    },
-  }))
-  .extendEditorTransforms(({ editor, tf: { reset } }) => ({
-    reset(options) {
-      const isFocused = editor.api.isFocused();
+}).extendEditorApi(({ editor }) => ({
+  redecorate: () => {
+    editor.api.debug.warn(
+      'The method editor.api.redecorate() has not been overridden. ' +
+        'This may cause unexpected behavior. Please ensure that all required editor methods are properly defined.',
+      'OVERRIDE_MISSING'
+    );
+  },
+}));
 
-      reset(options);
+export const SlateReactExtensionPlugin = withLegacyTransformOverride(
+  BaseSlateReactExtensionPlugin,
+  ({ editor, tf }) => {
+    const { normalizeNode, reset, unsetNodes } = tf;
 
-      if (isFocused) {
-        editor.tf.focus({ edge: 'startEditor' });
-      }
-    },
-  }))
-  .overrideEditor(({ editor, tf: { normalizeNode } }) => ({
-    transforms: {
-      normalizeNode(entry, options) {
-        if (isDefined(entry[0]._memo)) {
-          editor.tf.unsetNodes('_memo', { at: entry[1] });
+    return {
+      tf: {
+        reset(options) {
+          const isFocused = editor.api.isFocused();
 
-          return;
-        }
+          reset(options);
 
-        normalizeNode(entry, options);
+          if (isFocused) {
+            getCurrentRuntimeTransforms(editor).focus({ edge: 'startEditor' });
+          }
+        },
+        normalizeNode(entry, options) {
+          if (isDefined(entry[0]._memo)) {
+            unsetNodes('_memo', { at: entry[1] });
+
+            return;
+          }
+
+          normalizeNode(entry, options);
+        },
       },
-    },
-  }));
+    };
+  }
+);

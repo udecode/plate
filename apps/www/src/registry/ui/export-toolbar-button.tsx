@@ -145,7 +145,7 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
   };
 
   const exportToMarkdown = async () => {
-    const md = editor.getApi(MarkdownPlugin).markdown.serialize();
+    const md = editor.getPluginApi(MarkdownPlugin).markdown.serialize();
     const url = `data:text/markdown;charset=utf-8,${encodeURIComponent(md)}`;
     await downloadFile(url, 'plate.md');
   };

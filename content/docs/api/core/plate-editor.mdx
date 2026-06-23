@@ -29,20 +29,17 @@ The editor is still a Slate editor. Plate adds typed plugin access, plugin metad
   <APIItem name="children" type="Value">
     Current document value.
   </APIItem>
-  <APIItem name="selection" type="TRange | null">
+  <APIItem name="selection" type="Range | null">
     Current Slate selection.
   </APIItem>
   <APIItem name="operations" type="Operation[]">
     Operations applied since Slate last flushed the editor.
   </APIItem>
-  <APIItem name="api" type="EditorApi & CorePluginApi">
+  <APIItem name="api" type="PlateEditor['api'] & CorePluginApi">
     Core Slate APIs plus APIs contributed by resolved Plate plugins.
   </APIItem>
-  <APIItem name="tf" type="EditorTransforms & CorePluginTransforms">
+  <APIItem name="tf" type="PlateEditor['tf'] & CorePluginTransforms">
     Core Slate transforms plus transforms contributed by resolved Plate plugins.
-  </APIItem>
-  <APIItem name="transforms" type="PlateEditor['tf']">
-    Alias for `tf`.
   </APIItem>
   <APIItem name="plugins" type="Record<string, AnyEditorPlatePlugin>">
     Resolved plugin map keyed by plugin key.
@@ -65,7 +62,7 @@ The editor is still a Slate editor. Plate adds typed plugin access, plugin metad
 | `composing` | `boolean` | Composition handlers. |
 | `currentKeyboardEvent` | `KeyboardEventLike \| null` | `SlateReactExtensionPlugin` while handling keyboard shortcuts. |
 | `focused` | `boolean` | DOM focus integration. |
-| `prevSelection` | `TRange \| null` | Selection tracking. |
+| `prevSelection` | `Range \| null` | Selection tracking. |
 | `readOnly` | `boolean` | `withSlate({ readOnly })`, then React read-only state. |
 
 `editor.meta` carries plugin resolution output. Most application code reads this indirectly through helpers like `getPlugin`, `getOptions`, and render utilities.
@@ -84,7 +81,7 @@ The editor is still a Slate editor. Plate adds typed plugin access, plugin metad
 
 ## Plugin Access
 
-Use editor helpers when you need the resolved plugin instance, typed plugin API, typed transforms, or live plugin options.
+Use editor helpers when you need the resolved plugin instance, typed plugin API, or live plugin options. Use `editor.update` for plugin transaction commands.
 
 ```tsx title="Plugin option access"
 import { ParagraphPlugin, useEditorPlugin } from 'platejs/react';
@@ -99,8 +96,7 @@ export function ParagraphType() {
 | Helper | Type | Use it for |
 | --- | --- | --- |
 | `getPlugin(plugin)` | `<C>(plugin: WithRequiredKey<C>) => EditorPlatePlugin<C>` | Read the resolved plugin instance after overrides and configuration. |
-| `getApi(plugin?)` | `<C>(plugin?: WithRequiredKey<C>) => editor.api & InferApi<C>` | Get a typed view of editor APIs. The runtime value is `editor.api`. |
-| `getTransforms(plugin?)` | `<C>(plugin?: WithRequiredKey<C>) => editor.tf & InferTransforms<C>` | Get a typed view of editor transforms. The runtime value is `editor.transforms`. |
+| `getPluginApi(plugin?)` | `<C>(plugin?: WithRequiredKey<C>) => editor.api & InferApi<C>` | Get a typed view of editor APIs. The runtime value is `editor.api`. |
 | `getType(pluginKey)` | `(pluginKey: string) => string` | Resolve the node type for a plugin key. |
 | `getInjectProps(plugin)` | `(plugin) => InjectNodeProps` | Read injected node props with default `nodeKey` and `styleKey` filled from the plugin type. |
 | `getOptionsStore(plugin)` | `(plugin) => TStateApi` | Read the plugin option store. |
@@ -135,7 +131,7 @@ export function useBasicEditor() {
 | Step | Behavior |
 | --- | --- |
 | Editor identity | Sets `editor.id`, `editor.meta.key`, `editor.meta.isFallback`, `editor.meta.userId`, and `editor.dom`. |
-| Helper methods | Installs `getApi`, `getTransforms`, `getPlugin`, `getType`, option helpers, and injection helpers. |
+| Helper methods | Installs `getPluginApi`, `getPlugin`, `getType`, option helpers, and injection helpers. |
 | Core plugins | Resolves core plugins, replaces core plugins with custom plugins that share the same key, and resolves the root plugin. |
 | Components | Merges `components` into root-plugin component overrides. |
 | Normalization guard | Wraps `normalizeNode` so `editor.api.shouldNormalizeNode(entry)` can skip a normalization pass. |

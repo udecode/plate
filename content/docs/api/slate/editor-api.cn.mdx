@@ -15,7 +15,7 @@ Editor API 提供了一系列辅助函数，用于查询和操作编辑器状态
 type At = Location | Node
 ```
 
-当传入 Node 时，会使用 [`editor.api.findPath()`](/docs/api/slate/editor-api#findpath) 查找其路径。这样您可以通过以下方式引用位置：
+当传入 Node 时，Slate 会在内部解析该节点当前的路径。这样您可以通过以下方式引用位置：
 - [Location](/docs/api/slate/location) ([Path](/docs/api/slate/path), [Point](/docs/api/slate/point), 或 [Range](/docs/api/slate/range))
 - [Node](/docs/api/slate/node)
 
@@ -923,45 +923,6 @@ Check if a point is the start point of a location.
 </API>
 
 ## Location
-
-### `findPath`
-
-查找编辑器中 Plate 节点的路径。
-
-<API name="findPath">
-<APIParameters>
-  <APIItem name="node" type="Node">
-    要在编辑器树中查找路径的节点。
-  </APIItem>
-  <APIItem name="options" type="EditorFindPathOptions" optional>
-    查找节点路径的选项。
-  </APIItem>
-</APIParameters>
-<APIOptions type="EditorFindPathOptions">
-  <APIItem name="...options" type="QueryOptions<Value>" optional>
-    查找节点的通用查询选项。
-  </APIItem>
-  <APIItem name="ignoreNonSelectable" type="boolean" optional>
-    遍历时是否忽略不可选择的节点。
-  </APIItem>
-  <APIItem name="reverse" type="boolean" optional>
-    是否反向遍历。
-  </APIItem>
-  <APIItem name="universal" type="boolean" optional>
-    是否确保操作在所有节点上通用。
-  </APIItem>
-  <APIItem name="mode" type="QueryMode" optional>
-    查找节点的查询模式。
-  </APIItem>
-  <APIItem name="voids" type="boolean" optional>
-    搜索时是否包含 void 节点。
-  </APIItem>
-</APIOptions>
-
-<APIReturns type="Path | undefined">
-  如果找到则返回节点的路径，否则为 undefined。
-</APIReturns>
-</API>
 
 ### `path`
 

@@ -1,4 +1,5 @@
-import { type SlateEditor, type TLocation, NodeApi } from 'platejs';
+import type { Location } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 import { getTableGridAbove } from '../queries/getTableGridAbove';
 import { getCellTypes } from '../utils/getCellType';
@@ -12,7 +13,7 @@ export const moveSelectionFromCell = (
     fromOneCell,
     reverse,
   }: {
-    at?: TLocation;
+    at?: Location;
     /** Expand cell selection to an edge. */
     edge?: 'bottom' | 'left' | 'right' | 'top';
     /** Move selection from one selected cell */
@@ -57,10 +58,12 @@ export const moveSelectionFromCell = (
         // No default
       }
 
-      if (NodeApi.has(editor, anchorPath) && NodeApi.has(editor, focusPath)) {
-        editor.tf.select({
-          anchor: editor.api.start(anchorPath)!,
-          focus: editor.api.start(focusPath)!,
+      if (editor.api.hasPath(anchorPath) && editor.api.hasPath(focusPath)) {
+        editor.update((tx) => {
+          tx.selection.set({
+            anchor: editor.api.start(anchorPath)!,
+            focus: editor.api.start(focusPath)!,
+          });
         });
       }
 
@@ -84,20 +87,22 @@ export const moveSelectionFromCell = (
 
     nextCellPath[nextCellPath.length - 2] += offset;
 
-    if (NodeApi.has(editor, nextCellPath)) {
-      editor.tf.select(editor.api.start(nextCellPath)!);
+    if (editor.api.hasPath(nextCellPath)) {
+      editor.update((tx) => {
+        tx.selection.set(editor.api.start(nextCellPath)!);
+      });
     } else {
       const tablePath = cellPath.slice(0, -2);
 
       if (reverse) {
-        editor.tf.withoutNormalizing(() => {
-          editor.tf.select(editor.api.start(tablePath)!);
-          editor.tf.move({ reverse: true });
+        editor.update((tx) => {
+          tx.selection.set(editor.api.start(tablePath)!);
+          tx.selection.move({ reverse: true });
         });
       } else {
-        editor.tf.withoutNormalizing(() => {
-          editor.tf.select(editor.api.end(tablePath)!);
-          editor.tf.move();
+        editor.update((tx) => {
+          tx.selection.set(editor.api.end(tablePath)!);
+          tx.selection.move();
         });
       }
     }

@@ -1,10 +1,17 @@
 import type {
-  EditorApi,
-  EditorBase,
-  EditorTransforms,
-  TRange,
+  Ancestor,
+  BaseEditor as SlateRuntimeBaseEditor,
+  EditorUpdateContext,
+  EditorUpdateOptions,
+  EditorUpdateTransaction,
+  Range,
+  Selection,
   Value,
-} from '@platejs/slate-legacy';
+} from '@platejs/slate';
+import type {
+  CurrentRuntimeEditorApi as EditorApi,
+  CurrentRuntimeEditorBase as EditorBase,
+} from '../../internal/currentRuntimeBridge';
 import type { UnionToIntersection } from '@udecode/utils';
 import type { KeyboardEventLike } from 'is-hotkey';
 import type { Draft } from 'mutative';
@@ -16,7 +23,7 @@ import type {
   InferKey,
   InferOptions,
   InferSelectors,
-  InferTransforms,
+  InferTx,
   NodeComponents,
   PluginConfig,
   WithRequiredKey,
@@ -25,9 +32,22 @@ import type {
   AnyEditorPlugin,
   EditorPlugin,
   InjectNodeProps,
+  SlatePlugin,
 } from '../plugin/SlatePlugin';
 import type { BaseParagraphPlugin, CorePlugin } from '../plugins';
 import type { ResolvedInputRulesMeta } from '../plugins/input-rules/types';
+
+export type SlatePluginInput = AnyPluginConfig | SlatePlugin<AnyPluginConfig>;
+
+export type InferPluginConfig<P> =
+  P extends SlatePlugin<infer C> ? C : P extends AnyPluginConfig ? P : never;
+
+export type InferPlugins<T extends readonly unknown[]> = InferPluginConfig<
+  T[number]
+>;
+
+type InferInstalledPluginTx<P> =
+  P extends SlatePlugin<infer C> ? InferTx<C> : InferTx<P>;
 
 export type BaseEditor = EditorBase & {
   /** DOM state */
@@ -39,7 +59,7 @@ export type BaseEditor = EditorBase & {
     /** Whether the editor is focused. */
     focused: boolean;
     /** The previous selection. */
-    prevSelection: TRange | null;
+    prevSelection: Range | null;
     /** Whether the editor is read-only. */
     readOnly: boolean;
   };
@@ -112,6 +132,7 @@ export type BaseEditor = EditorBase & {
   getInjectProps: <C extends AnyPluginConfig = PluginConfig>(
     plugin: WithRequiredKey<C>
   ) => InjectNodeProps<C>;
+  getApi: SlateRuntimeBaseEditor['getApi'];
   getOption: <
     C extends AnyPluginConfig,
     StateType extends InferOptions<C>,
@@ -139,18 +160,30 @@ export type BaseEditor = EditorBase & {
     {},
     InferSelectors<C>
   >;
-  getPlugin: <C extends AnyPluginConfig = PluginConfig>(
-    plugin: WithRequiredKey<C>
-  ) => C extends { node: any } ? C : EditorPlugin<C>;
+  getPlugin: <PInput extends SlatePluginInput = PluginConfig>(
+    plugin: WithRequiredKey<PInput>
+  ) => InferPluginConfig<PInput> extends { node: any }
+    ? InferPluginConfig<PInput>
+    : EditorPlugin<InferPluginConfig<PInput>>;
+  read: SlateRuntimeBaseEditor['read'];
+  subscribe: SlateRuntimeBaseEditor['subscribe'];
+  subscribeCommit: SlateRuntimeBaseEditor['subscribeCommit'];
   getType: (pluginKey: string) => string;
+  getChunkSize?: (ancestor: Ancestor) => number | null;
   setOption: <C extends AnyPluginConfig, K extends keyof InferOptions<C>>(
     plugin: WithRequiredKey<C>,
     optionKey: K,
     value: InferOptions<C>[K]
   ) => void;
+  update: <TTx extends object = {}>(
+    fn: (
+      transaction: EditorUpdateTransaction & TTx,
+      context: EditorUpdateContext
+    ) => void,
+    options?: EditorUpdateOptions
+  ) => void;
+  extend: SlateRuntimeBaseEditor['extend'];
 };
-
-export type InferPlugins<T extends AnyPluginConfig[]> = T[number];
 
 export type KeyofPlugins<T extends AnyPluginConfig> =
   | (string & {})
@@ -169,41 +202,67 @@ export type SlateEditor = BaseEditor & {
     shortcuts: any;
   };
   plugins: Record<string, AnyEditorPlugin>;
-  // Alias for transforms
-  tf: EditorTransforms & UnionToIntersection<InferTransforms<CorePlugin>>;
-  transforms: EditorTransforms &
-    UnionToIntersection<InferTransforms<CorePlugin>>;
-  getApi: <C extends AnyPluginConfig = PluginConfig>(
-    plugin?: WithRequiredKey<C>
-  ) => SlateEditor['api'] & InferApi<C>;
-  getPlugin: <C extends AnyPluginConfig = PluginConfig>(
-    plugin: WithRequiredKey<C>
-  ) => C extends { node: any } ? C : EditorPlugin<C>;
-  getTransforms: <C extends AnyPluginConfig = PluginConfig>(
-    plugin?: WithRequiredKey<C>
-  ) => SlateEditor['tf'] & InferTransforms<C>;
+  getPlugin: <PInput extends SlatePluginInput = PluginConfig>(
+    plugin: WithRequiredKey<PInput>
+  ) => InferPluginConfig<PInput> extends { node: any }
+    ? InferPluginConfig<PInput>
+    : EditorPlugin<InferPluginConfig<PInput>>;
+};
+
+type TSlateEditorBase<V extends Value> = Pick<
+  EditorBase<V>,
+  'history' | 'id' | 'marks' | 'operations' | 'redo' | 'undo'
+> &
+  Pick<
+    BaseEditor,
+    | 'dom'
+    | 'extend'
+    | 'getApi'
+    | 'getChunkSize'
+    | 'getInjectProps'
+    | 'getOption'
+    | 'getOptions'
+    | 'getOptionsStore'
+    | 'read'
+    | 'setOption'
+    | 'setOptions'
+    | 'subscribe'
+    | 'subscribeCommit'
+  >;
+
+type TSlateEditorPlugins<P extends AnyPluginConfig> = Record<
+  string,
+  AnyEditorPlugin
+> & {
+  [K in P['key']]: EditorPlugin<Extract<P, { key: K }>>;
 };
 
 export type TSlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = CorePlugin,
-> = SlateEditor & {
+> = TSlateEditorBase<V> & {
   api: EditorApi<V> & UnionToIntersection<InferApi<CorePlugin | P>>;
   children: V;
+  getType: (pluginKey: string) => string;
   meta: BaseEditor['meta'] & {
     inputRules: ResolvedInputRulesMeta;
-    pluginList: P[];
+    pluginList: AnyEditorPlugin[];
     shortcuts: any;
   };
-  plugins: { [K in P['key']]: Extract<P, { key: K }> };
-  tf: EditorTransforms<V> &
-    UnionToIntersection<InferTransforms<CorePlugin | P>>;
-  transforms: EditorTransforms<V> &
-    UnionToIntersection<InferTransforms<CorePlugin | P>>;
-  getApi: <C extends AnyPluginConfig = PluginConfig>(
-    plugin?: WithRequiredKey<C>
-  ) => TSlateEditor<V>['api'] & InferApi<C>;
-  getTransforms: <C extends AnyPluginConfig = PluginConfig>(
-    plugin?: WithRequiredKey<C>
-  ) => TSlateEditor<V>['tf'] & InferTransforms<C>;
+  plugins: TSlateEditorPlugins<P>;
+  selection: Selection;
+  getPlugin: <PInput extends SlatePluginInput = PluginConfig>(
+    plugin: WithRequiredKey<PInput>
+  ) => InferPluginConfig<PInput> extends { node: any }
+    ? InferPluginConfig<PInput>
+    : EditorPlugin<InferPluginConfig<PInput>>;
+  update: <TTx extends object = {}>(
+    fn: (
+      transaction: EditorUpdateTransaction<V> &
+        UnionToIntersection<InferInstalledPluginTx<CorePlugin | P>> &
+        TTx,
+      context: EditorUpdateContext
+    ) => void,
+    options?: EditorUpdateOptions
+  ) => void;
 };

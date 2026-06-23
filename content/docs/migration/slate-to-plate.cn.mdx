@@ -126,12 +126,12 @@ const MyPlugin = createPlatePlugin({
   }
 }));
 
-// 添加新方法：
+// 添加新的可重放文档命令：
 const MyOtherPlugin = createPlatePlugin({
   key: 'myOtherPlugin',
-}).extendEditorTransforms(({ editor }) => ({
-  newMethod(text) {
-    // 添加新功能
+}).extendTx(() => (tx) => ({
+  newMethod(text: string) {
+    tx.text.insert(text);
   }
 }));
 ```

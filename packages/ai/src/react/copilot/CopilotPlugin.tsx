@@ -5,11 +5,11 @@ import type React from 'react';
 import type { DebouncedFunc } from 'lodash';
 
 import { serializeMd } from '@platejs/markdown';
+import type { Element } from '@platejs/slate';
 import debounce from 'lodash/debounce.js';
 import {
   type OmitFirst,
   type PluginConfig,
-  type TElement,
   bindFirst,
   KEYS,
   NodeApi,
@@ -23,7 +23,11 @@ import { acceptCopilot } from './transforms/acceptCopilot';
 import { acceptCopilotNextWord } from './transforms/acceptCopilotNextWord';
 import { type GetNextWord, getNextWord } from './utils/getNextWord';
 import { triggerCopilotSuggestion } from './utils/triggerCopilotSuggestion';
-import { withCopilot } from './withCopilot';
+import { createCopilotExtension } from './withCopilot';
+
+type TriggerCopilotSuggestionFn = OmitFirst<typeof triggerCopilotSuggestion>;
+type CancelableTriggerCopilotSuggestion = TriggerCopilotSuggestionFn &
+  Pick<DebouncedFunc<TriggerCopilotSuggestionFn>, 'cancel'>;
 
 export type CopilotPluginConfig = PluginConfig<
   'copilot',
@@ -82,14 +86,15 @@ export type CopilotPluginConfig = PluginConfig<
       stop: () => void;
     };
   },
+  {},
+  {
+    isSuggested?: (id: string) => boolean;
+  },
   {
     copilot: {
       accept: OmitFirst<typeof acceptCopilot>;
       acceptNextWord: OmitFirst<typeof acceptCopilotNextWord>;
     };
-  },
-  {
-    isSuggested?: (id: string) => boolean;
   }
 >;
 
@@ -151,7 +156,7 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
       if (!contextEntry) return '';
 
       return serializeMd(editor, {
-        value: [contextEntry[0] as TElement],
+        value: [contextEntry[0] as Element],
       });
     },
     triggerQuery: ({ editor }) => {
@@ -165,11 +170,13 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     },
   },
 })
-  .overrideEditor(withCopilot)
+  .extend((ctx) => ({
+    slateExtensions: [createCopilotExtension(ctx)],
+  }))
   .extendSelectors<CopilotPluginConfig['selectors']>(({ getOptions }) => ({
     isSuggested: (id) => getOptions().suggestionNodeId === id,
   }))
-  .extendTransforms(({ editor }) => ({
+  .extendTxGroup('copilot', ({ editor }) => () => ({
     accept: bindFirst(acceptCopilot, editor),
     acceptNextWord: bindFirst(acceptCopilotNextWord, editor),
   }))
@@ -177,13 +184,16 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
     ({ api, editor, getOptions, setOption, setOptions }) => {
       const debounceDelay = getOptions().debounceDelay;
 
-      let triggerSuggestion = bindFirst(triggerCopilotSuggestion, editor);
+      let triggerSuggestion: TriggerCopilotSuggestionFn = bindFirst(
+        triggerCopilotSuggestion,
+        editor
+      );
 
       if (debounceDelay) {
         triggerSuggestion = debounce(
           bindFirst(triggerCopilotSuggestion, editor),
           debounceDelay
-        ) as any;
+        ) as TriggerCopilotSuggestionFn;
       }
 
       return {
@@ -201,7 +211,10 @@ export const CopilotPlugin = createTPlatePlugin<CopilotPluginConfig>({
         stop: () => {
           const { abortController } = getOptions();
 
-          (api.copilot.triggerSuggestion as DebouncedFunc<any>)?.cancel();
+          (
+            api.copilot
+              .triggerSuggestion as Partial<CancelableTriggerCopilotSuggestion>
+          ).cancel?.();
 
           if (abortController) {
             abortController.abort();

@@ -10,6 +10,7 @@ import { getLeftTableCell } from '../../../lib/queries/getLeftTableCell';
 import { getSelectedCells } from '../../../lib/queries/getSelectedCells';
 import * as setBorderSizeModule from '../../../lib/transforms/setBorderSize';
 import { setBorderSize } from '../../../lib/transforms/setBorderSize';
+import { findTableNodePath } from '../../../lib/utils/findTableNodePath';
 import { setSelectedCellsBorder } from './getOnSelectTableBorderFactory';
 
 jsxt;
@@ -124,12 +125,13 @@ describe('setSelectedCellsBorder integration', () => {
 
     const editor = createTableEditor(input);
     const cells = getSelectedCells(editor) as TTableCellElement[];
+    const secondCellPath = findTableNodePath(editor, cells[1])!;
 
     expect(cells.map((cell) => cell.id)).toEqual(['c12', 'c22']);
-    expect(editor.api.findPath(cells[1])).toEqual([0, 1, 1]);
-    expect(
-      getLeftTableCell(editor, { at: editor.api.findPath(cells[1])! })?.[0].id
-    ).toBe('c21');
+    expect(secondCellPath).toEqual([0, 1, 1]);
+    expect(getLeftTableCell(editor, { at: secondCellPath })?.[0].id).toBe(
+      'c21'
+    );
 
     const setBorderSizeSpy = spyOn(setBorderSizeModule, 'setBorderSize');
 

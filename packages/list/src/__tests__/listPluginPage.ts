@@ -1,4 +1,5 @@
-import { type TElement, NodeApi, PathApi } from 'platejs';
+import type { Element } from '@platejs/slate';
+import { NodeApi, PathApi } from '@platejs/slate';
 
 import { type GetSiblingListOptions, BaseListPlugin } from '../lib';
 
@@ -7,11 +8,15 @@ export const listPluginPage = BaseListPlugin.extend(({ editor }) => ({
     getSiblingListOptions: {
       getNextEntry: ([, path]: any) => {
         const nextPath = PathApi.next(path);
-        const nextNode = NodeApi.get<TElement>(editor, nextPath);
+        const nextNode = NodeApi.getIf(editor as any, nextPath) as
+          | Element
+          | undefined;
 
         if (!nextNode) {
           const nextPagePath = [path[0] + 1];
-          const nextPageNode = NodeApi.get<TElement>(editor, nextPagePath);
+          const nextPageNode = NodeApi.getIf(editor as any, nextPagePath) as
+            | Element
+            | undefined;
 
           if (!nextPageNode) return;
 
@@ -21,14 +26,14 @@ export const listPluginPage = BaseListPlugin.extend(({ editor }) => ({
         return [nextNode, nextPath];
       },
       getPreviousEntry: ([, path]: any) => {
-        const prevPath = PathApi.previous(path);
-
-        if (!prevPath) {
+        if (!PathApi.hasPrevious(path)) {
           if (path[0] === 0) return;
 
           const prevPagePath = [path[0] - 1];
 
-          const node = NodeApi.get<TElement>(editor, prevPagePath);
+          const node = NodeApi.getIf(editor as any, prevPagePath) as
+            | Element
+            | undefined;
 
           if (!node) return;
 
@@ -37,12 +42,13 @@ export const listPluginPage = BaseListPlugin.extend(({ editor }) => ({
           return [lastNode, prevPagePath.concat(node.children.length - 1)];
         }
 
-        const prevNode = NodeApi.get(editor, prevPath);
+        const prevPath = PathApi.previous(path);
+        const prevNode = NodeApi.getIf(editor as any, prevPath);
 
         if (!prevNode) return;
 
         return [prevNode, prevPath];
       },
-    } as GetSiblingListOptions<TElement>,
+    } as GetSiblingListOptions<Element>,
   },
 }));

@@ -1,11 +1,13 @@
-import type { TElement } from 'platejs';
+import type { Element } from '@platejs/slate';
+import type { TTableCellElement } from 'platejs';
 
-export const getTableColumnCount = (tableNode: TElement): number => {
-  if ((tableNode.children as TElement[])?.[0]?.children) {
-    return (tableNode.children as TElement[])[0].children
-      .map(
-        (element) =>
-          element.colSpan || (element?.attributes as any)?.colspan || 1
+export const getTableColumnCount = (tableNode: Element): number => {
+  if ((tableNode.children as Element[])?.[0]?.children) {
+    return (
+      (tableNode.children as Element[])[0].children as TTableCellElement[]
+    )
+      .map((element) =>
+        Number(element.colSpan || element.attributes?.colspan || 1)
       )
       .reduce((total: number, num: number) => Number(total) + Number(num));
   }

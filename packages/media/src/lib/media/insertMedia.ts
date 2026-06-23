@@ -1,8 +1,13 @@
-import type { InsertNodesOptions, SlateEditor } from 'platejs';
+import type { NodeInsertNodesOptions } from '@platejs/slate';
+import type { SlateEditor, TImageElement } from 'platejs';
 
 import { KEYS } from 'platejs';
 
 import { insertImage, insertMediaEmbed } from '../..';
+
+type InsertNodesOptions = NodeInsertNodesOptions<TImageElement> & {
+  nextBlock?: boolean;
+};
 
 export interface InsertMediaOptions extends InsertNodesOptions {
   /**

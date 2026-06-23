@@ -51,6 +51,8 @@ const deleteSelection = (editor: SlateEditor) => {
   });
 
   pathRefs.forEach((pathRef) => {
-    editor.tf.removeNodes({ at: pathRef.unref()! });
+    editor.update((tx) => {
+      tx.nodes.remove({ at: pathRef.unref()! });
+    });
   });
 };

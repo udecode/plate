@@ -77,26 +77,24 @@ describe('copySelectedBlocks', () => {
         setData: mock(),
       };
 
-      const mockSetFragmentData = mock();
-      editor.tf.setFragmentData = mockSetFragmentData;
+      const writeSelection = mock();
+      editor.api.clipboard = { writeSelection };
 
       // Mock the blockSelection.getNodes to return the selected entries
-      editor.getPluginApi = mock().mockReturnValue({
-        blockSelection: {
-          getNodes: mock().mockReturnValue([
-            [
-              { id: 'block1', children: [{ text: 'First block' }], type: 'p' },
-              [0],
-            ],
-            [{ id: 'block2', children: [{ text: '' }], type: 'p' }, [1]],
-            [{ id: 'block3', children: [{ text: '   ' }], type: 'p' }, [2]],
-            [
-              { id: 'block4', children: [{ text: 'Last block' }], type: 'p' },
-              [3],
-            ],
-          ]),
-        },
-      });
+      editor.api.blockSelection = {
+        getNodes: mock().mockReturnValue([
+          [
+            { id: 'block1', children: [{ text: 'First block' }], type: 'p' },
+            [0],
+          ],
+          [{ id: 'block2', children: [{ text: '' }], type: 'p' }, [1]],
+          [{ id: 'block3', children: [{ text: '   ' }], type: 'p' }, [2]],
+          [
+            { id: 'block4', children: [{ text: 'Last block' }], type: 'p' },
+            [3],
+          ],
+        ]),
+      };
 
       // Mock editor.api.string() to return the text content of each block
       const stringResults = ['First block', '', '   ', 'Last block'];
@@ -112,8 +110,8 @@ describe('copySelectedBlocks', () => {
 
       copySelectedBlocks(editor);
 
-      // setFragmentData should only be called for non-empty blocks (block1 and block4)
-      expect(mockSetFragmentData).toHaveBeenCalledTimes(3);
+      // writeSelection should only be called for non-empty blocks.
+      expect(writeSelection).toHaveBeenCalledTimes(3);
 
       // Verify the final clipboard data was set
       expect(mockDataTransfer.setData).toHaveBeenCalledWith(
@@ -175,23 +173,21 @@ describe('copySelectedBlocks', () => {
         setData: mock(),
       };
 
-      const mockSetFragmentData = mock();
-      editor.tf.setFragmentData = mockSetFragmentData;
+      const writeSelection = mock();
+      editor.api.clipboard = { writeSelection };
 
-      editor.getPluginApi = mock().mockReturnValue({
-        blockSelection: {
-          getNodes: mock().mockReturnValue([
-            [
-              { id: 'block1', children: [{ text: 'First block' }], type: 'p' },
-              [0],
-            ],
-            [
-              { id: 'block2', children: [{ text: 'Second block' }], type: 'p' },
-              [1],
-            ],
-          ]),
-        },
-      });
+      editor.api.blockSelection = {
+        getNodes: mock().mockReturnValue([
+          [
+            { id: 'block1', children: [{ text: 'First block' }], type: 'p' },
+            [0],
+          ],
+          [
+            { id: 'block2', children: [{ text: 'Second block' }], type: 'p' },
+            [1],
+          ],
+        ]),
+      };
 
       const stringResults = ['First block', 'Second block'];
       let stringCallIndex = 0;
@@ -206,9 +202,8 @@ describe('copySelectedBlocks', () => {
 
       copySelectedBlocks(editor);
 
-      // setFragmentData should be called for both blocks
-      expect(mockSetFragmentData).toHaveBeenCalledTimes(2);
-      expect(mockSetFragmentData).toHaveBeenCalledWith(mockDataTransfer);
+      expect(writeSelection).toHaveBeenCalledTimes(2);
+      expect(writeSelection).toHaveBeenCalledWith(mockDataTransfer);
 
       // Verify the clipboard data was set
       expect(mockDataTransfer.setData).toHaveBeenCalledWith(
@@ -235,23 +230,21 @@ describe('copySelectedBlocks', () => {
         setData: mock(),
       };
 
-      const mockSetFragmentData = mock();
-      editor.tf.setFragmentData = mockSetFragmentData;
+      const writeSelection = mock();
+      editor.api.clipboard = { writeSelection };
 
-      editor.getPluginApi = mock().mockReturnValue({
-        blockSelection: {
-          getNodes: mock().mockReturnValue([
-            [
-              { id: 'block1', children: [{ text: 'First block' }], type: 'p' },
-              [0],
-            ],
-            [
-              { id: 'block2', children: [{ text: 'Second block' }], type: 'p' },
-              [1],
-            ],
-          ]),
-        },
-      });
+      editor.api.blockSelection = {
+        getNodes: mock().mockReturnValue([
+          [
+            { id: 'block1', children: [{ text: 'First block' }], type: 'p' },
+            [0],
+          ],
+          [
+            { id: 'block2', children: [{ text: 'Second block' }], type: 'p' },
+            [1],
+          ],
+        ]),
+      };
 
       const copied = (
         copySelectedBlocks as (
@@ -262,7 +255,7 @@ describe('copySelectedBlocks', () => {
 
       expect(copied).toBe(true);
       expect(copyToClipboardMock).not.toHaveBeenCalled();
-      expect(mockSetFragmentData).toHaveBeenCalledTimes(2);
+      expect(writeSelection).toHaveBeenCalledTimes(2);
       expect(mockDataTransfer.setData).toHaveBeenCalledWith(
         'text/plain',
         expect.any(String)

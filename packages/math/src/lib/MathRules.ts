@@ -1,23 +1,35 @@
-import type { Range } from '@platejs/slate';
+import type { Editor as SlateV2Editor, Range } from '@platejs/slate';
 
 import type { BlockFenceInputRuleMatch, SlateEditor } from 'platejs';
 
 import { createRuleFactory, KEYS, matchDelimitedInline } from 'platejs';
 
-import { insertEquation, insertInlineEquation } from './transforms';
+import type { EquationConfig } from './BaseEquationPlugin';
+import type { InlineEquationConfig } from './BaseInlineEquationPlugin';
 
 const INLINE_BOUNDARY_RE = /[\s([{'"`]/;
 const INLINE_FOLLOW_RE = /[\s)\]}:;,.!?'"`]/;
 
 const isEquationInputBlocked = (editor: SlateEditor) =>
-  editor.api.some({
-    match: {
-      type: [
+  (editor as unknown as SlateV2Editor).read((state) => {
+    const blockedTypes = new Set(
+      [
         editor.getType(KEYS.codeBlock),
         editor.getType(KEYS.equation),
         editor.getType(KEYS.inlineEquation),
-      ],
-    },
+      ].filter((type): type is string => typeof type === 'string')
+    );
+
+    return state.nodes.some({
+      match: (node) => {
+        const type =
+          typeof node === 'object' && node !== null && 'type' in node
+            ? (node as { type?: unknown }).type
+            : undefined;
+
+        return typeof type === 'string' && blockedTypes.has(type);
+      },
+    });
   });
 
 const getInlineEquationMatch = (
@@ -47,30 +59,37 @@ const getInlineEquationMatch = (
 export const MathRules = {
   markdown: createRuleFactory<
     { variant: '$' } | { on: 'break' | 'match'; variant: '$$' }
-  >((options) =>
-    options.variant === '$$'
-      ? {
+  >((options) => {
+    const enabled = (input: { editor: SlateEditor }) =>
+      !isEquationInputBlocked(input.editor) &&
+      (typeof options.enabled !== 'function' ||
+        options.enabled(input as never) !== false);
+
+    return options.variant === '$$'
+      ? ({
           type: 'blockFence',
           fence: '$$',
           block: KEYS.p,
           on: options.on,
-          enabled: ({ editor }) => !isEquationInputBlocked(editor),
+          enabled,
           priority: 100,
           apply: ({ editor }, match) => {
             const blockMatch = match as BlockFenceInputRuleMatch;
 
-            editor.tf.removeNodes({ at: blockMatch.path });
-            insertEquation(editor, {
-              at: blockMatch.path,
-              select: true,
+            editor.update<EquationConfig['tx']>((tx) => {
+              tx.nodes.remove({ at: blockMatch.path });
+              tx.equation.insert({
+                at: blockMatch.path,
+                select: true,
+              });
             });
 
             return true;
           },
-        }
-      : {
+        } as const)
+      : ({
           type: 'insertText',
-          enabled: ({ editor }) => !isEquationInputBlocked(editor),
+          enabled,
           trigger: '$',
           resolve: (context) => {
             if (context.text !== '$' || context.options?.at) {
@@ -85,14 +104,16 @@ export const MathRules = {
               texExpression: string;
             };
 
-            editor.tf.delete({
-              at: inlineMatch.deleteRange,
+            editor.update<InlineEquationConfig['tx']>((tx) => {
+              tx.text.delete({
+                at: inlineMatch.deleteRange,
+              });
+              tx.selection.set(inlineMatch.deleteRange.anchor);
+              tx.inlineEquation.insert(inlineMatch.texExpression);
             });
-            editor.tf.select(inlineMatch.deleteRange.anchor);
-            insertInlineEquation(editor, inlineMatch.texExpression);
 
             return true;
           },
-        }
-  ),
+        } as const);
+  }),
 };

@@ -10,6 +10,7 @@ import {
 
 import { BaseTablePlugin } from '../BaseTablePlugin';
 import { getCellTypes } from '../utils';
+import { findTableNodePath } from '../utils/findTableNodePath';
 import { getCellIndices } from '../utils/getCellIndices';
 import { findCellByIndexes } from './findCellByIndexes';
 import { getCellIndicesWithSpans } from './getCellIndicesWithSpans';
@@ -148,7 +149,7 @@ export const getTableMergeGridByRange = <T extends FormatType>(
         .children as Element[];
       rows[colIndex - startColIndex] = cell;
 
-      const cellPath = editor.api.findPath(cell)!;
+      const cellPath = findTableNodePath(editor, cell)!;
 
       cellEntries.push([cell, cellPath]);
     }

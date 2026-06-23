@@ -113,36 +113,6 @@ describe('withPlate', () => {
       });
     });
 
-    it('executes tx-backed plugin transform facades on the current editor runtime', () => {
-      const TxPlugin = createSlatePlugin({
-        key: 'txPlugin',
-      })
-        .extendTx(() => (tx: EditorUpdateTransaction) => ({
-          bold: () => tx.marks.add('bold', true),
-        }))
-        .extendTransforms(({ editor }) => ({
-          bold: () =>
-            editor.update<
-              PluginTx<'txPlugin', TxPluginTransaction['txPlugin']>
-            >((tx) => tx.txPlugin.bold()),
-        }));
-      const editor = withPlate(createEditor(), {
-        plugins: [TxPlugin],
-        selection: {
-          anchor: { offset: 0, path: [0, 0] },
-          focus: { offset: 4, path: [0, 0] },
-        },
-        value: [{ children: [{ text: 'text' }], type: 'p' }],
-      });
-
-      editor.tf.txPlugin.bold();
-
-      expect(editor.children[0].children[0]).toMatchObject({
-        bold: true,
-        text: 'text',
-      });
-    });
-
     it('runs v2-style update callbacks through the current legacy runtime bridge', () => {
       const editor = withPlate(createEditor(), {
         selection: {

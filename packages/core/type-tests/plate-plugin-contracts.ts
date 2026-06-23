@@ -1,11 +1,8 @@
-import { createEditor } from '@platejs/slate-legacy';
-
 import type { PluginConfig } from '@platejs/core';
 import {
   createPlateEditor,
   createPlatePlugin,
   createTPlatePlugin,
-  withPlate,
 } from '@platejs/core/react';
 
 type ToolbarConfig = PluginConfig<
@@ -42,7 +39,7 @@ const MentionPlugin = createPlatePlugin({
   getTrigger: () => getOptions().trigger,
 }));
 
-const plateEditor = withPlate(createEditor(), {
+const plateEditor = createPlateEditor({
   plugins: [ToolbarPlugin, MentionPlugin],
 });
 
@@ -52,7 +49,7 @@ const createdPlateEditor = createPlateEditor({
 
 const floating: boolean = plateEditor.api.toggleFloating();
 const nestedFloating: boolean = plateEditor
-  .getApi(ToolbarPlugin)
+  .getPluginApi(ToolbarPlugin)
   .plugin.isFloating();
 const mentionTrigger: '@' = plateEditor.api.getTrigger();
 const createdFloating: boolean = createdPlateEditor.api.toggleFloating();
@@ -74,7 +71,7 @@ void toolbarFloating;
 plateEditor.api.notReal();
 
 // @ts-expect-error wrong nested plugin api call
-createdPlateEditor.getApi(ToolbarPlugin).plugin.isFloating(true);
+createdPlateEditor.getPluginApi(ToolbarPlugin).plugin.isFloating(true);
 
 // @ts-expect-error literal option type must stay stable
 createdPlateEditor.getOptions(MentionPlugin).trigger = '#';

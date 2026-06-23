@@ -1,49 +1,45 @@
-import type { PlateEditor } from 'platejs/react';
-
 import {
+  type BlockSelectionConfig,
   BlockSelectionPlugin,
-  removeBlockSelectionNodes,
 } from '@platejs/selection/react';
+import type { Descendant, Element, NodeEntry } from '@platejs/slate';
+import { ElementApi, NodeApi, TextApi } from '@platejs/slate';
 import cloneDeep from 'lodash/cloneDeep.js';
-import {
-  type NodeEntry,
-  type SlateEditor,
-  type TElement,
-  KEYS,
-  NodeApi,
-  TextApi,
-} from 'platejs';
+import { type SlateEditor, KEYS } from 'platejs';
 
-import type { AIChatPluginConfig } from '../AIChatPlugin';
+import type { AIChatPlateEditor } from '../internal/editorTypes';
 
 export const createFormattedBlocks = ({
   blocks,
   format,
   sourceBlock,
 }: {
-  blocks: TElement[];
+  blocks: Element[];
   format: 'all' | 'none' | 'single';
   sourceBlock: NodeEntry;
 }) => {
   if (format === 'none') return cloneDeep(blocks);
 
   const [sourceNode] = sourceBlock;
-  const firstTextEntry = NodeApi.firstText(sourceNode);
+  const firstTextEntry = NodeApi.texts(sourceNode).next().value;
 
   if (!firstTextEntry) return null;
 
   const blockProps = NodeApi.extractProps(sourceNode);
   const textProps = NodeApi.extractProps(firstTextEntry[0]);
 
-  const applyTextFormatting = (node: any): any => {
+  const applyTextFormatting = <TNode extends Descendant>(
+    node: TNode
+  ): TNode => {
     if (TextApi.isText(node)) {
-      return { ...textProps, ...node };
+      return { ...textProps, ...node } as TNode;
     }
-    if (node.children) {
+
+    if (ElementApi.isElement(node)) {
       return {
         ...node,
         children: node.children.map(applyTextFormatting),
-      };
+      } as TNode;
     }
 
     return node;
@@ -62,7 +58,7 @@ export const createFormattedBlocks = ({
 };
 
 export const replaceSelectionAIChat = (
-  editor: PlateEditor,
+  editor: AIChatPlateEditor,
   sourceEditor: SlateEditor,
   { format = 'single' }: { format?: 'all' | 'none' | 'single' } = {}
 ) => {
@@ -73,7 +69,7 @@ export const replaceSelectionAIChat = (
     'isSelectingSome'
   );
 
-  editor.getApi<AIChatPluginConfig>({ key: KEYS.ai }).aiChat.hide();
+  editor.api.aiChat.hide();
 
   // If no blocks selected, treat it like a normal selection replacement
   if (!isBlockSelecting) {
@@ -101,45 +97,50 @@ export const replaceSelectionAIChat = (
         sourceEditor.children[0].type === KEYS.codeBlock &&
         sourceEditor.children.length === 1
       ) {
-        editor.tf.insertFragment(formattedBlocks[0].children);
+        editor.update((tx) => {
+          tx.fragment.insert(formattedBlocks[0].children);
+        });
       } else {
-        editor.tf.insertFragment(formattedBlocks);
+        editor.update((tx) => {
+          tx.fragment.insert(formattedBlocks);
+        });
       }
 
-      editor.tf.focus();
+      editor.api.dom.focus();
 
       return;
     }
 
-    editor.tf.insertFragment(sourceEditor.children);
-    editor.tf.focus();
+    editor.update((tx) => {
+      tx.fragment.insert(sourceEditor.children);
+    });
+    editor.api.dom.focus();
 
     return;
   }
 
-  const blockSelectionApi = editor.getApi(BlockSelectionPlugin).blockSelection;
+  const blockSelectionApi = editor.api.blockSelection;
   const selectedBlocks = blockSelectionApi.getNodes();
 
   if (selectedBlocks.length === 0) return;
   // If format is 'none' or multiple blocks with 'single',
   // just insert the content as is
   if (format === 'none' || (format === 'single' && selectedBlocks.length > 1)) {
-    editor.tf.withoutNormalizing(() => {
-      removeBlockSelectionNodes(editor);
-
-      editor.tf.withNewBatch(() => {
-        editor
-          .getTransforms(BlockSelectionPlugin)
-          .blockSelection.insertBlocksAndSelect(
+    editor.api.history.withNewBatch(() => {
+      editor.update<BlockSelectionConfig['tx']>((tx) => {
+        tx.withoutNormalizing(() => {
+          tx.blockSelection.removeNodes();
+          tx.blockSelection.insertBlocksAndSelect(
             cloneDeep(sourceEditor.children),
             {
               at: selectedBlocks[0][1],
             }
           );
+        });
       });
     });
 
-    editor.getApi(BlockSelectionPlugin).blockSelection.focus();
+    editor.api.blockSelection.focus();
 
     return;
   }
@@ -156,17 +157,16 @@ export const replaceSelectionAIChat = (
 
   if (!formattedBlocks) return;
 
-  editor.tf.withoutNormalizing(() => {
-    removeBlockSelectionNodes(editor);
-
-    editor.tf.withNewBatch(() => {
-      editor
-        .getTransforms(BlockSelectionPlugin)
-        .blockSelection.insertBlocksAndSelect(formattedBlocks, {
+  editor.api.history.withNewBatch(() => {
+    editor.update<BlockSelectionConfig['tx']>((tx) => {
+      tx.withoutNormalizing(() => {
+        tx.blockSelection.removeNodes();
+        tx.blockSelection.insertBlocksAndSelect(formattedBlocks, {
           at: firstBlockPath,
         });
+      });
     });
   });
 
-  editor.getApi(BlockSelectionPlugin).blockSelection.focus();
+  editor.api.blockSelection.focus();
 };

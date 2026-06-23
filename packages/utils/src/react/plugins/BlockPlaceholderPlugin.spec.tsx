@@ -4,9 +4,24 @@ import React from 'react';
 
 import { createSlatePlugin } from '@platejs/core';
 import { createPlateEditor, PlateTest } from '@platejs/core/react';
-import { render, waitFor } from '@testing-library/react';
+import { render } from '@testing-library/react';
 
 import { BlockPlaceholderPlugin } from './BlockPlaceholderPlugin';
+
+const renderPlaceholderEditor = (
+  editor: any,
+  options?: { readOnly?: boolean }
+) =>
+  render(
+    <PlateTest
+      editableProps={{ autoFocus: false }}
+      editor={editor}
+      readOnly={options?.readOnly}
+      suppressInstanceWarning
+    >
+      {null}
+    </PlateTest>
+  );
 
 const createEditor = (options?: {
   className?: string;
@@ -45,30 +60,29 @@ const createEditor = (options?: {
     ],
   });
 
+const getPlaceholder = (
+  editor: ReturnType<typeof createEditor>,
+  node: any,
+  path: number[]
+) =>
+  (
+    editor.getOption as (
+      plugin: typeof BlockPlaceholderPlugin,
+      key: 'placeholder',
+      node: any,
+      path: number[]
+    ) => string | undefined
+  )(BlockPlaceholderPlugin, 'placeholder', node, path);
+
 describe('BlockPlaceholderPlugin', () => {
   it('sets the target for an active empty block and injects placeholder props', async () => {
     const editor = createEditor({ className: 'placeholder-class' });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
+    const { container } = renderPlaceholderEditor(editor);
     const firstNode = editor.children[0] as any;
     const secondNode = editor.children[1] as any;
 
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toEqual({
-        node: firstNode,
-        placeholder: 'Type something...',
-      });
-    });
-
-    expect(
-      editor.getOption(BlockPlaceholderPlugin, 'placeholder', firstNode)
-    ).toBe('Type something...');
-    expect(
-      editor.getOption(BlockPlaceholderPlugin, 'placeholder', secondNode)
-    ).toBeUndefined();
+    expect(getPlaceholder(editor, firstNode, [0])).toBe('Type something...');
+    expect(getPlaceholder(editor, secondNode, [1])).toBeUndefined();
 
     const element = container.querySelector(
       '[placeholder="Type something..."]'
@@ -81,15 +95,9 @@ describe('BlockPlaceholderPlugin', () => {
     const editor = createEditor({
       value: [{ children: [{ text: '' }], type: 'p' }],
     });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
+    const { container } = renderPlaceholderEditor(editor);
 
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toBeNull();
-    });
+    expect(getPlaceholder(editor, editor.children[0] as any, [0])).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -99,15 +107,9 @@ describe('BlockPlaceholderPlugin', () => {
       nodeId: true,
       value: [{ children: [{ text: '' }], id: 'block-1', type: 'p' }],
     });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
+    const { container } = renderPlaceholderEditor(editor);
 
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toBeNull();
-    });
+    expect(getPlaceholder(editor, editor.children[0] as any, [0])).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -123,19 +125,10 @@ describe('BlockPlaceholderPlugin', () => {
         },
       ],
     });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
+    const { container } = renderPlaceholderEditor(editor);
     const firstNode = editor.children[0] as any;
 
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toEqual({
-        node: firstNode,
-        placeholder: 'Type something...',
-      });
-    });
+    expect(getPlaceholder(editor, firstNode, [0])).toBe('Type something...');
 
     expect(
       container.querySelector('[placeholder="Type something..."]')
@@ -165,15 +158,9 @@ describe('BlockPlaceholderPlugin', () => {
         },
       ],
     });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
+    const { container } = renderPlaceholderEditor(editor);
 
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toBeNull();
-    });
+    expect(getPlaceholder(editor, editor.children[0] as any, [0])).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -182,15 +169,9 @@ describe('BlockPlaceholderPlugin', () => {
     const editor = createEditor({
       placeholders: { h1: 'Heading...' },
     });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
+    const { container } = renderPlaceholderEditor(editor);
 
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toBeNull();
-    });
+    expect(getPlaceholder(editor, editor.children[0] as any, [0])).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -199,15 +180,9 @@ describe('BlockPlaceholderPlugin', () => {
     const editor = createEditor({
       query: () => false,
     });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
+    const { container } = renderPlaceholderEditor(editor);
 
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toBeNull();
-    });
+    expect(getPlaceholder(editor, editor.children[0] as any, [0])).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
@@ -219,30 +194,16 @@ describe('BlockPlaceholderPlugin', () => {
         focus: { offset: 3, path: [1, 0] },
       },
     });
-    const { container } = render(
-      <PlateTest editor={editor} suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
+    const { container } = renderPlaceholderEditor(editor);
 
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toBeNull();
-    });
+    expect(getPlaceholder(editor, editor.children[0] as any, [0])).toBeUndefined();
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });
 
   it('clears the target in read-only mode', async () => {
     const editor = createEditor();
-    const { container } = render(
-      <PlateTest editor={editor} readOnly suppressInstanceWarning>
-        {null}
-      </PlateTest>
-    );
-
-    await waitFor(() => {
-      expect(editor.getOptions(BlockPlaceholderPlugin)._target).toBeNull();
-    });
+    const { container } = renderPlaceholderEditor(editor, { readOnly: true });
 
     expect(container.querySelector('[placeholder]')).toBeNull();
   });

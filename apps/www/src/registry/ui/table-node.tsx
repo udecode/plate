@@ -45,8 +45,8 @@ import {
   Trash2Icon,
   XIcon,
 } from 'lucide-react';
+import type { Element as SlateElement } from '@platejs/slate';
 import {
-  type TElement,
   type TTableCellElement,
   type TTableElement,
   type TTableRowElement,
@@ -178,9 +178,10 @@ function useTableResizeController({
 }) {
   const { editor, getOptions } = useEditorPlugin(TablePlugin);
   const { disableMarginLeft = false, minColumnWidth = 0 } = getOptions();
-  const colSizes = useTableColSizes({
-    disableOverrides: true,
-  });
+  const colSizes =
+    useTableColSizes({
+      disableOverrides: true,
+    }) ?? [];
   const effectiveColSizes = React.useMemo(
     () => colSizes.map((colSize) => colSize || TABLE_DEFAULT_COLUMN_WIDTH),
     [colSizes]
@@ -614,12 +615,12 @@ export const TableElement = withHOC(
     );
     const hasControls = !readOnly && !isSelectionAreaVisible;
     const { marginLeft, props: tableProps } = useTableElement();
-    const colSizes = useTableColSizes();
+    const colSizes = useTableColSizes() ?? [];
     const controlColumnWidth = hasControls ? TABLE_CONTROL_COLUMN_WIDTH : 0;
     const dragIndicatorRef = React.useRef<HTMLDivElement>(null);
     const hoverIndicatorRef = React.useRef<HTMLDivElement>(null);
     const deferColumnResize =
-      colSizes.length * props.element.children.length >
+      colSizes.length * (props.element.children?.length ?? 0) >
       TABLE_DEFERRED_COLUMN_RESIZE_CELL_COUNT;
     const tablePath = useElementSelector(([, path]) => path, [], {
       key: KEYS.table,
@@ -763,7 +764,7 @@ function TableFloatingToolbar({
 }: React.ComponentProps<typeof PopoverContent>) {
   const selectedCellCount = useEditorSelector(
     (editor) =>
-      editor.getApi(TablePlugin).table.getSelectedCellIds()?.length ?? 0,
+      editor.getPluginApi(TablePlugin).table.getSelectedCellIds()?.length ?? 0,
     []
   );
   const selected = useSelected();
@@ -1102,7 +1103,7 @@ function ColorDropdownMenu({
       setCellBackground(editor, {
         color,
         selectedCells:
-          editor.getApi(TablePlugin).table.getSelectedCells() ?? [],
+          editor.getPluginApi(TablePlugin).table.getSelectedCells() ?? [],
       });
     },
     [editor]
@@ -1112,7 +1113,8 @@ function ColorDropdownMenu({
     setOpen(false);
     setCellBackground(editor, {
       color: null,
-      selectedCells: editor.getApi(TablePlugin).table.getSelectedCells() ?? [],
+      selectedCells:
+        editor.getPluginApi(TablePlugin).table.getSelectedCells() ?? [],
     });
   }, [editor]);
 
@@ -1175,7 +1177,7 @@ export function TableRowElement({
         PathApi.parent(dropEntry[1])
       ),
     onDropHandler: (_, { dragItem }) => {
-      const dragElement = (dragItem as { element: TElement }).element;
+      const dragElement = (dragItem as { element: SlateElement }).element;
 
       if (dragElement) {
         editor.tf.select(dragElement);

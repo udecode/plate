@@ -54,14 +54,12 @@ describe('useEditorChat', () => {
     useEditorPluginMock.mockReturnValue({
       editor: {
         api: {
-          isCollapsed: () => true,
-          isExpanded: () => false,
-        },
-        getPluginApi: () => ({
           blockSelection: {
             getNodes: () => [[{ id: 'b1' }, [0]]],
           },
-        }),
+          isCollapsed: () => true,
+          isExpanded: () => false,
+        },
         getOption: () => true,
       },
     });

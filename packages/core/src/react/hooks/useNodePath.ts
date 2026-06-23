@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { Descendant } from '@platejs/slate';
 
+import { findEditorPath } from '../../internal/utils/runtimeEditorQueries';
 import { useEditorRef } from '../stores';
 
 /**
@@ -12,5 +13,5 @@ import { useEditorRef } from '../stores';
 export const useNodePath = (node: Descendant) => {
   const editor = useEditorRef();
 
-  return React.useMemo(() => editor.api.findPath(node), [editor, node]);
+  return React.useMemo(() => findEditorPath(editor, node), [editor, node]);
 };

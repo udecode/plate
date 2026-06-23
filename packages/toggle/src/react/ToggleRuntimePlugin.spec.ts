@@ -1,18 +1,20 @@
 import type { Value } from 'platejs';
-import { createPlateEditor } from 'platejs/react';
-
-import { BaseTogglePlugin } from '../lib';
-import { TogglePlugin } from './TogglePlugin';
+import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
+import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
+import { BaseTogglePlugin } from '../lib/BaseTogglePlugin';
 
 type ToggleRuntimeApi = {
   isSelectable: (element: unknown) => boolean;
 };
 
-type TogglePluginApi = {
-  toggle: {
-    toggleIds: (ids: string[], force?: boolean | null) => void;
-  };
+type ToggleRuntimeTransforms = {
+  deleteBackward: (unit?: 'character') => boolean;
+  deleteForward: (unit?: 'character') => boolean;
+  insertBreak: () => boolean;
 };
+
+const getToggleRuntimeTransforms = (editor: unknown) =>
+  getCurrentRuntimeTransforms(editor) as unknown as ToggleRuntimeTransforms;
 
 const createToggleRuntimeEditor = ({
   selection,
@@ -24,11 +26,10 @@ const createToggleRuntimeEditor = ({
   };
   value: Value;
 }) =>
-  createPlateEditor<Value, typeof TogglePlugin>({
-    plugins: [TogglePlugin],
-    runtime: 'slate-v2',
-    selection,
-    value,
+  createPlateRuntimeEditor({
+    initialSelection: selection,
+    initialValue: value,
+    plugins: [BaseTogglePlugin],
   });
 
 describe('TogglePlugin Slate v2 runtime', () => {
@@ -44,9 +45,7 @@ describe('TogglePlugin Slate v2 runtime', () => {
 
     expect(api.isSelectable(hiddenChild)).toBe(false);
 
-    editor
-      .getPluginApi<TogglePluginApi>(BaseTogglePlugin)
-      .toggle.toggleIds(['t1'], true);
+    editor.api.toggle.toggleIds(['t1'], true);
 
     expect(api.isSelectable(hiddenChild)).toBe(true);
   });
@@ -63,11 +62,9 @@ describe('TogglePlugin Slate v2 runtime', () => {
       ],
     });
 
-    editor
-      .getPluginApi<TogglePluginApi>(BaseTogglePlugin)
-      .toggle.toggleIds(['t1'], true);
+    editor.api.toggle.toggleIds(['t1'], true);
 
-    expect(editor.tf.insertBreak()).toBe(true);
+    expect(getToggleRuntimeTransforms(editor).insertBreak()).toBe(true);
     expect(editor.read((state) => state.value.root())).toMatchObject([
       {
         children: [{ text: 'Toggle' }],
@@ -99,7 +96,7 @@ describe('TogglePlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(editor.tf.insertBreak()).toBe(true);
+    expect(getToggleRuntimeTransforms(editor).insertBreak()).toBe(true);
     expect(editor.read((state) => state.value.root())).toMatchObject([
       {
         children: [{ text: 'Toggle' }],
@@ -136,7 +133,9 @@ describe('TogglePlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(editor.tf.deleteBackward('character')).toBe(true);
+    expect(
+      getToggleRuntimeTransforms(editor).deleteBackward('character')
+    ).toBe(true);
     expect(editor.read((state) => state.value.root())).toMatchObject([
       {
         children: [{ text: 'Toggleafter' }],
@@ -166,7 +165,9 @@ describe('TogglePlugin Slate v2 runtime', () => {
       ],
     });
 
-    expect(editor.tf.deleteForward('character')).toBe(true);
+    expect(
+      getToggleRuntimeTransforms(editor).deleteForward('character')
+    ).toBe(true);
     expect(editor.read((state) => state.value.root())).toMatchObject([
       {
         children: [{ text: 'beforeToggle' }],

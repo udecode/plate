@@ -149,7 +149,9 @@ describe('selection cursor overlay queries', () => {
         value: [{ children: [{ text: 'one' }], type: KEYS.p }],
       });
 
-      spyOn(editor.api, 'toDOMRange').mockReturnValue(undefined as any);
+      (editor.api as any).dom = {
+        resolveDOMRange: mock(() => undefined),
+      };
 
       expect(
         getSelectionRects(editor, {
@@ -170,17 +172,19 @@ describe('selection cursor overlay queries', () => {
 
       const textNode = editor.children[0].children[0];
 
-      spyOn(editor.api, 'toDOMRange').mockReturnValue({
-        endContainer: {} as any,
-        endOffset: 1,
-        startContainer: {} as any,
-        startOffset: 0,
-      } as any);
+      (editor.api as any).dom = {
+        resolveDOMNode: mock(() => ({
+          getClientRects: () => ({ item: () => null, length: 0 }),
+          parentElement: null,
+        })),
+        resolveDOMRange: mock(() => ({
+          endContainer: {} as any,
+          endOffset: 1,
+          startContainer: {} as any,
+          startOffset: 0,
+        })),
+      };
       spyOn(editor.api, 'nodes').mockReturnValue([[textNode as any, [0, 0]]]);
-      spyOn(editor.api, 'toDOMNode').mockReturnValue({
-        getClientRects: () => ({ item: () => null, length: 0 }),
-        parentElement: null,
-      } as any);
 
       expect(
         getSelectionRects(editor, {
@@ -195,23 +199,15 @@ describe('selection cursor overlay queries', () => {
     });
 
     it('uses partial DOM ranges for start and end nodes and raw client rects for middle nodes', () => {
-      const editor = createPlateEditor({
-        value: [
-          {
-            children: [{ text: 'one' }, { text: 'two' }, { text: 'three' }],
-            type: KEYS.p,
-          },
-        ],
-      });
-
       const range: Range = {
         anchor: { offset: 1, path: [0, 0] },
         focus: { offset: 2, path: [0, 2] },
       };
+      const textNodes = [{ text: 'one' }, { text: 'two' }, { text: 'three' }];
       const textEntries = [
-        [editor.children[0].children[0] as any, [0, 0]],
-        [editor.children[0].children[1] as any, [0, 1]],
-        [editor.children[0].children[2] as any, [0, 2]],
+        [textNodes[0], [0, 0]],
+        [textNodes[1], [0, 1]],
+        [textNodes[2], [0, 2]],
       ] as any;
       const domRange = {
         endContainer: { id: 'end' },
@@ -242,22 +238,27 @@ describe('selection cursor overlay queries', () => {
       const selectNode = mock();
       const setStart = mock();
       const setEnd = mock();
+      let domNodeIndex = 0;
+      const editor = {
+        api: {
+          dom: {
+            resolveDOMNode: () => ({
+              getClientRects: () => middleRects,
+              parentElement: {},
+            }),
+            resolveDOMRange: () => domRange,
+          },
+          nodes: () => textEntries,
+        },
+      } as any;
+      editor.api.dom.resolveDOMNode = () => {
+        domNodeIndex++;
 
-      spyOn(editor.api, 'toDOMRange').mockReturnValue(domRange);
-      spyOn(editor.api, 'nodes').mockReturnValue(textEntries);
-      spyOn(editor.api, 'toDOMNode')
-        .mockReturnValueOnce({
+        return {
           getClientRects: () => middleRects,
           parentElement: {},
-        } as any)
-        .mockReturnValueOnce({
-          getClientRects: () => middleRects,
-          parentElement: {},
-        } as any)
-        .mockReturnValueOnce({
-          getClientRects: () => middleRects,
-          parentElement: {},
-        } as any);
+        };
+      };
 
       const createRangeSpy = spyOn(document, 'createRange');
       createRangeSpy
@@ -282,6 +283,7 @@ describe('selection cursor overlay queries', () => {
 
       expect(setStart).toHaveBeenCalledWith(domRange.startContainer, 1);
       expect(setEnd).toHaveBeenCalledWith(domRange.endContainer, 2);
+      expect(domNodeIndex).toBe(3);
       expect(result).toEqual([
         { height: 10, left: 5, top: 20, width: 3 },
         { height: 10, left: 13, top: 21, width: 8 },

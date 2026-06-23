@@ -44,30 +44,32 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
       const firstPath = entries[0]![1];
 
-      editor.tf.withoutNormalizing(() => {
-        for (const [node, path] of [...entries].reverse()) {
-          editor.tf.removeNodes({
-            at: path,
-          });
-          api.blockSelection.delete(node.id as string);
-        }
+      editor.update((tx) => {
+        tx.withoutNormalizing(() => {
+          for (const [node, path] of [...entries].reverse()) {
+            tx.nodes.remove({
+              at: path,
+            });
+            api.blockSelection.delete(node.id as string);
+          }
+        });
+      });
 
-        if (editor.children.length === 0) {
-          editor.meta._forceFocus = true;
-          editor.tf.focus();
-          editor.meta._forceFocus = false;
-        } else if (options.selectPrevious) {
-          const prevPath = PathApi.previous(firstPath);
+      if (editor.children.length === 0) {
+        editor.meta._forceFocus = true;
+        editor.api.dom.focus();
+        editor.meta._forceFocus = false;
+      } else if (options.selectPrevious) {
+        const prevPath = PathApi.previous(firstPath);
 
-          if (prevPath) {
-            const prevEntry = editor.api.block({ at: prevPath });
+        if (prevPath) {
+          const prevEntry = editor.api.block({ at: prevPath });
 
-            if (prevEntry) {
-              setOption('selectedIds', new Set([prevEntry[0].id as string]));
-            }
+          if (prevEntry) {
+            setOption('selectedIds', new Set([prevEntry[0].id as string]));
           }
         }
-      });
+      }
 
       return firstPath;
     },
@@ -150,7 +152,9 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
       // Mod+D => duplicate selected blocks
       if (isHotkey('mod+d')(e)) {
         e.preventDefault();
-        editor.getTransforms(BlockSelectionPlugin).blockSelection.duplicate();
+        editor.update<BlockSelectionConfig['tx']>((tx) =>
+          tx.blockSelection.duplicate()
+        );
         return;
       }
       // Only continue if we have "some" selection
@@ -166,7 +170,10 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
         if (entry) {
           const [, path] = entry;
           editor.meta._forceFocus = true;
-          editor.tf.focus({ at: path, edge: 'end' });
+          editor.update((tx) => {
+            tx.selection.set(editor.api.end(path)!);
+          });
+          editor.api.dom.focus();
           editor.meta._forceFocus = undefined;
           e.preventDefault();
         }
@@ -210,13 +217,15 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
 
         if (firstPath) {
           editor.meta._forceFocus = true;
-          editor.tf.insertNodes(
-            editor.api.create.block({ children: [{ text: e.key }] }),
-            { at: firstPath }
-          );
-          editor.tf.select(firstPath, { edge: 'end' });
+          editor.update((tx) => {
+            tx.nodes.insert(
+              editor.api.create.block({ children: [{ text: e.key }] }),
+              { at: firstPath }
+            );
+            tx.selection.set(editor.api.end(firstPath)!);
+          });
           editor.meta._forceFocus = false;
-          editor.tf.focus();
+          editor.api.dom.focus();
         }
         return;
       }

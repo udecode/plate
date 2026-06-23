@@ -1,10 +1,5 @@
-import type {
-  Editor,
-  ElementEntryOf,
-  ElementOf,
-  NodeEntry,
-  TElement,
-} from 'platejs';
+import type { Element, NodeEntry } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
@@ -13,31 +8,26 @@ import type { GetSiblingListOptions } from './getSiblingList';
 import { getNextList } from './getNextList';
 import { getPreviousList } from './getPreviousList';
 
-export interface GetListSiblingsOptions<
-  N extends ElementOf<E>,
-  E extends Editor = Editor,
-> extends Partial<GetSiblingListOptions<N, E>> {
+export interface GetListSiblingsOptions<N extends Element = Element>
+  extends Partial<GetSiblingListOptions<N>> {
   current?: boolean;
   next?: boolean;
   previous?: boolean;
 }
 
-export const getListSiblings = <
-  N extends ElementOf<E>,
-  E extends Editor = Editor,
->(
-  editor: E,
-  entry: ElementEntryOf<E>,
+export const getListSiblings = <N extends Element = Element>(
+  editor: SlateEditor,
+  entry: NodeEntry<Element>,
   {
     current = true,
     next = true,
     previous = true,
     ...options
-  }: GetListSiblingsOptions<N, E> = {}
+  }: GetListSiblingsOptions<N> = {}
 ) => {
-  const siblings: NodeEntry[] = [];
+  const siblings: NodeEntry<N>[] = [];
 
-  const node = entry[0] as TElement;
+  const node = entry[0] as Element;
 
   if (!node[KEYS.listType] && !Object.hasOwn(node, KEYS.listChecked)) {
     return siblings;
@@ -47,7 +37,7 @@ export const getListSiblings = <
 
   if (previous) {
     while (true) {
-      const prevEntry = getPreviousList<N, E>(editor, iterEntry, options);
+      const prevEntry = getPreviousList<N>(editor, iterEntry, options);
 
       if (!prevEntry) break;
 
@@ -57,7 +47,7 @@ export const getListSiblings = <
     }
   }
   if (current) {
-    siblings.push(entry);
+    siblings.push(entry as NodeEntry<N>);
   }
   if (next) {
     iterEntry = entry;

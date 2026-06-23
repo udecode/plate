@@ -1,12 +1,17 @@
 import type { SlateEditor } from 'platejs';
 
-import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
+import type { BlockSelectionConfig } from '../BlockSelectionPlugin';
 
 export const selectBlockSelectionNodes = (editor: SlateEditor) => {
-  editor.tf.select(
-    editor.api.nodesRange(
-      editor.getApi(BlockSelectionPlugin).blockSelection.getNodes()
-    )
-  );
-  editor.getApi(BlockSelectionPlugin).blockSelection.clear();
+  const blockSelectionApi = (
+    editor.api as unknown as BlockSelectionConfig['api']
+  ).blockSelection;
+  const range = editor.api.nodesRange(blockSelectionApi.getNodes());
+
+  if (!range) return;
+
+  editor.update((tx) => {
+    tx.selection.set(range);
+  });
+  blockSelectionApi.clear();
 };

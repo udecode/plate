@@ -118,8 +118,8 @@ Insert a callout element into the editor.
   <APIItem name="variant" type="string" optional>
     The variant of the callout to insert.
   </APIItem>
-  <APIItem name="...InsertNodesOptions" type="InsertNodesOptions<V>">
-    Other options from `InsertNodesOptions`.
+  <APIItem name="...options" type="object<V>">
+    Other insertion options.
   </APIItem>
 </APIOptions>
 </API>
@@ -174,7 +174,7 @@ Manage the emoji picker functionality for callouts.
 ### `TCalloutElement`
 
 ```typescript
-interface TCalloutElement extends TElement {
+interface TCalloutElement extends Element {
   variant?: string;
   icon?: string;
 }

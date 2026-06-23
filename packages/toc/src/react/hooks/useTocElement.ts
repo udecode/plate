@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { type Path, NodeApi } from 'platejs';
+import type { Path } from '@platejs/slate';
 import {
   useEditorPlugin,
   useEditorSelector,
@@ -65,11 +65,11 @@ export const useTocElement = ({
     ) => {
       e.preventDefault();
       const { id, path } = item;
-      const node = NodeApi.get(editor, path);
+      const node = editor.api.node(path)?.[0];
 
       if (!node) return;
 
-      const el = editor.api.toDOMNode(node);
+      const el = editor.api.dom.resolveDOMNode(node);
 
       if (!el) return;
 

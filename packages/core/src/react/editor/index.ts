@@ -3,6 +3,7 @@
  */
 
 export * from './PlateEditor';
+export * from './createPlateRuntimeEditor';
 export * from './getPlateCorePlugins';
 export * from './usePlateEditor';
 export * from './usePlateViewEditor';

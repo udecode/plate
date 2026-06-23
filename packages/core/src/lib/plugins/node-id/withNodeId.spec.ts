@@ -1,6 +1,6 @@
 await import('./NodeIdPlugin');
 
-const { withNodeId } = await import('./withNodeId');
+const { withNodeId } = await import('./internal/withNodeId');
 
 const createNodeIdOverride = (
   overrides: Record<string, any> = {},
@@ -34,7 +34,7 @@ const createNodeIdOverride = (
       insertNode,
       insertNodes,
     },
-  } as any).transforms;
+  } as any).tf;
 
   return {
     apply,

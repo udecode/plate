@@ -12,19 +12,16 @@ export const pasteSelectedBlocks = (editor: SlateEditor, e: ClipboardEvent) => {
     const entry = entries.at(-1)!;
     const [node, path] = entry;
 
-    if (!editor.api.isEmpty(node as any)) {
+    if (!editor.api.isEmpty(node)) {
       const at = PathApi.next(path);
 
-      editor.tf.insertNodes(editor.api.create.block({}, at), {
-        at,
-        select: true,
+      editor.update((tx) => {
+        tx.nodes.insert(editor.api.create.block({}, at), { at });
+        tx.selection.set(editor.api.end(at)!);
       });
     }
 
-    // quick fix until we find a way to merge history
-    // editor.tf.withoutMerging(() => {
-    editor.tf.insertData(e.clipboardData!);
-    // });
+    editor.api.clipboard.insertData(e.clipboardData!);
 
     selectInsertedBlocks(editor);
   }

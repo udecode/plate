@@ -1,4 +1,5 @@
-import { createSlateEditor, type AnySlatePlugin } from 'platejs';
+import { type AnySlatePlugin } from 'platejs';
+import { createPlateEditor } from 'platejs/react';
 import type { Selection, Value } from '@platejs/slate';
 
 export const normalizeRoot = ({
@@ -10,9 +11,22 @@ export const normalizeRoot = ({
   selection?: Selection;
   value: Value;
 }) => {
-  const editor = createSlateEditor({ plugins, selection, value });
+  const editor = createPlateEditor({
+    plugins,
+    runtime: 'slate-v2',
+    selection,
+    ...(value.length > 0 ? { value } : {}),
+  });
 
-  editor.tf.normalizeNode([editor, []]);
+  editor.update((tx) => {
+    if (value.length === 0) {
+      tx.value.replace({ children: [] });
+    }
 
-  return editor;
+    tx.normalize({ force: true });
+  });
+
+  return {
+    children: editor.read((state) => state.value.root()),
+  };
 };

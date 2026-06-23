@@ -2,6 +2,8 @@ import {
   type AnyEditorPlugin,
   type PluginConfig,
   createTSlatePlugin,
+  ElementApi,
+  KEYS,
 } from 'platejs';
 
 export type HeadingConfig = PluginConfig<
@@ -30,11 +32,16 @@ export const BaseH1Plugin = createTSlatePlugin({
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H1' }] } } },
   render: { as: 'h1' },
   rules,
-}).extendTransforms(({ editor, type }) => ({
-  toggle: () => {
-    editor.tf.toggleBlock(type);
-  },
-}));
+})
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      const isActive = tx.nodes.some({
+        match: (node) => ElementApi.isElement(node) && node.type === type,
+      });
+
+      tx.nodes.set({ type: isActive ? KEYS.p : type });
+    },
+  }));
 
 export const BaseH2Plugin = createTSlatePlugin({
   key: 'h2',
@@ -42,11 +49,16 @@ export const BaseH2Plugin = createTSlatePlugin({
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H2' }] } } },
   render: { as: 'h2' },
   rules,
-}).extendTransforms(({ editor, type }) => ({
-  toggle: () => {
-    editor.tf.toggleBlock(type);
-  },
-}));
+})
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      const isActive = tx.nodes.some({
+        match: (node) => ElementApi.isElement(node) && node.type === type,
+      });
+
+      tx.nodes.set({ type: isActive ? KEYS.p : type });
+    },
+  }));
 
 export const BaseH3Plugin = createTSlatePlugin({
   key: 'h3',
@@ -54,11 +66,16 @@ export const BaseH3Plugin = createTSlatePlugin({
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H3' }] } } },
   render: { as: 'h3' },
   rules,
-}).extendTransforms(({ editor, type }) => ({
-  toggle: () => {
-    editor.tf.toggleBlock(type);
-  },
-}));
+})
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      const isActive = tx.nodes.some({
+        match: (node) => ElementApi.isElement(node) && node.type === type,
+      });
+
+      tx.nodes.set({ type: isActive ? KEYS.p : type });
+    },
+  }));
 
 export const BaseH4Plugin = createTSlatePlugin({
   key: 'h4',
@@ -66,11 +83,16 @@ export const BaseH4Plugin = createTSlatePlugin({
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H4' }] } } },
   render: { as: 'h4' },
   rules,
-}).extendTransforms(({ editor, type }) => ({
-  toggle: () => {
-    editor.tf.toggleBlock(type);
-  },
-}));
+})
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      const isActive = tx.nodes.some({
+        match: (node) => ElementApi.isElement(node) && node.type === type,
+      });
+
+      tx.nodes.set({ type: isActive ? KEYS.p : type });
+    },
+  }));
 
 export const BaseH5Plugin = createTSlatePlugin({
   key: 'h5',
@@ -78,11 +100,16 @@ export const BaseH5Plugin = createTSlatePlugin({
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H5' }] } } },
   render: { as: 'h5' },
   rules,
-}).extendTransforms(({ editor, type }) => ({
-  toggle: () => {
-    editor.tf.toggleBlock(type);
-  },
-}));
+})
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      const isActive = tx.nodes.some({
+        match: (node) => ElementApi.isElement(node) && node.type === type,
+      });
+
+      tx.nodes.set({ type: isActive ? KEYS.p : type });
+    },
+  }));
 
 export const BaseH6Plugin = createTSlatePlugin({
   key: 'h6',
@@ -90,11 +117,16 @@ export const BaseH6Plugin = createTSlatePlugin({
   parsers: { html: { deserializer: { rules: [{ validNodeName: 'H6' }] } } },
   render: { as: 'h6' },
   rules,
-}).extendTransforms(({ editor, type }) => ({
-  toggle: () => {
-    editor.tf.toggleBlock(type);
-  },
-}));
+})
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      const isActive = tx.nodes.some({
+        match: (node) => ElementApi.isElement(node) && node.type === type,
+      });
+
+      tx.nodes.set({ type: isActive ? KEYS.p : type });
+    },
+  }));
 
 /** Enables support for headings with configurable levels (from 1 to 6). */
 export const BaseHeadingPlugin = createTSlatePlugin<HeadingConfig>({

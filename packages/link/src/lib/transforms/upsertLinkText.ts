@@ -1,8 +1,6 @@
 import type { Text } from '@platejs/slate';
 
-import type { SlateEditor, TLinkElement } from 'platejs';
-
-import { KEYS } from 'platejs';
+import { type SlateEditor, type TLinkElement, ElementApi, KEYS } from 'platejs';
 
 import type { UpsertLinkOptions } from './upsertLink';
 
@@ -14,8 +12,9 @@ export const upsertLinkText = (
   editor: SlateEditor,
   { text }: UpsertLinkOptions
 ) => {
+  const linkType = editor.getType(KEYS.link);
   const newLink = editor.api.above<TLinkElement>({
-    match: { type: editor.getType(KEYS.link) },
+    match: (node) => ElementApi.isElement(node) && node.type === linkType,
   });
 
   if (newLink) {
@@ -24,15 +23,20 @@ export const upsertLinkText = (
     if (text?.length && text !== editor.api.string(newLinkPath)) {
       const firstText = newLinkNode.children[0];
 
-      // remove link children
-      editor.tf.replaceNodes<Text>(
-        { ...firstText, text },
-        {
-          at: newLinkPath,
-          children: true,
-          select: true,
-        }
-      );
+      const firstChildPath = newLinkPath.concat([0]);
+
+      editor.update((tx) => {
+        newLinkNode.children.forEach(() => {
+          tx.nodes.remove({ at: firstChildPath });
+        });
+        tx.nodes.insert<Text>(
+          { ...firstText, text },
+          {
+            at: firstChildPath,
+            select: true,
+          }
+        );
+      });
     }
   }
 };

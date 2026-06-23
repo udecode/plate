@@ -1,10 +1,10 @@
 import React from 'react';
 
+import type { Element as SlateElement } from '@platejs/slate';
 import type { SlateRenderElementProps } from 'platejs/static';
 
 import {
   type PluginConfig,
-  type TElement,
   type TListElement,
   createTSlatePlugin,
   isDefined,
@@ -18,7 +18,6 @@ import type { GetSiblingListOptions } from './queries/getSiblingList';
 import type { ListStyleType } from './types';
 
 import { isOrderedList } from './queries';
-import { withList } from './withList';
 
 /**
  * All list items are normalized to have a listStart prop indicating their
@@ -36,7 +35,7 @@ import { withList } from './withList';
 export type BaseListConfig = PluginConfig<
   'list',
   {
-    getSiblingListOptions?: GetSiblingListOptions<TElement>;
+    getSiblingListOptions?: GetSiblingListOptions<SlateElement>;
     /** Map html element to list style type. */
     getListStyleType?: (element: HTMLElement) => ListStyleType;
   }
@@ -219,7 +218,7 @@ export const BaseListPlugin = createTSlatePlugin<BaseListConfig>({
     },
     match: ({ node }) => isDefined(node[KEYS.listType]),
   },
-}).overrideEditor(withList);
+});
 
 function List(props: SlateRenderElementProps) {
   const { listStart, listStyleType } = props.element as TListElement;

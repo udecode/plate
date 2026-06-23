@@ -1,4 +1,4 @@
-import type { SlateEditor } from 'platejs';
+import type { SlateEditor } from '@platejs/core';
 
 import { getListItemEntry } from '../index';
 

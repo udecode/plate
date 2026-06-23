@@ -1,9 +1,9 @@
-import type { PlateEditor } from 'platejs/react';
+import type { DeserializeMdOptions } from '@platejs/markdown';
 
-import { type DeserializeMdOptions, MarkdownPlugin } from '@platejs/markdown';
+import type { AIChatPlateEditor } from '../internal/editorTypes';
 
 export const streamDeserializeInlineMd = (
-  editor: PlateEditor,
+  editor: AIChatPlateEditor,
   text: string,
   options?: DeserializeMdOptions
-) => editor.getApi(MarkdownPlugin).markdown.deserializeInline(text, options);
+) => editor.api.markdown.deserializeInline(text, options);

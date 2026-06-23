@@ -1,5 +1,6 @@
-import { PathApi } from '@platejs/slate-legacy';
+import { PathApi } from '@platejs/slate';
 
+import { withLegacyTransformOverride } from '../../../internal/plugin/withLegacyTransformOverride';
 import { createTSlatePlugin } from '../../plugin';
 import {
   clearNavigationFeedbackTarget,
@@ -7,10 +8,14 @@ import {
   navigate,
   resolveNavigationFeedbackTarget,
 } from './transforms';
-import type { NavigationFeedbackConfig } from './types';
+import type {
+  NavigationFeedbackConfig,
+  NavigationFlashTargetOptions,
+  NavigationNavigateOptions,
+} from './types';
 import { NAVIGATION_FEEDBACK_KEY, NavigationFeedbackPluginKey } from './types';
 
-export const NavigationFeedbackPlugin =
+export const NavigationFeedbackPlugin = withLegacyTransformOverride(
   createTSlatePlugin<NavigationFeedbackConfig>({
     key: NAVIGATION_FEEDBACK_KEY,
     options: {
@@ -47,12 +52,22 @@ export const NavigationFeedbackPlugin =
         },
       };
     })
-    .extendEditorTransforms<NavigationFeedbackConfig['transforms']>(
-      ({ editor }) => ({
-        navigation: {
-          clear: () => clearNavigationFeedbackTarget(editor),
-          flashTarget: (options) => flashTarget(editor, options),
-          navigate: (options) => navigate(editor, options),
-        },
-      })
-    );
+    .extendTxGroup('navigation', ({ editor }) => () => ({
+      clear: () => clearNavigationFeedbackTarget(editor),
+      flashTarget: (options: NavigationFlashTargetOptions) =>
+        flashTarget(editor, options),
+      navigate: (options: NavigationNavigateOptions) =>
+        navigate(editor, options),
+    })),
+  ({ editor }) => ({
+    tf: {
+      navigation: {
+        clear: () => clearNavigationFeedbackTarget(editor),
+        flashTarget: (options: NavigationFlashTargetOptions) =>
+          flashTarget(editor, options),
+        navigate: (options: NavigationNavigateOptions) =>
+          navigate(editor, options),
+      },
+    },
+  })
+);

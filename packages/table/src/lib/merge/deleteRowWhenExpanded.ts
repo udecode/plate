@@ -66,7 +66,9 @@ export const deleteRowWhenExpanded = (
     }
 
     pathRefs.forEach((item) => {
-      editor.tf.removeNodes({ at: item.unref()! });
+      editor.update((tx) => {
+        tx.nodes.remove({ at: item.unref()! });
+      });
     });
   }
 };

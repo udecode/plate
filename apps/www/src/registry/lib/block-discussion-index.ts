@@ -33,9 +33,7 @@ export interface ResolvedSuggestion extends TResolvedSuggestion {
 
 export const BLOCK_SUGGESTION_TOKEN = '__block__';
 
-type BlockDiscussionEntry = NodeEntry<
-  TCommentText | Element | TSuggestionText
->;
+type BlockDiscussionEntry = NodeEntry<TCommentText | Element | TSuggestionText>;
 type SuggestionEntry = NodeEntry<Element | TSuggestionText>;
 
 type BlockDiscussionIndex = {

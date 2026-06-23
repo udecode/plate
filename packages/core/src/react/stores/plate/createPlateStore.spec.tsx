@@ -37,6 +37,7 @@ describe('createPlateStore', () => {
   const createScopedWrapper = () => {
     const editor = createPlateEditor({
       id: 'scoped-editor',
+      runtime: 'legacy',
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
 

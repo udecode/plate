@@ -164,14 +164,14 @@ the current docs for the target API.
     if (!mounted) return;
 
     // Initialize Yjs connection and sync
-    editor.getApi(YjsPlugin).yjs.init({
+    editor.getPluginApi(YjsPlugin).yjs.init({
       id: roomName, // Or your document identifier
       value: INITIAL_VALUE, // Your initial editor content
     });
 
     // Destroy connection on component unmount
     return () => {
-      editor.getApi(YjsPlugin).yjs.destroy();
+      editor.getPluginApi(YjsPlugin).yjs.destroy();
     };
   }, [editor, mounted, roomName]); // Add relevant dependencies
   ```
@@ -272,7 +272,7 @@ the current docs for the target API.
           mark: true,
           serialize: (slateNode: TSuggestionText, options): mdast.Text => {
             const suggestionData = options.editor
-              .getApi(SuggestionPlugin)
+              .getPluginApi(SuggestionPlugin)
               .suggestion.suggestionData(node);
 
             return suggestionData?.type === 'insert'
@@ -503,7 +503,7 @@ No breaking changes. Upgraded all dependencies to the latest version.
 
   This was previously done in `extendEditor` using top-level methods, which still works but now throws a type error due to the move to `editor.tf/editor.api`. A workaround is to extend your editor with `LegacyEditorMethods`.
 
-  **Why?** Having all methods at the top-level (next to `children`, `marks`, etc.) would clutter the editor interface. Slate splits transforms in three places (`editor`, `Editor`, and `Transforms`), which is also confusing. We've reorganized them into `tf` and `api` for better DX, but also to support transform-only middlewares in the future. This also lets us leverage `extendEditorTransforms`, `extendEditorApi`, and `overrideEditor` to modify those methods.
+  **Why?** Having all methods at the top-level (next to `children`, `marks`, etc.) would clutter the editor interface. Slate splits transforms in three places (`editor`, `Editor`, and `Transforms`), which is also confusing. Plate keeps editor reads/services under `api` and replayable document mutations under transaction groups.
 
   Migration example:
 
@@ -749,7 +749,7 @@ No breaking changes. Upgraded all dependencies to the latest version.
 
   - `editor.api.node(options)` (previously `findNode`) `at` option is now `at ?? editor.selection` instead of `at ?? editor.selection ?? []`. That means if you want to lookup the entire document, you need to pass `[]` explicitly.
 
-  - Removed `setNode` in favor of `setNodes` (you can now pass a `TNode` to `at` directly).
+  - Removed `setNode` in favor of `setNodes` (you can now pass a `Node` to `at` directly).
 
   - Removed `setElements` in favor of `setNodes`.
 
@@ -761,17 +761,17 @@ No breaking changes. Upgraded all dependencies to the latest version.
 
   - Replaced `Point` from slate with `Point` (type) and `PointApi` (static methods).
 
-  - Replaced `Text` from slate with `TText` (type) and `TextApi` (static methods). We also export `Text` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
+  - Replaced `Text` from slate with `Text` (type) and `TextApi` (static methods). We also export `Text` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
 
-  - Replaced `Range` from slate with `TRange` (type) and `RangeApi` (static methods). We also export `Range` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
+  - Replaced `Range` from slate with `Range` (type) and `RangeApi` (static methods). We also export `Range` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
 
-  - Replaced `Location` from slate with `TLocation` (type) and `LocationApi` (static methods). We also export `Location` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
+  - Replaced `Location` from slate with `Location` (type) and `LocationApi` (static methods). We also export `Location` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
 
   - Replaced `Span` from slate with `Span` (type) and `SpanApi` (static methods).
 
-  - Replaced `Node` from slate with `TNode` (type) and `NodeApi` (static methods). We also export `Node` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
+  - Replaced `Node` from slate with `Node` (type) and `NodeApi` (static methods). We also export `Node` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
 
-  - Replaced `Element` from slate with `TElement` (type) and `ElementApi` (static methods). We also export `Element` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
+  - Replaced `Element` from slate with `Element` (type) and `ElementApi` (static methods). We also export `Element` type like `slate` but we don't recommend it as it's conflicting with the DOM type.
 
   - Signature change:
 
@@ -858,7 +858,7 @@ No breaking changes. Upgraded all dependencies to the latest version.
     - `hasTexts` -> `editor.api.hasTexts`
     - `insertBreak` -> `editor.tf.insertBreak`
     - `insertData` -> `editor.tf.insertData`
-    - `insertElements` -> `editor.tf.insertNodes<TElement>`
+    - `insertElements` -> `editor.tf.insertNodes<Element>`
     - `insertEmptyElement` -> `editor.tf.insertNodes(editor.api.create.block({ type }))`
     - `insertFragment` -> `editor.tf.insertFragment`
     - `insertNode` -> `editor.tf.insertNode`
@@ -1011,13 +1011,13 @@ No breaking changes. Upgraded all dependencies to the latest version.
   Types:
 
   - Rename the following types:
-    - `TEditor` -> `Editor`
+    - `Editor` -> `Editor`
     - `TOperation` -> `Operation`
-    - `TPath` -> `Path`
+    - `Path` -> `Path`
     - `TNodeProps` -> `NodeProps`
     - `TNodeChildEntry` -> `NodeChildEntry`
-    - `TNodeEntry` -> `NodeEntry`
-    - `TDescendant` -> `Descendant`
+    - `NodeEntry` -> `NodeEntry`
+    - `Descendant` -> `Descendant`
     - `TDescendantEntry` -> `DescendantEntry`
     - `TAncestor` -> `Ancestor`
     - `TAncestorEntry` -> `AncestorEntry`
@@ -1603,10 +1603,9 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   - NEW `configure` method to configure the properties of existing plugins. The difference with `extend` is that `configure` with not add new properties to the plugin, it will only modify existing ones.
   - NEW `extendPlugin` method to extend a nested plugin configuration.
   - NEW `configurePlugin` method to configure the properties of a nested plugin.
-  - NEW `extendApi` method to extend the plugin API. The API is then merged into `editor.api[plugin.key]`.
-  - NEW `extendTransforms` method to extend the plugin transforms. The transforms is then merged into `editor.transforms[plugin.key]`.
-  - NEW `extendEditorApi` method to extend the editor API. The API is then merged into `editor.api`. Use this to add or override top-level methods to the editor.
-  - NEW `extendEditorTransforms` method to extend the editor transforms. The transforms is then merged into `editor.transforms`.
+  - `extendApi` extends the plugin API. The API is merged into the plugin's `editor.api` namespace.
+  - Transaction groups own replayable document mutations.
+  - Editor overrides wrap existing editor behavior.
   - NEW `extendOptions` method to extend the plugin options with selectors. Use `editor.useOption(plugin, 'optionKey')` to subscribe to an (extended) option.
   - NEW `withComponent` to replace `plugin.node.component`
 
@@ -1707,8 +1706,8 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
   - Move `childrenFactory` to `editor.api.create.value`
   - Rename `plugins` to `pluginList`
   - Rename `pluginsByKey` to `plugins`
-  - NEW `getApi()` to get the editor API
-  - NEW `getTransforms()` to get the editor transforms
+  - Plugin APIs live under `editor.api`.
+  - Replayable document mutations live under transaction groups.
   - Remove `getPlugin(editor, key)`, use `editor.getPlugin(plugin) or editor.getPlugin({ key })`
   - Remove `getPluginType`, use `editor.getType(plugin)` to get node type
   - Remove `getPluginInjectProps(editor, key)`, use `editor.getPlugin(plugin).inject.props`
@@ -2044,18 +2043,18 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
   Types:
 
-  - Merge `ReactEditor` and `HistoryEditor` interfaces into `TEditor`, removing `TReactEditor` and `THistoryEditor`
+  - Merge `ReactEditor` and `HistoryEditor` interfaces into `Editor`, removing `TReactEditor` and `THistoryEditor`
   - Remove `Value` generic type parameter from function signatures and type definitions
-  - Replace `V extends Value` with `E extends TEditor` for improved type inference
-  - Simplify `TEditor<V>` to `TEditor` in many places
-  - Refactor element-related types, where `E extends TEditor` in all cases:
+  - Replace `V extends Value` with `E extends Editor` for improved type inference
+  - Simplify `Editor<V>` to `Editor` in many places
+  - Refactor element-related types, where `E extends Editor` in all cases:
     - `EElement<V>` to `ElementOf<E>`
     - `EText<V>` to `TextOf<E>`
     - `ENode<V>` to `NodeOf<E>`
     - `EDescendant<V>` to `DescendantOf<E>`
     - `EAncestor<V>` to `AncestorOf<E>`
     - `EElementOrText<V>` to `ElementOrTextOf<E>`
-  - Update `TNodeEntry` related types:
+  - Update `NodeEntry` related types:
     - `ENodeEntry<V>` to `NodeEntryOf<E>`
     - `EElementEntry<V>` to `ElementEntryOf<E>`
     - `ETextEntry<V>` to `TextEntryOf<E>`
@@ -2070,15 +2069,15 @@ We recommend to upgrade to `@udecode/plate-core@38.1.0` in one-go.
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – Types:
 
-  - Remove `TReactEditor` type, as it's now integrated into the main `TEditor` type in `@udecode/slate`. Use `TEditor` instead.
-  - Replace `V extends Value` with `E extends TEditor` for improved type inference
+  - Remove `TReactEditor` type, as it's now integrated into the main `Editor` type in `@udecode/slate`. Use `Editor` instead.
+  - Replace `V extends Value` with `E extends Editor` for improved type inference
   - NEW `TEditableProps`, `TRenderElementProps`
 
 ## @udecode/slate-utils@37.0.0
 
 - [#3420](https://github.com/udecode/plate/pull/3420) by [@zbeyens](https://github.com/zbeyens) – Types:
 
-  - Replace `V extends Value` with `E extends TEditor` for improved type inference
+  - Replace `V extends Value` with `E extends Editor` for improved type inference
 
 ## @udecode/plate-suggestion@37.0.0
 
@@ -2532,7 +2531,7 @@ Migration:
   - `TablePlugin` option `disableUnsetSingleColSize` has been renamed and inverted into `enableUnsetSingleColSize`. New default is disabled. **Migration**:
     - if using `disableUnsetSingleColSize: true`, the option can be removed
     - if using `disableUnsetSingleColSize: false`, use `enableUnsetSingleColSize: true`
-  - `getTableColumnIndex` second parameter type is now: `cellNode: TElement`
+  - `getTableColumnIndex` second parameter type is now: `cellNode: Element`
 
 ## @udecode/plate-ui-dnd@20.0.0
 
@@ -2891,9 +2890,9 @@ Migration:
 
   This release includes major changes to plate and slate types:
 
-  - Changing the `TEditor` type to be `TEditor<V>` where `V` represents the "value" being edited by Slate. In the most generic editor, `V` would be equivalent to `TElement[]` (since that is what is accepted as children of the editor). But in a custom editor, you might have `TEditor<Array<Paragraph | Quote>>`.
-  - Other `TEditor`-and-`TNode`-related methods have been also made generic, so for example if you use `getLeafNode(editor, path)` it knows that the return value is a `TText` node. But more specifically, it knows that it is the text node of the type you've defined in your custom elements (with any marks you've defined).
-  - This replaces the declaration merging approach, and provides some benefits. One of the drawbacks to declaration merging was that it was impossible to know whether you were dealing with an "unknown" or "known" element, since the underlying type was changed. Similarly, having two editors on the page with different schemas wasn't possible to represent. Hopefully this approach with generics will be able to smoothly replace the declaration merging approach. (While being easy to migrate to, since you can pass those same custom element definitions into `TEditor` still.)
+  - Changing the `Editor` type to be `Editor<V>` where `V` represents the "value" being edited by Slate. In the most generic editor, `V` would be equivalent to `Element[]` (since that is what is accepted as children of the editor). But in a custom editor, you might have `Editor<Array<Paragraph | Quote>>`.
+  - Other `Editor`-and-`Node`-related methods have been also made generic, so for example if you use `getLeafNode(editor, path)` it knows that the return value is a `Text` node. But more specifically, it knows that it is the text node of the type you've defined in your custom elements (with any marks you've defined).
+  - This replaces the declaration merging approach, and provides some benefits. One of the drawbacks to declaration merging was that it was impossible to know whether you were dealing with an "unknown" or "known" element, since the underlying type was changed. Similarly, having two editors on the page with different schemas wasn't possible to represent. Hopefully this approach with generics will be able to smoothly replace the declaration merging approach. (While being easy to migrate to, since you can pass those same custom element definitions into `Editor` still.)
 
 **Define your custom types**
 
@@ -2903,15 +2902,15 @@ Migration:
 
 Those Slate types should be replaced by the new types:
 
-- `Editor` -> `TEditor<V extends Value = Value>`
-  - Note that `TEditor` methods are not typed based on `Value` as it would introduce a circular dependency. You can use `getTEditor(editor)` to get the editor with typed methods.
+- `Editor` -> `Editor<V extends Value = Value>`
+  - Note that `Editor` methods are not typed based on `Value` as it would introduce a circular dependency. You can use `getTEditor(editor)` to get the editor with typed methods.
 - `ReactEditor` -> `TReactEditor<V extends Value = Value>`
 - `HistoryEditor` -> `THistoryEditor<V extends Value = Value>`
 - `EditableProps` -> `TEditableProps<V extends Value = Value>`
-- `Node` -> `TNode`
-- `Element` -> `TElement`
-- `Text` -> `TText`
-- `NodeEntry` -> `TNodeEntry`
+- `Node` -> `Node`
+- `Element` -> `Element`
+- `Text` -> `Text`
+- `NodeEntry` -> `NodeEntry`
 - `NodeProps` -> `TNodeProps`
 
 **Slate functions**
@@ -2930,7 +2929,7 @@ Those Slate functions should be replaced by the new typed ones:
 - `Editor` functions are using `<V extends Value>` generic, where `V` can be a custom editor value type used in `PlateEditor<V>`.
 - `Editor` functions returning a node are using `<N extends ENode<V>, V extends Value = Value>` generics, where `N` can be a custom returned node type.
 - `Editor` callbacks (e.g. a plugin option) are using `<V extends Value = Value, E extends PlateEditor<V> = PlateEditor<V>>` generics, where `E` can be a custom editor type.
-- `Node` functions returning a node are using `<N extends Node, R extends TNode = TNode>` generics.
+- `Node` functions returning a node are using `<N extends Node, R extends Node = Node>` generics.
 - These generics are used by `<V extends Value, K extends keyof EMarks<V>>`: `getMarks`, `isMarkActive`, `removeMark`, `setMarks`, `ToggleMarkPlugin`, `addMark`, `removeEditorMark`
 - `WithOverride` is a special type case as it can return a new editor type:
 
@@ -2950,7 +2949,7 @@ Those Slate functions should be replaced by the new typed ones:
   > = (editor: E, plugin: WithPlatePlugin<P, V, E>) => EE;
   ```
 
-- `type TEditor<V extends Value>`
+- `type Editor<V extends Value>`
 - `type PlateEditor<V extends Value>`
 
 **Renamed functions**
@@ -2966,7 +2965,7 @@ Those Slate functions should be replaced by the new typed ones:
 
 **Replaced types**
 
-Removing node props types in favor of element types (same props + extends `TElement`). You can use `TNodeProps` to get the node data (props).
+Removing node props types in favor of element types (same props + extends `Element`). You can use `TNodeProps` to get the node data (props).
 
 - `LinkNodeData` -> `TLinkElement`
 - `ImageNodeData` -> `TImageElement`
@@ -2985,9 +2984,9 @@ Removing node props types in favor of element types (same props + extends `TElem
 - `match` signature change:
 
 ```
-<T extends TNode>(
+<T extends Node>(
   obj: T,
-  path: TPath,
+  path: Path,
   predicate?: Predicate<T>
 )
 ```
@@ -3009,7 +3008,7 @@ getEmptyTableNode(editor, { rowCount: 2, colCount: 2 });
 
 **Generic types**
 
-- `type StyledElementProps<V extends Value, N extends TElement = EElement<V>, TStyles = {}>`
+- `type StyledElementProps<V extends Value, N extends Element = EElement<V>, TStyles = {}>`
 
 # 10.0.0
 
@@ -3621,7 +3620,7 @@ Add `styled-components` to your dependencies
 ```ts
 // Before
 (
-  editor: TEditor,
+  editor: Editor,
   type: string,
   at: Location,
   options: Pick<AutoformatRule, 'preFormat' | 'format'>
@@ -3630,7 +3629,7 @@ Add `styled-components` to your dependencies
 
 ```ts
 // After
-(editor: TEditor, options: AutoformatBlockOptions)
+(editor: Editor, options: AutoformatBlockOptions)
 ```
 
 - moved the checks from `withAutoformat`
@@ -3641,7 +3640,7 @@ Add `styled-components` to your dependencies
 ```ts
 // Before
 (
-  editor: TEditor,
+  editor: Editor,
   options: Pick<AutoformatRule, 'type' | 'between' | 'markup' | 'ignoreTrim'>
 )
 ```
@@ -3649,7 +3648,7 @@ Add `styled-components` to your dependencies
 ```ts
 // After
 (
-  editor: TEditor,
+  editor: Editor,
   options: AutoformatMarkOptions
 )
 ```

@@ -10,5 +10,7 @@ export const insertEmoji = <TEmoji extends Emoji = Emoji>(
   const { createEmojiNode } = editor.getOptions(BaseEmojiPlugin);
 
   const emojiNode = createEmojiNode!(emoji);
-  editor.tf.insertNodes(emojiNode);
+  editor.update((tx) => {
+    tx.nodes.insert(emojiNode);
+  });
 };

@@ -337,10 +337,10 @@ test('model selection export is owned by the matching root view only', () => {
       roots: { child: [{ type: 'paragraph', children: [{ text: 'child' }] }] },
     },
   });
-  const mainEditor = createEditorView(runtime) as any;
-  const childEditor = createEditorView(runtime, { root: 'child' }) as any;
+  const mainEditor = createEditorView(runtime);
+  const childEditor = createEditorView(runtime, { root: 'child' });
 
-  childEditor.update((tx: any) => {
+  childEditor.update((tx) => {
     tx.selection.set({
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },

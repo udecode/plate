@@ -1,16 +1,18 @@
-import type { Editor, NodeEntry } from 'platejs';
+import type { NodeEntry } from '@platejs/slate';
+import type { SlateEditor } from 'platejs';
 
 import { KEYS } from 'platejs';
 
+import { normalizeListSequence } from '../normalizers/normalizeListSequence';
 import { ListStyleType } from '../types';
-import { setIndentTodoNode, setListNode } from './setListNode';
+import { setIndentTodoNodeTx, setListNodeTx } from './setListNode';
 
 /**
  * Set indent list to the given entries. Add indent if listStyleType was not
  * defined.
  */
 export const setListNodes = (
-  editor: Editor,
+  editor: SlateEditor,
   entries: NodeEntry[],
   {
     listStyleType = ListStyleType.Disc,
@@ -18,19 +20,22 @@ export const setListNodes = (
     listStyleType?: string;
   }
 ) => {
-  editor.tf.withoutNormalizing(() => {
+  const startPath = entries[0]?.[1];
+
+  editor.update((tx) => {
     entries.forEach((entry) => {
       const [node, path] = entry;
+      const nodeProps = node as Record<string, unknown>;
 
-      let indent = (node[KEYS.indent] as number) ?? 0;
+      let indent = (nodeProps[KEYS.indent] as number) ?? 0;
       indent =
-        node[KEYS.listType] || Object.hasOwn(node, KEYS.listChecked)
+        nodeProps[KEYS.listType] || Object.hasOwn(nodeProps, KEYS.listChecked)
           ? indent
           : indent + 1;
 
       if (listStyleType === 'todo') {
-        editor.tf.unsetNodes(KEYS.listType, { at: path });
-        setIndentTodoNode(editor, {
+        tx.nodes.unset(KEYS.listType, { at: path });
+        setIndentTodoNodeTx(tx, {
           at: path,
           indent,
           listStyleType,
@@ -39,12 +44,16 @@ export const setListNodes = (
         return;
       }
 
-      editor.tf.unsetNodes(KEYS.listChecked, { at: path });
-      setListNode(editor, {
+      tx.nodes.unset(KEYS.listChecked, { at: path });
+      setListNodeTx(tx, {
         at: path,
         indent,
         listStyleType,
       });
     });
   });
+
+  if (startPath) {
+    normalizeListSequence(editor, startPath);
+  }
 };

@@ -6,10 +6,12 @@ const useReadOnlyMock = mock();
 const someListMock = mock();
 const someTodoListMock = mock();
 const toggleListMock = mock();
+const useNodePathMock = mock();
 
 mock.module('platejs/react', () => ({
   useEditorRef: useEditorRefMock,
   useEditorSelector: useEditorSelectorMock,
+  useNodePath: useNodePathMock,
   useReadOnly: useReadOnlyMock,
 }));
 
@@ -30,6 +32,7 @@ describe('list hooks', () => {
   beforeEach(() => {
     useEditorRefMock.mockReset();
     useEditorSelectorMock.mockReset();
+    useNodePathMock.mockReset();
     useReadOnlyMock.mockReset();
     someListMock.mockReset();
     someTodoListMock.mockReset();
@@ -68,14 +71,19 @@ describe('list hooks', () => {
       `./useTodoListElement?test=${Math.random().toString(36).slice(2)}`
     );
     const setNodes = mock();
+    const update = mock((fn: any) =>
+      fn({
+        nodes: {
+          set: setNodes,
+        },
+      })
+    );
     const element = { checked: false, id: 'todo-1' };
 
     useEditorRefMock.mockReturnValue({
-      api: {
-        findPath: () => [0],
-      },
-      tf: { setNodes },
+      update,
     });
+    useNodePathMock.mockReturnValue([0]);
     useReadOnlyMock.mockReturnValue(false);
 
     const { result } = renderHook(() => {

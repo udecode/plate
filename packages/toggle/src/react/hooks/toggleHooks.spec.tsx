@@ -14,7 +14,7 @@ mock.module('../../lib', () => ({
   someToggle: someToggleMock,
 }));
 
-mock.module('../transforms', () => ({
+mock.module('../transforms/openNextToggles', () => ({
   openNextToggles: openNextTogglesMock,
 }));
 
@@ -53,12 +53,23 @@ describe('toggle hooks', () => {
       await import(
         `./useToggleToolbarButton?test=${Math.random().toString(36).slice(2)}`
       );
-    const toggleBlock = mock();
+    const block = mock(() => [{ type: 'p' }, [0]]);
     const collapse = mock();
     const focus = mock();
+    const set = mock();
+    const update = mock((fn: (tx: unknown) => void) =>
+      fn({
+        nodes: { set },
+        selection: { collapse },
+      })
+    );
     const editor = {
-      tf: { collapse, focus, toggleBlock },
-    } as any;
+      api: {
+        block,
+        dom: { focus },
+      },
+      update,
+    };
 
     someToggleMock.mockReturnValue(true);
     useEditorSelectorMock.mockImplementation((selector: any) => selector({}));
@@ -74,7 +85,9 @@ describe('toggle hooks', () => {
 
     expect(result.current.props.pressed).toBe(true);
     expect(openNextTogglesMock).toHaveBeenCalledWith(editor);
-    expect(toggleBlock).toHaveBeenCalledWith('toggle');
+    expect(block).toHaveBeenCalled();
+    expect(update).toHaveBeenCalled();
+    expect(set).toHaveBeenCalledWith({ type: 'toggle' }, { at: [0] });
     expect(collapse).toHaveBeenCalled();
     expect(focus).toHaveBeenCalled();
   });

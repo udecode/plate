@@ -16,10 +16,10 @@ export const BaseSuperscriptPlugin = createSlatePlugin({
   },
   render: { as: 'sup' },
   rules: { selection: { affinity: 'directional' } },
-}).extendTransforms(({ editor, type }) => ({
-  toggle: () => {
-    editor.tf.toggleMark(type, {
-      remove: editor.getType(KEYS.sub),
-    });
-  },
-}));
+})
+  .extendTx(({ type }) => (tx) => ({
+    toggle: () => {
+      tx.marks.remove(KEYS.sub);
+      tx.marks.toggle(type);
+    },
+  }));

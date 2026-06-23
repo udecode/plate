@@ -145,8 +145,8 @@ const blob = await editor.api.docxExport.exportToBlob({
 
 editor.api.docxExport.download(blob, 'document');
 
-// Or use transform for export + download
-await editor.tf.docxExport.exportAndDownload('document', {
+// Or export and download in one call
+await editor.api.docxExport.exportAndDownload('document', {
   orientation: 'portrait',
 });
 ```
