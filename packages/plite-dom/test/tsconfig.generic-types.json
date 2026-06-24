@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "files": ["./generic-dom-contract.ts"],
+  "compilerOptions": {
+    "composite": false,
+    "noEmit": true,
+    "rootDir": "../../..",
+    "skipLibCheck": true,
+    "types": ["node"]
+  }
+}

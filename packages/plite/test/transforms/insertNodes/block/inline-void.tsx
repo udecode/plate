@@ -1,0 +1,42 @@
+/** @jsx jsx */
+
+import { jsx } from '../../..';
+
+jsx;
+
+export const run = (editor, options = {}) => {
+  editor.nodes.insert(
+    <block>
+      <text />
+    </block>,
+    options
+  );
+};
+export const input = (
+  <editor>
+    <block>
+      <text />
+      <inline void>
+        <cursor />
+      </inline>
+      <text />
+    </block>
+  </editor>
+);
+export const output = (
+  <editor>
+    <block>
+      <text />
+      <inline void>
+        <text />
+      </inline>
+      <text />
+    </block>
+    <block>
+      <cursor />
+    </block>
+    <block>
+      <text />
+    </block>
+  </editor>
+);

@@ -183,7 +183,7 @@ const editor = createPlateEditor({
     在 `(offset * element.indent) + unit` 中使用的缩进偏移量。
     - **默认值：** `1`
   </APIItem>
-  <APIItem name="getNodesOptions" type="EditorNodesOptions" optional>
+  <APIItem name="getNodeOptions" type="object" optional>
     获取要缩进的节点的选项。
   </APIItem>
   <APIItem name="setNodesProps" type="object" optional>
@@ -208,7 +208,7 @@ const editor = createPlateEditor({
     缩进的变化（1 表示缩进，-1 表示取消缩进）。
     - **默认值：** `1`
   </APIItem>
-  <APIItem name="getNodesOptions" type="EditorNodesOptions<V>">
+  <APIItem name="getNodesOptions" type="object<V>">
     额外的 `getNodes` 选项。
   </APIItem>
   <APIItem name="setNodesProps" type="object">

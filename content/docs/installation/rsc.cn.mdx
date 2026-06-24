@@ -8,7 +8,7 @@ description: 安装并配置适用于React Server Components的Plate
 <Callout type="warning" title="关键RSC限制">
   在RSC中使用Plate时，**禁止**从任何`platejs*`包的`/react`子路径导入。始终使用基础导入（例如使用`@platejs/basic-nodes`而非`@platejs/basic-nodes/react`）。
 
-  这意味着您不能使用`platejs/react`中的`createPlateEditor`。请改用`platejs`中的`createSlateEditor`。
+  这意味着您不能使用`platejs/react`中的`createPlateEditor`。请改用`platejs`中的`createBasePlateEditor`。
 </Callout>
 
 <Steps>
@@ -23,12 +23,12 @@ npm install platejs @platejs/basic-nodes
 
 ### 创建编辑器实例
 
-在RSC环境中，您需要使用`platejs`中的`createSlateEditor`来初始化编辑器实例。该函数不依赖React钩子或客户端特定代码。
+在RSC环境中，您需要使用`platejs`中的`createBasePlateEditor`来初始化编辑器实例。该函数不依赖React钩子或客户端特定代码。
 
 以下示例展示如何设置带有各种插件的编辑器，类似于[服务端示例](/docs/examples/server-side)：
 
 ```tsx title="app/api/generate-doc/route.ts"
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import { BaseTextAlignPlugin } from '@platejs/basic-styles';
 import {
   BaseBoldPlugin,
@@ -55,7 +55,7 @@ const initialValue = [
 ];
 
 // 创建编辑器实例
-const editor = createSlateEditor({
+const editor = createBasePlateEditor({
   plugins: [
     // 块级插件
     BaseH1Plugin,
@@ -94,20 +94,20 @@ const markdown = editor.api.markdown.serialize();
 ```
 
 <Callout type="info">
-  `createSlateEditor`创建的是原始Plate编辑器实例。它适用于服务端逻辑、数据转换或准备静态渲染内容。查看完整的[服务端示例](/docs/examples/server-side)了解实际应用。
+  `createBasePlateEditor`创建的是原始Plate编辑器实例。它适用于服务端逻辑、数据转换或准备静态渲染内容。查看完整的[服务端示例](/docs/examples/server-side)了解实际应用。
 </Callout>
 
 ### 内容操作
 
 Plate在RSC中的主要用例是程序化内容操作：
 
--   **[`editor.api`](/docs/api/slate/editor-api)**: 访问各种查询编辑器状态的实用函数。例如：
+-   **[`editor.api`](/docs/api/plite/editor-api)**: 访问各种查询编辑器状态的实用函数。例如：
     -   `editor.api.nodes({ at: [], match })`: 查找特定节点
     -   `editor.api.string([])`: 提取文本内容
     -   [HTML序列化](/docs/html)
     -   [Markdown序列化](/docs/markdown)
 
--   **[`editor.tf`](/docs/api/slate/editor-transforms)**: 使用转换函数修改编辑器内容。例如：
+-   **[`editor.tf`](/docs/api/plite/editor-transforms)**: 使用转换函数修改编辑器内容。例如：
     -   `editor.tf.insertNodes(nodes, opts)`: 插入新节点
     -   `editor.tf.removeNodes(opts)`: 删除节点
     -   `editor.tf.setNodes(props, opts)`: 更新现有节点属性

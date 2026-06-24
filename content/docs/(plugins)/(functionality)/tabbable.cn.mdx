@@ -124,11 +124,11 @@ query: (event) => !!editor.api.some({
 }),
 ```
 
-### 非空Slate节点
+### 非空Plite节点
 
 将为编辑器中的每个可聚焦DOM元素创建一个`TabbableEntry`，使用[tabbable](https://www.npmjs.com/package/tabbable) NPM包确定。然后使用`isTabbable`过滤可聚焦列表。
 
-默认情况下，`isTabbable`仅对void Slate节点内的entry返回true。可以覆盖`isTabbable`以支持其他类型Slate节点中包含的DOM元素：
+默认情况下，`isTabbable`仅对void Plite节点内的entry返回true。可以覆盖`isTabbable`以支持其他类型Plite节点中包含的DOM元素：
 
 ```tsx
 // 启用CUSTOM_ELEMENT内的可聚焦DOM元素
@@ -142,7 +142,7 @@ isTabbable: (tabbableEntry) => (
 
 某些情况下，可能需要允许用户从编辑器切换到外部渲染的DOM元素(如交互式弹出框)。
 
-为此，覆盖`insertTabbableEntries`返回`TabbableEntry`对象数组，每个对象对应一个要包含在可聚焦列表中的外部DOM元素。`TabbableEntry`的`slateNode`和`path`应引用当DOM元素可聚焦时用户光标所在的Slate节点。
+为此，覆盖`insertTabbableEntries`返回`TabbableEntry`对象数组，每个对象对应一个要包含在可聚焦列表中的外部DOM元素。`TabbableEntry`的`slateNode`和`path`应引用当DOM元素可聚焦时用户光标所在的Plite节点。
 
 将`globalEventListener`选项设为`true`以确保Tabbable插件能将用户焦点返回到编辑器。
 
@@ -202,11 +202,11 @@ insertTabbableEntries: (event) => {
   <APIItem name="domNode" type="HTMLElement">
     表示可聚焦entry的HTML元素。
   </APIItem>
-  <APIItem name="slateNode" type="TNode">
-    对应的Slate节点。
+  <APIItem name="slateNode" type="Node">
+    对应的Plite节点。
   </APIItem>
   <APIItem name="path" type="Path">
-    文档中Slate节点的路径。
+    文档中Plite节点的路径。
   </APIItem>
 </APIAttributes>
 </API>

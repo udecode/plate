@@ -1,5 +1,7 @@
 # @platejs/test-utils
 
+## 54.0.0-beta.0
+
 ## 53.0.7
 
 ## 53.0.5
@@ -17,7 +19,7 @@
 ### Patch Changes
 
 - [#4853](https://github.com/udecode/plate/pull/4853) by [@zbeyens](https://github.com/zbeyens) –
-  - Update Slate dependencies to `0.123.0`
+  - Update Plite dependencies to `0.123.0`
 
 ## 52.3.2
 
@@ -209,11 +211,11 @@
 
 ### Major Changes
 
-🎉 The **Slate Plugins** project has evolved to **Plate** 🎉
+🎉 The **Plite Plugins** project has evolved to **Plate** 🎉
 
 To migrate, install `@udecode/plate[-x]` then find and replace all
 occurrences of:
 
-- `slate-plugins` to `plate`
+- `plite-plugins` to `plate`
 - `SlatePlugins` to `Plate`
 - `SlatePlugin` to `PlatePlugin`

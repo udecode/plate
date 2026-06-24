@@ -1,6 +1,6 @@
 {
   "name": "@platejs/excalidraw",
-  "version": "53.0.0",
+  "version": "54.0.0-beta.0",
   "description": "Excalidraw plugin for Plate",
   "keywords": [
     "plate",
@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "@excalidraw/excalidraw": "0.18.0",
+    "@platejs/plite": "workspace:^",
     "lodash": "^4.17.21",
     "react-compiler-runtime": "^1.0.0"
   },
@@ -50,7 +51,7 @@
     "@types/lodash": "^4.17.13"
   },
   "peerDependencies": {
-    "platejs": ">=53.0.0",
+    "platejs": ">=54.0.0-beta.0",
     "react": ">=18.0.0",
     "react-dom": ">=18.0.0"
   },

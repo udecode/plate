@@ -143,7 +143,7 @@ const editor = createPlateEditor({
 ### `tf.insert.equation`
 
 <API name="insert.equation">
-<APIOptions type="InsertNodesOptions">
+<APIOptions type="object">
     插入节点的转换选项
 </APIOptions>
 </API>
@@ -157,7 +157,7 @@ const editor = createPlateEditor({
   <APIItem name="texExpression" type="string" optional>
     要插入的LaTeX表达式。如未提供则为空公式。
   </APIItem>
-  <APIItem name="options" type="InsertNodesOptions" optional>
+  <APIItem name="options" type="object" optional>
     插入节点的转换选项
   </APIItem>
 </APIParameters>
@@ -168,7 +168,7 @@ const editor = createPlateEditor({
 ### `TEquationElement`
 
 ```typescript
-interface TEquationElement extends TElement {
+interface TEquationElement extends Element {
   texExpression: string;
 }
 ```

@@ -1,0 +1,421 @@
+---
+title: "Plite React Hooks"
+description: "Read editor state, root state, projections, annotations, widgets, and DOM-aware facts from React."
+---
+
+Use hooks inside a `Plite` provider when React UI needs editor facts. Prefer the narrowest hook that matches the UI: editor-wide hooks for toolbars, element hooks for rendered nodes, and projection hooks for decorations, annotations, and widgets.
+
+## On This Page
+
+- [Editor Hooks](hooks#editor-hooks)
+- [Runtime And Root Hooks](hooks#runtime-and-root-hooks)
+- [Element And Node Hooks](hooks#element-and-node-hooks)
+- [Projection Hooks](hooks#projection-hooks)
+- [DOM Strategy Hooks](hooks#dom-strategy-hooks)
+- [Annotation Hooks](hooks#annotation-hooks)
+- [Widget Hooks](hooks#widget-hooks)
+
+## Editor Hooks
+
+#### `useEditor(): Editor`
+
+Get the current editor object from React context.
+Use `usePliteEditor` to create an editor; use `useEditor` inside descendants
+that read the provider editor.
+
+#### `useEditorComposing(): boolean`
+
+Get whether the editor is currently handling a composition session.
+
+#### `useEditorFocused(): boolean`
+
+Get whether the editor is focused. Use this for toolbar UI, not for
+every rendered node in a large document.
+
+#### `useEditorReadOnly(): boolean`
+
+Get whether the current editor is read-only.
+
+#### `useEditorSelection(): Range | null`
+
+Get the current editor selection. This hook re-renders when the selection
+changes, so keep it out of large rendered node trees.
+
+#### `useEditorState<T>(selector, options?): T`
+
+Subscribe to a derived editor-state value. The selector runs inside
+`editor.read`, so toolbar UI does not need to open a read boundary by
+hand.
+
+```typescript
+const isBold = useEditorState((state) => {
+  return state.marks.get()?.bold === true;
+});
+```
+
+Use `options.shouldUpdate` to skip commits that cannot affect the selected
+value.
+
+```typescript
+const selection = useEditorState((state) => state.selection.get(), {
+  shouldUpdate: (change) => Boolean(change?.selectionChanged),
+});
+```
+
+Pass `options.deps` when the selector closes over component props.
+
+```typescript
+const matchingText = useEditorState(
+  (state) => state.text.string([]).includes(query),
+  { deps: [query] }
+);
+```
+
+#### `useStateFieldValue<T>(field, options?): T`
+
+Subscribe to one `defineStateField` value.
+
+```tsx
+const title = useStateFieldValue(documentTitle);
+```
+
+The hook only re-renders when that field key appears in
+`change.dirtyStateKeys`. Use it for document title, page settings, spellcheck,
+and other document state controls.
+
+#### `useSetStateField<T>(field): (value, options?) => void`
+
+Create a setter for one `defineStateField` value.
+
+```tsx
+const setTitle = useSetStateField(documentTitle);
+
+setTitle("Q3 Launch Brief");
+```
+
+The setter writes through `editor.update` and preserves DOM selection by
+default. Pass update options when the app needs a tag or collaboration metadata.
+
+#### `useEditorSelector<T>(selector, equalityFn?, options?): T`
+
+Subscribe to a low-level derived editor value.
+
+Use `useEditorState` for normal app-level editor reads. Use
+`useEditorSelector` when you intentionally need the editor object or operation
+batch passed to the selector. Prefer node-, text-, decoration-, or
+element-scoped hooks when rendering editor content.
+
+```typescript
+const latestOperationCount = useEditorSelector((_editor, operations) => {
+  return operations?.length ?? 0;
+});
+```
+
+#### `usePliteHistory(options?): PliteHistoryController`
+
+Create undo/redo commands and keyboard handling for the active root.
+
+```tsx
+const history = usePliteHistory();
+
+return (
+  <button disabled={!history.canUndo} onClick={history.undo}>
+    Undo
+  </button>
+);
+```
+
+Pass `options.root` to bind history controls to one root. Pass
+`focusPolicy: 'preserve'` when undo/redo is controlled from external UI and
+DOM focus should stay outside the editor. `history.root` is `undefined` for the
+primary document and the root key for an extra root.
+
+## Runtime And Root Hooks
+
+Use these when one editor owns multiple roots or external chrome.
+
+- Runtime hooks read the whole editor runtime.
+- Root state hooks read one root.
+- Root editor hooks return a command-capable editor for one root.
+
+Prefer `usePliteRootEditor(root)` when UI knows its root. Use
+`usePliteActiveEditor()` only for UI that should follow the current selection.
+
+#### `usePliteRuntime(options?): PliteRuntimeValue`
+
+Create a React runtime value, or read the nearest runtime from `PliteRuntime`.
+Most app code should use `Plite` directly.
+
+#### `usePliteRuntimeState<T>(selector, options?): T`
+
+Subscribe to whole-runtime editor state. The selector runs in a read boundary and
+re-renders only when the selected value changes.
+
+Shared selector options are `deps`, `equalityFn`, `shouldUpdate`, and
+`deferred`. Pass `deps` when the selector closes over props. Use
+`shouldUpdate(change, operations)` to skip commits that cannot affect the
+selected value.
+
+#### `usePliteRootState<T>(root, selector, options?): T`
+
+Subscribe to one root's state. The selector skips commits that cannot affect
+that root.
+
+#### `usePliteActiveRoot(): RootKey | undefined`
+
+Read the extra root key that owns the current selection. It returns `undefined`
+for the primary document.
+
+#### `usePliteRootEditor(root?, options?): PliteRootEditor`
+
+Create a command-capable editor for one root.
+
+Use this for root-specific toolbar or sidebar commands. Pass `{ readOnly:
+true }` when the editor should only read state.
+Omit `root` for the primary document.
+
+#### `usePliteActiveEditor(): PliteRootEditor`
+
+Create a command-capable editor for the root that owns the selection.
+
+#### `usePliteRootChrome(root?, options?): PliteRootChromeController`
+
+Create root chrome props for mouse interaction outside the editable content,
+such as margin clicks and drag selection around a root.
+
+```tsx
+const chrome = usePliteRootChrome("body");
+
+return <div {...chrome.props}>{children}</div>;
+```
+
+Pass `selection: 'end'` for chrome that should place the caret at the end of a
+root when clicked.
+
+#### `usePliteContentRoot(element?, options?): PliteContentRootController`
+
+Resolve a schema-owned child content root and its chrome controller.
+
+Use this inside an element renderer for editable voids or nested editor
+surfaces.
+
+#### `usePliteChildRoot(element?, slot?): RootKey`
+
+Resolve the stable child-root key for an element and slot.
+
+Prefer persisted `childRoots[slot]` when the child root is part of document
+data. The runtime fallback is for ephemeral editor islands.
+
+#### `usePliteRootEffect(effect, options?)`
+
+Run after Plite flushes mounted roots. Use this when a command or
+measurement needs the live root editor.
+
+Pass `root` to target one root. Pass `deps` for React-style rerun control.
+Omit `deps` when the effect should rerun after every React render.
+
+#### `usePliteCommandCallback(callback, options?): (...args) => result`
+
+Create a stable callback that resolves the mounted root editor at call time.
+
+```tsx
+const toggleTitle = usePliteCommandCallback((editor) => {
+  editor.update((tx) => tx.text.insert("Title"));
+});
+```
+
+Pass `focus: 'restore-root'` when the command should move focus back to the
+editor root before running. Pass `focus: 'none'` to leave focus alone. The
+default is `focus: 'preserve'`. Pass `root` when the command should target a
+known root instead of the editable or active root.
+
+## Element And Node Hooks
+
+Use these inside rendered editor content or node-local UI.
+
+#### `useElement(): Element`
+
+Get the current element object inside an element renderer.
+
+#### `useElementPath(): Path | null`
+
+Subscribe to the current path of the rendered element. Use this only for UI
+that displays or derives live path state during render. Event handlers should
+usually call `editor.api.dom.resolvePath(element)` and return early when it is
+not mounted.
+
+#### `useElementSelected(options?: UseElementSelectedOptions): boolean`
+
+Subscribe to whether the current element, or an explicit element path,
+intersects the current selection. Use `{ mode: 'collapsed' }` when selected UI
+should only appear for a collapsed caret inside the element, such as a block
+void image ring. Pass `{ at: path }` when the component needs to watch an
+explicit element path. Use this only when the component actually draws selected
+UI.
+
+```ts
+type UseElementSelectedOptions = {
+  at?: Path | null;
+  mode?: "intersects" | "collapsed";
+};
+```
+
+#### `usePliteNodeRef(runtimeId, options?): (node) => void`
+
+Bind a custom node element to Plite's runtime id, path, and DOM lookup maps.
+
+Use this only when replacing Plite's render primitives with a custom DOM shell.
+Normal renderers should use `PliteElement`, `PliteText`, `PliteLeaf`, or
+`PlitePlaceholder` so the required DOM attributes stay attached.
+
+#### `useNodeSelector<T>(selector, equalityFn?, options?): T`
+
+Subscribe to a value derived from one mounted node.
+
+Pass `options.runtimeId` to target a specific node, or call it inside an editor
+node renderer to use that renderer's runtime target.
+
+#### `useTextSelector<T>(selector, equalityFn?, options?): T`
+
+Subscribe to a value derived from one mounted text node.
+
+Pass `options.runtimeId` to target a specific text node, or call it inside an
+editor text renderer to use that renderer's runtime target.
+
+#### `useDecorationSelector<T>(selector, equalityFn?, options?): T`
+
+Subscribe to decoration/projection data for one mounted runtime target.
+
+Pass `options.runtimeId` to target a specific runtime node, or call it inside a
+renderer that already has runtime target context.
+
+## Projection Hooks
+
+Use projection hooks when ranges need to be shared across the editor, overlays,
+sidebars, annotations, or widgets.
+
+#### `usePliteProjectionEntries<T>(runtimeId): readonly PliteProjectionEntry<T>[]`
+
+Subscribe to low-level projected range entries for one runtime node. Normal app
+UI should use decoration sources, annotation stores, or widget stores first.
+Use projection entries only when custom inline rendering needs the exact
+projected slices for one mounted runtime id.
+
+#### `usePliteDecorationSource<T>(editor, options): PliteDecorationSource<T>`
+
+Create a provider-owned decoration source from React state.
+
+Use this when ranges are shared across the editor surface, sidebars, toolbars,
+or other overlay UI. Use `Editable.decorate` for a simple editor-local callback.
+
+```tsx
+const searchSource = usePliteDecorationSource(editor, {
+  id: "search",
+  read: ({ snapshot }) => findSearchMatches(snapshot, query),
+});
+
+return (
+  <Plite decorationSources={[searchSource]} editor={editor}>
+    <Editable renderSegment={renderSearchMatch} />
+  </Plite>
+);
+```
+
+#### `usePliteRangeDecorationSource<T>(editor, options): PliteDecorationSource<T>`
+
+Create a provider-owned decoration source from Plite ranges.
+
+The hook accepts `PliteRangeDecorationSourceOptions`, reads ranges from the
+current editor snapshot, and converts them to keyed decorations for the
+shared projection runtime. Use it for search matches, diagnostics, or highlight
+data that already lives as Plite ranges.
+
+```tsx
+const searchSource = usePliteRangeDecorationSource(editor, {
+  id: "search",
+  read: ({ snapshot }) => findSearchRanges(snapshot, query),
+});
+```
+
+## DOM Strategy Hooks
+
+Use these only when writing DOM-strategy-aware renderers.
+
+#### `useDOMStrategyVirtualOffset(): number`
+
+Read the vertical document offset for the current virtualized row.
+
+Use this inside DOM-strategy renderers that paint projected content against
+absolute document coordinates. Normal editor UI should not need it.
+
+## Annotation Hooks
+
+Use annotation hooks for durable anchored ranges such as comments, suggestions,
+diagnostics, and external review markers.
+
+#### `usePliteAnnotationStore<TData, TProjection>(editor, annotationsOrOptions): PliteAnnotationStore<TData, TProjection>`
+
+Create an annotation store for durable anchored ranges such as comments,
+suggestions, diagnostics, or external review markers.
+
+Pass the store to `Plite` so `Editable`, sidebars, and widget UI read one
+annotation snapshot.
+
+Pass an array for simple static annotation lists. Pass a projector when
+annotations are derived from React state and should refresh from explicit
+dependencies.
+
+```tsx
+const annotationStore = usePliteAnnotationStore(editor, {
+  deps: [comments],
+  project: () =>
+    comments.map((comment) => ({
+      anchor: comment.anchor,
+      data: comment,
+      id: comment.id,
+      projection: { tone: comment.tone },
+    })),
+});
+```
+
+#### `usePliteAnnotations<TData, TProjection>(store?): PliteAnnotationSnapshot<TData, TProjection>`
+
+Read the current annotation snapshot. Without an explicit store, the hook reads
+the store from the nearest `Plite` provider.
+
+#### `usePliteAnnotation<TData, TProjection>(id, store?): PliteResolvedAnnotation<TData, TProjection> | null`
+
+Read one annotation by id.
+
+## Widget Hooks
+
+Use widget hooks for UI anchored to nodes, selections, or annotations.
+
+#### `usePliteWidgetStore<TWidget, TAnnotation>(editor, widgetsOrOptions, annotationStore?): PliteWidgetStore<TWidget, TAnnotation>`
+
+Create a widget store for UI anchored to nodes, selections, or annotations.
+
+Pass an array for simple static widget lists. Pass a projector when widget
+creation depends on React state and should refresh from explicit dependencies.
+
+```tsx
+const widgetStore = usePliteWidgetStore(editor, {
+  annotationStore,
+  deps: [commentId],
+  project: () => [
+    {
+      anchor: { annotationId: commentId, type: "annotation" },
+      data: { label: "Comment" },
+      id: "comment-widget",
+    },
+  ],
+});
+```
+
+#### `usePliteWidgets<TWidget, TAnnotation>(store): PliteWidgetSnapshot<TWidget, TAnnotation>`
+
+Read every widget in a widget store.
+
+#### `usePliteWidget<TWidget, TAnnotation>(store, id): PliteResolvedWidget<TWidget, TAnnotation> | null`
+
+Read one widget by id.

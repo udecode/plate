@@ -1,0 +1,173 @@
+---
+title: "Defining Custom Elements"
+description: "Render custom block elements while preserving Plite's editable DOM contract."
+---
+
+The smallest editor can render a paragraph without a custom renderer, but real
+editors usually need block types such as paragraphs, quotes, code blocks, list
+items, cards, and embeds.
+
+## Starting Point
+
+Start from the editor from the previous walkthrough:
+
+```tsx
+const initialValue = [
+  {
+    type: "paragraph",
+    children: [{ text: "A line of text in a paragraph." }],
+  },
+];
+
+const App = () => {
+  const editor = usePliteEditor({ initialValue });
+
+  return (
+    <Plite editor={editor}>
+      <Editable
+        onKeyDown={(event) => {
+          if (event.key === "&") {
+            event.preventDefault();
+            editor.update((tx) => {
+              tx.text.insert("and");
+            });
+          }
+        }}
+      />
+    </Plite>
+  );
+};
+```
+
+## Render Elements
+
+Element renderers are normal React functions. Always spread `attributes` on the
+top-level DOM element and render `children`.
+
+```tsx
+const CodeElement = ({ attributes, children }) => {
+  return (
+    <pre {...attributes}>
+      <code>{children}</code>
+    </pre>
+  );
+};
+
+const DefaultElement = ({ attributes, children }) => {
+  return <p {...attributes}>{children}</p>;
+};
+
+const renderElement = (props) => {
+  switch (props.element.type) {
+    case "code":
+      return <CodeElement {...props} />;
+    default:
+      return <DefaultElement {...props} />;
+  }
+};
+```
+
+Pass the renderer to `Editable`:
+
+```tsx
+const App = () => {
+  const editor = usePliteEditor({ initialValue });
+
+  return (
+    <Plite editor={editor}>
+      <Editable
+        renderElement={renderElement}
+        onKeyDown={(event) => {
+          if (event.key === "&") {
+            event.preventDefault();
+            editor.update((tx) => {
+              tx.text.insert("and");
+            });
+          }
+        }}
+      />
+    </Plite>
+  );
+};
+```
+
+Keep renderer functions stable by defining them at module scope or memoizing
+them once.
+
+## Toggle A Block Type
+
+Use `editor.update(...)` and `tx.nodes.set(...)` to change the selected block.
+
+```tsx
+import { ElementApi } from "@platejs/plite";
+
+const App = () => {
+  const editor = usePliteEditor({ initialValue });
+
+  return (
+    <Plite editor={editor}>
+      <Editable
+        renderElement={renderElement}
+        onKeyDown={(event) => {
+          if (event.key === "`" && event.ctrlKey) {
+            event.preventDefault();
+
+            editor.update((tx) => {
+              tx.nodes.set(
+                { type: "code" },
+                {
+                  match: (node) =>
+                    ElementApi.isElement(node) && tx.schema.isBlock(node),
+                }
+              );
+            });
+          }
+        }}
+      />
+    </Plite>
+  );
+};
+```
+
+To make the shortcut toggle, read first, then write:
+
+```tsx
+import { ElementApi } from "@platejs/plite";
+
+const App = () => {
+  const editor = usePliteEditor({ initialValue });
+
+  return (
+    <Plite editor={editor}>
+      <Editable
+        renderElement={renderElement}
+        onKeyDown={(event) => {
+          if (event.key === "`" && event.ctrlKey) {
+            event.preventDefault();
+
+            const match = editor.read((state) =>
+              state.nodes.find({
+                match: (node) =>
+                  ElementApi.isElement(node) && node.type === "code",
+              })
+            );
+
+            editor.update((tx) => {
+              tx.nodes.set(
+                { type: match ? "paragraph" : "code" },
+                {
+                  match: (node) =>
+                    ElementApi.isElement(node) && tx.schema.isBlock(node),
+                }
+              );
+            });
+          }
+        }}
+      />
+    </Plite>
+  );
+};
+```
+
+The renderer controls how a node looks. The transaction controls the document
+shape.

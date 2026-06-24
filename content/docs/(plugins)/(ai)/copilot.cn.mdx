@@ -257,7 +257,7 @@ CopilotPlugin.configure(({ api }) => ({
         if (!contextEntry) return '';
 
         const prompt = serializeMd(editor, {
-          value: [contextEntry[0] as TElement],
+          value: [contextEntry[0] as Element],
         });
 
         return `继续文本直到下一个标点符号：

@@ -1,0 +1,65 @@
+---
+title: "Plite React"
+description: "Use the React editor runtime, provider, Editable surface, hooks, overlays, and DOM strategies."
+---
+
+`@platejs/plite-react` owns the React editor runtime: editor creation, the `Plite`
+provider, the `Editable` surface, browser event handling, native selection
+sync, void shells, hidden DOM coverage, decoration sources, annotations,
+widgets, and large-document DOM strategies.
+
+Start with `usePliteEditor`, `Plite`, and `Editable`.
+
+## Minimal Usage
+
+```tsx
+import { Plite, Editable, usePliteEditor } from "@platejs/plite-react";
+
+const Editor = () => {
+  const editor = usePliteEditor({
+    initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
+  });
+
+  return (
+    <Plite editor={editor}>
+      <Editable placeholder="Start typing..." />
+    </Plite>
+  );
+};
+```
+
+## Stable Runtime Path
+
+- [React Editor Setup](./react-editor-setup): create an editor and install
+  the React, DOM, clipboard, and history extensions.
+- [Plite Component](./plite): provide the editor, value changes, decoration
+  sources, annotation stores, and widget stores.
+- [Editable Component](./editable): render content, marks, voids,
+  placeholders, DOM strategies, and editor event handlers.
+- [Event Handling](./event-handling): customize copy, paste, drop, keyboard,
+  input, selection, focus, and drag behavior without replacing Plite's runtime.
+- [Hooks](./hooks): subscribe to editor state, runtime state, roots,
+  mounted nodes, decorations, annotations, widgets, focus, read-only state, and
+  selection.
+
+## Runtime Boundaries
+
+- [React Editor](./react-editor): DOM, focus, selection, clipboard, and
+  React-specific editor APIs.
+- Rendering primitives `PliteElement`, `PliteText`, `PliteLeaf`, and
+  `PlitePlaceholder` carry Plite's DOM attributes when custom renderers need to
+  keep the native editing contract intact.
+- [DOM Coverage Boundaries](./dom-coverage-boundaries): represent hidden or
+  summarized DOM regions for selection, copy, find, and materialization.
+- [Annotations](./annotations): durable anchored ranges for comments,
+  suggestions, diagnostics, and review markers.
+- [Hooks](./hooks): runtime/root hooks and widget hooks for external chrome
+  and overlay UI anchored to roots, nodes, selections, and annotations. Advanced
+  hooks include `usePliteNodeRef`, `useDOMStrategyVirtualOffset`, and
+  `usePliteRangeDecorationSource`.
+
+## Advanced Lanes
+
+- [Virtualized Rendering](./experimental-virtualized-rendering):
+  large-document stress and DOM-budget work. Keep production use behind explicit
+  product proof.

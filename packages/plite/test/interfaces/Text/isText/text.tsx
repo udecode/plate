@@ -1,0 +1,9 @@
+/** @jsx jsx */
+
+import { TextApi } from '@platejs/plite';
+
+export const input = {
+  text: '',
+};
+export const test = (value) => TextApi.isText(value);
+export const output = true;

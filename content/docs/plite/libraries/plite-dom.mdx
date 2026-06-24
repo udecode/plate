@@ -1,0 +1,122 @@
+---
+title: "Plite DOM"
+description: "Use DOM, clipboard, hotkey, and coverage helpers outside React-owned rendering."
+---
+
+`@platejs/plite-dom` is the DOM bridge for Plite editors. It owns DOM point/range
+conversion, selection conversion, clipboard formatting, hotkey helpers,
+contenteditable helpers, and DOM coverage metadata used by framework runtimes.
+React apps normally use these APIs through `@platejs/plite-react`.
+
+## Usage
+
+Framework runtimes usually call the DOM bridge through installed editor APIs.
+
+```ts
+editor.api.dom.focus();
+editor.api.clipboard.insertTextData(dataTransfer);
+```
+
+Use direct public imports from `@platejs/plite-dom` for framework integration
+code that needs DOM bridge helpers without React.
+
+```ts
+import { DOMCoverage, Hotkeys, isDOMNode } from "@platejs/plite-dom";
+```
+
+## Public Utility Groups
+
+`dom()` installs the DOM bridge extension on a core editor.
+`PliteDOMResolutionError` is the thrown error type for failed assert-style DOM
+resolution.
+
+`DOMCoverage` owns hidden, staged, and virtualized same-root coverage metadata.
+
+`Hotkeys`, `isHotkey`, and `Key` cover keyboard matching and keyboard names.
+`TRIPLE_CLICK` is the click count Plite uses for block-level triple-click
+handling.
+
+DOM utilities include shadow-aware traversal, active element/window/selection
+lookups, DOM type guards, DOM point normalization, plain-text paste detection,
+tracked mutation detection, and DOM order checks:
+
+```ts
+import {
+  closestShadowAware,
+  containsShadowAware,
+  getActiveElement,
+  getDefaultView,
+  getSelection,
+  hasShadowRoot,
+  isAfter,
+  isBefore,
+  isDOMElement,
+  isDOMNode,
+  isDOMSelection,
+  isDOMText,
+  isPlainTextOnlyPaste,
+  isTrackedMutation,
+  normalizeDOMPoint,
+} from "@platejs/plite-dom";
+```
+
+Text-diff utilities include string diff normalization, merging, point/range
+projection, target-range calculation, and state verification:
+
+```ts
+import {
+  applyStringDiff,
+  mergeStringDiffs,
+  normalizePoint,
+  normalizeRange,
+  normalizeStringDiff,
+  targetRange,
+  verifyDiffState,
+} from "@platejs/plite-dom";
+```
+
+Environment flags include `CAN_USE_DOM`, `HAS_BEFORE_INPUT_SUPPORT`,
+`IS_ANDROID`, `IS_CHROME`, `IS_FIREFOX`, `IS_IOS`, `IS_UC_MOBILE`, `IS_WEBKIT`,
+and `IS_WECHATBROWSER`.
+
+Decoration helpers include `isElementDecorationsEqual`,
+`isTextDecorationsEqual`, and `splitDecorationsByChild`.
+
+## Public Type Groups
+
+DOM bridge types include `DOMApi`, `DOMClipboardApi`,
+`DOMClipboardInsertDataHandler`, and `DOMEditorOptions`.
+
+DOM coverage types include `DOMCoverageBoundary`,
+`DOMCoverageSelectionPolicy`, `DOMCoveragePlitePointResult`, and
+`DOMCoverageDOMRangeResult`. Use these when a framework layer needs to describe
+hidden, staged, or virtualized same-root content.
+
+DOM primitive type names include `DOMNode`, `DOMElement`, `DOMText`, `DOMPoint`,
+`DOMRange`, `DOMStaticRange`, and `DOMSelection`.
+
+Hotkey and diff helper types include `HotkeySpec`, `HotkeyPlatform`,
+`HotkeyMatchOptions`, `KeyboardEventLike`, `StringDiff`, and `TextDiff`.
+
+## DOM Coverage
+
+DOM coverage boundaries model same-root content whose DOM is hidden, staged, or
+virtualized. They keep selection, copy, find, and Plite-to-DOM conversion tied
+to explicit policies instead of assuming every document node is mounted.
+
+React applications usually configure DOM coverage through
+[`EditableDOMCoverageBoundary`](./plite-react/dom-coverage-boundaries).
+
+## Internal Subpath
+
+The `/internal` package subpath is reserved for sibling Plite packages in this
+repo. Applications, extension libraries, and framework adapters outside this
+workspace should use the root `@platejs/plite-dom` export.
+
+## Related Docs
+
+- [React Editor](./plite-react/react-editor)
+- [Editable Component](./plite-react/editable)
+- [Clipboard And Paste](../concepts/17-clipboard-and-paste)
+- [DOM Coverage Boundaries](./plite-react/dom-coverage-boundaries)
+- [Event Handling](./plite-react/event-handling)

@@ -318,24 +318,24 @@ editor.tf.insert.tableRow()
 对于更复杂的编辑器，可以在单独的文件中定义类型（例如`plate-types.ts`）：
 
 ```ts
-import type { TElement, TText } from 'platejs';
+import type { Element, Text } from 'platejs';
 import type { TPlateEditor } from 'platejs/react';
 
 // 定义自定义元素类型
-interface ParagraphElement extends TElement {
+interface ParagraphElement extends Element {
   align?: 'left' | 'center' | 'right' | 'justify';
   children: RichText[];
   type: typeof ParagraphPlugin.key;
 }
 
-interface ImageElement extends TElement {
+interface ImageElement extends Element {
   children: [{ text: '' }]
   type: typeof ImagePlugin.key;
   url: string;
 }
 
 // 定义自定义文本类型
-interface FormattedText extends TText {
+interface FormattedText extends Text {
   bold?: boolean;
   italic?: boolean;
 }

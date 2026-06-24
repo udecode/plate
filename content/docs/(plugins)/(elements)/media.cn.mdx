@@ -606,7 +606,7 @@ enum UploadErrorCode {
   <APIItem name="url" type="string | ArrayBuffer">
     图片的 URL 或 ArrayBuffer。
   </APIItem>
-  <APIItem name="options" type="InsertNodesOptions" optional>
+  <APIItem name="options" type="object" optional>
     插入图片元素的额外选项。
   </APIItem>
 </APIParameters>
@@ -632,7 +632,7 @@ enum UploadErrorCode {
     媒体嵌入元素的键。
     - **默认值:** `KEYS.mediaEmbed`
   </APIItem>
-  <APIItem name="insertNodesOptions" type="InsertNodesOptions" optional>
+  <APIItem name="insertNodesOptions" type="object" optional>
     插入节点的额外选项。
   </APIItem>
 </APIOptions>
@@ -919,7 +919,7 @@ enum UploadErrorCode {
 ### `TMediaElement`
 
 ```tsx
-export interface TMediaElement extends TElement {
+export interface TMediaElement extends Element {
   url: string;
   id?: string;
   align?: 'center' | 'left' | 'right';
@@ -932,7 +932,7 @@ export interface TMediaElement extends TElement {
 ### `TPlaceholderElement`
 
 ```tsx
-export interface TPlaceholderElement extends TElement {
+export interface TPlaceholderElement extends Element {
   mediaType: string;
 }
 ```

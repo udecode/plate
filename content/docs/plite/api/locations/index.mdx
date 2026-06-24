@@ -1,0 +1,25 @@
+---
+title: "Location Types APIs"
+description: "Union types for paths, points, ranges, and spans in Plite documents."
+---
+
+The `Location` interface is a union of the ways to refer to a specific location in a Plite document: paths, points or ranges. Methods will often accept a `Location` instead of requiring only a `Path`, `Point` or `Range`.
+
+## Type
+
+```typescript
+type Location = Path | Point | Range;
+```
+
+## Location Pages
+
+- [Location](./location)
+- [Path](./path)
+- [Bookmark](./bookmark)
+- [PathRef](./path-ref)
+- [Point](./point)
+- [PointEntry](./point-entry)
+- [PointRef](./point-ref)
+- [Range](./range)
+- [RangeRef](./range-ref)
+- [Span](./span)

@@ -1,0 +1,352 @@
+---
+title: "Operation Replay Substrate"
+description: "Use commits, operations, and state patches as the raw replay contract for adapters."
+---
+
+Remote editing in Plite starts with operations and commits. Plite does not
+choose your network layer, CRDT, persistence model, or awareness protocol. This
+walkthrough shows the raw replay substrate an adapter can build on.
+
+## On This Page
+
+- [Start with a local editor](07-operation-replay-substrate#start-with-a-local-editor)
+- [Export operations](07-operation-replay-substrate#export-operations)
+- [Import remote operations](07-operation-replay-substrate#import-remote-operations)
+- [Subscribe to commits](07-operation-replay-substrate#subscribe-to-commits)
+- [Commit metadata](07-operation-replay-substrate#commit-metadata)
+- [Runtime ids are local](07-operation-replay-substrate#runtime-ids-are-local)
+- [Adapter ownership](07-operation-replay-substrate#adapter-ownership)
+- [Hocuspocus transport](07-operation-replay-substrate#hocuspocus-transport)
+- [Extension helpers](07-operation-replay-substrate#extension-helpers)
+- [What this page does not cover](07-operation-replay-substrate#what-this-page-does-not-cover)
+
+## Start with a local editor
+
+We'll use a normal editor first. Local writes still happen through
+`editor.update`, and the runtime records one commit for the whole update.
+
+```tsx
+import { createEditor } from "@platejs/plite";
+
+const editor = createEditor();
+
+editor.update(
+  (tx) => {
+    tx.text.insert("!");
+    tx.nodes.insert(
+      { type: "paragraph", children: [{ text: "four" }] },
+      { at: [3] }
+    );
+  },
+  { tag: ["local-edit", "collab-export"] }
+);
+
+const commit = editor.read((state) => state.value.lastCommit());
+```
+
+The `tag` option is a cheap lifecycle label. `metadata` is the typed policy
+channel for history, remote import, and selection behavior.
+
+## Export operations
+
+A commit contains the operations that changed the document plus the metadata
+Plite computed while applying them.
+
+```tsx
+const sharedStateKeys = new Set(["document.title", "page.settings"]);
+const commit = editor.read((state) => state.value.lastCommit());
+
+if (commit) {
+  const statePatches = commit.statePatches.filter((patch) =>
+    sharedStateKeys.has(patch.key)
+  );
+
+  if (commit.operations.length > 0 || statePatches.length > 0) {
+    sendToPeers({
+      metadata: commit.metadata,
+      operations: commit.operations,
+      statePatches,
+      tags: commit.tags,
+      selectionBefore: commit.selectionBefore,
+      selectionAfter: commit.selectionAfter,
+    });
+  }
+}
+```
+
+Operations and shared state patches are the document replay contract. Your
+adapter can translate them into its own transport format, persist them, batch
+them, or merge them with a CRDT. Plite only requires that the operations and
+state patches you replay are valid Plite payloads.
+
+Commit operations use the serialized document form: primary-document operations
+omit `root`, and extra-root operations keep `root`. Replay remote batches
+through the base editor/runtime when a message can contain both primary-document
+and extra-root edits; root-bound editor views are for local commands scoped to
+that root.
+
+Bulk edits are still operations. A paste can publish one `replace_fragment`
+operation that replaces a child slice and carries the selection before and after
+the replacement. If your adapter can replay Plite operations, replay it as-is.
+If your CRDT needs finer-grained edits, lower `replace_fragment` inside the
+adapter, not inside Plite's paste path.
+
+## Import remote operations
+
+Remote operations enter through `tx.operations.replay(...)`. This is the
+explicit operation replay path.
+
+```tsx
+editor.update(
+  (tx) => {
+    tx.operations.replay(message.operations);
+  },
+  {
+    tag: ["collaboration", "remote-import"],
+    metadata: {
+      collab: { origin: "remote", saveToHistory: false },
+      history: { mode: "skip" },
+      selection: { dom: "preserve" },
+    },
+  }
+);
+```
+
+Importing operations produces a normal commit. Subscribers, history, extension
+listeners, and React projection code all observe the same commit shape.
+
+If the remote message includes document state-field changes, replay those
+patches in the same transaction.
+
+```tsx
+const sharedStateKeys = new Set(["document.title", "page.settings"]);
+const statePatches = (message.statePatches ?? []).filter((patch) =>
+  sharedStateKeys.has(patch.key)
+);
+
+editor.update(
+  (tx) => {
+    tx.operations.replay(message.operations);
+    tx.statePatches.replay(statePatches);
+  },
+  {
+    tag: ["collaboration", "remote-import"],
+    metadata: {
+      collab: { origin: "remote", saveToHistory: false },
+      history: { mode: "skip" },
+      selection: { dom: "preserve" },
+    },
+  }
+);
+```
+
+## Subscribe to commits
+
+Use `editor.subscribeCommit` when an adapter needs to observe committed state.
+The listener receives the change summary for each commit.
+
+```tsx
+const sharedStateKeys = new Set(["document.title", "page.settings"]);
+
+const unsubscribe = editor.subscribeCommit((change) => {
+  const documentValue = editor.read((state) => state.value.get());
+  const statePatches = change.statePatches.filter((patch) =>
+    sharedStateKeys.has(patch.key)
+  );
+
+  saveDocument(documentValue);
+
+  if (change.metadata.collab?.origin === "remote") return;
+
+  if (change.operations.length === 0 && statePatches.length === 0) {
+    return;
+  }
+
+  sendToPeers({
+    operations: change.operations,
+    statePatches,
+    tags: change.tags,
+    dirty: change.dirty,
+  });
+});
+```
+
+Send operations and filtered state patches to peers. Save the full
+`state.value.get()` document value to your database, not to the adapter
+transport, unless your adapter strips local persisted state first.
+
+Call the returned function when the adapter disconnects.
+
+```tsx
+unsubscribe();
+```
+
+That's the adapter loop: local `update`, export the commit operations, import
+remote operations with `tx.operations.replay(...)`, and subscribe to committed
+snapshots.
+
+## Commit metadata
+
+The commit is the unit adapters should reason about. It groups every primitive
+write inside one `editor.update` call.
+
+| Field                 | Use                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------ |
+| `operations`          | The Plite operations that changed the document.                                            |
+| `statePatches`        | State-field changes. Filter to shared adapter-owned keys before exporting remote payloads. |
+| `tags`                | Adapter/app metadata such as `local-edit` or `remote-import`.                              |
+| `metadata`            | Typed policy for history, remote import, selection, and origin.                            |
+| `classes`             | Runtime classification, such as text or structural changes.                                |
+| `selectionBefore`     | The model selection before the commit.                                                     |
+| `selectionAfter`      | The model selection after the commit.                                                      |
+| `dirty.paths`         | Paths touched by the commit.                                                               |
+| `dirty.runtimeIds`    | Local runtime ids touched by the commit.                                                   |
+| `dirty.topLevelRange` | Top-level document range affected by the commit.                                           |
+| `snapshotChanged`     | Whether the document snapshot changed.                                                     |
+| `selectionChanged`    | Whether the model selection changed.                                                       |
+| `textChanged`         | Whether text content changed.                                                              |
+
+Adapters should treat this as an observation contract. If your transport layer
+needs a different representation, derive it from the commit instead of
+reading mutable editor fields.
+
+## Runtime ids are local
+
+Runtime ids are useful inside one editor instance because they survive local
+path changes. They are not part of the operation payload and should not be
+stored as remote identifiers.
+
+```tsx
+const { path, runtimeId } = editor.read((state) => {
+  const runtimeId = state.runtime.idAt([1]);
+
+  return {
+    path: runtimeId ? state.runtime.pathOf(runtimeId) : null,
+    runtimeId,
+  };
+});
+```
+
+Use runtime ids for local projection, target rebasing, and DOM/runtime lookup.
+Use your adapter's own document positions or awareness ids for remote cursors,
+presence, and persistence.
+
+## Adapter ownership
+
+Plite owns the document model, operations, snapshots, commits, runtime ids, and
+transaction boundaries. Your adapter owns the distributed system around them.
+
+| Owner   | Responsibilities                                                                                                                      |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Plite   | Apply operations, produce commits, normalize the document, expose snapshots, rebase local runtime targets.                            |
+| Adapter | Choose the network layer, translate operations if needed, resolve concurrent edits, persist remote state, own awareness and presence. |
+| React   | Render the current projection and subscribe to the runtime through Plite React.                                                       |
+
+Keeping those owners separate is what lets Plate, CRDT adapters, custom
+storage, and local-only editors share the same raw Plite substrate without
+making the editor object grow adapter-specific namespaces.
+
+## Hocuspocus transport
+
+`@platejs/yjs` accepts a `YjsProviderLike`. Hocuspocus stays at the application
+edge: wrap its provider so `provider.document` is exposed as `doc`, then pass
+that adapter to `createYjsExtension`.
+
+Run the local Hocuspocus server:
+
+```sh
+bun start:yjs
+```
+
+Then run the examples site and open `/examples/plite/yjs-hocuspocus`:
+
+```sh
+bun serve
+```
+
+The server mirrors the Potion deployment shape without requiring Potion's
+Prisma document table. It loads and stores binary Yjs snapshots under
+`.tmp/yjs-documents` and writes a JSON debug view of the Plite value next to
+each snapshot.
+
+```dotenv
+PLITE_YJS_PORT=4444
+PLITE_YJS_HOST=0.0.0.0
+PLITE_YJS_PATH=/yjs
+PLITE_YJS_TIMEOUT=10000
+PLITE_YJS_DEBOUNCE=2000
+PLITE_YJS_MAX_DEBOUNCE=10000
+PLITE_YJS_STORAGE_DIR=.tmp/yjs-documents
+
+NEXT_PUBLIC_PLITE_YJS_URL=ws://localhost:4444/yjs
+NEXT_PUBLIC_PLITE_YJS_ROOM=plite-yjs-hocuspocus-demo
+```
+
+Redis is optional for local development and useful when scaling more than one
+Hocuspocus instance:
+
+```dotenv
+PLITE_YJS_REDIS_ENABLED=1
+PLITE_YJS_REDIS_HOST=127.0.0.1
+PLITE_YJS_REDIS_PORT=6379
+```
+
+For local auth smoke tests, set a server token and pass the matching public
+demo token:
+
+```dotenv
+PLITE_YJS_AUTH_TOKEN=local-write-token
+NEXT_PUBLIC_PLITE_YJS_TOKEN=local-write-token
+```
+
+Real products should mint short-lived tokens server-side. Do not ship a write
+token as a public browser variable.
+
+## Extension helpers
+
+Extensions can add grouped `state` and `tx` helpers for higher-level behavior.
+They should not add adapter-shaped namespaces directly to the editor object.
+
+```tsx
+import { defineEditorExtension } from "@platejs/plite";
+
+editor.extend(
+  defineEditorExtension({
+    name: "table-foundation",
+    state: {
+      table(state) {
+        return {
+          rowCount() {
+            return state.nodes.children().length;
+          },
+        };
+      },
+    },
+    tx: {
+      table(tx) {
+        return {
+          insertRow(text: string) {
+            tx.nodes.insert(
+              { type: "paragraph", children: [{ text }] },
+              { at: [tx.nodes.children().length] }
+            );
+          },
+        };
+      },
+    },
+  })
+);
+```
+
+That shape gives product frameworks an integration backbone without turning raw
+Plite into a framework adapter.
+
+## What this page does not cover
+
+This page does not provide a full multiplayer recipe. It does not configure a
+provider, draw remote cursors, or define a CRDT merge policy. Those belong in
+adapter packages that can prove their behavior against Plite's operation and
+browser contracts.
+
+Collaboration adapters build on commits for observation, operations for replay,
+tags for routing, and local runtime ids for projection.

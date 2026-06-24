@@ -1,0 +1,57 @@
+{
+  "name": "@platejs/plite-history",
+  "version": "54.0.0-beta.0",
+  "description": "An operation-based history implementation for Plite editors.",
+  "keywords": [
+    "editor",
+    "history",
+    "operation",
+    "redo",
+    "save",
+    "@platejs/plite",
+    "stack",
+    "undo"
+  ],
+  "homepage": "https://platejs.org",
+  "bugs": {
+    "url": "https://github.com/udecode/plate/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/udecode/plate.git",
+    "directory": "packages/plite-history"
+  },
+  "license": "MIT",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "brl": "echo 'No barrels to generate'",
+    "build": "plate-pkg p:build",
+    "clean": "rimraf dist lib",
+    "lint": "plate-pkg p:lint",
+    "lint:fix": "plate-pkg p:lint:fix",
+    "test": "bun test --preload ../../config/plite-source-test-setup.ts",
+    "typecheck": "tsc --project tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "lodash": "^4.17.21",
+    "@platejs/plite": "workspace:^",
+    "@plate/scripts": "workspace:*"
+  },
+  "peerDependencies": {
+    "@platejs/plite": ">=54.0.0-beta.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

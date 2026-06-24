@@ -1,4 +1,4 @@
-import { createEditor as makeEditor, type TElement } from '@platejs/slate';
+import type { Element } from '@platejs/plite';
 
 import {
   createAnchor,
@@ -19,12 +19,10 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   );
 }
 
-/** The default creators for Slate objects. */
-
 const DEFAULT_CREATORS = {
   anchor: createAnchor,
   cursor: createCursor,
-  editor: createEditor(makeEditor),
+  editor: createEditor(),
   element: createElement,
   focus: createFocus,
   fragment: createFragment,
@@ -32,25 +30,12 @@ const DEFAULT_CREATORS = {
   text: createText,
 };
 
-/**
- * `HyperscriptCreators` are dictionaries of `HyperscriptCreator` functions
- * keyed by tag name.
- */
-
-type HyperscriptCreators<T = any> = Record<
+export type HyperscriptCreators<T = any> = Record<
   string,
   (tagName: string, attributes: Record<string, any>, children: any[]) => T
 >;
 
-/**
- * `HyperscriptShorthands` are dictionaries of properties applied to specific
- * kind of object, keyed by tag name. They allow you to easily define custom
- * hyperscript tags for your domain.
- */
-
-type HyperscriptShorthands = Record<string, Record<string, any>>;
-
-/** Create a Slate hyperscript function with `options`. */
+export type HyperscriptShorthands = Record<string, Record<string, any>>;
 
 const createHyperscript = (
   options: {
@@ -66,12 +51,8 @@ const createHyperscript = (
     ...options.creators,
   };
 
-  const jsx = createFactory(creators);
-
-  return jsx;
+  return createFactory(creators);
 };
-
-/** Create a Slate hyperscript function with `options`. */
 
 const createFactory = <T extends HyperscriptCreators>(creators: T) => {
   const jsx = <S extends keyof T & string>(
@@ -102,23 +83,18 @@ const createFactory = <T extends HyperscriptCreators>(creators: T) => {
     }
 
     kids = kids.filter(Boolean).flat();
-    const ret = creator(tagName, attrs, kids);
 
-    return ret;
+    return creator(tagName, attrs, kids);
   };
 
   return jsx;
 };
 
-/** Normalize a dictionary of element shorthands into creator functions. */
-
 const normalizeElements = (elements: HyperscriptShorthands) => {
-  const creators: HyperscriptCreators<TElement> = {};
+  const creators: HyperscriptCreators<Element> = {};
 
   for (const tagName in elements) {
-    if (!Object.hasOwn(elements, tagName)) {
-      continue;
-    }
+    if (!Object.hasOwn(elements, tagName)) continue;
 
     const props = elements[tagName];
 
@@ -139,13 +115,7 @@ const normalizeElements = (elements: HyperscriptShorthands) => {
         }
       }
 
-      const el = createElement(
-        'element',
-        { ...props, ...attributes },
-        children
-      );
-
-      return el;
+      return createElement('element', { ...props, ...attributes }, children);
     };
   }
 

@@ -1,0 +1,167 @@
+---
+title: "Projection And Overlays"
+description: "Choose between decorations, projection sources, annotations, widgets, and render props."
+---
+
+Projection turns model ranges into renderable text slices and overlay anchors.
+Use this page to choose between `Editable.decorate`, provider-owned decoration
+sources, annotations, widgets, and render props.
+
+## Choose The Right Surface
+
+Do not put every overlay into `decorate`. Pick the smallest owner that matches
+the lifetime of the UI.
+
+| Need                                                                 | Start with                                                                                     | Owner                  |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------- |
+| One editable needs a simple highlight                                | `Editable.decorate`                                                                            | `@platejs/plite-react` |
+| Search, diagnostics, or external highlights are shared with other UI | `usePliteDecorationSource` or `usePliteRangeDecorationSource` plus `<Plite decorationSources>` | `@platejs/plite-react` |
+| A range has durable identity                                         | `usePliteAnnotationStore` plus `<Plite annotationStore>`                                       | `@platejs/plite-react` |
+| UI is anchored to a selection, node, or annotation                   | `usePliteWidgetStore`, `usePliteWidgets`, and `usePliteWidget`                                 | `@platejs/plite-react` |
+| Text paint depends on projected slices                               | `Editable renderSegment`                                                                       | `@platejs/plite-react` |
+| The overlay claim needs browser-visible proof                        | screenshot, DOM selection, displayed selection, and follow-up typing                           | `@platejs/browser`     |
+
+Use decorations for paint. Use annotations when a range needs identity. Use
+widgets when UI hangs off a node, selection, or annotation.
+
+## Runtime Pipeline
+
+Projection is a React rendering layer, not a second document model.
+
+| Stage          | What happens                                                                                                  | Owner                                       |
+| -------------- | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| Source         | `decorate`, decoration sources, annotation stores, and selection sources provide ranges.                      | `@platejs/plite-react`                      |
+| Projection     | Sources are projected onto runtime text ids and split into slices.                                            | `@platejs/plite-react`                      |
+| Render         | `Editable` renders projected text through `renderSegment`, `renderLeaf`, `renderText`, and element renderers. | `@platejs/plite-react`                      |
+| Overlay UI     | Sidebars, popovers, toolbars, and widgets read annotation or widget snapshots.                                | App UI plus `@platejs/plite-react`          |
+| Commit refresh | Editor commits name the affected projection runtime ids when possible.                                        | `@platejs/plite` and `@platejs/plite-react` |
+| Proof          | Browser tests verify visible highlights, selection, focus, and follow-up editing.                             | `@platejs/browser`                          |
+
+Keep document data in Plite nodes, roots, and document state. Keep overlay
+payloads small and render-facing.
+
+## Decorations
+
+Use `Editable.decorate` for a local highlight that belongs to one editable.
+
+```tsx
+<Editable
+  decorate={([node, path]) => {
+    if (!TextApi.isText(node)) return [];
+
+    const start = node.text.indexOf(query);
+
+    return start === -1
+      ? []
+      : [
+          {
+            anchor: { path, offset: start },
+            data: { search: true },
+            focus: { path, offset: start + query.length },
+          },
+        ];
+  }}
+  renderSegment={(segment, children) =>
+    segment.slices.some((slice) => slice.data?.search) ? (
+      <mark>{children}</mark>
+    ) : (
+      children
+    )
+  }
+/>
+```
+
+Move to provider-owned decoration sources when ranges are shared with sidebars,
+toolbars, search panels, diagnostics, or other overlay UI.
+
+```tsx
+const searchSource = usePliteRangeDecorationSource(editor, {
+  deps: [query],
+  id: "search",
+  read: ({ snapshot }) => findSearchRanges(snapshot, query),
+});
+
+return (
+  <Plite decorationSources={[searchSource]} editor={editor}>
+    <Editable renderSegment={renderSearchMatch} />
+  </Plite>
+);
+```
+
+Use `decorateDirtiness` and `decorateRuntimeScope` when a decoration callback
+depends on external projection state and can name which runtime targets should
+refresh.
+
+## Annotations
+
+Annotations attach durable ids to ranges. They are the right owner for comments,
+suggestions, external diagnostics, and review markers.
+
+```tsx
+const annotationStore = usePliteAnnotationStore(editor, {
+  deps: [comments],
+  project: () =>
+    comments.map((comment) => ({
+      anchor: comment.anchor,
+      data: comment,
+      id: comment.id,
+      projection: { tone: comment.tone },
+    })),
+});
+
+return (
+  <Plite annotationStore={annotationStore} editor={editor}>
+    <Editable renderSegment={renderCommentSegment} />
+    <CommentsSidebar />
+  </Plite>
+);
+```
+
+`data` is app-facing metadata. `projection` is the small render-facing payload
+copied into text slices. Keep comment bodies, permissions, resolved state, and
+audit events in the app or sync service.
+
+## Widgets
+
+Widgets describe UI anchored to nodes, selections, or annotations. They are
+useful for comment popovers, inline toolbars, floating action buttons, and
+side-panel rows that need resolved visibility.
+
+```tsx
+const widgetStore = usePliteWidgetStore(editor, {
+  annotationStore,
+  deps: [comments],
+  project: () =>
+    comments.map((comment) => ({
+      anchor: { annotationId: comment.id, type: "annotation" },
+      data: { label: comment.label },
+      id: `comment-widget:${comment.id}`,
+    })),
+});
+```
+
+Use `usePliteWidgets(widgetStore)` when a panel renders every widget. Use
+`usePliteWidget(widgetStore, id)` when one component watches one widget.
+
+## Performance Rules
+
+Projection should reduce render work, not hide it.
+
+| Rule                           | Why                                                                                                                    |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| Hoist render callbacks         | Stable `renderElement`, `renderLeaf`, `renderText`, and `renderSegment` props avoid avoidable text rerenders.          |
+| Prefer source-scoped refresh   | Decoration and annotation sources can refresh the ranges they own instead of rerunning one global `decorate` callback. |
+| Keep projection payloads small | Large objects in `projection` make text-slice comparison and rerender debugging harder.                                |
+| Prove visible behavior         | Overlay correctness needs screenshot or DOM-visible proof when the bug is visual.                                      |
+
+Use [Improving Performance](../walkthroughs/09-performance) for render and
+huge-document guidance.
+
+## Related Docs
+
+- [Editable Component](../libraries/plite-react/editable)
+- [Plite Component](../libraries/plite-react/plite)
+- [Annotations](../libraries/plite-react/annotations)
+- [Plite React Hooks](../libraries/plite-react/hooks)
+- [Selection And DOM](16-selection-and-dom)
+- [Plite Browser](../libraries/plite-browser)

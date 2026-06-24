@@ -1,0 +1,85 @@
+---
+title: "Adding Event Handlers"
+description: "Handle editor-local browser events while keeping writes inside the Plite runtime."
+---
+
+`Editable` accepts React event handlers. Use them for UI-local shortcuts and
+small input policies that belong to one editor surface.
+
+## Starting Point
+
+This is the editor from the install walkthrough:
+
+```tsx
+import { Editable, Plite, usePliteEditor } from "@platejs/plite-react";
+
+const initialValue = [
+  {
+    type: "paragraph",
+    children: [{ text: "A line of text in a paragraph." }],
+  },
+];
+
+const App = () => {
+  const editor = usePliteEditor({ initialValue });
+
+  return (
+    <Plite editor={editor}>
+      <Editable />
+    </Plite>
+  );
+};
+```
+
+## Read The Native Event
+
+Pass `onKeyDown` when you only need to observe the browser event.
+
+```tsx
+const App = () => {
+  const editor = usePliteEditor({ initialValue });
+
+  return (
+    <Plite editor={editor}>
+      <Editable
+        onKeyDown={(event) => {
+          console.log(event.key);
+        }}
+      />
+    </Plite>
+  );
+};
+```
+
+## Write Through The Editor
+
+Prevent the browser default when Plite should own the edit, then write inside
+`editor.update(...)`.
+
+```tsx
+const App = () => {
+  const editor = usePliteEditor({ initialValue });
+
+  return (
+    <Plite editor={editor}>
+      <Editable
+        onKeyDown={(event) => {
+          if (event.key !== "&") return;
+
+          event.preventDefault();
+
+          editor.update((tx) => {
+            tx.text.insert("and");
+          });
+        }}
+      />
+    </Plite>
+  );
+};
+```
+
+Typing `&` now inserts `and` instead.
+
+Keep reusable behavior in commands or extensions once it is shared by keyboard
+shortcuts, toolbar buttons, menus, tests, or programmatic calls. See
+[Executing Commands](05-executing-commands).

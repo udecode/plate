@@ -1,0 +1,298 @@
+---
+title: "Why This Fork"
+description: "Why Plate maintains a Plite, what it optimizes for, and where the proof boundary is."
+---
+
+Plite is an agent-first editor substrate, not an official upstream Slate release. It keeps Plite's JSON document model and operation idea, then rebuilds the runtime around explicit reads, explicit writes, typed transactions, multi-root documents, state fields, and browser proof. This page explains the bet, the runtime shape, the package split, and the current proof limits.
+
+## On This Page
+
+- [The Main Fork](#the-main-fork)
+- [Why Not Stay Closer To Upstream Slate?](#why-not-stay-closer-to-upstream-slate)
+- [Who It Is For](#who-it-is-for)
+- [What Stays From Slate](#what-stays-from-slate)
+- [Runtime Shape](#runtime-shape)
+- [Document Shape](#document-shape)
+- [Extension Model](#extension-model)
+- [React Runtime](#react-runtime)
+- [Overlay Model](#overlay-model)
+- [Browser Proof](#browser-proof)
+- [Package Ownership](#package-ownership)
+- [Current Boundaries](#current-boundaries)
+- [Complete Change Map](#complete-change-map)
+- [Read Next](#read-next)
+
+## The Main Fork
+
+The first fork is the maintenance model.
+
+Contenteditable bugs do not end. Browsers shift, selection breaks, paste paths fork, IME has edge cases, and large documents expose every hidden shortcut. A runtime that depends on occasional human cleanup will rot.
+
+This fork is built for the opposite shape:
+
+- agents run the boring loops;
+- humans steer taste, API boundaries, and product calls;
+- every serious behavior claim needs executable proof;
+- every regression should become a test, harness repair, or workflow repair;
+- APIs can be hard-cut when the old shape makes the system harder to verify.
+
+That is the real fork. The code matters, but the maintenance philosophy matters more.
+
+## Why Not Stay Closer To Upstream Slate?
+
+The first attempted design was conservative: keep upstream Slate core intact, rewrite `plite-react`, and push the hard work into the renderer. That would have kept the public runtime closer to Slate 0.x while trying to unlock extra roots, document state, overlays, and React performance from React alone.
+
+That path broke down because the renderer cannot safely own the facts that make a rich-text editor correct. React can render a tree, but it cannot be the source of truth for write boundaries, selection authority, operation batching, dirty regions, stable node identity, history grouping, collaboration metadata, and DOM repair.
+
+If `plite-react` tried to own those anyway, it would become a hidden second runtime beside Plite. The adapter would have to translate between mutable editor fields, React subscriptions, browser selection, history, collaboration, and test proof. That is the black box this fork avoids.
+
+| Example | Why `plite-react` alone is the wrong owner |
+| ------- | ------------------------------------------ |
+| `Shift+Down` in a huge document | The runtime needs one selection target, one DOM-selection import/export path, and one dirty-render plan. A React component can patch symptoms, but it cannot make the model selection, native selection, and rendered corridor agree by itself. |
+| `Cmd+A` then Delete | The editor needs one transaction that owns model deletion, selection collapse, history grouping, operation output, DOM repair, and follow-up typing. Splitting that across core mutation plus React cleanup makes the proof lie. |
+| Extra editable regions | Headers, footers, sidebars, and body content need to serialize as one document value. If roots live only in React, normalization, history, collaboration, and persistence all get side channels. |
+| Document metadata | Values like `document.title` must travel with the document model. Keeping them as app-only React state makes save/load, undo policy, collaboration patches, and tests disagree. |
+| Overlays and comments | Decorations, annotations, and widgets share projection machinery, but they do not share ownership semantics. Treating them as React leaf hacks makes durable comments and transient search hits look the same. |
+| Browser proof | A model-only assertion can pass while the caret is wrong. A DOM-only assertion can pass while Plite state is wrong. The proof harness needs one commit that model, DOM, native selection, focus, replay, and follow-up typing can all inspect. |
+
+The fork keeps Plite's core model: JSON nodes, paths, points, ranges, operations, and app-owned schema. It rewrites the runtime around `editor.read(...)`, `editor.update(...)`, transaction groups, commits, and state fields so React can subscribe to precise state instead of guessing from broad tree changes.
+
+The influence is narrow. Lexical is the reference for explicit read/update discipline and dirty reconciliation. ProseMirror is the reference for transaction authority and DOM-selection import/export. The document layer stays Plite-shaped, which is the point: keep the flexible JSON model, replace the runtime shape that made React and browser proof fight the core.
+
+## Who It Is For
+
+Use this fork when you want the editor runtime maintained like infrastructure.
+
+| Use Plite if                                                                                    | Use upstream Slate if                                                                  |
+| ------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| You want agent-run regression loops, browser proof, API audits, and hard cuts.                               | You want the familiar Plite surface with the smallest social and technical surprise.   |
+| You own the editor integration and can move one surface at a time.                                           | You need a drop-in `withHistory(withReact(createEditor()))` upgrade path.              |
+| You need multiple editable regions, document metadata, overlays, large-document proof, or Yjs adapter proof. | You only need a small hand-maintained editor and do not want the new runtime contract. |
+| You accept docs that are dense, exact, and proof-oriented.                                                   | You want docs optimized first for a gentle tutorial read.                              |
+
+This is not a nicer wrapper around Slate 0.x. It is a stricter runtime for teams that prefer proof and maintainability over compatibility comfort.
+
+## What Stays From Slate
+
+The fork keeps the parts of Plite that make the model worth preserving:
+
+- documents are nested JSON nodes;
+- selections use paths, points, and ranges;
+- edits produce operations;
+- schema is application-owned;
+- React renders the editor instead of owning the document model.
+
+Those choices are still good. The fork changes the runtime around them.
+
+## Runtime Shape
+
+The public authoring model has two boundaries:
+
+```tsx
+const value = editor.read((state) => state.value.get());
+
+editor.update((tx) => {
+  tx.text.insert("Hello");
+});
+```
+
+Reads go through `editor.read(...)`. Writes go through `editor.update(...)`. Inside an update, transaction groups own text, nodes, fragments, selection, marks, roots, history, operations, and extension namespaces.
+
+| Surface              | Job                                                             |
+| -------------------- | --------------------------------------------------------------- |
+| `editor.read(...)`   | read committed runtime state without mutating it                |
+| `editor.update(...)` | run one write transaction and commit the result                 |
+| `tx.text`            | insert and delete text                                          |
+| `tx.nodes`           | insert, set, remove, split, merge, wrap, unwrap, and move nodes |
+| `tx.fragment`        | insert or delete clipboard-shaped fragments                     |
+| `tx.selection`       | set, clear, collapse, and move model selection                  |
+| `tx.marks`           | read, set, toggle, add, and remove active marks                 |
+| `tx.roots`           | create, replace, and delete extra roots                         |
+| `tx.history`         | undo and redo when `@platejs/plite-history` is installed        |
+| `tx.operations`      | replay lower-level operation streams                            |
+
+The editor still produces Plite operations. The difference is that local runtime truth is also captured as a commit so history, React, DOM repair, collaboration adapters, benchmarks, and proof tooling can observe the same edit.
+
+## Document Shape
+
+The short value is still an array of blocks:
+
+```tsx
+const initialValue = [{ type: "paragraph", children: [{ text: "Body" }] }];
+```
+
+Use a full document value when one editor owns extra editable regions or serialized metadata:
+
+```tsx
+const initialValue = {
+  children: [{ type: "paragraph", children: [{ text: "Body" }] }],
+  roots: {
+    header: [{ type: "paragraph", children: [{ text: "Draft" }] }],
+    footer: [{ type: "paragraph", children: [{ text: "Internal" }] }],
+  },
+  state: {
+    "document.title": "Launch brief",
+  },
+};
+```
+
+`children` is the primary editable body. `roots` stores extra editable regions. `state` stores persistent document metadata and small shared model state.
+
+Omit `root` for the primary editable. Root keys are for extra document regions.
+
+## Extension Model
+
+Extensions add named state and transaction groups. They do not replace the operation pipeline or patch random methods onto the editor object.
+
+```tsx
+import { defineEditorExtension } from "@platejs/plite";
+
+const todo = defineEditorExtension({
+  name: "todo",
+  tx: {
+    todo(tx) {
+      return {
+        toggle() {
+          tx.nodes.set({ checked: true, type: "todo" });
+        },
+      };
+    },
+  },
+});
+```
+
+This keeps method-style ergonomics while making ownership visible. App commands live in the runtime instead of in ad hoc editor mutation helpers.
+
+## React Runtime
+
+React editors start with `usePliteEditor`, `<Plite>`, and `<Editable>`.
+
+```tsx
+import { Editable, Plite, usePliteEditor } from "@platejs/plite-react";
+
+const Editor = () => {
+  const editor = usePliteEditor({
+    initialValue: [{ type: "paragraph", children: [{ text: "" }] }],
+  });
+
+  return (
+    <Plite editor={editor}>
+      <Editable placeholder="Start typing..." />
+    </Plite>
+  );
+};
+```
+
+`usePliteEditor` installs the normal React, DOM, clipboard, and history path. Use `createReactEditor` when the editor must be created outside component ownership.
+
+React rendering is selector-first. App chrome should subscribe to the editor facts it needs, not to the whole editor tree.
+
+| Area                        | Runtime owner                                                                    |
+| --------------------------- | -------------------------------------------------------------------------------- |
+| Editable rendering          | `@platejs/plite-react`                                                           |
+| DOM conversion and coverage | `@platejs/plite-dom`                                                             |
+| History                     | `@platejs/plite-history`                                                         |
+| Extra roots                 | `@platejs/plite` plus root-aware React hooks                                     |
+| Large-document proof lanes  | `@platejs/plite-react`, `@platejs/plite-dom`, `@platejs/browser`, and benchmarks |
+
+## Overlay Model
+
+The fork treats overlays as separate lanes.
+
+| Lane        | Purpose                                                                          |
+| ----------- | -------------------------------------------------------------------------------- |
+| Decorations | transient ranges such as search hits, syntax, diagnostics, and active matches    |
+| Annotations | durable, id-bearing anchors such as comments, review threads, and remote markers |
+| Widgets     | anchored UI such as labels, buttons, balloons, and diagnostics popovers          |
+
+A comment is not just a decoration with more props. A widget is not a text leaf. Those lanes can share projection infrastructure, but they do not share ownership semantics.
+
+Use `<Editable decorate={...} />` for simple editor-local ranges. Use the Plite React decoration-source and annotation-store hooks when ranges are shared, external, frequent, durable, or source-scoped.
+
+## Browser Proof
+
+Model tests are not enough for editor behavior. DOM checks are not enough either.
+
+For cursor, selection, paste, undo, hidden DOM, large documents, and collaboration-adjacent behavior, the fork expects proof across the layers that can actually fail.
+
+| Layer            | Why it matters                                                |
+| ---------------- | ------------------------------------------------------------- |
+| Model            | proves Plite state is correct                                 |
+| DOM              | proves rendered text and elements match the model             |
+| Native selection | proves the browser caret and selection agree where observable |
+| Focus            | catches editor activation and chrome bugs                     |
+| Commit metadata  | proves the runtime knows what changed                         |
+| Replay           | catches proof that only passes once                           |
+| Follow-up typing | proves the editor still works after the asserted state        |
+
+That is why `@platejs/browser` exists. It is not the product editing API. It is the proof harness used to keep the editor honest.
+
+## Package Ownership
+
+The packages are split by responsibility.
+
+| Package                      | Owns                                                                                                         |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `@platejs/plite`             | editor runtime, document model, operations, transactions, state fields, schema, pure helper APIs             |
+| `@platejs/plite-dom`         | DOM bridge, clipboard helpers, selection conversion, hotkeys, DOM coverage helpers                           |
+| `@platejs/plite-react`       | React editor setup, `<Plite>`, `<Editable>`, render primitives, hooks, overlays, annotations, DOM strategies |
+| `@platejs/plite-history`     | history extension and undo/redo runtime                                                                      |
+| `@platejs/plite-hyperscript` | JSX fixtures for tests                                                                                       |
+| `@platejs/yjs`               | Yjs collaboration adapter, awareness bridge, remote cursor hooks                                             |
+| `@platejs/plite-layout`      | page layout and page-view proof work                                                                         |
+| `@platejs/browser`           | browser proof harness and Playwright helpers                                                                 |
+
+Apps should import public package exports. `/internal` subpaths are for sibling packages in this repo.
+
+## Current Boundaries
+
+This fork is intentionally narrow about what it claims.
+
+| Area                       | Claim                                                                                                           |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Desktop browser editing    | In scope when covered by browser proof.                                                                         |
+| Raw mobile device behavior | Not claimed without real device proof artifacts.                                                                |
+| Pagination and page layout | Useful proof lane, not a mature production promise for every browser geometry and export case.                  |
+| Collaboration              | `@platejs/yjs` owns the adapter. Apps own provider packages, auth, persistence, room naming, and server policy. |
+| Upstream identity          | This is Plite, not an official upstream Slate release.                                             |
+
+The line is simple: if the proof lane does not own it, the docs should not pretend it is done.
+
+## Complete Change Map
+
+This table is intentionally exhaustive. It gives humans and agents one place to route deeper reading.
+
+| Area               | What changed                                                                                                                                                                                                                                                                                  |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Core lifecycle     | `editor.read(...)`, `editor.update(...)`, transaction groups, commits, and state groups                                                                                                                                                                                                       |
+| Core data model    | JSON-like nodes, paths, points, ranges, operations, bookmarks, runtime ids, refs, snapshots                                                                                                                                                                                                   |
+| Public helper APIs | `ElementApi`, `LocationApi`, `NodeApi`, `OperationApi`, `PathApi`, `PointApi`, `RangeApi`, `SpanApi`, `TextApi`, ref APIs                                                                                                                                                                     |
+| Extensions         | `defineEditorExtension`, schema elements, state fields, operation/query middleware, commit listeners, namespaced editor/state/transaction groups                                                                                                                                              |
+| Document values    | primary `children`, optional extra `roots`, optional persistent `state`                                                                                                                                                                                                                       |
+| Roots              | rootless primary document, named extra roots, content roots, root-aware React hooks and chrome                                                                                                                                                                                                |
+| State fields       | persistent and local fields, history policy, collaboration patch shape, React state-field hooks                                                                                                                                                                                               |
+| React setup        | `usePliteEditor`, `createReactEditor`, `<Plite>`, `<Editable>`, render primitives                                                                                                                                                                                                             |
+| React hooks        | editor state hooks, element hooks, root hooks, state-field hooks, decoration/annotation/widget hooks                                                                                                                                                                                          |
+| Browser editing    | DOM repair, native selection sync, beforeinput/input/paste/cut/drop authority, generated proof scenarios                                                                                                                                                                                      |
+| DOM bridge         | DOM point/range conversion, clipboard bridge, hotkeys, DOM coverage boundaries, browser environment helpers                                                                                                                                                                                   |
+| Overlays           | decorations, annotations, widgets, projection stores, source-scoped invalidation                                                                                                                                                                                                              |
+| Large documents    | active editing corridor, staged DOM coverage, virtualized rendering proof, huge-document smoke lanes                                                                                                                                                                                          |
+| History            | `history()` extension, `state.history`, `tx.history`, `editor.api.history`, history stack validation                                                                                                                                                                                          |
+| Hyperscript        | JSX fixture factory, custom fixture tags, low-level fixture creators                                                                                                                                                                                                                          |
+| Layout             | `createPliteLayout`, `PagedEditable`, page mount plans, fragment hooks                                                                                                                                                                                                                        |
+| Browser proof      | `@platejs/browser/core`, `@platejs/browser/browser`, `@platejs/browser/playwright`, `@platejs/browser/transports`, feature contracts, screenshots, traces, replay                                                                                                                             |
+| Docs               | migration guide, walkthroughs, API reference, roots/state docs, React setup docs, DOM coverage docs, layout docs                                                                                                                                                                              |
+| Examples           | plaintext, richtext, checklists, markdown, inlines, mentions, images, embeds, tables, paste HTML, placeholder, read-only, iframe/shadow DOM, styling, document state, hidden content, huge document, multi-root document, synced blocks, comment mode, search/code highlighting, Yjs examples |
+| Hard cuts          | rootless primary APIs, explicit reads/writes, transaction groups, no public compatibility aliases, no primary mutable editor-field authoring story                                                                                                                                            |
+
+## Read Next
+
+- [Installing Plite](walkthroughs/01-installing-plite)
+- [Migration](migration)
+- [React Editor Setup](libraries/plite-react/react-editor-setup)
+- [Roots](concepts/13-roots)
+- [Document State](concepts/14-document-state)
+- [Plite Browser](libraries/plite-browser)
+- [Plite Layout](libraries/plite-layout)
+
+The fork's promise is narrow: Plite's model, rebuilt for agent-run maintenance and proof-heavy editor behavior.

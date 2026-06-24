@@ -1,0 +1,83 @@
+# plite-dom
+
+## 0.124.1
+
+### Patch Changes
+
+- [#6040](https://github.com/ianstormtaylor/slate/pull/6040) [`20a1a937`](https://github.com/ianstormtaylor/slate/commit/20a1a9371538dda1911d533e0f02b1655ffffa12) Thanks [@12joan](https://github.com/12joan)! - - Harden property accessors against untrusted keys
+  - Fix incorrect argument types for the `compare` and `merge` options of `Transforms.setNodes`
+
+## 0.124.0
+
+### Patch Changes
+
+- [#6019](https://github.com/ianstormtaylor/slate/pull/6019) [`b9794a97`](https://github.com/ianstormtaylor/slate/commit/b9794a97dd8141f0e09c7ebb37395197553be2f6) Thanks [@delijah](https://github.com/delijah)! - Fix text node lookup for toPlitePoint
+
+## 0.123.1
+
+### Patch Changes
+
+- [#6004](https://github.com/ianstormtaylor/slate/pull/6004) [`e2a940a0`](https://github.com/ianstormtaylor/slate/commit/e2a940a0e1575a4f084923a16a1ab89cf965dfda) Thanks [@christianhg](https://github.com/christianhg)! - Fix `findPath` throwing "Unable to find the path for Plite node" after component unmount
+
+  When `toPlitePoint` is called with `suppressThrow: true` (e.g., from `toPliteRange` during selection change handling), it should not throw errors. However, the internal `findPath` calls were not respecting this option, causing errors to be thrown when the component was unmounting and node references became stale.
+
+  This fix wraps the `findPath` calls in `toPlitePoint` with try-catch blocks that respect the `suppressThrow` option, returning `null` instead of throwing when the option is enabled.
+
+## 0.123.0
+
+### Patch Changes
+
+- [#6000](https://github.com/ianstormtaylor/slate/pull/6000) [`8d9bf305`](https://github.com/ianstormtaylor/slate/commit/8d9bf30595a6fad62ff15e302ab489ff46a2515a) Thanks [@nabbydude](https://github.com/nabbydude)! - Added `Location.isPath`, `Location.isPoint`, `Location.isRange`, and `Location.isSpan` functions, as efficient type discriminators.
+  Use these instead of `Path.isPath`, `Point.isPoint`, `Range.isRange`, and `Span.isSpan` whenever possible.
+
+## 0.121.0
+
+### Patch Changes
+
+- [#5982](https://github.com/ianstormtaylor/slate/pull/5982) [`dd4a77b3`](https://github.com/ianstormtaylor/slate/commit/dd4a77b3c5bb5d2d3cd6a62f49d6f318d30d6727) Thanks [@nabbydude](https://github.com/nabbydude)! - Add `Node.isEditor`, `Node.isElement`, and `Node.isText` as alternative type guards for when we already know the object is a node.
+  Use these new functions instead of `Editor.isEditor`, `Element.isElement`, and `Text.isText` whenever possible, the classic functions are only necessary for typechecking an entirely unknown object.
+  ===
+
+## 0.119.0
+
+### Minor Changes
+
+- [#5963](https://github.com/ianstormtaylor/slate/pull/5963) [`33e74a82`](https://github.com/ianstormtaylor/slate/commit/33e74a822b82c4b9ce1444f456c5343970441ccb) Thanks [@iperzic](https://github.com/iperzic)! - Fixes an editor crash that happens when editor is placed inside Shadow DOM and the user is typing on Android
+
+## 0.118.1
+
+### Patch Changes
+
+- [#5936](https://github.com/ianstormtaylor/slate/pull/5936) [`05583457`](https://github.com/ianstormtaylor/slate/commit/0558345703e3451f82ffd7eeb15dee51102b1209) Thanks [@delijah](https://github.com/delijah)! - Search backward and forward for leaf nodes in non contenteditable elements inside `toPlitePoint`
+
+## 0.117.4
+
+### Patch Changes
+
+- [#5919](https://github.com/ianstormtaylor/slate/pull/5919) [`e029a87a`](https://github.com/ianstormtaylor/slate/commit/e029a87aba0d124af39c519813448201da32193d) Thanks [@12joan](https://github.com/12joan)! - Do not apply WeChat-related workarounds on recent versions of Chrome
+
+- [#5916](https://github.com/ianstormtaylor/slate/pull/5916) [`f2ea1e1e`](https://github.com/ianstormtaylor/slate/commit/f2ea1e1e3ae281cfef145b92a9cb61c7a749363d) Thanks [@delijah](https://github.com/delijah)! - Do not retry focusing editor after it has been unmounted
+
+## 0.116.0
+
+### Minor Changes
+
+- [#5871](https://github.com/ianstormtaylor/slate/pull/5871) [`fb87646e`](https://github.com/ianstormtaylor/slate/commit/fb87646e8643e1d0547134cea9d1f57912f06a92) Thanks [@12joan](https://github.com/12joan)! - - Add `splitDecorationsByChild` to split an array of decorated ranges by child index.
+
+## 0.114.0
+
+### Patch Changes
+
+- [#5849](https://github.com/ianstormtaylor/slate/pull/5849) [`0fde537b`](https://github.com/ianstormtaylor/slate/commit/0fde537b52c23dd374721501e31e9aab56ce6477) Thanks [@12joan](https://github.com/12joan)! - Fix: Deleting backward by a line misses 1 character (belated changeset for https://github.com/ianstormtaylor/slate/pull/5827)
+
+## 0.112.2
+
+### Patch Changes
+
+- [#5792](https://github.com/ianstormtaylor/slate/pull/5792) [`82165125`](https://github.com/ianstormtaylor/slate/commit/82165125957644f7dfe81d55a620f4d31132e3c9) Thanks [@zhi-zhi-zhi](https://github.com/zhi-zhi-zhi)! - fix: additional fix for previous fix: Prevent ReactEditor.toDOMRange crash in setDomSelection #5741
+
+## 0.111.0
+
+### Minor Changes
+
+- [#5734](https://github.com/ianstormtaylor/slate/pull/5734) [`9a212512`](https://github.com/ianstormtaylor/slate/commit/9a2125127064f35332d5c06df2dfa3768f745185) Thanks [@bmingles](https://github.com/bmingles)! - Split out plite-dom package

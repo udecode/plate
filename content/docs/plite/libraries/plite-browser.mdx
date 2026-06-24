@@ -1,0 +1,88 @@
+---
+title: "Plite Browser"
+description: "Use the first-party browser proof harness for Playwright editor behavior tests."
+---
+
+`@platejs/browser` is Plite's Playwright proof harness for model, DOM, native selection, focus, screenshots, trace, clipboard, and replayable scenario assertions. It is test infrastructure, not the product editing API; application code builds editors with `@platejs/plite`, `@platejs/plite-dom`, `@platejs/plite-react`, and extensions. Read [Editing Behavior](../concepts/15-editing-behavior) for the runtime pipeline, [Selection And DOM](../concepts/16-selection-and-dom) for caret proof, [Clipboard And Paste](../concepts/17-clipboard-and-paste) for payload proof, and [Projection And Overlays](../concepts/18-projection-and-overlays) for visible highlight and overlay proof.
+
+## Install
+
+```text
+npm install -D @platejs/browser @playwright/test
+```
+
+## Imports
+
+The package is subpath-only:
+
+- `@platejs/browser/playwright` for Playwright editor harnesses.
+- `@platejs/browser/core` for pure proof contracts, release-proof artifacts,
+  classifiers, and selection serialization helpers.
+- `@platejs/browser/browser` for DOM selection snapshots and zero-width
+  placeholder inspection in browser-capable test environments.
+- `@platejs/browser/transports` for device/browser proof-scope descriptors.
+
+Do not import from `@platejs/browser` directly.
+
+## First Test
+
+```ts
+import { expect, test } from "@playwright/test";
+import { openExample } from "@platejs/browser/playwright";
+
+test("types through the Plite browser path", async ({ page }) => {
+  const editor = await openExample(page, "plaintext", {
+    ready: { editor: "visible" },
+  });
+
+  await editor.focus();
+  await editor.type("Hello from @platejs/browser");
+
+  await editor.assert.text("Hello from @platejs/browser");
+  await editor.assert.noDoubleSelectionHighlight();
+  expect(await editor.get.selectedText()).toBe("");
+});
+```
+
+`openExample` waits for the mounted editor-ready contract before actions run.
+Prefer `editor.type(...)`, semantic selection helpers, clipboard helpers, and
+native event traces over raw Playwright DOM shortcuts when the claim is editor
+behavior.
+
+## Proof Contracts
+
+Plite browser proof should usually assert more than model state:
+
+| Claim                            | Useful proof                                                             |
+| -------------------------------- | ------------------------------------------------------------------------ |
+| Model state changed correctly    | model text, block text, operations, or commit metadata                   |
+| Browser caret is correct         | DOM caret, DOM selection, or native selection snapshot                   |
+| Visible selection is sane        | displayed selection snapshot and no double-highlight                     |
+| Editor stayed active             | focus ownership                                                          |
+| Native input path is the bug     | native event trace for input, paste, selection, or IME                   |
+| Visual evidence matters          | screenshot or JSON artifact                                              |
+| The editor still works afterward | follow-up typing after navigation, paste, undo, selection, or DOM repair |
+
+Feature contracts group browser behavior families by the owning Plite feature
+area. Use them to keep example coverage honest without turning one manual route
+check into a fake global guarantee.
+
+## Transport Claims
+
+`@platejs/browser/transports` classifies proof scope. A Playwright mobile viewport
+does not prove raw-device behavior. Appium descriptors close raw-device lanes
+only when the device gate runs. Proxy browser lanes are useful evidence, but
+they do not claim native mobile clipboard, human soft-keyboard, glide typing,
+or voice input.
+
+## Commands
+
+```text
+bun run test:plite-browser
+bun run test:plite-browser:core
+bun run test:plite-browser:dom
+bun run test:plite-browser:selection
+```
+
+Use focused Playwright specs for behavior routes and generated stress replay for
+portable editing failures.

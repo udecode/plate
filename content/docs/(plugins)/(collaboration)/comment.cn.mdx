@@ -69,7 +69,7 @@ npm install @platejs/comment
 创建带有扩展配置的评论插件以进行状态管理:
 
 ```tsx
-import { type ExtendConfig, type Path, isSlateString } from 'platejs';
+import { type ExtendConfig, type Path, isPliteString } from 'platejs';
 import {
   type BaseCommentConfig,
   BaseCommentPlugin,
@@ -126,10 +126,10 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
           isSet = true;
         };
 
-        if (!isSlateString(leaf)) unsetActiveComment();
+        if (!isPliteString(leaf)) unsetActiveComment();
 
         while (leaf.parentElement) {
-          if (leaf.classList.contains(`slate-${type}`)) {
+          if (leaf.classList.contains(`plite-${type}`)) {
             const commentsEntry = api.comment.node();
 
             if (!commentsEntry) {
@@ -163,7 +163,7 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
 
 ### 扩展 Transforms
 
-扩展 `setDraft` transform 以增强功能:
+扩展 `setDraft` 事务命令以增强功能:
 
 ```tsx
 export const commentPlugin = toTPlatePlugin<CommentConfig>(
@@ -172,20 +172,17 @@ export const commentPlugin = toTPlatePlugin<CommentConfig>(
     // ... previous configuration
   })
 )
-  .extendTransforms(
+  .extendTx(
     ({
       editor,
       setOption,
-      tf: {
-        comment: { setDraft },
-      },
-    }) => ({
+    }) => (tx) => ({
       setDraft: () => {
         if (editor.api.isCollapsed()) {
           editor.tf.select(editor.api.block()![1]);
         }
 
-        setDraft();
+        tx.comment.setDraft();
 
         editor.tf.collapse();
         setOption('activeId', getDraftCommentKey());
@@ -289,7 +286,7 @@ const editor = createPlateEditor({
 
 <API name="node">
   <APIOptions
-    type="EditorNodesOptions & { id?: string; isDraft?: boolean }"
+    type="object & { id?: string; isDraft?: boolean }"
     optional
   >
     查找节点的选项。
@@ -318,7 +315,7 @@ const editor = createPlateEditor({
 
 <API name="nodes">
   <APIOptions
-    type="EditorNodesOptions & { id?: string; isDraft?: boolean }"
+    type="object & { id?: string; isDraft?: boolean }"
     optional
   >
     查找节点的选项。
@@ -341,7 +338,7 @@ const editor = createPlateEditor({
 在当前选区设置草稿评论标记。
 
 <API name="setDraft">
-  <APIOptions type="SetNodesOptions" optional>
+  <APIOptions type="object" optional>
     设置草稿评论的选项。
   </APIOptions>
 </API>
@@ -449,7 +446,7 @@ const editor = createPlateEditor({
 
 <API name="isCommentNodeById">
   <APIParameters>
-    <APIItem name="node" type="TNode">
+    <APIItem name="node" type="Node">
       要检查的节点。
     </APIItem>
     <APIItem name="id" type="string">

@@ -212,7 +212,7 @@ const editor = createPlateEditor({
 </APIOptions>
 
 <APIReturns>
-<APIItem type="TElement">
+<APIItem type="Element">
 表格节点
 </APIItem>
 </APIReturns>
@@ -237,7 +237,7 @@ const editor = createPlateEditor({
 </APIOptions>
 
 <APIReturns>
-<APIItem type="TElement">
+<APIItem type="Element">
 单元格节点
 </APIItem>
 </APIReturns>
@@ -259,7 +259,7 @@ const editor = createPlateEditor({
 </APIOptions>
 
 <APIReturns>
-<APIItem type="TElement">
+<APIItem type="Element">
 行节点
 </APIItem>
 </APIReturns>
@@ -320,7 +320,7 @@ const editor = createPlateEditor({
 
 <API name="getCellChildren">
 <APIParameters>
-<APIItem name="cell" type="TElement">
+<APIItem name="cell" type="Element">
 表格单元格元素
 </APIItem>
 </APIParameters>
@@ -462,7 +462,7 @@ const editor = createPlateEditor({
 
 <API name="getTableColumnCount">
 <APIParameters>
-  <APIItem name="tableNode" type="TElement">
+  <APIItem name="tableNode" type="Element">
     要获取列数的表格节点
   </APIItem>
 </APIParameters>
@@ -480,7 +480,7 @@ const editor = createPlateEditor({
 
 <API name="getTableColumnIndex">
 <APIParameters>
-  <APIItem name="cellNode" type="TElement">
+  <APIItem name="cellNode" type="Element">
     要获取列索引的单元格节点
   </APIItem>
 </APIParameters>
@@ -540,7 +540,7 @@ const editor = createPlateEditor({
 
 <API name="getTableGridByRange">
 <APIOptions>
-<APIItem name="at" type="TRange">
+<APIItem name="at" type="Range">
 指定起始和结束单元格路径的范围
 </APIItem>
 <APIItem name="format" type="'table' | 'cell'" optional>
@@ -560,7 +560,7 @@ const editor = createPlateEditor({
 
 <API name="getTableRowIndex">
 <APIParameters>
-  <APIItem name="cellNode" type="TElement">
+  <APIItem name="cellNode" type="Element">
     要获取行索引的单元格节点
   </APIItem>
 </APIParameters>
@@ -633,7 +633,7 @@ const editor = createPlateEditor({
 </APISubList>
 </APIItem>
 
-<APIItem name="options" type="InsertNodesOptions" optional>
+<APIItem name="options" type="object" optional>
 插入表格节点的选项
 </APIItem>
 </APIParameters>
@@ -882,7 +882,7 @@ const editor = createPlateEditor({
 - 检查是否存在表格条目和选中的单元格条目。
 - 通过复制单元格内容而不是表格结构来处理单单元格复制或剪切操作。
 - 创建包含选中单元格内容的表格结构。
-- 将文本、HTML、CSV、TSV 和 Slate 片段数据设置到剪贴板。
+- 将文本、HTML、CSV、TSV 和 Plite 片段数据设置到剪贴板。
 
 ### `withTable`
 
@@ -959,10 +959,10 @@ const editor = createPlateEditor({
   <APIItem name="marginLeftOverride" type="number | null">
     左边距覆盖。
   </APIItem>
-  <APIItem name="selectedCells" type="TElement[] | null">
+  <APIItem name="selectedCells" type="Element[] | null">
     选中的单元格。
   </APIItem>
-  <APIItem name="selectedTables" type="TElement[] | null">
+  <APIItem name="selectedTables" type="Element[] | null">
     选中的表格。
   </APIItem>
 </APIAttributes>
@@ -974,7 +974,7 @@ const editor = createPlateEditor({
 
 <API name="useIsCellSelected">
 <APIParameters>
-  <APIItem name="element" type="TElement">
+  <APIItem name="element" type="Element">
     要检查的表格单元格元素。
   </APIItem>
 </APIParameters>

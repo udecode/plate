@@ -1,18 +1,9 @@
-import type { Path, TNode, TText } from '@platejs/slate';
+import type { Node, Path, Text } from '@platejs/plite';
 
-/** A weak map to hold anchor tokens. */
-
-const ANCHOR = new WeakMap<TNode, [number, AnchorToken]>();
-
-/** A weak map to hold focus tokens. */
-
-const FOCUS = new WeakMap<TNode, [number, FocusToken]>();
-
-/** All tokens inherit from a single constructor for `instanceof` checking. */
+const ANCHOR = new WeakMap<Node, [number, AnchorToken]>();
+const FOCUS = new WeakMap<Node, [number, FocusToken]>();
 
 export class Token {}
-
-/** Anchor tokens represent the selection's anchor point. */
 
 export class AnchorToken extends Token {
   offset?: number;
@@ -31,8 +22,6 @@ export class AnchorToken extends Token {
   }
 }
 
-/** Focus tokens represent the selection's focus point. */
-
 export class FocusToken extends Token {
   offset?: number;
   path?: Path;
@@ -50,27 +39,19 @@ export class FocusToken extends Token {
   }
 }
 
-/** Add an anchor token to the end of a text node. */
-
-export const addAnchorToken = (text: TText, token: AnchorToken) => {
+export const addAnchorToken = (text: Text, token: AnchorToken) => {
   const offset = text.text.length;
   ANCHOR.set(text, [offset, token]);
 };
 
-/** Get the offset if a text node has an associated anchor token. */
-
 export const getAnchorOffset = (
-  text: TText
+  text: Text
 ): [number, AnchorToken] | undefined => ANCHOR.get(text);
 
-/** Add a focus token to the end of a text node. */
-
-export const addFocusToken = (text: TText, token: FocusToken) => {
+export const addFocusToken = (text: Text, token: FocusToken) => {
   const offset = text.text.length;
   FOCUS.set(text, [offset, token]);
 };
 
-/** Get the offset if a text node has an associated focus token. */
-
-export const getFocusOffset = (text: TText): [number, FocusToken] | undefined =>
+export const getFocusOffset = (text: Text): [number, FocusToken] | undefined =>
   FOCUS.get(text);

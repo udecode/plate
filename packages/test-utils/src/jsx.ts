@@ -1,12 +1,8 @@
 import {
-  createHyperscript as createHyperscriptBase,
-  createText as createTestText,
+  createHyperscript,
   type HyperscriptShorthands,
-} from 'slate-hyperscript';
-
+} from './internals/hyperscript';
 import { createText } from './internals/creators';
-// biome-ignore lint/style/noExportedImports: createHyperscript is used locally and also re-exported
-import { createHyperscript } from './internals/hyperscript';
 
 export { createEditor } from './internals/creators';
 export { createHyperscript };
@@ -58,7 +54,6 @@ declare global {
       htd: any;
       htext: {
         [key: string]: any;
-        // These optional params will show up in the autocomplete!
         bold?: boolean;
         children?: any;
         code?: boolean;
@@ -125,23 +120,29 @@ export const elements: HyperscriptShorthands = {
   hvideo: { children: voidChildren, type: 'video' },
 };
 
+type PlateTestHyperscript = (
+  tagName: string,
+  attributes?: object | null,
+  ...children: any[]
+) => any;
+
 export const jsx = createHyperscript({
   creators: {
-    htext: createTestText,
+    htext: createText,
   },
   elements,
-});
+}) as PlateTestHyperscript;
 
-export const jsxt = createHyperscriptBase({
+export const jsxt = createHyperscript({
   creators: {
-    htext: createTestText,
+    htext: createText,
   },
   elements,
-});
+}) as PlateTestHyperscript;
 
 export const hjsx = createHyperscript({
   creators: {
     htext: createText,
   },
   elements,
-});
+}) as PlateTestHyperscript;

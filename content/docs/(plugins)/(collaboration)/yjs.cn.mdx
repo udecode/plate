@@ -10,7 +10,7 @@ toc: true
 
 ## 功能特性
 
-- **多提供者支持:** 使用 [Yjs](https://github.com/yjs/yjs) 和 [slate-yjs](https://docs.slate-yjs.dev/) 实现实时协作。支持同时使用多个同步提供者（例如 IndexedDB + Hocuspocus + WebRTC）共享同一个 `Y.Doc`。
+- **多提供者支持:** 使用 [Yjs](https://github.com/yjs/yjs) 和 [slate-yjs](https://docs.plite-yjs.dev/) 实现实时协作。支持同时使用多个同步提供者（例如 IndexedDB + Hocuspocus + WebRTC）共享同一个 `Y.Doc`。
 - **内置提供者:** 开箱即用地支持 [IndexedDB](https://github.com/yjs/y-indexeddb) 本地持久化、[Hocuspocus](https://tiptap.dev/hocuspocus)（服务器端）和 [WebRTC](https://github.com/yjs/y-webrtc)（点对点）提供者。
 - **自定义提供者:** 可扩展架构允许通过实现 `UnifiedProvider` 接口添加自定义提供者。
 - **感知与光标:** 集成 Yjs Awareness 协议，用于在用户之间共享光标位置和其他临时状态。包含 [`RemoteCursorOverlay`](/docs/components/remote-cursor-overlay) 用于渲染远程光标。
@@ -159,14 +159,14 @@ const MyEditorComponent = ({ documentId, initialValue }) => {
     if (!mounted) return;
 
     // 初始化 Yjs 连接、同步文档并设置初始编辑器状态
-    editor.getApi(YjsPlugin).yjs.init({
+    editor.getPluginApi(YjsPlugin).yjs.init({
       id: documentId,          // Yjs 文档的唯一标识符
       value: initialValue,     // 如果 Y.Doc 为空时的初始内容
     });
 
     // 清理：组件卸载时销毁连接
     return () => {
-      editor.getApi(YjsPlugin).yjs.destroy();
+      editor.getPluginApi(YjsPlugin).yjs.destroy();
     };
   }, [editor, mounted]);
 
@@ -498,7 +498,7 @@ YjsPlugin.configure({
 ## 相关资源
 
 - [Yjs](https://github.com/yjs/yjs) - 用于协作的 CRDT 框架
-- [slate-yjs](https://docs.slate-yjs.dev/) - Slate 的 Yjs 绑定
+- [slate-yjs](https://docs.plite-yjs.dev/) - Plite 的 Yjs 绑定
 - [y-indexeddb](https://github.com/yjs/y-indexeddb) - IndexedDB 持久化提供者
 - [Hocuspocus](https://tiptap.dev/hocuspocus) - Yjs 后端服务器
 - [y-webrtc](https://github.com/yjs/y-webrtc) - WebRTC 提供者
@@ -517,7 +517,7 @@ YjsPlugin.configure({
     提供者配置数组或预实例化的提供者实例。插件将从配置创建实例并直接使用现有实例。所有提供者将共享同一个 Y.Doc 和 Awareness。每个配置对象指定提供者 `type`（例如 `'indexeddb'`、`'hocuspocus'` 或 `'webrtc'`）及其特定的 `options`。自定义提供者实例必须符合 `UnifiedProvider` 接口。
   </APIItem>
   <APIItem name="cursors" type="WithCursorsOptions | null" optional>
-    远程光标配置。设置为 `null` 可显式禁用光标。如果省略，当指定了提供者时默认启用光标。传递给 `withTCursors`。参见 [WithCursorsOptions API](https://docs.slate-yjs.dev/api/slate-yjs-core/cursor-plugin#withcursors)。包括 `data`（本地用户信息）和 `autoSend`（默认 `true`）。
+    远程光标配置。设置为 `null` 可显式禁用光标。如果省略，当指定了提供者时默认启用光标。传递给 `withTCursors`。参见 [WithCursorsOptions API](https://docs.plite-yjs.dev/api/plite-yjs-core/cursor-plugin#withcursors)。包括 `data`（本地用户信息）和 `autoSend`（默认 `true`）。
   </APIItem>
   <APIItem name="ydoc" type="Y.Doc" optional>
     可选的共享 Y.Doc 实例。如果未提供，插件将在内部创建一个新实例。如果与其他 Yjs 工具集成或管理多个文档，可以提供您自己的实例。

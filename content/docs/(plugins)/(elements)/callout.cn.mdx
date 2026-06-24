@@ -117,8 +117,8 @@ const editor = createPlateEditor({
   <APIItem name="variant" type="string" optional>
     要插入的提示框变体类型
   </APIItem>
-  <APIItem name="...InsertNodesOptions" type="InsertNodesOptions<V>">
-    来自 `InsertNodesOptions` 的其他选项
+  <APIItem name="...options" type="object<V>">
+    其他插入选项
   </APIItem>
 </APIOptions>
 </API>
@@ -173,7 +173,7 @@ const editor = createPlateEditor({
 ### `TCalloutElement`
 
 ```typescript
-interface TCalloutElement extends TElement {
+interface TCalloutElement extends Element {
   variant?: string;
   icon?: string;
 }

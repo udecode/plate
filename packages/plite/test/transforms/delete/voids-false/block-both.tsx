@@ -1,0 +1,30 @@
+/** @jsx jsx */
+
+import { jsx } from '../../..';
+
+jsx;
+
+export const run = (editor) => {
+  editor.text.delete();
+};
+export const input = (
+  <editor>
+    <block void>
+      <anchor />
+    </block>
+    <block void>
+      <focus />
+    </block>
+    <block>one</block>
+    <block>two</block>
+  </editor>
+);
+export const output = (
+  <editor>
+    <block>
+      <cursor />
+      one
+    </block>
+    <block>two</block>
+  </editor>
+);

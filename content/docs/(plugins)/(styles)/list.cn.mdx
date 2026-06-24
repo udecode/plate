@@ -169,7 +169,7 @@ const editor = createPlateEditor({
 
 <API name="ListPlugin">
 <APIOptions>
-  <APIItem name="getSiblingListOptions" type="GetSiblingListOptions<TElement>" optional>
+  <APIItem name="getSiblingListOptions" type="GetSiblingListOptions<Element>" optional>
     用于确定兄弟元素缩进列表选项的函数。
   </APIItem>
   <APIItem name="getListStyleType" type="(element: HTMLElement) => ListStyleType" optional>
@@ -297,8 +297,8 @@ const editor = createPlateEditor({
   <APIItem name="eqIndent" type="boolean">
     指示当兄弟节点具有与当前节点相同的缩进级别时是否中断查找。如果为true，则在找到具有相同缩进级别的兄弟节点时停止查找。
   </APIItem>
-  <APIItem name="breakQuery" type="(node: TNode) => boolean | undefined">
-    一个函数，接受`TNode`并返回布尔值或undefined。
+  <APIItem name="breakQuery" type="(node: Node) => boolean | undefined">
+    一个函数，接受`Node`并返回布尔值或undefined。
     此函数用于指定查找过程应停止的条件。
   </APIItem>
   <APIItem name="breakOnLowerIndent" type="boolean">
