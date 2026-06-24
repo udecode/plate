@@ -1,5 +1,5 @@
 import { BaseBoldPlugin, BaseH1Plugin } from '@platejs/basic-nodes';
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createBasePlateEditor } from 'platejs';
 
 import { createTestEditor } from './createTestEditor';
 import { deserializeMd } from '../../../../../../packages/markdown/src/lib/deserializer';
@@ -20,7 +20,7 @@ describe('defaultRules', () => {
       },
     ];
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         MarkdownPlugin,
         BaseH1Plugin.configure({
@@ -47,7 +47,7 @@ describe('defaultRules', () => {
       },
     ];
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         MarkdownPlugin,
         BaseH1Plugin.configure({
@@ -78,7 +78,7 @@ describe('defaultRules', () => {
       },
     ];
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         MarkdownPlugin,
         BaseH1Plugin.configure({
@@ -109,7 +109,7 @@ describe('defaultRules', () => {
       },
     ];
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         MarkdownPlugin,
         BaseH1Plugin.configure({

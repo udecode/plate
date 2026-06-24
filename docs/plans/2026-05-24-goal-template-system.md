@@ -1,7 +1,7 @@
 # goal template system
 
 Objective:
-Add project/skill-specific goal plan template support while keeping the generic goal template project-agnostic, complete only when goal source rules/scripts/templates support selectable source-owned templates, a Slate Ralplan-specific goal template exists under the skill source tree, Slate Ralplan guidance points to that template, generated skill output is synced, the creator/checker scripts pass syntax and smoke tests, and pnpm lint:fix passes, while preserving docs/plans as the only runtime goal-plan location and avoiding docs/goals for state.
+Add project/skill-specific goal plan template support while keeping the generic goal template project-agnostic, complete only when goal source rules/scripts/templates support selectable source-owned templates, a Plite Ralplan-specific goal template exists under the skill source tree, Plite Ralplan guidance points to that template, generated skill output is synced, the creator/checker scripts pass syntax and smoke tests, and pnpm lint:fix passes, while preserving docs/plans as the only runtime goal-plan location and avoiding docs/goals for state.
 
 Goal plan:
 docs/plans/2026-05-24-goal-template-system.md
@@ -46,19 +46,19 @@ Phase / pass table:
 | Phase | Status | Evidence | Next |
 |-------|--------|----------|------|
 | Intake and source read | complete | read goal rule/helper/template, slate-ralplan rule, pasted generated skill, and docs/plans memory preference | done |
-| Implementation | complete | added template selector, template creator, Slate Ralplan template, and source guidance | done |
+| Implementation | complete | added template selector, template creator, Plite Ralplan template, and source guidance | done |
 | Verification | complete | syntax checks, pnpm install, template creator smoke, slate template smoke, pnpm lint:fix, active checker pass | done |
 | Closeout | complete | final response reports template location decision and evidence | done |
 
 Findings:
 - `docs/goals` is the wrong place for reusable goal templates. It would blur source templates with runtime plans.
 - Runtime goal plans should stay in `docs/plans`; reusable goal templates should live beside their owning source rule under `.agents/rules/<skill>/templates/`.
-- Slate Ralplan needs a domain template because the generic plan lacks scorecard, issue accounting, workspace verification, pass schedule, and final handoff rows.
+- Plite Ralplan needs a domain template because the generic plan lacks scorecard, issue accounting, workspace verification, pass schedule, and final handoff rows.
 
 Decisions and tradeoffs:
 - Add `--template <skill-or-path>` to `create-goal-scratchpad.mjs` -> keeps one instantiation command while allowing domain-specific templates -> small resolver logic.
 - Add `create-goal-template.mjs` -> gives future skills a standard scaffold command -> does not auto-design the domain rows, which still need human/source-rule judgment.
-- Store Slate Ralplan template at `.agents/rules/slate-ralplan/templates/goal-scratchpad.md` -> source-owned and synced by skiller -> avoids `docs/goals` state/template confusion.
+- Store Plite Ralplan template at `.agents/rules/slate-ralplan/templates/goal-scratchpad.md` -> source-owned and synced by skiller -> avoids `docs/goals` state/template confusion.
 
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
@@ -74,18 +74,18 @@ Timeline:
 - 2026-05-24T12:49:49+02:00 Goal created after `get_goal` returned no goal.
 - 2026-05-24T12:50:00+02:00 Added `--template` resolver to `create-goal-scratchpad.mjs`.
 - 2026-05-24T12:50:30+02:00 Added `create-goal-template.mjs`.
-- 2026-05-24T12:51:00+02:00 Added Slate Ralplan-specific goal template.
-- 2026-05-24T12:51:30+02:00 Updated goal, Slate Ralplan, and AGENTS source guidance.
+- 2026-05-24T12:51:00+02:00 Added Plite Ralplan-specific goal template.
+- 2026-05-24T12:51:30+02:00 Updated goal, Plite Ralplan, and AGENTS source guidance.
 - 2026-05-24T12:52:00+02:00 `pnpm install` synced generated `AGENTS.md` and skill output.
-- 2026-05-24T12:52:30+02:00 Smoke-tested template creator and Slate Ralplan template rendering; checker failed incomplete smoke plan as expected.
+- 2026-05-24T12:52:30+02:00 Smoke-tested template creator and Plite Ralplan template rendering; checker failed incomplete smoke plan as expected.
 - 2026-05-24T12:52:58+02:00 Removed temporary smoke plan and recorded final evidence.
 
 Verification evidence:
 - `node --check .agents/rules/goal/scripts/create-goal-scratchpad.mjs && node --check .agents/rules/goal/scripts/create-goal-template.mjs && node --check .agents/rules/goal/scripts/check-complete.mjs` -> passed.
 - `pnpm install` -> passed; skiller apply completed successfully.
 - `node .agents/rules/goal/scripts/create-goal-template.mjs --skill smoke-goal-template --print | awk 'NR<=8 {print}'` -> printed generic template header without writing a template file.
-- `node .agents/rules/goal/scripts/create-goal-scratchpad.mjs --template slate-ralplan ... --path docs/plans/2026-05-24-smoke-slate-ralplan-template.md` -> rendered a Slate Ralplan-specific smoke plan.
-- `rg -n "Template:|Slate Ralplan lane state|Scorecard|Issue accounting|Verification workspace gate" docs/plans/2026-05-24-smoke-slate-ralplan-template.md` -> found Slate-specific rows.
+- `node .agents/rules/goal/scripts/create-goal-scratchpad.mjs --template slate-ralplan ... --path docs/plans/2026-05-24-smoke-slate-ralplan-template.md` -> rendered a Plite Ralplan-specific smoke plan.
+- `rg -n "Template:|Plite Ralplan lane state|Scorecard|Issue accounting|Verification workspace gate" docs/plans/2026-05-24-smoke-slate-ralplan-template.md` -> found Plite-specific rows.
 - `node .agents/rules/goal/scripts/check-complete.mjs docs/plans/2026-05-24-smoke-slate-ralplan-template.md` -> failed as expected on unchecked checklist, open pass rows, missing final verification, and pending risks.
 - `rm docs/plans/2026-05-24-smoke-slate-ralplan-template.md` -> removed temporary smoke plan.
 - `pnpm lint:fix` -> passed after regex constant fix; `Checked 3423 files in 5s. No fixes applied.`
@@ -98,7 +98,7 @@ Reboot status:
 | Where am I going? | Report template system changes and verification |
 | What is the goal? | Add project/skill-specific goal templates while preserving generic goal template and docs/plans runtime plans |
 | What have I learned? | Templates should be source-owned under `.agents/rules/<skill>/templates`; `docs/goals` would be the wrong layer |
-| What have I done? | Added selector, creator, Slate Ralplan template, source guidance, sync, and smoke/lint verification |
+| What have I done? | Added selector, creator, Plite Ralplan template, source guidance, sync, and smoke/lint verification |
 
 Open risks:
 - None.

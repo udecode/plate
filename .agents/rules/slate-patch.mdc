@@ -36,21 +36,21 @@ the right long-term shape, verify, autoreview, hand off. It does not mean
 
 - The user asks only for an architecture plan or proposal. Use `slate-plan`.
 - The user asks for a normal diff review. Use `autoreview`.
-- The target is not Slate v2 or `.tmp/slate-v2`.
+- The target is not Slate v2 or `Plate repo root`.
 - The repair belongs to every goal-backed workflow. Use `autogoal repair`.
 - The only honest next step is a multi-pass public API RFC with user review.
   Say that and route to `slate-plan`.
 
 ## Hard Rules
 
-- Current `.tmp/slate-v2` source wins over memory, old plans, and prior
+- Current `Plate repo root` source wins over memory, old plans, and prior
   diagnosis.
-- Run Slate v2 commands from `.tmp/slate-v2`. `plate-2` commands do not prove
-  Slate v2 behavior.
-- Benchmark target work runs from `plate-2` through
+- Run Slate v2 commands from the Plate repo root with the Slate package/browser
+  commands. Generic Plate app commands do not prove Slate v2 behavior.
+- Benchmark target work runs from the Plate repo root through
   `benchmarks/targets/slate-v2.json` and `pnpm bench:targets:*`. It can route
-  next work, expose benchmark gaps, and hand optimization to `slate-ar-perf`,
-  but it never replaces `.tmp/slate-v2` reproduction, tests, or browser proof.
+  next work, expose benchmark gaps, and hand optimization to `slate-ar perf`,
+  but it never replaces Slate package reproduction, tests, or browser proof.
 - Reproduce first whenever practical. For browser routes, use the real route and
   behavior-level interaction, not only model-state calls.
 - Add a behavior-level regression test when sane. Prefer tests that cover the
@@ -77,9 +77,9 @@ the right long-term shape, verify, autoreview, hand off. It does not mean
 
 - Correctness fails: use `slate-patch`.
 - Generic measured loop with an existing proof surface: use `slate-ar`.
-- Metric optimization with an existing correctness oracle: use `slate-ar-perf`.
+- Metric optimization with an existing correctness oracle: use `slate-ar perf`.
 - Missing oracle for a performance loop: add repro/test/browser proof here
-  first, then hand off to `slate-ar-perf`.
+  first, then hand off to `slate-ar perf`.
 - A perf-sensitive correctness fix may end with a benchmark target handoff, not
   an Autoresearch packet loop.
 
@@ -104,7 +104,7 @@ Use it for misses like:
 
 Do not use it for:
 
-- runtime/product bugs in `.tmp/slate-v2`;
+- runtime/product bugs in `Plate repo root`;
 - one-off wording preferences;
 - unrelated goal lifecycle misses that belong to `autogoal repair`;
 - hand-editing generated `.agents/skills/*/SKILL.md`.
@@ -137,7 +137,7 @@ Goal handle:
 
 ```txt
 Fix Slate Patch <bug/cluster>; done when repro, behavior coverage, Slate v2
-proof, and autoreview pass; target `.tmp/slate-v2`.
+proof, and autoreview pass; target `Plate repo root`.
 ```
 
 Do not create a Slate Plan pass schedule. This skill is one implementation
@@ -148,7 +148,7 @@ slice, not a planning lane.
 ### 1. Reproduce And Bound
 
 1. Read the latest user report, attached media, route, issue, or failing test.
-2. Inspect the live owner in `.tmp/slate-v2`.
+2. Inspect the live owner in `Plate repo root`.
 3. Reproduce with the narrowest honest path:
    - browser route and real keyboard/mouse input for UI bugs;
    - package/unit test for pure model behavior;
@@ -193,6 +193,14 @@ Add or update the smallest behavior test that fails for the current bug:
 The test should assert the user-visible invariant and the model invariant when
 both matter.
 
+For selection replacement, history, or undo/redo bugs, never stop at a
+single-DOM-text-node case. If the selected phrase can cross marks, links,
+inline boundaries, or multiple Slate leaves, include a multi-path row with real
+keyboard typing, one undo, exact model value/selection, native selected text,
+and DOM selection endpoints. Helpers like `dragTextRange` that search one text
+node are insufficient for that row; use explicit Slate path endpoints or
+promote a reusable multi-leaf helper.
+
 #### Editor Selection Navigation Coverage
 
 When the bug class touches selection, keyboard navigation, mouse selection,
@@ -209,7 +217,8 @@ The red test must name:
 - direction: forward, backward, up, down, into boundary, out of boundary, or
   across many boundaries;
 - topology: plain blocks, hidden DOM, DOM coverage boundary, multi-root,
-  content root, editable void, synced root, virtualized DOM, or mixed topology;
+  content root, editable void, synced root, virtualized DOM, inline boundaries
+  with marks/links, or mixed topology;
 - starting state: collapsed, expanded forward, expanded backward, edge of
   block, multi-line, after focus handoff, or after history restore;
 - assertions: exact model selection/value plus DOM selection/focus/chrome
@@ -218,6 +227,22 @@ The red test must name:
 Do not claim "fully tested selection/navigation" unless the proof covers the
 relevant command x direction x topology x starting-state rows. If the bug only
 needs a narrower slice, record the intentionally skipped rows and why.
+
+For screenshot-visible selection bugs, inspect a fresh screenshot after the
+real keyboard/mouse path before handoff. Model state alone is not proof. The
+row must assert:
+
+- model selection path/offset;
+- native selection state through `window.getSelection()` or `slate-browser`;
+- visible view-selection markers or caret rects for the painted layer;
+- no second native paint when Slate owns a projected selection.
+
+For vertical Shift+Arrow bugs, cover both directions in the same row. Capture
+the repeated Shift+Down focus path, then assert repeated Shift+Up equals the
+reverse of that path prefix. Staged-vs-virtualized parity is not enough because
+both modes can share the same wrong target. Add an independent oracle: reverse
+path, native/upstream behavior, exact visual line target, or screenshot/geometry
+proof.
 
 For `selectionPolicy: 'materialize'` bugs, include the materialize-specific
 coverage rows from `docs/slate-v2/selection-navigation-coverage.md`: first
@@ -290,7 +315,7 @@ Verdict must be one of:
 
 ### 6. Verify
 
-Run focused gates from `.tmp/slate-v2`.
+Run focused gates from `Plate repo root`.
 
 Pick the relevant set:
 
@@ -299,9 +324,10 @@ Pick the relevant set:
 - changed site typecheck for examples;
 - focused Playwright route tests;
 - browser repro script when Playwright is not enough;
-- `bun check` only when the touched surface justifies a broader fast gate;
-- `bun check:full` only for release-quality browser claims or when explicitly
-  requested.
+- `pnpm slate:test` and `pnpm slate:typecheck` for package
+  behavior claims;
+- `pnpm --filter slate test:slate-browser` for release-quality browser behavior
+  claims or when explicitly requested.
 
 If a gate fails for unrelated existing debt, record the exact command and why it
 is unrelated. Do not hide a relevant failure.
@@ -309,7 +335,7 @@ is unrelated. Do not hide a relevant failure.
 ### 7. Benchmark Target Handoff
 
 After Slate v2 correctness proof, decide whether the patch needs benchmark
-target sync or a `slate-ar-perf` handoff.
+target sync or a `slate-ar perf` handoff.
 
 Run this when the bug class or patch touches performance/scalability,
 rendering/projection, React rerender behavior, huge documents, history,
@@ -322,10 +348,10 @@ Workflow:
 1. From `plate-2`, inspect `benchmarks/targets/slate-v2.json` and run
    `pnpm bench:targets:check`.
 2. Use `pnpm bench:targets:list` or
-   `node tooling/scripts/slate-autoresearch.mjs suggest-loops --with-checks`
+   `node tooling/scripts/slate-research.mjs suggest-loops --with-checks`
    to find the matching target.
 3. If a target exists, run `pnpm bench:targets:dry-run -- <target-id>` and
-   record whether `slate-ar-perf` should own further optimization.
+   record whether `slate-ar perf` should own further optimization.
 4. If no target exists, record
    `Benchmark target candidate needed - <behavior>` and the likely benchmark
    plus correctness command.
@@ -343,19 +369,23 @@ Final checklist item for non-trivial implementation changes:
 
 1. Load `.agents/skills/autoreview/SKILL.md`.
 2. Run the helper from the checkout that owns the patch.
-3. For `.tmp/slate-v2` patches, cwd must be `.tmp/slate-v2`:
+3. For Slate v2 package patches, cwd must be the Plate repo root:
 
 ```bash
 /Users/zbeyens/git/plate-2/.agents/skills/autoreview/scripts/autoreview --mode local
 ```
 
 4. Verify every accepted/actionable finding against source.
-5. Fix valid findings.
-6. Rerun focused proof and autoreview until no accepted/actionable findings
+5. For every finding, confirm the cited file belongs to the reviewed scope, the
+   line range still exists in the current checkout, and any quoted code still
+   matches current file contents. Reject stale, out-of-scope, or non-matching
+   findings instead of patching around review noise.
+6. Fix valid findings.
+7. Rerun focused proof and autoreview until no accepted/actionable findings
    remain.
 
-Do not run dirty-local autoreview from `plate-2` for `.tmp/slate-v2` patches.
-That reviews the wrong checkout.
+Do not run autoreview against a donor checkout for transplanted Slate packages.
+That reviews the wrong source.
 
 ## Final Response
 
@@ -367,7 +397,7 @@ Keep it short. Include:
 - selection/navigation matrix slice covered or intentionally skipped when
   applicable;
 - tests/proof run with cwd when not obvious;
-- benchmark target handoff when applicable: target dry-run, `slate-ar-perf`
+- benchmark target handoff when applicable: target dry-run, `slate-ar perf`
   handoff, candidate target needed, or N/A with reason;
 - autoreview result;
 - any relevant unresolved gate or unrelated existing failure.

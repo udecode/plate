@@ -34,8 +34,8 @@ as the execution goal. The user-review boundary is real.
 
 - Reviewing Slate v2 architecture, public API, hooks, runtime boundaries, or
   render contracts.
-- Executing a user-accepted Slate Plan against the live `.tmp/slate-v2`
-  workspace after a second explicit invocation names the accepted plan.
+- Executing a user-accepted Slate Plan against the live Plate repo root after a
+  second explicit invocation names the accepted plan.
 - The user asks whether the plan is the absolute best shape for:
   - React 19.2 runtime performance
   - unopinionated Slate-close DX
@@ -58,7 +58,7 @@ as the execution goal. The user-review boundary is real.
 - In planning mode, do not patch Slate v2 implementation code. Planning mode may
   edit only planning, research, issue-ledger, and PR-reference artifacts it
   explicitly owns.
-- In execution mode, Slate Plan may edit `.tmp/slate-v2` implementation, tests,
+- In execution mode, Slate Plan may edit Slate package implementation, tests,
   examples, package files, build config, and related reference docs only when
   the latest user message explicitly accepts the ready plan or asks this skill
   to execute that named plan.
@@ -101,18 +101,13 @@ as the execution goal. The user-review boundary is real.
   surfaces, a raw-Slate answer alone is insufficient.
 - Do not let a polished plan self-certify. Scores, verdicts, and keep/drop
   decisions need cited evidence.
-- Workspace verification is part of evidence. `plate-2` commands prove only
-  planning, ledgers, and completion-state artifacts. Any Slate v2 source,
-  runtime, browser, package, public API, or issue-fix claim must be verified
-  from the live `.tmp/slate-v2` workspace with the relevant `.tmp/slate-v2` command.
-- Do not count `bun run test`, typecheck, lint, Playwright, or package filters
-  run in `plate-2` as Slate v2 verification. They may be recorded only as
-  plan-artifact checks.
-- If execution mode touched `.tmp/slate-v2`, Slate Plan closure must require the
-  applicable `.tmp/slate-v2` verification command set.
-  A failing relevant `.tmp/slate-v2` command keeps the plan or execution review
-  `pending` unless the failure is proven unrelated with a cited command,
-  failing scope, and owner.
+- Workspace verification is part of evidence. Slate v2 source, runtime,
+  browser, package, public API, or issue-fix claims must be verified from the
+  Plate repo root with the package/app command that owns the claim.
+- If execution mode touched Slate package/app source, Slate Plan closure must
+  require the applicable root verification command set. A failing relevant
+  command keeps the plan or execution review `pending` unless the failure is
+  proven unrelated with a cited command, failing scope, and owner.
 
 ## Required Artifacts
 
@@ -140,7 +135,7 @@ as the execution goal. The user-review boundary is real.
   goals.
 - Active goal for execution mode: after explicit user acceptance, start a new
   goal for the accepted plan path and implementation target. Keep that goal
-  objective short and put the execution queue, `.tmp/slate-v2` verification
+  objective short and put the execution queue, `Plate repo root` verification
   gates, issue/reference sync, autoreview requirement, and closeout conditions
   in the execution plan. For dirty local work, the autoreview skill's target is
   `--mode local`; do not use `--uncommitted`.
@@ -197,12 +192,12 @@ as the execution goal. The user-review boundary is real.
   used as evidence. This is not a citations list; it must state the mechanism
   Slate should steal, reject, or deliberately diverge from.
 - Applicable implementation-skill review notes in the active plan: Vercel
-  React, performance-oracle, and tdd, plus shadcn/react-useeffect when relevant,
+  React, performance, and tdd, plus shadcn/react-useeffect when relevant,
   each marked `applied` or `skipped` with a concrete reason.
 - Allowed edit scope in planning mode: `docs/plans/**`, `docs/research/**`,
   `docs/slate-issues/**`, `docs/slate-v2/ledgers/**`, and
   `docs/slate-v2/references/**`.
-- Allowed edit scope in execution mode: the accepted plan's named `.tmp/slate-v2`
+- Allowed edit scope in execution mode: the accepted plan's named `Plate repo root`
   implementation, test, example, package, build, config, and reference-doc
   owners, plus the active plan ledger.
 
@@ -239,7 +234,7 @@ Good execution goal:
 
 ```txt
 Execute docs/plans/<accepted-plan>.md; done when execution closeout gates pass;
-target `.tmp/slate-v2`.
+target `Plate repo root`.
 ```
 
 Bad goal:
@@ -279,7 +274,7 @@ that lane.
    `docs/slate-v2/references/pr-description.md`.
 7. Relevant compiled research pages for Lexical, ProseMirror, Tiptap, Slate,
    React 19.2, node/render DX, and browser proof.
-8. Live `.tmp/slate-v2` API surfaces touched by the review.
+8. Live `Plate repo root` API surfaces touched by the review.
 
 Read when relevant:
 
@@ -294,13 +289,11 @@ Read when relevant:
 - [vercel-react-best-practices](.agents/skills/vercel-react-best-practices/SKILL.md)
   when React rendering, subscriptions, external stores, bundle shape, browser
   event listeners, or runtime performance are in scope.
-- [performance-oracle](.agents/skills/performance-oracle/SKILL.md) when hot
-  paths, algorithms, memory, browser/editor runtime, scalability, or measured
-  performance risk is in scope.
 - [performance](.agents/skills/performance/SKILL.md)
-  when a performance lane needs GitHub-scale cohorting, repeated-unit budgets,
+  when hot paths, algorithms, memory, browser/editor runtime, scalability,
+  measured performance risk, GitHub-scale cohorting, repeated-unit budgets,
   interaction-level INP/p95/p99 rows, memory tagging, degradation policy, or
-  production dashboard/RUM proof beyond generic React and algorithmic advice.
+  production dashboard/RUM proof are in scope.
 - [tdd](.agents/skills/tdd/SKILL.md) when the plan changes behavior, fixes a
   regression class, or needs test-first acceptance criteria.
 
@@ -308,7 +301,7 @@ Use `research-wiki` when the compiled layer is stale, contradictory, or missing
 coverage for the current question. For framework evidence, inspect local
 official clones under `..` or normalized `../raw` before external docs.
 
-If the review depends on current `.tmp/slate-v2` behavior, cite live source files
+If the review depends on current `Plate repo root` behavior, cite live source files
 or tests. If it depends on React 19.2, Lexical, ProseMirror, Tiptap, or Slate
 legacy behavior, cite the compiled research page or local source read used for
 that claim.
@@ -322,7 +315,7 @@ Before any pass, score, ledger row, migration answer, docs/example answer,
 proof row, implementation phase, final handoff, or user-facing explanation that
 relies on what currently exists:
 
-1. Re-read the live `.tmp/slate-v2` source, example, test, or generated contract
+1. Re-read the live `Plate repo root` source, example, test, or generated contract
    that owns the shape.
 2. State the exact current owner: file, test, route, generated contract, or
    explicit gap.
@@ -336,13 +329,13 @@ relies on what currently exists:
    or `gap: ...` instead of inventing a current state.
 
 Stale docs and closed plans are not current API evidence. They can explain why
-a decision exists, but they cannot prove what `.tmp/slate-v2` exposes today.
+a decision exists, but they cannot prove what `Plate repo root` exposes today.
 
 For render/API examples, grep the exact symbols first. Examples:
 
-- `rg -n "RenderVoidProps|renderVoid|renderElement" .tmp/slate-v2/packages/slate-react .tmp/slate-v2/site`
-- `rg -n "EditorExtension|commands\\?|setup\\(|extend\\(" .tmp/slate-v2/packages/slate/src`
-- `rg -n "useElementSelected|useNodeSelector|useEditorState" .tmp/slate-v2/packages/slate-react/src`
+- `rg -n "RenderVoidProps|renderVoid|renderElement" packages/slate-react apps/www`
+- `rg -n "EditorExtension|commands\\?|setup\\(|extend\\(" packages/slate/src`
+- `rg -n "useElementSelected|useNodeSelector|useEditorState" packages/slate-react/src`
 
 Do not translate from old Slate by memory. If the current code says void
 renderers already receive content-only props, do not describe a migration from
@@ -357,36 +350,36 @@ uses a stale "before". Re-ground those steps before writing them.
 
 ## Verification Workspace Gate
 
-Slate v2 verification runs in `.tmp/slate-v2`, not in this planning repo.
+Slate v2 verification runs from the Plate repo root, using the package/app
+command that owns the claim.
 
 Rules:
 
 1. Before scoring, closing, or reviewing an implementation slice that changes or
-   claims `.tmp/slate-v2` behavior, run the relevant command `.tmp/slate-v2` dir.
+   claims Slate v2 behavior, run the relevant root command.
 2. Record the exact command, cwd, result, and failure scope in the active plan.
-3. Broad Slate v2 closure after an execution pass needs the broadest
-   feasible `.tmp/slate-v2` gate for the touched surface. If `bun run test` is
-   the project-level release gate and it fails, closure stays `pending` until
-   the failure is fixed, isolated as unrelated, or explicitly moved to a
-   recorded owner.
+3. Broad Slate v2 closure after an execution pass needs the broadest feasible
+   root gate for the touched surface. If that gate fails, closure stays
+   `pending` until the failure is fixed, isolated as unrelated, or explicitly
+   moved to a recorded owner.
 4. Focused gates are acceptable during intermediate passes, but the plan must
-   name the remaining broad `.tmp/slate-v2` gate before calling the implementation
+   name the remaining broad root gate before calling the implementation
    release-ready.
 5. If tooling, time, browser availability, or device access prevents a required
-   `.tmp/slate-v2` gate, record `verification gap: <command>` and keep status
-   `pending` or `blocked` according to whether more autonomous work remains.
+   root gate, record `verification gap: <command>` and keep status `pending` or
+   `blocked` according to whether more autonomous work remains.
 
 Common command ownership examples:
 
-- Core package changes: run the relevant `bun --filter slate ...` test/typecheck
-  from `.tmp/slate-v2`, then the broader `.tmp/slate-v2` gate named by the package.
+- Core package changes: run `pnpm --filter @platejs/slate test` or the matching
+  package filter, then the broader root gate named by the package.
 - React/runtime/browser changes: run focused `slate-react` tests and matching
-  Playwright rows from `.tmp/slate-v2`; do not use `plate-2` tests as proof.
-- Public API/export changes: run public-surface contracts from `.tmp/slate-v2`.
-- Issue-fix claims: run the exact proof route from `.tmp/slate-v2` and keep issue
+  `/examples/slate/*` Playwright rows.
+- Public API/export changes: run package public-surface contracts.
+- Issue-fix claims: run the exact package or browser proof route and keep issue
   claims conservative until it passes.
-- Planning-only docs/ledger changes in `plate-2`: run the relevant source sync
-  and targeted text checks; no Slate v2 test claim may be made from that alone.
+- Planning-only docs/ledger changes: run the relevant source sync and targeted
+  text checks; no runtime claim may be made from that alone.
 
 ## Goal And Plan State
 
@@ -497,7 +490,7 @@ completed pass <name/date>`
 - every major decision has principles, top drivers, viable options, rejected
   alternatives, consequences, and follow-ups
 - high-risk deliberate mode is complete when triggered
-- every applicable Vercel React, performance-oracle, tdd, shadcn, and
+- every applicable Vercel React, performance, tdd, shadcn, and
   react-useeffect review is applied or explicitly skipped with a reason
 - every major breaking/paradigm change has an accepted objection-ledger row
 - extension/plugin/collaboration/data-model changes have migration-backbone
@@ -508,8 +501,8 @@ completed pass <name/date>`
 - pass-state ledger proves earlier passes completed before closure
 - plan deltas from review are recorded
 - verification workspace gate is satisfied: every Slate v2 source, behavior,
-  package, browser, or issue-fix claim has a recorded `.tmp/slate-v2` command and
-  result, and no relevant failing `.tmp/slate-v2` command is left without a fix,
+  package, browser, or issue-fix claim has a recorded `Plate repo root` command and
+  result, and no relevant failing `Plate repo root` command is left without a fix,
   unrelated-failure proof, or explicit owner
 - autoreview closeout is satisfied for execution work: non-trivial uncommitted
   implementation changes load `.agents/skills/autoreview/SKILL.md` and follow
@@ -569,7 +562,7 @@ The plan must include:
 25. Final completion gates.
 
 Fast driver gates must include the cwd. For any gate that proves Slate v2
-behavior, the cwd is `.tmp/slate-v2`. For planning-only gates, the cwd is
+behavior, the cwd is `Plate repo root`. For planning-only gates, the cwd is
 `plate-2`.
 
 The `docs/plans/templates/slate-plan.md` template should seed these as
@@ -848,8 +841,7 @@ Use this matrix:
 | Lens                          | Applies when                                                                                                                                                                         | Must answer                                                                                                                                                                                   |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `vercel-react-best-practices` | React rendering, external-store subscriptions, event listeners, bundle shape, browser runtime, or React 19.2 performance are in scope                                                | Are subscriptions narrow, global listeners deduped, transient values kept out of render, expensive work deferred, and React used as projection rather than engine?                            |
-| `performance-oracle`          | Hot paths, algorithms, large documents, memory lifetime, browser/editor runtime loops, operation replay, or scalability are in scope                                                 | Is complexity bounded? Are allocations, dirty-id sets, DOM repair, selection import/export, and replay paths controlled at 10x, 100x, and 1000x scale?                                        |
-| `performance`                 | Large repeated editor surfaces, interaction latency, production perf claims, virtualization/shell/staging choices, p95/p99 risk, or memory/DOM/component-count pressure are in scope | Are cohorts segmented, repeated-unit budgets named, interaction-level INP/p95/p99 rows tracked, memory tags defined, degradation contracts explicit, and Datadog/RUM dashboard gaps recorded? |
+| `performance`                 | Hot paths, algorithms, large documents, memory lifetime, browser/editor runtime loops, operation replay, scalability, repeated editor surfaces, interaction latency, production perf claims, virtualization/shell/staging choices, p95/p99 risk, or memory/DOM/component-count pressure are in scope | Are complexity, allocations, dirty-id sets, DOM repair, selection import/export, replay paths, cohorts, repeated-unit budgets, interaction-level INP/p95/p99 rows, memory tags, degradation contracts, and Datadog/RUM dashboard gaps controlled? |
 | `tdd`                         | Behavior changes, bug fixes, public interface changes, regression classes, or executable acceptance criteria are in scope                                                            | Is there a public-interface red-green-refactor slice or generated browser contract that proves behavior rather than implementation details?                                                   |
 | `build-web-apps:shadcn`       | UI/editor chrome, examples, menus, popovers, command palettes, inputs, forms, overlays, styling, or component composition are in scope                                               | Are UI surfaces composable, minimal-prop, accessible, and not product-opinion leakage into Slate core?                                                                                        |
 | `react-useeffect`             | Effects, derived state, reset-on-prop, subscriptions, browser APIs, external systems, or parent notifications are in scope                                                           | Is the effect external synchronization? Can it be render calculation, event handler, keyed reset, `useMemo`, or `useSyncExternalStore` instead?                                               |
@@ -1077,7 +1069,7 @@ Record:
 - dropped decisions
 - strengthened acceptance criteria
 - new tests/proof rows
-- verification commands with cwd, especially any `.tmp/slate-v2` focused or broad
+- verification commands with cwd, especially any `Plate repo root` focused or broad
   gate used to support a claim
 - unresolved items moved to the next pass
 - no-change decisions with the evidence that made change unnecessary
@@ -1100,9 +1092,8 @@ in the plan:
   alternatives, consequences, and follow-ups are recorded.
 - Performance pass: prove the shape avoids global editor subscriptions on hot
   paths. Use `vercel-react-best-practices` for React/runtime projection
-  decisions and `performance-oracle` for hot-path, algorithmic, memory, browser
-  runtime, or scalability claims when applicable. Use
-  `performance` when the plan needs cohort segmentation,
+  decisions and `performance` for hot-path, algorithmic, memory, browser
+  runtime, scalability claims, cohort segmentation,
   repeated-unit budgets, interaction-level INP/p95/p99 rows, memory tagging,
   degradation contracts, or Datadog/RUM dashboard proof.
 - DX pass: prove the shape is close enough to Slate terminology without copying
@@ -1115,7 +1106,7 @@ in the plan:
   example-by-example patching. Use `tdd` expectations for behavior slices that
   should be introduced or fixed test-first.
 - Verification workspace pass: prove all Slate v2 behavior/source/test claims
-  were checked in `.tmp/slate-v2`, not `plate-2`. If a relevant `.tmp/slate-v2`
+  were checked in `Plate repo root`, not `plate-2`. If a relevant `Plate repo root`
   command fails, keep status `pending` and record the failing command, scope,
   and next owner.
 - Research pass: prove Lexical, ProseMirror, and Tiptap were used as evidence,
@@ -1183,7 +1174,7 @@ Group bullets by surface when useful:
 - public API
 - intent / decision brief
 - React/runtime
-- applicable Vercel React / performance-oracle / tdd review
+- applicable Vercel React / performance / tdd review
 - hooks and render contracts
 - events and callbacks
 - schema/predicate behavior

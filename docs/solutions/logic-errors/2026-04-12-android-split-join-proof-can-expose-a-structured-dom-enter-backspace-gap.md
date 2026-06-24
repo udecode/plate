@@ -6,7 +6,7 @@ root_cause: logic_error
 title: Android split join proof can expose a structured DOM enter backspace gap
 tags:
   - slate-react
-  - slate-browser
+  - plite-browser
   - android
   - split-join
   - enter

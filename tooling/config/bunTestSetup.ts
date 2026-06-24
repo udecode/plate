@@ -95,9 +95,9 @@ if (typeof window !== 'undefined' && window.DOMParser) {
   });
 }
 
-// Fix Happy-DOM readonly property issue with isContentEditable
-// slate-test-utils needs to set element.isContentEditable = true
-// but Happy-DOM makes this property readonly
+// Fix Happy-DOM readonly property issue with isContentEditable.
+// Plate-owned test harnesses need to mark editable nodes as contentEditable,
+// but Happy-DOM makes this property readonly.
 if (typeof window !== 'undefined' && window.HTMLElement) {
   const originalDescriptor = Object.getOwnPropertyDescriptor(
     window.HTMLElement.prototype,

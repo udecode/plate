@@ -2,7 +2,7 @@
 title: Next-dev benchmark readiness must warm and retry before failing
 date: 2026-04-15
 category: workflow-issues
-module: slate-v2
+module: plite
 problem_type: workflow_issue
 component: testing_framework
 symptoms:
@@ -12,7 +12,7 @@ root_cause: missing_workflow_step
 resolution_type: workflow_improvement
 severity: medium
 tags:
-  - slate-v2
+  - plite
   - benchmarking
   - playwright
   - next-dev
@@ -54,7 +54,7 @@ Harden the benchmark runner instead of touching the example:
 
 Relevant file:
 
-- [huge-document-overlays.mjs](/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/replacement/huge-document-overlays.mjs)
+- [huge-document-overlays.mjs](/Users/zbeyens/git/plite/scripts/benchmarks/browser/replacement/huge-document-overlays.mjs)
 
 Verification after the patch:
 
@@ -83,4 +83,4 @@ being stupid.
 ## Related Issues
 
 - [Editor benchmark viewers must keep live and snapshot rows separate](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-04-editor-benchmark-viewers-must-keep-live-and-snapshot-rows-separate.md)
-- [Slate v2 Overlay Benchmark Hardening](/Users/zbeyens/git/plate-2/docs/plans/2026-04-15-slate-v2-overlay-benchmark-hardening.md)
+- [Plite Overlay Benchmark Hardening](/Users/zbeyens/git/plate-2/docs/plans/2026-04-15-plite-overlay-benchmark-hardening.md)

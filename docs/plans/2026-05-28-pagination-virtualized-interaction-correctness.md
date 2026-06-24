@@ -24,7 +24,7 @@ Task source:
 - title: virtualized pagination click/focus/editing overlap
 - acceptance criteria: clicking a split projected paragraph keeps projected line
   positions stable, ArrowRight/ArrowLeft update selection, text insertion updates
-  Slate state, table-cell native input repair updates Slate state, and existing
+  Plite state, table-cell native input repair updates Plite state, and existing
   virtualized performance checks remain green.
 
 Completion threshold:
@@ -36,13 +36,13 @@ Completion threshold:
 - Focused Playwright coverage proves click, navigation, editing, table editing,
   direct startup, dropdown switch, middle typing, burst typing, fast scrolling,
   and scaled page coordinates.
-- Typecheck and lint pass in `.tmp/slate-v2`.
+- Typecheck and lint pass in `Plate repo root`.
 - `node .agents/rules/autogoal/scripts/check-complete.mjs docs/plans/2026-05-28-pagination-virtualized-interaction-correctness.md` passes before goal close.
 
 Verification surface:
-- `.tmp/slate-v2` route: `site/examples/ts/pagination.tsx`
-- `.tmp/slate-v2` core repair: `packages/slate-react/src/editable/dom-repair-queue.ts`
-- `.tmp/slate-v2` tests: `playwright/integration/examples/pagination.test.ts`
+- `Plate repo root` route: `site/examples/ts/pagination.tsx`
+- `Plate repo root` core repair: `packages/plite-react/src/editable/dom-repair-queue.ts`
+- `Plate repo root` tests: `playwright/integration/examples/pagination.test.ts`
 - Commands recorded in Verification evidence.
 
 Constraints:
@@ -53,7 +53,7 @@ Constraints:
 
 Boundaries:
 - Source of truth: user screenshot/video plus live Playwright repro on `/examples/pagination?strategy=virtualized`.
-- Allowed edit scope: pagination example, Slate React native input repair, and pagination Playwright tests.
+- Allowed edit scope: pagination example, Plite React native input repair, and pagination Playwright tests.
 - Browser surface: local pagination example at `http://localhost:3100/examples/pagination?strategy=virtualized` and Playwright-served example app.
 - Tracker sync: N/A; no issue or PR requested.
 - Non-goals: redesign pagination APIs, solve headless pagination, or rewrite table splitting.
@@ -92,7 +92,7 @@ Start Gates:
 | `docs/solutions` checked for non-trivial existing-code work | no | N/A: local regression with direct source and tests. |
 | TDD decision before behavior change or bug fix | yes | Added Playwright regression for click, navigation, and editing. |
 | Branch decision for code-changing task | yes | N/A: no branch or commit requested. |
-| Release artifact decision | yes | N/A: no package release metadata requested for local Slate v2 scratch work. |
+| Release artifact decision | yes | N/A: no package release metadata requested for local Plite scratch work. |
 | Browser tool decision for browser surface | yes | Browser MCP was not exposed by tool search; Playwright used for the requested coverage. |
 | PR expectation decision | yes | N/A: no PR requested. |
 | Tracker sync expectation decision | yes | N/A: no tracker. |
@@ -110,7 +110,7 @@ Work Checklist:
 - [x] Final handoff shape decided: bug fix summary with verification commands and caveat on transcript helper.
 - [x] Branch handling recorded: N/A, no commit requested.
 - [x] Local-env-rot retry policy recorded: N/A, failures mapped to code/test behavior.
-- [x] Workspace authority recorded: proof commands run in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`.
+- [x] Workspace authority recorded: proof commands run in `/Users/zbeyens/git/plate-2/Plate repo root`.
 - [x] High-risk note recorded: browser/runtime native input repair changed and covered by Playwright.
 - [x] Review/autoreview target selected: N/A; user requested immediate fix and focused verification.
 - [x] Agent-native review decision recorded: N/A, no agent tooling changed.
@@ -129,11 +129,11 @@ Completion Gates:
 | Package exports or file layout changed | no | N/A | No exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | N/A | No manifest or lockfile edits. |
 | Agent rules or skills changed | no | N/A | No agent files changed. |
-| Workspace authority proof | yes | Run proof in owning workspace | Commands run in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`. |
+| Workspace authority proof | yes | Run proof in owning workspace | Commands run in `/Users/zbeyens/git/plate-2/Plate repo root`. |
 | Browser surface changed | yes | Exercise route interactions | Playwright route proof covers startup, switching, click/edit, table edit, typing, scrolling, scaled coordinates. |
 | Browser final proof | yes | Record screenshot or trace caveat | Playwright traces generated; local screenshot `/tmp/pagination-click-2708-after-fix.png` showed no overlap. |
 | CI-controlled template output changed | no | N/A | No templates changed. |
-| Package behavior or public API changed | yes | Record changeset decision | N/A for scratch Slate v2 lane; no release requested. |
+| Package behavior or public API changed | yes | Record changeset decision | N/A for scratch Plite lane; no release requested. |
 | Registry-only component work changed | no | N/A | No registry component work. |
 | Docs or content changed | no | N/A | Only this goal plan changed outside code. |
 | High-risk mini gate | yes | Record failure mode and proof | Failure mode: DOM/model divergence and split paragraph overlap; proof: Playwright regression and native repair table test. |
@@ -161,12 +161,12 @@ Phase / pass table:
 
 Findings:
 - The overlap came from treating selected multi-fragment paragraphs as native
-  flow DOM. Slate rendered the whole paragraph as one static flow block, so it
+  flow DOM. Plite rendered the whole paragraph as one static flow block, so it
   escaped the pagination projection and overlapped page content.
 - Split paragraphs must stay projection-owned. Native DOM sync is safe only for
   single-fragment text blocks.
 - Virtualized table editing exposed a related native input repair gap: Chrome can
-  mutate DOM text and drop DOM selection before repair maps the change to Slate.
+  mutate DOM text and drop DOM selection before repair maps the change to Plite.
 
 Decisions and tradeoffs:
 - Kept native flow DOM sync for single-fragment focused text to preserve fast
@@ -182,7 +182,7 @@ Decisions and tradeoffs:
 Implementation notes:
 - `site/examples/ts/pagination.tsx`: added native-flow eligibility by fragment
   count/page count and filtered active flow paths through it.
-- `packages/slate-react/src/editable/dom-repair-queue.ts`: added fallback repair
+- `packages/plite-react/src/editable/dom-repair-queue.ts`: added fallback repair
   using collapsed runtime selection when DOM selection is unavailable after
   native text insertion.
 - `playwright/integration/examples/pagination.test.ts`: added the split projected
@@ -199,11 +199,11 @@ Error attempts:
 |------------------------|-------|---------------------|------------|
 | Video transcript helper produced too few timestamp lines | 1 | Use screenshot and live Playwright repro | Repro and proof completed without transcript. |
 | Initial flow gating broke old perf test target because it was a split paragraph | 1 | Move perf target to single-fragment middle block and add split projection regression | Tests passed. |
-| Virtualized table edit failed to update Slate model | 1 | Fix native DOM repair fallback to model selection | Table edit proof passed. |
+| Virtualized table edit failed to update Plite model | 1 | Fix native DOM repair fallback to model selection | Table edit proof passed. |
 | Fast-scroll p95 threshold failed under parallel workers | 2 | Keep p50 hard threshold and loosen p95 contention guard | Broad Playwright slice passed. |
 
 Verification evidence:
-- `cwd=/Users/zbeyens/git/plate-2/.tmp/slate-v2`
+- `cwd=/Users/zbeyens/git/plate-2/Plate repo root`
 - `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium -g "keeps split projected paragraphs stable|keeps middle-document typing responsive|keeps fast burst typing intact" --reporter=line` passed: 3 tests.
 - `PLAYWRIGHT_RETRIES=0 bun playwright playwright/integration/examples/pagination.test.ts --project=chromium -g "loads the direct virtualized|switches from staged|keeps split projected|keeps a 1000-page|keeps middle-document|keeps fast burst|keeps visible content mounted|keeps scaled virtualized" --reporter=line` passed: 8 tests.
 - `bun typecheck:site && bun typecheck:root && bun lint:fix` passed.

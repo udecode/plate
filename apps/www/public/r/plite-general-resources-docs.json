@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plite-general-resources-docs",
+  "title": "Resources",
+  "description": "Source, proof, ecosystem, and adjacent-editor links for Plite work.",
+  "files": [
+    {
+      "path": "../../content/docs/plite/general/resources.mdx",
+      "content": "---\ntitle: \"Resources\"\ndescription: \"Source, proof, ecosystem, and adjacent-editor links for Plite work.\"\n---\n\nUse these links as starting points. Current API truth lives in this docs section, package READMEs, source, and tests.\n\n## First-Party References\n\n- [Why This Fork](../why-this-fork) explains the maintenance model, package set, and proof boundary.\n- [Migration](../migration) gives an ordered path for moving an upstream Slate 0.x editor.\n- [Docs Proof Map](docs-proof-map) links public claims to source and tests.\n- [Plite Browser](../libraries/plite-browser) documents the first-party browser proof harness.\n- [Contributing](contributing) explains issue and PR expectations.\n\n## Source\n\n- [Plate repository](https://github.com/udecode/plate)\n- [Plate package docs](https://platejs.org/docs)\n- [Plate examples](https://platejs.org/examples/plite/richtext)\n\n## Ecosystem Starting Points\n\nTreat ecosystem packages as compatibility research unless their current release explicitly targets this package set.\n\n- [Plate](https://github.com/udecode/plate) is the product-level editor framework built on Plite.\n- [`slate-yjs`](https://github.com/BitPhinix/slate-yjs) is useful prior art for Yjs integration patterns.\n- [`slate-angular`](https://github.com/worktile/slate-angular) and [`slate-vue3`](https://github.com/Guan-Erjia/slate-vue3) are useful prior art for non-React view layers.\n\n## Adjacent Editors\n\nThese projects are useful for behavior and architecture comparison. Do not copy their APIs into Plite docs.\n\n- [ProseMirror](https://prosemirror.net/)\n- [Lexical](https://lexical.dev/)\n- [CodeMirror](https://codemirror.net/)\n- [Tiptap](https://tiptap.dev/)\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plite/general/resources.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

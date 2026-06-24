@@ -2,7 +2,7 @@
 title: Overlay perf coverage must include annotation-backed widget churn
 date: 2026-04-15
 category: workflow-issues
-module: slate-v2
+module: plite
 problem_type: workflow_issue
 component: testing_framework
 symptoms:
@@ -12,7 +12,7 @@ root_cause: missing_workflow_step
 resolution_type: workflow_improvement
 severity: medium
 tags:
-  - slate-v2
+  - plite
   - performance
   - benchmarking
   - overlays
@@ -76,9 +76,9 @@ Fresh result:
 
 Relevant files:
 
-- [rerender-breadth.tsx](/Users/zbeyens/git/slate-v2/scripts/benchmarks/browser/react/rerender-breadth.tsx)
-- [annotation-store-contract.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/test/annotation-store-contract.tsx)
-- [widget-layer-contract.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/test/widget-layer-contract.tsx)
+- [rerender-breadth.tsx](/Users/zbeyens/git/plite/scripts/benchmarks/browser/react/rerender-breadth.tsx)
+- [annotation-store-contract.tsx](/Users/zbeyens/git/plite/packages/plite-react/test/annotation-store-contract.tsx)
+- [widget-layer-contract.tsx](/Users/zbeyens/git/plite/packages/plite-react/test/widget-layer-contract.tsx)
 
 ## Why This Works
 
@@ -105,6 +105,6 @@ two isolated tricks.
 
 ## Related Issues
 
-- [Slate React v2 projection proof must split range semantics from the React overlay store](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-03-slate-react-v2-projection-proof-must-split-range-semantics-from-react-overlay-store.md)
-- [Slate v2 Rerender Breadth Batch](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-slate-v2-rerender-breadth-batch.md)
-- [Slate v2 Decoration Perf Coverage Audit](/Users/zbeyens/git/plate-2/docs/plans/2026-04-15-slate-v2-decoration-perf-coverage-audit.md)
+- [Plite React v2 projection proof must split range semantics from the React overlay store](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-03-slate-react-v2-projection-proof-must-split-range-semantics-from-react-overlay-store.md)
+- [Plite Rerender Breadth Batch](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-plite-rerender-breadth-batch.md)
+- [Plite Decoration Perf Coverage Audit](/Users/zbeyens/git/plate-2/docs/plans/2026-04-15-plite-decoration-perf-coverage-audit.md)

@@ -38,7 +38,7 @@ performance work.
 
 As of `2026-04-03`:
 
-- plain core is good enough versus Slate
+- plain core is good enough versus Plite
 - insert-text perf is good enough
 - `nodeId` is no longer the cliff
 - the dedicated `nodeId` paste/import lane now exists, and it shows:
@@ -55,7 +55,7 @@ As of `2026-04-03`:
 If we ship now, the meaningful remaining performance work is:
 
 1. `HighlightPlugin`
-   - currently still well behind Slate on the activated lane
+   - currently still well behind Plite on the activated lane
 2. `StrikethroughPlugin`
    - same story; cheap mark path still too expensive
 3. Table selection

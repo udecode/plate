@@ -2,7 +2,8 @@
   "git": {
     "deploymentEnabled": {
       "**": false,
-      "main": true
+      "main": true,
+      "next": true
     }
   },
   "ignoreCommand": "bash -c '[ \"$VERCEL_GIT_COMMIT_MESSAGE\" = \"Version Packages\" ]'",

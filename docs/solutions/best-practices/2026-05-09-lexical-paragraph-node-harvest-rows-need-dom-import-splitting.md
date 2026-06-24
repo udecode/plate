@@ -2,7 +2,7 @@
 title: Lexical paragraph node harvest rows need DOM import splitting
 date: 2026-05-09
 category: docs/solutions/best-practices
-module: Slate v2 Lexical harvest
+module: Plite Lexical harvest
 problem_type: best_practice
 component: testing_framework
 symptoms:
@@ -12,7 +12,7 @@ symptoms:
 root_cause: inadequate_documentation
 resolution_type: documentation_update
 severity: medium
-tags: [slate-v2, lexical-harvest, paragraph-node, paste-html, tests]
+tags: [plite, lexical-harvest, paragraph-node, paste-html, tests]
 ---
 
 # Lexical paragraph node harvest rows need DOM import splitting
@@ -27,7 +27,7 @@ import should preserve valid alignment from CSS `text-align` and legacy
 
 ## Symptoms
 
-- Slate already had paragraph/block split and merge coverage.
+- Plite already had paragraph/block split and merge coverage.
 - The paste-html importer created paragraph elements but ignored paragraph
   alignment.
 - The paste-html renderer had `align` in the example value type but did not
@@ -41,7 +41,7 @@ Split the source file before porting:
 
 - reject constructor, schema, `createDOM`, `updateDOM`, factory, and type-guard
   rows as Lexical API shape;
-- route insert-after/split behavior through existing Slate insert-break and
+- route insert-after/split behavior through existing Plite insert-break and
   transform contracts;
 - port paragraph DOM import alignment as a focused paste-html browser row.
 
@@ -50,14 +50,14 @@ their inline `style.textAlign`, not every rendered paragraph in the editor.
 
 ## Why This Works
 
-Slate owns paragraph alignment as editor data and rendering policy. The copied
+Plite owns paragraph alignment as editor data and rendering policy. The copied
 behavior is not Lexical's `ParagraphNode` class; it is the user-visible result of
 pasting standard paragraph HTML. Keeping the proof at the paste-html boundary
 protects the actual behavior without baking in Lexical internals.
 
 ## Prevention
 
-- For upstream node tests, reject class/schema/helper rows unless Slate exposes
+- For upstream node tests, reject class/schema/helper rows unless Plite exposes
   the same public API.
 - Preserve CSS-over-attribute precedence when importing common HTML attributes.
 - In browser tests after paste, assert the imported blocks by content instead of

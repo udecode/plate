@@ -11,7 +11,7 @@ Next + shadcn app.
 - reuse the `js-framework-benchmark` results structure/pattern
 - keep shadcn / Next implementation
 - erase the old benchmark dashboard shell
-- use current local Slate/Plate data
+- use current local Plite/Plate data
 - keep non-result surfaces secondary
 
 ## Constraints

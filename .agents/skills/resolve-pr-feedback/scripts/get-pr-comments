@@ -3,85 +3,148 @@
 set -e
 
 if [ $# -lt 1 ]; then
-    echo "Usage: get-pr-comments PR_NUMBER [OWNER/REPO]"
-    echo "Example: get-pr-comments 123"
-    echo "Example: get-pr-comments 123 EveryInc/cora"
-    exit 1
+  echo "Usage: get-pr-comments PR_NUMBER [OWNER/REPO]"
+  echo "Example: get-pr-comments 123"
+  echo "Example: get-pr-comments 123 udecode/plate"
+  exit 1
 fi
 
 PR_NUMBER=$1
 
 if [ -n "$2" ]; then
-    OWNER=$(echo "$2" | cut -d/ -f1)
-    REPO=$(echo "$2" | cut -d/ -f2)
+  OWNER=$(echo "$2" | cut -d/ -f1)
+  REPO=$(echo "$2" | cut -d/ -f2)
 else
-    OWNER=$(gh repo view --json owner -q .owner.login 2>/dev/null)
-    REPO=$(gh repo view --json name -q .name 2>/dev/null)
+  # Keep the friendly error reachable when this runs outside a git repo.
+  OWNER=$(gh repo view --json owner -q .owner.login 2>/dev/null || true)
+  REPO=$(gh repo view --json name -q .name 2>/dev/null || true)
 fi
 
 if [ -z "$OWNER" ] || [ -z "$REPO" ]; then
-    echo "Error: Could not detect repository. Pass OWNER/REPO as second argument."
-    exit 1
+  echo "Error: could not resolve owner/repo. Run from inside the target git repository, or pass OWNER/REPO as the second argument." >&2
+  exit 1
 fi
 
-# Fetch review threads, regular PR comments, and review bodies in one query.
-# Output is a JSON object with three keys:
-#   review_threads - unresolved, non-outdated inline code review threads
-#   pr_comments    - top-level PR conversation comments (excludes PR author)
-#   review_bodies  - review submissions with non-empty body text (excludes PR author)
-gh api graphql -f owner="$OWNER" -f repo="$REPO" -F pr="$PR_NUMBER" -f query='
-query FetchPRFeedback($owner: String!, $repo: String!, $pr: Int!) {
+# Output keys:
+#   review_threads - unresolved inline review threads, including outdated ones
+#   pr_comments    - top-level PR comments, excluding PR author and CI/status bots
+#   review_bodies  - review bodies, excluding PR author and CI/status bots
+#
+# Keep review threads paginated. Long-lived PRs can exceed GitHub's first page,
+# and dropping page 2 silently makes review closure lie.
+threads_pages=$(gh api graphql --paginate --slurp \
+  -f owner="$OWNER" -f repo="$REPO" -F pr="$PR_NUMBER" \
+  -f query='
+query Threads($owner: String!, $repo: String!, $pr: Int!, $endCursor: String) {
   repository(owner: $owner, name: $repo) {
     pullRequest(number: $pr) {
       author { login }
-      reviewThreads(first: 100) {
-        edges {
-          node {
-            id
-            isResolved
-            isOutdated
-            path
-            line
-            comments(first: 50) {
-              nodes {
-                id
-                author { login }
-                body
-                createdAt
-                url
-              }
+      reviewThreads(first: 100, after: $endCursor) {
+        nodes {
+          id
+          isResolved
+          isOutdated
+          path
+          line
+          originalLine
+          startLine
+          originalStartLine
+          comments(first: 100) {
+            nodes {
+              id
+              author { login __typename }
+              body
+              createdAt
+              url
             }
           }
         }
+        pageInfo { hasNextPage endCursor }
       }
-      comments(first: 100) {
+    }
+  }
+}')
+
+comments_pages=$(gh api graphql --paginate --slurp \
+  -f owner="$OWNER" -f repo="$REPO" -F pr="$PR_NUMBER" \
+  -f query='
+query Comments($owner: String!, $repo: String!, $pr: Int!, $endCursor: String) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $pr) {
+      comments(first: 100, after: $endCursor) {
         nodes {
           id
-          author { login }
+          author { login __typename }
           body
           createdAt
           url
         }
+        pageInfo { hasNextPage endCursor }
       }
-      reviews(first: 50) {
+    }
+  }
+}')
+
+reviews_pages=$(gh api graphql --paginate --slurp \
+  -f owner="$OWNER" -f repo="$REPO" -F pr="$PR_NUMBER" \
+  -f query='
+query Reviews($owner: String!, $repo: String!, $pr: Int!, $endCursor: String) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $pr) {
+      reviews(first: 100, after: $endCursor) {
         nodes {
           id
-          author { login }
+          author { login __typename }
           body
           state
           createdAt
           url
         }
+        pageInfo { hasNextPage endCursor }
       }
     }
   }
-}' | jq '.data.repository.pullRequest as $pr | {
-  review_threads: [$pr.reviewThreads.edges[]
-    | select(.node.isResolved == false and .node.isOutdated == false)],
-  pr_comments: [$pr.comments.nodes[]
-    | select(.author.login != $pr.author.login)
-    | select(.body | test("^\\s*$") | not)],
-  review_bodies: [$pr.reviews.nodes[]
-    | select(.body != null and .body != "")
-    | select(.author.login != $pr.author.login)]
-}'
+}')
+
+# `isOutdated` is line drift, not resolution. Surface those threads and let the
+# resolver relocate the concern against current source.
+jq -n \
+  --argjson threads "$threads_pages" \
+  --argjson comments "$comments_pages" \
+  --argjson reviews "$reviews_pages" '
+  ($threads[0].data.repository.pullRequest.author) as $author |
+  [$threads[].data.repository.pullRequest.reviewThreads.nodes[]] as $all_threads |
+  [$comments[].data.repository.pullRequest.comments.nodes[]] as $all_comments |
+  [$reviews[].data.repository.pullRequest.reviews.nodes[]] as $all_reviews |
+  [
+    "codecov",
+    "codecov[bot]",
+    "github-actions",
+    "github-actions[bot]",
+    "vercel",
+    "vercel[bot]",
+    "netlify",
+    "netlify[bot]",
+    "coveralls",
+    "coveralls[bot]",
+    "sonarcloud[bot]",
+    "snyk-bot"
+  ] as $ci_bot_logins |
+  def is_ci_status_noise:
+    ((.author.login // "") as $login | ($ci_bot_logins | index($login)) != null)
+    or (
+      ((.author.__typename // "") == "Bot")
+      and ((.body // "") | test("(?i)(coverage|deployment|preview|build|workflow|check run|status check|security scan|snyk)"))
+    );
+  [$all_threads[] | select(.isResolved == false)] as $unresolved |
+  {
+    review_threads: [$unresolved[] | { node: . }],
+    pr_comments: [$all_comments[]
+      | select(.author.login != $author.login)
+      | select(is_ci_status_noise | not)
+      | select(.body | test("^\\s*$") | not)],
+    review_bodies: [$all_reviews[]
+      | select(.body != null and .body != "")
+      | select(.author.login != $author.login)
+      | select(is_ci_status_noise | not)]
+  }'

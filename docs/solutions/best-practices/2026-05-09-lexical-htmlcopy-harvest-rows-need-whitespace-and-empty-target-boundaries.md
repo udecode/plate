@@ -2,17 +2,17 @@
 title: Lexical HTML copy harvest rows need whitespace and empty-target boundaries
 date: 2026-05-09
 category: docs/solutions/best-practices
-module: Slate v2 Lexical harvest
+module: Plite Lexical harvest
 problem_type: best_practice
 component: testing_framework
 symptoms:
   - Lexical HTMLCopyAndPaste mixed paragraph whitespace normalization, code HTML import, and HR/decorator insertion rows.
-  - A multiline HTML paste browser row created seven paragraphs instead of four because raw newline text leaked into the Slate fragment.
+  - A multiline HTML paste browser row created seven paragraphs instead of four because raw newline text leaked into the Plite fragment.
   - Switching the example importer to tx.fragment.insert fixed the empty paragraph but broke existing code and nested-list paste rows.
 root_cause: wrong_api
 resolution_type: documentation_update
 severity: medium
-tags: [slate-v2, lexical-harvest, paste-html, clipboard, whitespace, tests]
+tags: [plite, lexical-harvest, paste-html, clipboard, whitespace, tests]
 ---
 
 # Lexical HTML copy harvest rows need whitespace and empty-target boundaries
@@ -33,7 +33,7 @@ code-source import, and HR/block-void insertion policy.
 
 ## What Didn't Work
 
-- Treating HR rows as generic paste-html work. Slate has no accepted HR element
+- Treating HR rows as generic paste-html work. Plite has no accepted HR element
   owner in this example, so those rows need a future HR/block-void plus
   block-fragment owner.
 - Replacing `tx.nodes.insert` with `tx.fragment.insert` for the whole example
@@ -68,7 +68,7 @@ The browser proof should cover both accepted rows:
 
 ## Why This Works
 
-The copied invariant is not "replace Slate paste with Lexical's paste model."
+The copied invariant is not "replace Plite paste with Lexical's paste model."
 It is "normal HTML source newlines are layout noise unless they come from an
 explicit break or preserved-whitespace context."
 
@@ -83,7 +83,7 @@ claiming a new generic fragment insertion law.
   decorator/block-void insertion.
 - When touching `paste-html-import.ts`, run the focused row and the full
   `paste-html.test.ts` browser file.
-- Do not promote HR/decorator rows until Slate has an explicit HR/block-void
+- Do not promote HR/decorator rows until Plite has an explicit HR/block-void
   owner.
 - Treat `tx.fragment.insert` as a separate policy change that must pass the
   whole paste-html corpus before it can replace `tx.nodes.insert`.

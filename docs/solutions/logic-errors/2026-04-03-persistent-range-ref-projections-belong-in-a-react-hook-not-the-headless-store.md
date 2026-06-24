@@ -17,8 +17,8 @@ severity: medium
 
 ## What happened
 
-After the `slate-v2` range-ref proof landed, the next obvious step was wiring
-durable anchors into `slate-react-v2` projections.
+After the `plite` range-ref proof landed, the next obvious step was wiring
+durable anchors into `plite-react-v2` projections.
 
 The first attempt shoved `RangeRef` support directly into the headless
 projection store.
@@ -61,7 +61,7 @@ That is good.
 
 ## Reusable rule
 
-For Slate v2 projection architecture:
+For Plite projection architecture:
 
 - core owns durable anchor semantics
 - the headless projection store owns raw range-to-slice projection

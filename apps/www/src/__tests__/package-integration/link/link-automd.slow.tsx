@@ -1,6 +1,6 @@
 /** @jsx jsxt */
 
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createBasePlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
 import { LinkKit } from '@/registry/components/editor/plugins/link-kit';
@@ -9,7 +9,7 @@ import { AutoformatKit } from '@/registry/components/editor/plugins/autoformat-k
 jsxt;
 
 const createPlainEditor = (text: string, offset = text.length) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: [BaseParagraphPlugin, ...LinkKit, ...AutoformatKit],
     selection: {
       anchor: { offset, path: [0, 0] },
@@ -18,7 +18,7 @@ const createPlainEditor = (text: string, offset = text.length) =>
     value: [{ children: [{ text }], type: 'p' }],
   } as any);
 const createEditor = (value: any) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: [BaseParagraphPlugin, ...LinkKit, ...AutoformatKit],
     value,
   } as any);

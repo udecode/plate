@@ -8,7 +8,7 @@ Repo-specific companion to Plate's core plugin APIs.
 
 Before shaping a reusable public API, architecture decision, builder/factory
 pattern, naming convention, runtime/service boundary, or perf-sensitive public
-surface, read [north-star](../north-star/SKILL.md) first. This skill is the
+surface, read [vision](../vision/SKILL.md) first. This skill is the
 execution companion, not the constitutional source of truth.
 
 Use this skill for Plate-specific plugin authorship: semantic ownership,
@@ -16,29 +16,29 @@ authoring order, type-contract fidelity, and React/Plate wrapper boundaries.
 
 Use [docs-creator](../docs-creator/SKILL.md) for public plugin docs.
 
-## North-Star Gate
+## Vision Gate
 
 Binary contract:
 
 - If the lane materially changes reusable API shape, runtime boundaries,
   builder/factory patterns, or reusable naming/layering, stop and route to
-  [north-star](../north-star/SKILL.md) first. Then include:
-  - `north-star updated`
-  - or `north-star reaffirmed: <section-name>`
+  [vision](../vision/SKILL.md) first. Then include:
+  - `VISION.md updated`
+  - or `VISION.md reaffirmed: <section-name>`
 - If not, continue here for plugin execution mechanics.
 
 Owner map:
 
 | Owner | Scope |
 | --- | --- |
-| `north-star` | doctrine, API shape, runtime boundaries, perf law |
+| `vision` | doctrine, API shape, runtime boundaries, perf law |
 | `plate-plugin-creator` | plugin mechanics, typing, wrappers, file placement |
 
-Do not restate long-form `north-star` law, precedence, or anti-pattern prose
+Do not restate long-form `vision` law, precedence, or anti-pattern prose
 here. Keep only the routing gate, short derived checklist, and execution
 mechanics.
 
-Derived checklist from `north-star`:
+Derived checklist from `vision`:
 
 1. Is the owner/layer explicit?
 2. Is this canonical semantics or local sugar?

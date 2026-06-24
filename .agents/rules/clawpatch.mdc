@@ -13,8 +13,8 @@ forced re-review of existing Clawpatch feature records.
 
 - Docs: `https://clawpatch.ai/`
 - GitHub docs: `https://github.com/openclaw/clawpatch`
-- In this repo pair, the active Slate v2 Clawpatch project usually lives at
-  `.tmp/slate-v2`
+- The active Slate v2 Clawpatch target is the Plate repo root unless the user
+  names a narrower checkout.
 - Clawpatch state is local runtime state. Keep `.clawpatch/` out of git unless
   the user explicitly asks to preserve it as an artifact.
 
@@ -33,8 +33,8 @@ checkout or missing state. Do not initialize over a missing project by reflex.
 You can also run from another cwd with global flags:
 
 ```bash
-clawpatch --root .tmp/slate-v2 status --json
-clawpatch --root .tmp/slate-v2 report --status open --json
+clawpatch --root . status --json
+clawpatch --root . report --status open --json
 ```
 
 ## What Clawpatch Does
@@ -152,8 +152,8 @@ clawpatch status --json
 large/generated folders and `.clawpatch/**`, uses the local Codex provider, and
 sets `git.requireCleanWorktreeForFix: true`.
 
-Do not run `clawpatch init` in `plate-2` when the target is `.tmp/slate-v2`.
-Run commands from the actual target root.
+Run commands from the actual target root. Do not initialize over missing state
+by reflex.
 
 ## Review
 
@@ -384,7 +384,7 @@ revalidate again.
 Example from Slate v2:
 
 ```bash
-bun --filter slate-react build
+pnpm --filter @platejs/slate-react build
 clawpatch revalidate --finding <findingId> --json
 ```
 
@@ -426,8 +426,7 @@ Run `clawpatch map --json` or inspect the feature record first.
 
 ## Slate V2 Operating Rules
 
-- Default target: `.tmp/slate-v2` from the `plate-2` root when the user says
-  the Slate v2 Clawpatch state moved there.
+- Default target: `.` from the Plate repo root when the user says Slate v2.
 - Keep `.clawpatch/` ignored. The state can be huge and local.
 - Use the active goal plus one `docs/plans/**` goal plan for restartable
   progress when the run spans many commands. Do not create hook fallback state.
@@ -468,5 +467,5 @@ Then verify the generated skill mirrors the source:
 
 ```bash
 test -f .agents/skills/clawpatch/SKILL.md
-rg -n "Force Re-Review All Features|review --dry-run|requireCleanWorktreeForFix|\\.tmp/slate-v2" .agents/rules/clawpatch.mdc .agents/skills/clawpatch/SKILL.md
+rg -n "Force Re-Review All Features|review --dry-run|requireCleanWorktreeForFix|clawpatch --root \\." .agents/rules/clawpatch.mdc .agents/skills/clawpatch/SKILL.md
 ```

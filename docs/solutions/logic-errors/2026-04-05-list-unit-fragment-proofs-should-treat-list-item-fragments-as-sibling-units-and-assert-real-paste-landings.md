@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: List-unit fragment proofs should treat list-item fragments as sibling units and assert real paste landings
 tags:
-  - slate-v2
+  - plite
   - list-item
   - wrapper-unit
   - clipboard
@@ -40,8 +40,8 @@ The durable seam was:
 - treat `list-item` fragments as sibling units when the target container is a
   `bulleted-list`
 - prove the shape through:
-  - `slate-v2` contracts
-  - `slate-dom-v2` clipboard-boundary tests
+  - `plite` contracts
+  - `plite-dom-v2` clipboard-boundary tests
   - real Chromium copy/paste example tests
 
 ## Why this works

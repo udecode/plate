@@ -2,7 +2,7 @@
 title: Parent nested DOM selections must not import as parent ranges
 date: 2026-05-09
 category: docs/solutions/logic-errors
-module: Slate v2 nested editor selection runtime
+module: Plite nested editor selection runtime
 problem_type: logic_error
 component: testing_framework
 symptoms:
@@ -11,14 +11,14 @@ symptoms:
 root_cause: logic_error
 resolution_type: code_fix
 severity: high
-tags: [slate-v2, nested-editors, selection, beforeinput, lexical-harvest]
+tags: [plite, nested-editors, selection, beforeinput, lexical-harvest]
 ---
 
 # Parent nested DOM selections must not import as parent ranges
 
 ## Problem
 
-Lexical regression 7635 pushed Slate's editable-void coverage from plain nested
+Lexical regression 7635 pushed Plite's editable-void coverage from plain nested
 editing into rich paste inside a nested editor. The new browser row exposed an
 adjacent parent/nested selection bug: a DOM range starting in the parent editor
 and ending in the nested editor could overwrite parent content on the next
@@ -67,7 +67,7 @@ bun run lint:fix && bun check
 ## Why This Works
 
 Nested editors live under the parent editor's DOM, but they have their own
-`data-slate-editor` root and selection ownership. `hasSelectableTarget` preserves
+`data-plite-editor` root and selection ownership. `hasSelectableTarget` preserves
 valid parent selections, including non-readonly void targets, while rejecting
 endpoints owned by a nested editor.
 

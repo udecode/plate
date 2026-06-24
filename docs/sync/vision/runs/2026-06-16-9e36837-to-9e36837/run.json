@@ -1,0 +1,23 @@
+{
+  "statusPath": "docs/sync/vision/status.json",
+  "base": "9e3683771331cd9edcc0dc6e74f3368257ee5bdc",
+  "target": "9e3683771331cd9edcc0dc6e74f3368257ee5bdc",
+  "committedChangedFiles": 0,
+  "committedCandidateLines": 0,
+  "workingTreeChangedFiles": 102,
+  "workingTreeCandidateLines": 5386,
+  "lastRunDir": null,
+  "pendingRunDir": null,
+  "runDir": "docs/sync/vision/runs/2026-06-16-9e36837-to-9e36837",
+  "candidateCategoryCounts": {
+    "api_dx": 2816,
+    "proof": 1624,
+    "supervisor": 1481,
+    "vision": 1295,
+    "editor_behavior": 844,
+    "maintainer": 558,
+    "research": 189
+  },
+  "generatedAt": "2026-06-16T14:50:46.810Z",
+  "plan": null
+}

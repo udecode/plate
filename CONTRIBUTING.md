@@ -30,6 +30,9 @@ Welcome to the table.
 The bug form is written for execution, not storytelling.
 
 Maintainers usually work bugs through Codex using [`task`](.agents/skills/task/SKILL.md) or [`major-task`](.agents/skills/major-task/SKILL.md).
+That Codex run happens locally in a maintainer checkout. There is no hosted bot
+or API worker that can recover missing context from your machine, private
+account, or unstated setup.
 
 - Focused local regressions fit `task`
 - Cross-package, public API, architecture, and performance work often fit `major-task`
@@ -43,8 +46,12 @@ What we want:
 - expected behavior grounded in docs, a known-good version, or prior observed behavior
 - actual behavior grounded in logs, screenshots, or direct observation
 - acceptance criteria for the fixed state
+- last-known-good and first-known-bad versions when this is a regression
+- whether the issue is Slate substrate, Plate framework, docs/examples, or unclear
+- browser/editor proof when the bug is visible in the editor
 - exact environment details
 - a minimal code or config excerpt when the repro is small enough to paste
+- one issue per submission
 
 Public repros beat screenshots every time.
 
@@ -55,6 +62,15 @@ Issues without enough grounded evidence may be labeled `needs reproduction`, dep
 ## Before You PR
 
 - Test locally against your actual Plate setup or against the minimal repro.
+- Fill the PR template as durable state. Maintainers use the PR body as the
+  local Codex handoff: intent, proof, risk, current blocker, and next action.
+- Keep the PR takeover-ready: exact next command, proof artifact, unresolved
+  review state, and any missing maintainer decision should be visible in the PR
+  body.
+- External PRs that change user-visible behavior must include real behavior
+  proof from a real Plate setup or the minimal repro. Tests, mocks, lint,
+  typechecks, and CI are useful support, but they do not prove the user-visible
+  behavior by themselves.
 - Run the smallest relevant local lane first.
   - Package work:
     - `pnpm install`
@@ -72,6 +88,8 @@ Issues without enough grounded evidence may be labeled `needs reproduction`, dep
 - Do not submit test-only or CI-only PRs that merely try to make known `main` failures pass.
 - Ensure CI checks pass.
 - Keep PRs focused. One thing per PR. Do not mix unrelated concerns.
+- Keep PRs takeover-ready. If you open from a fork, leave **Allow edits by
+  maintainers** enabled unless there is a specific reason not to.
 - Describe what changed and why.
 - Reply to or resolve bot review conversations you addressed before asking for review again.
 - Use American English spelling and grammar in code, comments, docs, and UI strings.
@@ -95,13 +113,13 @@ Built with Codex, Claude, or other AI tools? Good. Just mark it.
 Please include in your PR:
 
 - [ ] Mark as AI-assisted in the PR title or description
-- [ ] Note the degree of testing: untested / lightly tested / fully tested
+- [ ] Include real behavior proof when user-visible behavior changes; AI-generated tests, lint, typechecks, and CI output are supplemental
 - [ ] Include prompts or session logs if possible
 - [ ] Confirm you understand what the code does
 - [ ] If you have access to Codex, run `codex review --base origin/main` locally and address the findings before asking for review
 - [ ] Resolve or reply to bot review conversations after you address them
 
-AI PRs are first-class citizens here. We just want transparency so reviewers know what to look for.
+AI PRs are first-class citizens here. We just want transparency and proof so reviewers know what to look for.
 
 ## Current Focus
 

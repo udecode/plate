@@ -39,7 +39,7 @@
 - 2026-04-08: Ran `pnpm install`, `pnpm turbo build --filter=./packages/suggestion`, `pnpm turbo typecheck --filter=./packages/suggestion`, and `pnpm lint:fix`.
 - 2026-04-09: Tightened the regression to assert that only the mention gets a remove mark and that the cursor lands at `[0,0]:1`.
 - 2026-04-09: Fixed inline-void deletion by marking the void element directly and selecting `editor.api.before(pointNext)` instead of continuing the character loop.
-- 2026-04-09: Added `apps/www/src/registry/ui/block-discussion-index.spec.tsx` with JSX-like Slate fixtures covering remove summaries for `date`, `inline_equation`, and `mention`.
+- 2026-04-09: Added `apps/www/src/registry/ui/block-discussion-index.spec.tsx` with JSX-like Plite fixtures covering remove summaries for `date`, `inline_equation`, and `mention`.
 - 2026-04-09: Fixed discussion summary extraction by mapping inline suggestion elements to display text via `value`, formatted `date`, and `texExpression`.
 - 2026-04-09: Added a `findSuggestionProps` regression proving backward deletion from the left edge of an inline void must reuse that void's remove-suggestion metadata.
 - 2026-04-09: Fixed continuous inline-void deletion by letting `findSuggestionProps` inspect adjacent inline suggestion elements when adjacent text suggestions are absent.

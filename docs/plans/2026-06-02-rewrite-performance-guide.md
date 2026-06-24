@@ -37,10 +37,10 @@ Completion threshold:
 - The page teaches the quickest valid performance path first.
 - Every concrete route, command, workload, and benchmark artifact claim is backed
   by current repo source.
-- Unsourced hardcoded Plate-vs-Slate numbers and absolute local links are absent
+- Unsourced hardcoded Plate-vs-Plite numbers and absolute local links are absent
   from the source docs page.
-- The guide distinguishes public Plate-vs-Slate docs harness evidence from
-  Slate v2-vs-Slate Evidence Kit evidence.
+- The guide distinguishes public Plate-vs-Plite docs harness evidence from
+  Plite-vs-Plite Evidence Kit evidence.
 - `pnpm --filter www build:source`, `pnpm --filter www check:docs`, Browser
   verification, and the autogoal completion check pass or record a concrete
   blocker.
@@ -173,18 +173,18 @@ Phase / pass table:
 | Closeout | complete | Plan updated and completion check run | final response |
 
 Findings:
-- The old public Plate-vs-Slate numbers were only found in the docs page and
+- The old public Plate-vs-Plite numbers were only found in the docs page and
   generated registry docs JSON, not a durable benchmark artifact.
-- `benchmarks/editor` active evidence currently covers Slate v2 vs Slate, not
-  Plate vs Slate public overhead.
+- `benchmarks/editor` active evidence currently covers Plite vs Plite, not
+  Plate vs Plite public overhead.
 - `apps/www/public/r/performance-docs.json` is stale registry output; repo rules
   say not to regenerate registry output locally.
 
 Decisions and tradeoffs:
 - Removed unsourced numeric snapshots from the source guide.
-- Kept the public docs harness as the Plate-vs-Slate claim source.
+- Kept the public docs harness as the Plate-vs-Plite claim source.
 - Referenced Evidence Kit as supporting research and static-report output, not
-  as public Plate-vs-Slate proof.
+  as public Plate-vs-Plite proof.
 - Left CI-owned registry JSON untouched.
 
 Implementation notes:
@@ -249,7 +249,7 @@ Reboot status:
 | Where am I? | Closeout |
 | Where am I going? | Final response |
 | What is the goal? | Rewrite performance guide as source-backed current-state docs |
-| What have I learned? | Public Plate-vs-Slate docs harness and Slate v2 Evidence Kit evidence must stay separate |
+| What have I learned? | Public Plate-vs-Plite docs harness and Plite Evidence Kit evidence must stay separate |
 | What have I done? | Rewrote guide, verified parser/parity/browser, recorded evidence |
 
 Open risks:

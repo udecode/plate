@@ -1,0 +1,117 @@
+import * as os from 'node:os'
+import { devices, type PlaywrightTestConfig } from '@playwright/test'
+
+const projects = [
+  {
+    name: 'chromium',
+    use: {
+      ...devices['Desktop Chrome'],
+      permissions: ['clipboard-read', 'clipboard-write'],
+      launchOptions: {
+        // headless: false,
+        /**
+         * Enable scrollbars in headless mode.
+         */
+        ignoreDefaultArgs: ['--hide-scrollbars'],
+      },
+    },
+  },
+  {
+    name: 'firefox',
+    use: {
+      ...devices['Desktop Firefox'],
+    },
+  },
+  {
+    name: 'mobile',
+    use: {
+      ...devices['Pixel 5'],
+      permissions: ['clipboard-read', 'clipboard-write'],
+    },
+  },
+]
+
+if (os.type() === 'Darwin') {
+  projects.push({
+    name: 'webkit',
+    use: {
+      ...devices['Desktop Safari'],
+    },
+  })
+}
+
+const retries = process.env.PLAYWRIGHT_RETRIES
+  ? +process.env.PLAYWRIGHT_RETRIES
+  : process.env.CI
+    ? 5
+    : 2
+
+const workers = process.env.PLAYWRIGHT_WORKERS
+  ? +process.env.PLAYWRIGHT_WORKERS
+  : process.env.CI
+    ? undefined
+    : 2
+
+const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3101'
+
+/**
+ * See https://playwright.dev/docs/test-configuration.
+ */
+const config: PlaywrightTestConfig = {
+  testDir: './playwright',
+  /* Maximum time one test can run for. */
+  timeout: 30 * 1000,
+  expect: {
+    /**
+     * Maximum time expect() should wait for the condition to be met.
+     * For example in `await expect(locator).toHaveText();`
+     */
+    timeout: 8000,
+  },
+  /* Run tests in files in parallel */
+  fullyParallel: !process.env.CI,
+  /* Fail the build on CI if you accidentally left test.only in the source code. */
+  forbidOnly: !!process.env.CI,
+  /* Retry on CI only */
+  // allow PLAYWRIGHT_RETRIES to override for local dev
+  retries,
+  /* Opt out of parallel tests. */
+  workers,
+  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
+  reporter: process.env.CI ? 'github' : 'list',
+  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  use: {
+    viewport: {
+      width: 1280,
+      height: 720,
+    },
+    /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
+    actionTimeout: 0,
+    /* Base URL to use in actions like `await page.goto('/')`. */
+    // Can be overridden with PLAYWRIGHT_BASE_URL env var (used by Docker tests)
+    baseURL,
+
+    /* Collect trace if the first attempt fails. See https://playwright.dev/docs/trace-viewer */
+    trace: 'retain-on-first-failure',
+
+    /* Name of attribute for selecting elements by page.getByTestId */
+    testIdAttribute: 'data-test-id',
+  },
+
+  /* Configure projects for major browsers */
+  projects,
+
+  webServer: process.env.PLAYWRIGHT_BASE_URL
+    ? undefined
+    : {
+        command: 'bun build:next && bun serve:playwright',
+        reuseExistingServer: !process.env.CI,
+        timeout: 300 * 1000,
+        url: baseURL,
+      },
+
+  /* Folder for test artifacts such as screenshots, videos, traces, etc. */
+  // outputDir: 'test-results/',
+}
+
+export default config

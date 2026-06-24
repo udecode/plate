@@ -10,7 +10,7 @@ Goal plan:
 docs/plans/2026-05-24-goal-start-completion-gates.md
 
 Completion threshold:
-- `docs/plans/templates/goal.md`, `slate-plan.md`,
+- `docs/plans/templates/goal.md`, `plite-plan.md`,
   `editor-test-harvester.md`, and `editor-harvest-plan.md` include
   `Start Gates:` and `Completion Gates:` tables.
 - `check-complete.mjs` fails unresolved gate rows when gate tables are present.

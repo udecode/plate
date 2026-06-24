@@ -44,7 +44,7 @@ That is a fake proof seam.
 
 ## Reusable rule
 
-For IME work in Slate:
+For IME work in Plite:
 
 - do not treat jsdom contenteditable composition as authoritative unless you
   have already proved the event path is really reaching the same runtime seam

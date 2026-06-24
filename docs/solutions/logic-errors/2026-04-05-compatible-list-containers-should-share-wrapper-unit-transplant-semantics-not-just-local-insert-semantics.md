@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Compatible list containers should share wrapper-unit transplant semantics not just local insert semantics
 tags:
-  - slate-v2
+  - plite
   - ordered-list
   - bulleted-list
   - transplant

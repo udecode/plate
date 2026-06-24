@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: V2 text string primitives should own the DOM text boundary
 tags:
-  - slate-v2
+  - plite
   - slate-react-v2
   - text
   - renderer
@@ -19,21 +19,21 @@ severity: medium
 
 After the zero-width policy was split and proved in Chromium, the v2 proof
 surfaces were still hand-rolling ordinary text leaves with raw
-`<span data-slate-string>` markup.
+`<span data-plite-string>` markup.
 
-That is the same low-level seam legacy Slate already treats specially.
+That is the same low-level seam legacy Plite already treats specially.
 
 Leaving it ad hoc in every proof surface would have been lazy and brittle.
 
 ## What fixed it
 
-`slate-react-v2` now owns a reusable `TextString` primitive:
+`plite-react-v2` now owns a reusable `TextString` primitive:
 
-- [text-string.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react-v2/src/components/text-string.tsx)
+- [text-string.tsx](/Users/zbeyens/git/plite/packages/plite-react-v2/src/components/text-string.tsx)
 
-It follows the same real boundary as legacy Slate:
+It follows the same real boundary as legacy Plite:
 
-- render a stable `<span data-slate-string>`
+- render a stable `<span data-plite-string>`
 - keep the initial text as the React child
 - repair actual DOM `textContent` in a layout effect when it drifts
 
@@ -54,7 +54,7 @@ Owning that boundary in one primitive is the first real v2 text-renderer seam.
 
 ## Reusable rule
 
-For `slate-react-v2` renderer/input work:
+For `plite-react-v2` renderer/input work:
 
 - zero-width policy belongs in a shared `ZeroWidthString`
 - ordinary text-node rendering belongs in a shared `TextString`
@@ -66,5 +66,5 @@ past due to become a package primitive.
 
 ## Related issues
 
-- [2026-04-04-slate-v2-no-feff-line-break-placeholders-need-dom-owned-br-interiors.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-04-slate-v2-no-feff-line-break-placeholders-need-dom-owned-br-interiors.md)
+- [2026-04-04-plite-no-feff-line-break-placeholders-need-dom-owned-br-interiors.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-04-plite-no-feff-line-break-placeholders-need-dom-owned-br-interiors.md)
 - [2026-04-04-void-like-zero-width-ime-proofs-need-the-real-void-spacer-structure.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-04-void-like-zero-width-ime-proofs-need-the-real-void-spacer-structure.md)

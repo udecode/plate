@@ -33,6 +33,6 @@ them only with an explicit user decision and record the reason in the sync plan.
 | LLM docs | smart merge | Use upstream `.md` route and copy-page model; keep Plate-specific context only where it adds real value. |
 | RSS/OG/assets | smart merge | Use upstream structure when useful, with Plate branding and release content. |
 | Dev/debug routes | exclude public | Do not ship public `/dev` or e2e/debug routes in the docs app. |
-| Slate-to-HTML page | keep Plate | Keep the special page because the RSC example cannot be previewed through the generic block path. |
+| Plite-to-HTML page | keep Plate | Keep the special page because the RSC example cannot be previewed through the generic block path. |
 | Workspace aliases/typecheck | keep Plate | Preserve app source aliases and package integration typecheck model. |
 | Package integration tests | keep Plate | Do not lose app-as-integration-harness coverage during shadcn syncs. |

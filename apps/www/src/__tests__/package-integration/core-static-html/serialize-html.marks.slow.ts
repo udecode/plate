@@ -21,7 +21,7 @@ describe('core static serializeHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-slate-leaf="true" data-slate-bold="true"><strong><span data-slate-string="true">bold</span></strong></span>'
+      '<span data-plite-leaf="true" data-plite-bold="true"><strong><span data-plite-string="true">bold</span></strong></span>'
     );
   });
 
@@ -43,7 +43,7 @@ describe('core static serializeHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-slate-leaf="true" data-slate-italic="true"><em><span data-slate-string="true">italic</span></em></span>'
+      '<span data-plite-leaf="true" data-plite-italic="true"><em><span data-plite-string="true">italic</span></em></span>'
     );
   });
 
@@ -65,7 +65,7 @@ describe('core static serializeHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-slate-leaf="true" data-slate-underline="true"><u><span data-slate-string="true">underlined</span></u></span>'
+      '<span data-plite-leaf="true" data-plite-underline="true"><u><span data-plite-string="true">underlined</span></u></span>'
     );
   });
 
@@ -87,7 +87,7 @@ describe('core static serializeHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-slate-leaf="true" data-slate-strikethrough="true"><s><span data-slate-string="true">strikethrough</span></s></span>'
+      '<span data-plite-leaf="true" data-plite-strikethrough="true"><s><span data-plite-string="true">strikethrough</span></s></span>'
     );
   });
 
@@ -109,7 +109,7 @@ describe('core static serializeHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-slate-leaf="true" data-slate-code="true"><code><span data-slate-string="true">some code</span></code></span>'
+      '<span data-plite-leaf="true" data-plite-code="true"><code><span data-plite-string="true">some code</span></code></span>'
     );
   });
 
@@ -131,7 +131,7 @@ describe('core static serializeHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-slate-leaf="true" data-slate-subscript="true"><sub><span data-slate-string="true">subscripted</span></sub></span>'
+      '<span data-plite-leaf="true" data-plite-subscript="true"><sub><span data-plite-string="true">subscripted</span></sub></span>'
     );
   });
 
@@ -153,7 +153,7 @@ describe('core static serializeHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-slate-leaf="true" data-slate-superscript="true"><sup><span data-slate-string="true">superscripted</span></sup></span>'
+      '<span data-plite-leaf="true" data-plite-superscript="true"><sup><span data-plite-string="true">superscripted</span></sup></span>'
     );
   });
 
@@ -175,7 +175,7 @@ describe('core static serializeHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-slate-leaf="true" data-slate-kbd="true"><kbd><span data-slate-string="true">keyboard shortcut</span></kbd></span>'
+      '<span data-plite-leaf="true" data-plite-kbd="true"><kbd><span data-plite-string="true">keyboard shortcut</span></kbd></span>'
     );
   });
 
@@ -197,7 +197,7 @@ describe('core static serializeHtml mark rendering', () => {
     });
 
     expect(html).toContain(
-      '<span data-slate-leaf="true" data-slate-bold="true" data-slate-italic="true"><em><strong><span data-slate-string="true">bold and italic</span></strong></em></span>'
+      '<span data-plite-leaf="true" data-plite-bold="true" data-plite-italic="true"><em><strong><span data-plite-string="true">bold and italic</span></strong></em></span>'
     );
   });
 });

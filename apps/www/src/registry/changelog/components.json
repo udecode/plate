@@ -150,7 +150,7 @@
     "table-nomerge-demo": ["2026-03-31-resolve-merged-border-neighbors"],
     "editor-ai": ["2026-03-28-render-url-videos-media-node"],
     "editor-basic": ["2026-03-28-render-url-videos-media-node"],
-    "slate-to-html": [
+    "plite-to-html": [
       "2026-03-28-render-url-videos-media-node",
       "2025-11-20-biome-ultracite",
       "2025-10-17-fix-react-decouple"

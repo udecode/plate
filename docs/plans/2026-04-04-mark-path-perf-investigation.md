@@ -2,7 +2,7 @@
 
 ## Goal
 
-Find the exact cause of the standalone rich-markdown mark mount gap versus Slate, with measured evidence strong enough to justify the next optimization cut.
+Find the exact cause of the standalone rich-markdown mark mount gap versus Plite, with measured evidence strong enough to justify the next optimization cut.
 
 ## Scope
 
@@ -19,7 +19,7 @@ Find the exact cause of the standalone rich-markdown mark mount gap versus Slate
 - `BasicMarksPlugin` bundle adds real extra tax.
 - Single-mark rows are still red, so bundle tax is not the whole story.
 - Earlier speculative fast-path edits were reverted because they did not produce a clean measured win.
-- The bold leaf DOM shape is already basically the same between Plate and Slate.
+- The bold leaf DOM shape is already basically the same between Plate and Plite.
 - The remaining mark gap is runtime work, not extra leaf DOM.
 - The kept cuts key `pipeRenderLeaf(...)` and `pipeRenderText(...)` by active mark.
 

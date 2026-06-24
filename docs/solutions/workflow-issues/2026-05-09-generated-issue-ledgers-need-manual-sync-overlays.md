@@ -19,19 +19,19 @@ tags: [slate-issues, gitcrawl, issue-ledger, drift-check, workflow]
 
 ## Problem
 
-The Slate issue-ledger stack had mixed generated archive data, frozen research
+The Plite issue-ledger stack had mixed generated archive data, frozen research
 corpus data, manual v2 sync classification, and PR claim accounting. That made
-future `slate-ralplan` and `clawsweeper` runs likely to update the wrong file.
+future `plite-ralplan` and `clawsweeper` runs likely to update the wrong file.
 
 ## Symptoms
 
-- `docs/slate-issues/gitcrawl-live-open-ledger.md` says it intentionally
+- `docs/plite-issues/gitcrawl-live-open-ledger.md` says it intentionally
   contains live gitcrawl fields only, but rule text still told agents to add
   manual issue classifications there.
-- `docs/slate-issues/open-issues-ledger.md` owns a frozen `682`-issue research
+- `docs/plite-issues/open-issues-ledger.md` owns a frozen `682`-issue research
   corpus, while the current gitcrawl live ledger has `630` open issues.
-- `docs/slate-v2/ledgers/issue-coverage-matrix.md` had `25` fixed claims while
-  `docs/slate-v2/references/pr-description.md` had `31`.
+- `docs/plite/ledgers/issue-coverage-matrix.md` had `25` fixed claims while
+  `docs/plite/references/pr-description.md` had `31`.
 
 ## What Didn't Work
 
@@ -49,11 +49,11 @@ Separate the roles:
 2. Keep `open-issues-ledger.md` as the frozen historical corpus and
    classification seed.
 3. Add a current manual overlay such as
-   `docs/slate-issues/gitcrawl-v2-sync-ledger.md`.
+   `docs/plite-issues/gitcrawl-v2-sync-ledger.md`.
 4. Keep exact PR claims in
-   `docs/slate-v2/ledgers/issue-coverage-matrix.md`.
+   `docs/plite/ledgers/issue-coverage-matrix.md`.
 5. Keep long-form local issue reasoning in
-   `docs/slate-v2/ledgers/fork-issue-dossier.md`.
+   `docs/plite/ledgers/fork-issue-dossier.md`.
 6. Make PR description counts derive from the ledgers, not the other way
    around.
 7. Add a checker that fails when these surfaces drift.

@@ -76,8 +76,8 @@ parents:
 - `docs`: docs are touched but not the dominant deliverable
 - `agent-native`: agent instructions, skills, hooks, commands, prompts, or
   user-action tooling changed
-- `browser`: real browser, route, UI, console, network, or interaction proof
-  is required
+- `browser`: real browser, route, UI, native browser/OS, console, network, or
+  interaction proof is required
 - `package-api`: package exports, public API, release artifacts, package
   boundaries, or package-level checks changed
 
@@ -612,29 +612,38 @@ Gate closure rules:
 5. Choose the title, template, and `docs/plans` path needed by the objective.
    If the helper is the only reliable way to know the path, create only the
    static plan shell before `create_goal`.
-6. If no active goal exists and the user or governing skill asked for a goal,
+6. If `docs/plans/templates/` does not exist, initialize the generic templates
+   before creating or selecting a plan:
+
+   ```bash
+   node .agents/skills/autogoal/scripts/init-templates.mjs
+   ```
+
+   Existing project templates must be kept. Do not continue with only built-in
+   fallback templates when the project template directory is missing.
+7. If no active goal exists and the user or governing skill asked for a goal,
    create one with a short `create_goal.objective` handle under 240 characters.
-7. If an active goal already matches the desired end state, continue under it.
-8. If an active goal exists but points at a different objective, do not overwrite
+8. If an active goal already matches the desired end state, continue under it.
+9. If an active goal exists but points at a different objective, do not overwrite
    it. Resolve the current goal honestly before starting another one. If the
    tool does not allow that transition, report the mismatch and ask for the
    smallest decision needed. A governing lane goal may proceed only when it can
    honestly complete or fit within the current active goal.
-9. Ensure the `docs/plans` goal plan exists before substantive work.
-10. Fill the generated plan itself before substantive work: write the objective,
+10. Ensure the `docs/plans` goal plan exists before substantive work.
+11. Fill the generated plan itself before substantive work: write the objective,
    threshold, verification surface, constraints, boundaries, blocked condition,
    flow mode, and goal plan path; resolve generated gates as yes/no/N/A instead
    of deleting or replacing the template output.
-11. Record the output-budget strategy before exploratory commands: which
+12. Record the output-budget strategy before exploratory commands: which
     searches or reads are allowed, which high-volume paths are excluded, and
     how large results will be capped, counted, or saved as artifacts instead of
     streamed into the goal context.
-12. Record timed-checkpoint semantics when the prompt includes a duration. If
+13. Record timed-checkpoint semantics when the prompt includes a duration. If
     the duration is not explicitly a hard stop, treat it as minimum active work
     and add the initial scorecard when no concrete metric exists.
-13. Use that exact path for
+14. Use that exact path for
    `check-complete.mjs`.
-14. Do not start durable work until the goal is set, verified as already matching,
+15. Do not start durable work until the goal is set, verified as already matching,
    or the user explicitly resolves the missing-goal path.
 
 Set or verify the goal before mutable lane state when the workflow depends on a
@@ -656,17 +665,20 @@ docs/plans/templates/goal-repair.md
 docs/plans/templates/packs/<pack>.md
 ```
 
-When `docs/plans/templates/goal.md` or another generic template is missing,
-initialize the generic set before creating a goal plan:
+When `docs/plans/templates/` is absent, or when `docs/plans/templates/goal.md`
+or another generic template is missing, initialize the generic set before
+creating a goal plan:
 
 ```bash
 node .agents/skills/autogoal/scripts/init-templates.mjs
 ```
 
 `create-goal-scratchpad.mjs` and `create-goal-template.mjs` run this
-initialization automatically. Existing files are kept. Project-specific
-templates such as `docs/plans/templates/<lane>.md` stay in the project and are
-never moved into the skill package.
+initialization automatically. If an agent is creating or selecting a plan
+without those helpers and the directory is absent, run `init-templates.mjs`
+first. Existing files are kept. Project-specific templates such as
+`docs/plans/templates/<lane>.md` stay in the project and are never moved into
+the skill package.
 
 ## Goal Plan
 

@@ -5,7 +5,7 @@ component: tooling
 root_cause: wrong_api
 title: Appium Android Chrome can show keyboard state without exposing Gboard candidates
 tags:
-  - slate-browser
+  - plite-browser
   - appium
   - android
   - chrome
@@ -29,7 +29,7 @@ It was real keyboard-feature behavior:
 Direct local probes on the Android Chrome emulator showed that the stack is only
 half-open:
 
-- Appium can load the real Slate route
+- Appium can load the real Plite route
 - Appium can focus the editor
 - `/appium/device/is_keyboard_shown` returns `true`
 - Appium exposes both `CHROMIUM` and `NATIVE_APP`

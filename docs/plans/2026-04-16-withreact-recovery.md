@@ -1,7 +1,7 @@
 # 2026-04-16 withReact recovery
 
 ## Goal
-- Recover `packages/slate-react/src/plugin/with-react.ts` by same-path legacy diff and current-doc proof.
+- Recover `packages/plite-react/src/plugin/with-react.ts` by same-path legacy diff and current-doc proof.
 
 ## Phases
 - [ ] Read learnings/docs and current owners

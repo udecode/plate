@@ -39,7 +39,7 @@ Completion threshold:
 Verification surface:
 - `pnpm install`
 - `rg -n "Goal Flow Modes|One-Shot Execution|Agent-Led Plan Hardening|Collaborative Planning|Flow mode:|which flow mode it uses" .agents/rules/goal.mdc .agents/skills/goal/SKILL.md .claude/skills/goal/SKILL.md .agents/rules/goal/README.md`
-- `rg -n "slate-plan|Slate|autoreview|Autoreview|--template task|--template slate|\\$task|\\$slate" .agents/rules/goal.mdc .agents/skills/goal/SKILL.md .claude/skills/goal/SKILL.md .agents/rules/goal/README.md || true`
+- `rg -n "plite-plan|Plite|autoreview|Autoreview|--template task|--template slate|\\$task|\\$slate" .agents/rules/goal.mdc .agents/skills/goal/SKILL.md .claude/skills/goal/SKILL.md .agents/rules/goal/README.md || true`
 - `sed -n '1,14p' .agents/skills/goal/SKILL.md`
 - `sed -n '74,140p' .agents/skills/goal/SKILL.md`
 - `node .agents/rules/goal/scripts/check-complete.mjs docs/plans/2026-05-25-universal-goal-planning-flows.md`

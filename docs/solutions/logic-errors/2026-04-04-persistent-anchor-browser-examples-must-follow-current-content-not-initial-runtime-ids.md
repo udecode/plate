@@ -5,7 +5,7 @@ component: testing_framework
 root_cause: logic_error
 title: Persistent anchor browser examples must follow current content not initial runtime ids
 tags:
-  - slate-browser
+  - plite-browser
   - slate-react-v2
   - range-ref
   - projections
@@ -57,7 +57,7 @@ The browser example switched from “remember the first runtime ids forever” t
 
 - derive current rows from the latest top-level text snapshot
 - locate the current anchored row by text/content semantics
-- let `useSlateProjections(...)` speak for the current runtime id
+- let `usePliteProjections(...)` speak for the current runtime id
 - target edits using the current path for the logical row, not a stale path or
   stale id
 
@@ -65,7 +65,7 @@ That keeps the example honest about what the user cares about.
 
 ## Reusable rule
 
-For browser examples around persistent Slate anchors:
+For browser examples around persistent Plite anchors:
 
 - follow current logical content from the latest snapshot
 - do not pin the example UI to initial runtime ids across structural edits

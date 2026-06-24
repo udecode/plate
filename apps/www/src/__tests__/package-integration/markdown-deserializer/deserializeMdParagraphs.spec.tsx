@@ -4,7 +4,7 @@ import { BasicMarksPlugin } from '@platejs/basic-nodes/react';
 import { BaseSuggestionPlugin } from '@platejs/suggestion';
 import { SuggestionPlugin } from '@platejs/suggestion/react';
 import { jsxt } from '@platejs/test-utils';
-import { createSlateEditor } from 'platejs';
+import { createBasePlateEditor } from 'platejs';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 
@@ -21,7 +21,7 @@ const markdownPlugin = MarkdownPlugin.configure({
 });
 
 const createTestEditor = (plugins: any[] = []) =>
-  createSlateEditor({
+  createBasePlateEditor({
     plugins: [
       markdownPlugin,
       BaseSuggestionPlugin,

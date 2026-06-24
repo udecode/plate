@@ -2,7 +2,7 @@
 title: Native list fragment paste must run before generic fragment unwrapping
 date: 2026-05-09
 category: docs/solutions/logic-errors
-module: Slate v2 clipboard list fragment paste
+module: Plite clipboard list fragment paste
 problem_type: logic_error
 component: documentation
 symptoms:
@@ -12,14 +12,14 @@ symptoms:
 root_cause: logic_error
 resolution_type: code_fix
 severity: high
-tags: [slate-v2, clipboard, insert-fragment, list, lexical-harvest]
+tags: [plite, clipboard, insert-fragment, list, lexical-harvest]
 ---
 
 # Native list fragment paste must run before generic fragment unwrapping
 
 ## Problem
 
-Lexical's native list copy/paste tests exposed shapes that Slate's generic
+Lexical's native list copy/paste tests exposed shapes that Plite's generic
 fragment insertion path could not model cleanly. The generic path was built to
 merge inline/text leaves into the target block, so it either unwrapped copied
 list items into paragraphs or left promoted paragraphs trapped inside a list.
@@ -47,7 +47,7 @@ list items into paragraphs or left promoted paragraphs trapped inside a list.
 ## Solution
 
 Handle structural list fragment shapes explicitly before the generic unwrapping
-path in `packages/slate/src/transforms-text/insert-fragment.ts`.
+path in `packages/plite/src/transforms-text/insert-fragment.ts`.
 
 The fix added two replacement branches:
 
@@ -57,7 +57,7 @@ The fix added two replacement branches:
   `bulleted-list`, replace the parent container window with head container,
   promoted middle blocks, and tail container.
 
-The tests live in `packages/slate/test/clipboard-contract.ts` and lock the
+The tests live in `packages/plite/test/clipboard-contract.ts` and lock the
 portable Lexical rows:
 
 - partial list item plus paragraph into an empty editor;
@@ -69,8 +69,8 @@ portable Lexical rows:
 Verification:
 
 ```bash
-bun test ./packages/slate/test/clipboard-contract.ts -t "partial list|copied list|paragraph fragments into a list|paragraph fragments at the end"
-bun test ./packages/slate/test/clipboard-contract.ts
+bun test ./packages/plite/test/clipboard-contract.ts -t "partial list|copied list|paragraph fragments into a list|paragraph fragments at the end"
+bun test ./packages/plite/test/clipboard-contract.ts
 bun run lint:fix
 bun check
 ```
@@ -104,4 +104,4 @@ selection honest.
 
 - [List-unit fragment proofs should treat list-item fragments as sibling units and assert real paste landings](2026-04-05-list-unit-fragment-proofs-should-treat-list-item-fragments-as-sibling-units-and-assert-real-paste-landings.md)
 - [Single-block fragment replacement must preserve target block before full-document replace](2026-05-04-single-block-fragment-replacement-must-preserve-target-block-before-full-document-replace.md)
-- [Slate v2 large paste fast path must still be a logical operation](../performance-issues/2026-05-05-slate-v2-large-paste-fast-path-must-still-be-a-logical-operation.md)
+- [Plite large paste fast path must still be a logical operation](../performance-issues/2026-05-05-plite-large-paste-fast-path-must-still-be-a-logical-operation.md)

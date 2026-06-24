@@ -142,7 +142,7 @@ Start Gates:
 | Source of truth read before analysis | yes | User request and autogoal skill body read in prompt; full local Evidence Kit source read: `src/cli.mjs`, `src/index.mjs`, `scripts/evidence-kit.mjs`, templates, schemas, tests, and skills under `/Users/zbeyens/git/-shapeshift-labs-evidence-kit`. |
 | Major lane selected | yes | benchmark / framework-comparison infrastructure. |
 | Decision criteria stated | yes | Criteria recorded in Major source and Completion threshold. |
-| Existing repo patterns / prior decisions checked | yes | Read old `benchmarks/editor/README.md`, root `package.json` benchmark scripts, `docs/analysis/editor-architecture-candidates.md`, Slate v2 benchmark README, and prior memory for Slate v2 benchmark artifacts. |
+| Existing repo patterns / prior decisions checked | yes | Read old `benchmarks/editor/README.md`, root `package.json` benchmark scripts, `docs/analysis/editor-architecture-candidates.md`, Plite benchmark README, and prior memory for Plite benchmark artifacts. |
 | Helper stack selected | yes | `autogoal`, `major-task`, local Evidence Kit skills/source. No browser or docs-creator because browser app and user-facing docs were removed. |
 | External research decision recorded | yes | Use local Evidence Kit clone only. No web research unless local source is insufficient. |
 | Implementation expectation recorded | yes | Destructive implementation is in scope. |
@@ -274,7 +274,7 @@ Verification evidence:
   `find benchmarks/editor/apps benchmarks/editor/app benchmarks/editor/templates benchmarks/editor/components benchmarks/editor/assets benchmarks/editor/website benchmarks/editor/tests/config -maxdepth 0 -print`
   returned only missing-path errors, proving the old directories are absent.
 - `/Users/zbeyens/git/plate-2`: stale script audit passed:
-  `rg '"bench:editor:(build|build:plate|contract|contract:prod|dev|dev:plate|dev:slate|prepare:plate|preview:plate|preview:slate|start|transform)"|benchmark:contract|apps/plate|apps/slate|benchmark-app-contract|run_contract_benchmarks|EditorBenchmarkContract|templates/apps|templates/tests' package.json benchmarks/editor --glob '!benchmarks/editor/src/index.mjs' --glob '!benchmarks/editor/benchmarks/data/**'`
+  `rg '"bench:editor:(build|build:plate|contract|contract:prod|dev|dev:plate|dev:slate|prepare:plate|preview:plate|preview:slate|start|transform)"|benchmark:contract|apps/plate|apps/plite|benchmark-app-contract|run_contract_benchmarks|EditorBenchmarkContract|templates/apps|templates/tests' package.json benchmarks/editor --glob '!benchmarks/editor/src/index.mjs' --glob '!benchmarks/editor/benchmarks/data/**'`
   returned no matches.
 - `/Users/zbeyens/git/plate-2`: scoped lint passed:
   `pnpm exec biome check package.json benchmarks/editor docs/plans/2026-05-27-replace-editor-benchmarks-with-evidence-kit.md --fix`.

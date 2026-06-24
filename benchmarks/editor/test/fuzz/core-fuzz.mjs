@@ -36,7 +36,7 @@ const slateCompareRows = normalizeSlateLegacyCompareArtifact(
   buildSlateCompareArtifact(),
   {
     artifactPath:
-      '../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-test.json',
+      '../../tmp/slate-react-huge-document-legacy-compare-benchmark-test.json',
     rootDir: process.cwd(),
   }
 );
@@ -123,7 +123,7 @@ function buildSlateCompareArtifact() {
 
   return {
     lane: 'slate-react-huge-document-legacy-compare',
-    currentRepo: '/Users/zbeyens/git/plate-2/.tmp/slate-v2',
+    currentRepo: '/Users/zbeyens/git/plate-2/.',
     legacyRepo: '/Users/zbeyens/git/slate',
     config: {
       blocks: 5000,

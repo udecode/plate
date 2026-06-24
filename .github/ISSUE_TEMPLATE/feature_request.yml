@@ -1,0 +1,123 @@
+name: Feature request
+description: Propose a new Plate or Plite capability.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us evaluate this with concrete use cases, ownership, and tradeoffs.
+        One request per submission.
+
+        If this is a support question, use Discussions or Discord instead.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One-line statement of the requested capability.
+      placeholder: Add a first-class table fragment merge policy.
+    validations:
+      required: true
+  - type: dropdown
+    id: owner_surface
+    attributes:
+      label: Owner surface
+      description: Choose the owner that best matches the request.
+      options:
+        - Plite substrate
+        - Plate framework or plugin
+        - Docs, examples, templates, or registry
+        - Unsure
+    validations:
+      required: true
+  - type: dropdown
+    id: vision_fit
+    attributes:
+      label: Vision fit
+      description: Does this fit Plate/Plite's current direction?
+      options:
+        - Yes
+        - Unsure
+        - No, but I think the vision should change
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What user pain this solves and why current behavior is insufficient.
+      placeholder: Copying table fragments from external editors loses merged-cell structure.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed solution
+      description: Desired behavior, API, docs, or UX with as much specificity as possible.
+      placeholder: Define paste semantics for rectangular table fragments and normalize unsupported fragments predictably.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches considered and why they are weaker.
+      placeholder: App-local paste handling works for one schema but does not give package authors a shared contract.
+  - type: textarea
+    id: not_worth_doing
+    attributes:
+      label: What would make this not worth doing?
+      description: Name the tradeoff, complexity, compatibility cost, or product boundary that should make maintainers reject or defer this.
+      placeholder: Not worth it if it requires putting product-specific UX into Plite core.
+    validations:
+      required: true
+  - type: textarea
+    id: api_dx_impact
+    attributes:
+      label: API / DX impact
+      description: Name any public API, docs, package, plugin, component, or example surface this would affect. Use `NOT_ENOUGH_INFO` if unknown.
+      placeholder: "@platejs/table paste plugin, table docs, table example"
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: |
+        Explain who is affected, severity/urgency, how often this pain occurs, and practical consequences.
+        Include:
+        - Affected users/packages/surfaces
+        - Severity
+        - Frequency
+        - Consequence
+      placeholder: |
+        Affected: table-heavy document editors
+        Severity: Medium
+        Frequency: every external table paste
+        Consequence: users manually rebuild pasted table structure
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / examples
+      description: Prior art, links, screenshots, recordings, metrics, customer reports, or comparable editor behavior.
+      placeholder: Comparable behavior in ProseMirror, Lexical, or a production Plate app.
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance criteria
+      description: What should be true if this is implemented?
+      placeholder: |
+        - Pasting a rectangular table fragment preserves cell order.
+        - Unsupported fragments fail predictably.
+        - Docs show the supported policy.
+    validations:
+      required: true
+  - type: textarea
+    id: additional_information
+    attributes:
+      label: Additional information
+      description: Extra context, constraints, or references not covered above.
+      placeholder: Compatibility constraints, edge cases, known weak alternatives.

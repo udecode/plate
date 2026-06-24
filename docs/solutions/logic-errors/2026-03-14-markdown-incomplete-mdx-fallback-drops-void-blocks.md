@@ -5,7 +5,7 @@ problem_type: logic_error
 component: markdown_deserializer
 symptoms:
   - "Incomplete MDX fallback dropped already-parsed content when the complete prefix ended in a void node"
-  - "`markdownToSlateNodesSafely('<hr /><u>')` returned only the fallback paragraph and lost the horizontal rule"
+  - "`markdownToPliteNodesSafely('<hr /><u>')` returned only the fallback paragraph and lost the horizontal rule"
 root_cause: fallback_replacement_error
 resolution_type: code_change
 severity: medium
@@ -22,7 +22,7 @@ tags:
 
 ## Problem
 
-`markdownToSlateNodesSafely` is the recovery path when full markdown deserialization fails and the input ends with incomplete MDX.
+`markdownToPliteNodesSafely` is the recovery path when full markdown deserialization fails and the input ends with incomplete MDX.
 
 That fallback already handled two sane cases:
 
@@ -58,7 +58,7 @@ Now the safe fallback keeps the parsed prefix and still exposes the incomplete M
 These checks passed:
 
 ```bash
-bun test packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.spec.tsx
+bun test packages/markdown/src/lib/deserializer/utils/markdownToPliteNodesSafely.spec.tsx
 bun test packages/markdown/src
 bun run test:slowest -- --top 15 packages/markdown/src
 ```

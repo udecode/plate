@@ -14,13 +14,13 @@ legacy_refs:
   - ../slate/packages/slate-dom/src/plugin/dom-editor.ts
   - ../slate/packages/slate-dom/src/plugin/with-dom.ts
 v2_refs:
-  - .tmp/slate-v2/packages/slate/src/core/leaf-lifecycle.ts
-  - .tmp/slate-v2/packages/slate/test/leaf-lifecycle-contract.ts
-  - .tmp/slate-v2/packages/slate/test/selection-rebase-contract.ts
-  - .tmp/slate-v2/packages/slate-react/test/rendered-dom-shape-contract.tsx
-  - .tmp/slate-v2/packages/slate-browser/src/playwright/index.ts
-  - .tmp/slate-v2/playwright/integration/examples/richtext.test.ts
-  - .tmp/slate-v2/playwright/integration/examples/inlines.test.ts
+  - packages/slate/src/core/leaf-lifecycle.ts
+  - packages/slate/test/leaf-lifecycle-contract.ts
+  - packages/slate/test/selection-rebase-contract.ts
+  - packages/slate-react/test/rendered-dom-shape-contract.tsx
+  - packages/browser/src/playwright/index.ts
+  - apps/www/tests/slate-browser/donor/examples/richtext.test.ts
+  - apps/www/tests/slate-browser/donor/examples/inlines.test.ts
 ---
 
 # Slate v2 destructive leaf-boundary deletion should own leaf cleanup before render

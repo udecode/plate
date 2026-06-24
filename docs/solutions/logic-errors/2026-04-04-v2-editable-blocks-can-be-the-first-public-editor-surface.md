@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: V2 editable blocks can be the first public editor surface
 tags:
-  - slate-v2
+  - plite
   - slate-react-v2
   - editable
   - public-api
@@ -26,9 +26,9 @@ It is the smallest surface that already packages the proved behavior.
 
 ## What fixed it
 
-`slate-react-v2` now exposes:
+`plite-react-v2` now exposes:
 
-- [EditableBlocks](/Users/zbeyens/git/slate-v2/packages/slate-react-v2/src/components/editable-blocks.tsx)
+- [EditableBlocks](/Users/zbeyens/git/plite/packages/plite-react-v2/src/components/editable-blocks.tsx)
 
 That surface packages:
 

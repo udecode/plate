@@ -4,7 +4,7 @@
 
 Fix the `/docs/table` multi-cell selection runtime error:
 
-`Unable to find the path for Slate node: {"text":""}`
+`Unable to find the path for Plite node: {"text":""}`
 
 ## Status
 
@@ -16,19 +16,19 @@ Fix the `/docs/table` multi-cell selection runtime error:
 ## Findings
 
 - The failure is reported on the local docs route `http://localhost:3002/docs/table` during multi-cell selection.
-- A prior learning at `docs/solutions/ui-bugs/2026-03-27-version-history-demo-must-clone-snapshots-per-editor.md` documents the same Slate error when multiple editor surfaces share the same Slate node graph.
+- A prior learning at `docs/solutions/ui-bugs/2026-03-27-version-history-demo-must-clone-snapshots-per-editor.md` documents the same Plite error when multiple editor surfaces share the same Plite node graph.
 - The currently captured terminal output is stale and still shows the older local `.bun` parse failure; the docs dev server is not currently running.
-- Browser repro is deterministic: dragging from the `Heading` cell into the lower-right cells of the first table raises `Unable to find the path for Slate node: {"text":"Heading","bold":true}`.
+- Browser repro is deterministic: dragging from the `Heading` cell into the lower-right cells of the first table raises `Unable to find the path for Plite node: {"text":"Heading","bold":true}`.
 - `/docs/table` mounts two editors that both start from the same static `tableValue` graph:
   - the generic `table-demo` through `Demo` + `DEMO_VALUES.table`
   - the disable-merge example through `table-nomerge-demo`
-- The table package itself was a red herring here. The docs examples were sharing the same Slate nodes across two mounted editors on one page.
+- The table package itself was a red herring here. The docs examples were sharing the same Plite nodes across two mounted editors on one page.
 - A targeted red test path with `bun test` is currently blocked by the local `node_modules/.bun/is-hotkey` parse corruption, which is separate from this table bug.
 
 ## Progress Log
 
 - Reloaded task/debug/browser/test/planning skills for this bug.
-- Searched local learnings and code for `table`, `multi-cell`, and the exact Slate error.
+- Searched local learnings and code for `table`, `multi-cell`, and the exact Plite error.
 - Started a dedicated plan file for this bug.
 - Reproduced the browser crash on `/docs/table` with `browser-use` by dragging a multi-cell selection in the first table demo.
 - Added `createDemoValueSnapshot` and switched both mounted table demos to pass cloned initial values into `usePlateEditor`.

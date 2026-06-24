@@ -2,7 +2,7 @@
 title: Empty target fragment paste keeps first block wrapper
 date: 2026-05-09
 category: docs/solutions/logic-errors
-module: Slate v2 clipboard fragment insertion
+module: Plite clipboard fragment insertion
 problem_type: logic_error
 component: documentation
 symptoms:
@@ -12,7 +12,7 @@ symptoms:
 root_cause: logic_error
 resolution_type: code_fix
 severity: medium
-tags: [slate-v2, lexical-harvest, clipboard, insert-fragment, block-quote]
+tags: [plite, lexical-harvest, clipboard, insert-fragment, block-quote]
 ---
 
 # Empty target fragment paste keeps first block wrapper
@@ -23,7 +23,7 @@ Lexical's native `CopyAndPaste.spec.mjs` includes a useful block-format row:
 copy two paragraphs, paste them into an empty quote, keep the first paragraph in
 the quote, and place the second paragraph after it.
 
-Slate v2's single-empty-block fragment path replaced the target quote with the
+Plite's single-empty-block fragment path replaced the target quote with the
 incoming paragraph fragment, losing the target wrapper.
 
 ## Symptoms

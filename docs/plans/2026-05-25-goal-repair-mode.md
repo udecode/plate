@@ -46,13 +46,13 @@ Constraints:
 
 Boundaries:
 - Source of truth: latest user prompt plus pasted `goal`, `task`, and
-  `slate-plan` skills.
+  `plite-plan` skills.
 - Allowed edit scope: `.agents/rules/goal.mdc`,
   `.agents/skills/goal/SKILL.md`, `docs/plans/templates/goal-repair.md`, and
   this plan.
 - Browser surface: N/A: no browser behavior.
 - Tracker sync: N/A: no tracker item.
-- Non-goals: no changes to `task` or `slate-plan` in this slice; `goal repair`
+- Non-goals: no changes to `task` or `plite-plan` in this slice; `goal repair`
   targets their templates/rules when invoked later.
 
 Blocked condition:
@@ -87,7 +87,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
-| Skill analysis before edits | yes | Read pasted `goal`, `task`, and `slate-plan`; read local `.agents/rules/goal.mdc`, `.agents/rules/task.mdc`, and templates before editing. |
+| Skill analysis before edits | yes | Read pasted `goal`, `task`, and `plite-plan`; read local `.agents/rules/goal.mdc`, `.agents/rules/task.mdc`, and templates before editing. |
 | Active goal checked or created | yes | `get_goal` returned none; `create_goal` created the repair-mode objective. |
 | Source of truth read before edits | yes | User prompt and pasted skills read before patching. |
 | Tracker comments and attachments read | N/A: no tracker | No tracker source. |
@@ -169,7 +169,7 @@ Phase / pass table:
 Findings:
 - `goal` had template creation guidance but no way to repair templates/rules
   after a completed goal failed a user expectation.
-- Derived skills like `task` and `slate-plan` can stay unchanged because repair
+- Derived skills like `task` and `plite-plan` can stay unchanged because repair
   mode targets their owning rules/templates when invoked with a named skill or
   plan.
 
@@ -226,7 +226,7 @@ Final handoff contract:
     repair targets, not duplicate command owners.
   - Why not quick patch: argument hint alone would not teach ownership,
     classification, proof, or safety.
-  - Why not broader change: editing `task`/`slate-plan` now would duplicate the
+  - Why not broader change: editing `task`/`plite-plan` now would duplicate the
     repair command before seeing a real repair invocation.
 - Verified: source/generation/template smoke checks passed as described above.
 
@@ -239,7 +239,7 @@ Final handoff / sync:
 
 Timeline:
 - 2026-05-25 Task goal plan created.
-- 2026-05-25 Read pasted and local `goal`, `task`, `slate-plan` sources.
+- 2026-05-25 Read pasted and local `goal`, `task`, `plite-plan` sources.
 - 2026-05-25 Added `goal repair <expectation>` repair mode to goal rule.
 - 2026-05-25 Added `docs/plans/templates/goal-repair.md`.
 - 2026-05-25 Ran `pnpm install` for generated skill sync.

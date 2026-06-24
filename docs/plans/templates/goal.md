@@ -6,6 +6,14 @@ TODO: Write the short create_goal objective, under 240 characters. Put the full 
 Goal plan:
 {{PLAN_PATH}}
 
+First checkpoint:
+- Before implementation or broad exploration, copy every explicit prompt
+  requirement into this plan as checkable checkpoints: scope, non-goals,
+  timing/duration, stop conditions, deliverables, final handoff sections,
+  verification surface, and success criteria.
+- Do not continue into implementation until this extraction is complete or
+  explicitly marked N/A with reason.
+
 Timed checkpoint:
 - requested duration: pending
 - semantics: pending
@@ -33,6 +41,13 @@ Output budget strategy:
 Blocked condition:
 - TODO: Name the condition that stops autonomous work.
 
+Browser strategy:
+- TODO. Use Browser for normal app QA; use Chrome directly for native
+  downloads, print/print-preview, file picker/uploads, clipboard, browser
+  dialogs/permissions, extension/profile state, or exact Chrome rendering; use
+  Computer Use only for native Chrome/OS UI that needs visual inspection after
+  Chrome automation cannot read it.
+
 Completion rule:
 - Do not call `update_goal(status: complete)` while any required checklist item
   remains unchecked. If an item does not apply, check it and add `N/A: <reason>`.
@@ -45,6 +60,7 @@ Completion rule:
 Start Gates:
 | Gate | Applies | Evidence |
 |------|---------|----------|
+| Prompt requirements captured before work | pending | pending |
 | Timed checkpoint parsed | pending | pending |
 | Skill analysis before edits | pending | pending |
 | Active goal checked or created | pending | pending |
@@ -58,6 +74,10 @@ Work Checklist:
 - [ ] If a duration was requested, it is recorded as minimum active work unless
       explicitly marked hard stop; when no better metric exists, initial and
       final confidence scores are recorded.
+- [ ] First checkpoint complete: every explicit prompt requirement, scope
+      boundary, timing constraint, stop condition, deliverable, final handoff
+      section, verification surface, and success criterion is copied into this
+      plan as checkable checkpoints before implementation.
 - [ ] Short objective plus threshold, verification surface, constraints,
       boundaries, and blocked condition are concrete.
 - [ ] Work phases/pass rows below are updated with evidence.
@@ -83,7 +103,7 @@ Completion Gates:
 | Package manifests, lockfile, or install graph changed | pending | Run `pnpm install` and relevant package checks | pending |
 | Agent rules or skills changed | pending | Run `pnpm install` and verify generated skill sync | pending |
 | Workspace authority proof | pending | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | pending |
-| Browser surface changed | pending | Capture Browser Use proof | pending |
+| Browser surface changed | pending | Capture Browser proof for normal app surfaces, or Chrome/Computer proof for native browser/OS surfaces | pending |
 | CI-controlled template output changed | pending | Restore generated template output or record why it is intentionally kept | pending |
 | Package behavior or public API changed | pending | Add a changeset or record why no changeset applies | pending |
 | High-risk mini gate | pending | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | pending |

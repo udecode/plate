@@ -53,7 +53,7 @@ Make the umbrella package publish compatible internal ranges instead of exact wo
 {
   "dependencies": {
     "@platejs/core": "workspace:^",
-    "@platejs/slate": "workspace:^",
+    "@platejs/plite": "workspace:^",
     "@platejs/utils": "workspace:^",
     "@udecode/react-hotkeys": "workspace:^",
     "@udecode/react-utils": "workspace:^",

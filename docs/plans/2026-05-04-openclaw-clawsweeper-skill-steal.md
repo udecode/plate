@@ -10,7 +10,7 @@ source_repo: ../openclaw/.agents
 ## Goal
 
 Steal the useful issue-processing discipline from `../openclaw/.agents` and
-adapt it for the Slate v2 issue-ledger workflow in this repo.
+adapt it for the Plite issue-ledger workflow in this repo.
 
 ## Source Skills Reviewed
 
@@ -26,18 +26,18 @@ adapt it for the Slate v2 issue-ledger workflow in this repo.
 - `openclaw-test-performance`: evidence-first benchmark/profiling discipline
   for performance rows.
 - `security-triage`: not imported; security advisory flow is too
-  OpenClaw-specific for the Slate issue-ledger lane.
+  OpenClaw-specific for the Plite issue-ledger lane.
 
 ## Decisions
 
 - Keep the `clawsweeper` name because the user asked for that exact lane.
 - Pull the transferable sections into one skill; do not create separate
   Plate-local skills for each OpenClaw helper.
-- Adapt the body to Slate issue work, not OpenClaw bot operations.
-- Use `docs/slate-issues/open-issues-ledger.md` as frozen corpus truth.
-- Use `docs/plans/2026-05-04-slate-v2-full-issue-ledger-architecture-ralplan.md`
+- Adapt the body to Plite issue work, not OpenClaw bot operations.
+- Use `docs/plite-issues/open-issues-ledger.md` as frozen corpus truth.
+- Use `docs/plans/2026-05-04-plite-full-issue-ledger-architecture-ralplan.md`
   and its issue matrix as architecture classification truth.
-- Use `.tmp/slate-v2` only for current implementation proof.
+- Use `Plate repo root` only for current implementation proof.
 - Exact `Fixes #...` remains forbidden unless the original issue repro is
   proved end to end.
 - Add compiled issue dossier mode for one section per issue, without GitHub

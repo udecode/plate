@@ -6,8 +6,8 @@ import { ImagePlugin } from '@platejs/media/react';
 import { TablePlugin } from '@platejs/table/react';
 import { getHtmlDocument, jsxt } from '@platejs/test-utils';
 
-import { createSlateEditor } from '../../../../../../packages/core/src/lib/editor';
-import { createSlatePlugin } from '../../../../../../packages/core/src/lib/plugin';
+import { createBasePlateEditor } from '../../../../../../packages/core/src/lib/editor';
+import { createEditorPlugin } from '../../../../../../packages/core/src/lib/plugin';
 import { BaseParagraphPlugin } from '../../../../../../packages/core/src/lib/plugins/paragraph';
 import { deserializeHtmlElement } from '../../../../../../packages/core/src/lib/plugins/html/utils/deserializeHtmlElement';
 
@@ -28,9 +28,9 @@ describe('when element has class and attribute, and plugin has deserialize type,
   it('parses the custom node type and attributes', () => {
     expect(
       deserializeHtmlElement(
-        createSlateEditor({
+        createBasePlateEditor({
           plugins: [
-            createSlatePlugin({
+            createEditorPlugin({
               key: 'a',
               node: { type: 'poll' },
               parsers: {
@@ -81,7 +81,7 @@ describe('when plugin has deserialize attributeNames', () => {
   it('stores allowed DOM attributes on the node', () => {
     expect(
       deserializeHtmlElement(
-        createSlateEditor({
+        createBasePlateEditor({
           plugins: [TablePlugin],
         }),
         element
@@ -104,7 +104,7 @@ describe('when element has a comment node', () => {
   it('ignore the comment node', () => {
     expect(
       deserializeHtmlElement(
-        createSlateEditor({
+        createBasePlateEditor({
           plugins: [],
         }),
         element
@@ -124,7 +124,7 @@ describe('when element has pre without child', () => {
   ) as any;
 
   it('ignores empty pre tags', () => {
-    expect(deserializeHtmlElement(createSlateEditor(), element)).toEqual(
+    expect(deserializeHtmlElement(createBasePlateEditor(), element)).toEqual(
       output.children
     );
   });
@@ -143,7 +143,7 @@ describe('when there is no plugins', () => {
   it('does not deserialize the tags without plugins', () => {
     expect(
       deserializeHtmlElement(
-        createSlateEditor({
+        createBasePlateEditor({
           plugins: [],
         }),
         element
@@ -155,7 +155,7 @@ describe('when there is no plugins', () => {
 describe('when plugin has deserializer.attributeNames', () => {
   const html = `<html><body><img alt="removed" src="https://i.imgur.com/removed.png" /></body></html>`;
 
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: [
       ImagePlugin.extend({
         parsers: {
@@ -190,7 +190,7 @@ describe('when plugin has deserializer.attributeNames', () => {
 describe('when plugin has deserializer.parse', () => {
   const html = `<html><body><p><a href="http://google.com" target="_blank">a</a></p></body></html>`;
 
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: [
       BaseParagraphPlugin,
       LinkPlugin.extend(() => ({
@@ -229,7 +229,7 @@ describe('when plugin has deserializer.parse', () => {
 describe('when plugin has deserializer.rules.validNodeName', () => {
   const html = '<html><body><p><b>strong</b></p></body></html>';
 
-  const editor = createSlateEditor({
+  const editor = createBasePlateEditor({
     plugins: [
       BaseParagraphPlugin,
       BoldPlugin.extend({

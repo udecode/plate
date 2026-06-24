@@ -5,7 +5,7 @@
 
 ## Goal
 
-Keep navigation highlight attached to the same logical node while Slate
+Keep navigation highlight attached to the same logical node while Plite
 operations move its path.
 
 ## Decision
@@ -19,7 +19,7 @@ operations move its path.
 ## Why
 
 - plain path snapshots go stale as soon as the node moves
-- `PathRef` already exists in the Slate layer for exactly this case
+- `PathRef` already exists in the Plite layer for exactly this case
 - runtime mutable refs do not belong in plugin options
 
 ## Verification

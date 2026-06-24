@@ -34,7 +34,7 @@ That public harness uses:
 Headline result there:
 
 - Plate core `10k` mixed mount: `475.61 ms`
-- Slate `10k` mixed mount: `529.58 ms`
+- Plite `10k` mixed mount: `529.58 ms`
 
 That harness is still useful.
 It answers the narrower question:
@@ -50,7 +50,7 @@ The standalone lab uses:
 
 - [benchmarks/editor/apps/shared/fixtures.ts](/Users/zbeyens/git/plate-2/benchmarks/editor/apps/shared/fixtures.ts)
 - [benchmarks/editor/apps/plate/src/App.tsx](/Users/zbeyens/git/plate-2/benchmarks/editor/apps/plate/src/App.tsx)
-- [benchmarks/editor/apps/slate/src/App.tsx](/Users/zbeyens/git/plate-2/benchmarks/editor/apps/slate/src/App.tsx)
+- [benchmarks/editor/apps/plite/src/App.tsx](/Users/zbeyens/git/plate-2/benchmarks/editor/apps/plite/src/App.tsx)
 - [core-markdown-live.json](/Users/zbeyens/git/plate-2/benchmarks/editor/data/results/core-markdown-live.json)
 
 That `mixed-markdown-10k` fixture is much richer:
@@ -66,7 +66,7 @@ That `mixed-markdown-10k` fixture is much richer:
 Headline result there:
 
 - Plate `03_mount-10k`: `736.30 ms`
-- Slate `03_mount-10k`: `437.60 ms`
+- Plite `03_mount-10k`: `437.60 ms`
 
 That is not a contradiction.
 It is a different workload.
@@ -97,7 +97,7 @@ It proves the public benchmark was narrower.
 
 We now have decomposition rows from the standalone lab:
 
-| Lane | Plate | Slate | Read |
+| Lane | Plate | Plite | Read |
 | --- | ---: | ---: | --- |
 | `41_mount-10k-plain-core` | `215.20 ms` | `197.90 ms` | same class, Plate somewhat slower |
 | `42_mount-10k-plain-basic` | `212.60 ms` | `193.40 ms` | same class, Plate somewhat slower |
@@ -127,7 +127,7 @@ That changes the diagnosis:
 - code-heavy mount is actually fine
 - blockquote becomes red only once the richer basic bundle is in play
 - heavy marks are a major red zone
-- every basic mark we measured is materially slower than Slate
+- every basic mark we measured is materially slower than Plite
 - `strikethrough` is the worst single mark, but not uniquely bad
 - switching from `BasicMarksPlugin` to a single mark plugin helps a lot, but it
   still leaves a real red gap
@@ -144,7 +144,7 @@ working together on the richer markdown fixture.
 
 ### 3. Lists are still a first-class suspect, but not the only one
 
-The standalone fixture still feeds Slate true nested list containers:
+The standalone fixture still feeds Plite true nested list containers:
 
 - `bulleted-list`
 - `numbered-list`
@@ -164,10 +164,10 @@ blockquote-basic rows also go red.
 
 The live contract results show most edit lanes clustering around `50 ms`:
 
-- `10_type-middle`: Plate `50.00 ms`, Slate `50.10 ms`
-- `29_paste-plain-text`: Plate `49.90 ms`, Slate `50.00 ms`
-- `30_paste-html-rich-text`: Plate `49.80 ms`, Slate `50.30 ms`
-- `34_undo-single-change`: Plate `50.00 ms`, Slate `50.00 ms`
+- `10_type-middle`: Plate `50.00 ms`, Plite `50.10 ms`
+- `29_paste-plain-text`: Plate `49.90 ms`, Plite `50.00 ms`
+- `30_paste-html-rich-text`: Plate `49.80 ms`, Plite `50.30 ms`
+- `34_undo-single-change`: Plate `50.00 ms`, Plite `50.00 ms`
 
 That is not a believable story about perfect parity.
 It is a measurement artifact.
@@ -199,7 +199,7 @@ The real live story today is:
 
 This is now the clearest red lane.
 
-`47_mount-10k-marks-core` is already worse than Slate.
+`47_mount-10k-marks-core` is already worse than Plite.
 `48_mount-10k-marks-basic` is still dramatically worse.
 
 The single-mark rows make the next step clearer:
@@ -235,7 +235,7 @@ The earlier trace was useful, but it hid one important thing:
 
 The next direct lower-bound rows made that clearer:
 
-| Lane | Plate | Slate | Read |
+| Lane | Plate | Plite | Read |
 | --- | ---: | ---: | --- |
 | `86_mount-10k-bold-basic` | `678.10 ms` | `458.20 ms` | full basic-marks bundle still clearly red |
 | `90_mount-10k-bold-single` | `496.40 ms` | `463.90 ms` | single bold plugin is much better, but still slower |
@@ -246,7 +246,7 @@ That split is the real answer:
 - `BasicMarksPlugin` is still paying large bundle-side fan-out above the direct
   bold lower bound
 - the single bold path still pays about `60 ms` above the direct lower bound
-- the direct lower bound itself is already in the same class as Slate
+- the direct lower bound itself is already in the same class as Plite
 
 So the red lane is **not** "Plate cannot mount bold leaves fast enough."
 It is the work Plate chooses to do around that mount.
@@ -256,16 +256,16 @@ The DOM probe on `90_mount-10k-bold-single` makes that even more explicit.
 For the whole `10k` bold fixture, both editors mount the same leaf topology:
 
 - `10,000` `<strong>` nodes
-- `30,000` `[data-slate-leaf]` nodes
-- `30,000` `[data-slate-string]` nodes
+- `30,000` `[data-plite-leaf]` nodes
+- `30,000` `[data-plite-string]` nodes
 - `90,000` `<span>` nodes
 
 The first paragraph is also almost the same shape:
 
 - Plate:
-  `<div data-slate-node="element" data-block-id="..." class="slate-p">...`
-- Slate:
-  `<p data-slate-node="element" style="content-visibility:auto">...`
+  `<div data-plite-node="element" data-block-id="..." class="plite-p">...`
+- Plite:
+  `<p data-plite-node="element" style="content-visibility:auto">...`
 
 So the bold gap is **not** caused by extra leaf DOM nodes.
 
@@ -321,9 +321,9 @@ The important consequence is:
 
 One fresh standalone rerun on the kept final state landed here:
 
-- `86_mount-10k-bold-basic`: Plate `639.10 ms`, Slate `582.00 ms`
-- `90_mount-10k-bold-single`: Plate `434.60 ms`, Slate `578.50 ms`
-- `94_mount-10k-bold-direct`: Plate `484.50 ms`, Slate `544.30 ms`
+- `86_mount-10k-bold-basic`: Plate `639.10 ms`, Plite `582.00 ms`
+- `90_mount-10k-bold-single`: Plate `434.60 ms`, Plite `578.50 ms`
+- `94_mount-10k-bold-direct`: Plate `484.50 ms`, Plite `544.30 ms`
 
 That is noisy in the absolute numbers, but the shape is the point:
 
@@ -343,13 +343,13 @@ The next kept mark cut stayed inside the leaf pipe itself:
 
 Fresh full-batch rows on the kept final state:
 
-- `47_mount-10k-marks-core`: Plate `1227.50 ms`, Slate `925.50 ms`
-- `48_mount-10k-marks-basic`: Plate `1299.80 ms`, Slate `889.50 ms`
-- `86_mount-10k-bold-basic`: Plate `585.90 ms`, Slate `375.90 ms`
-- `87_mount-10k-italic-basic`: Plate `622.10 ms`, Slate `345.30 ms`
-- `88_mount-10k-underline-basic`: Plate `591.40 ms`, Slate `332.00 ms`
-- `89_mount-10k-strikethrough-basic`: Plate `580.70 ms`, Slate `334.40 ms`
-- `90_mount-10k-bold-single`: Plate `424.50 ms`, Slate `343.20 ms`
+- `47_mount-10k-marks-core`: Plate `1227.50 ms`, Plite `925.50 ms`
+- `48_mount-10k-marks-basic`: Plate `1299.80 ms`, Plite `889.50 ms`
+- `86_mount-10k-bold-basic`: Plate `585.90 ms`, Plite `375.90 ms`
+- `87_mount-10k-italic-basic`: Plate `622.10 ms`, Plite `345.30 ms`
+- `88_mount-10k-underline-basic`: Plate `591.40 ms`, Plite `332.00 ms`
+- `89_mount-10k-strikethrough-basic`: Plate `580.70 ms`, Plite `334.40 ms`
+- `90_mount-10k-bold-single`: Plate `424.50 ms`, Plite `343.20 ms`
 
 Compared to the pre-batch standalone snapshot, that means:
 
@@ -367,12 +367,12 @@ The next widened decomposition also ruled out an easy special-mark scapegoat.
 
 Fresh rows for the remaining unmeasured marks:
 
-- `98_mount-10k-code-basic`: Plate `418.70 ms`, Slate `387.00 ms`
-- `99_mount-10k-code-single`: Plate `450.30 ms`, Slate `365.80 ms`
-- `100_mount-10k-subscript-basic`: Plate `410.90 ms`, Slate `382.80 ms`
-- `101_mount-10k-subscript-single`: Plate `395.00 ms`, Slate `340.10 ms`
-- `102_mount-10k-superscript-basic`: Plate `395.30 ms`, Slate `384.20 ms`
-- `103_mount-10k-superscript-single`: Plate `400.00 ms`, Slate `359.10 ms`
+- `98_mount-10k-code-basic`: Plate `418.70 ms`, Plite `387.00 ms`
+- `99_mount-10k-code-single`: Plate `450.30 ms`, Plite `365.80 ms`
+- `100_mount-10k-subscript-basic`: Plate `410.90 ms`, Plite `382.80 ms`
+- `101_mount-10k-subscript-single`: Plate `395.00 ms`, Plite `340.10 ms`
+- `102_mount-10k-superscript-basic`: Plate `395.30 ms`, Plite `384.20 ms`
+- `103_mount-10k-superscript-single`: Plate `400.00 ms`, Plite `359.10 ms`
 
 Take:
 
@@ -410,13 +410,13 @@ That keeps the two good properties together:
 
 Focused reruns on the kept hybrid path landed here:
 
-- `48_mount-10k-marks-basic`: Plate `1244.70 ms`, Slate `903.00 ms`
-- `86_mount-10k-bold-basic`: Plate `557.20 ms`, Slate `335.60 ms`
-- `87_mount-10k-italic-basic`: Plate `547.90 ms`, Slate `339.40 ms`
-- `89_mount-10k-strikethrough-basic`: Plate `555.50 ms`, Slate `344.50 ms`
-- `90_mount-10k-bold-single`: Plate `399.90 ms`, Slate `342.50 ms`
-- `91_mount-10k-italic-single`: Plate `388.30 ms`, Slate `349.90 ms`
-- `93_mount-10k-strikethrough-single`: Plate `439.80 ms`, Slate `339.60 ms`
+- `48_mount-10k-marks-basic`: Plate `1244.70 ms`, Plite `903.00 ms`
+- `86_mount-10k-bold-basic`: Plate `557.20 ms`, Plite `335.60 ms`
+- `87_mount-10k-italic-basic`: Plate `547.90 ms`, Plite `339.40 ms`
+- `89_mount-10k-strikethrough-basic`: Plate `555.50 ms`, Plite `344.50 ms`
+- `90_mount-10k-bold-single`: Plate `399.90 ms`, Plite `342.50 ms`
+- `91_mount-10k-italic-single`: Plate `388.30 ms`, Plite `349.90 ms`
+- `93_mount-10k-strikethrough-single`: Plate `439.80 ms`, Plite `339.60 ms`
 
 That is the cleanest remaining shared-pipe win so far.
 
@@ -435,9 +435,9 @@ So this is still high priority.
 
 That split is no longer hypothetical. The dedicated list rows say:
 
-- `49_mount-10k-list-markdown`: Plate `890.40 ms`, Slate `630.10 ms`
-- `96_mount-10k-list-core`: Plate `622.70 ms`, Slate `679.20 ms`
-- `97_mount-10k-list-only`: Plate `848.70 ms`, Slate `671.70 ms`
+- `49_mount-10k-list-markdown`: Plate `890.40 ms`, Plite `630.10 ms`
+- `96_mount-10k-list-core`: Plate `622.70 ms`, Plite `679.20 ms`
+- `97_mount-10k-list-only`: Plate `848.70 ms`, Plite `671.70 ms`
 
 That means:
 
@@ -453,7 +453,7 @@ The DOM probe made the reason concrete:
   `30,000` paragraph nodes
 - fixed Plate `list-only`: `0` `<ul>`, `0` `<li>`, `30,000`
   `[role="listitem"]` paragraphs
-- Slate nested list lane: `10,000` `<ul>`, `30,000` `<li>`
+- Plite nested list lane: `10,000` `<ul>`, `30,000` `<li>`
 
 So the original list cliff was not mysterious.
 

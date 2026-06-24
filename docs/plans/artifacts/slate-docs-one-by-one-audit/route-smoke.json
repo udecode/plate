@@ -1,0 +1,152 @@
+[
+  {
+    "route": "/docs/slate/walkthroughs/01-installing-slate",
+    "status": 200,
+    "ok": true,
+    "title": "Installing Slate - Plate"
+  },
+  {
+    "route": "/docs/slate/migration",
+    "status": 200,
+    "ok": true,
+    "title": "Migration - Plate"
+  },
+  {
+    "route": "/docs/slate/walkthroughs/09-performance",
+    "status": 200,
+    "ok": true,
+    "title": "Improving Performance - Plate"
+  },
+  {
+    "route": "/docs/slate/api/operations",
+    "status": 200,
+    "ok": true,
+    "title": "Operation Types - Plate"
+  },
+  {
+    "route": "/docs/slate/api/operations/operation",
+    "status": 200,
+    "ok": true,
+    "title": "Operation API - Plate"
+  },
+  {
+    "route": "/docs/slate/concepts/02-nodes",
+    "status": 200,
+    "ok": true,
+    "title": "Nodes - Plate"
+  },
+  {
+    "route": "/docs/slate/concepts/03-locations",
+    "status": 200,
+    "ok": true,
+    "title": "Locations - Plate"
+  },
+  {
+    "route": "/docs/slate/concepts/04-transforms",
+    "status": 200,
+    "ok": true,
+    "title": "Transforms - Plate"
+  },
+  {
+    "route": "/docs/slate/concepts/05-operations",
+    "status": 200,
+    "ok": true,
+    "title": "Operations - Plate"
+  },
+  {
+    "route": "/docs/slate/concepts/06-commands",
+    "status": 200,
+    "ok": true,
+    "title": "Commands - Plate"
+  },
+  {
+    "route": "/docs/slate/concepts/09-rendering",
+    "status": 200,
+    "ok": true,
+    "title": "Rendering - Plate"
+  },
+  {
+    "route": "/docs/slate/concepts/10-serializing",
+    "status": 200,
+    "ok": true,
+    "title": "Serializing - Plate"
+  },
+  {
+    "route": "/docs/slate/api/locations/bookmark",
+    "status": 200,
+    "ok": true,
+    "title": "Bookmark API - Plate"
+  },
+  {
+    "route": "/docs/slate/api/locations/path-ref",
+    "status": 200,
+    "ok": true,
+    "title": "PathRef API - Plate"
+  },
+  {
+    "route": "/docs/slate/api/locations/point-ref",
+    "status": 200,
+    "ok": true,
+    "title": "PointRef API - Plate"
+  },
+  {
+    "route": "/docs/slate/api/locations/range-ref",
+    "status": 200,
+    "ok": true,
+    "title": "RangeRef API - Plate"
+  },
+  {
+    "route": "/docs/slate/api/locations/point",
+    "status": 200,
+    "ok": true,
+    "title": "Point API - Plate"
+  },
+  {
+    "route": "/docs/slate/api/locations/range",
+    "status": 200,
+    "ok": true,
+    "title": "Range API - Plate"
+  },
+  {
+    "route": "/docs/slate/api/scrubber",
+    "status": 200,
+    "ok": true,
+    "title": "Debug Value Scrubbing - Plate"
+  },
+  {
+    "route": "/docs/slate/libraries/slate-history/history-extension-setup",
+    "status": 200,
+    "ok": true,
+    "title": "History Extension Setup - Plate"
+  },
+  {
+    "route": "/docs/slate/libraries/slate-react/event-handling",
+    "status": 200,
+    "ok": true,
+    "title": "Slate React Event Handling - Plate"
+  },
+  {
+    "route": "/docs/slate/libraries/slate-react/react-editor-setup",
+    "status": 200,
+    "ok": true,
+    "title": "React Editor Setup - Plate"
+  },
+  {
+    "route": "/docs/slate/libraries/slate",
+    "status": 200,
+    "ok": true,
+    "title": "Slate - Plate"
+  },
+  {
+    "route": "/docs/slate/libraries/slate-hyperscript",
+    "status": 200,
+    "ok": true,
+    "title": "Slate Hyperscript - Plate"
+  },
+  {
+    "route": "/docs/slate/libraries/slate-react/annotations",
+    "status": 200,
+    "ok": true,
+    "title": "Annotations - Plate"
+  }
+]

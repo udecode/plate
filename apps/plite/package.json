@@ -1,0 +1,25 @@
+{
+  "name": "plite",
+  "version": "0.0.0-private",
+  "private": true,
+  "scripts": {
+    "build": "next build --webpack",
+    "pretest:plite-browser": "node scripts/build-browser-if-stale.mjs",
+    "pretest:plite-browser:chromium": "node scripts/build-browser-if-stale.mjs",
+    "serve": "node scripts/serve.mjs",
+    "test:plite-browser": "node scripts/run-plite-browser.mjs matrix",
+    "test:plite-browser:chromium": "node scripts/run-plite-browser.mjs chromium",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@playwright/test": "1.53.0",
+    "next": "16.2.6",
+    "nuqs": "2.4.3",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "serve-handler": "6.1.6"
+  },
+  "devDependencies": {
+    "@types/serve-handler": "6.1.4"
+  }
+}

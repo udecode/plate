@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plite-libraries-plite-history-history-editor-docs",
+  "title": "History Editor API",
+  "description": "Read history state, run undo/redo transactions, and control history batching.",
+  "files": [
+    {
+      "path": "../../content/docs/plite/libraries/plite-history/history-editor.mdx",
+      "content": "---\ntitle: \"History Editor API\"\ndescription: \"Read history state, run undo/redo transactions, and control history batching.\"\n---\n\nHistory adds read, transaction, and editor API groups instead of mutating the\nroot editor object.\n\n## State API\n\n#### `state.history.get(): History`\n\nRead the full history value.\n\n#### `state.history.undos(): Batch[]`\n\nRead the undo stack.\n\n#### `state.history.redos(): Batch[]`\n\nRead the redo stack.\n\n## Transaction API\n\n#### `tx.history.undo(): void`\n\nUndo the previous history batch.\n\n#### `tx.history.redo(): void`\n\nRedo the next history batch.\n\n## Editor API\n\n#### `editor.api.history.withMerging(fn: () => void): void`\n\nRun updates that merge into the previous history batch.\n\n#### `editor.api.history.withNewBatch(fn: () => void): void`\n\nRun updates where the first operation starts a new history batch.\n\n#### `editor.api.history.withoutMerging(fn: () => void): void`\n\nRun updates without merging new operations into the previous history batch.\n\n#### `editor.api.history.withoutSaving(fn: () => void): void`\n\nRun updates without saving operations to history.\n\n#### `editor.api.history.isMerging(): boolean | undefined`\n\nRead the current merge flag.\n\n#### `editor.api.history.isSaving(): boolean | undefined`\n\nRead the current saving flag.\n\n## Types\n\n```typescript\nimport type { EditorStatePatch, Operation, Range } from \"@platejs/slate\";\n\ntype History = {\n  redos: Batch[];\n  undos: Batch[];\n};\n\ntype Batch = {\n  operations: Operation[];\n  selectionBefore: Range | null;\n  selectionBeforeRoot?: string;\n  statePatches: EditorStatePatch[];\n};\n```\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plite/libraries/plite-history/history-editor.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

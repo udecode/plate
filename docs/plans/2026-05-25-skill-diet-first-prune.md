@@ -274,7 +274,7 @@ Verification evidence:
   generated skills, CE colon names, `planning-with-files`, and `codex-review`;
   it removed 7 skills but left lock entries.
 - `npx skills remove --skill ce:brainstorm --skill ce:ideate --skill ce:work --skill ce:plan --skill ce:review --skill ce:compound-refresh -y` found no colon-name matches.
-- `npx skills remove ce-brainstorm ce-ideate ce-work ce-plan ce-review ce-compound-refresh -y` removed 6 CE skills.
+- `npx skills remove ce-brainstorm ce-ideate ce-work ce-plan ce-compound-refresh -y` removed stale CE skills.
 - `npx skills remove ce-compound -y` removed 1 additional CE skill.
 - `pnpm install` passed and Skiller applied Claude Code plus Codex outputs.
 - Path audit over `.agents/rules`, `.agents/skills`, and `.claude/skills`

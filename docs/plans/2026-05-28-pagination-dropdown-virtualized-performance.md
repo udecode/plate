@@ -81,8 +81,8 @@ Work Checklist:
 - [x] Final handoff shape decided: bug/perf fix with verification commands and caveat.
 - [x] Branch handling recorded as N/A: no commit or PR requested.
 - [x] Local-env-rot retry policy recorded as N/A: no install corruption signal.
-- [x] Workspace authority recorded: commands ran in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`; plan check runs in `/Users/zbeyens/git/plate-2`.
-- [x] High-risk note recorded: large fixture reconciliation must not use thousands of Slate operations on a mounted editor.
+- [x] Workspace authority recorded: commands ran in `/Users/zbeyens/git/plate-2/Plate repo root`; plan check runs in `/Users/zbeyens/git/plate-2`.
+- [x] High-risk note recorded: large fixture reconciliation must not use thousands of Plite operations on a mounted editor.
 - [x] Review/autoreview target marked N/A for this narrow follow-up; focused tests cover the changed path.
 - [x] Agent-native review decision recorded as N/A: no agent files changed.
 - [x] Browser pack route, interaction path, and expected visible outcome recorded.
@@ -100,7 +100,7 @@ Completion Gates:
 | Package exports or file layout changed | no | N/A | No exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | N/A | No manifest or lockfile changed. |
 | Agent rules or skills changed | no | N/A | No agent rules or skills changed. |
-| Workspace authority proof | yes | Verify in owning workspace | All implementation proofs ran in `.tmp/slate-v2`; plan check runs in repo root. |
+| Workspace authority proof | yes | Verify in owning workspace | All implementation proofs ran in `Plate repo root`; plan check runs in repo root. |
 | Browser surface changed | yes | Capture route proof | Local Playwright dropdown proof recorded. |
 | Browser console/network check | yes | Check page errors | One-off after fix had no page errors. |
 | Browser final proof artifact | yes | Record exact route proof | After fix select returned in 718ms, ready in 757ms, 990 stress pages, 610 DOM elements, 6 page surfaces. |

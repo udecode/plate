@@ -172,7 +172,7 @@ Completion Gates:
 | Package behavior or public API changed | yes | Add a changeset or record why no changeset applies | `.changeset/hook-stable-leaf-renderers.md` adds `@platejs/core` patch. |
 | Registry-only component work changed | no | Update `tooling/data/plate-ui-changelog.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, or record N/A | N/A: not registry-only work. |
 | Docs or content changed | no | For docs-heavy work, use `--template docs`; for incidental docs, verify source-backed claims, links, examples, and rendered output or record N/A | N/A: runtime plan file only, no user docs/content. |
-| High-risk mini gate | yes | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | Failure mode: hook-calling renderers executed in Slate `Leaf`; proof: red/green test and browser language switch; boundary: core pipes own renderer invocation. |
+| High-risk mini gate | yes | For public API/runtime/package-boundary/browser/agent-action/command-contract changes, record realistic failure mode, proof plan, and why the chosen boundary is right; otherwise N/A | Failure mode: hook-calling renderers executed in Plite `Leaf`; proof: red/green test and browser language switch; boundary: core pipes own renderer invocation. |
 | Agent-native review for agent/tooling changes | no | For `.agents/**`, `.claude/**`, `.codex/**`, skills, hooks, commands, prompts, or user-action tooling, load `.agents/skills/agent-native-reviewer/SKILL.md` and close accepted/actionable findings, or record N/A | N/A: no agent/tooling files changed. |
 | Local install corruption suspected | no | Run `pnpm run reinstall` once, rerun the exact failing command, or record N/A | N/A: no verification failure; `pnpm check` passed. |
 | Autoreview for non-trivial implementation changes | yes | Load `.agents/skills/autoreview/SKILL.md`; use dirty local `--mode local`, branch/PR `--mode branch --base <base>`, or committed slice `--mode commit --commit <ref>` until no accepted/actionable findings, or record N/A for docs-only/trivial/no local patch | First local review found stale plan path; fixed. Second `.agents/skills/autoreview/scripts/autoreview --mode local` clean. |
@@ -189,7 +189,7 @@ Completion Gates:
 | Browser final proof artifact | yes | Record screenshot/trace/route proof or exact caveat | Exact Browser proof recorded in `Verification evidence`; no screenshot needed. |
 | Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | No `packages/core/src/react/utils/index.ts` or package export change; runtime behavior only. |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published `@platejs/core` runtime behavior fix. |
-| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | `.changeset/hook-stable-leaf-renderers.md` uses `"@platejs/core": patch`. |
+| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | `.changeset/hook-stable-leaf-renderers.md` uses `"@platejs/core": patch`. |
 | Registry changelog | no | If the change is registry-only under `apps/www/src/registry/**`, update `tooling/data/plate-ui-changelog.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, and do not add a package changeset | N/A: no registry files changed. |
 | No release artifact | no | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | N/A: changeset required and added. |
 | Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | Focused test, package typecheck, and full `pnpm check` passed. |
@@ -207,7 +207,7 @@ Phase / pass table:
 Findings:
 - Issue #5004 root cause confirmed locally: `pipeRenderLeaf` / `pipeRenderText` executed hook-calling plugin renderers as plain functions only when matching marks were active.
 - Existing April 2026 solution note explains why inactive renderer skipping matters for performance; fix must preserve skipping instead of calling every complex renderer unconditionally.
-- Browser route `/docs/examples/code-block` reproduces the practical surface with `slate-code_syntax` decorations.
+- Browser route `/docs/examples/code-block` reproduces the practical surface with `plite-code_syntax` decorations.
 
 Decisions and tradeoffs:
 - Use React component boundaries for active complex renderers instead of invoking them as plain functions. This keeps hook order stable and preserves inactive-renderer skipping.
@@ -245,7 +245,7 @@ Final handoff contract:
   - Reproduced: focused test failed before fix; Browser route exercised after fix
   - Verified: focused test, package typecheck, Browser proof, `pnpm check`, autoreview
 - Browser check: `/docs/examples/code-block`, JavaScript -> Plain Text -> JavaScript, no warn/error logs
-- Outcome: complex leaf/text renderers no longer change Slate `Leaf` hook order when marks appear or disappear
+- Outcome: complex leaf/text renderers no longer change Plite `Leaf` hook order when marks appear or disappear
 - Caveat: `pnpm check` lint reports one existing warning in `apps/www/src/components/ui/sidebar.tsx`
 - Design:
   - Chosen boundary: `@platejs/core` render pipes own plugin renderer invocation

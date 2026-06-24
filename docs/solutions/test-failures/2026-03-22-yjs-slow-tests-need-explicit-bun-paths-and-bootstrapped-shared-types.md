@@ -54,4 +54,4 @@ That means both peers start with the same `editors.main` shared type identity gr
 
 - If a Bun runner targets non-discovered filenames, pass `./relative/path` or an absolute path. Bare strings are filter bait.
 - For Yjs nested-doc collaboration tests, bootstrap the shared structure once and copy it with `Y.encodeStateAsUpdate` and `Y.applyUpdate` before connecting peers.
-- Do not treat `yTextToSlateElement(emptyXmlText)` returning `[{ text: '' }]` as seeded content. Check `sharedType.length` when the real question is whether content was inserted.
+- Do not treat `yTextToPliteElement(emptyXmlText)` returning `[{ text: '' }]` as seeded content. Check `sharedType.length` when the real question is whether content was inserted.

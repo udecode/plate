@@ -40,7 +40,7 @@ This is the strongest current evidence that the remaining Android lane is no
 longer about generic parity rows.
 
 It is about Android-specific noncancelable or double-owned delete behavior,
-which is exactly the class legacy Slate React used Android-specialist handling
+which is exactly the class legacy Plite React used Android-specialist handling
 for.
 
 ## Reusable rule

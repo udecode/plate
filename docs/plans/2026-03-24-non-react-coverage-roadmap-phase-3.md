@@ -46,7 +46,7 @@ Freeze the last worthwhile non-React queue after the bun-check fixes so future p
 12. `[done]` `5` [traverseHtmlNode.ts](packages/core/src/lib/plugins/html/utils/traverseHtmlNode.ts)
 13. `[done]` `5` [moveListItemSublistItemsToListItemSublist.ts](packages/list-classic/src/lib/transforms/moveListItemSublistItemsToListItemSublist.ts)
 14. `[done]` `5` [mdastToSlate.ts](packages/markdown/src/lib/deserializer/mdastToSlate.ts)
-15. `[done]` `5` [markdownToSlateNodesSafely.ts](packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.ts)
+15. `[done]` `5` [markdownToPliteNodesSafely.ts](packages/markdown/src/lib/deserializer/utils/markdownToPliteNodesSafely.ts)
 16. `[done]` `5` [addMarkSuggestion.ts](packages/suggestion/src/lib/transforms/addMarkSuggestion.ts)
 17. `[done]` `5` [removeMarkSuggestion.ts](packages/suggestion/src/lib/transforms/removeMarkSuggestion.ts)
 18. `[done]` `5` [deleteRowWhenExpanded.ts](packages/table/src/lib/merge/deleteRowWhenExpanded.ts)

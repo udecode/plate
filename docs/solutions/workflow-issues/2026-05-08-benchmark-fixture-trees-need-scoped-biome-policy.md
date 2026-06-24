@@ -85,4 +85,4 @@ turning the override into a blanket lint bypass.
 
 ## Related Issues
 
-- [Slate v2 tooling port should stage package build owners separately from repo-wide source lint](../developer-experience/2026-04-16-slate-v2-tooling-port-should-stage-build-owners-and-source-lint-separately.md)
+- [Plite tooling port should stage package build owners separately from repo-wide source lint](../developer-experience/2026-04-16-plite-tooling-port-should-stage-build-owners-and-source-lint-separately.md)

@@ -2,7 +2,7 @@
 title: TipTap harvest placeholders need harness routing
 date: 2026-05-10
 category: best-practices
-module: Slate v2 TipTap harvest
+module: Plite TipTap harvest
 problem_type: best_practice
 component: testing_framework
 symptoms:
@@ -11,7 +11,7 @@ symptoms:
 root_cause: incomplete_setup
 resolution_type: workflow_improvement
 severity: low
-tags: [slate-v2, tiptap-harvest, editor-test-harvester, placeholder-tests, coverage-routing]
+tags: [plite, tiptap-harvest, editor-test-harvester, placeholder-tests, coverage-routing]
 ---
 
 # TipTap harvest placeholders need harness routing
@@ -49,7 +49,7 @@ In the TipTap harvest, 14 files moved this way, including:
 
 The harvester should count behavior, not file shells. A no-assertion Cypress file
 can still be useful as evidence that a demo route exists, but it cannot justify
-a Slate or Plate test row.
+a Plite or Plate test row.
 
 ## Prevention
 

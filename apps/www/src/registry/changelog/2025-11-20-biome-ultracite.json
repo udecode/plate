@@ -462,7 +462,7 @@
       "diagnostics": []
     },
     {
-      "name": "slate-to-html",
+      "name": "plite-to-html",
       "files": ["apps/www/src/registry/components/editor/slate-to-html.tsx"],
       "definitionFiles": ["apps/www/src/registry/registry-blocks.ts"],
       "diagnostics": []
@@ -616,7 +616,7 @@
         "markdown-streaming-demo",
         "preview-markdown-demo",
         "pro-iframe-demo",
-        "slate-to-html",
+        "plite-to-html",
         "version-history-demo",
         "fumadocs-mdx-components",
         "mdx-plate-components"

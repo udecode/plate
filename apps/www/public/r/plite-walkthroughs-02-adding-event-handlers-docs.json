@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plite-walkthroughs-02-adding-event-handlers-docs",
+  "title": "Adding Event Handlers",
+  "description": "Handle editor-local browser events while keeping writes inside the Plite runtime.",
+  "files": [
+    {
+      "path": "../../content/docs/plite/walkthroughs/02-adding-event-handlers.mdx",
+      "content": "---\ntitle: \"Adding Event Handlers\"\ndescription: \"Handle editor-local browser events while keeping writes inside the Plite runtime.\"\n---\n\n`Editable` accepts React event handlers. Use them for UI-local shortcuts and\nsmall input policies that belong to one editor surface.\n\n## Starting Point\n\nThis is the editor from the install walkthrough:\n\n```tsx\nimport { Editable, Plite, useSlateEditor } from \"@platejs/slate-react\";\n\nconst initialValue = [\n  {\n    type: \"paragraph\",\n    children: [{ text: \"A line of text in a paragraph.\" }],\n  },\n];\n\nconst App = () => {\n  const editor = useSlateEditor({ initialValue });\n\n  return (\n    <Plite editor={editor}>\n      <Editable />\n    </Plite>\n  );\n};\n```\n\n## Read The Native Event\n\nPass `onKeyDown` when you only need to observe the browser event.\n\n```tsx\nconst App = () => {\n  const editor = useSlateEditor({ initialValue });\n\n  return (\n    <Plite editor={editor}>\n      <Editable\n        onKeyDown={(event) => {\n          console.log(event.key);\n        }}\n      />\n    </Plite>\n  );\n};\n```\n\n## Write Through The Editor\n\nPrevent the browser default when Plite should own the edit, then write inside\n`editor.update(...)`.\n\n```tsx\nconst App = () => {\n  const editor = useSlateEditor({ initialValue });\n\n  return (\n    <Plite editor={editor}>\n      <Editable\n        onKeyDown={(event) => {\n          if (event.key !== \"&\") return;\n\n          event.preventDefault();\n\n          editor.update((tx) => {\n            tx.text.insert(\"and\");\n          });\n        }}\n      />\n    </Plite>\n  );\n};\n```\n\nTyping `&` now inserts `and` instead.\n\nKeep reusable behavior in commands or extensions once it is shared by keyboard\nshortcuts, toolbar buttons, menus, tests, or programmatic calls. See\n[Executing Commands](05-executing-commands).\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plite/walkthroughs/02-adding-event-handlers.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

@@ -1,9 +1,9 @@
 import { BoldPlugin } from '@platejs/basic-nodes/react';
 
-import { createSlateEditor } from '../../../../../../packages/core/src/lib/editor';
+import { createBasePlateEditor } from '../../../../../../packages/core/src/lib/editor';
 import {
   type HtmlDeserializer,
-  createSlatePlugin,
+  createEditorPlugin,
 } from '../../../../../../packages/core/src/lib/plugin';
 import { BaseParagraphPlugin } from '../../../../../../packages/core/src/lib/plugins/paragraph';
 import { pluginDeserializeHtml } from '../../../../../../packages/core/src/lib/plugins/html/utils/pluginDeserializeHtml';
@@ -24,8 +24,8 @@ describe('when element is p and validNodeName is P', () => {
 
     expect(
       pluginDeserializeHtml(
-        createSlateEditor(),
-        createSlatePlugin({
+        createBasePlateEditor(),
+        createEditorPlugin({
           node: { type: BaseParagraphPlugin.key },
           parsers: {
             html: {
@@ -46,8 +46,8 @@ describe('when element is p, validAttribute', () => {
 
     expect(
       pluginDeserializeHtml(
-        createSlateEditor(),
-        createSlatePlugin({
+        createBasePlateEditor(),
+        createEditorPlugin({
           node: { type: BaseParagraphPlugin.key },
           parsers: {
             html: {
@@ -73,8 +73,8 @@ describe('when element is p, validAttribute', () => {
 
     expect(
       pluginDeserializeHtml(
-        createSlateEditor(),
-        createSlatePlugin({
+        createBasePlateEditor(),
+        createEditorPlugin({
           node: { type: BaseParagraphPlugin.key },
           parsers: {
             html: {
@@ -103,8 +103,8 @@ describe('when element is p with color and rule style is different', () => {
 
     expect(
       pluginDeserializeHtml(
-        createSlateEditor(),
-        createSlatePlugin({
+        createBasePlateEditor(),
+        createEditorPlugin({
           node: { type: BaseParagraphPlugin.key },
           parsers: {
             html: {
@@ -135,8 +135,8 @@ describe('when element is p with same style color than rule', () => {
 
     expect(
       pluginDeserializeHtml(
-        createSlateEditor(),
-        createSlatePlugin({
+        createBasePlateEditor(),
+        createEditorPlugin({
           node: { type: BaseParagraphPlugin.key },
           parsers: {
             html: {
@@ -167,8 +167,8 @@ describe('when element has style color and rule style color is *', () => {
 
     expect(
       pluginDeserializeHtml(
-        createSlateEditor(),
-        createSlatePlugin({
+        createBasePlateEditor(),
+        createEditorPlugin({
           node: { type: BaseParagraphPlugin.key },
           parsers: {
             html: {
@@ -199,8 +199,8 @@ describe('when element is strong and validNodeName is strong', () => {
 
     expect(
       pluginDeserializeHtml(
-        createSlateEditor(),
-        createSlatePlugin({
+        createBasePlateEditor(),
+        createEditorPlugin({
           node: { isLeaf: true, type: BoldPlugin.key },
           parsers: {
             html: {

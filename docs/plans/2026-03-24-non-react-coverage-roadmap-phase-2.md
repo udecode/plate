@@ -62,7 +62,7 @@ Freeze the last worthwhile non-React cleanup batch so future passes stop re-rank
   Reason: schema boilerplate.
 - `[deferred]` `4` [content-types.ts](packages/docx-io/src/lib/internal/schemas/content-types.ts)
   Reason: schema boilerplate.
-- `[deferred]` `4` [focus.ts](packages/slate/src/internal/dom-editor/focus.ts)
+- `[deferred]` `4` [focus.ts](packages/plite/src/internal/dom-editor/focus.ts)
   Reason: DOM-ish utility crumb. Save it for a DOM-focused phase if it ever matters.
 - `[deferred]` `4` [useRecordHotkeys.ts](packages/udecode/react-hotkeys/src/internal/useRecordHotkeys.ts)
   Reason: not in `/react`, but still close enough to React-side behavior that it can wait for the React phase.

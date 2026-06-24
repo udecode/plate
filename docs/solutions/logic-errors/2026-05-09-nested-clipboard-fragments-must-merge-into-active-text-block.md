@@ -2,7 +2,7 @@
 title: Nested clipboard fragments must merge into active text block
 date: 2026-05-09
 category: docs/solutions/logic-errors
-module: slate-v2 lexical harvest insert-fragment
+module: plite lexical harvest insert-fragment
 problem_type: logic_error
 component: testing_framework
 symptoms:
@@ -12,7 +12,7 @@ symptoms:
 root_cause: logic_error
 resolution_type: code_fix
 severity: medium
-tags: [slate-v2, lexical-harvest, clipboard, insert-fragment, code-block]
+tags: [plite, lexical-harvest, clipboard, insert-fragment, code-block]
 ---
 
 # Nested clipboard fragments must merge into active text block
@@ -71,7 +71,7 @@ desktop clipboard shortcuts and asserts:
 
 ## Why This Works
 
-Slate clipboard fragments preserve ancestor structure. A partial copy inside a
+Plite clipboard fragments preserve ancestor structure. A partial copy inside a
 code line can therefore arrive as `code-block -> code-line -> text`, even though
 the intended paste target is already inside a compatible `code-line`.
 
@@ -86,7 +86,7 @@ keeps the paste local to the active line.
 - For harvested clipboard rows, assert structure after paste, not just plain
   text.
 - Add a package-level fragment shape proof before browser-only fixes when the
-  failure inserts the wrong Slate node structure.
+  failure inserts the wrong Plite node structure.
 - Keep example paste handlers out unless the behavior is product policy rather
   than generic fragment fitting.
 

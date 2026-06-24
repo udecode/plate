@@ -2,7 +2,7 @@
 title: V2 read-only should stay app-level until the editor surface owns it
 date: 2026-04-06
 category: docs/solutions/logic-errors
-module: Slate v2 read-only surface
+module: Plite read-only surface
 problem_type: logic_error
 component: documentation
 symptoms:
@@ -13,7 +13,7 @@ root_cause: logic_error
 resolution_type: code_fix
 severity: medium
 tags:
-  - slate-v2
+  - plite
   - slate-react-v2
   - read-only
   - editorial-family
@@ -70,7 +70,7 @@ That keeps the replacement story honest:
 
 This preserves the real package boundary.
 
-The current `slate-react` editor-facing surface is still optimized around
+The current `plite-react` editor-facing surface is still optimized around
 active editing:
 
 - selection ownership

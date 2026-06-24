@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { createSlateEditor, createTSlatePlugin } from 'platejs';
+import { createBasePlateEditor, createEditorPlugin } from 'platejs';
 import { serializeHtml } from 'platejs/static';
 
 import { BaseEditorKit } from '@/registry/components/editor/editor-base-kit';
@@ -9,7 +9,7 @@ import { createStaticEditor } from './create-static-editor';
 
 describe('core static serializeHtml custom render hooks', () => {
   it('renders belowNodes output around children', async () => {
-    const renderBelowPlugin = createTSlatePlugin({
+    const renderBelowPlugin = createEditorPlugin({
       key: 'test-list',
       render: {
         belowNodes: (_injectProps: any) =>
@@ -23,7 +23,7 @@ describe('core static serializeHtml custom render hooks', () => {
       },
     });
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [...BaseEditorKit, renderBelowPlugin],
       value: [
         {
@@ -66,15 +66,15 @@ describe('core static serializeHtml custom render hooks', () => {
     });
 
     expect(html).toContain(
-      '<span data-slate-string="true">None encoded string 100%</span>'
+      '<span data-plite-string="true">None encoded string 100%</span>'
     );
     expect(html).toContain(
-      '<span data-slate-string="true">Encoded string 100%25</span>'
+      '<span data-plite-string="true">Encoded string 100%25</span>'
     );
   });
 
   it('applies both node and leaf renderers', async () => {
-    const testPlugin = createTSlatePlugin({
+    const testPlugin = createEditorPlugin({
       key: 'test',
       node: {
         isDecoration: false,
@@ -82,15 +82,15 @@ describe('core static serializeHtml custom render hooks', () => {
       },
       render: {
         node: ({ children }) => (
-          <span data-slate-test="node-wrapper">{children}</span>
+          <span data-plite-test="node-wrapper">{children}</span>
         ),
         leaf: ({ children }) => (
-          <span data-slate-test="leaf-wrapper">{children}</span>
+          <span data-plite-test="leaf-wrapper">{children}</span>
         ),
       },
     });
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [...BaseEditorKit, testPlugin],
       value: [
         {
@@ -111,12 +111,12 @@ describe('core static serializeHtml custom render hooks', () => {
     });
 
     expect(html).toContain(
-      '<span data-slate-node="text" data-slate-test="true"><span data-slate-test="node-wrapper"><span data-slate-leaf="true"><span data-slate-test="leaf-wrapper"><span data-slate-string="true">test content</span></span></span></span></span>'
+      '<span data-plite-node="text" data-plite-test="true"><span data-plite-test="node-wrapper"><span data-plite-leaf="true"><span data-plite-test="leaf-wrapper"><span data-plite-string="true">test content</span></span></span></span></span>'
     );
   });
 
   it('applies a component renderer to decoration leaves', async () => {
-    const testPlugin = createTSlatePlugin({
+    const testPlugin = createEditorPlugin({
       key: 'test',
       node: {
         isDecoration: true,
@@ -124,10 +124,10 @@ describe('core static serializeHtml custom render hooks', () => {
       },
     });
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         testPlugin.withComponent(({ children }) => (
-          <span data-slate-test="node-wrapper">{children}</span>
+          <span data-plite-test="node-wrapper">{children}</span>
         )),
       ],
       value: [
@@ -149,12 +149,12 @@ describe('core static serializeHtml custom render hooks', () => {
     });
 
     expect(html).toContain(
-      '<span data-slate-node="text"><span data-slate-leaf="true" data-slate-test="true"><span data-slate-test="node-wrapper"><span data-slate-string="true">test content</span></span></span></span>'
+      '<span data-plite-node="text"><span data-plite-leaf="true" data-plite-test="true"><span data-plite-test="node-wrapper"><span data-plite-string="true">test content</span></span></span></span>'
     );
   });
 
   it('applies a component renderer to non-decoration leaves', async () => {
-    const testPlugin = createTSlatePlugin({
+    const testPlugin = createEditorPlugin({
       key: 'test',
       node: {
         isDecoration: false,
@@ -162,10 +162,10 @@ describe('core static serializeHtml custom render hooks', () => {
       },
     });
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [
         testPlugin.withComponent(({ children }) => (
-          <span data-slate-test="node-wrapper">{children}</span>
+          <span data-plite-test="node-wrapper">{children}</span>
         )),
       ],
       value: [
@@ -187,7 +187,7 @@ describe('core static serializeHtml custom render hooks', () => {
     });
 
     expect(html).toContain(
-      '<span data-slate-node="text" data-slate-test="true"><span data-slate-test="node-wrapper"><span data-slate-leaf="true"><span data-slate-string="true">test content</span></span></span></span>'
+      '<span data-plite-node="text" data-plite-test="true"><span data-plite-test="node-wrapper"><span data-plite-leaf="true"><span data-plite-string="true">test content</span></span></span></span>'
     );
   });
 });

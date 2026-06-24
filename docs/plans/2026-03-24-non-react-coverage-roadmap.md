@@ -53,10 +53,10 @@ Freeze the remaining high-ROI non-React coverage work into one stable roadmap so
 22. `[done]` `5` [moveSelectionFromCell.ts](packages/table/src/lib/transforms/moveSelectionFromCell.ts)
 23. `[done]` `5` [transformDiffDescendants.ts](packages/diff/src/internal/transforms/transformDiffDescendants.ts)
 24. `[done]` `5` [deleteSuggestion.ts](packages/suggestion/src/lib/transforms/deleteSuggestion.ts)
-25. `[done]` `5` [deleteText.ts](packages/slate/src/internal/transforms/deleteText.ts)
+25. `[done]` `5` [deleteText.ts](packages/plite/src/internal/transforms/deleteText.ts)
 26. `[done]` `5` [insertCodeBlock.ts](packages/code-block/src/lib/transforms/insertCodeBlock.ts)
 27. `[done]` `5` [unwrapList.ts](packages/list-classic/src/lib/transforms/unwrapList.ts)
-28. `[done]` `5` [markdownToSlateNodesSafely.ts](packages/markdown/src/lib/deserializer/utils/markdownToSlateNodesSafely.ts)
+28. `[done]` `5` [markdownToPliteNodesSafely.ts](packages/markdown/src/lib/deserializer/utils/markdownToPliteNodesSafely.ts)
 
 ## Tier 2: Still Worth Doing
 
@@ -81,15 +81,15 @@ Freeze the remaining high-ROI non-React coverage work into one stable roadmap so
   Reason: same story. Huge base-class surface, bad ROI for the current phase.
 - `[deferred]` `5` [plate-types.ts](packages/utils/src/lib/plate-types.ts)
   Reason: type-heavy utility bag. Raw score is inflated by missing lcov, not by likely regression value.
-- `[deferred]` `5` [SlateEditor.ts](packages/core/src/lib/editor/SlateEditor.ts)
+- `[deferred]` `5` [PliteEditor.ts](packages/core/src/lib/editor/PliteEditor.ts)
   Reason: core editor slab. Save it for the architecture pass.
 - `[deferred]` `5` [font-table.ts](packages/docx-io/src/lib/internal/schemas/font-table.ts)
   Reason: schema boilerplate, not a sharp behavioral seam.
-- `[deferred]` `5` [node-entry.ts](packages/slate/src/interfaces/node-entry.ts)
+- `[deferred]` `5` [node-entry.ts](packages/plite/src/interfaces/node-entry.ts)
   Reason: interface contract file, weak ROI for runtime unit tests.
-- `[deferred]` `5` [legacy-editor.ts](packages/slate/src/interfaces/editor/legacy-editor.ts)
+- `[deferred]` `5` [legacy-editor.ts](packages/plite/src/interfaces/editor/legacy-editor.ts)
   Reason: interface-oriented, not where regressions will hide first.
-- `[deferred]` `5` [editor-type.ts](packages/slate/src/interfaces/editor/editor-type.ts)
+- `[deferred]` `5` [editor-type.ts](packages/plite/src/interfaces/editor/editor-type.ts)
   Reason: same.
 - `[deferred]` `5` [mdast.ts](packages/markdown/src/lib/mdast.ts)
   Reason: type or bridge surface, not worth dedicated coverage theater.

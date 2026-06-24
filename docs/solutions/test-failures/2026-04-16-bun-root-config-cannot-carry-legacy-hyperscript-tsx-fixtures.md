@@ -1,21 +1,21 @@
 ---
-module: Slate v2 Bun JSX fixture lanes
+module: Plite Bun JSX fixture lanes
 date: 2026-04-16
 last_updated: 2026-04-17
 problem_type: test_failure
 component: testing_framework
 symptoms:
-  - "Bun imports legacy Slate TSX fixture files as React-style elements instead of Slate hyperscript output"
+  - "Bun imports legacy Plite TSX fixture files as React-style elements instead of Plite hyperscript output"
   - "Files with `/** @jsx jsx */` still fail under the root Bun config"
   - "Dynamic fixture imports yield `children` or `selection` as `undefined`"
-  - "Calling `Editor.above` on the imported `slate` fixture editor blows up because the imported TSX module is not a real Slate editor"
+  - "Calling `Editor.above` on the imported `slate` fixture editor blows up because the imported TSX module is not a real Plite editor"
 root_cause: config_error
 resolution_type: code_change
 severity: high
 tags:
   - bun
   - slate
-  - slate-v2
+  - plite
   - slate-hyperscript
   - hyperscript
   - tests
@@ -23,24 +23,24 @@ tags:
   - fixtures
 ---
 
-# Bun preload transforms for legacy Slate JSX lanes must target the imported fixture files
+# Bun preload transforms for legacy Plite JSX lanes must target the imported fixture files
 
 ## Problem
 
-Legacy Slate TSX fixture lanes do not compile through the Slate hyperscript path
+Legacy Plite TSX fixture lanes do not compile through the Plite hyperscript path
 under raw `bun test` in this repo.
 
 Without help, Bun turns fixture JSX like `<element>word</element>` into
-React-style element objects instead of Slate hyperscript output.
+React-style element objects instead of Plite hyperscript output.
 
 That shows up in the current dynamic-import lanes:
 
-- `packages/slate-hyperscript/test/index.spec.ts` importing
-  `packages/slate-hyperscript/test/fixtures/*.tsx`
-- `packages/slate/test/index.spec.ts` importing the full `packages/slate/test/**`
+- `packages/plite-hyperscript/test/index.spec.ts` importing
+  `packages/plite-hyperscript/test/fixtures/*.tsx`
+- `packages/plite/test/index.spec.ts` importing the full `packages/plite/test/**`
   fixture corpus
-- `packages/slate-history/test/index.spec.ts` importing the full
-  `packages/slate-history/test/**` fixture corpus
+- `packages/plite-history/test/index.spec.ts` importing the full
+  `packages/plite-history/test/**` fixture corpus
 
 ## What Didn't Work
 
@@ -52,7 +52,7 @@ used by the dynamic fixture imports, not the pragma contract itself.
 
 ### 2. Targeting the spec entrypoint instead of the imported fixtures
 
-The current `slate-hyperscript` Bun lane imports `test/fixtures/*.tsx` from
+The current `plite-hyperscript` Bun lane imports `test/fixtures/*.tsx` from
 `index.spec.ts`. A preload regex that targets a dead or non-imported spec path
 does nothing for the actual failing modules.
 
@@ -66,44 +66,44 @@ single-root Bun setup.
 Keep the legacy fixture syntax and fix the import path that Bun actually uses.
 
 Use one scoped preload transform in
-[config/bun-test-setup.ts](/Users/zbeyens/git/slate-v2/config/bun-test-setup.ts)
+[config/bun-test-setup.ts](/Users/zbeyens/git/plite/config/bun-test-setup.ts)
 that targets the legacy fixture directories directly:
 
-- `packages/slate-hyperscript/test/**/*.tsx`
-- `packages/slate/test/**/*.tsx` excluding the Bun spec entrypoints
+- `packages/plite-hyperscript/test/**/*.tsx`
+- `packages/plite/test/**/*.tsx` excluding the Bun spec entrypoints
 
 For plain legacy fixtures, keep the files as bare TSX and let the preload
-inject `import { jsx } from 'slate-hyperscript'` before running the classic JSX
+inject `import { jsx } from 'plite-hyperscript'` before running the classic JSX
 transform. Only keep a local `const jsx = createHyperscript(...)` inside files
 that truly need a custom factory.
 
-For the current `slate` and `slate-history` Bun lanes, keep the shared editor
+For the current `slate` and `plite-history` Bun lanes, keep the shared editor
 helpers and let the fixtures import a side-effect-free package-local `index.js`
 helper for `jsx`:
 
 - keep the legacy custom JSX factory only inside
-  [packages/slate/test/index.js](/Users/zbeyens/git/slate-v2/packages/slate/test/index.js)
+  [packages/plite/test/index.js](/Users/zbeyens/git/plite/packages/plite/test/index.js)
   and
-  [packages/slate-history/test/index.js](/Users/zbeyens/git/slate-v2/packages/slate-history/test/index.js)
+  [packages/plite-history/test/index.js](/Users/zbeyens/git/plite/packages/plite-history/test/index.js)
   as pure helper exports for legacy fixture imports
 - move the editor helper into
-  [packages/slate/test/support/with-test.js](/Users/zbeyens/git/slate-v2/packages/slate/test/support/with-test.js)
+  [packages/plite/test/support/with-test.js](/Users/zbeyens/git/plite/packages/plite/test/support/with-test.js)
 - keep one Bun suite entry at
-  [packages/slate/test/index.spec.ts](/Users/zbeyens/git/slate-v2/packages/slate/test/index.spec.ts)
+  [packages/plite/test/index.spec.ts](/Users/zbeyens/git/plite/packages/plite/test/index.spec.ts)
   and
-  [packages/slate-history/test/index.spec.ts](/Users/zbeyens/git/slate-v2/packages/slate-history/test/index.spec.ts)
+  [packages/plite-history/test/index.spec.ts](/Users/zbeyens/git/plite/packages/plite-history/test/index.spec.ts)
   for the full package fixture corpora
 - keep those package-local `index.js` files side-effect free so fixtures can
   import `jsx` from them without re-entering an old suite bootstrap
 - when Bun reveals type-only imports as runtime imports, convert them to
   `import type` instead of papering over the error
 
-That keeps all legacy Slate fixture packages on the single root Bun config while
+That keeps all legacy Plite fixture packages on the single root Bun config while
 letting Bun own the migrated fixture lanes.
 
 ## Why This Works
 
-The real contract was not "Bun cannot run Slate JSX tests."
+The real contract was not "Bun cannot run Plite JSX tests."
 
 It was "raw Bun runtime imports are not reproducing the hyperscript pragma path
 for the imported fixture modules."
@@ -118,7 +118,7 @@ ordinary fixtures.
 
 ## Prevention
 
-- For legacy Slate fixture lanes, do not assume plain runtime imports tell the
+- For legacy Plite fixture lanes, do not assume plain runtime imports tell the
   truth about Bun pragma support.
 - If a Bun spec dynamically imports legacy TSX fixtures, scope the preload regex
   to the legacy fixture directories, not a hand-maintained bucket list.
@@ -131,13 +131,13 @@ ordinary fixtures.
 
 ```bash
 pnpm install
-pnpm turbo build --filter=./packages/slate-hyperscript
-pnpm turbo typecheck --filter=./packages/slate-hyperscript
-pnpm turbo build --filter=./packages/slate
-pnpm turbo typecheck --filter=./packages/slate
+pnpm turbo build --filter=./packages/plite-hyperscript
+pnpm turbo typecheck --filter=./packages/plite-hyperscript
+pnpm turbo build --filter=./packages/plite
+pnpm turbo typecheck --filter=./packages/plite
 pnpm exec tsc --project config/tsconfig.test.json --noEmit
-bun test ./packages/slate-hyperscript/test/index.spec.ts
-bun test ./packages/slate/test/bun/editor-above.spec.tsx
+bun test ./packages/plite-hyperscript/test/index.spec.ts
+bun test ./packages/plite/test/bun/editor-above.spec.tsx
 pnpm test:bun
 pnpm test:mocha
 pnpm lint

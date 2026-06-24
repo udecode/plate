@@ -35,9 +35,9 @@ function createWorkspacePackages(entries) {
 test('includes affected template-facing packages for transitive changes', () => {
   const workspacePackages = createWorkspacePackages({
     '@platejs/basic-nodes': ['@platejs/core'],
-    '@platejs/core': ['@platejs/slate'],
-    '@platejs/slate': [],
-    platejs: ['@platejs/basic-nodes', '@platejs/core', '@platejs/slate'],
+    '@platejs/core': ['@platejs/plite'],
+    '@platejs/plite': [],
+    platejs: ['@platejs/basic-nodes', '@platejs/core', '@platejs/plite'],
   });
   const relevantPackageNames = getReachableWorkspacePackageNames(
     ['platejs'],

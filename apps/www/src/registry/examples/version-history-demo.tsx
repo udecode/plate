@@ -9,7 +9,7 @@ import {
   withGetFragmentExcludeDiff,
 } from '@platejs/diff';
 import { cloneDeep } from 'lodash';
-import { type Value, createSlatePlugin, KEYS } from 'platejs';
+import { type Value, createEditorPlugin, KEYS } from 'platejs';
 import { createPlatePlugin, toPlatePlugin, useSelected } from 'platejs/react';
 import {
   type PlateElementProps,
@@ -111,7 +111,7 @@ const InlineVoidElement = ({ children, ...props }: PlateElementProps) => {
 };
 
 const DiffPlugin = toPlatePlugin(
-  createSlatePlugin({
+  createEditorPlugin({
     key: 'diff',
     node: { isLeaf: true },
   }).overrideEditor(withGetFragmentExcludeDiff),

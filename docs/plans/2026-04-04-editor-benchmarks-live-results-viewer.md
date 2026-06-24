@@ -19,7 +19,7 @@ Fix live-results composition in the editor-benchmarks viewer, keep fixture namin
 - Production preview runs are now completing cleanly.
 - Current live rich-markdown snapshot:
   - Plate `03_mount-10k`: ~32301 ms
-  - Slate `03_mount-10k`: ~438 ms
+  - Plite `03_mount-10k`: ~438 ms
   - Plate `10_type-middle`: ~25 ms
-  - Slate `10_type-middle`: ~26 ms
+  - Plite `10_type-middle`: ~26 ms
 - So the viewer/runners are healthy now; the remaining problem is the actual Plate 10k mount surface on the richer markdown fixture.

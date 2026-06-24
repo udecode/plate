@@ -4,7 +4,7 @@ topic: api-drift-perf-benchmark-strategy
 status: active
 source_repos:
   - /Users/zbeyens/git/plate-2
-  - /Users/zbeyens/git/slate-v2
+  - /Users/zbeyens/git/plite
 ---
 
 # API Drift Perf Benchmark Strategy
@@ -18,7 +18,7 @@ deserve optimization work.
 
 Execution register:
 
-- [api-drift-perf-register.md](/Users/zbeyens/git/plate-2/docs/slate-v2/archive/api-drift-perf-register.md)
+- [api-drift-perf-register.md](/Users/zbeyens/git/plate-2/docs/plite/archive/api-drift-perf-register.md)
 
 ## Rule
 
@@ -40,9 +40,9 @@ The repo already has the right pattern in place:
 - [editor-performance-next-phase-consensus.md](/Users/zbeyens/git/plate-2/docs/performance/editor-performance-next-phase-consensus.md)
   says benchmarks decide sequencing and generic seams get fixed before wider
   blame spreads.
-- [perf-gate-package.md](/Users/zbeyens/git/plate-2/docs/slate-v2/archive/perf-gate-package.md)
+- [perf-gate-package.md](/Users/zbeyens/git/plate-2/docs/plite/archive/perf-gate-package.md)
   already separates blocker lanes from diagnostic-only lanes.
-- [normalization-reference.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/normalization-reference.md)
+- [normalization-reference.md](/Users/zbeyens/git/plate-2/docs/plite/references/normalization-reference.md)
   proves one API drift can be frozen as a contract matrix before optimization.
 
 That should become the default workflow for all meaningful API drifts.
@@ -104,7 +104,7 @@ engine topology may have changed cost shape.
 
 Important constraint:
 
-- benchmark against legacy `slate-batch-engine` behavior when useful
+- benchmark against legacy `plite-batch-engine` behavior when useful
 - do not treat that engine as something v2 should pull forward by default
 
 ### 4. React runtime public surface
@@ -114,7 +114,7 @@ Primary examples:
 - `withReact`
 - `Editable`
 - `EditableBlocks`
-- `useSlateSelector`
+- `usePliteSelector`
 - `useElement`
 - `useSelected`
 
@@ -126,9 +126,9 @@ culprit.
 
 Build the benchmark inventory from:
 
-- [api-surface-keep-cut-register.md](/Users/zbeyens/git/plate-2/docs/slate-v2/archive/api-surface-keep-cut-register.md)
-- [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/slate-v2/true-slate-rc-proof-ledger.md)
-- [pr-description.md](/Users/zbeyens/git/plate-2/docs/slate-v2/references/pr-description.md)
+- [api-surface-keep-cut-register.md](/Users/zbeyens/git/plate-2/docs/plite/archive/api-surface-keep-cut-register.md)
+- [true-slate-rc-proof-ledger.md](/Users/zbeyens/git/plate-2/docs/plite/true-slate-rc-proof-ledger.md)
+- [pr-description.md](/Users/zbeyens/git/plate-2/docs/plite/references/pr-description.md)
 
 For each kept drift row, record:
 

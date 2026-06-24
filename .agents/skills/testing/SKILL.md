@@ -86,6 +86,25 @@ Hard constraints:
 - Use rendered React tests only when the contract is genuinely React-specific: hooks, providers, stores, DOM behavior, or rerender semantics.
 - Remaining `createPlateEditor` usage is a reviewed allowlist, not a future cleanup queue.
 
+## Fake Runtime Contracts
+
+When a bug or harvested invariant crosses a runtime boundary, prefer a small
+fake runtime or contract helper over a one-off integration smoke. The fake
+runtime must exercise both directions of the boundary: local code sends the
+expected request/event, and the fake peer returns a deterministic response that
+drives the local assertion.
+
+Good targets:
+
+- editor host services and browser/proof transports;
+- clipboard, selection, history, paste, and command bridges;
+- plugin registration and extension contracts;
+- package public APIs that call into a host/runtime service.
+
+Keep these helpers focused and package-local first. Promote them only after
+multiple tests repeat the same boundary. Do not add broad barrels or
+cross-package dev dependencies to support an overbuilt fake runtime.
+
 ## File Organization
 
 - File-scoped specs live beside the implementation.

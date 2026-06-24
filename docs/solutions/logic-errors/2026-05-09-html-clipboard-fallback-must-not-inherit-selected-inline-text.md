@@ -2,7 +2,7 @@
 title: HTML clipboard fallback must not inherit selected inline text
 date: 2026-05-09
 category: docs/solutions/logic-errors
-module: Slate v2 DOM clipboard fallback
+module: Plite DOM clipboard fallback
 problem_type: logic_error
 component: documentation
 symptoms:
@@ -11,14 +11,14 @@ symptoms:
 root_cause: logic_error
 resolution_type: code_fix
 severity: high
-tags: [slate-v2, clipboard, inline-links, data-transfer, lexical-harvest]
+tags: [plite, clipboard, inline-links, data-transfer, lexical-harvest]
 ---
 
 # HTML clipboard fallback must not inherit selected inline text
 
 ## Problem
 
-Lexical regression 5251 exposed a split between Slate's model fragment path and
+Lexical regression 5251 exposed a split between Plite's model fragment path and
 the real browser paste path. Replacing selected text inside an inline link with
 rich clipboard content passed through `insertFragment` correctly in package
 tests, but browser paste still inherited the link because the DataTransfer
@@ -26,7 +26,7 @@ fallback inserted plain text directly.
 
 ## Symptoms
 
-- `packages/slate/test/clipboard-contract.ts` passed for rich fragment
+- `packages/plite/test/clipboard-contract.ts` passed for rich fragment
   insertion over selected inline-link text.
 - `playwright/integration/examples/inlines.test.ts` failed with the link text
   rendered as `replacedlink`.
@@ -36,7 +36,7 @@ fallback inserted plain text directly.
 ## What Didn't Work
 
 - Fixing only `insertFragment`. That made direct model insertion correct, but
-  `text/html` without a Slate fragment still fell back to single-line
+  `text/html` without a Plite fragment still fell back to single-line
   `insertText`.
 - Treating this as an HTML parser problem. The inlines example does not own a
   generic HTML import pipeline; the bug was the fallback path inheriting inline
@@ -57,11 +57,11 @@ Keep the model and browser paths aligned:
 Verification:
 
 ```bash
-bun test ./packages/slate/test/clipboard-contract.ts -t "selected inline link text"
-bun test ./packages/slate-dom/test/clipboard-boundary.ts -t "selected inline text"
+bun test ./packages/plite/test/clipboard-contract.ts -t "selected inline link text"
+bun test ./packages/plite-dom/test/clipboard-boundary.ts -t "selected inline text"
 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/inlines.test.ts --project=chromium -g "selected inline link text"
-bun test ./packages/slate/test/clipboard-contract.ts
-bun test ./packages/slate-dom/test/clipboard-boundary.ts
+bun test ./packages/plite/test/clipboard-contract.ts
+bun test ./packages/plite-dom/test/clipboard-boundary.ts
 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/inlines.test.ts --project=chromium
 bun run lint:fix && bun check
 ```
@@ -82,7 +82,7 @@ replaces the selected inline text and lands before the surviving inline tail.
 - Pair package fragment proofs with a DOM clipboard fallback proof when the
   source regression uses real paste.
 - For inline-link paste rows, assert link containment, not just block text.
-- Treat `text/html` without `data-slate-fragment` as a separate transport path;
+- Treat `text/html` without `data-plite-fragment` as a separate transport path;
   green `insertFragment` tests do not prove browser paste.
 
 ## Related Issues

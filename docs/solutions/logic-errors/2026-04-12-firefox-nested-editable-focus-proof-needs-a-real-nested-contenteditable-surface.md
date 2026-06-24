@@ -6,7 +6,7 @@ root_cause: logic_error
 title: Firefox nested editable focus proof needs a real nested contenteditable surface
 tags:
   - slate-react
-  - slate-browser
+  - plite-browser
   - firefox
   - nested-editable
   - focus
@@ -17,7 +17,7 @@ severity: medium
 
 ## What happened
 
-The legacy Firefox row looked scary because Slate had an explicit runtime
+The legacy Firefox row looked scary because Plite had an explicit runtime
 carve-out:
 
 - if a nested editable gets focus in Firefox

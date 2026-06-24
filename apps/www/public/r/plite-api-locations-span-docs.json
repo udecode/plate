@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plite-api-locations-span-docs",
+  "title": "Span API",
+  "description": "Element-bound span helper API.",
+  "files": [
+    {
+      "path": "../../content/docs/plite/api/locations/span.mdx",
+      "content": "---\ntitle: \"Span API\"\ndescription: \"Element-bound span helper API.\"\n---\n\nA `Span` is a low-level way to refer to a `Range` using `Element` as the end points instead of a `Point` which requires the use of leaf text nodes.\n\n## Type\n\n```typescript\ntype Span = [Path, Path];\n```\n\n## On This Page\n\n- [Static methods](span#static-methods)\n  - [Check methods](span#check-methods)\n\n## Static Methods\n\n### Check Methods\n\n#### `SpanApi.isSpan(value: unknown) => value is Span`\n\nCheck if a `value` implements the `Span` interface.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plite/api/locations/span.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

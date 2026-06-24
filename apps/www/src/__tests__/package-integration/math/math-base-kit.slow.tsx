@@ -1,17 +1,23 @@
 /** @jsx jsxt */
 
-import { BaseParagraphPlugin, createSlateEditor } from 'platejs';
+import {
+  type Value,
+  BaseParagraphPlugin,
+  createBasePlateEditor,
+} from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 
 import { BaseMathKit } from '@/registry/components/editor/plugins/math-base-kit';
 
 jsxt;
 
-const createMathEditor = (value: any) =>
-  createSlateEditor({
-    plugins: [BaseParagraphPlugin, ...BaseMathKit],
+const mathPlugins = [BaseParagraphPlugin, ...BaseMathKit] as const;
+
+const createMathEditor = (value: Value) =>
+  createBasePlateEditor({
+    plugins: mathPlugins,
     value,
-  } as any);
+  });
 
 describe('BaseMathKit', () => {
   it('inserts inline equations through the base insert transform', () => {
@@ -25,7 +31,7 @@ describe('BaseMathKit', () => {
 
     const editor = createMathEditor(input);
 
-    (editor.tf as any).insert.inlineEquation('E=mc^2');
+    editor.tf.insert.inlineEquation('E=mc^2');
 
     expect(input.children).toEqual(
       (
@@ -50,7 +56,7 @@ describe('BaseMathKit', () => {
 
     const editor = createMathEditor(input);
 
-    (editor.tf as any).insert.equation();
+    editor.tf.insert.equation();
 
     expect(editor.children).toMatchObject([
       {

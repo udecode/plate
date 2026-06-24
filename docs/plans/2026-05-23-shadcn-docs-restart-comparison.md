@@ -161,7 +161,7 @@ Primary files:
 - `apps/www/src/app/(app)/docs/components/page.tsx`
 - `apps/www/src/app/(app)/docs/examples/page.tsx`
 - `apps/www/src/app/(app)/docs/plugins/page.tsx`
-- `apps/www/src/app/(app)/docs/examples/slate-to-html/page.tsx`
+- `apps/www/src/app/(app)/docs/examples/plite-to-html/page.tsx`
 - `apps/www/src/app/(app)/editors/page.tsx`
 - `apps/www/src/app/(blocks)/blocks/[name]/page.tsx`
 - `apps/www/src/app/(blocks)/blocks/playground/page.tsx`
@@ -1041,7 +1041,7 @@ This is the recommended default for confirmation. "Discard upstream" means do no
 | Analytics | None beyond basic app analytics shape | v0/create/per-click event tracking | Plate GA | Per-click event tracking and analytics around discarded surfaces | Keep GA only |
 | OG/RSS | Upstream OG/RSS structure | shadcn-specific content | Plate OG branding and metadata | Stale duplicate font assets if not needed | Keep structure, rebrand |
 | Dev/debug routes | None | None | Move useful debug tools elsewhere if still needed | `apps/www/src/app/dev/**` in public docs app | Discard from restart |
-| Slate-to-HTML special page | None | None | `docs/examples/slate-to-html`, `blocks/slate-to-html`, Tailwind trace include | Generic preview path for this page, because RSC cannot be previewed normally | Keep special route/page |
+| Plite-to-HTML special page | None | None | `docs/examples/plite-to-html`, `blocks/slate-to-html`, Tailwind trace include | Generic preview path for this page, because RSC cannot be previewed normally | Keep special route/page |
 | Release docs | Fumadocs content patterns | shadcn changelog content | Plate `content/releases/index.mdx`, `ReleaseIndex` if release docs stay | Contentlayer-only release generation assumptions | Keep content, port renderer |
 | Dependencies | Current upstream Fumadocs/shadcn v4 deps | v0-only deps if any | Plate editor/runtime deps required by retained demos | `contentlayer2`, `next-contentlayer2`, old theme-only deps | Keep upgrading and pruning |
 | Verification model | Upstream app tests for retained upstream routes | Tests for discarded routes | Plate package integration and registry validation | Browser checks for discarded theme/create/v0 paths | Verify retained surfaces only |
@@ -1057,7 +1057,7 @@ This is the recommended default for confirmation. "Discard upstream" means do no
 7. Keep and simplify registry-derived docs pages for components/examples around Fumadocs page data.
 8. Port Plate registry content and rewrite build scripts against upstream shadcn v4 registry behavior.
 9. Reapply editor demos and preview/source display.
-10. Reapply confirmed product surfaces: CN docs, Plate Plus/Pro hooks, MCP docs/dialog, GA-only analytics, centered Plate homepage, Slate-to-HTML special route, and non-v0 `@plate` init/bootstrap if useful.
+10. Reapply confirmed product surfaces: CN docs, Plate Plus/Pro hooks, MCP docs/dialog, GA-only analytics, centered Plate homepage, Plite-to-HTML special route, and non-v0 `@plate` init/bootstrap if useful.
 11. Preserve package integration tests and workspace alias/typecheck model.
 12. Regenerate public registry output.
 13. Run build/typecheck/lint/browser verification.
@@ -1070,7 +1070,7 @@ This is the recommended default for confirmation. "Discard upstream" means do no
 - LLM UI: use upstream shadcn `.md` route and copy-page model; discard Plate's extra `LLMCopyButton` / `ViewOptions` unless a later gap appears.
 - Analytics: keep GA only; no per-click event tracking.
 - Homepage: keep a Plate homepage, aligned with the current Plate direction, centered, no theme/customizer surface.
-- Slate-to-HTML: keep the special route/page because it cannot be previewed through the normal registry preview path.
+- Plite-to-HTML: keep the special route/page because it cannot be previewed through the normal registry preview path.
 - Init route: keep a non-v0 Plate init/bootstrap route only if it directly serves `@plate` registry install; skip create/v0/product-generator behavior.
 
 ## Hard Calls
@@ -1088,7 +1088,7 @@ This is the recommended default for confirmation. "Discard upstream" means do no
 - LLM UI: use shadcn model, discard Plate's extra copy/view UI.
 - Analytics: keep GA only.
 - Homepage: keep Plate homepage, centered, no themes.
-- Slate-to-HTML: keep special route/page.
+- Plite-to-HTML: keep special route/page.
 - Init route: keep non-v0 `@plate` bootstrap only if directly useful.
 - `/api/registry/[name]`: throw as a public-shaped route. Keep `/api/registry-source/[name]` for lazy code-view bandwidth if large registry payloads require it.
 - `docsConfig` files: use as migration data, not the new architecture.

@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Nested simple block-container rebasing can strip the wrapper path and reuse top-level logic
 tags:
-  - slate-v2
+  - plite
   - selection
   - range-ref
   - nested-blocks

@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Same-block mixed-inline range refs can reuse the editor selection offset model without op metadata
 tags:
-  - slate-v2
+  - plite
   - range-ref
   - mixed-inline
   - selection

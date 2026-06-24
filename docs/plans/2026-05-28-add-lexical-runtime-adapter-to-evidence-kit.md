@@ -1,7 +1,7 @@
 # Add Lexical runtime adapter to Evidence Kit
 
 Objective:
-Add the next non-Slate runtime adapter after ProseMirror by measuring Lexical
+Add the next non-Plite runtime adapter after ProseMirror by measuring Lexical
 headless editor/history operations, wiring the adapter into the active Evidence
 Kit registry, refreshing generated perf artifacts, and proving the adapter gap
 count decreases with real rows.
@@ -23,7 +23,7 @@ Major source:
 - type: repo benchmark control plane
 - id / link: `benchmarks/editor/research/benchmark-registry.json`
 - title: Evidence Kit rich-text runtime adapter matrix
-- decision to make: how to add the next non-Slate adapter without claiming
+- decision to make: how to add the next non-Plite adapter without claiming
   browser/product parity
 - decision criteria: source-backed target, local clone inspected, active
   required artifact, measured rows, refreshed docs/health, reduced
@@ -64,7 +64,7 @@ Constraints:
 - Keep the adapter headless: `lexical`, `@lexical/headless`, and
   `@lexical/history`.
 - Separate measured evidence from source-backed gaps.
-- Do not claim React, DOM/browser, collab, or Slate-specific issue parity from
+- Do not claim React, DOM/browser, collab, or Plite-specific issue parity from
   a headless Lexical adapter.
 
 Boundaries:
@@ -146,7 +146,7 @@ Completion Gates:
 | Current-state source audit | yes | Map current owner, boundaries, constraints, and affected surfaces | local Lexical package metadata/source and Evidence Kit registry inspected |
 | Decision criteria closure | yes | Mark each criterion satisfied, narrowed, rejected, or blocked with evidence | Lexical selected for headless runtime coverage only |
 | Options / tradeoffs / rejection record | yes | Record viable options, chosen recommendation, and why alternatives lose | Lexical second; Plate/Tiptap deferred due wrapper/product adapter shape |
-| Review / pressure pass | yes | Validate no overclaiming against workload coverage | React/browser/collab/Slate-specific Lexical rows remain `adapter-missing` |
+| Review / pressure pass | yes | Validate no overclaiming against workload coverage | React/browser/collab/Plite-specific Lexical rows remain `adapter-missing` |
 | Review findings closure | yes | Fix or explicitly reject accepted/actionable findings and record closure proof | reset moved outside timed operation samples |
 | External-source audit | yes | Cite official/local clone/external sources when used, or record N/A | local `../lexical` exists; local source confirmed headless/history APIs |
 | Implementation gates | yes | Close primary-template and touched-surface gates | adapter, registry, package scripts/deps, generated docs/results updated |
@@ -171,7 +171,7 @@ Findings:
 - The adapter can honestly cover large document creation, text insertion,
   selection, document replacement, block fragment insert, and history undo/redo.
 - A headless adapter cannot honestly cover React render behavior, browser replay,
-  collab behavior, or Slate-specific issue #6038 transaction semantics.
+  collab behavior, or Plite-specific issue #6038 transaction semantics.
 
 Decisions and tradeoffs:
 - Chosen: Lexical headless adapter using `lexical`, `@lexical/headless`, and
@@ -221,7 +221,7 @@ Verification evidence:
 Final handoff contract:
 - Recommendation: next adapter should be Tiptap if the priority is
   ProseMirror-product-wrapper overhead, or Plate if the priority is direct
-  Plate-vs-Slate user-facing wrapper cost.
+  Plate-vs-Plite user-facing wrapper cost.
 - Confidence: high.
 - Evidence: active Lexical artifact, generated rows, refreshed docs/health, and
   explicit workload coverage map.
@@ -244,7 +244,7 @@ Reboot status:
 |----------|--------|
 | Where am I? | Closeout |
 | Where am I going? | Final verification, goal completion, response |
-| What is the goal? | Add the Lexical non-Slate runtime adapter |
+| What is the goal? | Add the Lexical non-Plite runtime adapter |
 | What have I learned? | Lexical headless/history can close three workload gaps without overclaiming browser/product coverage |
 | What have I done? | Added adapter, registry metadata, scripts, deps, generated evidence, docs, and iteration note |
 

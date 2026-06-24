@@ -18,8 +18,13 @@ export const siteConfig = {
   navItems: [
     {
       href: '/docs',
-      label: 'Docs',
-      labelCn: '文档',
+      label: 'Plate',
+      labelCn: 'Plate',
+    },
+    {
+      href: '/docs/plite',
+      label: 'Plite',
+      labelCn: 'Plite',
     },
     {
       href: '/editors',

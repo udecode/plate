@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plite-api-scrubber-docs",
+  "title": "Debug Value Scrubbing",
+  "description": "Debug scrubber API for redacting values in thrown Plite errors.",
+  "files": [
+    {
+      "path": "../../content/docs/plite/api/scrubber.mdx",
+      "content": "---\ntitle: \"Debug Value Scrubbing\"\ndescription: \"Debug scrubber API for redacting values in thrown Plite errors.\"\n---\n\nPlite formats some thrown error details with document values and nodes. Text\nfields are redacted by default. Apps that need stricter diagnostics can install\na scrubber for additional fields.\n\n## Install A Scrubber\n\n```typescript\nimport { setDebugValueScrubber } from \"@platejs/slate\";\n\nsetDebugValueScrubber((key, value) => {\n  if (key === \"text\" || key === \"src\") return \"[redacted]\";\n  return value;\n});\n```\n\nPass `null` or `undefined` to restore the default scrubber.\n\n```typescript\nsetDebugValueScrubber(null);\n```\n\n## API\n\n#### `setDebugValueScrubber(scrubber?: DebugValueScrubber | null): void`\n\nSet the function used before Plite formats debug values.\n\n```typescript\ntype DebugValueScrubber = (key: string, value: unknown) => unknown;\n```\n\nThe custom scrubber runs before Plite's default text redaction. Return the\noriginal value to let the default scrubber handle it.\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plite/api/scrubber.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

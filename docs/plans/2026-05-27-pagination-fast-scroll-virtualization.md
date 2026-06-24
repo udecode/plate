@@ -22,7 +22,7 @@ Fix:
 - Keep the `page_overscan` control and route state from the prior slice.
 
 Changed:
-- `packages/slate-layout/src/react.tsx`
+- `packages/plite-layout/src/react.tsx`
   - Derives page-surface overscan from virtualized DOM strategy.
   - Removes the extra implicit page-sized overscan buffer.
   - Adds visible-content-range unit filtering.
@@ -30,7 +30,7 @@ Changed:
 - `playwright/integration/examples/pagination.test.ts`
   - Adds a fast-jump regression asserting bounded rows, cells, DOM, and page surfaces.
 - `.changeset/paged-editable-virtualized-overscan.md`
-  - Patch changeset for `slate-layout`.
+  - Patch changeset for `plite-layout`.
 
 Performance proof:
 - Before fix, local jump through the stress route hit about `200ms`, with `240` rows / `720` cells / `3360` elements.
@@ -47,7 +47,7 @@ Verification:
   - Result: 1 passed.
 - `PLAYWRIGHT_BASE_URL=http://localhost:3100 PLAYWRIGHT_RETRIES=0 bunx playwright test playwright/integration/examples/pagination.test.ts playwright/integration/examples/query-controls.test.ts --project=chromium`
   - Result: 20 passed.
-- `bun --filter slate-layout typecheck`
+- `bun --filter plite-layout typecheck`
   - Result: passed.
 - `bun typecheck:site`
   - Result: passed.

@@ -5,8 +5,8 @@ component: testing_framework
 root_cause: async_timing
 title: Inline-edge IME proofs should set selection semantically before composition
 tags:
-  - slate-browser
-  - slate-v2
+  - plite-browser
+  - plite
   - ime
   - selection
   - inline
@@ -17,7 +17,7 @@ severity: medium
 
 ## What happened
 
-After landing the shared `slate-react-v2` zero-width renderer seam, the next
+After landing the shared `plite-react-v2` zero-width renderer seam, the next
 behavior proof was the FEFF-backed inline-edge path in Chromium IME.
 
 The first red looked like the inline-edge renderer was broken.
@@ -48,7 +48,7 @@ Set the selection semantically before composition:
 With that setup, the FEFF-backed inline-edge path passed in Chromium:
 
 - IME committed `すし`
-- final Slate selection landed at `0.0:2|0.0:2`
+- final Plite selection landed at `0.0:2|0.0:2`
 
 ## Why this works
 
@@ -67,7 +67,7 @@ semantic editor point the proof claims to measure.
 For browser proofs around inline edges or other mixed-content roots:
 
 - do not rely on generic click focus as your selection setup
-- set the intended Slate selection semantically before composition-sensitive
+- set the intended Plite selection semantically before composition-sensitive
   assertions
 
 If a proof is about IME on a specific text leaf, the selection setup should be
@@ -75,5 +75,5 @@ just as specific.
 
 ## Related issues
 
-- [2026-04-04-slate-browser-playwright-helpers-must-normalize-zero-width-selection-and-wait-for-selection-sync.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-04-slate-browser-playwright-helpers-must-normalize-zero-width-selection-and-wait-for-selection-sync.md)
-- [2026-04-04-slate-v2-no-feff-line-break-placeholders-need-dom-owned-br-interiors.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-04-slate-v2-no-feff-line-break-placeholders-need-dom-owned-br-interiors.md)
+- [2026-04-04-plite-browser-playwright-helpers-must-normalize-zero-width-selection-and-wait-for-selection-sync.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-04-plite-browser-playwright-helpers-must-normalize-zero-width-selection-and-wait-for-selection-sync.md)
+- [2026-04-04-plite-no-feff-line-break-placeholders-need-dom-owned-br-interiors.md](/Users/zbeyens/git/plate-2/docs/solutions/logic-errors/2026-04-04-plite-no-feff-line-break-placeholders-need-dom-owned-br-interiors.md)

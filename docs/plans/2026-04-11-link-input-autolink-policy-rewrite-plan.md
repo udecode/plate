@@ -134,7 +134,7 @@ plain autolink literal behavior.
 ```ts
 type LinkInputContext = {
   cause: "insert-space" | "insert-break" | "paste";
-  editor: SlateEditor;
+  editor: PliteEditor;
   selectionMode: "collapsed" | "expanded";
   sourceText: string;
   textBefore: string;
@@ -156,7 +156,7 @@ type LinkInputConfig = {
       selectedText?: "preserve" | "replace";
     };
     resolveUrl?: (context: {
-      editor: SlateEditor;
+      editor: PliteEditor;
       text: string;
       cause: LinkInputContext["cause"];
     }) => string | undefined;

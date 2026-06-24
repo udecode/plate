@@ -1,0 +1,15 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "plite-libraries-plite-history-index-docs",
+  "title": "Plite History",
+  "description": "Use the history package for undo, redo, and history batch state.",
+  "files": [
+    {
+      "path": "../../content/docs/plite/libraries/plite-history/index.mdx",
+      "content": "---\ntitle: \"Plite History\"\ndescription: \"Use the history package for undo, redo, and history batch state.\"\n---\n\nThis sub-library tracks document operations and state-field patches so editors\ncan undo and redo user actions.\n\n## Pages\n\n- [History Extension Setup](./history-extension-setup)\n- [History Editor API](./history-editor)\n- [History](./history)\n",
+      "type": "registry:file",
+      "target": "content/docs/plate/plite/libraries/plite-history/index.mdx"
+    }
+  ],
+  "type": "registry:file"
+}

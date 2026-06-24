@@ -1,7 +1,7 @@
 # Add ProseMirror runtime adapter to Evidence Kit
 
 Objective:
-Add the first non-Slate runtime adapter to the Evidence Kit rich-text benchmark
+Add the first non-Plite runtime adapter to the Evidence Kit rich-text benchmark
 matrix by measuring ProseMirror headless model/state/history operations, wiring
 the adapter into the active registry, refreshing generated perf artifacts, and
 proving the adapter gap count decreases with real rows.
@@ -23,7 +23,7 @@ Major source:
 - type: repo benchmark control plane
 - id / link: `benchmarks/editor/research/benchmark-registry.json`
 - title: Evidence Kit rich-text runtime adapter matrix
-- decision to make: which non-Slate adapter should land first and what rows it
+- decision to make: which non-Plite adapter should land first and what rows it
   may honestly cover
 - decision criteria: source-backed target, headless runtime possible, measured
   rows produced by an active registry artifact, generated docs and health
@@ -165,7 +165,7 @@ Phase / pass table:
 | Closeout | complete | final handoff prepared | final response |
 
 Findings:
-- ProseMirror is the right first non-Slate adapter because its headless runtime
+- ProseMirror is the right first non-Plite adapter because its headless runtime
   maps cleanly to large document creation, text insertion, selection changes,
   document replacement, fragment insert, and history undo/redo.
 - A headless adapter cannot honestly cover DOM/browser/React/collab/product
@@ -244,10 +244,10 @@ Reboot status:
 |----------|--------|
 | Where am I? | Closeout |
 | Where am I going? | Final verification, goal completion, response |
-| What is the goal? | Add the next non-Slate runtime adapter |
+| What is the goal? | Add the next non-Plite runtime adapter |
 | What have I learned? | ProseMirror can close three headless workload gaps without overclaiming browser/product coverage |
 | What have I done? | Added adapter, registry metadata, scripts, generated evidence, docs, and iteration note |
 
 Open risks:
 - ProseMirror DOM/editor-view behavior is not measured by this adapter.
-- Remaining non-Slate adapter gaps are still the dominant next action.
+- Remaining non-Plite adapter gaps are still the dominant next action.

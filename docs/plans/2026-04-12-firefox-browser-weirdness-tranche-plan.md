@@ -4,7 +4,7 @@ topic: firefox-browser-weirdness-tranche-plan
 status: draft
 source_repos:
   - /Users/zbeyens/git/plate-2
-  - /Users/zbeyens/git/slate-v2
+  - /Users/zbeyens/git/plite
   - /Users/zbeyens/git/slate
 ---
 
@@ -58,7 +58,7 @@ The mistake to avoid now is random row-poking.
 
 Legacy reference:
 
-- [editable.tsx](/Users/zbeyens/git/slate/packages/slate-react/src/components/editable.tsx)
+- [editable.tsx](/Users/zbeyens/git/slate/packages/plite-react/src/components/editable.tsx)
   comment around:
   “In firefox if there is more then 1 range and we call setDomSelection we
   remove the ability to select more cells in a table”
@@ -69,9 +69,9 @@ Current bucket:
 
 Current owner hypothesis:
 
-- [table-multi-range-firefox.tsx](/Users/zbeyens/git/slate-v2/site/examples/ts/table-multi-range-firefox.tsx)
-- [table-multi-range-firefox.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/table-multi-range-firefox.test.ts)
-- [editable.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable.tsx)
+- [table-multi-range-firefox.tsx](/Users/zbeyens/git/plite/site/examples/ts/table-multi-range-firefox.tsx)
+- [table-multi-range-firefox.test.ts](/Users/zbeyens/git/plite/playwright/integration/examples/table-multi-range-firefox.test.ts)
+- [editable.tsx](/Users/zbeyens/git/plite/packages/plite-react/src/components/editable.tsx)
 
 Current blocker:
 
@@ -88,7 +88,7 @@ Closure condition:
 
 Legacy reference:
 
-- [editable.tsx](/Users/zbeyens/git/slate/packages/slate-react/src/components/editable.tsx)
+- [editable.tsx](/Users/zbeyens/git/slate/packages/plite-react/src/components/editable.tsx)
   global `dragend` / `drop` workaround
 
 Current bucket:
@@ -113,15 +113,15 @@ Closure condition:
 - [x] document-level `dragend` / `drop` cleanup remains active after the
   example-owned drop path short-circuits the internal handler
 - evidence:
-  [drag-drop-cleanup.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/drag-drop-cleanup.test.ts),
-  [drag-drop-cleanup.tsx](/Users/zbeyens/git/slate-v2/site/examples/ts/drag-drop-cleanup.tsx),
-  [editable.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable.tsx)
+  [drag-drop-cleanup.test.ts](/Users/zbeyens/git/plite/playwright/integration/examples/drag-drop-cleanup.test.ts),
+  [drag-drop-cleanup.tsx](/Users/zbeyens/git/plite/site/examples/ts/drag-drop-cleanup.tsx),
+  [editable.tsx](/Users/zbeyens/git/plite/packages/plite-react/src/components/editable.tsx)
 
 ### Row C: Firefox nested editable focus bounce
 
 Legacy reference:
 
-- [editable.tsx](/Users/zbeyens/git/slate/packages/slate-react/src/components/editable.tsx)
+- [editable.tsx](/Users/zbeyens/git/slate/packages/plite-react/src/components/editable.tsx)
   comment:
   “If the editor has nested editable elements, the focus can go to them. In
   Firefox, this must be prevented”
@@ -140,9 +140,9 @@ Closure condition:
 - [x] Firefox proof shows clicking the nested editable keeps active focus on the
   outer editor
 - evidence:
-  [firefox-nested-editable-focus.tsx](/Users/zbeyens/git/slate-v2/site/examples/ts/firefox-nested-editable-focus.tsx),
-  [firefox-nested-editable-focus.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/firefox-nested-editable-focus.test.ts),
-  [editable.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable.tsx)
+  [firefox-nested-editable-focus.tsx](/Users/zbeyens/git/plite/site/examples/ts/firefox-nested-editable-focus.tsx),
+  [firefox-nested-editable-focus.test.ts](/Users/zbeyens/git/plite/playwright/integration/examples/firefox-nested-editable-focus.test.ts),
+  [editable.tsx](/Users/zbeyens/git/plite/packages/plite-react/src/components/editable.tsx)
 
 ## Chosen Order
 

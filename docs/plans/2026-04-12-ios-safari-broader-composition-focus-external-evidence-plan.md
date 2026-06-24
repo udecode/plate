@@ -1,6 +1,6 @@
 ---
 date: 2026-04-12
-topic: slate-v2-ios-safari-broader-composition-focus-external-evidence-plan
+topic: plite-ios-safari-broader-composition-focus-external-evidence-plan
 ---
 
 # iOS Safari Broader Composition / Focus External Evidence Plan

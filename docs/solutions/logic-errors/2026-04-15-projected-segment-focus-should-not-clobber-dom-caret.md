@@ -5,7 +5,7 @@ component: frontend_stimulus
 root_cause: logic_error
 title: Projected segment focus should not clobber the browser caret
 tags:
-  - slate-v2
+  - plite
   - slate-react
   - projections
   - selection
@@ -20,21 +20,21 @@ severity: medium
 
 `markdown-preview` rendered bold markdown through projection slices. Clicking
 inside the projected bold span visually placed the browser caret in the bold
-text, but Slate focus restoration snapped the DOM selection back to the default
-Slate selection.
+text, but Plite focus restoration snapped the DOM selection back to the default
+Plite selection.
 
-Backspace then ran against the wrong Slate selection and became a no-op.
+Backspace then ran against the wrong Plite selection and became a no-op.
 
 ## What fixed it
 
 `Editable` focus restoration now checks whether the browser already has a real
-DOM selection inside the editor before restoring the initial/default Slate
+DOM selection inside the editor before restoring the initial/default Plite
 selection on the delayed focus pass.
 
 The key rule:
 
-- if the DOM selection maps to a Slate range and differs from the focus fallback,
-  select the DOM-derived Slate range instead of clobbering it
+- if the DOM selection maps to a Plite range and differs from the focus fallback,
+  select the DOM-derived Plite range instead of clobbering it
 
 `Editable` key handling also syncs from the current DOM selection before
 handling plain `Enter`, `Backspace`, and `Delete`, so keyboard actions use the
@@ -42,7 +42,7 @@ actual browser caret when projected text wrappers are involved.
 
 ## Why This Works
 
-Projected segments introduce extra DOM wrappers around a single Slate text node.
+Projected segments introduce extra DOM wrappers around a single Plite text node.
 The DOM bridge can map those points correctly, but only if the focus handler
 does not overwrite the browser selection first.
 
@@ -51,13 +51,13 @@ inside the editor.
 
 ## Reusable rule
 
-For Slate v2 projected text:
+For Plite projected text:
 
-- never restore a fallback Slate selection over a valid in-editor DOM selection
+- never restore a fallback Plite selection over a valid in-editor DOM selection
 - sync key-driven structural commands from DOM selection before executing them
 - test projected spans with real click/key browser paths, not only semantic
   helper selection
 
 Regression owner:
 
-- [markdown-preview.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/markdown-preview.test.ts)
+- [markdown-preview.test.ts](/Users/zbeyens/git/plite/playwright/integration/examples/markdown-preview.test.ts)

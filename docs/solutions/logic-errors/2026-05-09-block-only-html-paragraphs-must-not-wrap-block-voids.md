@@ -2,17 +2,17 @@
 title: Block-only HTML paragraphs must not wrap block voids
 date: 2026-05-09
 category: docs/solutions/logic-errors
-module: Slate v2 paste-html import
+module: Plite paste-html import
 problem_type: logic_error
 component: testing_framework
 symptoms:
   - Lexical ImageHTML exported no-caption images as `<p><img></p>`.
-  - Slate paste-html imported the block image under a paragraph.
+  - Plite paste-html imported the block image under a paragraph.
   - The first ImageHTML browser proof failed because a paragraph still wrapped the image.
 root_cause: logic_error
 resolution_type: code_fix
 severity: medium
-tags: [slate-v2, lexical-harvest, paste-html, image, block-void, tests]
+tags: [plite, lexical-harvest, paste-html, image, block-void, tests]
 ---
 
 # Block-only HTML paragraphs must not wrap block voids
@@ -20,7 +20,7 @@ tags: [slate-v2, lexical-harvest, paste-html, image, block-void, tests]
 ## Problem
 
 Lexical's `ImageHTML.test.ts` exports a no-caption image as `<p><img></p>`.
-In Slate v2's paste-html example, `image` is a block void. Importing that HTML
+In Plite's paste-html example, `image` is a block void. Importing that HTML
 as a paragraph containing an image creates the wrong document shape.
 
 ## Symptoms
@@ -36,7 +36,7 @@ as a paragraph containing an image creates the wrong document shape.
   stress row uses top-level `<img>` siblings, not Lexical's `<p><img></p>`
   export shape.
 - Weakening the test to accept an empty paragraph around the image. That would
-  bless a block void under a paragraph, which is the wrong Slate shape.
+  bless a block void under a paragraph, which is the wrong Plite shape.
 
 ## Solution
 
@@ -65,7 +65,7 @@ The browser proof covers both source shapes:
 
 ## Why This Works
 
-HTML `<p>` is often a source wrapper, not a Slate paragraph contract. When its
+HTML `<p>` is often a source wrapper, not a Plite paragraph contract. When its
 meaningful children are already block elements, keeping the paragraph wrapper
 turns a valid block into an invalid nested block. Unwrapping only block-only
 paragraphs preserves normal text paragraphs while keeping block images at the
@@ -75,7 +75,7 @@ right level.
 
 - For HTML import rows, assert structure, not only visible content.
 - When a source editor exports block content inside a paragraph wrapper, decide
-  whether the wrapper is source noise before mapping it to Slate.
+  whether the wrapper is source noise before mapping it to Plite.
 - If `paste-html-import.ts` changes, run the focused browser row and the full
   `paste-html.test.ts` file.
 - Keep exact image attributes, caption editor internals, native clipboard

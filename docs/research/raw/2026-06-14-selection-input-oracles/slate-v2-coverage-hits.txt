@@ -1,0 +1,896 @@
+.tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts:69:      new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts:303:  test('commits IME composition while DOM coverage boundaries are hidden', async ({
+.tmp/slate-v2/playwright/integration/examples/dom-coverage-boundaries.test.ts:306:    test.skip(testInfo.project.name === 'mobile', 'desktop IME proof only')
+.tmp/slate-v2/playwright/integration/examples/comment-mode.test.ts:38:    document.dispatchEvent(new Event('selectionchange'))
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:65:  test('captures native beforeinput trace while inserting text', async ({
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:82:        events: ['beforeinput', 'input'],
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:89:      const beforeinput = trace.entries.find(
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:90:        (entry) => entry.type === 'beforeinput'
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:101:      expect(trace.entries.at(0)?.type).toBe('beforeinput')
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:102:      expect(beforeinput).toMatchObject({
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:106:      expect(beforeinput?.selection.selectedText).toBe('')
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1527:      'Firefox lacks compatible synthetic StaticRange beforeinput dispatch'
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1531:      'Desktop synthetic beforeinput target range proof'
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1574:        const event = new InputEvent('beforeinput', {
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1579:        }) as InputEvent & { getTargetRanges: () => StaticRange[] }
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1581:        event.getTargetRanges = () => [
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1606:      'Firefox lacks compatible synthetic StaticRange beforeinput dispatch'
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1610:      'Desktop synthetic beforeinput target range proof'
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1672:          const event = new InputEvent('beforeinput', {
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1677:          }) as InputEvent & { getTargetRanges: () => StaticRange[] }
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1679:          event.getTargetRanges = () => [
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1748:      'Firefox lacks compatible synthetic StaticRange beforeinput dispatch'
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1752:      'Desktop synthetic beforeinput target range proof'
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1812:          const event = new InputEvent('beforeinput', {
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1817:          }) as InputEvent & { getTargetRanges: () => StaticRange[] }
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1819:          event.getTargetRanges = () => [
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1869:      'Firefox lacks compatible synthetic StaticRange beforeinput dispatch'
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1873:      'Desktop synthetic beforeinput target range proof'
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1937:          const event = new InputEvent('beforeinput', {
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1942:          }) as InputEvent & { getTargetRanges: () => StaticRange[] }
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1944:          event.getTargetRanges = () => [
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1987:  test('applies beforeinput target ranges for browser text substitutions', async ({
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1992:      'Firefox lacks compatible synthetic StaticRange beforeinput dispatch'
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:1996:      'Desktop synthetic beforeinput target range proof'
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2025:      const targetRanges =
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2049:        const event = new InputEvent('beforeinput', {
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2054:        }) as InputEvent & { getTargetRanges: () => StaticRange[] }
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2056:        event.getTargetRanges = ranges
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2067:        ranges: targetRanges(firstTextNode, 1, firstTextNode, 1),
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2083:        ranges: targetRanges(firstTextNode, 0, firstTextNode, 1),
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2117:      const event = new InputEvent('beforeinput', {
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2122:      }) as InputEvent & { getTargetRanges: () => StaticRange[] }
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2124:      event.getTargetRanges = () => [
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2138:  test('applies insertTranspose beforeinput as adjacent character transpose', async ({
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2143:      'Firefox lacks compatible synthetic beforeinput dispatch'
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2147:      'Desktop synthetic beforeinput transpose proof'
+.tmp/slate-v2/playwright/integration/examples/plaintext.test.ts:2166:          new InputEvent('beforeinput', {
+.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts:164:  test('native format beforeinput routes through the semantic command handler', async ({
+.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts:186:      const event = new InputEvent('beforeinput', {
+.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts:190:      }) as InputEvent & { getTargetRanges: () => StaticRange[] }
+.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts:192:      event.getTargetRanges = () => []
+.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts:202:  test('keeps hovering toolbar hidden during IME composition', async ({
+.tmp/slate-v2/playwright/integration/examples/hovering-toolbar.test.ts:205:    test.skip(testInfo.project.name !== 'chromium', 'Chromium CDP IME proof')
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:91:      new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:119:        type: 'compositionstart' | 'compositionupdate' | 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:131:      dispatchCompositionEvent('compositionstart', steps[0] ?? '')
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:133:        dispatchCompositionEvent('compositionupdate', text)
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:144:      dispatchCompositionEvent('compositionend', committedText)
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:146:        new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:205:  test('keeps a mention atomic when CJK composition starts after it', async ({
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:208:    test.skip(testInfo.project.name !== 'chromium', 'Chromium IME atom proof')
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:540:  test('keeps mention portal open during IME composition', async ({
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:543:    test.skip(testInfo.project.name !== 'chromium', 'Chromium CDP IME proof')
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:576:  test('commits staged IME composition before a markable inline mention', async ({
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:579:    test.skip(testInfo.project.name !== 'chromium', 'Chromium CDP IME proof')
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:610:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:615:  test('commits IME composition between inline mentions without overwriting them', async ({
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:618:    test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof')
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:658:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:663:  test('commits IME composition immediately after an inline mention', async ({
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:666:    test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof')
+.tmp/slate-v2/playwright/integration/examples/mentions.test.ts:703:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/paste-html.test.ts:527:          entry.eventFamily === 'beforeinput' &&
+.tmp/slate-v2/packages/slate-history/test/history-contract.ts:1480:  it('undoes a committed composition as one history unit', () => {
+.tmp/slate-v2/packages/slate-history/test/history-contract.ts:1496:      { metadata: { history: { mode: 'merge' } }, tag: 'composition' }
+.tmp/slate-v2/packages/slate-history/test/history-contract.ts:1507:  it('does not save canceled composition text to history', () => {
+.tmp/slate-v2/packages/slate-history/test/history-contract.ts:1521:      { metadata: { history: { mode: 'skip' } }, tag: 'composition-cancel' }
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:462:  phase: 'beforeinput' | 'input'
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:483:    element.addEventListener('beforeinput', record('beforeinput'), true)
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:533:    document.dispatchEvent(new Event('selectionchange'))
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:545:  await root.evaluate((element: HTMLElement, compositionText) => {
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:548:      new CompositionEvent('compositionend', {
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:551:        data: compositionText,
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1300:  test('ignores synthetic beforeinput when the browser has no selection ranges', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1303:    test.skip(testInfo.project.name === 'mobile', 'Desktop beforeinput proof')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1317:      const event = new InputEvent('beforeinput', {
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1580:      (event) => event.phase === 'beforeinput'
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1603:  test('commits IME composition inside bold markup', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1606:    test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1660:          type: 'compositionstart' | 'compositionupdate' | 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1674:        dispatchCompositionEvent('compositionstart', steps[0] ?? '')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1676:          dispatchCompositionEvent('compositionupdate', text)
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1687:        dispatchCompositionEvent('compositionend', committedText)
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1689:          new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1709:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1730:  test('commits IME composition in an empty rich text block', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1733:    test.skip(testInfo.project.name !== 'chromium', 'Chromium CDP IME proof')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1771:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1776:  test('replaces select-all rich text with IME composition', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1779:    test.skip(testInfo.project.name !== 'chromium', 'Chromium CDP IME proof')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1810:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1815:  test('commits IME composition through an active mark in an empty block', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1820:      'Chromium IME cursor-wrapper proof'
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1863:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1868:  test('commits IME composition through an active mark before a formatted sibling', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1873:      'Chromium IME cursor-wrapper proof'
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1935:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1940:  test('replaces multiple formatted text nodes with Korean IME composition', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1943:    test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:1989:        new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2017:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2023:  test('commits rapid consecutive IME compositions in separate rich text blocks', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2026:    test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2064:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2069:  test('preserves native IME composition when model text changes before it', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2072:    test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2082:    const compositionOffset = 'one '.length
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2089:    await editor.selection.collapse({ path: [0, 0], offset: compositionOffset })
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2106:          throw new Error('Cannot apply operation during IME composition')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2134:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2139:  test('keeps native IME composition coherent when model delete starts at composition point', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2142:    test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2152:    const compositionOffset = 'one '.length
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2159:    await editor.selection.collapse({ path: [0, 0], offset: compositionOffset })
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2176:          throw new Error('Cannot apply operation during IME composition')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2188:      { deleted: deletedText, offset: compositionOffset }
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2204:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2209:  test('keeps native IME composition coherent when plain text is pasted at the composition point', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2212:    test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2222:    const compositionOffset = 'one '.length
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2229:    await editor.selection.collapse({ path: [0, 0], offset: compositionOffset })
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2273:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2278:  test('replaces a cross-paragraph rich text selection with IME composition', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2281:    test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2331:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2336:  test('replaces a cross-paragraph rich text selection with synthetic IME composition', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2378:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2383:  test('deletes rich text selection after WebKit compositionend', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2386:    test.skip(testInfo.project.name !== 'webkit', 'WebKit compositionend proof')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2437:  test('deletes rich text line selection after WebKit compositionend', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:2440:    test.skip(testInfo.project.name !== 'webkit', 'WebKit compositionend proof')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:3590:                entry.eventFamily === 'beforeinput') &&
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:3605:                  entry.eventFamily === 'beforeinput') &&
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:3613:                entry.eventFamily === 'selectionchange' &&
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:3644:                  entry.eventFamily === 'selectionchange' &&
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:5130:          new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:5178:          new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:6189:  test('records selectionchange and repair kernel results', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:6200:      'selectionchange-repair-kernel-results',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:6204:          label: 'selectionchange-trace',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:6208:          label: 'assert-selectionchange-trace',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:6210:            eventFamily: 'selectionchange',
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:6317:        ).eventFamily === 'selectionchange' &&
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:6911:  test('applies native beforeinput history undo and redo', async ({
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:6914:    test.skip(testInfo.project.name === 'mobile', 'Desktop beforeinput proof')
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:6925:        const event = new InputEvent('beforeinput', {
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:6957:            entry.eventFamily === 'beforeinput' &&
+.tmp/slate-v2/playwright/integration/examples/richtext.test.ts:6976:            entry.eventFamily === 'beforeinput' &&
+.tmp/slate-v2/playwright/integration/examples/huge-document.test.ts:327:      new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/playwright/integration/examples/iframe.test.ts:107:          new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/playwright/integration/examples/pagination.test.ts:2036:        'beforeinput',
+.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts:130:  test('commits IME composition from the custom placeholder empty state', async ({
+.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts:133:    test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof')
+.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts:161:      eventFamily: 'compositionend',
+.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts:166:  test('commits dictation-style insertText beforeinput from the custom placeholder empty state', async ({
+.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts:171:      'Firefox lacks compatible synthetic beforeinput dispatch'
+.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts:175:      'Desktop synthetic beforeinput placeholder proof'
+.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts:190:      const event = new InputEvent('beforeinput', {
+.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts:209:  test('fires blur when focus leaves during placeholder IME composition', async ({
+.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts:212:    test.skip(testInfo.project.name !== 'chromium', 'Chromium CDP IME proof')
+.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts:231:      document.getElementById('composition-blur-target')?.remove()
+.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts:234:      button.id = 'composition-blur-target'
+.tmp/slate-v2/playwright/integration/examples/placeholder.test.ts:253:    const blurTarget = page.locator('#composition-blur-target')
+.tmp/slate-v2/packages/slate-dom/src/index.ts:20:  targetRange,
+.tmp/slate-v2/packages/slate-dom/src/index.ts:104:  NODE_TO_RUNTIME_ID,
+.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts:106:    test(`keeps ${source} decoration refresh from interrupting active IME composition`, async ({
+.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts:109:      test.skip(testInfo.project.name !== 'chromium', 'Chromium IME proof')
+.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts:137:        .toBe('composition')
+.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts:144:        .toBe('composition')
+.tmp/slate-v2/playwright/integration/examples/decorations-async.test.ts:154:        eventFamily: 'compositionend',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:183:      'beforeinput target ranges replace browser substitution spans',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:188:    family: 'native-beforeinput-target-range-repair',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:213:      'composition commits through the browser scenario runner',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:223:      'composition commits inside formatted markup without breaking marks',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:224:      'active-mark cursor-wrapper composition creates marked text',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:225:      'composition can replace multiple formatted text nodes once',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:226:      'WebKit compositionend cleanup deletes expanded rich text selections',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:228:    family: 'ime-composition-formatted-boundaries',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:233:      'rapid consecutive compositions commit in separate rich text blocks',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:234:      'cross-paragraph native composition replaces the selected range once',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:235:      'synthetic composition transport does not mutate React-owned expanded DOM ranges',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:236:      'final model selection lands after the committed composition text',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:238:    family: 'ime-composition-cross-block-repair',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:243:      'synthetic composition can stay open across app-owned decoration refresh',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:244:      'prop and hook decoration sources refresh while composition remains active',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:245:      'committed composition text survives the decoration restructure',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:246:      'model, DOM caret, and final text agree after compositionend',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:248:    family: 'ime-composition-decoration-refresh',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:253:      'composition next to an inline void inserts into the adjacent text node',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:255:      'DOM selection remains collapsed after composition',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:258:    family: 'ime-composition-inline-void-boundary',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:263:      'composition commits text through the browser scenario runner',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:264:      'undo removes the committed composition text as one history unit',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:265:      'model text returns to the pre-composition value',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:268:    family: 'ime-composition-undo',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:371:        'native-beforeinput-target-range-repair',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:372:        'ime-composition-formatted-boundaries',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:373:        'ime-composition-cross-block-repair',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:374:        'ime-composition-decoration-refresh',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:378:        'ime-composition-undo',
+.tmp/slate-v2/packages/slate-browser/src/core/first-party-browser-contracts.ts:383:      rows: rowsByFamily(['ime-composition-inline-void-boundary']),
+.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts:416:  test('ignores selectionchange noise from input inside editable void', async ({
+.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts:433:      element.dispatchEvent(new Event('selectionchange', { bubbles: true }))
+.tmp/slate-v2/playwright/integration/examples/editable-voids.test.ts:1312:          new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:33:const READY_TIMEOUT_MS = 20_000
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:35:const DEFAULT_RUNTIME_ERROR_PATTERNS = [
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:197:  | 'beforeinput'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:198:  | 'compositionend'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:199:  | 'compositionstart'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:200:  | 'compositionupdate'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:202:  | 'selectionchange'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:259:    | 'composition-mismatch'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:262:    | 'missing-beforeinput'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:275:  targetRanges: SlateBrowserNativeEventTraceTargetRangeSnapshot[]
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:437:  | 'beforeinput'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:440:  | 'compositionend'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:441:  | 'compositionstart'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:442:  | 'compositionupdate'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:455:  | 'selectionchange'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:460:  | 'composition'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:487:  | 'composition-owned'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:802:  | 'desktop-native-ime-composition'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:807:  | 'mobile-synthetic-composition'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:810:  | 'synthetic-composition'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1517:          label: 'select-composition-start',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1532:    label: 'assert-composition-start-trace',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1534:      eventFamily: 'compositionstart',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1540:    label: 'assert-composition-update-trace',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1542:      eventFamily: 'compositionupdate',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1548:    label: 'assert-composition-end-trace',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:1550:      eventFamily: 'compositionend',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2854:    if (normalized.includes('composition')) {
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2855:      return 'mobile-synthetic-composition'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2869:  if (normalized.includes('native-composition')) {
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2870:    return 'desktop-native-ime-composition'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2873:  if (normalized.includes('synthetic-composition')) {
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2874:    return 'synthetic-composition'
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:2921:  const patterns = options.patterns ?? DEFAULT_RUNTIME_ERROR_PATTERNS
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3618:          'selectionchange',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3619:          'beforeinput',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3621:          'compositionstart',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3622:          'compositionupdate',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3623:          'compositionend',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3739:        const ranges = event.getTargetRanges?.() ?? []
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3856:            'missing-beforeinput',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3881:            `beforeinput="${lastBeforeInput.data}" input="${entry.data}"`
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3940:            'composition-mismatch',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3941:            `composition="${lastComposition.data}" event="${entry.data}"`
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3963:        const compositionEvent =
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3968:        if (type === 'beforeinput') {
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3973:          data: inputEvent?.data ?? compositionEvent?.data ?? null,
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3981:          targetRanges: inputEvent ? takeTargetRanges(inputEvent) : [],
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3988:        } else if (type === 'beforeinput') {
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3990:        } else if (type.startsWith('composition')) {
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:3999:        'beforeinput',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4001:        'compositionstart',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4002:        'compositionupdate',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4003:        'compositionend',
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4009:      ownerDocument.addEventListener('selectionchange', record)
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4025:          ownerDocument.removeEventListener('selectionchange', record)
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4085:            targetRanges: entry.targetRanges.map((range) => ({
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4865:        timeout: options.timeoutMs ?? READY_TIMEOUT_MS,
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4908:        new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:4912:        rootNode.dispatchEvent(new Event('selectionchange', { bubbles: true }))
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:5066:  { timeoutMs = READY_TIMEOUT_MS }: { timeoutMs?: number } = {}
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:6851:        new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:6855:        rootNode.dispatchEvent(new Event('selectionchange', { bubbles: true }))
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7186:    await expect(editor.root).toBeVisible({ timeout: READY_TIMEOUT_MS })
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7189:        timeout: READY_TIMEOUT_MS,
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7201:      timeout: READY_TIMEOUT_MS,
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7208:        timeout: READY_TIMEOUT_MS,
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7385:              new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7390:                new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7406:                  new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7411:                    new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7438:            new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/packages/slate-browser/src/playwright/index.ts:7443:              new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/packages/slate-browser/src/core/proof.ts:157:  if (!snapshot.events.some((event) => event.includes('beforeinput'))) {
+.tmp/slate-v2/packages/slate-browser/src/core/proof.ts:158:    issues.push('Expected at least one beforeinput event in debug snapshot')
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:27:test('beforeinput preserves pending native text repair selection over mismatched DOM selection', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:72:      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:92:test('beforeinput ignores stale backward target range while model owns insert', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:98:  const targetRange = document.createRange()
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:129:    targetRange.setStart(text, 1)
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:130:    targetRange.setEnd(text, 1)
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:141:        getTargetRanges: () => [targetRange],
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:175:  inputController.state.activeIntent = 'composition'
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:199:      activeIntent: 'composition',
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:208:test('beforeinput returns same-path pending native text repair DOM range without importing it', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:249:        getTargetRanges: () => {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:276:test('beforeinput imports same-path native selection when pending repair owns a different offset', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:314:      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:334:test('beforeinput imports backward native text caret when no pending repair owns it', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:374:      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:399:test('beforeinput ignores repair-induced backward text caret when no pending repair owns it', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:444:      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:464:test('beforeinput ignores text host target ranges while the node map is dirty', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:496:  const targetRange = {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:515:        getTargetRanges: () => [targetRange],
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:535:test('beforeinput keeps current text host target ranges while the node map is dirty', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:573:  const targetRange = {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:595:        getTargetRanges: () => [targetRange],
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:614:test('beforeinput uses event target range instead of later live DOM selection', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:678:        getTargetRanges: () => [eventTargetRange],
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:698:test('beforeinput resolves block-spanning element target ranges before live selection fallback', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:797:  const targetRange = document.createRange()
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:798:  targetRange.setStart(firstBlock, 0)
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:799:  targetRange.setEnd(secondBlock, secondBlock.childNodes.length)
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:811:        getTargetRanges: () => [targetRange],
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:848:test('beforeinput does not import only the first range from multiple target ranges', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.test.tsx:916:        getTargetRanges: () => [firstTargetRange, secondTargetRange],
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:5:  | 'compositionend'
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:6:  | 'compositionstart'
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:7:  | 'compositionupdate'
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:24:      'compositionstart',
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:50:        throw new Error('Missing active editable selection for composition')
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:68:) => dispatchSyntheticCompositionEvent(surface, 'compositionstart', text)
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:73:) => dispatchSyntheticCompositionEvent(surface, 'compositionupdate', text)
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:84:        throw new Error('Missing active editable selection for composition')
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:167:        type: 'beforeinput' | 'input',
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:174:            cancelable: type === 'beforeinput',
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:182:          cancelable: type === 'beforeinput',
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:192:        type: 'beforeinput' | 'input',
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:203:        'beforeinput',
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:239:          throw new Error('Missing active editable selection for composition')
+.tmp/slate-v2/packages/slate-browser/src/playwright/ime.ts:260:        new CompositionEvent('compositionend', {
+.tmp/slate-v2/packages/slate-dom/src/utils/weak-maps.ts:23:export const NODE_TO_RUNTIME_ID: WeakMap<Node, RuntimeId> = new WeakMap()
+.tmp/slate-v2/packages/slate-dom/src/utils/weak-maps.ts:54: * Weak maps for saving pending state on composition stage.
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:32:  targetRange,
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:59:// https://github.com/facebook/draft-js/blob/main/src/component/handlers/composition/DraftEditorCompositionHandler.js#L41
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:126:  let compositionEndTimeoutId: ReturnType<typeof setTimeout> | null = null
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:170:      const targetRange = Editor.range(editor, target)
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:172:      if (!selection || !RangeApi.equals(selection, targetRange)) {
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:270:      const range = targetRange(diff)
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:357:    if (compositionEndTimeoutId) {
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:358:      clearTimeout(compositionEndTimeoutId)
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:361:    compositionEndTimeoutId = setTimeout(() => {
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:370:    debug('composition start')
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:374:    if (compositionEndTimeoutId) {
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:375:      clearTimeout(compositionEndTimeoutId)
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:376:      compositionEndTimeoutId = null
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:581:    // COMPAT: When deleting before a non-contenteditable element chrome only fires a beforeinput,
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:605:    let targetRange: Range | null = null
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:631:      targetRange = ReactEditor.resolveSlateRange(editor, nativeTargetRange, {
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:640:    if (!targetRange && domSelection) {
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:642:      targetRange = ReactEditor.resolveSlateRange(editor, domSelection, {
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:647:    targetRange = targetRange ?? readRuntimeSelection(editor)
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:648:    if (!targetRange) {
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:662:        selection: targetRange,
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:667:      let [start, end] = RangeApi.edges(targetRange)
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:671:        RangeApi.isExpanded(targetRange) &&
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:680:          // when deleting a linebreak, targetRange will span across the break (ie start in the node before and end in the node after)
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:684:            targetRange = { anchor: end, focus: end }
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:688:            targetRange = { anchor: start, focus: start }
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:715:      if (RangeApi.isExpanded(targetRange)) {
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:718:          PathApi.equals(targetRange.anchor.path, targetRange.focus.path)
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:720:          const point = { path: targetRange.anchor.path, offset: start.offset }
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:724:          storeDiff(targetRange.anchor.path, {
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:734:          scheduleCommand(command, { at: targetRange })
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:746:          scheduleCommand(command, { at: targetRange })
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:753:        const { anchor } = targetRange
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:754:        if (canStoreDiff && RangeApi.isCollapsed(targetRange)) {
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:769:          scheduleCommand(command, { at: targetRange })
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:775:        const { anchor } = targetRange
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:787:          RangeApi.isCollapsed(targetRange) &&
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:800:          scheduleCommand(command, { at: targetRange })
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:808:          scheduleCommand(command, { at: targetRange })
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:816:          scheduleCommand(command, { at: targetRange })
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:824:          scheduleCommand(command, { at: targetRange })
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:832:          scheduleCommand(command, { at: targetRange })
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:840:          scheduleCommand(command, { at: targetRange })
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:848:          scheduleCommand(command, { at: targetRange })
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:856:          scheduleCommand(command, { at: targetRange })
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:864:          scheduleCommand(command, { at: targetRange })
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:872:          scheduleCommand(command, { at: targetRange })
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:885:          scheduleCommand({ data, kind: 'insert-data' }, { at: targetRange })
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:926:              at: targetRange,
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:932:        if (PathApi.equals(targetRange.anchor.path, targetRange.focus.path)) {
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:933:          canStoreDiff = canStoreDiff && canStoreDOMTextDiffAtRange(targetRange)
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:938:          const [start, end] = RangeApi.edges(targetRange)
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:947:            type === 'insertText' && RangeApi.isCollapsed(targetRange)
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:991:              RangeApi.isCollapsed(targetRange) &&
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:1001:              RangeApi.isCollapsed(targetRange) &&
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:1055:                ? targetRange
+.tmp/slate-v2/packages/slate-react/src/hooks/android-input-manager/android-input-manager.ts:1056:                : (readRuntimeSelection(editor) ?? targetRange)
+.tmp/slate-v2/packages/slate-dom/src/utils/environment.ts:46:      getTargetRanges?: unknown
+.tmp/slate-v2/packages/slate-dom/src/utils/environment.ts:48:  ).getTargetRanges === 'function'
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:46:  type: 'beforeinput' | 'input',
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:47:  init: InputEventInit & { targetRanges?: StaticRange[] } = {}
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:56:  if (init.targetRanges) {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:57:    Object.defineProperty(event, 'getTargetRanges', {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:58:      value: () => init.targetRanges,
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:78:  test('captures beforeinput/input events with DOM text-node deltas', async () => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:83:      events: ['beforeinput', 'input'],
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:87:    dispatchInputEvent(root, 'beforeinput', {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:90:      targetRanges: [
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:112:      'beforeinput',
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:115:    expect(trace.entries[0].targetRanges[0]).toMatchObject({
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:129:  test('detects input without a matching beforeinput', async () => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:134:      events: ['beforeinput', 'input'],
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:150:        type: 'missing-beforeinput',
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:160:      events: ['beforeinput', 'input'],
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:162:    dispatchInputEvent(root, 'beforeinput', {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-native-event-trace.test.ts:177:    dispatchInputEvent(root, 'beforeinput', {
+.tmp/slate-v2/packages/slate-dom/src/utils/diff-text.ts:158:export function targetRange(textDiff: TextDiff): Range {
+.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:214:  | 'composition-start'
+.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:215:  | 'composition-end'
+.tmp/slate-v2/packages/slate/src/interfaces/editor.ts:1238:  | 'composition'
+.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:179:          'native-beforeinput-target-range-repair',
+.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:182:        ['core-editing', 'ime-composition-formatted-boundaries', ['richtext']],
+.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:183:        ['core-editing', 'ime-composition-cross-block-repair', ['richtext']],
+.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:186:          'ime-composition-decoration-refresh',
+.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:989:        transport: 'synthetic-composition',
+.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:991:    ).toBe('mobile-synthetic-composition')
+.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:995:        transport: 'native-composition',
+.tmp/slate-v2/packages/slate-browser/test/core/scenario.test.ts:997:    ).toBe('desktop-native-ime-composition')
+.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:76:  it('routes model-owned insert-data beforeinput through the same command boundary', () => {
+.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:110:  it('executes the prepared beforeinput command instead of reparsing event data', () => {
+.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:412:  it('replaces expanded beforeinput target ranges with typed text', () => {
+.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:492:  it('routes Android-style replacement text through model-owned beforeinput', () => {
+.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:583:  it('transposes adjacent characters from insertTranspose beforeinput', () => {
+.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:703:  it('keeps Android-style newline after composition from swallowing follow-up text', () => {
+.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:752:  it('routes Android-style backspace through model-owned beforeinput', () => {
+.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:782:  ] as const)('deletes the selected fragment from %s beforeinput', (inputType) => {
+.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:927:  it('replaces expanded CJK composition selection once', () => {
+.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:954:  it('deletes expanded CJK composition selection once', () => {
+.tmp/slate-v2/packages/slate-react/test/model-input-strategy-contract.test.ts:1013:  it('ignores native history beforeinput while read-only', () => {
+.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:51:  NODE_TO_RUNTIME_ID,
+.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:290:   * Experimental and android specific: Flush all pending diffs and cancel composition at the next possible time.
+.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:613:  const runtimeId = NODE_TO_RUNTIME_ID.get(node)
+.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:2367:        // COMPAT: Android IMEs might remove the zero width space while composing,
+.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:2373:        // because the text node should have no characters. However, during IME
+.tmp/slate-v2/packages/slate-dom/src/plugin/dom-editor.ts:2374:        // composition the ASCII characters will be prepended to the zero-width
+.tmp/slate-v2/packages/slate-browser/test/core/proof.test.ts:39:              events: ['beforeinput:insertText:s'],
+.tmp/slate-v2/packages/slate-browser/test/core/proof.test.ts:52:      events: ['beforeinput:insertText:s'],
+.tmp/slate-v2/packages/slate-browser/test/core/proof.test.ts:108:      events: ['beforeinput:insertText:s', 'mutation'],
+.tmp/slate-v2/packages/slate-browser/test/core/proof.test.ts:121:      events: ['beforeinput:insertText:s'],
+.tmp/slate-v2/packages/slate-browser/test/core/proof.test.ts:134:      events: ['beforeinput:insertText:s'],
+.tmp/slate-v2/packages/slate-browser/test/core/proof.test.ts:155:        events: ['beforeinput:insertCompositionText:す'],
+.tmp/slate-v2/packages/slate-react/test/generic-react-editor-contract.tsx:281:  // @ts-expect-error withEditor wrapper composition is cut
+.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:716:  const targetRange = {
+.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:724:      targetRange.anchor
+.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:744:          range: targetRange,
+.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:816:  const targetRange = {
+.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:824:      targetRange.anchor
+.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:844:          range: targetRange,
+.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:1678:      id="dom-strategy-composition-dom-sync"
+.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:2441:test('Editable domStrategy partial-DOM interaction does not promote during composition', async () => {
+.tmp/slate-v2/packages/slate-react/test/dom-strategy-and-scroll.tsx:2461:      id="dom-strategy-composition-promotion"
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:66:test('destructive beforeinput joins the active keydown epoch', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:71:    rootEventFamily: 'beforeinput',
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:81:      eventFamily: 'beforeinput',
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:89:test('handled destructive keydown suppresses duplicate beforeinput command', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:106:test('handled insert-break keydown suppresses duplicate beforeinput command', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:119:    rootEventFamily: 'beforeinput',
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:139:test('completed duplicate insert-break beforeinput closes the epoch before the next Enter', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:172:test('handled soft insert-break keydown suppresses matching line-break beforeinput only', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:189:    rootEventFamily: 'beforeinput',
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:206:test('non-destructive beforeinput cannot inherit a destructive epoch', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:214:      eventFamily: 'beforeinput',
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:263:test('model repair and repair-induced selectionchange stay in the same epoch and close it', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:277:  const selectionchange = recordEditableKernelTrace({
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:282:      eventFamily: 'selectionchange',
+.tmp/slate-v2/packages/slate-react/test/editing-epoch-kernel-contract.ts:290:  expect(selectionchange.epochId).toBe(epoch.id)
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:36:    eventFamily: 'selectionchange' as const,
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:75:    eventFamily: 'selectionchange',
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:152:      eventFamily: 'beforeinput',
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:188:test('beforeinput format commands resolve through semantic command definitions', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:221:  ).toContain('beforeinput')
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:224:test('beforeinput and keydown commands resolve through typed definitions', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:252:  ).toContain('beforeinput')
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:260:  ).toContain('beforeinput')
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:321:test('beforeinput data transfer commands preserve the browser payload', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:339:      'beforeinput'
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:344:test('beforeinput insertFromPaste prefers contenteditable dataTransfer over event data', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:386:test('kernel traces preserve selectionchange origin metadata', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:407:    eventFamily: 'selectionchange',
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:735:test('beforeinput text insert keeps model selection after repair-induced text input', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:905:test('keyboard events during composition stay browser-owned', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:912:  inputController.state.selectionSource = 'composition-owned'
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:934:    intent: 'composition',
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:939:    stateBefore: 'composition',
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:943:test('composition lifecycle events stay browser-owned', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:950:  inputController.state.selectionSource = 'composition-owned'
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:961:    intent: 'composition',
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:966:    stateBefore: 'composition',
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:1025:test('beforeinput history stays model-owned for internal controls', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:1082:    eventFamily: 'selectionchange',
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:1112:test('selectionchange ownership keeps repair and programmatic changes model-owned', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:1133:test('kernel transition rejects repair-induced selectionchange as native intent', () => {
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:1137:      eventFamily: 'selectionchange',
+.tmp/slate-v2/packages/slate-react/test/editing-kernel-contract.ts:1147:    reason: 'programmatic selectionchange cannot re-import as native intent',
+.tmp/slate-v2/packages/slate-react/test/composition-state-contract.test.ts:10:} from '../src/editable/composition-state'
+.tmp/slate-v2/packages/slate-react/test/composition-state-contract.test.ts:51:describe('composition state', () => {
+.tmp/slate-v2/packages/slate-react/test/composition-state-contract.test.ts:52:  it('does not predelete expanded selections on read-only compositionstart', () => {
+.tmp/slate-v2/packages/slate-react/test/composition-state-contract.test.ts:83:  it('does not commit Chrome composition fallback while read-only', () => {
+.tmp/slate-v2/packages/slate-react/test/composition-state-contract.test.ts:102:          state: { selectionSource: 'composition-owned' },
+.tmp/slate-v2/packages/slate-react/test/composition-state-contract.test.ts:121:  it('does not enter composition state on read-only compositionupdate', () => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:19:        throw new Error('CDP should not be used for synthetic composition')
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:23:      throw new Error('Synthetic composition evaluated in the top-level page')
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:33:describe('playwright IME helpers', () => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:46:  test('runs synthetic composition against the resolved editor surface', async () => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:55:    active.addEventListener('compositionstart', (event) => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:58:    active.addEventListener('compositionupdate', (event) => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:61:    active.addEventListener('compositionend', (event) => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:64:    active.addEventListener('beforeinput', (event) => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:87:      'compositionstart',
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:88:      'compositionupdate',
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:89:      'beforeinput:insertFromComposition:é',
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:91:      'compositionend',
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:95:  test('does not mutate DOM when synthetic composition beforeinput is handled', async () => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:104:    active.addEventListener('beforeinput', (event) => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:114:    active.addEventListener('compositionend', (event) => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:130:      'beforeinput:insertFromComposition:é',
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:131:      'compositionend',
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:135:  test('creates a DOM composition fallback when beforeinput is handled without a model change', async () => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:150:    active.addEventListener('beforeinput', (event) => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:160:    active.addEventListener('compositionend', (event) => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:176:      'beforeinput:insertFromComposition:é',
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:178:      'compositionend',
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:182:  test('dispatches input when desktop synthetic composition falls back to DOM repair', async () => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:205:    active.addEventListener('beforeinput', (event) => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:215:    active.addEventListener('compositionend', (event) => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:232:      'beforeinput:insertFromComposition:é',
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:234:      'compositionend',
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:238:  test('projects model selection before synthetic composition fallback edits the DOM', async () => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:272:    active.addEventListener('beforeinput', (event) => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:290:  test('uses semantic fallback for mobile synthetic composition when a Slate handle is available', async () => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:326:      active.addEventListener('beforeinput', (event) => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:350:  test('keeps unhandled mobile synthetic composition on the DOM input path', async () => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:379:      active.addEventListener('beforeinput', (event) => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:402:        'beforeinput:insertFromComposition:é',
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:413:  test('uses semantic fallback for unhandled mobile synthetic composition with a Slate selection handle', async () => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:522:  test('installs composition key events once on the resolved editor surface', async () => {
+.tmp/slate-v2/packages/slate-browser/test/core/playwright-ime.test.ts:536:      new CompositionEvent('compositionstart', {
+.tmp/slate-v2/packages/slate-dom/test/dom-coverage.ts:484:  test('does not materialize boundaries while composition is active', () => {
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:26:test('beforeinput trace keeps an outer event handler duration bucket', () => {
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:32:  expect(source).toContain("profileBeforeInputDuration('beforeinput-total'")
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:95:test('same-burst insertText beforeinput flushes deferred native text repair', () => {
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:104:test('beforeinput flushes deferred native text repair boundaries', () => {
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:125:test('beforeinput skips pending DOM selection flush for model-preferred insertText', () => {
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:146:test('beforeinput ignores browser events with no selection and no target ranges', () => {
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:150:        getTargetRanges: () => [],
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:159:        getTargetRanges: () => [],
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:168:        getTargetRanges: () => [{} as StaticRange],
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:177:        getTargetRanges: () => [],
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:185:test('beforeinput target ranges can import even when live DOM selection policy is model-owned', () => {
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:189:        getTargetRanges: () => [{} as StaticRange],
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:197:        getTargetRanges: () => [],
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:205:        getTargetRanges: () => [],
+.tmp/slate-v2/packages/slate-react/test/runtime-before-input-events-contract.test.ts:212:test('beforeinput still flushes pending DOM selection for native-owned input', () => {
+.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:243:        'Selectionchange import completion belongs with the selectionchange runtime controller.',
+.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:269:      owner: 'Runtime composition engine',
+.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:271:        'Editable must not own composition state transitions directly; runtime composition engine owns them.',
+.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:334:        'Global selectionchange listener attachment should move behind the root runtime facade.',
+.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:433:          'Native selectionchange listener attachment belongs in the root lifecycle owner, not the root coordinator body.',
+.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:567:    "\\bfrom '../editable/composition-state'": {
+.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:570:      owner: 'Runtime composition events',
+.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:609:    "\\bfrom '../editable/runtime-composition-events'": {
+.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:675:      owner: 'Runtime beforeinput/input events',
+.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:682:      owner: 'Runtime beforeinput events',
+.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:684:        'Native beforeinput decisions are part of event-runtime orchestration.',
+.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:745:        'Non-selectionchange event frames are owned by the runtime kernel trace engine.',
+.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:769:        'Non-selectionchange user-event command traces are owned by the runtime kernel trace engine.',
+.tmp/slate-v2/packages/slate-react/test/kernel-authority-audit-contract.ts:873:          'Runtime selection engine owns selectionchange-triggered pending native text repair.',
+.tmp/slate-v2/packages/slate-react/test/android-input-manager-contract.test.ts:47:  targetRanges: StaticRange[] = []
+.tmp/slate-v2/packages/slate-react/test/android-input-manager-contract.test.ts:52:    getTargetRanges: () => targetRanges,
+.tmp/slate-v2/packages/slate-react/test/android-input-manager-contract.test.ts:161:  it('clears an expired text repair echo before follow-up beforeinput work', () => {
+.tmp/slate-v2/packages/slate-react/test/android-input-manager-contract.test.ts:352:  it('keeps pending text diffs deferred while Android composition is active', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts:173:  test('composition text input still exports model selection normally', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts:190:  test('cancelled selectionchange flush clears pending DOM import', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts:268:  test('model-owned repair selectionchange skips stale DOM import work only after model-owned repair', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts:496:  test('preserves pending native text insert repair through selectionchange', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts:534:  test('repairs pending native text insert during model-owned selectionchange', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-runtime-contract.test.ts:650:  test('composition still exports synced text-only selection commits', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:442:test('native editor-owned selectionchange clears model preference before DOM import', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:468:test('native selectionchange outside the editor does not clear model preference', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:494:test('native editor-owned selectionchange with unresolved Slate range keeps model preference', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:521:test('repair-induced editor-owned selectionchange does not clear model preference', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:598:test('DOM selectionchange import only accepts native collapsed changes', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:625:test('model-owned programmatic selectionchange keeps its ownership guard', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:651:test('model-owned collapsed programmatic selectionchange skips DOM range resolution', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:704:test('selectionchange ignores detached DOM endpoints before resolving Slate range', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:795:test('selectionchange ignores host-removal collapse outside the editor', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:883:test('selectionchange ignores removed shadow host empty native selection', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:972:test('model-owned browser-handle selectionchange keeps its ownership guard', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:996:test('repair-induced selectionchange clears its origin after model repair', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:1021:test('repair-induced text input selectionchange can keep DOM-current ownership', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:1046:test('native selectionchange clears its origin after import handling', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:1069:test('pending native repair selectionchange policy suppresses stale same-path offsets and allows deliberate selections', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-controller-contract.ts:1336:    'composition',
+.tmp/slate-v2/packages/slate-react/test/dom-repair-policy-contract.test.ts:508:test('native input repair guards virtualized DOM replacement selectionchanges', () => {
+.tmp/slate-v2/packages/slate-react/test/dom-repair-policy-contract.test.ts:1208:    eventFamily: 'selectionchange',
+.tmp/slate-v2/packages/slate-react/test/react-editor-contract.tsx:8:    const event = new Event('beforeinput', {
+.tmp/slate-v2/packages/slate-react/test/surface-contract.tsx:203:  test('Editable exposes native beforeinput context without public command handlers', () => {
+.tmp/slate-v2/packages/slate-dom/test/bridge.ts:21:  NODE_TO_RUNTIME_ID,
+.tmp/slate-v2/packages/slate-dom/test/bridge.ts:228:    NODE_TO_RUNTIME_ID.set(targetNode, runtimeId!)
+.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts:145:  it('defers iOS Korean Backspace to native input', () => {
+.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts:155:  it('keeps non-Korean Backspace model-owned', () => {
+.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts:165:  it('keeps non-Backspace keys model-owned for iOS Korean input', () => {
+.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts:902:  it('keeps Enter during active composition browser-owned', () => {
+.tmp/slate-v2/packages/slate-react/test/keyboard-input-strategy-contract.test.ts:2200:  it('routes printable expanded-selection fallback input through the model without beforeinput support', async () => {
+.tmp/slate-v2/packages/slate-react/test/view-selection-contract.test.ts:89:    expect(source).toContain('? EMPTY_RUNTIME_IDS')
+.tmp/slate-v2/packages/slate-react/test/editable-behavior.tsx:286:    const event = new InputEvent('beforeinput', {
+.tmp/slate-v2/packages/slate-react/test/editable-behavior.tsx:300:  test('Editable onBeforeInput is not replayed from native beforeinput', async () => {
+.tmp/slate-v2/packages/slate-react/test/editable-behavior.tsx:327:        new InputEvent('beforeinput', {
+.tmp/slate-v2/packages/slate-react/test/selection-dom-realm-contract.test.ts:64:test('selectionchange listener ignores input targets from the target document realm', async () => {
+.tmp/slate-v2/packages/slate-react/test/selection-dom-realm-contract.test.ts:83:      new frameWindow.Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/packages/slate-react/test/selection-dom-realm-contract.test.ts:88:    frameDocument.dispatchEvent(new frameWindow.Event('selectionchange'))
+.tmp/slate-v2/packages/slate-react/test/selection-dom-realm-contract.test.ts:98:test('selectionchange listener skips repair-induced model-owned history imports', async () => {
+.tmp/slate-v2/packages/slate-react/test/selection-dom-realm-contract.test.ts:122:    frameDocument.dispatchEvent(new frameWindow.Event('selectionchange'))
+.tmp/slate-v2/packages/slate-react/test/selection-dom-realm-contract.test.ts:128:    frameDocument.dispatchEvent(new frameWindow.Event('selectionchange'))
+.tmp/slate-v2/packages/slate-react/test/selection-dom-realm-contract.test.ts:138:test('WebKit shadow selectionchange uses the editor document realm', async () => {
+.tmp/slate-v2/packages/slate-react/test/selection-dom-realm-contract.test.ts:182:test('WebKit shadow beforeinput uses the shadow root realm', async () => {
+.tmp/slate-v2/packages/slate-react/test/selection-dom-realm-contract.test.ts:200:  const event = new frameWindow.InputEvent('beforeinput', {
+.tmp/slate-v2/packages/slate-react/test/selection-dom-realm-contract.test.ts:209:  Object.defineProperty(event, 'getTargetRanges', {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts:49:        event: { getTargetRanges: () => [] } as unknown as InputEvent,
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts:74:      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts:96:      event: { getTargetRanges: () => [] } as unknown as InputEvent,
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts:110:  it('imports expanded delete target ranges from blur-time IME cleanup events', () => {
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts:113:    const targetRange = {} as StaticRange
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts:131:          getTargetRanges: () => [targetRange],
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts:152:    const targetRange = {} as StaticRange
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts:170:          getTargetRanges: () => [targetRange],
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts:191:    const targetRange = {} as StaticRange
+.tmp/slate-v2/packages/slate-react/test/selection-reconciler-contract.ts:209:          getTargetRanges: () => [targetRange],
+.tmp/slate-v2/packages/slate-dom/test/environment.ts:48:  test('enables beforeinput support when InputEvent exposes target ranges', async () => {
+.tmp/slate-v2/packages/slate-dom/test/environment.ts:52:        getTargetRanges() {
+.tmp/slate-v2/packages/slate-dom/test/environment.ts:61:  test('disables beforeinput support when target ranges are unavailable', async () => {
+.tmp/slate-v2/packages/slate-dom/test/environment.ts:74:        getTargetRanges() {
+.tmp/slate-v2/packages/slate-react/src/decoration-source.ts:100:const EMPTY_RUNTIME_SNAPSHOT = Object.freeze(
+.tmp/slate-v2/packages/slate-react/src/decoration-source.ts:252:          ? (EMPTY_RUNTIME_SNAPSHOT as readonly SlateProjectionSlice<T>[])
+.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:65:test('native input listeners attach once while reading the latest beforeinput handler', () => {
+.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:79:      new Event('beforeinput', {
+.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:86:      addEventListener.mock.calls.filter(([type]) => type === 'beforeinput')
+.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:89:      removeEventListener.mock.calls.filter(([type]) => type === 'beforeinput')
+.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:963:test('deferred native text input repair keeps a beforeinput-only burst character', () => {
+.tmp/slate-v2/packages/slate-react/test/input-router-contract.test.tsx:2728:test('react input repair does not replay text after flushing deferred beforeinput operations', () => {
+.tmp/slate-v2/packages/slate-react/src/projection-store.ts:156:const EMPTY_RUNTIME_SNAPSHOT = Object.freeze(
+.tmp/slate-v2/packages/slate-react/src/projection-store.ts:159:const EMPTY_RUNTIME_IDS = Object.freeze([]) as readonly RuntimeId[]
+.tmp/slate-v2/packages/slate-react/src/projection-store.ts:656:        changedRuntimeIds: EMPTY_RUNTIME_IDS,
+.tmp/slate-v2/packages/slate-react/src/projection-store.ts:666:        changedRuntimeIds: EMPTY_RUNTIME_IDS,
+.tmp/slate-v2/packages/slate-react/src/projection-store.ts:801:        (EMPTY_RUNTIME_SNAPSHOT as readonly SlateProjectionSlice<T>[])
+.tmp/slate-v2/packages/slate-react/src/projection-store.ts:813:          changedRuntimeIds: EMPTY_RUNTIME_IDS,
+.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts:7:import { commitInsertFromComposition } from './composition-state'
+.tmp/slate-v2/packages/slate-react/src/editable/model-input-strategy.ts:210:  // COMPAT: Since `beforeinput` doesn't fully `preventDefault`,
+.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:938:  it('supports a custom fragment MIME key', () => {
+.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:979:  it('falls back to the HTML embedded fragment when the custom MIME payload is absent', () => {
+.tmp/slate-v2/packages/slate-dom/test/clipboard-boundary.ts:1403:  it('falls back to plain text when the custom MIME fragment is malformed', () => {
+.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts:517:          eventFamily: 'selectionchange',
+.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts:689:        new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/packages/slate-react/src/editable/browser-handle.ts:693:        rootNode.dispatchEvent(new Event('selectionchange', { bubbles: true }))
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts:7:} from './composition-state'
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts:35:  setComposing: EditableEventRuntime['composition']['setComposing']
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts:47:        family: 'compositionend',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts:85:        family: 'compositionstart',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-composition-events.ts:122:        family: 'compositionupdate',
+.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx:8:  NODE_TO_RUNTIME_ID,
+.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx:23:const EDITOR_TO_RUNTIME_ID_TO_ELEMENTS = new WeakMap<
+.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx:58:  const existing = EDITOR_TO_RUNTIME_ID_TO_ELEMENTS.get(editor)
+.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx:65:  EDITOR_TO_RUNTIME_ID_TO_ELEMENTS.set(editor, next)
+.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx:125:  const runtimeElementMap = EDITOR_TO_RUNTIME_ID_TO_ELEMENTS.get(editor)
+.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx:413:    recordDOMTextSyncProfile('skip-composition')
+.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx:560:  NODE_TO_RUNTIME_ID.set(slateNode, runtimeId)
+.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx:575:      if (NODE_TO_RUNTIME_ID.get(slateNode) === runtimeId) {
+.tmp/slate-v2/packages/slate-react/src/hooks/use-slate-node-ref.tsx:576:        NODE_TO_RUNTIME_ID.delete(slateNode)
+.tmp/slate-v2/packages/slate/src/core/editor-runtime.ts:158:const EDITOR_RUNTIME = new WeakMap<Editor, InternalEditorRuntime>()
+.tmp/slate-v2/packages/slate/src/core/editor-runtime.ts:164:  EDITOR_RUNTIME.set(editor, runtime as unknown as InternalEditorRuntime)
+.tmp/slate-v2/packages/slate/src/core/editor-runtime.ts:170:  EDITOR_RUNTIME.has(value as Editor)
+.tmp/slate-v2/packages/slate/src/core/editor-runtime.ts:175:  const runtime = EDITOR_RUNTIME.get(editor)
+.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts:49:  source: 'beforeinput' | 'input'
+.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts:105:    previousRepair.source === 'beforeinput' &&
+.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts:846:  // Attach a native DOM event handler for `beforeinput` events, because React's
+.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts:848:  // real `beforeinput` events sadly... (2019/11/04)
+.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts:850:  // `beforeinput` is attached directly because React's polyfill does
+.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts:852:  node.addEventListener('beforeinput', onDOMBeforeInput)
+.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts:856:    // `beforeinput` is attached directly because React's polyfill does
+.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts:858:    node.removeEventListener('beforeinput', onDOMBeforeInput)
+.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts:1187:        previousRepair.source = 'beforeinput'
+.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts:1193:          source: 'beforeinput',
+.tmp/slate-v2/packages/slate-react/src/editable/input-router.ts:1453:      // COMPAT: Certain browsers don't support the `beforeinput` event, so we
+.tmp/slate-v2/packages/slate-react/src/editable/dom-input-event.ts:6:  getTargetRanges?: () => StaticRange[]
+.tmp/slate-v2/packages/slate-react/src/editable/dom-input-event.ts:34:  const { getTargetRanges } = event as InputEventWithTargetRanges
+.tmp/slate-v2/packages/slate-react/src/editable/dom-input-event.ts:36:  return typeof getTargetRanges === 'function'
+.tmp/slate-v2/packages/slate-react/src/editable/dom-input-event.ts:37:    ? getTargetRanges.call(event)
+.tmp/slate-v2/packages/slate/src/utils/runtime-ids.ts:6:const NODE_RUNTIME_IDS = new WeakMap<object, WeakMap<Editor, RuntimeId>>()
+.tmp/slate-v2/packages/slate/src/utils/runtime-ids.ts:7:const NEXT_RUNTIME_ID = new WeakMap<Editor, number>()
+.tmp/slate-v2/packages/slate/src/utils/runtime-ids.ts:12:  const next = NEXT_RUNTIME_ID.get(editor) ?? 0
+.tmp/slate-v2/packages/slate/src/utils/runtime-ids.ts:13:  NEXT_RUNTIME_ID.set(editor, next + 1)
+.tmp/slate-v2/packages/slate/src/utils/runtime-ids.ts:18:  let runtimeIds = NODE_RUNTIME_IDS.get(node)
+.tmp/slate-v2/packages/slate/src/utils/runtime-ids.ts:22:    NODE_RUNTIME_IDS.set(node, runtimeIds)
+.tmp/slate-v2/packages/slate/src/utils/runtime-ids.ts:30:  const next = NEXT_RUNTIME_ID.get(editor) ?? 0
+.tmp/slate-v2/packages/slate/src/utils/runtime-ids.ts:33:    NEXT_RUNTIME_ID.set(editor, numericPart + 1)
+.tmp/slate-v2/packages/slate/src/utils/runtime-ids.ts:78:    ? NODE_RUNTIME_IDS.get(previousNode)?.get(editor)
+.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:732:    // COMPAT: Certain browsers don't support the `beforeinput` event, so we
+.tmp/slate-v2/packages/slate-react/src/editable/clipboard-input-strategy.ts:734:    // COMPAT: Firefox, Chrome and Safari don't emit `beforeinput` events
+.tmp/slate-v2/packages/slate-react/src/editable/native-input-strategy.ts:140:  // COMPAT: use composition change events as a hint to where we should insert
+.tmp/slate-v2/packages/slate-react/src/editable/native-input-strategy.ts:141:  // composition text if we aren't composing to work around https://github.com/ianstormtaylor/slate/issues/5038
+.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts:19:const EMPTY_RUNTIME_IDS: readonly RuntimeId[] = []
+.tmp/slate-v2/packages/slate-react/src/editable/root-selector-sources.ts:101:            : EMPTY_RUNTIME_IDS
+.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:618:    // COMPAT: The composition end event isn't fired reliably in all browsers,
+.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:619:    // so we sometimes might end up stuck in a composition state even though we
+.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:711:    // `beforeinput` events, the browser doesn't think there's ever
+.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:911:    // COMPAT: Certain browsers don't support the `beforeinput` event, so we
+.tmp/slate-v2/packages/slate-react/src/editable/keyboard-input-strategy.ts:916:        // COMPAT: Chrome and Safari support `beforeinput` event but do not fire
+.tmp/slate-v2/packages/slate/test/escape-hatch-inventory-contract.ts:138:      'Slate React owns editable input, IME, repair, and bridge workers behind the kernel.',
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:128:const EMPTY_RUNTIME_INDEX = Object.freeze({
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:203:const TARGET_RUNTIME = new WeakMap<Editor, EditorTargetRuntime>()
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:204:const TARGET_RUNTIME_ACTIVE = new WeakSet<Editor>()
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:205:const RUNTIME_INDEX_CACHE = new WeakMap<
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:221:const FULL_ROOT_REPLACE_CHILDREN_TOP_LEVEL_RUNTIME_IDS_CACHE = new WeakMap<
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:225:const RUNTIME_INDEX_VERSION = new WeakMap<Editor, number>()
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:953:  RUNTIME_INDEX_VERSION.set(
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:955:    (RUNTIME_INDEX_VERSION.get(editor) ?? 0) + 1
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:957:  RUNTIME_INDEX_CACHE.delete(editor)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:961:  RUNTIME_INDEX_VERSION.get(editor) ?? 0
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:1002:  const cached = RUNTIME_INDEX_CACHE.get(editor)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:1009:  RUNTIME_INDEX_CACHE.set(editor, { index, version })
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:1422:    FULL_ROOT_REPLACE_CHILDREN_TOP_LEVEL_RUNTIME_IDS_CACHE.get(
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:1439:  FULL_ROOT_REPLACE_CHILDREN_TOP_LEVEL_RUNTIME_IDS_CACHE.set(
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:1475:    RUNTIME_INDEX_CACHE.set(editor, {
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:1923:      EMPTY_RUNTIME_INDEX)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3088:  RUNTIME_INDEX_CACHE.delete(editor)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3108:    RUNTIME_INDEX_CACHE.delete(editor)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3292:  if (TARGET_RUNTIME_ACTIVE.has(editor)) {
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3296:  const runtime = TARGET_RUNTIME.get(editor)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3302:  TARGET_RUNTIME_ACTIVE.add(editor)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3316:    TARGET_RUNTIME_ACTIVE.delete(editor)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3325:    TARGET_RUNTIME.set(editor, runtime)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3327:    TARGET_RUNTIME.delete(editor)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3332:  TARGET_RUNTIME.get(editor) ?? null
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3339:  const previousRuntime = TARGET_RUNTIME.get(editor)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3340:  const hadPreviousRuntime = TARGET_RUNTIME.has(editor)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3342:  TARGET_RUNTIME.set(editor, runtime)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3348:      TARGET_RUNTIME.set(editor, previousRuntime!)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3350:      TARGET_RUNTIME.delete(editor)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:3718:          RUNTIME_INDEX_CACHE.set(editor, {
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:5321:        ? (RUNTIME_INDEX_CACHE.get(editor)?.index ?? null)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:5545:                        ? RUNTIME_INDEX_CACHE.get(editor)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:5830:  RUNTIME_INDEX_VERSION.set(editor, 0)
+.tmp/slate-v2/packages/slate/src/core/public-state.ts:5831:  RUNTIME_INDEX_CACHE.delete(editor)
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:21:import { usePendingInsertionMarksEffect } from './composition-state'
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-root-engine.ts:35:import { useRuntimeCompositionEngine } from './runtime-composition-engine'
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:48:  | 'beforeinput'
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:51:  | 'compositionend'
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:52:  | 'compositionstart'
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:53:  | 'compositionupdate'
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:66:  | 'selectionchange'
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:71:  | 'composition'
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:114:    inputFamilies: ['beforeinput', 'keydown'],
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:119:    inputFamilies: ['beforeinput', 'keydown'],
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:124:    inputFamilies: ['beforeinput'],
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:129:    inputFamilies: ['beforeinput', 'copy', 'cut', 'keydown'],
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:134:    inputFamilies: ['beforeinput', 'keydown'],
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:139:    inputFamilies: ['beforeinput', 'keydown'],
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:144:    inputFamilies: ['beforeinput', 'drop', 'paste'],
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:149:    inputFamilies: ['beforeinput', 'input'],
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:154:    inputFamilies: ['beforeinput', 'keydown'],
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:457:    case 'composition-owned':
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:458:      return 'composition'
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:662:    eventFamily === 'selectionchange' &&
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:669:      reason: 'programmatic selectionchange cannot re-import as native intent',
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:727:  if (eventFamily === 'selectionchange' && ownership === 'native-allowed') {
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:1184:    (internalTarget && intent !== 'history') || intent === 'composition'
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:1197:    intent !== 'composition' &&
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:1202:      : intent === 'composition'
+.tmp/slate-v2/packages/slate-react/src/editable/editing-kernel.ts:1236:      : intent === 'composition'
+.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts:261:    return 'composition'
+.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts:361:    return 'composition'
+.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts:408:  return 'composition'
+.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts:426:    inputController.state.selectionSource = 'composition-owned'
+.tmp/slate-v2/packages/slate-react/src/editable/input-controller.ts:427:  } else if (inputController.state.selectionSource === 'composition-owned') {
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:26:import { useRuntimeCompositionEvents } from './runtime-composition-events'
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:92:  composition: {
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:169:        composition: {
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:235:    setComposing: runtime.composition.setComposing,
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:263:  const compositionHandlers = useRuntimeCompositionEvents({
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:271:    setComposing: runtime.composition.setComposing,
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:306:      ...compositionHandlers,
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-event-engine.ts:313:      compositionHandlers,
+.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:533:      /includeSyntheticBeforeInput\s*\?\s*'synthetic-beforeinput'\s*:\s*'native-beforeinput'/
+.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:946:    assert.match(source, /\$\{prefix\}_type_after_delete_beforeinput_count/)
+.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:947:    assert.match(source, /\$\{prefix\}_type_after_delete_beforeinput_span_ms/)
+.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:950:      /\$\{prefix\}_type_after_delete_beforeinput_max_gap_ms/
+.tmp/slate-v2/packages/slate/test/core-benchmark-scripts-contract.ts:954:      /\$\{prefix\}_type_after_delete_beforeinput_p95_gap_ms/
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:284:  // COMPAT: In Chrome, `selectionchange` events can fire when <input> and
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:309:  // Attach a native DOM event handler for `selectionchange`, because React's
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:315:    'selectionchange',
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:321:      'selectionchange',
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:661:    new Event('selectionchange', { bubbles: true })
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:942:  // current selection, but IME/focus cleanup can provide an expanded
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:943:  // beforeinput target range that must become the model delete range.
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:947:    const targetRanges = getInputEventTargetRanges(event)
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:948:    const targetRange = targetRanges.length === 1 ? targetRanges[0] : null
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:949:    const textHostRange = targetRange
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:950:      ? resolveSlateRangeFromDOMTextRange(editor, targetRange, {
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:954:    const targetRangeBelongsToEditor =
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:955:      !!targetRange &&
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:957:        ? editorElement.contains(targetRange.startContainer) &&
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:958:          editorElement.contains(targetRange.endContainer)
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:959:        : ReactEditor.hasSelectableTarget(editor, targetRange.startContainer) &&
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:960:          ReactEditor.hasSelectableTarget(editor, targetRange.endContainer))
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:963:      targetRange &&
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:965:      targetRangeBelongsToEditor
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:971:          : ReactEditor.resolveSlateRange(editor, targetRange, {
+.tmp/slate-v2/packages/slate-react/src/editable/selection-reconciler.ts:1561:        // Compat: Android IMEs try to force their selection by manually re-applying it even after we set it.
+.tmp/slate-v2/packages/slate-react/src/editable/editing-epoch-kernel.ts:159:    trace.eventFamily === 'beforeinput' &&
+.tmp/slate-v2/packages/slate-react/src/editable/editing-epoch-kernel.ts:174:    trace.eventFamily === 'selectionchange' &&
+.tmp/slate-v2/packages/slate-react/src/editable/editing-epoch-kernel.ts:307:    trace.eventFamily !== 'selectionchange' ||
+.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:616:    activeIntent === 'composition' ||
+.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:786:    case 'composition-owned':
+.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:787:      return 'composition'
+.tmp/slate-v2/packages/slate-react/src/editable/selection-controller.ts:819:    preference.reason === 'composition' ||
+.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts:100:  // COMPAT: in Safari, `compositionend` is dispatched after the
+.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts:101:  // `beforeinput` for "insertFromComposition". But if we wait for it
+.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts:122:  // beforeinput. If the composed text reached the DOM but not the model,
+.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts:123:  // commit it from compositionend and then remove unmanaged DOM text.
+.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts:307:    const compositionText =
+.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts:320:      text: compositionText,
+.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts:327:        reason: 'composition',
+.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts:420:  const compositionText = getCompositionEventText(event)
+.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts:421:  if (compositionText) {
+.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts:422:    EDITOR_TO_PENDING_COMPOSITION_TEXT.set(editor, compositionText)
+.tmp/slate-v2/packages/slate-react/src/editable/composition-state.ts:434:  // before we receive the composition end event.
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts:114:  if (inputController.state.activeIntent !== 'composition') {
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts:208:      eventFamily: 'selectionchange',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-selection-engine.ts:260:          eventFamily: 'selectionchange',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts:82:  if (decision.intent === 'composition') {
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts:350:            setComposing: runtime.composition.setComposing,
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-keyboard-events.ts:461:        setComposing: runtime.composition.setComposing,
+.tmp/slate-v2/packages/slate-react/src/editable/projected-native-affordance.ts:34:        'Collapsed root-local IME remains native; expanded projected composition has no native-span proof.',
+.tmp/slate-v2/packages/slate-react/src/editable/input-state.ts:7:  | 'composition'
+.tmp/slate-v2/packages/slate-react/src/editable/input-state.ts:20:  | 'composition-owned'
+.tmp/slate-v2/packages/slate-react/src/editable/input-state.ts:36:  | 'composition'
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-input-events.ts:127:        decision.intent === 'composition' &&
+.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:127:const EMPTY_RUNTIME_IDS = Object.freeze([]) as readonly RuntimeId[]
+.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1001:          childRuntimeIds: EMPTY_RUNTIME_IDS,
+.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1015:          ? EMPTY_RUNTIME_IDS
+.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1331:  targetRange?: SlateRange
+.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1337:  const pathRanges = targetRange
+.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1338:    ? [{ anchor: targetRange.anchor.path, focus: targetRange.focus.path }]
+.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:1718:          ? EMPTY_RUNTIME_IDS
+.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:2018:    (boundary: DOMCoverageBoundary, targetRange?: SlateRange) => {
+.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:2022:        targetRange
+.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:2059:    (boundary: DOMCoverageBoundary, targetRange?: SlateRange) => {
+.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:2061:        targetRange?.anchor.path[0] ?? boundary.coveredPathRanges[0]?.anchor[0]
+.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:2069:        targetRange &&
+.tmp/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx:2070:        scrollVirtualizedPathIntoView(targetRange.anchor.path)
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:222:  setComposing: EditableEventRuntime['composition']['setComposing']
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:228:      profileBeforeInputDuration('beforeinput-total', () => {
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:241:        const decision = profileBeforeInputDuration('beforeinput-prepare', () =>
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:249:        profileBeforeInputDuration('beforeinput-trace', () =>
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:252:            family: 'beforeinput',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:259:          profileBeforeInputDuration('beforeinput-native-history', () =>
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:277:            'beforeinput-complete-duplicate-command',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:295:        const el = profileBeforeInputDuration('beforeinput-root-node', () =>
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:299:          profileBeforeInputDuration('beforeinput-nested-editable-target', () =>
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:314:          'beforeinput-root-owner',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:319:          profileBeforeInputDuration('beforeinput-webkit-shadow', () =>
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:331:        profileBeforeInputDuration('beforeinput-on-user-input', onUserInput)
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:334:          'beforeinput-has-editable-target',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:340:            profileBeforeInputDuration('beforeinput-without-selection', () =>
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:352:            'beforeinput-should-flush-selection',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:361:            profileBeforeInputDuration('beforeinput-flush-selection', () =>
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:367:            'beforeinput-read-selection',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:372:            !profileBeforeInputDuration('beforeinput-is-editor-view', () =>
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:389:              'beforeinput-reread-selection-after-native-text-flush',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:395:            'beforeinput-native-decision',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:419:            'beforeinput-read-view-root',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:437:              'beforeinput-redirect-root',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:471:            profileBeforeInputDuration('beforeinput-dom-handler', () =>
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:491:            'beforeinput-run-deferred-operations',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:502:            'beforeinput-force-model-owned-text-input',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:511:            'beforeinput-sync-selection',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:600:            'beforeinput-set-pending-repair-path',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:619:            profileBeforeInputDuration('beforeinput-input-rules', () =>
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:632:            profileBeforeInputDuration('beforeinput-prevent-default', () =>
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:644:                  'beforeinput-queue-native-text-repair',
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:657:            : profileBeforeInputDuration('beforeinput-apply-model', () =>
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:680:              profileBeforeInputDuration('beforeinput-request-repair', () =>
+.tmp/slate-v2/packages/slate-react/src/editable/runtime-before-input-events.ts:688:              'beforeinput-restore-user-selection',
+.tmp/slate-v2/packages/slate/test/text-units-contract.ts:78:    description: 'Korean jamo sequence',
+.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:645:            // COMPAT: Certain browsers don't support the `beforeinput` event, so we'd
+.tmp/slate-v2/packages/slate-react/src/components/editable.tsx:708:  // to prevent Android IMEs to pick up its content in autocorrect and to auto-capitalize the first letter
+.tmp/slate-v2/packages/slate/test/headless-contract.ts:31:  it('supports package-split headless composition through source-resolved package imports', () => {
+.tmp/slate-v2/packages/slate-react/src/components/restore-dom/restore-dom-manager.ts:42:          // because this interrupts the composition.

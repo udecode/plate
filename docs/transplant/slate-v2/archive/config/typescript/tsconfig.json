@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": "../..",
+    "esModuleInterop": true,
+    "ignoreDeprecations": "6.0",
+    "jsx": "react",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "paths": {
+      "slate": ["packages/slate/src/index.ts"],
+      "slate/internal": ["packages/slate/src/internal/index.ts"],
+      "@slate/yjs": ["packages/slate-yjs/src/index.ts"],
+      "@slate/yjs/core": ["packages/slate-yjs/src/core/index.ts"],
+      "@slate/yjs/internal": ["packages/slate-yjs/src/internal/index.ts"],
+      "@slate/yjs/react": ["packages/slate-yjs/src/react/index.ts"],
+      "slate-browser/browser": ["packages/slate-browser/src/browser/index.ts"],
+      "slate-browser/core": ["packages/slate-browser/src/core/index.ts"],
+      "slate-browser/playwright": [
+        "packages/slate-browser/src/playwright/index.ts"
+      ],
+      "slate-browser/transports": [
+        "packages/slate-browser/src/transports/index.ts"
+      ],
+      "slate-dom": ["packages/slate-dom/src/index.ts"],
+      "slate-dom/internal": ["packages/slate-dom/src/internal/index.ts"],
+      "slate-history": ["packages/slate-history/src/index.ts"],
+      "slate-hyperscript": ["packages/slate-hyperscript/src/index.ts"],
+      "slate-layout": ["packages/slate-layout/src/index.ts"],
+      "slate-layout/react": ["packages/slate-layout/src/react.tsx"],
+      "slate-react": ["packages/slate-react/src/index.ts"]
+    },
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "strict": true,
+    "target": "esnext"
+  }
+}

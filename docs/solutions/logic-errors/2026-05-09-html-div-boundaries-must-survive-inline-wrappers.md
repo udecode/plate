@@ -2,17 +2,17 @@
 title: HTML div boundaries must survive inline wrappers
 date: 2026-05-09
 category: docs/solutions/logic-errors
-module: Slate v2 paste-html import
+module: Plite paste-html import
 problem_type: logic_error
 component: testing_framework
 symptoms:
   - Lexical core HTMLCopyAndPaste rows expected nested divs to split paragraphs.
-  - Slate paste-html flattened div-separated text under spans and divs into one paragraph.
+  - Plite paste-html flattened div-separated text under spans and divs into one paragraph.
   - Plain text, malformed paragraphs, and strong paste mark inheritance already passed.
 root_cause: logic_error
 resolution_type: code_fix
 severity: medium
-tags: [slate-v2, lexical-harvest, paste-html, html, div, tests]
+tags: [plite, lexical-harvest, paste-html, html, div, tests]
 ---
 
 # HTML div boundaries must survive inline wrappers
@@ -21,7 +21,7 @@ tags: [slate-v2, lexical-harvest, paste-html, html, div, tests]
 
 Lexical's core `HTMLCopyAndPaste.test.ts` treats generic `<div>` as a visible
 block boundary, even when it is nested under a `<span>` or another `<div>`.
-Slate v2's paste-html importer treated unknown elements as transparent
+Plite's paste-html importer treated unknown elements as transparent
 children, so `123<div>456</div>` and `<span>123<div>456</div></span>` collapsed
 into one paragraph.
 

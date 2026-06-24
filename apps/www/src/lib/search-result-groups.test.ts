@@ -20,7 +20,7 @@ describe('getSearchResultGroup', () => {
         content: '`insertNode`',
         id: 'editor-transforms-insert-node',
         type: 'heading',
-        url: '/docs/api/slate/editor-transforms#insertnode',
+        url: '/docs/api/plite/editor-transforms#insertnode',
       })
     ).toBe('apiReference');
   });

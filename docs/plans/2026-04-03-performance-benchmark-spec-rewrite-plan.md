@@ -10,7 +10,7 @@ reading like a real benchmark program spec.
 The target is the rigor and control surface of
 `js-framework-benchmark`, translated into rich-text editor terms.
 
-Not a toy `Plate vs Slate` note.
+Not a toy `Plate vs Plite` note.
 Not a marketing page.
 A production-grade editor benchmark spec.
 
@@ -102,7 +102,7 @@ The rewritten spec should define five layers:
 
 ### v1 benchmark scope
 
-Rich-text standard plus the parts of the Slate example surface people actually
+Rich-text standard plus the parts of the Plite example surface people actually
 care about:
 
 - paragraphs
@@ -134,7 +134,7 @@ The spec must be written for a future multi-editor table, not a permanent 1v1.
 Near term:
 
 - Plate
-- Slate
+- Plite
 
 Future:
 
@@ -143,7 +143,7 @@ Future:
 - Lexical
 - others
 
-That means the spec should avoid hardcoding `Plate vs Slate` assumptions into
+That means the spec should avoid hardcoding `Plate vs Plite` assumptions into
 the benchmark model.
 
 ## Benchmark Families

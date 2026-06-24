@@ -1,7 +1,7 @@
 # fix editor space wrapping
 
 Objective:
-Fix issue 4637 editor inserted-space wrapping if Plate-owned; stop if proof shows Slate/browser ownership.
+Fix issue 4637 editor inserted-space wrapping if Plate-owned; stop if proof shows Plite/browser ownership.
 
 Goal plan:
 docs/plans/4637-fix-editor-space-wrapping.md
@@ -19,10 +19,10 @@ Task source:
 - type: GitHub issue
 - id / link: [#4637](https://github.com/udecode/plate/issues/4637)
 - title: Spaces do overflow, instead of getting moved to the next line
-- acceptance criteria: In the Plate registry editor surface, a run of user-entered spaces inside a word must wrap within the editor width instead of extending horizontally past the right edge. If the behavior is owned by Slate or browser layout outside Plate styling, stop with evidence and no code.
+- acceptance criteria: In the Plate registry editor surface, a run of user-entered spaces inside a word must wrap within the editor width instead of extending horizontally past the right edge. If the behavior is owned by Plite or browser layout outside Plate styling, stop with evidence and no code.
 
 Completion threshold:
-- The issue is classified as Plate-owned, Slate-owned, invalid, or not reproduced with evidence.
+- The issue is classified as Plate-owned, Plite-owned, invalid, or not reproduced with evidence.
 - If Plate-owned, registry editor styling is fixed at the shared ownership boundary, focused regression evidence covers editable and static editor classes, relevant verification commands pass, Browser proof is captured, and the final handoff includes the screenshot.
 - Task closure is legal only when the source-of-truth acceptance criteria are
   satisfied or explicitly narrowed, required verification evidence is recorded,
@@ -49,13 +49,13 @@ Boundaries:
 - Allowed edit scope: shared registry editor styling, focused tests, registry changelog if required, and this goal plan.
 - Browser surface: local Plate editor demo/docs route rendering `Editor` from `apps/www/src/registry/ui/editor.tsx`.
 - Tracker sync: GitHub issue #4637 after PR exists, unless no PR is created.
-- Non-goals: do not change Slate internals; do not change code-node whitespace; do not patch individual demos one by one; do not manually edit generated registry outputs.
+- Non-goals: do not change Plite internals; do not change code-node whitespace; do not patch individual demos one by one; do not manually edit generated registry outputs.
 
 Output budget strategy:
 - Use focused `rg` patterns and `max_output_tokens`; the first broad whitespace/editor search was too noisy and is recorded under Error attempts.
 
 Blocked condition:
-- Stop without implementation if source/browser proof shows Slate or browser-native ownership, or if the issue cannot be reproduced at any honest level.
+- Stop without implementation if source/browser proof shows Plite or browser-native ownership, or if the issue cannot be reproduced at any honest level.
 
 Task state:
 - task_type: public GitHub bug
@@ -69,7 +69,7 @@ Current verdict:
 - verdict: valid Plate-owned styling bug, fixed and verified
 - confidence: high
 - next owner: PR / tracker sync
-- reason: The registry editor and static editor used `whitespace-pre-wrap break-words`; `PlateContent` only forwards props to Slate `Editable`, so the durable boundary is registry styling, not Slate internals.
+- reason: The registry editor and static editor used `whitespace-pre-wrap break-words`; `PlateContent` only forwards props to Plite `Editable`, so the durable boundary is registry styling, not Plite internals.
 
 Pre-solution issue challenge:
 - reporter claim: Inserting enough spaces inside a word on platejs.org causes the spaces to overflow the editor width instead of wrapping.
@@ -83,7 +83,7 @@ Pre-solution issue challenge:
 - validity verdict: valid Plate-owned bug.
 - best long-term fix boundary: shared `Editor` and `EditorStatic` registry variants should use a whitespace policy that preserves spaces while allowing wrap opportunities.
 - harsh honest feedback: The issue is right; the suggested fix is bad because it asks for the current broken class.
-- hard-stop decision: no Slate hard stop; proceed only within registry styling and keep code-node whitespace unchanged.
+- hard-stop decision: no Plite hard stop; proceed only within registry styling and keep code-node whitespace unchanged.
 
 Completion rule:
 - Do not call `update_goal(status: complete)` while any required checklist item
@@ -210,11 +210,11 @@ Phase / pass table:
 
 Findings:
 - The report is valid: preserved spaces in the shared editor surface can hang past the editor edge when the registry uses `white-space: pre-wrap`.
-- This is not a Slate issue: `PlateContent` only forwards props to Slate `Editable`; the broken choice lives in registry UI classes.
+- This is not a Plite issue: `PlateContent` only forwards props to Plite `Editable`; the broken choice lives in registry UI classes.
 - The bot suggestion was wrong because `pre-wrap` was already the active class. `break-spaces` is the browser CSS mode that preserves spaces while creating wrapping opportunities inside long space runs.
 
 Decisions and tradeoffs:
-- Fix the shared live/static registry editor variants instead of changing Slate, `PlateContent`, or individual demos.
+- Fix the shared live/static registry editor variants instead of changing Plite, `PlateContent`, or individual demos.
 - Keep `code-node` and `code-node-static` on `whitespace-pre-wrap`; code whitespace has different UX expectations.
 - Use a class-level regression because JSDOM cannot prove final line wrapping honestly.
 
@@ -260,7 +260,7 @@ Final handoff contract:
 - Design:
   - Chosen boundary: shared registry editor styling.
   - Why not quick patch: individual demos would miss static/live registry consumers.
-  - Why not broader change: Slate/core `Editable` is not the source, and code nodes need separate whitespace semantics.
+  - Why not broader change: Plite/core `Editable` is not the source, and code nodes need separate whitespace semantics.
 - Verified: `bun test apps/www/src/registry/ui/editor.spec.tsx`; `bun test tooling/scripts/generate-ui-changelog-entries.test.mjs`; `pnpm --filter www typecheck`; `pnpm --filter www build:tw`; `pnpm lint:fix`; `pnpm check`; autoreview local.
 - PR body verified: `gh pr view 5022 --json number,title,url,body` verified the required task-style body.
 
@@ -298,7 +298,7 @@ Reboot status:
 |----------|--------|
 | Where am I? | PR / tracker sync |
 | Where am I going? | Branch, commit, push, PR, issue comment, final goal check |
-| What is the goal? | Fix issue #4637 if Plate-owned and stop if Slate-owned |
+| What is the goal? | Fix issue #4637 if Plate-owned and stop if Plite-owned |
 | What have I learned? | Valid Plate registry styling bug; bot fix suggestion was stale/wrong |
 | What have I done? | Implemented and verified shared registry editor whitespace fix |
 

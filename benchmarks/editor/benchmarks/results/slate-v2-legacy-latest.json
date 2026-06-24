@@ -11,7 +11,7 @@
       "medianUs": 43410,
       "p95Us": 43430,
       "ops": 3,
-      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DefaultRenderAuto; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -21,7 +21,7 @@
       "medianUs": 275590,
       "p95Us": 282600,
       "ops": 3,
-      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DefaultRenderAuto; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -31,7 +31,7 @@
       "medianUs": 258260,
       "p95Us": 266270,
       "ops": 3,
-      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DefaultRenderAuto; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -41,7 +41,7 @@
       "medianUs": 258830,
       "p95Us": 407620,
       "ops": 3,
-      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DefaultRenderAuto; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -51,7 +51,7 @@
       "medianUs": 25970,
       "p95Us": 27030,
       "ops": 3,
-      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DefaultRenderAuto; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -61,7 +61,7 @@
       "medianUs": 20640,
       "p95Us": 31610,
       "ops": 3,
-      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DefaultRenderAuto; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -71,7 +71,7 @@
       "medianUs": 394930,
       "p95Us": 410690,
       "ops": 3,
-      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DefaultRenderAuto; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -81,7 +81,7 @@
       "medianUs": 275220,
       "p95Us": 391210,
       "ops": 3,
-      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DefaultRenderAuto; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -91,7 +91,7 @@
       "medianUs": 265680,
       "p95Us": 270710,
       "ops": 3,
-      "note": "surface=v2DefaultRenderAuto; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DefaultRenderAuto; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -101,7 +101,7 @@
       "medianUs": 20460,
       "p95Us": 21340,
       "ops": 3,
-      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DomPresent; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -111,7 +111,7 @@
       "medianUs": 270560,
       "p95Us": 272550,
       "ops": 3,
-      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DomPresent; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -121,7 +121,7 @@
       "medianUs": 317210,
       "p95Us": 326900,
       "ops": 3,
-      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DomPresent; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -131,7 +131,7 @@
       "medianUs": 280220,
       "p95Us": 320370,
       "ops": 3,
-      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DomPresent; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -141,7 +141,7 @@
       "medianUs": 27170,
       "p95Us": 27750,
       "ops": 3,
-      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DomPresent; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -151,7 +151,7 @@
       "medianUs": 31870,
       "p95Us": 32500,
       "ops": 3,
-      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DomPresent; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -161,7 +161,7 @@
       "medianUs": 413850,
       "p95Us": 416400,
       "ops": 3,
-      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DomPresent; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -171,7 +171,7 @@
       "medianUs": 294640,
       "p95Us": 320940,
       "ops": 3,
-      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DomPresent; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -181,7 +181,7 @@
       "medianUs": 259420,
       "p95Us": 353750,
       "ops": 3,
-      "note": "surface=v2DomPresent; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=v2DomPresent; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -191,7 +191,7 @@
       "medianUs": 115950,
       "p95Us": 116070,
       "ops": 3,
-      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=legacyChunkOn; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -201,7 +201,7 @@
       "medianUs": 65450,
       "p95Us": 67180,
       "ops": 3,
-      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=legacyChunkOn; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -211,7 +211,7 @@
       "medianUs": 66670,
       "p95Us": 68270,
       "ops": 3,
-      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=legacyChunkOn; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -221,7 +221,7 @@
       "medianUs": 65090,
       "p95Us": 66350,
       "ops": 3,
-      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=legacyChunkOn; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -231,7 +231,7 @@
       "medianUs": 324930,
       "p95Us": 330620,
       "ops": 3,
-      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=legacyChunkOn; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -241,7 +241,7 @@
       "medianUs": 118540,
       "p95Us": 179100,
       "ops": 3,
-      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=legacyChunkOn; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -251,7 +251,7 @@
       "medianUs": 1080,
       "p95Us": 1150,
       "ops": 3,
-      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=legacyChunkOn; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -261,7 +261,7 @@
       "medianUs": 65590,
       "p95Us": 66350,
       "ops": 3,
-      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=legacyChunkOn; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     },
     {
       "category": "slate-react-huge-document-legacy-compare",
@@ -271,7 +271,7 @@
       "medianUs": 68600,
       "p95Us": 68950,
       "ops": 3,
-      "note": "surface=legacyChunkOn; source=../../.tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../../.tmp/slate-v2; legacy=../../../slate; iterations=3; typeOps=20"
+      "note": "surface=legacyChunkOn; source=../../tmp/slate-react-huge-document-legacy-compare-benchmark-compare-all-blocks-5000-iters-3-ops-20-combined-selection-no-profile.json; current=../..; legacy=../../../slate; iterations=3; typeOps=20"
     }
   ]
 }

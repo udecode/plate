@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Multiple complex list units still reduce to one wrapper-list fragment when each unit is already proved
 tags:
-  - slate-v2
+  - plite
   - list-item
   - wrapper-list
   - sibling-units

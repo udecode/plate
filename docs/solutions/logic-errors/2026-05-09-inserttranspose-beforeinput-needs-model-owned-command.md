@@ -2,17 +2,17 @@
 title: InsertTranspose beforeinput needs a model-owned command
 date: 2026-05-09
 category: docs/solutions/logic-errors
-module: Slate v2 React input runtime
+module: Plite React input runtime
 problem_type: logic_error
 component: frontend_react
 symptoms:
-  - Lexical's portable Control+T transpose row had no Slate equivalent.
-  - Slate prevented `insertTranspose` beforeinput without applying a model command.
+  - Lexical's portable Control+T transpose row had no Plite equivalent.
+  - Plite prevented `insertTranspose` beforeinput without applying a model command.
   - Repeated transpose from `abc` at offset `1` left the text unchanged.
 root_cause: missing_command
 resolution_type: code_fix
 severity: medium
-tags: [slate-v2, beforeinput, keyboard, transpose, input-runtime]
+tags: [plite, beforeinput, keyboard, transpose, input-runtime]
 ---
 
 # InsertTranspose beforeinput needs a model-owned command
@@ -20,7 +20,7 @@ tags: [slate-v2, beforeinput, keyboard, transpose, input-runtime]
 ## Problem
 
 Mac Control+T can emit `beforeinput` with `inputType: "insertTranspose"`.
-Slate classified that as model-owned text input, prevented native DOM mutation,
+Plite classified that as model-owned text input, prevented native DOM mutation,
 then had no command to apply.
 
 ## Symptoms
@@ -48,7 +48,7 @@ after the swapped pair.
 
 `insertTranspose` is not ordinary inserted text; it carries the edit intent in
 `inputType`, not in `data`. Treating every `insert*` event as data-backed text
-means Slate can correctly prevent native mutation but still silently drop the
+means Plite can correctly prevent native mutation but still silently drop the
 edit.
 
 The clean owner is the editing kernel plus model-input strategy, not a
@@ -61,10 +61,10 @@ the rest of beforeinput handling.
   `data` payload.
 - Add one package proof for command parsing/application and one browser proof
   for the event route when the behavior is browser-visible.
-- Do not treat OS labels or browser skip tags as Slate behavior. Port the
+- Do not treat OS labels or browser skip tags as Plite behavior. Port the
   invariant, not the upstream harness.
 
 ## Related Issues
 
 - [Beforeinput substitutions must flush native text before replacement](./2026-05-09-beforeinput-substitutions-must-flush-native-text-before-replacement.md)
-- [Slate hotkey dependency hard cuts need owned matchers and layout contracts](../developer-experience/2026-05-03-slate-hotkey-dependency-hard-cuts-need-owned-matchers-and-layout-contracts.md)
+- [Plite hotkey dependency hard cuts need owned matchers and layout contracts](../developer-experience/2026-05-03-slate-hotkey-dependency-hard-cuts-need-owned-matchers-and-layout-contracts.md)

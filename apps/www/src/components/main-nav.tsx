@@ -31,6 +31,13 @@ export function MainNav({
     <nav className={cn('items-center gap-0', className)} {...props}>
       {items.map((item) => {
         const href = getLocalizedPath(locale, item.href);
+        const isActive =
+          item.href === '/docs'
+            ? pathname === href ||
+              (pathname?.startsWith(`${href}/`) &&
+                !pathname.startsWith(`${href}/slate`))
+            : pathname === href ||
+              (href !== '/' && pathname?.startsWith(`${href}/`));
 
         return (
           <Button
@@ -43,11 +50,9 @@ export function MainNav({
             <Link
               className={cn(
                 'relative items-center',
-                (pathname === href ||
-                  (href !== '/' && pathname?.startsWith(href))) &&
-                  'text-primary'
+                isActive && 'text-primary'
               )}
-              data-active={pathname === href}
+              data-active={isActive}
               href={href}
               rel={item.external ? 'noreferrer' : undefined}
               target={item.external ? '_blank' : undefined}

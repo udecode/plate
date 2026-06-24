@@ -21,6 +21,8 @@ export default function PlaygroundDemo({
   className?: string;
 }) {
   const locale = useLocale();
+  const browserProofEnabled =
+    process.env.NEXT_PUBLIC_PLATE_BROWSER_PROOF === '1';
   const value = React.useMemo(
     () => normalizeStaticValue(getI18nValues(locale).playground),
     [locale]
@@ -34,7 +36,7 @@ export default function PlaygroundDemo({
           [KEYS.indent]: id !== 'listClassic',
           [KEYS.list]: id !== 'listClassic',
           [KEYS.listClassic]: id === 'listClassic',
-          [KEYS.playwright]: process.env.NODE_ENV !== 'production',
+          [KEYS.playwright]: browserProofEnabled,
         },
       },
       plugins: [

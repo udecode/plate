@@ -7,7 +7,7 @@ module: Plugin API design
 problem_type: best_practice
 component: tooling
 symptoms:
-  - "Plugin hooks used `normalizeInitialValue`, which sounded like Slate runtime normalization instead of an initial value transform seam"
+  - "Plugin hooks used `normalizeInitialValue`, which sounded like Plite runtime normalization instead of an initial value transform seam"
   - "The codebase still needed legacy plugin compatibility because the old hook name was threaded through plugin cache, edit-only config, and tests"
   - "The desired long-term direction was a pure initial-value transform API with a strict returned-value contract, but a hard rename would have created needless churn"
 root_cause: inadequate_documentation
@@ -26,7 +26,7 @@ tags:
 
 ## Problem
 
-The plugin hook name `normalizeInitialValue` was muddy. It sounded like Slate
+The plugin hook name `normalizeInitialValue` was muddy. It sounded like Plite
 runtime normalization, but the hook actually existed to transform the initial
 editor value before the editor was ready.
 
@@ -65,7 +65,7 @@ The hook accepts the same context and must return the next value:
 
 ```ts
 type TransformInitialValue = (ctx: {
-  editor: SlateEditor;
+  editor: PliteEditor;
   value: Value;
 }) => Value;
 ```

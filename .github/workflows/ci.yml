@@ -7,6 +7,14 @@ on:
       - next
     paths:
       - 'packages/**'
+      - '!packages/browser/**'
+      - '!packages/plite/**'
+      - '!packages/plite-dom/**'
+      - '!packages/plite-history/**'
+      - '!packages/plite-hyperscript/**'
+      - '!packages/plite-layout/**'
+      - '!packages/plite-react/**'
+      - '!packages/yjs/**'
       - 'tooling/**'
       - 'package.json'
       - '.github/actions/**'
@@ -28,6 +36,14 @@ on:
       - reopened
     paths:
       - 'packages/**'
+      - '!packages/browser/**'
+      - '!packages/plite/**'
+      - '!packages/plite-dom/**'
+      - '!packages/plite-history/**'
+      - '!packages/plite-hyperscript/**'
+      - '!packages/plite-layout/**'
+      - '!packages/plite-react/**'
+      - '!packages/yjs/**'
       - 'tooling/**'
       - 'package.json'
       - '.github/actions/**'

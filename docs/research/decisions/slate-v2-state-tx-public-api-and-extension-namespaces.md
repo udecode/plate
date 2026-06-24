@@ -104,7 +104,7 @@ discoverable extension namespace.
 
 ## 2026-04-28 Live-Source Refresh
 
-Live `.tmp/slate-v2` now has the state/tx substrate:
+Live `Plate repo root` now has the state/tx substrate:
 
 - `editor.read((state) => ...)` and `editor.update((tx) => ...)` are implemented
   and tested.
@@ -143,7 +143,7 @@ This is a plan/execution gap, not a research contradiction.
 ## 2026-04-29 Editor Namespace Hard-Cut Refresh
 
 The public `Editor` value is still a live source mismatch with this decision.
-Live `.tmp/slate-v2` still exports `EditorInterface` and `export const Editor`,
+Live `Plate repo root` still exports `EditorInterface` and `export const Editor`,
 and that namespace mixes editor-state reads, writes, extension registration,
 replacement helpers, and setup helpers.
 

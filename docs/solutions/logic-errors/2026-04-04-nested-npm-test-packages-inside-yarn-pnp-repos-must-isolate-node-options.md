@@ -17,8 +17,8 @@ severity: medium
 
 ## What happened
 
-The `slate-browser` POC used a nested support package with its own `npm`
-install, Vitest browser config, and Playwright dependency, but the parent Slate
+The `plite-browser` POC used a nested support package with its own `npm`
+install, Vitest browser config, and Playwright dependency, but the parent Plite
 repo runs on Yarn PnP.
 
 That caused two real integration failures:

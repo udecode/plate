@@ -14,7 +14,7 @@ Do **not** lead with “Plate vs every popular editor.”
 
 Lead with:
 
-- Plate vs Slate as the primary benchmark story
+- Plate vs Plite as the primary benchmark story
 - Plate internal lane breakdown as the credibility layer
 - broader editor comparisons only as a secondary, tightly-scoped reference
   matrix
@@ -156,7 +156,7 @@ This is the public core story.
 Compare:
 
 - Plate
-- Slate
+- Plite
 
 Why:
 
@@ -181,7 +181,7 @@ This is the optional secondary matrix.
 Compare only if each editor gets an honest equivalent implementation:
 
 - Plate
-- Slate
+- Plite
 - Lexical
 - ProseMirror
 - Tiptap
@@ -246,7 +246,7 @@ Recommended sections:
    - run counts
    - hardware caveat
 
-3. **Primary results: Plate vs Slate**
+3. **Primary results: Plate vs Plite**
    - mount
    - input
    - `nodeId`
@@ -333,7 +333,7 @@ Do it in phases:
 
 ### Phase A
 
-Publish Plate vs Slate first.
+Publish Plate vs Plite first.
 
 This is the defensible benchmark story right now.
 
@@ -342,7 +342,7 @@ This is the defensible benchmark story right now.
 Add a cross-editor appendix or second section with:
 
 - Plate
-- Slate
+- Plite
 - Lexical
 - ProseMirror
 - Tiptap
@@ -371,7 +371,7 @@ Write the benchmark contract first:
 
 ### Phase 2: Public headline extraction
 
-Turn existing Plate vs Slate evidence into:
+Turn existing Plate vs Plite evidence into:
 
 - clean tables
 - reproducible commands
@@ -382,7 +382,7 @@ Turn existing Plate vs Slate evidence into:
 Build one narrow shared benchmark with:
 
 - Plate
-- Slate
+- Plite
 - Lexical
 
 If that survives contact with reality, widen later.
@@ -397,7 +397,7 @@ Do not write the Chinese version until the English benchmark story is stable.
 
 ### Resolve before planning
 
-- Should the first public Performance doc ship with only Plate vs Slate, or
+- Should the first public Performance doc ship with only Plate vs Plite, or
   should it also include a small cross-editor appendix on day one?
 
 ### Defer to planning
@@ -423,7 +423,7 @@ So the first doc should be:
 
 > **Performance**
 >
-> Plate vs Slate on real editor workloads, with an internal breakdown showing
+> Plate vs Plite on real editor workloads, with an internal breakdown showing
 > exactly where the wins come from.
 
 Then, if we still want broader editor comparison, add it as a second,

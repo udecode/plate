@@ -165,7 +165,7 @@ Completion Gates:
 | Package manifests, lockfile, or install graph changed | no | Run `pnpm install` and relevant package checks | N/A for patch, though `pnpm run reinstall` was run once to rule out local install corruption after unrelated package-suite failure. |
 | Agent rules or skills changed | no | Run `pnpm install` and verify generated skill sync | N/A: no `.agents/**`, `.claude/**`, `.codex/**`, skill, hook, command, or prompt files changed. |
 | Workspace authority proof | yes | Run verification in the owning repo/package/app/route/tool and record cwd; do not count the wrong workspace as proof | All commands ran in `/Users/zbeyens/git/plate`; package proof used `@platejs/selection`; Browser opened `http://localhost:3000`. |
-| Browser surface changed | yes | Capture Browser Use proof or record explicit waiver/blocker | Browser route loaded with one Slate editor; native clipboard shortcuts are disabled by the in-app browser, so exact shortcut proof is blocked by tool policy. |
+| Browser surface changed | yes | Capture Browser Use proof or record explicit waiver/blocker | Browser route loaded with one Plite editor; native clipboard shortcuts are disabled by the in-app browser, so exact shortcut proof is blocked by tool policy. |
 | Browser final proof | yes | Attach screenshot or exact browser verification caveat when browser proof applies | Exact caveat: approved Browser cannot press Meta+C/clipboard shortcuts; local Browser reached the homepage and detected one editor, but dev-server output later showed unrelated package-dist module-resolution noise, so browser proof is limited. |
 | CI-controlled template output changed | no | Restore generated template output or record why it is intentionally kept | N/A: no `templates/**` output changed. |
 | Package behavior or public API changed | yes | Add a changeset or record why no changeset applies | `.changeset/cold-safari-copy.md` adds `@platejs/selection` patch. |
@@ -183,12 +183,12 @@ Completion Gates:
 | Final lint | yes | Run `pnpm lint:fix` or scoped equivalent | `pnpm lint:fix` -> checked 3276 files, no fixes applied. |
 | Output budget discipline | yes | Verify no unbounded high-volume command output was streamed, or record the accidental output and recovery | One pre-goal broad `rg` streamed too much output; all post-goal commands used focused paths/caps. |
 | Goal plan complete | yes | Run `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-14-4612-safari-block-selection-copy.md` | Passed: `[autogoal] complete: docs/plans/2026-06-14-4612-safari-block-selection-copy.md`. |
-| Browser interaction proof | yes | Exercise the target route/interaction with the approved browser tool or record blocker | Browser loaded `http://localhost:3000` and found one Slate editor; exact Meta+C proof blocked because Browser disables native clipboard shortcuts. |
+| Browser interaction proof | yes | Exercise the target route/interaction with the approved browser tool or record blocker | Browser loaded `http://localhost:3000` and found one Plite editor; exact Meta+C proof blocked because Browser disables native clipboard shortcuts. |
 | Browser console/network check | yes | Record console/network state or why it is not applicable | Browser console readback returned `[]`, but dev-server terminal output later showed unrelated package-dist module-resolution errors; do not claim clean live browser acceptance. |
 | Browser final proof artifact | yes | Record screenshot/trace/route proof or exact caveat | Caveat recorded: Browser shortcut limitation prevents exact local copy gesture proof; package test proves event DataTransfer route. |
 | Public API / package boundary proof | yes | Source-audit public API, exports, and package boundary impact | Optional `dataTransfer?: DataTransfer` return boolean preserves no-arg fallback; no export/file-layout changes. |
 | Release artifact classification | yes | Record whether the change is published package behavior/API/types/config/runtime, registry-only, or no published user-visible delta | Published package runtime behavior for `@platejs/selection`. |
-| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/slate`, `@platejs/core`, or `platejs` | `.changeset/cold-safari-copy.md` is one `@platejs/selection` patch file; no forbidden core package minor. |
+| Published package changeset | yes | If published package users see a delta, load `changeset`, add/update one `.changeset/*.md` per package, and prove no forbidden `minor` on `@platejs/plite`, `@platejs/core`, or `platejs` | `.changeset/cold-safari-copy.md` is one `@platejs/selection` patch file; no forbidden core package minor. |
 | Registry changelog | no | If the change is registry-only under `apps/www/src/registry/**`, update `tooling/data/plate-ui-changelog.mdx`, run `node tooling/scripts/generate-ui-changelog-entries.mjs --write`, and do not add a package changeset | N/A: not registry-only. |
 | No release artifact | no | If no artifact is needed, record the exact reason: internal-only, docs-only, agent-only, test-only, or no user-visible delta from `main` | N/A: changeset applies. |
 | Package typecheck/build/test | yes | Run owning package checks or record N/A with reason | Focused test and package typecheck passed; full package script has unrelated order/runtime pollution, but `pnpm check` passed root gates. |
@@ -233,7 +233,7 @@ Verification evidence:
 - Package typecheck: `pnpm turbo typecheck --filter=./packages/selection` -> 8 successful tasks.
 - Package full-script caveat: `pnpm --filter @platejs/selection test` still fails unrelated order/runtime pollution after reinstall; root check below passed.
 - Lint fix: `pnpm lint:fix` -> no fixes applied.
-- Browser: in-app Browser reached `http://localhost:3000` and found one `[data-slate-editor="true"]`; native clipboard shortcuts are disabled by Browser, and dev-server output later showed unrelated package-dist module-resolution errors, so no exact Safari/Meta+C or clean live browser proof is claimed.
+- Browser: in-app Browser reached `http://localhost:3000` and found one `[data-plite-editor="true"]`; native clipboard shortcuts are disabled by Browser, and dev-server output later showed unrelated package-dist module-resolution errors, so no exact Safari/Meta+C or clean live browser proof is claimed.
 - Root PR gate: `pnpm check` -> passed.
 - Autoreview: `.agents/skills/autoreview/scripts/autoreview --mode local` -> clean, no accepted/actionable findings.
 - Goal plan checker: `node .agents/skills/autogoal/scripts/check-complete.mjs docs/plans/2026-06-14-4612-safari-block-selection-copy.md` -> complete.
@@ -245,13 +245,13 @@ Final handoff contract:
 - Flow table:
   - Reproduced: red focused test, browser screenshot/source from issue
   - Verified: focused test, package typecheck, root check, browser route/caveat
-- Browser check: Local homepage was reachable and one Slate editor was detectable; exact clipboard shortcut was blocked by Browser policy, this is not a Safari engine, and dev-server output had unrelated package-dist module-resolution noise.
+- Browser check: Local homepage was reachable and one Plite editor was detectable; exact clipboard shortcut was blocked by Browser policy, this is not a Safari engine, and dev-server output had unrelated package-dist module-resolution noise.
 - Outcome: Block-selection copy/cut uses native event clipboard data instead of starting a second programmatic copy through `copy-to-clipboard`.
 - Caveat: Live Safari prompt cannot be proven from the in-app browser; package test locks the Safari-triggering call path.
 - Design:
   - Chosen boundary: `@platejs/selection` hidden input copy/cut event wiring plus selected-block clipboard serializer.
   - Why not quick patch: Browser prompt is caused by using `copy-to-clipboard` inside an existing copy event, so suppressing the prompt or disabling copy would be wrong.
-  - Why not broader change: Core Slate clipboard serialization already works with `DataTransfer`; the bug is the block-selection transport path.
+  - Why not broader change: Core Plite clipboard serialization already works with `DataTransfer`; the bug is the block-selection transport path.
 - Verified: red/green focused test, `pnpm turbo typecheck --filter=./packages/selection`, `pnpm lint:fix`, `pnpm check`, Browser route/caveat, autoreview.
 - PR body verified: `gh pr view 5018 --repo udecode/plate --json url,body --jq '{url:.url, body:.body}'` confirmed the task-style body, no self-link, and stricter browser caveat.
 
@@ -278,7 +278,7 @@ Task-style PR body contract:
 Final handoff / sync:
 - PR: https://github.com/udecode/plate/pull/5018
 - Issue / tracker: https://github.com/udecode/plate/issues/4612#issuecomment-4703053799
-- Browser proof: Local homepage reached in approved Browser and one Slate editor found; exact Meta+C/Safari proof blocked by Browser native clipboard shortcut policy; dev-server output later showed unrelated package-dist module-resolution noise, so live browser acceptance is not claimed.
+- Browser proof: Local homepage reached in approved Browser and one Plite editor found; exact Meta+C/Safari proof blocked by Browser native clipboard shortcut policy; dev-server output later showed unrelated package-dist module-resolution noise, so live browser acceptance is not claimed.
 - Caveats: Live Safari prompt verification is not available in this runtime; package regression test locks the Safari-triggering call path.
 
 Timeline:

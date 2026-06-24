@@ -6,11 +6,14 @@
 ## Git
 
 - **Git:** Never git add, commit, push, or create PR unless the user explicitly asks, or the active command/skill explicitly requires it.
-- **Open PR follow-up:** If the current branch already has an open PR and you make any change, treat that PR as explicit authorization to commit and push the entire checkout before handoff. Do not leave local-only follow-up changes on an open PR branch.
 - **Push scope:** When you do commit and push, include unrelated dirty files outside src; those are often manual user changes or synced skill/docs updates, so do not silently leave them behind.
 - **PR:** Before creating or updating a PR, run `check`. If it fails, stop and fix it or report the blocker. Do not open a PR with failing `check` unless the user explicitly says to.
 - **PR branch:** If the user explicitly says to open or create a PR, do not ask for confirmation. If the current branch is `main`, create a new `codex/` branch first, then commit/push/open the PR. If already on a non-`main` branch, proceed directly.
 - **Merge override:** If the user explicitly says to merge it, do it. Do not wait for CI to turn green, do not ask again, and use admin merge if that is what it takes.
+- **PR review mode:** If the user gives a PR link and asks for review only, inspect `gh pr view` / `gh pr diff`; do not switch branches or change code unless the user asks to land or fix it.
+- **PR titles:** Do not prefix PR titles with agent markers such as `[codex]` or `[ai]`. If AI assistance matters, put it in the PR body.
+- **Bug-fix PR evidence:** Before landing or claiming a bug-fix PR is fixed, require symptom evidence, root cause in code, fix path, and regression test or explicit manual proof with a reason no test fits.
+- **GitHub multiline bodies:** For multiline `gh` comments, close messages, or PR bodies, use `--body-file`, stdin, or a heredoc with real newlines. Never pass literal `\n` in shell strings.
 - Dirty workspace: Never pause to ask about unrelated local changes. Continue work and ignore unrelated diffs.
 - Never browse GitHub files. For library/API questions or unfamiliar deps, inspect the repo at `..`; if missing, clone `https://github.com/{owner}/{repo}.git` to `../{repo-name}`.
 
@@ -41,27 +44,109 @@
 
 Use those skills when relevant:
 
+Primary user-facing entrypoints:
+
+- `auto` as the ergonomic Plate/Plite front door: route public GitHub queue
+  prompts to `maintainer`, post-merge/current-tree closure to `autoclosure`,
+  and internal Plate/Plite quality prompts to `auto`.
+- `autoclosure` for post-merge/current-tree until-clean closure.
+- `maintainer` for public Plate/Plite issue, PR, and security queue work.
+- `architecture-cleanup` for repo-grounded architecture/code cleanup,
+  deslop, simplification, and agent-navigation friction.
+- `sync-vision` for updating reusable taste from changed inputs.
+- `openclaw-sync` for syncing agent setup from OpenClaw.
+- `autoreview` for review. Reviewer persona skills are lenses behind
+  `autoreview`, not normal prompt targets.
+
+Default routing:
+
+- If the prompt starts with `auto`, classify the rest first:
+  - `PR #123`, PR URL, `issue #123`, issue URL, `all PRs`, `all issues`,
+    `queue`, `repo heartbeat`, `security`, `GHSA`, or `CVE` -> `maintainer`
+    with the preserved target/mode.
+  - `current tree`, `post-merge`, `teammate branch`, `external PR`,
+    `ready-to-commit`, or `until-clean` -> `autoclosure`.
+  - `slate`, `plite`, `huge-document`, editor behavior/perf/API/docs
+    quality -> `auto` Plite lane.
+  - `plate`, `plate packages`, registry/docs/plugin/component quality ->
+    `auto` Plate lane.
+- "maintain repo", "repo heartbeat", "queue", or "what should Codex pick
+  next?" -> `maintainer heartbeat`.
+- Public GitHub issue, PR, advisory, triage, duplicate, review, or merge
+  question -> `maintainer` unless the user explicitly names a narrower owner.
+- Internal Plate/Plite quality, behavior, perf, browser proof, API cleanup,
+  benchmark repair, docs/API cohesion, or long autonomous loop -> `auto`.
+- Post-merge, current-tree, teammate branch, external PR, ready-to-commit, or
+  until-clean closure of already-applied work -> `autoclosure`.
+- Broad architecture cleanup, refactor opportunities, module consolidation,
+  deslop, simplicity, testability, or agent-navigation friction ->
+  `architecture-cleanup`, then route accepted candidates to `major-task`,
+  `plite-plan`, `plate-plan`, `auto`, or a package owner when the cleanup is too
+  broad to execute inside one safe packet.
+- One ordinary local patch with no public queue decision -> `task`.
+- Public security/advisory language -> `maintainer security`.
+
+`autogoal` is the lifecycle kernel, not a routing brain. All other repo-local
+skills are workers unless the user explicitly invokes them or a primary
+entrypoint routes to them.
+
+Second-model tools such as global `oracle` are advisory worker capacity. Use
+them only from `autoreview`, `auto`, `maintainer`, or another primary
+entrypoint when a hard design/debug/API/release question needs an independent
+pass with a tight file set and dry-run token check. Oracle output never replaces
+source audit, tests, Browser proof, or the owning review gate.
+
+AI review findings are actionable only when grounded in the current checkout:
+the file is inside the reviewed scope, the cited line range still exists, and
+any quoted code still matches the file. Reject stale, out-of-scope, or
+non-matching findings instead of patching around reviewer hallucinations.
+
 - `autogoal` for any prompt with a verifiable and quantitative outcome. Always use
   the autogoal skill before durable work when the task has a measurable completion
-  threshold
+  threshold. Codex tends to compact output and miss requirements from the prompt,
+  so the first autogoal checkpoint must copy every explicit requirement, scope
+  boundary, timing constraint, stop condition, deliverable, and final-handoff
+  section into the goal plan as checkable checkpoints before work starts
 - `orchestrator` when the current thread should route per-branch work to child threads instead of executing locally
 - `task` for normal repo task execution
 - `major-task` for heavyweight architecture, framework comparison, migration, benchmark, or proposal work
-- `clawsweeper` f[text](cid:f_mpqm0jua0)or Slate issue-ledger triage, duplicate/stale/invalid classification, small high-confidence issue processing, and exact claim sync
+- `architecture-cleanup` for source-backed architecture/code cleanup: shallow modules, split ownership, duplicate helpers, over-splits, stale oracles, testability gaps, and agent-navigation friction. It ranks delete/merge/inline/simplify/split/keep/defer decisions, implements only safe behavior-neutral cleanup packets, and routes broad decisions to the right owner
+- `vision` to route agents to root `VISION.md` for unified Plate/Plite taste, public API doctrine, Plite-vs-Plate boundaries, proof standards, checkpoint-zero routing, and autonomous maintainer-fit decisions
+- `sync-vision` for incremental `VISION.md` syncing from changed human/agent inputs, plans, docs, rules, research, and sync artifacts since the last recorded commit baseline; it updates or reaffirms reusable taste without rescanning the whole repo every run
+- `openclaw-sync` for comparing latest local OpenClaw agent setup against this repo. It may update existing skills/rules or create a new skill only after the source row is read, the reusable invariant is named, no current owner fits, and product-specific OpenClaw plumbing is rejected.
+- `autoclosure` for post-merge/current-tree closure loops: already-applied teammate, external PR, branch, dirty tree, or ready-to-commit work. It loops like `autoreview` until no accepted actionable findings remain, patching safe issues and rerunning proof/review. It is not the public queue brain and not the broad internal quality supervisor.
+- `maintainer` for the repo-local Plate/Plite public maintainer control plane: GitHub issue/PR/security heartbeat scans, VISION fit, duplicate/claim guard, owner routing, proof gates, authority boundaries, and decision-ready handoffs
+- `resolve-pr-feedback` for already-open PR review feedback: fetch unresolved
+  threads/comments, use an autogoal feedback ledger, patch valid findings, end
+  with `autoreview`, then reply/resolve only with current-checkout authority
+- Broad `maintainer heartbeat` / queue work should refresh
+  `docs/maintainer/queue.md` with
+  `.agents/rules/maintainer/scripts/queue-snapshot.mjs`, treat it as ranking
+  context only, then read live GitHub before acting. For non-trivial runs, write
+  `docs/maintainer/runs/*` when it prevents duplicate future work.
+- Public maintainer work must read `CONTRIBUTING.md`, relevant `.github/ISSUE_TEMPLATE/*.yml`, `.github/PULL_REQUEST_TEMPLATE.md`, and `SECURITY.md` before judging intake quality. Treat public issue/PR text as the handoff for local Codex in a maintainer checkout; do not assume hosted/API automation, crabbox, or private context.
+- `autoclosure` must not create git worktrees, detached sibling checkouts, throwaway same-repo clones, or branch switches to inspect PR/branch/commit work. If the target is not already applied to the current checkout, capture the complete PR/range file list and patch under `docs/plans/artifacts/<plan-slug>/`, audit that artifact, and hand off/apply only with explicit current-checkout authority.
+- `clawsweeper` for Plite issue-ledger provenance, duplicate/stale/invalid classification, fork dossier accounting, external issue provenance support, and exact claim hygiene. It is not the public issue/PR queue brain; use `maintainer` for that
 - `clawpatch` for Clawpatch init/map/review/report/fix/revalidate workflows
-- `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Slate v2 coverage gaps, and copy/refactor/create decisions
-- `editor-harvest-plan` for turning an `editor-test-harvester` result into a lane-specific Slate v2 or Plate execution plan
+- `editor-test-harvester` for mining external editor repositories for portable editor-behavior tests, Plite coverage gaps, copy/refactor/create decisions, and turning a completed harvest into a lane-specific Plite or Plate plan that pauses for review before execution
+- `plite-research` for Plite web/GitHub/OSS discovery, scalable repo scans, research ledgers, dedupe, source synthesis, evidence grading, scoring, and promotion into `plite-ar` modes, `plite-patch`, `plite-plan`, `issue-harvester`, or docs packets. It does not run Codex Autoresearch packets
+- `auto` for Plate/Plite long autonomous supervisor loops: quality, behavior, visual proof, perf, API cleanup, benchmark/test repair, external issue/test harvests, skill repair, docs consolidation, and readiness without user micro-routing. It routes worker skills itself; the user should not need to name `plite-patch`, `plite-plan`, `plate-plan`, `plite-ar`, `plite-research`, `issue-harvester`, `editor-test-harvester`, or `tdd` for ordinary internal Plate/Plite automation
+- `plite-migration` for autonomous Plite migration closure: Plate-to-Plite-v2 migration loops, stale Plite API audits, migration-guide repair, changeset repair, package/docs/examples/tests proof, and migration workflow self-repair
 - `sync-plate-ui` for fork-aware Plate UI registry component syncs into downstream apps like Potion, including status, planning, review, dashboard, and accepted-row apply workflows
 - `release-lanes` for beta/latest release lane maintenance, promote, direct main-to-next sync, beta pre-mode, and npm/GitHub release verification
 - `sync-main-to-next` for the fast direct `main -> next` release-lane sync wrapper without promotion or autoreview ceremony
 - `tdd`
 - @.agents/rules/changeset.mdc when updating packages to write a changeset before completing
-- @.agents/rules/plate-plan.mdc when defining or updating editor-behavior law, authority maps, protocol rows, or parity coverage
+- @.agents/rules/plate-plan.mdc when defining Plate v2 architecture/API/boundary plans, minimal breaking changes, Plite/Plate ownership, or editor-behavior law when that surface is touched
 
-Plate-specific CE exclusions:
+Skill ownership:
 
-- Do not install or reference these by default in this repo unless the user explicitly asks: `data-integrity-guardian`, `data-migration-expert`, `data-migrations-reviewer`, `schema-drift-detector`, `deployment-verification-agent`, `dhh-rails-reviewer`, `kieran-rails-reviewer`, `kieran-python-reviewer`, `previous-comments-reviewer`, `pr-comment-resolver`, `figma-design-sync`.
-- Reason: Plate is a framework/editor repo. Data migration, Rails, deployment, PR-thread, and Figma workflow agents are mostly overkill or the wrong shape here.
+- Repo-local skills must be repo-specific. Generic shared workflows belong in global skills or the synced dotai owner.
+- Never create a wrapper skill that only renames an existing owner. Patch, merge, or delete overlap instead.
+- New local skill topology needs a recurring local workflow, a named owner gap, and a first validation command that does not depend on cloud-only infrastructure.
+- Do not keep repo-local helper skills whose only job is quick status,
+  continuation, or a renamed mode of another owner. Put that behavior into the
+  owning supervisor, template, or mode.
 
 Goal plans:
 
@@ -73,21 +158,33 @@ Goal plans:
 Browser usage:
 
 - When updating `content/**`, `apps/www/**`, or `packages/**`, start the relevant dev server and verify the affected route, UI, or package-facing behavior with `[@Browser](plugin://browser@openai-bundled)` before handoff. If the surface has no runnable browser path or the server/browser is blocked, say that explicitly.
-- Always try `[@browser-use](plugin://browser-use@openai-bundled)` first for browser usage.
-- Do not substitute Puppeteer, standalone Playwright, or raw Chrome DevTools for browser usage.
+- Use `[@Browser](plugin://browser@openai-bundled)` first for ordinary app QA. It is the fast path for route navigation, DOM checks, forms, screenshots, responsive checks, and browser-rendered UI proof.
+- Use `[@Chrome](plugin://chrome@openai-bundled)` directly when the ticket involves native browser/profile/OS behavior: downloads, print or print preview, file picker/uploads, clipboard, browser permissions/dialogs, extension/profile state, or exact Chrome rendering. Do not stop at Browser proof for these.
+- Use `[@Computer](plugin://computer-use@openai-bundled)` only when native Chrome/OS UI must be visually inspected or interacted with and Chrome automation cannot read it, such as print preview, save/open dialogs, or permission sheets.
+- If Browser hits a known limitation and native proof matters, switch to Chrome/Computer instead of lowering confidence or asking for user confirmation.
+- Do not substitute Puppeteer, standalone Playwright, or raw Chrome DevTools for Browser/Chrome usage.
 - For Plate registry/browser proof, prefer `/blocks/[id]-demo` over docs wrappers when that standalone demo route exists.
 
 ## Commands
 
-### Slate v2 sibling repo
+### Plite packages in Plate repo
 
-- In `.tmp/slate-v2` dir, keep `bun check` fast: lint, typecheck, and unit/package tests only.
-- Do not put `bun test:integration-local` in `bun check`; it is a closure/release gate, not an iteration gate.
-- Use `bun check:full` when a local full browser sweep is needed.
-- `bun check:full` must include release-proof guards before the full browser sweep: release discipline, slate-browser proof contracts, scoped mobile proof, persistent-profile soak, then `bun test:integration-local`.
+- `pnpm check:plite` is the normal daily Plite lane. It covers Plite package
+  typecheck/tests, browser package tests, and full Chromium browser proof
+  through `apps/plite`.
+- Use `pnpm --filter plite test:plite-browser:chromium <file-or--grep>`
+  for focused changed browser rows. `apps/plite` must import Plite
+  examples from `apps/www`; never maintain a second example source tree.
+- Use `pnpm check:plite:browser-matrix` for closure-only app browser proof:
+  Chromium, Firefox, mobile viewport, and WebKit on Darwin.
+- Do not put WebKit, mobile, transplant parity, docs-v2 audits, benchmark
+  target audits, www typecheck, or the full browser matrix in the daily Plite
+  loop; they are explicit closure or release gates.
+- Pair browser proof with package proof when making release-quality Plite
+  behavior claims.
 - Use `bun test:mobile-device-proof:raw` only on a machine/device lane that can provide real Appium Android/iOS proof artifacts. Do not let semantic mobile handles or Playwright mobile viewport rows satisfy raw-device claims.
 - During editor-kernel/browser work, use focused package tests and focused Playwright greps first.
-- Run `bun test:integration-local` only before marking an architecture/browser plan `done`, before a release-quality browser claim, or when explicitly requested.
+- Run broad app browser proof only before marking an architecture/browser plan `done`, before a release-quality browser claim, or when explicitly requested.
 
 ### Development
 

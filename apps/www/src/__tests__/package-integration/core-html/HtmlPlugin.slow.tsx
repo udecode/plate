@@ -8,8 +8,8 @@ import { jsxt } from '@platejs/test-utils';
 import { afterEach, describe, expect, it, spyOn, type Mock } from 'bun:test';
 
 import {
-  createSlateEditor,
-  type SlateEditor,
+  createBasePlateEditor,
+  type BasePlateEditor,
 } from '../../../../../../packages/core/src/lib/editor';
 import { BaseParagraphPlugin } from '../../../../../../packages/core/src/lib/plugins/paragraph';
 
@@ -42,7 +42,7 @@ describe('when inserting html', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const expected = (
         <editor>
@@ -55,7 +55,7 @@ describe('when inserting html', () => {
 
       const plugins = [HeadingPlugin];
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins,
         selection: input.selection,
         value: input.children,
@@ -75,7 +75,7 @@ describe('when inserting html', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const expected = (
         <editor>
@@ -88,7 +88,7 @@ describe('when inserting html', () => {
 
       const plugins = [HeadingPlugin];
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins,
         selection: input.selection,
         value: input.children,
@@ -108,7 +108,7 @@ describe('when inserting html', () => {
             <cursor />
           </hp>
         </editor>
-      ) as any as SlateEditor;
+      ) as any as BasePlateEditor;
 
       const expected = (
         <editor>
@@ -123,7 +123,7 @@ describe('when inserting html', () => {
 
       const plugins = [BaseParagraphPlugin];
 
-      const editor = createSlateEditor({
+      const editor = createBasePlateEditor({
         plugins,
         selection: input.selection,
         value: input.children,
@@ -148,7 +148,7 @@ describe('when inserting empty html', () => {
         <cursor />
       </hp>
     </editor>
-  ) as any as SlateEditor;
+  ) as any as BasePlateEditor;
 
   // noinspection CheckTagEmptyBody
   const dataTransfer = {
@@ -167,7 +167,7 @@ describe('when inserting empty html', () => {
   it('keeps the editor unchanged', () => {
     const plugins = [BoldPlugin];
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins,
       selection: input.selection,
       value: input.children,
@@ -187,7 +187,7 @@ describe('when inserting an iframe without src', () => {
         <cursor />
       </hp>
     </editor>
-  ) as any as SlateEditor;
+  ) as any as BasePlateEditor;
 
   // noinspection CheckTagEmptyBody
   const data = {
@@ -208,7 +208,7 @@ describe('when inserting an iframe without src', () => {
   it('falls back to inserting the iframe text content', () => {
     const plugins = [MediaEmbedPlugin];
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins,
       selection: input.selection,
       value: input.children,
@@ -228,7 +228,7 @@ describe('when inserting link with href', () => {
         <cursor />
       </hp>
     </editor>
-  ) as any as SlateEditor;
+  ) as any as BasePlateEditor;
 
   // noinspection CheckTagEmptyBody
   const data = {
@@ -252,7 +252,7 @@ describe('when inserting link with href', () => {
   it('insert the link with url', () => {
     const plugins = [BaseParagraphPlugin, LinkPlugin];
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins,
       selection: input.selection,
       value: input.children,
@@ -272,7 +272,7 @@ describe('when inserting plain text', () => {
         <cursor />
       </hp>
     </editor>
-  ) as any as SlateEditor;
+  ) as any as BasePlateEditor;
 
   const data = {
     getData: (format: string) => (format === 'text/html' ? '' : 'inserted'),
@@ -298,7 +298,7 @@ describe('when inserting plain text', () => {
       <fragment>inserted</fragment>
     );
 
-    const editor = createSlateEditor({
+    const editor = createBasePlateEditor({
       plugins: [],
       selection: input.selection,
       value: input.children,

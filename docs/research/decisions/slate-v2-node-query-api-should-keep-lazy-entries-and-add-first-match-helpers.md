@@ -49,21 +49,21 @@ of a generator or returning a generator that may be consumed after the boundary.
 
 ## Current Source Evidence
 
-- `.tmp/slate-v2/packages/slate/src/editor/nodes.ts:6` is still a generator-based
+- `packages/slate/src/editor/nodes.ts:6` is still a generator-based
   editor query.
-- `.tmp/slate-v2/packages/slate/src/interfaces/node.ts:677` is still a
+- `packages/slate/src/interfaces/node.ts:677` is still a
   generator-based raw tree query.
-- `.tmp/slate-v2/packages/slate/src/core/public-state.ts` exposes
+- `packages/slate/src/core/public-state.ts` exposes
   `state.nodes.entries`, `state.nodes.find`, `state.nodes.some`, and
   `state.nodes.toArray`.
-- `.tmp/slate-v2/site/examples/ts/inlines.tsx`, `site/examples/ts/richtext.tsx`,
+- `apps/www/src/app/(app)/examples/slate/_examples/inlines.tsx`, `site/examples/ts/richtext.tsx`,
   `site/examples/ts/tables.tsx`, and `site/examples/ts/check-lists.tsx` use
   `find` / `some` for first-match and boolean checks.
-- `.tmp/slate-v2/packages/slate-dom/src/plugin/with-dom.ts` uses
+- `packages/slate-dom/src/plugin/with-dom.ts` uses
   `state.nodes.toArray` for read-boundary materialization before creating path
   refs.
-- `.tmp/slate-v2/packages/slate/test/query-contract.ts` and
-  `.tmp/slate-v2/packages/slate/test/state-tx-public-api-contract.ts` prove the
+- `packages/slate/test/query-contract.ts` and
+  `packages/slate/test/state-tx-public-api-contract.ts` prove the
   public query contract through `editor.read`.
 
 ## Reference Systems

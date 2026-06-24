@@ -5,7 +5,7 @@ Move reusable goal templates from `docs/goals/templates` to
 `docs/plans/templates`, complete only when helper scripts resolve and create
 templates from the new location, source rules and generated skill output no
 longer reference `docs/goals/templates`, old template files are gone, smoke
-tests prove static generic and Slate shells render into `docs/plans`, incomplete
+tests prove static generic and Plite shells render into `docs/plans`, incomplete
 shells are rejected, stale-pattern search is clean, `pnpm install` syncs
 generated output, `pnpm lint:fix` is stable, and this plan passes
 `check-complete`.
@@ -16,7 +16,7 @@ docs/plans/2026-05-24-move-goal-templates-under-plans.md
 Completion threshold:
 - `docs/plans/templates/goal.md` and `docs/plans/templates/slate-ralplan.md`
   exist; no reusable goal templates remain under `docs/goals/templates`;
-  helper scripts and rule guidance use `docs/plans/templates`; generic and Slate
+  helper scripts and rule guidance use `docs/plans/templates`; generic and Plite
   smoke plans render and are rejected as incomplete until filled; final lint and
   completion checks pass.
 
@@ -108,14 +108,14 @@ Timeline:
 - 2026-05-24T11:31:41.980Z Goal plan created.
 - 2026-05-24T13:31:41+02:00 Filled objective, checklist, scope, and initial
   findings before editing source files.
-- 2026-05-24T13:33:00+02:00 Moved `goal.md` and `slate-ralplan.md` to
+- 2026-05-24T13:33:00+02:00 Moved `goal.md` and `plite-ralplan.md` to
   `docs/plans/templates`.
 - 2026-05-24T13:33:40+02:00 Updated scratchpad/template helper resolvers,
-  helper text, goal rules, Slate Ralplan rules, task rules, and repo agent
+  helper text, goal rules, Plite Ralplan rules, task rules, and repo agent
   guidance to use `docs/plans/templates`.
 - 2026-05-24T13:33:54+02:00 `pnpm install` synced generated output.
 - 2026-05-24T13:33:54+02:00 Ran script syntax checks, template-file
-  existence checks, new-template creation smoke, generic and Slate static
+  existence checks, new-template creation smoke, generic and Plite static
   scratchpad render smokes, expected incomplete-plan rejection, stale template
   path search, and smoke cleanup.
 - 2026-05-24T13:33:54+02:00 `pnpm lint:fix` passed with no fixes applied.
@@ -129,7 +129,7 @@ Verification evidence:
 - `test ! -e docs/goals` -> passed.
 - `node .agents/rules/goal/scripts/create-goal-template.mjs --path docs/plans/templates/smoke-template.md` -> created template under `docs/plans/templates`; expected core rows found; smoke file removed.
 - `node .agents/rules/goal/scripts/create-goal-scratchpad.mjs --title "smoke plans template generic" --path docs/plans/2026-05-24-smoke-plans-template-generic.md` -> rendered generic static shell from `docs/plans/templates`; checker rejected unfilled shell as expected; smoke file removed.
-- `node .agents/rules/goal/scripts/create-goal-scratchpad.mjs --template slate-ralplan --title "smoke plans template slate" --path docs/plans/2026-05-24-smoke-plans-template-slate.md` -> rendered Slate static shell from `docs/plans/templates`; checker rejected unfilled shell as expected; smoke file removed.
+- `node .agents/rules/goal/scripts/create-goal-scratchpad.mjs --template slate-ralplan --title "smoke plans template slate" --path docs/plans/2026-05-24-smoke-plans-template-slate.md` -> rendered Plite static shell from `docs/plans/templates`; checker rejected unfilled shell as expected; smoke file removed.
 - `rg -n "docs/goals/templates|docs/goals/\*\* runtime state" .agents/rules .agents/AGENTS.md AGENTS.md .agents/skills/goal/SKILL.md .agents/skills/slate-ralplan/SKILL.md` -> no matches; stale template path search clean.
 - `pnpm lint:fix` -> passed; `Checked 3423 files in 5s. No fixes applied.`
 - `node .agents/rules/goal/scripts/check-complete.mjs docs/plans/2026-05-24-move-goal-templates-under-plans.md` -> passed with `[goal] complete: docs/plans/2026-05-24-move-goal-templates-under-plans.md`.

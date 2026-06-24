@@ -1,0 +1,6 @@
+* text=auto eol=lf
+
+# Codex Autoresearch ledger files
+autoresearch.jsonl text eol=lf
+autoresearch.md text eol=lf
+autoresearch.ideas.md text eol=lf

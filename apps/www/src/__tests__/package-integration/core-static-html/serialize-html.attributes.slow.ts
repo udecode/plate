@@ -21,13 +21,13 @@ describe('core static serializeHtml attributes', () => {
               node: {
                 isDecoration: false,
                 props: {
-                  'data-slate-test': true,
+                  'data-plite-test': true,
                 },
                 textProps: {
-                  'data-slate-test': 'text',
+                  'data-plite-test': 'text',
                 },
                 leafProps: {
-                  'data-slate-test': 'leaf',
+                  'data-plite-test': 'leaf',
                 },
               },
             },
@@ -42,7 +42,7 @@ describe('core static serializeHtml attributes', () => {
     });
 
     expect(html).toEqual(
-      '<div data-slate-editor="true" data-slate-node="value"><div data-slate-node="element" data-slate-type="p" style="position:relative"><span data-slate-node="text" data-slate-test="text" data-slate-italic="true"><em data-slate-test="true"><span data-slate-leaf="true" data-slate-test="leaf" data-slate-bold="true"><strong><span data-slate-string="true">Right Aligned Heading</span></strong></span></em></span><span data-slate-node="text" data-slate-test="text" data-slate-italic="true"><em data-slate-test="true"><span data-slate-leaf="true" data-slate-test="leaf"><span data-slate-string="true">Right Aligned Heading</span></span></em></span></div></div>'
+      '<div data-plite-editor="true" data-plite-node="value"><div data-plite-node="element" data-plite-type="p" style="position:relative"><span data-plite-node="text" data-plite-test="text" data-plite-italic="true"><em data-plite-test="true"><span data-plite-leaf="true" data-plite-test="leaf" data-plite-bold="true"><strong><span data-plite-string="true">Right Aligned Heading</span></strong></span></em></span><span data-plite-node="text" data-plite-test="text" data-plite-italic="true"><em data-plite-test="true"><span data-plite-leaf="true" data-plite-test="leaf"><span data-plite-string="true">Right Aligned Heading</span></span></em></span></div></div>'
     );
   });
 });

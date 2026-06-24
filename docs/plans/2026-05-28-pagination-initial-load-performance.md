@@ -81,7 +81,7 @@ Work Checklist:
 - [x] Final handoff shape decided: bug/perf fix with commands and caveat.
 - [x] Branch handling recorded as N/A: no commit or PR requested.
 - [x] Local-env-rot retry policy recorded as N/A: failures matched test behavior, not install corruption.
-- [x] Workspace authority recorded: all commands ran in `/Users/zbeyens/git/plate-2/.tmp/slate-v2`; autogoal plan check runs in `/Users/zbeyens/git/plate-2`.
+- [x] Workspace authority recorded: all commands ran in `/Users/zbeyens/git/plate-2/Plate repo root`; autogoal plan check runs in `/Users/zbeyens/git/plate-2`.
 - [x] High-risk note recorded: browser startup/performance path could regress if fixture counts are compared in pages vs blocks again.
 - [x] Review/autoreview target marked N/A for this narrow follow-up; targeted tests cover the changed behavior.
 - [x] Agent-native review decision recorded as N/A: no `.agents`, hooks, or skill files changed.
@@ -100,7 +100,7 @@ Completion Gates:
 | Package exports or file layout changed | no | N/A | No package exports or file layout changed. |
 | Package manifests, lockfile, or install graph changed | no | N/A | No package manifests or install graph changed. |
 | Agent rules or skills changed | no | N/A | No agent rules or skills changed. |
-| Workspace authority proof | yes | Verify in owning workspace | Commands ran in `.tmp/slate-v2`; plan check runs in repo root. |
+| Workspace authority proof | yes | Verify in owning workspace | Commands ran in `Plate repo root`; plan check runs in repo root. |
 | Browser surface changed | yes | Capture route proof | Local Playwright route proof recorded; browser-use unavailable from discovered tools. |
 | Browser console/network check | yes | Check page errors | One-off after fix had no page errors; only React DevTools and HMR logs. |
 | Browser final proof artifact | yes | Record exact route proof | After fix warmed dev: DOMContentLoaded 393ms, visible editor 2117ms, 1105 pages, 990 stress pages, 610 DOM elements, 6 page surfaces. |

@@ -40,7 +40,7 @@ Move adjacent-cell ownership into a shared query helper that resolves neighbors 
 - resolves the current cell, row, and table with `getTableEntries(...)`
 - reads the current visual row and column with `getCellIndices(...)`
 - finds the real adjacent cell with `findCellByIndexes(...)`
-- reconstructs the actual Slate path with `getCellPath(...)`
+- reconstructs the actual Plite path with `getCellPath(...)`
 
 `getTopTableCell(...)` and `getLeftTableCell(...)` both delegate to that helper.
 

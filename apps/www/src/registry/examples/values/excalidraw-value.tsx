@@ -4,10 +4,10 @@ import { jsx } from '@platejs/test-utils';
 
 jsx;
 
-import type { TExcalidrawElement } from '@platejs/excalidraw';
+import type { ExcalidrawElement } from '@platejs/excalidraw';
 import type { NodeProps } from 'platejs';
 
-export const excalidrawInitialData: NodeProps<TExcalidrawElement> = {
+export const excalidrawInitialData: NodeProps<ExcalidrawElement> = {
   data: {
     elements: [
       {

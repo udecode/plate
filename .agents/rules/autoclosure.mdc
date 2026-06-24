@@ -1,0 +1,250 @@
+---
+description: Post-merge and current-tree closure loop for Plate/Slate. Use when the user wants already-landed, teammate, external PR, branch, or dirty current-tree work made cohesive until no accepted actionable findings remain, like autoreview but with safe fixes, proof reruns, docs/API/generated-output audits, and final review attention.
+argument-hint: '[current tree | post-merge | <branch|commit|pr|path>] [until-clean | loop | review]'
+disable-model-invocation: true
+---
+
+# Autoclosure
+
+Handle $ARGUMENTS.
+
+Use this when work already exists and the job is to make it feel native to the
+repo before commit, handoff, or the next task.
+
+This is a closure loop, not a broad quality supervisor. It keeps going like
+`autoreview`, but it is allowed to patch safe issues, rerun proof, invoke
+worker skills, and repeat until no accepted actionable findings remain.
+
+## Core Take
+
+`autoreview` asks: "What is wrong with this diff?"
+
+`autoclosure` asks: "Is this whole already-landed/current-tree change coherent
+enough that we would be comfortable owning it?"
+
+Loop:
+
+```txt
+target -> requirements -> changed-surface map -> coherence audit
+-> focused proof -> autoreview -> verify findings -> patch/reject
+-> architecture/docs/API/generated-output checks -> rerun proof/review
+-> clean or stop
+```
+
+## Use When
+
+- The user invokes `autoclosure`.
+- The user says post-merge, merged PR, teammate branch, external PR, current
+  tree closure, until clean, loop until clean, ready to commit, or "make sure
+  nothing is missing" for already-applied work.
+- A PR or branch was merged locally and needs cohesion with `VISION.md`, docs,
+  tests, examples, package exports, generated output, and skill routing.
+- A broad supervisor such as `auto`, `maintainer`, `slate-ar`, or
+  `slate-migration` reaches final current-tree cleanup before handoff.
+- The work is not one bug fix anymore; it is a diff/tree quality closure pass.
+
+## Do Not Use When
+
+- The user asks to scan public GitHub issues/PRs/security queue: use
+  `maintainer`.
+- The user asks for one structured review pass only: use `autoreview`.
+- The user asks for broad internal quality/perf/research over hours: use
+  `auto`.
+- The user asks for architecture cleanup as the primary goal: use
+  `architecture-cleanup`.
+- The user asks for one ordinary patch with no existing diff/branch/merge
+  context: use `task`, `slate-patch`, or the package owner.
+- The next move is a public API/runtime/product design fork: route to
+  `slate-plan`, `plate-plan`, or `major-task`.
+
+## Invocation
+
+Default target is `current tree`.
+
+Natural prompts:
+
+- `autoclosure current tree`
+- `autoclosure post-merge`
+- `autoclosure yjs branch`
+- `autoclosure PR 123 until-clean`
+- `autoclosure before commit`
+
+Treat `until-clean`, `loop`, and omitted mode as loop-until-clean. This is not
+a timed soak. It stops when the closure threshold is met or a real boundary
+appears.
+
+## Goal Contract
+
+Use `autogoal` for non-trivial closure work.
+
+```bash
+node .agents/skills/autogoal/scripts/create-goal-scratchpad.mjs \
+  --template autoclosure \
+  --title "<target> closure"
+```
+
+Add packs only when the closure target has unusual surfaces the template does
+not already cover. Do not use `task` for normal autoclosure; the dedicated
+template owns repeated review/proof closure.
+
+The first checkpoint must copy the user's exact target, scope, non-goals, stop
+conditions, proof expectations, and final handoff requirements into the plan.
+
+## Target Selection
+
+Resolve the review target before running proof:
+
+- `current tree`: inspect modified and untracked files as the target. Do not
+  warn about unrelated dirty files; this skill exists to close the current
+  checkout.
+- `post-merge`: inspect the current checkout plus recent merge/changed files
+  when identifiable. If no merge metadata is obvious, treat current tree as the
+  target and record that basis.
+- `branch`: review against the relevant base branch when the branch is named.
+- `commit`: review that commit when named.
+- `PR`: never create a sibling worktree or detached checkout for closure. If
+  the PR is public queue work, route to `maintainer`. If the user explicitly
+  wants autoclosure on a PR, capture the complete PR file list and patch in the
+  current checkout, store it beside the plan, and audit from that captured diff
+  plus current source. Patch code only when the PR is already applied to the
+  current checkout, or when the user explicitly asks to apply the PR diff here.
+
+Every proof command must name the cwd/package/app it proves.
+
+## No Worktree Rule
+
+Do not use `git worktree`, detached sibling checkouts, throwaway clones of the
+same repo, or branch switching to perform autoclosure. Closure means "make this
+checkout coherent." Creating a second checkout splits evidence from the files
+the user will commit and creates fake readiness.
+
+If the target is not present in the current checkout, do not patch a shadow
+copy. Capture evidence instead:
+
+```bash
+mkdir -p docs/plans/artifacts/<plan-slug>
+gh pr view <number-or-url> \
+  --json number,title,url,baseRefName,headRefName,author,commits,files \
+  > docs/plans/artifacts/<plan-slug>/pr-<number>.json
+gh pr diff <number-or-url> --patch \
+  > docs/plans/artifacts/<plan-slug>/pr-<number>.patch
+gh pr diff <number-or-url> --name-only \
+  > docs/plans/artifacts/<plan-slug>/pr-<number>.files
+```
+
+If the target is a local commit/range rather than a GitHub PR, capture:
+
+```bash
+git show --stat --name-only <ref>
+git diff --name-only <base>..<head>
+git diff --patch <base>..<head> \
+  > docs/plans/artifacts/<plan-slug>/<base>..<head>.patch
+```
+
+The plan's target map must cite these artifact paths. If the captured PR/range
+needs code changes, the next owner is `maintainer`, `task`, or user-directed
+apply-to-current-checkout work. Do not call the PR/range clean as current-tree
+closure until the changes are actually in this checkout and proof runs here.
+
+## Closure Loop
+
+Repeat until clean:
+
+1. **Requirement checkpoint:** read latest user request, active plan, root
+   `VISION.md`, `.agents/AGENTS.md`, and the relevant `docs/vision/*.md`.
+2. **Changed-surface map:** list changed files, untracked files, generated
+   outputs, package exports, docs, tests, examples, agent rules, and browser
+   surfaces in scope. For PR/range targets not applied to this checkout, use
+   the captured diff artifacts as the surface map and stop before patching
+   current files.
+3. **Coherence audit:** look for stale dirty fixes, fake aliases, docs/API
+   mismatch, orphan tests, obsolete generated output, weak commands, missing
+   changesets when package policy requires one, and violated Slate-vs-Plate
+   boundaries.
+4. **Focused proof:** run the smallest commands that prove changed behavior,
+   package API, docs/build output, browser surface, generated skills, or source
+   invariants.
+5. **Autoreview:** load `autoreview`, choose the correct target mode, and run
+   it. Verify every accepted finding against current source before patching.
+6. **Patch/reject:** patch safe findings at the right owner. Reject stale,
+   speculative, out-of-scope, or over-complex findings with a reason in the
+   plan.
+7. **Architecture cleanup:** invoke `architecture-cleanup` when findings show
+   shallow modules, over-splits, fake wrappers, ownership confusion, duplicated
+   helpers, or agent-navigation friction.
+8. **Rerun:** after any patch, rerun affected focused proof and rerun
+   `autoreview` when the diff materially changed.
+9. **Clean pass:** stop only after the latest pass has zero accepted actionable
+   findings and all required proof/generation rows are closed. For risky
+   public API, agent-rule, package-boundary, or broad refactor changes, require
+   two consecutive clean closure passes after the last patch.
+
+## Clean Definition
+
+Clean means:
+
+- zero accepted actionable `autoreview` findings remain;
+- all accepted architecture-cleanup findings are fixed, rejected, or routed
+  with owner and reason;
+- required focused proof after the last patch passes or is explicitly N/A;
+- generated outputs affected by the diff are synced or intentionally absent;
+- docs/API/examples/tests are coherent with current source;
+- high-risk items are in `Needs your attention` with concrete anchors;
+- no dirty speculative half-patch remains;
+- the changed files being called clean are in the current checkout. Captured
+  PR/range diffs can be reviewed, but they are not "current-tree clean" until
+  applied and verified here;
+- final handoff has changed list, commands, review attention, residual risks,
+  and next owner.
+
+Do not call a closure clean because "review was mostly fine" or because one
+review engine was terse. Clean is a ledger state, not a vibe.
+
+## Stop Conditions
+
+Stop when:
+
+- clean definition is satisfied;
+- commit, push, PR, release, publish, merge, external post/send, or destructive
+  cleanup requires user authority;
+- `VISION.md` does not cover a taste/product/API decision and no safe alternate
+  closure work remains;
+- the next fix requires a broad architecture plan rather than a safe closure
+  packet;
+- required proof needs unavailable credentials/devices/services;
+- the same real blocker repeats and no autonomous progress remains.
+
+Queue soft questions in the final handoff when safe work remains. Ask only when
+the answer gates the next safe closure move.
+
+## Worker Routing
+
+- `autoreview`: mandatory review engine and rerun loop.
+- `architecture-cleanup`: source-shape/deslop/agent-navigation findings.
+- `auto`: broader internal quality/perf/research loops after closure discovers
+  a bigger lane than "make this diff clean".
+- `maintainer`: public GitHub issue/PR/security queue decisions or public
+  mutations.
+- `slate-plan` / `plate-plan`: public API/runtime/product architecture forks.
+- `task`, `slate-patch`, package owners: narrow implementation fixes found by
+  closure.
+- `sync-vision`: reusable taste discovered during closure.
+
+## Final Handoff
+
+Report:
+
+- goal plan path and closure target;
+- PR/range diff artifacts captured, when the target is not already applied to
+  the current checkout;
+- loop count and clean definition result;
+- changed list grouped by code, tests/proof, docs/examples, generated outputs,
+  skills/workflow, and reverted/quarantined packets;
+- accepted findings fixed;
+- findings rejected with reasons;
+- commands run with cwd;
+- `autoreview` result and rerun count;
+- architecture-cleanup result when used;
+- needs-your-attention, capped to the few highest-value review items;
+- stopping checkpoints and exact user decisions needed;
+- residual risks and next owner.

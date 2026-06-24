@@ -26,13 +26,13 @@ ownership rules.
   workflow, and linked reference files
 - public type tests are a better pattern source than ad hoc examples
 - callback/configure/extend paths already provide editor context, so teaching
-  explicit `SlateEditor` threading as a default would narrow typing for no gain
+  explicit `PliteEditor` threading as a default would narrow typing for no gain
 - repo learnings already prefer hard ownership boundaries over fuzzy "everything
   lives in one lane" documentation
 - scope should stay on plugin authoring; documentation work should link out to
   `docs-plugin` instead of bloating this skill
 - real package pairs back a hard architecture rule:
-  `src/lib` semantic plugins first with `createSlatePlugin` /
+  `src/lib` semantic plugins first with `createPlitePlugin` /
   `createTSlatePlugin`, then React/Plate wrappers with `toPlatePlugin`,
   `toTPlatePlugin`, or `createPlatePlugin` only when the React surface is
   genuinely required
@@ -43,7 +43,7 @@ ownership rules.
 ## Open Questions
 
 - how much testing/release guidance belongs in the skill versus references
-- exact exception set for breaking the Slate-first law
+- exact exception set for breaking the Plite-first law
 
 ## Working Plan
 

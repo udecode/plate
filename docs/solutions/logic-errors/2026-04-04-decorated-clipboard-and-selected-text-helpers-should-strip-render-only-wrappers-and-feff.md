@@ -5,7 +5,7 @@ component: testing_framework
 root_cause: logic_error
 title: Decorated clipboard and selected-text helpers should strip render-only wrappers and FEFF
 tags:
-  - slate-browser
+  - plite-browser
   - clipboard
   - selected-text
   - feff
@@ -28,14 +28,14 @@ semantics still needed to be made honest:
 
 Two changes closed the gap:
 
-1. `slate-react-v2` `Editable` now owns the browser clipboard bridge through
+1. `plite-react-v2` `Editable` now owns the browser clipboard bridge through
    `ClipboardBridge.setFragmentData(...)` and `ClipboardBridge.insertData(...)`
-2. `slate-browser` `get.selectedText()` now strips FEFF from the DOM selection
+2. `plite-browser` `get.selectedText()` now strips FEFF from the DOM selection
    string before returning it
 
 That made the browser proofs line up with actual editor semantics:
 
-- decorated copy writes the `application/x-slate-v2-fragment` payload plus
+- decorated copy writes the `application/x-plite-fragment` payload plus
   clean HTML/plain text
 - rendered highlight wrappers do not leak into clipboard HTML
 - selecting through a mark placeholder still reads semantic text instead of
@@ -54,7 +54,7 @@ about editor semantics.
 
 ## Reusable rule
 
-For Slate browser helpers around rich text:
+For Plite browser helpers around rich text:
 
 - selected-text helpers should normalize out zero-width sentinels
 - clipboard helpers should prove fragment semantics, not renderer wrappers

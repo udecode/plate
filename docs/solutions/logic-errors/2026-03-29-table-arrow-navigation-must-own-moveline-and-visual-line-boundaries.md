@@ -33,7 +33,7 @@ The table plugin was not fully owning plain vertical arrow movement at the `move
 That left two gaps:
 
 - Browser default caret motion could paint an intermediate frame before table code repaired the final selection.
-- Slate block structure alone could not tell whether a single paragraph was already on its visual first or last line.
+- Plite block structure alone could not tell whether a single paragraph was already on its visual first or last line.
 
 So the transform knew too little about timing and too little about visual layout.
 
@@ -54,12 +54,12 @@ The implementation lives in [withTable.ts](/Users/hyeongjin/Workspace/plate/pack
 
 The browser already knows how to move a caret between visual lines inside one DOM block. The table plugin only needs to take over once that native move is exhausted.
 
-Owning the `moveLine` seam removes the transient flash because the browser default move never gets a chance to paint first. Checking DOM rects removes the early cross-cell jump because the transform can finally see visual line boundaries that Slate paths cannot represent.
+Owning the `moveLine` seam removes the transient flash because the browser default move never gets a chance to paint first. Checking DOM rects removes the early cross-cell jump because the transform can finally see visual line boundaries that Plite paths cannot represent.
 
 # Prevention
 
 - If a plugin owns keyboard navigation semantics, intercept the ownership seam first. Do not rely on later selection repair for plain arrow movement.
-- If movement depends on visual line layout, Slate path checks are not enough. Use DOM range geometry at the transform seam.
+- If movement depends on visual line layout, Plite path checks are not enough. Use DOM range geometry at the transform seam.
 - Keep regression coverage at both levels:
   - synchronous plain-arrow cross-cell movement
   - multi-block cells that should stay native until the next or previous block boundary

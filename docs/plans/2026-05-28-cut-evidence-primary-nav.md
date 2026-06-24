@@ -5,7 +5,7 @@ Cut `evidence.html` from the primary `benchmarks/editor/docs/perf/index.html`
 navigation while preserving it as a generated raw audit footer link.
 
 Completion threshold:
-- `index.html` primary list has exactly two cards: `rich-text.html` and `slate-v2-internals.html`.
+- `index.html` primary list has exactly two cards: `rich-text.html` and `plite-internals.html`.
 - `evidence.html` remains generated/reachable as a footer audit link.
 - Benchmark docs generation/checks pass.
 - Served `/index.html` proves the new shape.

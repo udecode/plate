@@ -9,7 +9,7 @@ status: blocked
 ## Goal
 
 Prove whether the empty-block line-break placeholder path can safely drop FEFF
-in legacy Slate.
+in legacy Plite.
 
 ## Current Result
 

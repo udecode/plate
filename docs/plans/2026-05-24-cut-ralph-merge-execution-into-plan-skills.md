@@ -10,7 +10,7 @@ docs/plans/2026-05-24-cut-ralph-merge-execution-into-plan-skills.md
 
 Completion threshold:
 - `.agents/rules/ralph.mdc` and `.agents/skills/ralph/` are gone.
-- `slate-plan` documents the two-phase contract: planning stops for user
+- `plite-plan` documents the two-phase contract: planning stops for user
   review; accepted-plan execution starts only on a later invocation.
 - `plate-plan`, `editor-harvest-ralplan`, goal rules, AGENTS, and slate-plan
   template no longer route execution through `ralph`.
@@ -32,7 +32,7 @@ Constraints:
 - Keep explicit user-review stop before implementation.
 - No compatibility aliases or duplicate execution skills.
 - Do not reintroduce `.tmp` completion-hook state for goal work.
-- Preserve existing Slate Plan pass gates, issue accounting, and verification
+- Preserve existing Plite Plan pass gates, issue accounting, and verification
   discipline.
 
 Boundaries:
@@ -81,7 +81,7 @@ Required checklist:
 - [x] `node .agents/rules/goal/scripts/check-complete.mjs docs/plans/2026-05-24-cut-ralph-merge-execution-into-plan-skills.md`
       passes after final evidence is recorded.
 - [x] `ce-compound` evaluated after non-trivial verified work. N/A: the reusable
-      lesson is encoded directly in `goal`, `slate-plan`, `plate-plan`, and the
+      lesson is encoded directly in `goal`, `plite-plan`, `plate-plan`, and the
       active template; no separate solution note needed.
 - [x] Reboot status is current.
 - [x] Every required checklist item above is checked or marked N/A with reason
@@ -101,8 +101,8 @@ Findings:
 - The useful part to keep is not the prompt generator; it is the accepted-plan
   execution contract: explicit goal, exact plan path, next owner, verification,
   autoreview when implementation is non-trivial, and no `done` until evidence.
-- Current `slate-plan` hard-stops implementation and tells the user to invoke
-  `ralph`; that should become "invoke `slate-plan` again after accepting the
+- Current `plite-plan` hard-stops implementation and tells the user to invoke
+  `ralph`; that should become "invoke `plite-plan` again after accepting the
   plan".
 - `plate-plan` and `editor-harvest-ralplan` still carried the old `.tmp`
   completion/continue bridge; those are now replaced by active-goal plus
@@ -118,7 +118,7 @@ Decisions and tradeoffs:
 Error attempts:
 | Error / failed attempt | Count | Next different move | Resolution |
 |------------------------|-------|---------------------|------------|
-| `rg` text-check with double quotes tried command substitution for backticked `slate-plan` | 1 | rerun with single-quoted pattern | safe rerun passed |
+| `rg` text-check with double quotes tried command substitution for backticked `plite-plan` | 1 | rerun with single-quoted pattern | safe rerun passed |
 | negative `rg -n "ralph\|Ralph" ...` exited 1 | 1 | treat as no stale matches | expected success condition |
 
 External/browser findings:
@@ -129,7 +129,7 @@ Timeline:
 - 2026-05-24T16:44:51.225Z Goal plan created.
 - 2026-05-24T16:45Z Read active rule sources and workflow solution notes.
 - 2026-05-24T16:50Z Patched source rules: removed `ralph` routing, added
-  Slate Plan planning/execution modes, updated Plate/editor-harvest handoffs,
+  Plite Plan planning/execution modes, updated Plate/editor-harvest handoffs,
   and deleted `ralph` source/generated files.
 - 2026-05-24T16:53Z Removed leftover `.tmp` completion/continue bridge from
   Plate Plan and editor-harvest rules.
@@ -141,7 +141,7 @@ Verification evidence:
 - `pnpm install` -> passed; Skiller apply completed successfully.
 - `test ! -e .agents/rules/ralph.mdc && test ! -e .agents/skills/ralph` -> passed.
 - `rg -n 'ralph|Ralph' .agents AGENTS.md docs/plans/templates -S` -> no matches; exit code 1 is expected for a negative search.
-- `rg -n 'Execution mode starts|User Review And Execution Mode|accepted-plan execution|invoke \`slate-plan\` again|new goal|Do not create hook state' ...` -> expected source/generated/template references present.
+- `rg -n 'Execution mode starts|User Review And Execution Mode|accepted-plan execution|invoke \`plite-plan\` again|new goal|Do not create hook state' ...` -> expected source/generated/template references present.
 - `rg -n 'completion file|completion state|completion-check|continue\\.md|Continuation prompt|\\.tmp/<id>|\\.tmp/\\*\\*/completion-check' .agents/rules/slate-plan.mdc .agents/rules/plate-plan.mdc .agents/rules/editor-harvest-ralplan.mdc .agents/skills/slate-plan/SKILL.md .agents/skills/plate-plan/SKILL.md .agents/skills/editor-harvest-ralplan/SKILL.md docs/plans/templates/slate-plan.md -S` -> only explicit "do not create hook state" rows remain; no active completion-file bridge.
 - `pnpm lint:fix` -> passed; Biome checked 3423 files, no fixes applied.
 - `node .agents/rules/goal/scripts/check-complete.mjs docs/plans/2026-05-24-cut-ralph-merge-execution-into-plan-skills.md` -> passed.

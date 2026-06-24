@@ -2,7 +2,7 @@
 title: Collapsed inline link insertion must move selection outside the link
 date: 2026-05-09
 category: docs/solutions/logic-errors
-module: slate-v2 lexical harvest inlines
+module: plite lexical harvest inlines
 problem_type: logic_error
 component: testing_framework
 symptoms:
@@ -12,14 +12,14 @@ symptoms:
 root_cause: logic_error
 resolution_type: code_fix
 severity: medium
-tags: [slate-v2, lexical-harvest, inline, link, selection, browser-proof]
+tags: [plite, lexical-harvest, inline, link, selection, browser-proof]
 ---
 
 # Collapsed inline link insertion must move selection outside the link
 
 ## Problem
 
-Lexical regression 1113 exposed a missing Slate browser proof: after a URL is
+Lexical regression 1113 exposed a missing Plite browser proof: after a URL is
 typed and wrapped as an inline link, pressing Enter should place the selection
 outside the link. The next block must not inherit an empty duplicate link.
 
@@ -73,7 +73,7 @@ from the correct editor point.
   not only the inserted node shape.
 - Browser rows should type after the boundary action to prove affinity, because
   selection assertions alone can miss inherited formatting or inline wrappers.
-- Keep product autolink policy separate from generic Slate core; this fix lives
+- Keep product autolink policy separate from generic Plite core; this fix lives
   in the example link command.
 
 ## Related Issues

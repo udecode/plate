@@ -2,7 +2,7 @@
 title: Active radius 1 is the best large-document corridor default for RC
 date: 2026-04-11
 category: docs/solutions/performance-issues
-module: Slate v2 React runtime
+module: Plite React runtime
 problem_type: performance_issue
 component: frontend_stimulus
 symptoms:
@@ -13,7 +13,7 @@ root_cause: inadequate_documentation
 resolution_type: code_fix
 severity: medium
 tags:
-  - slate-v2
+  - plite
   - slate-react
   - performance
   - huge-document
@@ -78,5 +78,5 @@ At the same time, it avoids the wider live-area tax of radius `2`.
 
 ## Related Issues
 
-- [2026-04-11-slate-v2-active-radius-policy-batch.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-slate-v2-active-radius-policy-batch.md)
-- [2026-04-11-slate-v2-active-corridor-promotion-batch.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-slate-v2-active-corridor-promotion-batch.md)
+- [2026-04-11-plite-active-radius-policy-batch.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-plite-active-radius-policy-batch.md)
+- [2026-04-11-plite-active-corridor-promotion-batch.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-plite-active-corridor-promotion-batch.md)

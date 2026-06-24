@@ -46,8 +46,8 @@ Normalized raw entrypoints:
 
 ## Research Questions
 
-- What should Slate v2 steal from each architecture?
-- What should Slate v2 explicitly not copy?
+- What should Plite steal from each architecture?
+- What should Plite explicitly not copy?
 - Which claims are raw-backed, compiled-backed, or still open?
 
 ## Status
@@ -90,14 +90,14 @@ Added:
 - `docs/research/sources/editor-architecture/lexical-read-update-extension-runtime.md`
 - `docs/research/sources/editor-architecture/prosemirror-transaction-view-dom-runtime.md`
 - `docs/research/sources/editor-architecture/tiptap-extension-command-react-dx.md`
-- `docs/research/decisions/slate-v2-read-update-runtime-architecture.md`
+- `docs/research/decisions/plite-read-update-runtime-architecture.md`
 
 Updated:
 
 - `docs/research/sources/editor-architecture/README.md`
 - `docs/research/index.md`
 - `docs/research/log.md`
-- `docs/research/decisions/slate-v2-data-model-first-react-perfect-runtime.md`
+- `docs/research/decisions/plite-data-model-first-react-perfect-runtime.md`
 
 ## Corpus Dispositions
 

@@ -5,7 +5,7 @@ component: testing_framework
 root_cause: wrong_api
 title: Firefox Playwright keyboard insertText can provide a stronger-than-proxy composition lane
 tags:
-  - slate-browser
+  - plite-browser
   - firefox
   - playwright
   - composition
@@ -43,7 +43,7 @@ The same direct pattern also worked on:
 - inline-edge
 - void-edge
 
-with the expected committed Slate state.
+with the expected committed Plite state.
 
 ## Why this matters
 

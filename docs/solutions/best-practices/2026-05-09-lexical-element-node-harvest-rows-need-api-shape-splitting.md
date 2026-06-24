@@ -2,17 +2,17 @@
 title: Lexical element node harvest rows need API-shape splitting
 date: 2026-05-09
 category: docs/solutions/best-practices
-module: Slate v2 Lexical harvest
+module: Plite Lexical harvest
 problem_type: best_practice
 component: testing_framework
 symptoms:
   - Lexical element-node tests mix portable query behavior with Lexical JSON, DOM slot, and node lifecycle APIs.
-  - Existing Slate operation coverage can make a direct splice port redundant.
+  - Existing Plite operation coverage can make a direct splice port redundant.
   - Text traversal gaps can hide inside a broad element-node source file.
 root_cause: inadequate_documentation
 resolution_type: documentation_update
 severity: medium
-tags: [slate-v2, lexical-harvest, element-node, query-contract, tests]
+tags: [plite, lexical-harvest, element-node, query-contract, tests]
 ---
 
 # Lexical element node harvest rows need API-shape splitting
@@ -22,16 +22,16 @@ tags: [slate-v2, lexical-harvest, element-node, query-contract, tests]
 Lexical element-node tests look portable at first, but the file combines several
 owners: JSON schema, element child queries, text traversal, splice behavior,
 transform scheduling, DOM slot rendering, and DOM index helpers. A direct copy
-would drag Lexical architecture into Slate tests.
+would drag Lexical architecture into Plite tests.
 
 ## Symptoms
 
 - `getChildren`, `getAllTextNodes`, `getFirstChild`, `getLastChild`, and
   `getTextContent` are portable query behavior.
-- `splice` rows overlap with Slate operation, transform, and selection-rebase
+- `splice` rows overlap with Plite operation, transform, and selection-rebase
   contracts.
 - `getDOMSlot`, `indexPath`, Lexical JSON schema, node keys, and transform
-  scheduling are not raw Slate package behavior.
+  scheduling are not raw Plite package behavior.
 
 ## What Didn't Work
 
@@ -44,7 +44,7 @@ would drag Lexical architecture into Slate tests.
 
 ## Solution
 
-Split Lexical element-node rows by the API the Slate caller actually observes:
+Split Lexical element-node rows by the API the Plite caller actually observes:
 
 - child/text queries -> `Node.children`, `Node.texts`, `Node.first`,
   `Node.last`, and `Node.string`;
@@ -54,25 +54,25 @@ Split Lexical element-node rows by the API the Slate caller actually observes:
 - Lexical JSON/node lifecycle -> reject as framework API shape.
 
 For this pass, the useful proof landed in
-`.tmp/slate-v2/packages/slate/test/query-contract.ts`:
+`packages/plite/test/query-contract.ts`:
 
 - nested text leaves are emitted in document order;
 - first and last text leaves resolve from a nested element;
-- element text content is produced by Slate's public `Node.string` contract.
+- element text content is produced by Plite's public `Node.string` contract.
 
 ## Why This Works
 
-The Slate test should protect observable editor behavior, not Lexical's class
+The Plite test should protect observable editor behavior, not Lexical's class
 model. Query APIs own text traversal; operation APIs own structural mutation;
 React/browser tests own DOM slot behavior. Keeping those owners separate makes
 the harvested coverage stronger and smaller.
 
 ## Prevention
 
-- For broad upstream node test files, split each row by public Slate owner
+- For broad upstream node test files, split each row by public Plite owner
   before editing.
 - Do not port upstream JSON schemas, node-key lifecycle, or DOM helper APIs
-  unless Slate exposes the same public surface.
+  unless Plite exposes the same public surface.
 - Prefer one compact query proof for missing traversal behavior over copying a
   matrix of class methods.
 - Route mutation rows through existing operation and selection contracts first.
@@ -80,4 +80,4 @@ the harvested coverage stronger and smaller.
 ## Related Issues
 
 - [Lexical docs traversal harvest rows need query-shape contracts](./2026-05-09-lexical-docs-traversal-harvest-rows-need-query-shape-contracts.md)
-- [Slate v2 editor query reverse must reverse emitted matches](../logic-errors/2026-05-07-slate-v2-editor-query-reverse-must-reverse-emitted-matches.md)
+- [Plite editor query reverse must reverse emitted matches](../logic-errors/2026-05-07-plite-editor-query-reverse-must-reverse-emitted-matches.md)

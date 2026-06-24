@@ -2,7 +2,7 @@
 title: Single-block fragment replacement must preserve target block before full-document replace
 date: 2026-05-04
 category: docs/solutions/logic-errors
-module: slate-v2 slate
+module: plite slate
 problem_type: logic_error
 component: documentation
 symptoms:
@@ -11,14 +11,14 @@ symptoms:
 root_cause: logic_error
 resolution_type: code_fix
 severity: medium
-tags: [slate-v2, clipboard, insert-fragment, target-block]
+tags: [plite, clipboard, insert-fragment, target-block]
 ---
 
 # Single-block fragment replacement must preserve target block before full-document replace
 
 ## Problem
 
-Rich Slate fragment insertion could downgrade the receiving block when the
+Rich Plite fragment insertion could downgrade the receiving block when the
 selection covered the entire single-block document. The full-document replace
 fast path ran before target-block ownership had a chance to preserve the
 receiving block wrapper.
@@ -91,4 +91,4 @@ small target-owned shape before the broad replace path.
 
 - [V2 fragment proofs should preserve a nested block wrapper before chasing arbitrary tree support](2026-04-04-v2-fragment-proofs-should-preserve-a-nested-block-wrapper-before-chasing-arbitrary-tree-support.md)
 - [List-unit fragment proofs should treat list-item fragments as sibling units and assert real paste landings](2026-04-05-list-unit-fragment-proofs-should-treat-list-item-fragments-as-sibling-units-and-assert-real-paste-landings.md)
-- Slate issue #5151
+- Plite issue #5151

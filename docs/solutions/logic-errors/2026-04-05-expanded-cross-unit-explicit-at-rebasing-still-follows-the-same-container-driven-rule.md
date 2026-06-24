@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Expanded cross-unit explicit-at rebasing still follows the same container-driven rule
 tags:
-  - slate-v2
+  - plite
   - explicit-at
   - selection
   - range-ref

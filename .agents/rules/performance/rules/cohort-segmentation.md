@@ -6,7 +6,7 @@ Use this when "large document" or "big surface" is treated as one bucket.
 
 Segment by size and complexity before choosing tactics.
 
-Baseline Slate cohorts:
+Baseline Plite cohorts:
 
 | Cohort | Examples | Default stance |
 | --- | --- | --- |

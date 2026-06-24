@@ -2,24 +2,24 @@
 title: Next 16 example imports must use explicit maps and drop next config eslint
 date: 2026-04-16
 category: developer-experience
-module: slate-v2 site upgrade
+module: plite site upgrade
 problem_type: developer_experience
 component: tooling
 symptoms:
-  - upgrading the slate-v2 site from Next 14 to Next 16 exposed an invalid `eslint` key in `next.config.js`
+  - upgrading the plite site from Next 14 to Next 16 exposed an invalid `eslint` key in `next.config.js`
   - the example page's template-string dynamic import caused Next 16 to bundle `site/examples/ts/custom-types.d.ts` as if it were a route module
   - the site build stayed red even though package build, typecheck, lint, and tests were already green under React 19.2
 root_cause: config_error
 resolution_type: dependency_update
 severity: medium
-tags: [slate-v2, next-16, webpack, dynamic-import, custom-types, react-19]
+tags: [plite, next-16, webpack, dynamic-import, custom-types, react-19]
 ---
 
 # Next 16 example imports must use explicit maps and drop next config eslint
 
 ## Problem
 
-The tranche-2 upgrade moved `slate-v2` to Next 16.
+The tranche-2 upgrade moved `plite` to Next 16.
 
 That exposed two stale assumptions from the older site setup: `next.config.js`
 still carried a now-invalid `eslint` block, and the example page still used a
@@ -49,11 +49,11 @@ pull `.d.ts` files into the route bundle.
 Fix the site at the exact Next 16 compatibility points:
 
 1. Remove the unsupported `eslint` key from
-   [next.config.js](/Users/zbeyens/git/slate-v2/site/next.config.js).
+   [next.config.js](/Users/zbeyens/git/plite/site/next.config.js).
 2. Drop the forced `--webpack` path and let Next 16 run on its default
    Turbopack build/dev lane.
 3. Replace the template-string dynamic import in
-   [site/pages/examples/[example].tsx](/Users/zbeyens/git/slate-v2/site/pages/examples/[example].tsx)
+   [site/pages/examples/[example].tsx](/Users/zbeyens/git/plite/site/pages/examples/[example].tsx)
    with an explicit importer map.
 
 Shape of the fix:
@@ -94,5 +94,5 @@ runtime code.
 
 ## Related Issues
 
-- [Slate custom types path recovery must not reintroduce global ambient site augmentation](/Users/zbeyens/git/plate-2/docs/solutions/developer-experience/2026-04-15-slate-custom-types-path-recovery-must-not-reintroduce-global-ambient-site-augmentation.md)
-- [Slate v2 fresh-branch migration plan](/Users/zbeyens/git/plate-2/docs/slate-v2/fresh-branch-migration-plan.md)
+- [Plite custom types path recovery must not reintroduce global ambient site augmentation](/Users/zbeyens/git/plate-2/docs/solutions/developer-experience/2026-04-15-slate-custom-types-path-recovery-must-not-reintroduce-global-ambient-site-augmentation.md)
+- [Plite fresh-branch migration plan](/Users/zbeyens/git/plate-2/docs/plite/fresh-branch-migration-plan.md)

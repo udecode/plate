@@ -2,7 +2,7 @@
 title: Clipboard fragment format keys must guard HTML fallback too
 date: 2026-05-04
 category: docs/solutions/logic-errors
-module: slate-v2 slate-dom clipboard schema isolation
+module: plite plite-dom clipboard schema isolation
 problem_type: logic_error
 component: tooling
 symptoms:
@@ -12,40 +12,40 @@ symptoms:
 root_cause: missing_validation
 resolution_type: code_fix
 severity: medium
-tags: [slate-v2, slate-dom, clipboard, data-transfer, fragment-format, insertdata]
+tags: [plite, plite-dom, clipboard, data-transfer, fragment-format, insertdata]
 ---
 
 # Clipboard fragment format keys must guard HTML fallback too
 
 ## Problem
-Custom Slate clipboard format keys are not enough if the HTML fallback still
-uses an unkeyed `data-slate-fragment`. The browser clipboard can lose the custom
+Custom Plite clipboard format keys are not enough if the HTML fallback still
+uses an unkeyed `data-plite-fragment`. The browser clipboard can lose the custom
 MIME payload and still carry `text/html`, so schema isolation has to apply to
 both channels.
 
 ## Symptoms
 - `application/${clipboardFormatKey}` was configurable.
-- `text/html` still carried a bare `data-slate-fragment`.
+- `text/html` still carried a bare `data-plite-fragment`.
 - A receiving default-key editor could treat a custom-key source as trusted
-  Slate JSON through the embedded HTML fallback.
+  Plite JSON through the embedded HTML fallback.
 - App-owned paste examples had to type `dom.clipboard.insertData` handlers
   without reaching into private runtime files or using `unknown`.
 
 ## What Didn't Work
 - Only customizing the MIME key. Safari and cross-browser clipboard flows still
   need the HTML carrier, so the fallback must be keyed too.
-- Removing embedded HTML fallback. That would break normal Slate-to-Slate paste
+- Removing embedded HTML fallback. That would break normal Plite-to-Plite paste
   paths that rely on `text/html`.
-- Adding a raw Slate rich HTML parser. Schema-specific rich HTML import belongs
-  to app capabilities, not `slate-dom`.
+- Adding a raw Plite rich HTML parser. Schema-specific rich HTML import belongs
+  to app capabilities, not `plite-dom`.
 
 ## Solution
 Write a format marker beside every embedded fragment and require it to match the
 receiving editor's configured key:
 
 ```ts
-attachElement.setAttribute('data-slate-fragment', encoded)
-attachElement.setAttribute('data-slate-fragment-format', clipboardFormatKey)
+attachElement.setAttribute('data-plite-fragment', encoded)
+attachElement.setAttribute('data-plite-fragment-format', clipboardFormatKey)
 data.setData(`application/${clipboardFormatKey}`, encoded)
 ```
 
@@ -89,13 +89,13 @@ editor.extend({
 ```
 
 ## Why This Works
-The internal Slate fragment is trusted only when the transport identity matches
+The internal Plite fragment is trusted only when the transport identity matches
 the receiving editor. The fallback path remains useful for normal browser copy
 flows, but it no longer bypasses schema isolation when the custom MIME payload
 is absent.
 
 The public handler type keeps extension-owned rich paste policy in the
-capability layer. `slate-dom` owns transport and trust boundaries; apps own
+capability layer. `plite-dom` owns transport and trust boundaries; apps own
 foreign HTML interpretation.
 
 ## Prevention
@@ -110,6 +110,6 @@ foreign HTML interpretation.
   covered.
 
 ## Related Issues
-- `docs/solutions/logic-errors/2026-04-03-slate-v2-clipboard-boundary-proof-must-split-fragment-semantics-and-dom-transport.md`
+- `docs/solutions/logic-errors/2026-04-03-plite-clipboard-boundary-proof-must-split-fragment-semantics-and-dom-transport.md`
 - `docs/solutions/logic-errors/2026-05-04-inline-void-clipboard-export-must-not-assume-block-void-spacer-dom.md`
 - `docs/solutions/developer-experience/2026-05-03-slate-public-root-hard-cuts-need-internal-imports-and-explicit-type-exports.md`

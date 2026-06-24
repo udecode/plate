@@ -110,12 +110,12 @@ export const registryBlocks: Registry['items'] = [
     dependencies: ['next-themes'],
     files: [
       {
-        path: 'blocks/slate-to-html/page.tsx',
+        path: 'blocks/plate-to-html/page.tsx',
         target: 'app/html/page.tsx',
         type: 'registry:page',
       },
       {
-        path: 'components/editor/slate-to-html.tsx',
+        path: 'components/editor/plate-to-html.tsx',
         type: 'registry:component',
       },
       {
@@ -190,7 +190,7 @@ export const registryBlocks: Registry['items'] = [
     meta: {
       rsc: true,
     },
-    name: 'slate-to-html',
+    name: 'plate-to-html',
     registryDependencies: ['@plate/editor-base-kit', 'button'],
     type: 'registry:block',
   },

@@ -50,7 +50,7 @@ The decision from that comparison:
 - Preserve the already-landed Fumadocs source cutover, then adopt upstream search, app shell, and shadcn v4 registry behavior.
 - Keep Plate docs content, API MDX vocabulary, registry content, editor demos, package integration tests, and workspace alias/typecheck model.
 - Keep Contentlayer out, and throw Plate custom themes/customizer, client-only nav search hacks, and stale CSS marked for sync removal.
-- Keep CN docs, MCP UI, Plate Plus hooks, GA, a centered Plate homepage, and the Slate-to-HTML special page; use upstream shadcn's LLM/copy-page model instead of Plate's extra LLM UI.
+- Keep CN docs, MCP UI, Plate Plus hooks, GA, a centered Plate homepage, and the Plite-to-HTML special page; use upstream shadcn's LLM/copy-page model instead of Plate's extra LLM UI.
 - After deleting a public surface, run active-source searches for the deleted vocabulary and remove orphaned helper state. For the theme/create/project slice, that meant deleting `ProjectAddButton`, `useProject`, `ThemeComponent`, `ThemeWrapper`, `useLiftMode`, and customizer-only event/config variants while keeping the package-manager install config used by code blocks.
 
 ## Why This Works

@@ -8,12 +8,12 @@ runners, Autoresearch, and report generation.
 
 ## Summary
 
-- Targets: 27
-- Required artifacts: 25
-- Existing artifacts: 25
+- Targets: 29
+- Required artifacts: 27
+- Existing artifacts: 27
 - Missing optional artifacts: 2
 - Missing required artifacts: 0
-- Status counts: ok=25, missing-optional-artifact=2
+- Status counts: ok=27, missing-optional-artifact=2
 
 ## Targets
 
@@ -37,12 +37,14 @@ runners, Autoresearch, and report generation.
 | history-retained-memory | history | benchmark_seconds | missing-optional-artifact | 0/1 | wrapped |
 | issue-6038-transaction-execution | issue-replay | benchmark_seconds | ok | 1/1 | wrapped |
 | react-active-typing-breakdown | react-typing | typing_seconds | ok | 1/1 | wrapped |
-| react-huge-document-browser-trace | react-large-document | browser_trace_seconds | ok | 1/1 | wrapped |
+| react-huge-document-browser-trace | react-large-document | react_huge_doc_type_to_paint_p95_ms | ok | 1/1 | yes |
 | react-huge-document-full | react-large-document | react_huge_doc_full_max_budget_ratio | ok | 1/1 | yes |
 | react-huge-document-legacy-compare | react-large-document | react_huge_doc_legacy_compare_worst_p95_ratio | ok | 1/1 | yes |
 | react-huge-document-overlays | react-large-document | benchmark_seconds | ok | 1/1 | wrapped |
 | react-huge-document-slate-browser-trace | react-large-document | browser_trace_seconds | ok | 1/1 | wrapped |
 | react-huge-document-virtualized-type-to-paint | react-large-document | react_huge_doc_type_to_paint_p95_ms | ok | 1/1 | yes |
 | react-pagination-virtualized-char-burst | react-pagination | pagination_virtualized_vs_table_ratio | ok | 1/1 | yes |
+| react-pagination-virtualized-real-editor-ops | react-pagination | pagination_virtualized_real_ops_worst_p95_ms | ok | 1/1 | yes |
 | react-rerender-breadth | react-locality | benchmark_seconds | ok | 1/1 | wrapped |
 | react-runtime-node-fanout | react-locality | slate_react_runtime_node_fanout_count | ok | 1/1 | yes |
+| yjs-collaboration | collaboration | yjs_collaboration_worst_p95_ms | ok | 1/1 | yes |

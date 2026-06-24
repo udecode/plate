@@ -5,7 +5,7 @@ component: tooling
 root_cause: missing_tooling
 title: Appium UiAutomator2 can prove local Android Chrome on emulator when Playwright Android stalls
 tags:
-  - slate-browser
+  - plite-browser
   - android
   - appium
   - uiautomator2
@@ -18,7 +18,7 @@ severity: medium
 
 ## What happened
 
-We needed a local open-source Android browser-mobile proof path for Slate.
+We needed a local open-source Android browser-mobile proof path for Plite.
 
 The environment turned out to be better than expected:
 
@@ -43,7 +43,7 @@ At that point Appium could:
 
 - create a Chrome session on the emulator
 - autodownload the matching Chromedriver
-- navigate to the local Slate example via `10.0.2.2`
+- navigate to the local Plite example via `10.0.2.2`
 - read back page title and source
 
 ## Reusable rule

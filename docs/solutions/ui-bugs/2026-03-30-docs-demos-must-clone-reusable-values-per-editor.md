@@ -6,7 +6,7 @@ module: apps/www docs demos
 problem_type: ui_bug
 component: documentation
 symptoms:
-  - Dragging a multi-cell selection in `/docs/table` throws `Unable to find the path for Slate node`.
+  - Dragging a multi-cell selection in `/docs/table` throws `Unable to find the path for Plite node`.
   - The failure only appears on pages that mount more than one editor from the same reusable demo value.
   - A stale local `.bun` mirror can hide or reintroduce the bug during verification.
 root_cause: logic_error
@@ -26,15 +26,15 @@ tags:
 
 ## Problem
 
-The docs app was mounting multiple editors from the same reusable Slate value object. On `/docs/table`, the generic `table-demo` and the disable-merge table demo both started from the same `tableValue` tree, so Slate's DOM-to-node bookkeeping could end up pointing at the wrong mounted editor.
+The docs app was mounting multiple editors from the same reusable Plite value object. On `/docs/table`, the generic `table-demo` and the disable-merge table demo both started from the same `tableValue` tree, so Plite's DOM-to-node bookkeeping could end up pointing at the wrong mounted editor.
 
 ## Symptoms
 
-- Dragging across multiple cells in the first table demo raised `Unable to find the path for Slate node: {"text":"Heading","bold":true}`.
-- The crash came from Slate React's DOM selection sync path, not from a table transform:
+- Dragging across multiple cells in the first table demo raised `Unable to find the path for Plite node: {"text":"Heading","bold":true}`.
+- The crash came from Plite React's DOM selection sync path, not from a table transform:
   - `findPath`
-  - `toSlatePoint`
-  - `toSlateRange`
+  - `toPlitePoint`
+  - `toPliteRange`
   - `Editable.useMemo[onDOMSelectionChange]`
 - Fresh verification was confusing because a corrupted local `node_modules/.bun` mirror could also break docs compilation with the unrelated `is-hotkey` parse error.
 
@@ -45,7 +45,7 @@ The docs app was mounting multiple editors from the same reusable Slate value ob
 
 ## Solution
 
-Clone reusable demo values before passing them into `usePlateEditor`, so every mounted docs editor owns its own Slate tree.
+Clone reusable demo values before passing them into `usePlateEditor`, so every mounted docs editor owns its own Plite tree.
 
 ```tsx
 import cloneDeep from 'lodash/cloneDeep.js';
@@ -88,11 +88,11 @@ expect(snapshotA[2]).not.toBe(snapshotB[2]);
 
 ## Why This Works
 
-Slate expects each mounted editor to own its own node graph. Reusing one static value object across multiple editors breaks that assumption, so DOM selection can resolve a node from one mounted editor against another editor's tree and fail path lookup. Deep-cloning the initial value restores one-editor-one-tree ownership and keeps Slate's internal DOM mappings stable.
+Plite expects each mounted editor to own its own node graph. Reusing one static value object across multiple editors breaks that assumption, so DOM selection can resolve a node from one mounted editor against another editor's tree and fail path lookup. Deep-cloning the initial value restores one-editor-one-tree ownership and keeps Plite's internal DOM mappings stable.
 
 ## Prevention
 
-- Never pass a shared exported Slate value directly into more than one mounted editor.
+- Never pass a shared exported Plite value directly into more than one mounted editor.
 - If a docs example uses reusable constants like `DEMO_VALUES[id]`, snapshot the value at the editor boundary.
 - When a docs page mounts a generic demo and a custom demo from the same source value, treat that as a multi-editor case even if both examples look read-only at first glance.
 - If local verification suddenly shows unrelated `.bun` parse failures while CI is green, clean non-versioned local env first:

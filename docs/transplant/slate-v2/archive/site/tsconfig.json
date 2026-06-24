@@ -1,0 +1,44 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "paths": {
+      "@/*": ["./*"],
+      "@slate/yjs": ["../packages/slate-yjs/src/index.ts"],
+      "@slate/yjs/core": ["../packages/slate-yjs/src/core/index.ts"],
+      "@slate/yjs/react": ["../packages/slate-yjs/src/react/index.ts"],
+      "slate": ["../packages/slate/src/index.ts"],
+      "slate-browser/*": ["../packages/slate-browser/src/*"],
+      "slate-dom": ["../packages/slate-dom/src/index.ts"],
+      "slate-dom/internal": ["../packages/slate-dom/src/internal/index.ts"],
+      "slate-history": ["../packages/slate-history/src/index.ts"],
+      "slate-hyperscript": ["../packages/slate-hyperscript/src/index.ts"],
+      "slate-layout": ["../packages/slate-layout/src/index.ts"],
+      "slate-layout/react": ["../packages/slate-layout/src/react.tsx"],
+      "slate/internal": ["../packages/slate/src/internal/index.ts"],
+      "slate-react": ["../packages/slate-react/src/index.ts"]
+    },
+    "types": ["node", "react", "react-dom"]
+  },
+  "exclude": ["node_modules"],
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "../packages/slate-dom/src/**/*.d.ts",
+    "../packages/slate-react/src/**/*.d.ts"
+  ]
+}

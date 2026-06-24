@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Multi-block child containers inside proved sibling units still reduce to one wrapper-list fragment
 tags:
-  - slate-v2
+  - plite
   - wrapper-unit
   - sibling-units
   - quote
@@ -40,8 +40,8 @@ Selection across sibling units still reduced cleanly to:
 
 That survived:
 
-- `slate-v2` extraction
-- `slate-dom-v2` clipboard transport
+- `plite` extraction
+- `plite-dom-v2` clipboard transport
 - Chromium copy/paste
 
 ## Why this works

@@ -375,7 +375,7 @@ ItalicPlugin.configure({
 
 ```ts
 export const TypographyShortcutsKit = [
-  createSlatePlugin({
+  createPlitePlugin({
     key: "typographyShortcuts",
     inputRulePresets: {
       defaults: ["smartQuotes", "ellipsis", "mdash"],
@@ -471,7 +471,7 @@ Tasks:
 Files:
 
 - [getTextFromBlockStart.ts](packages/core/src/lib/plugins/input-rules/getTextFromBlockStart.ts)
-- editor API files under `packages/slate` and `packages/core`
+- editor API files under `packages/plite` and `packages/core`
 
 Tasks:
 

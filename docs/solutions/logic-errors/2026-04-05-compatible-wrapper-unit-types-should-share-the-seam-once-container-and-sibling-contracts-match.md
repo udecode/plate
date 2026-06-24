@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Compatible wrapper-unit types should share the seam once container and sibling contracts match
 tags:
-  - slate-v2
+  - plite
   - list-item
   - check-list-item
   - wrapper-unit

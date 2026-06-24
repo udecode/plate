@@ -2,7 +2,7 @@
 title: Shell-only large-document islands must preserve far subtrees during DOM reconciliation
 date: 2026-04-11
 category: docs/solutions/performance-issues
-module: Slate v2 React runtime
+module: Plite React runtime
 problem_type: performance_issue
 component: frontend_stimulus
 symptoms:
@@ -13,7 +13,7 @@ root_cause: logic_error
 resolution_type: code_fix
 severity: critical
 tags:
-  - slate-v2
+  - plite
   - slate-react
   - performance
   - huge-document
@@ -28,7 +28,7 @@ tags:
 
 The first shell-only large-document experiment had a hidden correctness trap.
 
-`EditableBlocks` reconciles from DOM by reading `[data-slate-node="text"]`
+`EditableBlocks` reconciles from DOM by reading `[data-plite-node="text"]`
 nodes and rebuilding text content in snapshot order. That works only when the
 whole editable tree is mounted.
 
@@ -51,7 +51,7 @@ Once far islands become cheap shells, that assumption becomes false.
 ## Solution
 
 In
-[editable-text-blocks.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react/src/components/editable-text-blocks.tsx),
+[editable-text-blocks.tsx](/Users/zbeyens/git/plite/packages/plite-react/src/components/editable-text-blocks.tsx),
 keep DOM reconciliation scoped to mounted top-level islands:
 
 - active islands still reconcile from DOM text nodes
@@ -96,5 +96,5 @@ So reconciliation must also become subset-aware. Once that happens:
 
 ## Related Issues
 
-- [2026-04-11-slate-v2-large-document-shell-proof-batch.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-slate-v2-large-document-shell-proof-batch.md)
-- [2026-04-11-slate-v2-proof-first-large-document-layer-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-slate-v2-proof-first-large-document-layer-plan.md)
+- [2026-04-11-plite-large-document-shell-proof-batch.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-plite-large-document-shell-proof-batch.md)
+- [2026-04-11-plite-proof-first-large-document-layer-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-11-plite-proof-first-large-document-layer-plan.md)

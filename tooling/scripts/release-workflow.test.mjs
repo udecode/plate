@@ -350,7 +350,7 @@ test('main to next sync verifier checks package, pre-state, and changelog output
       ours: nextPackage,
       resolved: JSON.stringify({
         dependencies: {
-          '@platejs/slate': '54.0.1-beta.0',
+          '@platejs/plite': '54.0.1-beta.0',
         },
         description: 'test',
         name: '@platejs/core',

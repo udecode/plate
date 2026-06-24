@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: V2 text surfaces should bind runtime ids from paths and use zero-length projections for mark placeholders
 tags:
-  - slate-v2
+  - plite
   - slate-react-v2
   - projections
   - mark-placeholder
@@ -33,7 +33,7 @@ That was more boilerplate than signal.
 - `path={[...]}`
   so it can derive both `text` and `runtimeId` from the committed snapshot
 - zero-length projection slices
-  rendered as `data-slate-mark-placeholder` zero-width leaves
+  rendered as `data-plite-mark-placeholder` zero-width leaves
 
 That let the browser proof render a mark placeholder from a collapsed projected
 range and then compose text through it without any route-local runtime-id glue.
@@ -52,13 +52,13 @@ So the renderer does not need a second model for it.
 It just needs to treat zero-length slices as a renderable leaf at the correct
 boundary.
 
-Likewise, if a text surface already knows the Slate path it is rendering, it
+Likewise, if a text surface already knows the Plite path it is rendering, it
 should be able to find its own runtime id and text content.
 Making every caller do that work is just leaking internals.
 
 ## Reusable rule
 
-For `slate-react-v2` text surfaces:
+For `plite-react-v2` text surfaces:
 
 - path-based binding should be the default ergonomic lane
 - zero-length projected ranges should be the default mark-placeholder lane

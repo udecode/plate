@@ -8,7 +8,7 @@ benchmarks are discarded unless registered.
 
 Completion threshold:
 - Active benchmark artifacts are declared in `benchmarks/editor/research/benchmark-registry.json`.
-- `benchmarks/editor/src/index.mjs` ingests active artifacts from the registry instead of hardcoded Slate v2 artifact lists/fallbacks.
+- `benchmarks/editor/src/index.mjs` ingests active artifacts from the registry instead of hardcoded Plite artifact lists/fallbacks.
 - A health command writes `benchmarks/results/benchmark-health-latest.json` with status counts, missing/stale/ignored artifacts, and ranked next actions.
 - Package scripts expose `evidence:refresh` and include health generation in full/check flows.
 - `docs/perf/index.html` surfaces benchmark health and next actions.
@@ -26,7 +26,7 @@ Verification surface:
 - HTTP smoke proof against `http://127.0.0.1:8765/index.html`
 
 Constraints:
-- Do not delete Slate v2 source-owned benchmark runners; they are the measurement owners.
+- Do not delete Plite source-owned benchmark runners; they are the measurement owners.
 - Discard old benchmark authority by ignoring unregistered artifacts, not by treating every historical tmp JSON as active.
 - Do not revive the old Next/Vite benchmark app lab.
 - No PR/commit/branch requested.
@@ -36,7 +36,7 @@ Boundaries:
 - Allowed edit scope: `benchmarks/editor`, generated perf docs, root benchmark script aliases, and this plan.
 - Browser surface: local static docs server at `http://127.0.0.1:8765/`.
 - Tracker sync: N/A.
-- Non-goals: no new Slate v2 benchmark runner implementation, no non-Slate runtime adapter implementation.
+- Non-goals: no new Plite benchmark runner implementation, no non-Plite runtime adapter implementation.
 
 Blocked condition:
 - Block only if the registry-driven ingest cannot preserve current measured rows, required artifacts are missing, package checks fail after targeted repair, or the static docs server is unavailable. None remained.
@@ -63,10 +63,10 @@ Start Gates:
 |------|---------|----------|
 | Skill analysis before edits | yes | Loaded `major-task`, `hard-cut`, and `autogoal`. |
 | Active goal checked or created | yes | Active goal created for Evidence Kit control-plane replacement. |
-| Source of truth read before edits | yes | Read current `benchmarks/editor` scripts, source map, package scripts, Slate v2 benchmark README, and prior memory note. |
+| Source of truth read before edits | yes | Read current `benchmarks/editor` scripts, source map, package scripts, Plite benchmark README, and prior memory note. |
 | Tracker comments and attachments read | no | N/A: no tracker. |
 | Video transcript evidence required | no | N/A: no video. |
-| `docs/solutions` checked for non-trivial existing-code work | no | N/A: benchmark docs/source map and Slate v2 benchmark README were the direct source. |
+| `docs/solutions` checked for non-trivial existing-code work | no | N/A: benchmark docs/source map and Plite benchmark README were the direct source. |
 | TDD decision before behavior change or bug fix | yes | No TDD; registry/health script checks and package check are the right proof. |
 | Branch decision for code-changing task | yes | No branch action requested. |
 | Release artifact decision | yes | No changeset; private benchmark lab only. |
@@ -127,7 +127,7 @@ Phase / pass table:
 | Closeout | complete | Plan ready for autogoal checker. | final response |
 
 Findings:
-- Source-owned benchmark runners stay in Slate v2; active Evidence Kit ingests only registered stable artifacts.
+- Source-owned benchmark runners stay in Plite; active Evidence Kit ingests only registered stable artifacts.
 - The old failure mode was treating every tmp JSON or old benchmark note as current evidence.
 - Current health: 23 active artifacts, 904 rows, 716 ok, 54 adapter-missing, 130 coverage-gap, 2 optional-missing-artifact, 2 over-budget, and 33 unregistered historical artifacts ignored.
 
@@ -138,7 +138,7 @@ Decisions and tradeoffs:
 
 Implementation notes:
 - Added `research/benchmark-registry.json` with active artifacts and workload mappings.
-- Replaced hardcoded Slate v2 artifact lists/fallback artifact paths with registry-driven ingest.
+- Replaced hardcoded Plite artifact lists/fallback artifact paths with registry-driven ingest.
 - Added `benchmarks/benchmark-health.mjs`.
 - Added `evidence:health`, `evidence:refresh`, and root `bench:editor:health` / `bench:editor:refresh` aliases.
 - Updated generated `index.html` to show health, next actions, and ignored old artifacts.
@@ -169,7 +169,7 @@ Final handoff contract:
   - Verified: `evidence:refresh`, `docs:perf:check`, `check`, and HTTP route proof passed.
 - Browser check: route-level proof against local static server passed.
 - Outcome: Evidence Kit is now the active control plane; unregistered old benchmark artifacts are discarded from active claims.
-- Caveat: No new non-Slate runtime adapters were implemented; health now ranks that as a next action.
+- Caveat: No new non-Plite runtime adapters were implemented; health now ranks that as a next action.
 - Design:
   - Chosen boundary: Evidence Kit registry + health over target-owned runners.
   - Why not quick patch: hardcoded specs keep old-workflow confusion alive.
@@ -180,7 +180,7 @@ Final handoff / sync:
 - PR: N/A.
 - Issue / tracker: N/A.
 - Browser proof: route-level HTTP proof passed.
-- Caveats: non-Slate runtime adapters remain missing by design and are visible in health.
+- Caveats: non-Plite runtime adapters remain missing by design and are visible in health.
 
 Timeline:
 - 2026-05-28T15:54Z Goal created and source read started.

@@ -7,7 +7,7 @@ Done.
 ## Goal
 
 Produce a full research-wiki pass for the absolute-best editor node/text/mark
-DX and runtime architecture, unconstrained by legacy Slate closeness, while
+DX and runtime architecture, unconstrained by legacy Plite closeness, while
 preserving React/shadcn flexibility and avoiding perf regressions.
 
 ## Scope

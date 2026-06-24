@@ -4,7 +4,7 @@ topic: appium-android-setup-proof
 status: in_progress
 source_repos:
   - /Users/zbeyens/git/plate-2
-  - /Users/zbeyens/git/slate-v2
+  - /Users/zbeyens/git/plite
 ---
 
 # Appium Android Setup Proof
@@ -33,7 +33,7 @@ tools.
   - Chrome installed
 - enabled Appium Chromedriver autodownload with:
   - `uiautomator2:chromedriver_autodownload`
-- proved Android Chrome session creation and navigation to the local Slate
+- proved Android Chrome session creation and navigation to the local Plite
   placeholder example
 
 ## Exact Proof
@@ -53,7 +53,7 @@ The proof path now works with local open-source tooling:
 
 ## Added Operator Surface
 
-In `/Users/zbeyens/git/slate-v2`:
+In `/Users/zbeyens/git/plite`:
 
 - `pnpm proof:appium:android:local`
 
@@ -83,14 +83,14 @@ This is enough to say:
 It is not yet enough to say:
 
 - full Android IME/browser parity is closed
-- Appium assertions are integrated into `slate-browser`
+- Appium assertions are integrated into `plite-browser`
 - Playwright Android is the winner
 
 ## Comparative Read
 
 - Playwright `_android` can see the emulator, which is good
 - `launchBrowser()` still hangs here, which is bad
-- Appium got to a real Chrome session and local Slate page
+- Appium got to a real Chrome session and local Plite page
 
 So the honest winner for this environment today is:
 
@@ -108,7 +108,7 @@ Use this proof to decide whether the next Android tranche should:
 The first narrow Appium behavior spike is now possible and reveals a real
 problem instead of just setup success:
 
-- Appium can click the Slate textbox
+- Appium can click the Plite textbox
 - Appium can send text input
 - Appium can read the debug overlay back through `execute/sync`
 - but the placeholder path is unstable and not trustworthy yet:
@@ -117,11 +117,11 @@ problem instead of just setup success:
   - the packaged proof path later showed:
     - empty `blockTexts`
     - no event trail
-    - no Slate selection
+    - no Plite selection
   - Appium `mobile: type` also left the debug overlay unchanged
   - `adb shell input text sushi` after focusing the textbox also left the debug
     overlay unchanged
-  - targeting `[data-slate-zero-width="n"]` instead of the textbox still
+  - targeting `[data-plite-zero-width="n"]` instead of the textbox still
     produced polluted placeholder text
   - the command now fails loudly on that condition
 

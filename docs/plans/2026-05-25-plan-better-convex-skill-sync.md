@@ -46,7 +46,7 @@ Constraints:
 - Planning-only. Do not modify `../better-convex`.
 - Preserve `better-convex` package manager, PR, tracker, changeset, fixture,
   package-owned `kitcn`, scenario, and final-handoff policy.
-- Do not copy Plate-specific editor, Slate, registry, or browser-demo rules.
+- Do not copy Plate-specific editor, Plite, registry, or browser-demo rules.
 - Do not manually edit generated `.agents/skills/**` or `.claude/skills/**` in
   the future implementation.
 
@@ -90,7 +90,7 @@ Out of scope for this pass:
 - `react`, `testing`, `hard-cut`, `research-wiki`, `shadcn-parity`, and
   `dev-browser` common-rule sync. They exist in both repos, but this task is
   lifecycle sync. Do them later as separate reviewable diffs.
-- Plate-only skills: `slate-plan`, `clawsweeper`, `clawpatch`, `plate-plan`,
+- Plate-only skills: `plite-plan`, `clawsweeper`, `clawpatch`, `plate-plan`,
   `plate-ui`, `resolve-slate-issue`, editor harvest skills, and registry/docs
   skills.
 - `video-transcripts` extraction. `better-convex` currently embeds transcript

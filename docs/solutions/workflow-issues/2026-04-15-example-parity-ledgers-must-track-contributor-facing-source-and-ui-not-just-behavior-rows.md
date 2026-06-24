@@ -2,7 +2,7 @@
 title: Example parity ledgers must track contributor-facing source and UI, not just behavior rows
 date: 2026-04-15
 category: workflow-issues
-module: slate-v2
+module: plite
 problem_type: workflow_issue
 component: documentation
 symptoms:
@@ -12,7 +12,7 @@ symptoms:
 root_cause: missing_workflow_step
 resolution_type: workflow_improvement
 severity: high
-tags: [slate-v2, example-parity, replacement-compatibility, contributor-facing, drift-ledger]
+tags: [plite, example-parity, replacement-compatibility, contributor-facing, drift-ledger]
 ---
 
 # Example parity ledgers must track contributor-facing source and UI, not just behavior rows
@@ -56,8 +56,8 @@ Reopen the matrix around the thing users actually see.
 
 That landed in:
 
-- [example-parity-matrix.md](/Users/zbeyens/git/plate-2/docs/slate-v2/ledgers/example-parity-matrix.md)
-- [2026-04-15-slate-v2-example-parity-recovery-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-15-slate-v2-example-parity-recovery-plan.md)
+- [example-parity-matrix.md](/Users/zbeyens/git/plate-2/docs/plite/ledgers/example-parity-matrix.md)
+- [2026-04-15-plite-example-parity-recovery-plan.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-15-plite-example-parity-recovery-plan.md)
 
 The reopened example rows from the audit were:
 
@@ -99,4 +99,4 @@ the useful narrower proof lanes.
 ## Related Issues
 
 - [2026-04-14-slate-direct-audit-green-does-not-mean-mirrored-if-harness-shapes-output.md](/Users/zbeyens/git/plate-2/docs/solutions/workflow-issues/2026-04-14-slate-direct-audit-green-does-not-mean-mirrored-if-harness-shapes-output.md)
-- [example-parity-matrix.md](/Users/zbeyens/git/plate-2/docs/slate-v2/ledgers/example-parity-matrix.md)
+- [example-parity-matrix.md](/Users/zbeyens/git/plate-2/docs/plite/ledgers/example-parity-matrix.md)

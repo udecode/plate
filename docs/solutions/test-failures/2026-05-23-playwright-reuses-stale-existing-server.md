@@ -2,7 +2,7 @@
 title: Playwright table proof can reuse a stale existing server
 date: 2026-05-23
 category: docs/solutions/test-failures
-module: slate-v2 playwright verification
+module: plite playwright verification
 problem_type: test_failure
 component: testing_framework
 symptoms:
@@ -12,14 +12,14 @@ symptoms:
 root_cause: config_error
 resolution_type: workflow_improvement
 severity: medium
-tags: [slate-v2, playwright, stale-server, verification, examples]
+tags: [plite, playwright, stale-server, verification, examples]
 ---
 
 # Playwright table proof can reuse a stale existing server
 
 ## Problem
 
-Slate v2 Playwright tests default to `reuseExistingServer` locally. If a server
+Plite Playwright tests default to `reuseExistingServer` locally. If a server
 is already running on the configured port, tests can exercise stale built output
 instead of the source just edited.
 
@@ -43,7 +43,7 @@ For source edits that affect rendered examples, build the static site and run
 Playwright against a fresh server on a separate port:
 
 ```bash
-cd .tmp/slate-v2
+cd Plate repo root
 bun build:next
 PORT=3111 bun serve:playwright
 PLAYWRIGHT_BASE_URL=http://localhost:3111 PLAYWRIGHT_RETRIES=0 \
@@ -76,6 +76,6 @@ source/test string duplication from becoming a false failure.
 
 ## Related Issues
 
-- [Slate React history hotkeys must repair DOM after model undo](../ui-bugs/2026-04-21-slate-react-history-hotkeys-must-repair-dom-after-model-undo.md)
-- [Slate React scroll range measurement must restore DOM methods](../logic-errors/2026-05-11-slate-react-scroll-range-measurement-must-restore-dom-methods.md)
-- [Slate React triple-click delete needs full block selection intent](../logic-errors/2026-05-06-slate-react-triple-click-delete-needs-full-block-selection-intent.md)
+- [Plite React history hotkeys must repair DOM after model undo](../ui-bugs/2026-04-21-slate-react-history-hotkeys-must-repair-dom-after-model-undo.md)
+- [Plite React scroll range measurement must restore DOM methods](../logic-errors/2026-05-11-slate-react-scroll-range-measurement-must-restore-dom-methods.md)
+- [Plite React triple-click delete needs full block selection intent](../logic-errors/2026-05-06-slate-react-triple-click-delete-needs-full-block-selection-intent.md)

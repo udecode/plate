@@ -2,7 +2,7 @@
 title: Expanded delete across inline boundaries must remove crossed inline ancestors
 date: 2026-05-09
 category: docs/solutions/logic-errors
-module: slate-v2 lexical harvest delete-text
+module: plite lexical harvest delete-text
 problem_type: logic_error
 component: testing_framework
 symptoms:
@@ -12,14 +12,14 @@ symptoms:
 root_cause: logic_error
 resolution_type: test_fix
 severity: medium
-tags: [slate-v2, lexical-harvest, delete, inline, selection]
+tags: [plite, lexical-harvest, delete, inline, selection]
 ---
 
 # Expanded delete across inline boundaries must remove crossed inline ancestors
 
 ## Problem
 
-Lexical regression 1083 exposed an expanded-delete boundary that Slate did not
+Lexical regression 1083 exposed an expanded-delete boundary that Plite did not
 prove: deleting a range that starts at inline link content and continues outside
 that inline should remove the inline element, not leave an empty shell.
 
@@ -42,7 +42,7 @@ that inline should remove the inline element, not leave an empty shell.
 ## Solution
 
 Add package proof for both accepted rows in
-`.tmp/slate-v2/packages/slate/test/delete-contract.ts`:
+`packages/plite/test/delete-contract.ts`:
 
 - delete a full selection where the visible content starts with an inline link
 - delete a partial expanded range that starts at an inline link and ends after it
@@ -54,7 +54,7 @@ deletes.
 
 ## Why This Works
 
-Slate normalizes an empty spacer before leading inline content. The full
+Plite normalizes an empty spacer before leading inline content. The full
 selection proof must include that spacer, while the partial proof starts inside
 the link. In both accepted rows, the selected inline is not merely emptied; the
 selection crosses out of it, so the inline element is part of the deleted

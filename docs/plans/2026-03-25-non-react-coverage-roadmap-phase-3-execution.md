@@ -37,7 +37,7 @@ status: completed
 ## Outcome
 
 - Tier 1 and Tier 2 are complete.
-- `upsertLink.ts` and `markdownToSlateNodesSafely.ts` each had dead branches removed instead of receiving fake tests.
+- `upsertLink.ts` and `markdownToPliteNodesSafely.ts` each had dead branches removed instead of receiving fake tests.
 - New direct specs landed for the remaining honest helper seams in `core`, `markdown`, `table`, `list-classic`, and `suggestion`.
 - This pass exposed and fixed two real product bugs:
   - `splitIncompleteMdx.ts` treated a closing `>` at end-of-string as incomplete.

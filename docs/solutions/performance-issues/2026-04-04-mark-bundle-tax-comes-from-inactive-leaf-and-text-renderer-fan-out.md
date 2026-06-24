@@ -6,7 +6,7 @@ module: marks mount path
 problem_type: performance_issue
 component: tooling
 symptoms:
-  - "Standalone `10k` mark-heavy mount lanes were materially slower than Slate even after earlier plain-mark fast paths"
+  - "Standalone `10k` mark-heavy mount lanes were materially slower than Plite even after earlier plain-mark fast paths"
   - "`BasicMarksPlugin` was much slower than the matching single-mark lane"
   - "The DOM shape looked roughly identical, but Plate still paid a larger mount bill"
 root_cause: logic_error
@@ -30,7 +30,7 @@ The standalone editor benchmark exposed a red `10k` bold lane even after the
 earlier cheap-mark fast paths.
 
 The deceptive part was that the mounted DOM was already basically the same as
-Slate:
+Plite:
 
 - `10,000` `<strong>` nodes
 - `30,000` leaf nodes
@@ -43,9 +43,9 @@ So the extra runtime was not a "Plate mounts more DOM" story.
 
 Current standalone rows on the rich benchmark lab:
 
-- `86_mount-10k-bold-basic`: Plate `585.90 ms`, Slate `375.90 ms`
-- `90_mount-10k-bold-single`: Plate `424.50 ms`, Slate `343.20 ms`
-- `94_mount-10k-bold-direct`: Plate `406.00 ms`, Slate `333.90 ms`
+- `86_mount-10k-bold-basic`: Plate `585.90 ms`, Plite `375.90 ms`
+- `90_mount-10k-bold-single`: Plate `424.50 ms`, Plite `343.20 ms`
+- `94_mount-10k-bold-direct`: Plate `406.00 ms`, Plite `333.90 ms`
 
 That split says:
 
@@ -121,18 +121,18 @@ That keeps plain leaves cheap while still removing the per-render
 
 Focused reruns on the kept hybrid path landed here:
 
-- `48_mount-10k-marks-basic`: Plate `1244.70 ms`, Slate `903.00 ms`
-- `86_mount-10k-bold-basic`: Plate `557.20 ms`, Slate `335.60 ms`
-- `90_mount-10k-bold-single`: Plate `399.90 ms`, Slate `342.50 ms`
-- `91_mount-10k-italic-single`: Plate `388.30 ms`, Slate `349.90 ms`
-- `93_mount-10k-strikethrough-single`: Plate `439.80 ms`, Slate `339.60 ms`
+- `48_mount-10k-marks-basic`: Plate `1244.70 ms`, Plite `903.00 ms`
+- `86_mount-10k-bold-basic`: Plate `557.20 ms`, Plite `335.60 ms`
+- `90_mount-10k-bold-single`: Plate `399.90 ms`, Plite `342.50 ms`
+- `91_mount-10k-italic-single`: Plate `388.30 ms`, Plite `349.90 ms`
+- `93_mount-10k-strikethrough-single`: Plate `439.80 ms`, Plite `339.60 ms`
 
 Widening the decomposition to the remaining special marks showed that no single
 plugin was secretly causing the whole remaining wall:
 
-- `98_mount-10k-code-basic`: Plate `418.70 ms`, Slate `387.00 ms`
-- `100_mount-10k-subscript-basic`: Plate `410.90 ms`, Slate `382.80 ms`
-- `102_mount-10k-superscript-basic`: Plate `395.30 ms`, Slate `384.20 ms`
+- `98_mount-10k-code-basic`: Plate `418.70 ms`, Plite `387.00 ms`
+- `100_mount-10k-subscript-basic`: Plate `410.90 ms`, Plite `382.80 ms`
+- `102_mount-10k-superscript-basic`: Plate `395.30 ms`, Plite `384.20 ms`
 
 So the remaining `marks-basic` lane is mostly the aggregate cost of many marked
 leaves in the same workload, not one hidden special-mark disaster.

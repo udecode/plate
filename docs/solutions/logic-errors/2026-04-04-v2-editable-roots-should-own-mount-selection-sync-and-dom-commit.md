@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: V2 editable roots should own mount selection sync and DOM commit
 tags:
-  - slate-v2
+  - plite
   - slate-react-v2
   - editable
   - selection
@@ -20,7 +20,7 @@ severity: medium
 Even after the text and element primitives were packaged, every v2 proof surface
 was still hand-rolling the same root loop:
 
-- mount the root into `slate-dom-v2`
+- mount the root into `plite-dom-v2`
 - sync DOM selection from snapshot selection
 - initialize collapsed selection on focus
 - listen to native `input` / `compositionend`
@@ -30,9 +30,9 @@ That was already the beginning of an `Editable`.
 
 ## What fixed it
 
-`slate-react-v2` now owns a minimal `Editable` root:
+`plite-react-v2` now owns a minimal `Editable` root:
 
-- [editable.tsx](/Users/zbeyens/git/slate-v2/packages/slate-react-v2/src/components/editable.tsx)
+- [editable.tsx](/Users/zbeyens/git/plite/packages/plite-react-v2/src/components/editable.tsx)
 
 The v2 placeholder, inline-edge, and void-edge proof surfaces now use that
 component instead of each keeping a private reconciliation loop.
@@ -50,7 +50,7 @@ editor-facing surface instead of a pile of useful pieces.
 
 ## Reusable rule
 
-For `slate-react-v2`:
+For `plite-react-v2`:
 
 - once multiple proof surfaces duplicate the same root mount/selection/input
   loop, package it as an editable surface

@@ -370,13 +370,13 @@ For detailed changes, see [\`CHANGELOG\`](https://github.com/udecode/plate/blob/
 });
 
 test('validates AI release notes preserve exact commit links', () => {
-  const raw = `## \`@platejs/slate\`
+  const raw = `## \`@platejs/plite\`
 
 ### Patch Changes
 
 - Updated \`slate-react\`. ([\`ce9ec87\`](https://github.com/udecode/plate/commit/ce9ec871c9547a8a3c78ded13a93049ef9fe049c))
 
-For detailed changes, see [\`CHANGELOG\`](https://github.com/udecode/plate/blob/abc/packages/slate/CHANGELOG.md)
+For detailed changes, see [\`CHANGELOG\`](https://github.com/udecode/plate/blob/abc/packages/plite/CHANGELOG.md)
 `;
   const withoutCommit = raw.replace(
     '([`ce9ec87`](https://github.com/udecode/plate/commit/ce9ec871c9547a8a3c78ded13a93049ef9fe049c))',

@@ -16,7 +16,7 @@ Sources:
 - GitHub Engineering, "The uphill climb of making diff lines performant",
   pasted by the user on 2026-05-03.
 - TanStack Virtual official docs queried through Context7 on 2026-05-03.
-- Live `.tmp/slate-v2` source read on 2026-05-03.
+- Live `Plate repo root` source read on 2026-05-03.
 - TanStack Blog, "TanStack Virtual just got a lot faster, and finally handles
   iOS", published 2026-05-19 and read on 2026-05-23.
 - TanStack Virtual latest Virtualizer API docs, read on 2026-05-23.
@@ -58,7 +58,7 @@ Current live Slate v2 facts on 2026-05-23:
 
 Slate decision update:
 
-- Upgrade `@tanstack/react-virtual` in `.tmp/slate-v2` so the lockfile reaches
+- Upgrade `@tanstack/react-virtual` in `Plate repo root` so the lockfile reaches
   `3.13.25` / `virtual-core@3.15.0`.
 - Do not expose TanStack options in public Slate API. The existing Slate-shaped
   `domStrategy={{ type: 'virtualized', threshold, overscan,
@@ -123,7 +123,7 @@ Slate implication:
 
 ## Live Slate v2 Current Shape
 
-Current live `.tmp/slate-v2` source has:
+Current live `Plate repo root` source has:
 
 - `renderingStrategy` public prop with `full`, `staged`, `shell`, and
   `virtualized` effective types;

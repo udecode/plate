@@ -35,7 +35,7 @@ claim-routing pass, not a fix pass unless a narrow, proven code path drops out.
 | ----------------- | -------- | --------------------------------------------------------------- |
 | 1. Evidence fetch | complete | Gitcrawl threads/neighbors/search plus live GitHub issue reads. |
 | 2. Classification | complete | Five issue decisions with bucket/confidence.                    |
-| 3. Dossier write  | complete | Batch dossier under `docs/slate-v2/ledgers/`.                   |
+| 3. Dossier write  | complete | Batch dossier under `docs/plite/ledgers/`.                   |
 | 4. Ledger sync    | complete | Update live ledger rows only if status/bucket changes.          |
 | 5. Verification   | complete | Prettier and completion check.                                  |
 

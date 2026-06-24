@@ -9,8 +9,6 @@ export const playgroundValue: Value = [
   {
     children: [
       { text: '体验使用 ' },
-      { children: [{ text: 'Slate' }], type: 'a', url: 'https://slatejs.org' },
-      { text: ' 和 ' },
       { children: [{ text: 'React' }], type: 'a', url: 'https://reactjs.org' },
       {
         text: ' 构建的现代富文本编辑器。这个演示平台仅展示了 Plate 功能的一部分。',

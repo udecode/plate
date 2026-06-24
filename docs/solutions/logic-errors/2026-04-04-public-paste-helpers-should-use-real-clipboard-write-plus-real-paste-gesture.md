@@ -5,7 +5,7 @@ component: testing_framework
 root_cause: logic_error
 title: Public paste helpers should use real clipboard write plus real paste gesture
 tags:
-  - slate-browser
+  - plite-browser
   - clipboard
   - paste
   - playwright
@@ -17,7 +17,7 @@ severity: medium
 
 ## What happened
 
-The first candidate public paste helpers for `slate-browser` were synthetic
+The first candidate public paste helpers for `plite-browser` were synthetic
 `paste` event tricks.
 
 They looked small.
@@ -27,9 +27,9 @@ The real question was:
 
 - can the browser write actual clipboard content
 - can the test trigger an actual paste gesture
-- does Slate handle that path correctly?
+- does Plite handle that path correctly?
 
-In Chromium on the Slate examples, yes.
+In Chromium on the Plite examples, yes.
 
 ## What fixed it
 
@@ -59,7 +59,7 @@ They are bad as the public default once a real browser path exists.
 
 ## Reusable rule
 
-If `slate-browser/playwright` exposes paste helpers, they should:
+If `plite-browser/playwright` exposes paste helpers, they should:
 
 - write to the real browser clipboard
 - trigger a real paste gesture

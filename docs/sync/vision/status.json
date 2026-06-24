@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "initializedAt": "2026-06-16T10:38:04Z",
+  "lastSyncedCommit": "9e3683771331cd9edcc0dc6e74f3368257ee5bdc",
+  "lastSyncedAt": "2026-06-16T10:38:04Z",
+  "lastTargetCommit": "9e3683771331cd9edcc0dc6e74f3368257ee5bdc",
+  "lastRunDir": null,
+  "pendingRunDir": null,
+  "lastPlan": null,
+  "notes": [
+    "Initial baseline created with the sync-vision skill.",
+    "lastSyncedCommit accounts for committed inputs only.",
+    "Working-tree overlay is visible in run artifacts but not baselined until committed."
+  ]
+}

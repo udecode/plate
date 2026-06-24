@@ -7,7 +7,7 @@ Prevent `@platejs/dnd` from throwing `Expected drag drop context` when a Plate s
 ## Findings
 
 - `apps/www` already wraps the app tree in [`Providers`](apps/www/src/components/context/providers.tsx) with `DndProvider`.
-- The editor DnD plugin also wraps `aboveSlate` in [`dnd-kit.tsx`](apps/www/src/registry/components/editor/plugins/dnd-kit.tsx) with `DndProvider`.
+- The editor DnD plugin also wraps `abovePlite` in [`dnd-kit.tsx`](apps/www/src/registry/components/editor/plugins/dnd-kit.tsx) with `DndProvider`.
 - Prior repo learning in [`2026-03-28-next-prerendered-client-editors-need-dnd-hooks-to-noop-on-the-server.md`](docs/solutions/developer-experience/2026-03-28-next-prerendered-client-editors-need-dnd-hooks-to-noop-on-the-server.md) already established that this error is often a runtime-environment contract bug, not missing provider plumbing.
 - Current package fix: guard `useDragNode` and `useDropNode` on both DOM availability and `DndContext.dragDropManager`.
 

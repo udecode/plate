@@ -8,14 +8,14 @@
     "docs": "Docs and research files are linked evidence, not benchmark control state."
   },
   "counts": {
-    "targets": 27,
-    "artifacts": 27,
-    "existingArtifacts": 25,
+    "targets": 29,
+    "artifacts": 29,
+    "existingArtifacts": 27,
     "missingOptionalArtifacts": 2,
     "missingRequiredArtifacts": 0,
-    "requiredArtifacts": 25,
+    "requiredArtifacts": 27,
     "statusCounts": {
-      "ok": 25,
+      "ok": 27,
       "missing-optional-artifact": 2
     }
   },
@@ -27,14 +27,14 @@
       "owner": "slate-v2",
       "question": "Which rich-text, table, inline, and paste-html browser fixtures replay across Slate v2 and legacy Slate?",
       "command": "bun run bench:browser:rich-text-replay-coverage:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "replay_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-browser-rich-text-replay-coverage-benchmark.json",
+          "path": "tmp/slate-browser-rich-text-replay-coverage-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -54,14 +54,14 @@
       "owner": "slate-v2",
       "question": "Do 10,000-line copy/paste payloads and 50,000-block two-node cuts stay under issue-shaped budgets?",
       "command": "SLATE_CLIPBOARD_BENCH_HUGE_CUT_BLOCKS=50000 SLATE_CLIPBOARD_BENCH_ISSUE_TARGETS=1 bun run bench:core:clipboard-large-payload:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "clipboard_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-clipboard-large-payload-benchmark.json",
+          "path": "tmp/slate-clipboard-large-payload-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -81,14 +81,14 @@
       "owner": "slate-v2",
       "question": "Are remote replay, bookmark rebase, canonical replacement, history skip, and cleanup lanes ready?",
       "command": "bun run bench:core:collab-readiness:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-collab-readiness-benchmark.json",
+          "path": "tmp/slate-collab-readiness-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -108,14 +108,14 @@
       "owner": "slate-v2",
       "question": "How expensive is the editor store and public snapshot surface?",
       "command": "bun run bench:core:editor-store:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "core_benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-editor-store-benchmark.json",
+          "path": "tmp/slate-editor-store-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -135,14 +135,14 @@
       "owner": "slate-v2",
       "question": "Does Slate v2 match legacy Slate for core huge-document operations?",
       "command": "bun run bench:core:huge-document:compare:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "core_benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-core-huge-document-benchmark.json",
+          "path": "tmp/slate-core-huge-document-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -162,14 +162,14 @@
       "owner": "slate-v2",
       "question": "How expensive are structural node transforms?",
       "command": "bun run bench:core:node-transforms:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "core_benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-node-transform-benchmark.json",
+          "path": "tmp/slate-node-transform-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -189,14 +189,14 @@
       "owner": "slate-v2",
       "question": "Does Slate v2 match legacy Slate for normalization?",
       "command": "bun run bench:core:normalization:compare:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "core_benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-normalization-compare-benchmark.json",
+          "path": "tmp/slate-normalization-compare-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -216,14 +216,14 @@
       "owner": "slate-v2",
       "question": "How fast is current Slate v2 normalization?",
       "command": "bun run bench:core:normalization:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "core_benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-normalization-benchmark.json",
+          "path": "tmp/slate-normalization-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -243,14 +243,14 @@
       "owner": "slate-v2",
       "question": "Does Slate v2 match legacy Slate for core observation?",
       "command": "bun run bench:core:observation:compare:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "core_benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-core-observation-benchmark.json",
+          "path": "tmp/slate-core-observation-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -270,14 +270,14 @@
       "owner": "slate-v2",
       "question": "How expensive are query, ref, and observation paths?",
       "command": "bun run bench:core:query-ref-observation:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "core_benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-query-ref-observation-benchmark.json",
+          "path": "tmp/slate-query-ref-observation-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -297,14 +297,14 @@
       "owner": "slate-v2",
       "question": "How expensive are refs and projection paths?",
       "command": "bun run bench:core:refs-projection:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "core_benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-refs-projection-benchmark.json",
+          "path": "tmp/slate-refs-projection-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -324,14 +324,14 @@
       "owner": "slate-v2",
       "question": "Does Slate v2 match legacy Slate for rich-text editing, transforms, selection, and navigation operations?",
       "command": "RICH_TEXT_OPS_COMPARE_ITERATIONS=51 bun run bench:core:rich-text-operations:compare:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "rich_text_structural_ops_p95_ms",
       "direction": "lower",
       "printsMetric": true,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-rich-text-operations-compare-benchmark.json",
+          "path": "tmp/slate-rich-text-operations-compare-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -351,14 +351,14 @@
       "owner": "slate-v2",
       "question": "How expensive are text and selection operations?",
       "command": "bun run bench:core:text-selection:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "core_benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-text-selection-benchmark.json",
+          "path": "tmp/slate-text-selection-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -378,14 +378,14 @@
       "owner": "slate-v2",
       "question": "How expensive is the current-only transaction path?",
       "command": "bun run bench:core:transaction:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "core_benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-transaction-benchmark.json",
+          "path": "tmp/slate-transaction-benchmark.json",
           "required": false,
           "exists": false
         }
@@ -405,14 +405,14 @@
       "owner": "slate-v2",
       "question": "Does Slate v2 match legacy Slate for undo/redo typing and fragment history?",
       "command": "HISTORY_BENCH_LEGACY_REPO=../../../slate bun run bench:history:compare:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "history_compare_worst_p95_ratio",
       "direction": "lower",
       "printsMetric": true,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-history-compare-benchmark.json",
+          "path": "tmp/slate-history-compare-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -432,14 +432,14 @@
       "owner": "slate-v2",
       "question": "How much retained memory does history keep?",
       "command": "bun run bench:core:history-retained-memory:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-history-retained-memory-benchmark.json",
+          "path": "tmp/slate-history-retained-memory-benchmark.json",
           "required": false,
           "exists": false
         }
@@ -459,14 +459,14 @@
       "owner": "slate-v2",
       "question": "Does the issue #6038 transaction execution replay stay healthy?",
       "command": "bun run bench:slate:6038:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/bench-slate-6038.json",
+          "path": "tmp/bench-slate-6038.json",
           "required": true,
           "exists": true
         }
@@ -486,14 +486,14 @@
       "owner": "slate-v2",
       "question": "Where does active typing time go in the React runtime?",
       "command": "bun run bench:react:active-typing:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "typing_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-react-active-typing-breakdown-benchmark.json",
+          "path": "tmp/slate-react-active-typing-breakdown-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -513,14 +513,14 @@
       "owner": "slate-v2",
       "question": "What DOM count, heap, long-frame, and interaction traces does Slate v2 produce in Chromium?",
       "command": "bun run bench:react:huge-document:browser-trace:local",
-      "cwd": ".tmp/slate-v2",
-      "metric": "browser_trace_seconds",
+      "cwd": ".",
+      "metric": "react_huge_doc_type_to_paint_p95_ms",
       "direction": "lower",
-      "printsMetric": false,
+      "printsMetric": true,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-3-ops-10.json",
+          "path": "tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-defaultAuto-stagedDomPresent-blocks-5000-iters-3-ops-10.json",
           "required": true,
           "exists": true
         }
@@ -539,15 +539,15 @@
       "kind": "benchmark-suite",
       "owner": "slate-v2",
       "question": "Does Slate v2 stay fast and local across the full huge-document benchmark suite?",
-      "command": "HUGE_DOC_FULL_LEGACY_REPO=../../../slate HUGE_DOC_FULL_BLOCKS=5000 HUGE_DOC_FULL_ITERATIONS=5 HUGE_DOC_FULL_TRACE_ITERATIONS=5 HUGE_DOC_FULL_TYPE_OPS=10 bun run bench:react:huge-document:full:local",
-      "cwd": ".tmp/slate-v2",
+      "command": "HUGE_DOC_FULL_STRICT_BUDGET=1 HUGE_DOC_FULL_LEGACY_REPO=../../../slate HUGE_DOC_FULL_BLOCKS=5000 HUGE_DOC_FULL_ITERATIONS=5 HUGE_DOC_FULL_TRACE_ITERATIONS=5 HUGE_DOC_FULL_TYPE_OPS=10 bun run bench:react:huge-document:full:local",
+      "cwd": ".",
       "metric": "react_huge_doc_full_max_budget_ratio",
       "direction": "lower",
       "printsMetric": true,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-react-huge-document-full-benchmark.json",
+          "path": "tmp/slate-react-huge-document-full-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -562,14 +562,14 @@
       "owner": "slate-v2",
       "question": "Does Slate v2 beat legacy Slate for 5,000-block React editing, selection, startup, and full-document replacement?",
       "command": "REACT_HUGE_COMPARE_LEGACY_REPO=../../../slate REACT_HUGE_COMPARE_DISPOSE_DELAY_MS=0 REACT_HUGE_COMPARE_SPLIT_SELECTION=1 REACT_HUGE_COMPARE_ISOLATE_SURFACES=1 REACT_HUGE_COMPARE_SURFACES=v2DefaultRenderAuto,v2DomPresent REACT_HUGE_COMPARE_BLOCKS=5000 REACT_HUGE_COMPARE_ITERATIONS=5 REACT_HUGE_COMPARE_TYPE_OPS=10 bun run bench:react:huge-document:legacy-compare:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "react_huge_doc_legacy_compare_worst_p95_ratio",
       "direction": "lower",
       "printsMetric": true,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-react-huge-document-legacy-compare-benchmark-compare-v2DefaultRenderAuto-v2DomPresent-blocks-5000-iters-5-ops-10-isolated-surfaces-split-selection-no-profile.json",
+          "path": "tmp/slate-react-huge-document-legacy-compare-benchmark-compare-v2DefaultRenderAuto-v2DomPresent-blocks-5000-iters-5-ops-10-isolated-surfaces-split-selection-no-profile.json",
           "required": true,
           "exists": true
         }
@@ -589,14 +589,14 @@
       "owner": "slate-v2",
       "question": "Do overlay and partial-DOM promotion paths stay local in huge documents?",
       "command": "bun ../../scripts/benchmarks/browser/react/huge-document-overlays.tsx",
-      "cwd": ".tmp/slate-v2/packages/slate-react",
+      "cwd": "./packages/slate-react",
       "metric": "benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/packages/slate-react/tmp/slate-react-huge-document-overlays-benchmark.json",
+          "path": "tmp/slate-react-huge-document-overlays-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -616,14 +616,14 @@
       "owner": "slate-v2",
       "question": "What matching browser trace does legacy Slate chunk-on produce for the same huge-document surface?",
       "command": "SLATE_LEGACY_BROWSER_TRACE_SURFACES=legacyChunkOn bun run bench:react:huge-document:slate-browser-trace:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "browser_trace_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-react-huge-document-slate-browser-trace-benchmark-surfaces-legacyChunkOn-blocks-5000-iters-3-ops-10.json",
+          "path": "tmp/slate-react-huge-document-slate-browser-trace-benchmark-surfaces-legacyChunkOn-blocks-5000-iters-3-ops-10.json",
           "required": true,
           "exists": true
         }
@@ -643,14 +643,14 @@
       "owner": "slate-v2",
       "question": "Does the 5,000-block virtualized React surface keep type-to-paint latency inside the interactive budget?",
       "command": "SLATE_BROWSER_TRACE_SURFACES=virtualized SLATE_BROWSER_TRACE_ITERATIONS=5 SLATE_BROWSER_TRACE_TYPE_OPS=10 SLATE_BROWSER_TRACE_NATIVE_TIMEOUT_MS=5000 bun run bench:react:huge-document:browser-trace:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "react_huge_doc_type_to_paint_p95_ms",
       "direction": "lower",
       "printsMetric": true,
       "correctnessCommand": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright test playwright/integration/examples/huge-document.test.ts --project=chromium -g \"exposes virtualized DOM strategy controls and metrics|keeps virtualized backward scroll stable over dynamic block heights\"",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-5-ops-10.json",
+          "path": "tmp/slate-react-huge-document-browser-trace-benchmark-surfaces-virtualized-blocks-5000-iters-5-ops-10.json",
           "required": true,
           "exists": true
         }
@@ -665,14 +665,14 @@
       "owner": "slate-v2",
       "question": "Does rows=800 virtualized pagination keep char-burst typing near staged table performance while DOM and page mounts stay bounded?",
       "command": "bun run bench:react:pagination-virtualized-char-burst:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "pagination_virtualized_vs_table_ratio",
       "direction": "lower",
       "printsMetric": true,
       "correctnessCommand": "PLAYWRIGHT_RETRIES=0 PLAYWRIGHT_WORKERS=1 bun playwright test playwright/integration/examples/pagination.test.ts --project=chromium -g \"keeps rows=800 virtualized pagination in the staged-class perf envelope|keeps fast staged text after insert breaks at the model caret|selects projected pagination words on native double click|places virtualized pagination selection at wrapped line ends\"",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/tmp/slate-pagination-virtualized-char-burst-benchmark.json",
+          "path": "tmp/slate-pagination-virtualized-char-burst-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -687,14 +687,14 @@
       "owner": "slate-v2",
       "question": "How broad are React rerenders for selection, leaves, ancestors, and source-scoped invalidation?",
       "command": "bun ../../scripts/benchmarks/browser/react/rerender-breadth.tsx",
-      "cwd": ".tmp/slate-v2/packages/slate-react",
+      "cwd": "./packages/slate-react",
       "metric": "benchmark_seconds",
       "direction": "lower",
       "printsMetric": false,
       "correctnessCommand": "bun check",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/packages/slate-react/tmp/slate-react-rerender-breadth-benchmark.json",
+          "path": "tmp/slate-react-rerender-breadth-benchmark.json",
           "required": true,
           "exists": true
         }
@@ -714,14 +714,36 @@
       "owner": "slate-v2",
       "question": "Do root insert, reorder, and full-replacement edits avoid waking unrelated runtime-node selectors?",
       "command": "bun run bench:react:runtime-node-fanout:local",
-      "cwd": ".tmp/slate-v2",
+      "cwd": ".",
       "metric": "slate_react_runtime_node_fanout_count",
       "direction": "lower",
       "printsMetric": true,
       "correctnessCommand": "cd packages/slate-react && bun test:vitest test/provider-hooks-contract.tsx -t \"fan out|full-document replacement\"",
       "artifacts": [
         {
-          "path": ".tmp/slate-v2/packages/slate-react/tmp/slate-react-runtime-node-fanout-benchmark.json",
+          "path": "tmp/slate-react-runtime-node-fanout-benchmark.json",
+          "required": true,
+          "exists": true
+        }
+      ],
+      "status": "ok",
+      "migration": null
+    },
+    {
+      "id": "yjs-collaboration",
+      "family": "collaboration",
+      "kind": "current",
+      "owner": "slate-v2",
+      "question": "Does @platejs/yjs keep multi-peer sync, awareness, reconnect, and large-document collaboration fast while preserving convergence?",
+      "command": "bun benchmarks/slate-v2/donor/core/current/yjs-collaboration.mjs",
+      "cwd": ".",
+      "metric": "yjs_collaboration_worst_p95_ms",
+      "direction": "lower",
+      "printsMetric": true,
+      "correctnessCommand": "pnpm --filter @platejs/yjs test && pnpm --filter @platejs/yjs typecheck",
+      "artifacts": [
+        {
+          "path": "tmp/slate-yjs-collaboration-benchmark.json",
           "required": true,
           "exists": true
         }

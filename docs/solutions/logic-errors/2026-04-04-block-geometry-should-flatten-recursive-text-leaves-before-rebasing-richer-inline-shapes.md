@@ -5,7 +5,7 @@ component: documentation
 root_cause: logic_error
 title: Block geometry should flatten recursive text leaves before rebasing richer-inline shapes
 tags:
-  - slate-v2
+  - plite
   - selection
   - range-ref
   - rich-inline

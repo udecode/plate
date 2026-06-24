@@ -3,14 +3,14 @@ title: EditableBlocks app-owned surfaces must not churn runtime ids or miss plai
 date: 2026-04-20
 last_updated: 2026-05-29
 category: docs/solutions/logic-errors
-module: Slate React runtime
+module: Plite React runtime
 problem_type: logic_error
 component: tooling
 symptoms:
   - "EditableBlocks app-owned proofs rendered no projection slices even though the projection store snapshot was populated"
   - "Plain createEditor()-backed app-owned transforms changed editor state without rerendering EditableBlocks subscribers"
   - "App-owned scrollSelectionIntoView could not resolve DOM text nodes for plain-editor text selections"
-  - "A Slate example control passed initial value setup but still failed the value replacement guard by calling tx.value.replace() after the provider mounted"
+  - "A Plite example control passed initial value setup but still failed the value replacement guard by calling tx.value.replace() after the provider mounted"
 root_cause: logic_error
 resolution_type: code_fix
 severity: high
@@ -51,11 +51,11 @@ bridge seams that were actually broken.
 1. Stop auto-wrapped `EditableBlocks` from reinitializing the editor with
    `initialValue`. That mount-time replace churned runtime ids and immediately
    desynced projection-store keys from the mounted tree.
-2. Make the `Slate` provider wake selector subscribers for plain editors by
+2. Make the `Plite` provider wake selector subscribers for plain editors by
    bridging `editor.onChange` when the editor is not DOM-enhanced.
 3. Pass text marks through `EditableTextBlocks` so projection-backed text nodes
    can stay on the direct projected rendering path.
-4. Ensure `useSlateNodeRef` creates the plain-editor key-to-element map when it
+4. Ensure `usePliteNodeRef` creates the plain-editor key-to-element map when it
    does not already exist, so DOM range resolution works for app-owned
    selections.
 5. Preserve shifted node keys across `insert_node` and `remove_node` in
@@ -68,16 +68,16 @@ bridge seams that were actually broken.
 Key files:
 
 ```ts
-// packages/slate-react/src/components/editable-text-blocks.tsx
+// packages/plite-react/src/components/editable-text-blocks.tsx
 return (
-  <Slate editor={editor} projectionStore={projectionStore}>
+  <Plite editor={editor} projectionStore={projectionStore}>
     {content}
-  </Slate>
+  </Plite>
 )
 ```
 
 ```ts
-// packages/slate-react/src/components/slate.tsx
+// packages/plite-react/src/components/slate.tsx
 if (!EDITOR_TO_KEY_TO_ELEMENT.has(editor)) {
   const originalOnChange = editor.onChange
 
@@ -89,7 +89,7 @@ if (!EDITOR_TO_KEY_TO_ELEMENT.has(editor)) {
 ```
 
 ```ts
-// packages/slate-react/src/hooks/use-slate-node-ref.tsx
+// packages/plite-react/src/hooks/use-slate-node-ref.tsx
 const keyToElement = EDITOR_TO_KEY_TO_ELEMENT.get(editor) ?? new WeakMap()
 
 if (!EDITOR_TO_KEY_TO_ELEMENT.has(editor)) {
@@ -100,7 +100,7 @@ keyToElement.set(key, node)
 ```
 
 ```ts
-// packages/slate-dom/src/plugin/with-dom.ts
+// packages/plite-dom/src/plugin/with-dom.ts
 case 'insert_node':
 case 'remove_node': {
   pathRefMatches.push(...getPathRefMatches(e, Path.parent(op.path)))
@@ -123,7 +123,7 @@ selection-to-DOM resolution became honest enough for `scrollSelectionIntoView`.
 - Do not auto-wrap an already-populated editor with a provider that blindly
   reapplies `initialValue`.
 - Do not treat `tx.value.replace()` as a harmless example control shortcut.
-  After `<Slate>` mounts, prefer scoped `tx.nodes.remove()` /
+  After `<Plite>` mounts, prefer scoped `tx.nodes.remove()` /
   `tx.nodes.insertMany()` updates so runtime ids, layout projection, selection,
   and collaboration state stay traceable.
 - Treat `createEditor()` support as a real public contract. If a surface

@@ -24,7 +24,7 @@ describe('applyAIReview', () => {
           {
             children: [
               {
-                text: 'Slate',
+                text: 'Plite',
               },
             ],
             type: 'a',
@@ -390,9 +390,9 @@ describe('applyAIReview', () => {
       {
         blockId: '5zZ8_hM53b',
         comment:
-          'This sentence introduces the technologies used to build the rich-text editor, Slate and React.',
+          'This sentence introduces the technologies used to build the rich-text editor, Plite and React.',
         content:
-          'Experience a modern rich-text editor built with [Slate](https://slatejs.org) and [React](https://reactjs.org).',
+          'Experience a modern rich-text editor built with [Plite](https://slatejs.org) and [React](https://reactjs.org).',
       },
       {
         blockId: 'GznILN9jX7',

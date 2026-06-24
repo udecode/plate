@@ -4,10 +4,10 @@ type: solution
 date: 2026-04-09
 status: completed
 category: workflow-issues
-module: slate-v2
+module: plite
 tags:
   - slate
-  - slate-v2
+  - plite
   - browser
   - examples
   - deletion-closure
@@ -53,13 +53,13 @@ Those two rows needed different handling:
 
 - `select.test.ts` still matched a real browser behavior seam, so the fix was to
   recover it directly in
-  [richtext.test.ts](/Users/zbeyens/git/slate-v2/playwright/integration/examples/richtext.test.ts)
+  [richtext.test.ts](/Users/zbeyens/git/plite/playwright/integration/examples/richtext.test.ts)
   with a triple-click paragraph-selection proof
 - `huge-document.test.ts` only asserted old chunking internals, so it was an
   explicit better-cut and mapped to the live huge-document benchmark lane
 
 That let the full Playwright deleted family close honestly in
-[2026-04-09-slate-v2-playwright-integration-examples-deleted-family-closure.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-09-slate-v2-playwright-integration-examples-deleted-family-closure.md)
+[2026-04-09-plite-playwright-integration-examples-deleted-family-closure.md](/Users/zbeyens/git/plate-2/docs/plans/2026-04-09-plite-playwright-integration-examples-deleted-family-closure.md)
 while exposing the real next residue:
 
 - `site/examples/ts/custom-types.d.ts`
