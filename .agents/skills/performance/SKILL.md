@@ -140,9 +140,9 @@ Use this shape for a large-document Plate review:
 
 That is enough to review a huge-document claim without rereading the entire performance rule set.
 
-## Slate Plan Performance Pass
+## Plite Plan Performance Pass
 
-When used inside `slate-plan`, record this lens in the implementation review matrix.
+When used inside `plite-plan`, record this lens in the implementation review matrix.
 
 Must answer:
 

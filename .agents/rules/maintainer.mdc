@@ -113,7 +113,7 @@ Execution owners still do the work:
   applied work.
 - `auto`: internal Plate/Slate quality, behavior, perf, API, proof, and
   workflow self-repair.
-- `slate-plan` / `plate-plan`: architecture, public API, behavior law, and
+- `plite-plan` / `plate-plan`: architecture, public API, behavior law, and
   maintainer-objection plans.
 - `architecture-cleanup`: repo-grounded architecture/code cleanup for
   cross-package refactors, testability gaps, shallow modules, over-splits,
@@ -240,10 +240,10 @@ Read the exact item first. Then classify route:
 | Item | Default owner |
 | --- | --- |
 | Slate substrate bug | `resolve-slate-issue` or `slate-patch` |
-| Slate architecture/API fork | `slate-plan` |
+| Slate architecture/API fork | `plite-plan` |
 | Already-applied PR/branch/current-tree closure | `autoclosure` |
 | Plate/Slate internal quality/perf/browser gap | `auto` |
-| Cross-package architecture/testability/refactor/deslop candidate | `architecture-cleanup`, then `major-task`, `slate-plan`, or `plate-plan` |
+| Cross-package architecture/testability/refactor/deslop candidate | `architecture-cleanup`, then `major-task`, `plite-plan`, or `plate-plan` |
 | Plate framework/plugin/component/docs | `plate-plan`, `plate-plugin-creator`, `plate-ui`, `docs-creator`, or `task` |
 | Security/advisory | `maintainer security` |
 | PR review | `autoreview` |

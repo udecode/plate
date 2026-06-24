@@ -56,7 +56,7 @@ Read these first:
 6. `.agents/skills/clawsweeper/SKILL.md` for issue/PR provenance discipline
    when a test exists because of a known upstream bug.
 7. For lane-plan mode, the downstream lane skill:
-   - `slate-v2`: `.agents/skills/slate-plan/SKILL.md`
+   - `slate-v2`: `.agents/skills/plite-plan/SKILL.md`
    - `plate`: `.agents/skills/plate-plan/SKILL.md`
 
 Never browse GitHub files. If the target is `owner/repo` and the checkout is
@@ -476,7 +476,7 @@ Lane registry:
 
 | Lane       | Aliases                  | Downstream skill                     | Owner                                                                   | Output                                                       |
 | ---------- | ------------------------ | ------------------------------------ | ----------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `slate-v2` | `slate`, `raw-slate`     | `.agents/skills/slate-plan/SKILL.md` | Raw Slate v2 substrate in `Plate repo root`                               | `docs/plans/YYYY-MM-DD-slate-v2-<repo>-harvest-plan.md`      |
+| `slate-v2` | `slate`, `raw-slate`     | `.agents/skills/plite-plan/SKILL.md` | Raw Slate v2 substrate in `Plate repo root`                               | `docs/plans/YYYY-MM-DD-slate-v2-<repo>-harvest-plan.md`      |
 | `plate`    | `platejs`, `plate-owned` | `.agents/skills/plate-plan/SKILL.md` | Plate packages, kits, docs, examples, and product behavior in this repo | `docs/plans/YYYY-MM-DD-plate-<repo>-harvest-plan.md`         |
 
 If the lane is unknown, infer only when harvest row owner labels make the
@@ -532,7 +532,7 @@ Lane-plan workflow:
       concepts, not upstream API names;
     - for `plate`, search packages, kits, docs, examples, and behavior-law docs.
 11. Apply downstream lane gates:
-    - `slate-v2`: load and apply `slate-plan` gates;
+    - `slate-v2`: load and apply `plite-plan` gates;
     - `plate`: load and apply `plate-plan` gates.
 12. Fill the lane-plan sections in the template.
 13. If below threshold, keep `pending` and name the next pass.

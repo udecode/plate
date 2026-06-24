@@ -40,7 +40,7 @@ keep.
 - The task is one normal patch: use `task`, `slate-patch`, or the package
   owner.
 - The task is an accepted public API/runtime/product architecture plan:
-  use `major-task`, `slate-plan`, or `plate-plan`.
+  use `major-task`, `plite-plan`, or `plate-plan`.
 - The task is measured Slate optimization state: use `slate-ar`.
 - The task is internal Plate/Slate quality/perf/browser/API supervision:
   use `auto`, which may invoke this skill when architecture cleanup is
@@ -216,7 +216,7 @@ Focused proof comes before broad proof. After multiple packets or import churn,
 run the relevant broad gate. Never leave speculative cleanup dirty.
 
 For behavior, public API, runtime boundary, product UX, or large blast radius:
-stop at ranked recommendation and route to `major-task`, `slate-plan`,
+stop at ranked recommendation and route to `major-task`, `plite-plan`,
 `plate-plan`, `auto`, or the package owner.
 
 ## Deslop Inventory
@@ -246,7 +246,7 @@ more files.
   over-split, fake-wrapper, or agent-navigation findings during closure.
 - `major-task`: owns broad decision, rollout, and implementation plan when the
   cleanup has meaningful blast radius.
-- `slate-plan` / `plate-plan`: own public API, behavior law, runtime boundary,
+- `plite-plan` / `plate-plan`: own public API, behavior law, runtime boundary,
   or product architecture decisions after this skill identifies the problem.
 - `maintainer`: may route public issue/PR architecture-cleanup candidates here
   before deciding execution owner.

@@ -55,7 +55,6 @@
     "[Debug Value Scrubbing](/docs/plite/api/scrubber)",
     "[Transforms API](/docs/plite/api/transforms)",
     "---Libraries---",
-    "[Plite Browser](/docs/plite/libraries/plite-browser)",
     "[Plite DOM](/docs/plite/libraries/plite-dom)",
     "[History Editor API](/docs/plite/libraries/plite-history/history-editor)",
     "[History Extension Setup](/docs/plite/libraries/plite-history/history-extension-setup)",

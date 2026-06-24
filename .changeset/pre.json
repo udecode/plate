@@ -38,7 +38,6 @@
     "@platejs/mention": "53.0.0",
     "platejs": "53.1.2",
     "@plate/scripts": "1.0.0",
-    "@platejs/playwright": "53.0.0",
     "@platejs/resizable": "53.0.0",
     "@platejs/selection": "53.1.6",
     "@platejs/slash-command": "53.0.0",

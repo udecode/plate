@@ -16,7 +16,7 @@ correct, fast, visually stable, well-tested, architecturally clean,
 docs-aligned, and ready for review.
 
 This is a router and supervisor skill. It does not replace `maintainer`,
-`autoclosure`, `slate-patch`, `slate-plan`, `plate-plan`, `slate-ar`,
+`autoclosure`, `slate-patch`, `plite-plan`, `plate-plan`, `slate-ar`,
 `slate-migration`, `architecture-cleanup`, or package owners unless evidence
 proves the skill topology itself is wrong. It routes them, repairs missing
 proof/metrics/skills, reshapes the Plate/Slate skill stack when needed, and
@@ -69,7 +69,7 @@ explicitly deferred, decisions are consolidated, and ship readiness is clean.
 
 - The user asks one narrow Slate bug fix: use `slate-patch`.
 - The user asks one ordinary local patch outside Slate automation: use `task`.
-- The user asks one architecture/API plan for review: use `slate-plan` or
+- The user asks one architecture/API plan for review: use `plite-plan` or
   `plate-plan` according to lane.
 - The user asks one Slate benchmark target: use `slate-ar perf <target>`.
 - The user asks whether existing Slate gates pass: use `slate-ar gate`.
@@ -194,11 +194,11 @@ For timed and batch-loop modes:
   workflow slowdowns;
 - do not hand off early just because the first packet closed;
 - do not turn `Needs your attention`, `deferred-with-owner`, or "route to
-  slate-plan/slate-ar perf" into a pause while the timebox is still open and a
+  plite-plan/slate-ar perf" into a pause while the timebox is still open and a
   reversible experiment, research packet, benchmark packet, or architecture
   spike can be run safely;
 - if a lane is risky but important, use the supervisor's freedom: start a
-  controlled scratchpad experiment, through `slate-ar`/`slate-plan` for Slate
+  controlled scratchpad experiment, through `slate-ar`/`plite-plan` for Slate
   lanes or `plate-plan`/the package owner for Plate lanes as the owner demands,
   record the hypothesis and proof gate before changing code, then keep, revert,
   or quarantine the packet from evidence;
@@ -311,7 +311,7 @@ Split long work into checkpoints that fit one high-quality prompt:
   record pass/fail signatures.
 - **Patch checkpoint:** fix one correctness class or one missing oracle.
 - **Perf checkpoint:** optimize one measured hot lane with correctness green.
-- **Architecture checkpoint:** run `slate-plan` for Slate API/runtime
+- **Architecture checkpoint:** run `plite-plan` for Slate API/runtime
   boundaries, `plate-plan` for Plate behavior/product boundaries, and
   `architecture-cleanup` for source shape/deslop/navigation friction before
   choosing either when the issue is structural.
@@ -322,7 +322,7 @@ Split long work into checkpoints that fit one high-quality prompt:
 - **Architecture-cleanup checkpoint:** when repeated Slate or Plate bugs, weak tests,
   copied helpers, hard-to-prove behavior, package-boundary confusion, deslop,
   over-splits, or perf work expose broader source-layout friction, invoke
-  `architecture-cleanup` before choosing `slate-plan`, `plate-plan`,
+  `architecture-cleanup` before choosing `plite-plan`, `plate-plan`,
   `slate-patch`, `slate-ar`, or a package owner.
 - **Skill-repair checkpoint:** patch the owning skill/rule when the workflow
   missed a recurring expectation.
@@ -478,7 +478,7 @@ For risky performance or architecture lanes inside a timed run:
 3. use `slate-ar` for Slate measured loop state when the work needs packet
    history, ASI logging, dashboard/status, or quality-gap research;
 4. use `slate-ar` perf mode for Slate target-backed performance experiments,
-   and use `slate-plan`/`plate-plan` only when an API/runtime/product decision
+   and use `plite-plan`/`plate-plan` only when an API/runtime/product decision
    must be made explicit before implementation;
 5. compare baseline/latest/best and record why the packet is `keep`, `revert`,
    or `quarantine`;
@@ -1070,7 +1070,7 @@ Then repair the owning layer:
 - missing/lying metric -> benchmark target/script repair;
 - visual proof gap -> Browser/screenshot/Playwright geometry proof;
 - stale docs -> decision consolidation;
-- bad API -> `slate-plan` or accepted implementation;
+- bad API -> `plite-plan` or accepted implementation;
 - missing taste coverage -> stop, capture the answer, and patch
   `vision` before resuming when the answer is reusable;
 - wrong/missing/overlapping skill -> `.agents/rules/**` repair;
@@ -1102,7 +1102,7 @@ Each loop cycle has one primary owner and one packet-ledger decision.
 8. **Architecture cleanup:** use `architecture-cleanup` when the evidence
    points to shallow modules, split ownership, copied proof helpers, over-splits,
    deslop, or poor test locality rather than one obvious API decision.
-9. **API cleanup:** use `slate-plan` or `plate-plan` when repeated bugs show
+9. **API cleanup:** use `plite-plan` or `plate-plan` when repeated bugs show
    bad public or internal API shape.
 10. **Skill repair:** patch source rules when the loop itself missed policy.
 11. **Decision consolidation:** update durable docs before ship readiness.
@@ -1118,7 +1118,7 @@ After each cycle:
   dirtier;
 - switch bottleneck after two correctness-green no-gain packets;
 - route to `architecture-cleanup` when the next win is broader architecture/code
-  cleanup, or to `slate-plan` when it is a concrete public API/runtime
+  cleanup, or to `plite-plan` when it is a concrete public API/runtime
   decision;
 - log evidence, rejected attempts, and the next owner in the plan.
 
@@ -1312,7 +1312,7 @@ The supervisor repairs whatever layer is missing:
 - **Architecture smell:** use `architecture-cleanup` when the smell is spread
   across modules, package ownership, proof harnesses, over-splits, deslop, or
   testability.
-- **API smell:** use `slate-plan` or implement the accepted shape when the plan
+- **API smell:** use `plite-plan` or implement the accepted shape when the plan
   is already accepted.
 - **Missing taste coverage:** stop at the checkpoint, record the missing taste
   in the plan, capture the user's answer, and patch root `VISION.md` when
@@ -1401,10 +1401,10 @@ Stop when:
 - `vision` does not cover a taste or risk-tolerance decision needed
   for the next safe move and no safe alternate owner remains, or the invocation
   mode is full-loop;
-- the next safe move is a `slate-plan` or `plate-plan` public API/runtime/product
+- the next safe move is a `plite-plan` or `plate-plan` public API/runtime/product
   decision;
 - the next safe move is pagination and the prompt did not explicitly request
-  pagination. Queue it as deferred with owner `slate-plan` instead of entering
+  pagination. Queue it as deferred with owner `plite-plan` instead of entering
   it from `auto`;
 - a same-signal behavior failure has already been routed through the right
   specialist owner and still needs a user-only decision or unsafe architecture
@@ -1449,5 +1449,5 @@ Report:
 - `Stopping checkpoints to unblock` section with queued questions, current
   recommendation, and exact anchors;
 - accepted deferrals and residual risks;
-- next owner: continue automation, `slate-plan`, `plate-plan`, `slate-ar`, a
+- next owner: continue automation, `plite-plan`, `plate-plan`, `slate-ar`, a
   package owner, or blocked authority decision.

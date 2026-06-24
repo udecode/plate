@@ -41,7 +41,7 @@ Blocked condition:
   score-hardening, or plan-hardening move remains runnable.
 
 Plite Plan lane state:
-- slate_plan_lane_status: pending
+- plite_plan_lane_status: pending
 - current_pass: current-state-read
 - current_pass_status: in_progress
 - next_pass: related-issue-discovery
@@ -127,7 +127,7 @@ Scorecard:
 |-----------|-------:|------:|----------|
 | React 19.2 runtime performance | 0.20 | pending | |
 | Plite-close unopinionated DX | 0.20 | pending | |
-| Plate and slate-yjs migration backbone | 0.15 | pending | |
+| Plate and collaboration migration backbone | 0.15 | pending | |
 | Regression-proof testing strategy | 0.20 | pending | |
 | Research evidence completeness | 0.15 | pending | |
 | shadcn-style composability and minimalism | 0.10 | pending | |
@@ -158,7 +158,7 @@ Plate migration-backbone target:
 |----------|------------------------|------------------------|----------|---------|---------|
 | pending | pending | pending | pending | pending | pending |
 
-slate-yjs migration-backbone target:
+Collaboration migration-backbone target:
 | Pressure | Plite substrate target | Collaboration route | Non-goal | Evidence | Verdict |
 |----------|------------------------|---------------------|----------|---------|---------|
 | pending | pending | pending | pending | pending | pending |
@@ -248,7 +248,7 @@ Open questions and decision-changing evidence:
 Implementation phases with owners:
 | Phase | Owner | Scope | Entry criteria | Exit criteria | Verification |
 |-------|-------|-------|----------------|---------------|--------------|
-| pending | slate-plan execution mode | pending | pending | pending | pending |
+| pending | plite-plan execution mode | pending | pending | pending | pending |
 
 Fast driver gates:
 | Gate | Cwd | Command / artifact | Proves | Status |

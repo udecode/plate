@@ -56,7 +56,7 @@ Every discovered migration gap updates the durable owner:
 
 - The user asks one local Slate v2 bug fix: use `slate-patch`.
 - The user asks one architecture/API decision before migration: use
-  `slate-plan`.
+  `plite-plan`.
 - The user asks broad behavior/perf automation unrelated to migration closure:
   use `auto`.
 - The task is only writing a package changeset for an already-understood diff:
@@ -240,7 +240,7 @@ Stop when:
 - the migration completion threshold passes;
 - the active packet is verified, reverted, or quarantined and the timed minimum
   runtime has elapsed;
-- a public API/runtime fork needs `slate-plan`;
+- a public API/runtime fork needs `plite-plan`;
 - a required user taste decision is missing from `vision` and no safe
   alternate migration work remains;
 - commit, PR, external credential, or destructive cleanup authority is needed.

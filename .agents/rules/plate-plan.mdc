@@ -1,5 +1,5 @@
 ---
-description: 'Define or execute Plate v2 architecture/API plans aligned with Slate v2: minimal breaking changes, Slate/Plate boundary, runtime/API conflict removal, product DX, performance, proof gates, and migration roadmap.'
+description: 'Define or execute Plate v2 architecture/API plans aligned with Plite: minimal breaking changes, Plite/Plate boundary, runtime/API conflict removal, product DX, performance, proof gates, and migration roadmap.'
 argument-hint: '[--quick|--standard|--deep] <Plate v2 architecture/API/boundary prompt | accepted plan path>'
 disable-model-invocation: true
 ---
@@ -9,7 +9,7 @@ disable-model-invocation: true
 Handle $ARGUMENTS.
 
 Use this for Plate v2 "absolute best architecture/DX" planning where the bad
-outcome is incremental compatibility sludge: old Plate APIs fighting new Slate
+outcome is incremental compatibility sludge: old Plate APIs fighting new Plite
 APIs, wrappers around wrappers, private runtime bridges leaking public, and
 breaking changes made without a crisp payoff.
 
@@ -30,11 +30,11 @@ planning goal.
 - Defining Plate v2 public API, plugin API, runtime, package, docs, examples,
   registry, or migration architecture.
 - Deciding the minimal breaking changes needed to stop Plate APIs conflicting
-  with Slate APIs.
+  with Plite APIs.
 - Auditing or redesigning Plate runtime accessors, plugin command surfaces,
   transform namespaces, package bridges, legacy substrate imports, docs
-  examples, and runtime/default-route bridges that may overlap with Slate.
-- Reviewing whether a Plate feature belongs in Slate substrate, Plate product
+  examples, and runtime/default-route bridges that may overlap with Plite.
+- Reviewing whether a Plate feature belongs in Plite substrate, Plate product
   APIs, a private migration bridge, docs/examples, or deletion.
 - Executing a user-accepted Plate Plan after a second explicit invocation names
   the accepted plan.
@@ -47,7 +47,7 @@ planning goal.
 - The user asks for a normal diff review; use `autoreview`.
 - The user asks for public GitHub issue/PR queue handling; use `maintainer`.
 - The user asks for already-applied current-tree closure; use `autoclosure`.
-- The work is pure Slate substrate design; use `slate-plan`.
+- The work is pure Plite substrate design; use `plite-plan`.
 
 ## Hard Policy
 
@@ -73,7 +73,7 @@ planning goal.
 - No public compatibility aliases. No public runtime shims. No docs for old API
   names. Private temporary bridges are allowed only with an owner, deletion
   trigger, proof gate, and no public export.
-- Slate API wins when a Plate API conflicts with the Slate substrate. Plate may
+- Plite API wins when a Plate API conflicts with the Plite substrate. Plate may
   keep a distinct product-level API only when the plan proves a separate user
   job, separate namespace, and no conceptual overlap.
 - Do not let a polished plan self-certify. Scores, verdicts, and keep/drop
@@ -88,35 +88,35 @@ planning goal.
 
 ## Plate V2 Doctrine
 
-Plate v2 sits on top of Slate. Plate should become simpler because Slate owns
+Plate v2 sits on top of Plite. Plate should become simpler because Plite owns
 more of the substrate cleanly.
 
 Default take:
 
-- Slate owns raw editor substrate.
+- Plite owns raw editor substrate.
 - Plate owns product composition.
-- Plate must not fork Slate concepts under Plate names.
-- Plate must not expose legacy Slate compatibility as a public beta promise.
+- Plate must not fork Plite concepts under Plate names.
+- Plate must not expose legacy Plite compatibility as a public beta promise.
 - Plate can break public APIs when the break removes overlap, improves DX,
   improves performance, or makes behavior easier to test.
 - Plate should keep product ergonomics. Do not make app authors manually wire
-  low-level Slate primitives just to build common editor features.
+  low-level Plite primitives just to build common editor features.
 - The target is not "closest to old Plate." The target is "best Plate on top of
-  the new Slate."
+  Plite."
 
-## Slate / Plate Boundary
+## Plite / Plate Boundary
 
 Use this ownership map before scoring any plan:
 
 | Surface | Owner | Rule |
 | --- | --- | --- |
-| Document model, nodes, operations, ranges, selection primitives | Slate | Plate consumes and specializes; it does not redefine core shape. |
-| `editor.read`, `editor.update`, transaction groups, operation replay | Slate | Plate product APIs may call them, but must not expose a competing core mutation layer. |
-| React editor runtime, root locality, DOM projection, browser selection bridge | Slate | Plate composes runtime behavior through supported hooks and extension points. |
-| Browser proof harness for editor behavior | Slate/browser proof infra | Plate uses it for product behavior proof; it does not turn proof helpers into app API. |
-| Yjs/collaboration substrate | Slate/Yjs substrate first | Plate owns product collab UI and package ergonomics. |
+| Document model, nodes, operations, ranges, selection primitives | Plite | Plate consumes and specializes; it does not redefine core shape. |
+| `editor.read`, `editor.update`, transaction groups, operation replay | Plite | Plate product APIs may call them, but must not expose a competing core mutation layer. |
+| React editor runtime, root locality, DOM projection, browser selection bridge | Plite | Plate composes runtime behavior through supported hooks and extension points. |
+| Browser proof harness for editor behavior | Plite/browser proof infra | Plate uses it for product behavior proof; it does not turn proof helpers into app API. |
+| Yjs/collaboration substrate | Plite/Yjs substrate first | Plate owns product collab UI and package ergonomics. |
 | Product plugins, kits, UI, registry, docs, examples, templates | Plate | Opinionated editor features belong here. |
-| Product commands and feature workflows | Plate | Names must be product-level and must not collide with Slate core namespaces. |
+| Product commands and feature workflows | Plate | Names must be product-level and must not collide with Plite core namespaces. |
 | App-level configuration and registry defaults | Plate | Keep it ergonomic; do not leak private runtime bridges. |
 
 If a surface is mixed, split it. Do not keep a shared owner because migration is
@@ -126,13 +126,13 @@ awkward.
 
 Every Plate v2 API plan that touches runtime or plugins must include an API
 conflict ledger discovered from live source. The ledger must cover every public
-or exported Plate surface that can overlap with Slate-owned substrate:
+or exported Plate surface that can overlap with Plite-owned substrate:
 
 - editor runtime accessors
 - product command and transform namespaces
 - plugin API and option extension points
 - feature-package command surfaces
-- Slate transaction/read/update interaction points
+- Plite transaction/read/update interaction points
 - runtime/default-route bridge APIs
 - package exports and declarations
 - docs/examples teaching public API
@@ -142,7 +142,7 @@ Row verdicts:
 
 - `hard-cut`: remove the public API and update callers.
 - `rename`: keep the concept but move it to a distinct Plate product name.
-- `move-to-slate`: delete the Plate owner and consume Slate.
+- `move-to-plite`: delete the Plate owner and consume Plite.
 - `move-to-plate-product`: keep as Plate product API with a non-conflicting
   namespace and clear user job.
 - `private-bridge`: temporary internal scaffold, not public, with deletion gate.
@@ -150,7 +150,7 @@ Row verdicts:
 
 Source-discovered legacy accessors deserve special suspicion. They are useful
 only if they remain clearly Plate product surfaces. If they read like alternate
-Slate core APIs, cut or rename them.
+Plite core APIs, cut or rename them.
 
 Typed escape hatches may be transitional only if the plan proves why normal
 typing cannot cover the caller yet. They cannot become the final Plate v2 story
@@ -172,7 +172,7 @@ without an explicit keep decision.
 - Active execution goal after user acceptance: a new goal that names the
   accepted plan and implementation target.
 - API conflict ledger in the active plan.
-- Slate/Plate boundary map in the active plan.
+- Plite/Plate boundary map in the active plan.
 - Minimal breaking-change matrix in the active plan.
 - Public API target, private bridge target, and deletion gates in the active
   plan.
@@ -193,7 +193,7 @@ Allowed planning edit scope:
 - `docs/research/**`
 - `docs/vision/**`
 - `docs/editor-behavior/**` when behavior law changes
-- `docs/slate-v2/**` references only when the plan relies on Slate migration
+- `docs/plite/**` references only when the plan relies on Plite migration
   evidence
 - `.agents/rules/plate-plan.mdc` only when self-repairing the skill
 
@@ -243,14 +243,14 @@ Review Plate APIs a bit.
 3. Active plan under `docs/plans/`, if present.
 4. Root `VISION.md`.
 5. Relevant `docs/vision/**` detail files.
-6. `.agents/rules/slate-plan.mdc` when methodology drift is suspected.
-7. Current Slate package APIs that Plate plans to consume:
-   - `packages/slate/**`
-   - `packages/slate-react/**`
-   - `packages/slate-dom/**`
-   - `packages/slate-history/**`
-   - `packages/slate-yjs/**`
-   - `packages/slate-layout/**`
+6. `.agents/rules/plite-plan.mdc` when methodology drift is suspected.
+7. Current Plite package APIs that Plate plans to consume:
+   - `packages/plite/**`
+   - `packages/plite-react/**`
+   - `packages/plite-dom/**`
+   - `packages/plite-history/**`
+   - `packages/plite-yjs/**`
+   - `packages/plite-layout/**`
 8. Current Plate package source affected by the plan:
    - `packages/core/**`
    - `packages/plate/**`
@@ -291,12 +291,12 @@ Common command families:
 | package build/public declarations | `pnpm --filter <package-name> build` |
 | exports/barrels | `pnpm brl` plus diff review |
 | docs/content | `pnpm --filter www check:docs` and browser proof when route changed |
-| Slate behavior used by Plate | focused `pnpm --filter slate test:slate-browser:chromium <file-or-grep>` |
-| full Slate release/deletion claim | `pnpm check:slate` |
+| Plite behavior used by Plate | focused `pnpm --filter plite test:plite-browser:chromium <file-or-grep>` |
+| full Plite release/deletion claim | `pnpm check:plite` |
 | broad Plate repo claim | the repo `check` command only when the plan explicitly needs it |
 
 Do not run Playwright against `apps/www` by default. Browser editor behavior
-proof belongs in the owned Slate/browser lane unless the accepted plan names a
+proof belongs in the owned Plite/browser lane unless the accepted plan names a
 Plate app route as the product behavior owner.
 
 ## Confidence Score
@@ -306,7 +306,7 @@ Score with evidence. Threshold: total score >= 0.92 and no dimension below
 
 | Dimension | Weight |
 | --- | ---: |
-| Slate/Plate boundary correctness | 0.20 |
+| Plite/Plate boundary correctness | 0.20 |
 | Plate API/DX quality | 0.20 |
 | Runtime, performance, and testability | 0.20 |
 | Minimal breaking-change strategy | 0.15 |
@@ -315,7 +315,7 @@ Score with evidence. Threshold: total score >= 0.92 and no dimension below
 
 Automatic caps:
 
-- Any unresolved Slate/Plate owner overlap caps total at 0.84.
+- Any unresolved Plite/Plate owner overlap caps total at 0.84.
 - Any public compatibility alias or shim without an accepted hard reason caps
   total at 0.80.
 - Any API conflict ledger missing required rows caps total at 0.78.
@@ -335,7 +335,7 @@ Every Plate Plan should contain:
 2. Intent, outcome, in-scope, non-goals, decision boundaries.
 3. Decision brief: principles, drivers, viable options, rejected alternatives,
    chosen option, consequences.
-4. Slate/Plate boundary map.
+4. Plite/Plate boundary map.
 5. Current-source inventory.
 6. API conflict ledger.
 7. Minimal breaking-change matrix.
@@ -366,7 +366,7 @@ Required passes:
 
 1. Current-state read and initial score.
 2. Intent, scope, boundary, and non-goals.
-3. Slate/Plate boundary audit.
+3. Plite/Plate boundary audit.
 4. API conflict inventory.
 5. Minimal breaking-change strategy.
 6. Runtime/performance/testability pass.
@@ -389,7 +389,7 @@ Before scoring above threshold, record these pass results:
 - DX pass: prove the target shape is easier for app authors and future agents.
 - Minimal-break pass: prove the public break set is the smallest clean set.
 - Hard-cut pass: remove aliases, shims, stale docs, and fake compatibility.
-- Runtime pass: prove runtime/default-route choices do not fight Slate.
+- Runtime pass: prove runtime/default-route choices do not fight Plite.
 - Performance pass: prove hot-path and subscription choices are bounded.
 - Testability pass: prove the plan improves proofability, not just aesthetics.
 - Docs pass: prove latest-state docs and examples match the target API.
@@ -471,7 +471,7 @@ plan.
 
 Group by surface:
 
-- Slate/Plate boundary
+- Plite/Plate boundary
 - public API target
 - API conflicts and verdicts
 - breaking changes

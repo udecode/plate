@@ -55,7 +55,7 @@ target -> requirements -> changed-surface map -> coherence audit
 - The user asks for one ordinary patch with no existing diff/branch/merge
   context: use `task`, `slate-patch`, or the package owner.
 - The next move is a public API/runtime/product design fork: route to
-  `slate-plan`, `plate-plan`, or `major-task`.
+  `plite-plan`, `plate-plan`, or `major-task`.
 
 ## Invocation
 
@@ -225,7 +225,7 @@ the answer gates the next safe closure move.
   a bigger lane than "make this diff clean".
 - `maintainer`: public GitHub issue/PR/security queue decisions or public
   mutations.
-- `slate-plan` / `plate-plan`: public API/runtime/product architecture forks.
+- `plite-plan` / `plate-plan`: public API/runtime/product architecture forks.
 - `task`, `slate-patch`, package owners: narrow implementation fixes found by
   closure.
 - `sync-vision`: reusable taste discovered during closure.

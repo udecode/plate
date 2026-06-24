@@ -2,4 +2,4 @@
 "@platejs/browser": patch
 ---
 
-Improve Plite Playwright focus and selection synchronization for the `apps/plite` browser proof lane.
+Make `@platejs/browser/playwright` the first-party Playwright proof surface, including low-level editable, block, text, and browser-handle helpers.

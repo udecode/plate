@@ -354,7 +354,7 @@ lock.
 
 ## Review And Risk Gates
 
-Keep this lighter than Slate Plan. A normal task should not grow a scorecard,
+Keep this lighter than Plite Plan. A normal task should not grow a scorecard,
 issue ledger, or pass calendar, but it still needs real closeout pressure when
 the patch is risky.
 

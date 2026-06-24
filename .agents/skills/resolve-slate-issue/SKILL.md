@@ -1,5 +1,5 @@
 ---
-description: Resolve one Slate or Slate v2 GitHub issue end to end, using task-style issue intake plus Slate Plan proof discipline, then post the verified no-PR issue comment with gh.
+description: Resolve one Slate or Slate v2 GitHub issue end to end, using task-style issue intake plus Plite Plan proof discipline, then post the verified no-PR issue comment with gh.
 argument-hint: <issue number | issue URL>
 disable-model-invocation: true
 name: resolve-slate-issue
@@ -14,7 +14,7 @@ Handle $ARGUMENTS.
 
 Use this for one issue at a time when the goal is to prove, fix or classify the
 issue, then comment directly on the issue. This combines `task` issue-first
-execution with Slate Plan's live-source, issue-ledger, and Slate v2
+execution with Plite Plan's live-source, issue-ledger, and Slate v2
 verification discipline.
 
 ## Hard Rules

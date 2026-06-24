@@ -167,7 +167,6 @@
         "@platejs/math": "workspace:^",
         "@platejs/media": "workspace:^",
         "@platejs/mention": "workspace:^",
-        "@platejs/playwright": "workspace:^",
         "@platejs/plite": "workspace:^",
         "@platejs/plite-dom": "workspace:^",
         "@platejs/plite-history": "workspace:^",
@@ -1011,24 +1010,6 @@
       "version": "1.0.0",
       "bin": {
         "plate-pkg": "./plate-pkg.cjs",
-      },
-    },
-    "packages/playwright": {
-      "name": "@platejs/playwright",
-      "version": "54.0.0-beta.0",
-      "dependencies": {
-        "@platejs/plite": "workspace:^",
-        "react-compiler-runtime": "^1.0.0",
-      },
-      "devDependencies": {
-        "@plate/scripts": "workspace:*",
-        "platejs": "workspace:^",
-      },
-      "peerDependencies": {
-        "@playwright/test": ">=1.42.1",
-        "platejs": ">=54.0.0-beta.0",
-        "react": ">=18.0.0",
-        "react-dom": ">=18.0.0",
       },
     },
     "packages/plite": {
@@ -2046,7 +2027,6 @@
 
     "@platejs/mention": ["@platejs/mention@workspace:packages/mention"],
 
-    "@platejs/playwright": ["@platejs/playwright@workspace:packages/playwright"],
 
     "@platejs/plite": ["@platejs/plite@workspace:packages/plite"],
 

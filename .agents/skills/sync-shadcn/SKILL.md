@@ -657,7 +657,7 @@ the goal also required implementation, baseline advancement, or user acceptance.
 
 ## User Review Boundary
 
-This mirrors the important part of `slate-plan`: plan first, stop, then execute
+This mirrors the important part of `plite-plan`: plan first, stop, then execute
 only after explicit acceptance.
 
 Planning mode may:

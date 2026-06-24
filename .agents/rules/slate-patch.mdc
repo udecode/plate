@@ -12,7 +12,7 @@ If the arguments start with `repair <expectation>`, run Repair Command. Otherwis
 run the normal Slate Patch workflow.
 
 Use this for Slate v2 bug fixes where the agent should fix the bug now, then
-challenge its own patch with Slate Plan-level architecture pressure before
+challenge its own patch with Plite Plan-level architecture pressure before
 handoff. This is the implementation lane for "fix it, but do not ship a dirty
 local patch".
 
@@ -34,12 +34,12 @@ the right long-term shape, verify, autoreview, hand off. It does not mean
 
 ## Do Not Use When
 
-- The user asks only for an architecture plan or proposal. Use `slate-plan`.
+- The user asks only for an architecture plan or proposal. Use `plite-plan`.
 - The user asks for a normal diff review. Use `autoreview`.
 - The target is not Slate v2 or `Plate repo root`.
 - The repair belongs to every goal-backed workflow. Use `autogoal repair`.
 - The only honest next step is a multi-pass public API RFC with user review.
-  Say that and route to `slate-plan`.
+  Say that and route to `plite-plan`.
 
 ## Hard Rules
 
@@ -140,7 +140,7 @@ Fix Slate Patch <bug/cluster>; done when repro, behavior coverage, Slate v2
 proof, and autoreview pass; target `Plate repo root`.
 ```
 
-Do not create a Slate Plan pass schedule. This skill is one implementation
+Do not create a Plite Plan pass schedule. This skill is one implementation
 slice, not a planning lane.
 
 ## Workflow
@@ -310,7 +310,7 @@ Verdict must be one of:
 
 - `keep`: patch is the right long-term shape.
 - `rework`: fix before final verification.
-- `escalate`: stop and route to `slate-plan` because the right fix is a broader
+- `escalate`: stop and route to `plite-plan` because the right fix is a broader
   public architecture decision.
 
 ### 6. Verify
@@ -403,4 +403,4 @@ Keep it short. Include:
 - any relevant unresolved gate or unrelated existing failure.
 
 If the architecture pressure verdict is `escalate`, say exactly why and name the
-`slate-plan` surface to open next.
+`plite-plan` surface to open next.

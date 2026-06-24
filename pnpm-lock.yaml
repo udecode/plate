@@ -417,9 +417,6 @@ importers:
       '@platejs/mention':
         specifier: workspace:^
         version: link:../../packages/mention
-      '@platejs/playwright':
-        specifier: workspace:^
-        version: link:../../packages/playwright
       '@platejs/plite':
         specifier: workspace:^
         version: link:../../packages/plite
@@ -1707,22 +1704,6 @@ importers:
         version: link:../plate-scripts
 
   packages/plate-scripts: {}
-
-  packages/playwright:
-    dependencies:
-      '@platejs/plite':
-        specifier: workspace:^
-        version: link:../plite
-      react-compiler-runtime:
-        specifier: ^1.0.0
-        version: 1.0.0(react@19.2.4)
-    devDependencies:
-      '@plate/scripts':
-        specifier: workspace:*
-        version: link:../plate-scripts
-      platejs:
-        specifier: workspace:^
-        version: link:../plate
 
   packages/plite:
     devDependencies:
