@@ -2,17 +2,15 @@
 
 import React from 'react';
 
-import type { Value } from '@platejs/slate';
+import { defineEditorExtension, type Value } from '@platejs/plite';
 
 import { act, render, renderHook } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';
-import isEqual from 'lodash/isEqual';
-import memoize from 'lodash/memoize';
 
 import type { PlatePlugins } from '../plugin';
 import type { PlateElementProps, PlateLeafProps } from './plate-nodes';
 
-import { type SlatePlugins, createSlatePlugin } from '../../lib';
+import { createEditorPlugin } from '../../lib';
 import { createPlateEditor, usePlateEditor } from '../editor';
 import { createPlatePlugin } from '../plugin/createPlatePlugin';
 import {
@@ -120,14 +118,16 @@ describe('Plate', () => {
         );
         const { result } = renderHook(() => useEditorValue(), { wrapper });
 
-        expect(result.current).toEqual(editor.api.create.value());
+        expect(result.current).toEqual([
+          { children: [{ text: '' }], type: 'p' },
+        ]);
       });
     });
   });
 
   describe('useEditorRef().plugins', () => {
     it('uses the plugins already attached to the editor', () => {
-      const _plugins = [createSlatePlugin({ key: 'test' })];
+      const _plugins = [createEditorPlugin({ key: 'test' })];
       const editor = createPlateEditor({ plugins: _plugins });
 
       const wrapper = ({ children }: any) => (
@@ -275,24 +275,31 @@ describe('Plate', () => {
 
   describe('when editor normalization is disabled', () => {
     it('does not normalize on mount', () => {
-      const fn = mock((e, [node, path]) => {
-        if (e.api.isBlock(node) && path?.length && !isEqual(node.path, path)) {
-          e.tf.setNodes({ path }, { at: path });
-        }
-      });
+      const fn = mock();
 
-      const plugins: SlatePlugins = memoize(
-        (): SlatePlugins => [
-          createSlatePlugin({ key: 'a' }).extendEditorTransforms(
-            ({ editor, tf: { normalizeNode } }) => ({
-              normalizeNode(node) {
-                fn(editor, node);
-                normalizeNode(node);
+      const plugins = [
+        createEditorPlugin({
+          editorExtensions: [
+            defineEditorExtension({
+              name: 'test:path-normalizer',
+              normalizers: {
+                node({ entry, next, tx }) {
+                  const [node, path] = entry;
+
+                  if (path.length && node.path !== path) {
+                    fn();
+                    tx.nodes.set({ path }, { at: path });
+                    return;
+                  }
+
+                  next();
+                },
               },
-            })
-          ),
-        ]
-      )();
+            }),
+          ],
+          key: 'a',
+        }),
+      ];
 
       const editor = createPlateEditor({
         plugins,
@@ -312,14 +319,13 @@ describe('Plate', () => {
       ]);
     });
   });
-
-  describe('when render aboveSlate renders null', () => {
+  describe('when render abovePlite renders null', () => {
     it('renders without normalizing editor children', () => {
       const plugins: PlatePlugins = [
         createPlatePlugin({
           key: 'a',
           render: {
-            aboveSlate: () => null,
+            abovePlite: () => null,
           },
         }),
       ];
