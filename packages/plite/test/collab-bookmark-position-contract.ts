@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  bookmark as editorBookmark,
+  getLastCommit as editorGetLastCommit,
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import { history } from '@platejs/plite-history';
 
@@ -36,7 +44,7 @@ const remoteCollabOptions = {
 const createCollabEditor = (children: Descendant[]) => {
   const editor = createEditor({ extensions: [history()] });
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children,
     selection: null,
     marks: null,
@@ -65,7 +73,7 @@ const replayRemote = (
 const assertLastRemoteCommit = (
   editor: ReturnType<typeof createCollabEditor>
 ) => {
-  const commit = Editor.getLastCommit(editor);
+  const commit = editorGetLastCommit(editor);
 
   assert(commit);
   assert.deepEqual(commit.tags, ['collaboration', 'remote-import']);
@@ -79,8 +87,8 @@ const assertLastRemoteCommit = (
 describe('collab bookmark position contract', () => {
   it('rebases collapsed bookmarks before and after remote text inserts', () => {
     const editor = createCollabEditor([paragraph('alpha')]);
-    const beforeInsert = Editor.bookmark(editor, collapsed([0, 0], 1));
-    const afterInsert = Editor.bookmark(editor, collapsed([0, 0], 4));
+    const beforeInsert = editorBookmark(editor, collapsed([0, 0], 1));
+    const afterInsert = editorBookmark(editor, collapsed([0, 0], 4));
 
     replayRemote(editor, [
       {
@@ -100,8 +108,8 @@ describe('collab bookmark position contract', () => {
 
   it('nulls bookmarks inside text nodes removed by remote replay', () => {
     const editor = createCollabEditor([paragraph('alpha'), paragraph('beta')]);
-    const removedNode = Editor.getSnapshot(editor).children[1]!;
-    const removedBookmark = Editor.bookmark(
+    const removedNode = editorGetSnapshot(editor).children[1]!;
+    const removedBookmark = editorBookmark(
       editor,
       range({ path: [1, 0], offset: 1 }, { path: [1, 0], offset: 3 })
     );
@@ -121,7 +129,7 @@ describe('collab bookmark position contract', () => {
 
   it('rebases a bookmarked range across remote text split', () => {
     const editor = createCollabEditor([paragraph('alpha')]);
-    const bookmark = Editor.bookmark(
+    const bookmark = editorBookmark(
       editor,
       range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 4 })
     );
@@ -142,13 +150,13 @@ describe('collab bookmark position contract', () => {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 1], offset: 2 },
     });
-    assert.equal(Editor.string(editor, resolved!), 'lph');
+    assert.equal(editorString(editor, resolved!), 'lph');
     assert.deepEqual(bookmark.unref(), resolved);
   });
 
   it('rebases a bookmarked range across remote block merge', () => {
     const editor = createCollabEditor([paragraph('alpha'), paragraph('beta')]);
-    const bookmark = Editor.bookmark(
+    const bookmark = editorBookmark(
       editor,
       range({ path: [1, 0], offset: 1 }, { path: [1, 0], offset: 3 })
     );
@@ -169,15 +177,15 @@ describe('collab bookmark position contract', () => {
       anchor: { path: [0, 1], offset: 1 },
       focus: { path: [0, 1], offset: 3 },
     });
-    assert.equal(Editor.string(editor, resolved!), 'et');
+    assert.equal(editorString(editor, resolved!), 'et');
     assert.deepEqual(bookmark.unref(), resolved);
   });
 
   it('rebases a bookmarked range when its containing block moves remotely', () => {
     const editor = createCollabEditor([paragraph('alpha'), paragraph('beta')]);
-    const movedBlockRuntimeId = Editor.getRuntimeId(editor, [1]);
-    const movedTextRuntimeId = Editor.getRuntimeId(editor, [1, 0]);
-    const bookmark = Editor.bookmark(
+    const movedBlockRuntimeId = editorGetRuntimeId(editor, [1]);
+    const movedTextRuntimeId = editorGetRuntimeId(editor, [1, 0]);
+    const bookmark = editorBookmark(
       editor,
       range({ path: [1, 0], offset: 1 }, { path: [1, 0], offset: 3 })
     );
@@ -197,18 +205,18 @@ describe('collab bookmark position contract', () => {
 
     assertLastRemoteCommit(editor);
     assert.deepEqual(
-      Editor.getPathByRuntimeId(editor, movedBlockRuntimeId),
+      editorGetPathByRuntimeId(editor, movedBlockRuntimeId),
       [0]
     );
     assert.deepEqual(
-      Editor.getPathByRuntimeId(editor, movedTextRuntimeId),
+      editorGetPathByRuntimeId(editor, movedTextRuntimeId),
       [0, 0]
     );
     assert.deepEqual(resolved, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 3 },
     });
-    assert.equal(Editor.string(editor, resolved!), 'et');
+    assert.equal(editorString(editor, resolved!), 'et');
     assert.deepEqual(bookmark.unref(), resolved);
   });
 
@@ -219,7 +227,7 @@ describe('collab bookmark position contract', () => {
       listItem('two'),
       paragraph('three'),
     ]);
-    const bookmark = Editor.bookmark(
+    const bookmark = editorBookmark(
       editor,
       range({ path: [0, 0], offset: 1 }, { path: [3, 0], offset: 2 })
     );
@@ -248,7 +256,7 @@ describe('collab bookmark position contract', () => {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [2, 0], offset: 2 },
     });
-    assert.equal(Editor.string(editor, resolved!), 'eroone-twoth');
+    assert.equal(editorString(editor, resolved!), 'eroone-twoth');
     assert.deepEqual(bookmark.unref(), resolved);
   });
 });

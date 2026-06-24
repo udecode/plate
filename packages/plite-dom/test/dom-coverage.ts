@@ -1,6 +1,11 @@
 import { JSDOM } from 'jsdom';
 import { createEditor, type Descendant, type Range } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  hasPath as editorHasPath,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 
 import { dom } from '../src/index';
 import {
@@ -20,7 +25,7 @@ type DOMTestEditor = ReturnType<typeof createNestedEditor>;
 const createNestedEditor = () => {
   const editor = createEditor({ extensions: [dom()] });
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'section',
@@ -52,7 +57,7 @@ const createNestedEditor = () => {
 const createLargeEditor = (blocks: number) => {
   const editor = createEditor({ extensions: [dom()] });
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: blocks }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `Block ${index}` }],
@@ -123,7 +128,7 @@ const createTextDOM = (document: Document, text: string) => {
 };
 
 const getRuntimeId = (editor: DOMTestEditor, path: number[]) => {
-  const runtimeId = Editor.getRuntimeId(editor, path);
+  const runtimeId = editorGetRuntimeId(editor, path);
 
   if (!runtimeId) {
     throw new Error(`Missing runtime id at ${path.join('.')}`);
@@ -309,7 +314,7 @@ describe('DOM coverage boundaries', () => {
         },
       });
 
-      Editor.replace(editor, {
+      editorReplace(editor, {
         children: [
           {
             type: 'paragraph',
@@ -553,7 +558,7 @@ describe('DOM coverage boundaries', () => {
         editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
       });
 
-      expect(Editor.getSnapshot(editor).children).toEqual([
+      expect(editorGetSnapshot(editor).children).toEqual([
         {
           type: 'section',
           children: [
@@ -635,7 +640,7 @@ describe('DOM coverage boundaries', () => {
   test('invalidates a boundary when merge removes its owner runtime', () => {
     const editor = createEditor({ extensions: [dom()] });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -692,7 +697,7 @@ describe('DOM coverage boundaries', () => {
     const outsidePoint = { path: [4999, 0], offset: 0 };
     const baselineSamples = Array.from({ length: 25 }, () =>
       measureRepeated(() => {
-        Editor.hasPath(editor, outsidePoint.path);
+        editorHasPath(editor, outsidePoint.path);
       })
     );
 

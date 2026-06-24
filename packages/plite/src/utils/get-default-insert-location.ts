@@ -1,5 +1,10 @@
 import type { Location } from '../interfaces';
-import { Editor } from '../interfaces/editor';
+import {
+  getChildren as editorGetChildren,
+  getSnapshot as editorGetSnapshot,
+  point as editorPoint,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 
 /**
  * Get the default location to insert content into the editor.
@@ -8,13 +13,13 @@ import { Editor } from '../interfaces/editor';
  * common use case when inserting from a non-selected state.
  */
 export const getDefaultInsertLocation = (editor: Editor): Location => {
-  const selection = Editor.getSnapshot(editor).selection;
+  const selection = editorGetSnapshot(editor).selection;
 
   if (selection) {
     return selection;
   }
-  if (Editor.getChildren(editor).length > 0) {
-    return Editor.point(editor, [], { edge: 'end' });
+  if (editorGetChildren(editor).length > 0) {
+    return editorPoint(editor, [], { edge: 'end' });
   }
   return [0];
 };

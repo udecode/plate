@@ -1,12 +1,17 @@
 import { LocationApi } from '../interfaces';
-import { Editor, type EditorStaticApi } from '../interfaces/editor';
+import {
+  getSnapshot as editorGetSnapshot,
+  levels as editorLevels,
+  path as editorPath,
+} from '../interfaces/editor';
+import type { EditorStaticApi } from '../interfaces/editor';
 import { PathApi } from '../interfaces/path';
 
 export const above: EditorStaticApi['above'] = (editor, options = {}) => {
   const {
     voids = false,
     mode = 'lowest',
-    at = Editor.getSnapshot(editor).selection,
+    at = editorGetSnapshot(editor).selection,
     match,
   } = options;
 
@@ -14,7 +19,7 @@ export const above: EditorStaticApi['above'] = (editor, options = {}) => {
     return;
   }
 
-  let path = Editor.path(editor, at);
+  let path = editorPath(editor, at);
 
   // If `at` is a Range that spans mulitple nodes, `path` will be their common ancestor.
   // Otherwise `path` will be a text node and/or the same as `at`, in which cases we want to start with its parent.
@@ -28,7 +33,7 @@ export const above: EditorStaticApi['above'] = (editor, options = {}) => {
 
   const reverse = mode === 'lowest';
 
-  const [firstMatch] = Editor.levels(editor, {
+  const [firstMatch] = editorLevels(editor, {
     at: path,
     voids,
     match,

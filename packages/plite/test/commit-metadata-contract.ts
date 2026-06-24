@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getLastCommit as editorGetLastCommit,
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  insertBreak as editorInsertBreak,
+  replace as editorReplace,
+  subscribe as editorSubscribe,
+} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -19,7 +26,7 @@ describe('commit metadata contract', () => {
   it('captures update tags and selection before/after on text commits', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
         anchor: { path: [0, 0], offset: 3 },
@@ -27,7 +34,7 @@ describe('commit metadata contract', () => {
       },
     });
 
-    const before = Editor.getSnapshot(editor);
+    const before = editorGetSnapshot(editor);
     const blockRuntimeId = before.index.pathToId['0'];
     const textRuntimeId = before.index.pathToId['0.0'];
 
@@ -41,7 +48,7 @@ describe('commit metadata contract', () => {
       { tag: ['history-push', 'paste'] }
     );
 
-    const commit = Editor.getLastCommit(editor);
+    const commit = editorGetLastCommit(editor);
 
     assert(commit);
     assert.deepEqual(commit.classes, ['text']);
@@ -92,7 +99,7 @@ describe('commit metadata contract', () => {
     ] satisfies EditorUpdateTag[];
     const options = { tag: tags } satisfies EditorUpdateOptions;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
         anchor: { path: [0, 0], offset: 3 },
@@ -104,7 +111,7 @@ describe('commit metadata contract', () => {
       tx.text.insert('!');
     }, options);
 
-    assert.deepEqual(Editor.getLastCommit(editor)?.tags, tags);
+    assert.deepEqual(editorGetLastCommit(editor)?.tags, tags);
   });
 
   it('captures typed update metadata on commits', () => {
@@ -119,7 +126,7 @@ describe('commit metadata contract', () => {
       tag: ['collaboration', 'remote-import'],
     } satisfies EditorUpdateOptions;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
         anchor: { path: [0, 0], offset: 3 },
@@ -131,7 +138,7 @@ describe('commit metadata contract', () => {
       tx.text.insert('!');
     }, options);
 
-    const commit = Editor.getLastCommit(editor);
+    const commit = editorGetLastCommit(editor);
 
     assert(commit);
     assert.deepEqual(commit.tags, ['collaboration', 'remote-import']);
@@ -157,7 +164,7 @@ describe('commit metadata contract', () => {
       initialValue: [paragraph('one')],
     });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
         anchor: { path: [0, 0], offset: 3 },
@@ -165,7 +172,7 @@ describe('commit metadata contract', () => {
       },
     });
 
-    const blockRuntimeId = Editor.getRuntimeId(editor, [0]);
+    const blockRuntimeId = editorGetRuntimeId(editor, [0]);
 
     assert(blockRuntimeId);
 
@@ -185,7 +192,7 @@ describe('commit metadata contract', () => {
       }
     );
 
-    const commit = Editor.getLastCommit(editor);
+    const commit = editorGetLastCommit(editor);
 
     assert(commit);
     assert.deepEqual(commit.tags, ['paste', 'provenance-local']);
@@ -214,9 +221,9 @@ describe('commit metadata contract', () => {
 
   it('groups multiple primitive writes inside one update into one commit', () => {
     const editor = createEditor();
-    const commits: NonNullable<ReturnType<typeof Editor.getLastCommit>>[] = [];
+    const commits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] = [];
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
         anchor: { path: [0, 0], offset: 3 },
@@ -224,7 +231,7 @@ describe('commit metadata contract', () => {
       },
     });
 
-    const unsubscribe = Editor.subscribe(editor, (_snapshot, commit) => {
+    const unsubscribe = editorSubscribe(editor, (_snapshot, commit) => {
       if (commit) {
         commits.push(commit);
       }
@@ -237,7 +244,7 @@ describe('commit metadata contract', () => {
 
     unsubscribe();
 
-    const commit = Editor.getLastCommit(editor);
+    const commit = editorGetLastCommit(editor);
 
     assert(commit);
     assert.equal(commits.length, 1);
@@ -270,13 +277,13 @@ describe('commit metadata contract', () => {
   it('marks full-document replacement as broad runtime dirtiness', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraph('one')],
       selection: null,
     });
 
-    const commit = Editor.getLastCommit(editor);
-    const snapshot = Editor.getSnapshot(editor);
+    const commit = editorGetLastCommit(editor);
+    const snapshot = editorGetSnapshot(editor);
     const nextRuntimeIds = [
       snapshot.index.pathToId['0'],
       snapshot.index.pathToId['0.0'],
@@ -305,7 +312,7 @@ describe('commit metadata contract', () => {
   it('keeps top-level split impact scoped to shifted top-level runtime ids', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         paragraph('one'),
         {
@@ -322,18 +329,18 @@ describe('commit metadata contract', () => {
       },
     });
 
-    const before = Editor.getSnapshot(editor);
+    const before = editorGetSnapshot(editor);
     const tableRuntimeId = before.index.pathToId['1'];
     const tableRowRuntimeId = before.index.pathToId['1.0'];
-    const unsubscribe = Editor.subscribe(editor, () => {});
+    const unsubscribe = editorSubscribe(editor, () => {});
 
     assert(tableRuntimeId);
     assert(tableRowRuntimeId);
 
-    Editor.insertBreak(editor);
+    editorInsertBreak(editor);
     unsubscribe();
 
-    const commit = Editor.getLastCommit(editor);
+    const commit = editorGetLastCommit(editor);
 
     assert(commit);
     assert.equal(commit.topLevelOrderChanged, true);

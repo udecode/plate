@@ -16,7 +16,7 @@ import {
   type Location as PliteLocation,
 } from '../interfaces';
 import type { EditorStaticApi } from '../interfaces/editor';
-import { Editor } from '../interfaces/editor';
+import { void as editorVoid } from '../interfaces/editor';
 import type { TextInsertTextOptions } from '../interfaces/transforms/text';
 import { applyInsertText } from '../transforms-text/insert-text';
 import { getDefaultInsertLocation } from '../utils';
@@ -43,7 +43,7 @@ const shouldIgnoreTarget = (
 
   return (
     target != null &&
-    ((!voids && Editor.void(editor, { at: target })) ||
+    ((!voids && editorVoid(editor, { at: target })) ||
       elementReadOnly(editor, { at: target }))
   );
 };

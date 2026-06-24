@@ -26,15 +26,15 @@ describe('withStatic', () => {
       expect(pluginKeys).toContain(DOMPlugin.key);
     });
 
-    it('have ViewPlugin override transforms', () => {
+    it('expose ViewPlugin copy API', () => {
       const editor = createStaticEditor();
 
-      // ViewPlugin overrides DOMPlugin, so we check the DOMPlugin has the override
+      // ViewPlugin extends DOMPlugin, so we check the DOM plugin is installed.
       const domPlugin = editor.getPlugin(DOMPlugin);
       expect(domPlugin).toBeDefined();
 
-      // The override should be applied through the plugin system
-      expect(editor.tf.setFragmentData).toBeDefined();
+      // The API should be applied through the plugin system.
+      expect(editor.api.setFragmentData).toBeDefined();
     });
   });
 
@@ -252,11 +252,11 @@ describe('withStatic', () => {
   });
 
   describe('plugin functionality', () => {
-    it('have setFragmentData transform from ViewPlugin', () => {
+    it('have setFragmentData API from ViewPlugin', () => {
       const editor = createStaticEditor();
 
-      expect(editor.tf.setFragmentData).toBeDefined();
-      expect(typeof editor.tf.setFragmentData).toBe('function');
+      expect(editor.api.setFragmentData).toBeDefined();
+      expect(typeof editor.api.setFragmentData).toBe('function');
     });
 
     it('preserve other withPlite options', () => {

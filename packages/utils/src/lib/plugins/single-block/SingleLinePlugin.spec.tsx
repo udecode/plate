@@ -31,7 +31,6 @@ describe('SingleLinePlugin', () => {
   it('merge all blocks into the first block', () => {
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
-      runtime: 'plite',
       value: input.children,
     });
 
@@ -60,7 +59,6 @@ describe('SingleLinePlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
-      runtime: 'plite',
       value: inputWithLineBreaks.children,
     });
 
@@ -85,7 +83,6 @@ describe('SingleLinePlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
-      runtime: 'plite',
       selection: singleLineInput.selection,
       value: singleLineInput.children,
     });
@@ -111,7 +108,6 @@ describe('SingleLinePlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
-      runtime: 'plite',
       selection: singleLineInput.selection,
       value: singleLineInput.children,
     });
@@ -142,7 +138,6 @@ describe('SingleLinePlugin', () => {
 
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
-      runtime: 'plite',
       value: emptyBlocksInput.children,
     });
 

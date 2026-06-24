@@ -1,7 +1,6 @@
 import {
   defineEditorExtension,
   ElementApi,
-  Editor as BasePlateEditorApi,
   NodeApi,
   OperationApi,
   PathApi,
@@ -14,6 +13,7 @@ import {
   type Selection,
   type Value,
 } from '@platejs/plite';
+import { pathRef, pathRefs } from '@platejs/plite/internal';
 import { nanoid } from 'nanoid';
 
 import type { NoInfer } from '../../internal/types';
@@ -22,7 +22,7 @@ import {
   createCurrentRuntimeEditor,
   getCurrentRuntimeTransforms,
   installCurrentRuntimeInputRulesExtension,
-  installCurrentRuntimeTransformFacade,
+  installCurrentRuntimeTransforms,
   type CurrentRuntimeEditor as Editor,
 } from '../../internal/currentRuntimeBridge';
 import type { NodeComponents } from '../plugin/BasePlugin';
@@ -30,6 +30,7 @@ import type { AnyEditorPlugin } from '../plugin/EditorPlugin';
 import type { ChunkingConfig } from '../plugins/chunking';
 import type { NavigationFeedbackConfig } from '../plugins/navigation-feedback';
 import type { NodeIdConfig } from '../plugins/node-id/NodeIdPlugin';
+import { BaseParagraphPlugin } from '../plugins/paragraph/BaseParagraphPlugin';
 import type {
   InferPlugins,
   BasePlateEditor,
@@ -38,6 +39,7 @@ import type {
 } from './BasePlateEditor';
 
 import { resolvePlugins } from '../../internal/plugin/resolvePlugins';
+import { pipeTransformInitialValue } from '../../internal/plugin/pipeTransformInitialValue';
 import { createEditorPlugin } from '../plugin/createEditorPlugin';
 import {
   getPluginByType,
@@ -45,10 +47,7 @@ import {
   getEditorPluginInstance,
 } from '../plugin/getEditorPluginInstance';
 import { type CorePlugin, getCorePlugins } from '../plugins/getCorePlugins';
-import {
-  installLegacyRuntimeTxTransformBridge,
-  installLegacyRuntimeUpdateBridge,
-} from '../../internal/editor/legacyRuntimeUpdateBridge';
+import { installPlateRuntimeTxExtensions } from '../../internal/editor/runtimeTxExtensions';
 
 const installPlateRuntimeStateMirrors = (editor: BasePlateEditor) => {
   const defineMirror = (key: PropertyKey, descriptor: PropertyDescriptor) => {
@@ -64,7 +63,9 @@ const installPlateRuntimeStateMirrors = (editor: BasePlateEditor) => {
   defineMirror('children', {
     get: () => editor.read((state) => state.value.root()) as Value,
     set: (value: Value) => {
-      BasePlateEditorApi.replace(editor, { children: value, selection: null });
+      editor.update((tx) => {
+        tx.value.replace({ children: value, selection: null });
+      });
     },
   });
   defineMirror('selection', {
@@ -108,6 +109,209 @@ const installPlateRuntimeStateMirrors = (editor: BasePlateEditor) => {
       });
     },
   });
+};
+
+const getBaseRuntimeChildren = (node: unknown) =>
+  node &&
+  typeof node === 'object' &&
+  'children' in node &&
+  Array.isArray((node as { children?: unknown }).children)
+    ? (node as { children: unknown[] }).children
+    : null;
+
+const isBaseRuntimeTextNode = (node: unknown): node is { text: string } =>
+  node !== null &&
+  typeof node === 'object' &&
+  'text' in node &&
+  typeof (node as { text?: unknown }).text === 'string';
+
+const getBaseRuntimeNodeAtPath = (value: Readonly<Value>, path: number[]) => {
+  let node: unknown = value[path[0]];
+
+  for (const index of path.slice(1)) {
+    const children = getBaseRuntimeChildren(node);
+
+    if (!children) return;
+
+    node = children[index];
+  }
+
+  return node;
+};
+
+const getBaseRuntimeValueEdgePoint = (
+  value: Readonly<Value>,
+  edge: 'end' | 'start'
+): Point | null => {
+  if (value.length === 0) return null;
+
+  const path = [edge === 'start' ? 0 : value.length - 1];
+  let node = getBaseRuntimeNodeAtPath(value, path);
+
+  while (!isBaseRuntimeTextNode(node)) {
+    const children = getBaseRuntimeChildren(node);
+
+    if (!children || children.length === 0) return null;
+
+    const nextIndex = edge === 'start' ? 0 : children.length - 1;
+    path.push(nextIndex);
+    node = children[nextIndex];
+  }
+
+  return {
+    offset: edge === 'start' ? 0 : node.text.length,
+    path,
+  };
+};
+
+const normalizeBaseInitialValue = <V extends Value>(
+  editor: BasePlateEditor,
+  value: unknown
+): V => {
+  if (typeof value === 'string') {
+    return editor.api.html.deserialize({ element: value }) as V;
+  }
+
+  if (Array.isArray(value) && value.length > 0) {
+    return value as V;
+  }
+
+  const currentValue = editor.read((state) => state.value.root()) as V;
+
+  return currentValue.length > 0
+    ? currentValue
+    : ([
+        {
+          children: [{ text: '' }],
+          type: editor.getType(BaseParagraphPlugin.key),
+        },
+      ] as V);
+};
+
+const resolveBaseInitialSelection = (
+  editor: BasePlateEditor,
+  value: Readonly<Value>,
+  selection?: Selection,
+  autoSelect?: boolean | 'end' | 'start'
+) => {
+  const asTextPoint = (point: Point | null | undefined) => {
+    if (!point) return null;
+
+    try {
+      const node = editor.api.node(point.path)?.[0];
+
+      if (node && NodeApi.isText(node)) return point;
+    } catch {}
+
+    return null;
+  };
+  const resolvePoint = (point: Point) => {
+    try {
+      return (
+        asTextPoint(point) ??
+        asTextPoint(editor.api.start(point.path)) ??
+        asTextPoint(editor.api.start([]))
+      );
+    } catch {
+      try {
+        return asTextPoint(editor.api.start([]));
+      } catch {
+        return null;
+      }
+    }
+  };
+
+  if (selection) {
+    const anchor = resolvePoint(selection.anchor);
+    const focus = resolvePoint(selection.focus);
+
+    return anchor && focus ? { anchor, focus } : null;
+  }
+
+  const edge =
+    autoSelect === true ? 'end' : autoSelect === 'start' ? 'start' : autoSelect;
+  const point = edge ? getBaseRuntimeValueEdgePoint(value, edge) : null;
+
+  return point ? { anchor: point, focus: point } : null;
+};
+
+const initializeBasePlateEditor = <V extends Value>(
+  editor: BasePlateEditor,
+  {
+    autoSelect,
+    selection,
+    shouldNormalizeEditor,
+    value,
+    onReady,
+  }: {
+    autoSelect?: boolean | 'end' | 'start';
+    onReady?: (ctx: {
+      editor: BasePlateEditor;
+      isAsync: boolean;
+      value: V;
+    }) => void;
+    selection?: Selection;
+    shouldNormalizeEditor?: boolean;
+    value?: ((editor: BasePlateEditor) => Promise<V> | V) | V | string | null;
+  }
+) => {
+  const applyValue = (nextValueInput: unknown, isAsync = false) => {
+    const nextValue = normalizeBaseInitialValue<V>(editor, nextValueInput);
+
+    editor.update(
+      (tx) => {
+        tx.value.replace({ children: nextValue, selection: null });
+      },
+      { metadata: { history: { mode: 'skip' } }, skipNormalize: true }
+    );
+
+    pipeTransformInitialValue(editor);
+
+    const currentValue = editor.read((state) => state.value.root()) as V;
+    const nextSelection = resolveBaseInitialSelection(
+      editor,
+      currentValue,
+      selection,
+      autoSelect
+    );
+
+    if (nextSelection) {
+      editor.update(
+        (tx) => {
+          tx.selection.set(nextSelection);
+        },
+        { metadata: { history: { mode: 'skip' } } }
+      );
+    }
+
+    if (shouldNormalizeEditor) {
+      editor.update((tx) => {
+        tx.normalize({ force: true });
+      });
+    }
+
+    onReady?.({
+      editor,
+      isAsync,
+      value: editor.read((state) => state.value.root()) as V,
+    });
+  };
+
+  if (typeof value === 'function') {
+    const result = value(editor);
+
+    if (result && typeof (result as Promise<V>).then === 'function') {
+      (result as Promise<V>).then((resolvedValue) => {
+        applyValue(resolvedValue, true);
+      });
+      return;
+    }
+
+    applyValue(result);
+    return;
+  }
+
+  applyValue(value);
 };
 
 const installPlateRuntimeApiFacade = (editor: BasePlateEditor) => {
@@ -345,6 +549,7 @@ const installPlateRuntimeApiFacade = (editor: BasePlateEditor) => {
 
         return !!selection && RangeApi.isExpanded(selection);
       }),
+    isComposing: () => editor.dom?.composing === true,
     isFocused: () =>
       editor.read((state: any) => state.dom?.focused?.() ?? false) ||
       (editor.dom as { focused?: boolean } | undefined)?.focused === true,
@@ -439,8 +644,8 @@ const installPlateRuntimeApiFacade = (editor: BasePlateEditor) => {
         }
       }),
     pathRef: (path: Location, options?: Record<string, unknown>) =>
-      BasePlateEditorApi.pathRef(editor, path as never, options as never),
-    pathRefs: () => BasePlateEditorApi.pathRefs(editor),
+      pathRef(editor, path as never, options as never),
+    pathRefs: () => pathRefs(editor),
     onChange: () => {},
     range: (at: unknown, to?: unknown) =>
       editor.read((state) => {
@@ -536,6 +741,43 @@ const installPlateNormalizeRulesExtension = (editor: BasePlateEditor) => {
           }
 
           next();
+        },
+      },
+    })
+  );
+};
+
+const installPlateLengthExtension = (editor: BasePlateEditor) => {
+  const plugin = editor.meta.pluginList.find(
+    (candidate) => (candidate as { runtimeLength?: boolean }).runtimeLength
+  );
+
+  if (!plugin) return;
+
+  editor.extend(
+    defineEditorExtension({
+      name: 'plate:length:plite',
+      operations: {
+        apply({ operation, next }) {
+          next(operation);
+
+          const maxLength = (
+            editor.getOptions(plugin) as { maxLength?: number } | undefined
+          )?.maxLength;
+
+          if (!maxLength) return;
+
+          const length = editor.read((state) => state.text.string([]).length);
+
+          if (length <= maxLength) return;
+
+          editor.update((tx) => {
+            tx.text.delete({
+              distance: length - maxLength,
+              reverse: true,
+              unit: 'character',
+            });
+          });
         },
       },
     })
@@ -1033,7 +1275,7 @@ export const withPlite = <
   editor.meta.isFallback = false;
   editor.meta.userId = userId;
   installPlateRuntimeApiFacade(editor);
-  installCurrentRuntimeTransformFacade(editor);
+  installCurrentRuntimeTransforms(editor);
   installPlateRuntimeStateMirrors(editor);
   editor.dom = {
     composing: false,
@@ -1046,7 +1288,6 @@ export const withPlite = <
   editor.getPlugin = ((plugin) =>
     getEditorPluginInstance(editor, plugin)) as BasePlateEditor['getPlugin'];
   editor.getType = (pluginKey) => getPluginType(editor, pluginKey);
-  installLegacyRuntimeUpdateBridge(editor);
   editor.getInjectProps = (plugin) => {
     const nodeProps =
       editor.getPlugin<AnyEditorPlugin>(plugin).inject?.nodeProps ??
@@ -1142,28 +1383,14 @@ export const withPlite = <
   resolvePlugins(editor, [rootPluginInstance], optionsStoreFactory);
   installCurrentRuntimeInputRulesExtension(editor);
   installPlateElementSpecsExtension(editor);
-  installLegacyRuntimeTxTransformBridge(editor);
+  installPlateRuntimeTxExtensions(editor);
+  installPlateLengthExtension(editor);
   installPlateMergeRulesExtension(editor);
   installPlateNormalizeRulesExtension(editor);
 
   /** Ignore normalizeNode overrides if shouldNormalizeNode returns false */
   const legacyTransforms = getCurrentRuntimeTransforms(editor) as unknown as {
     normalizeNode: (...args: any[]) => any;
-    init: (options: {
-      autoSelect?: boolean | 'end' | 'start';
-      onReady?: (ctx: {
-        editor: BasePlateEditor;
-        isAsync: boolean;
-        value: Value;
-      }) => void;
-      selection?: Selection;
-      shouldNormalizeEditor?: boolean;
-      value?:
-        | string
-        | Value
-        | null
-        | ((editor: BasePlateEditor) => Value | Promise<Value>);
-    }) => void;
   };
   const normalizeNode = legacyTransforms.normalizeNode;
   legacyTransforms.normalizeNode = (
@@ -1179,7 +1406,7 @@ export const withPlite = <
     legacyTransforms.normalizeNode as BasePlateEditor['normalizeNode'];
 
   if (!skipInitialization) {
-    legacyTransforms.init({
+    initializeBasePlateEditor(editor, {
       autoSelect,
       selection,
       shouldNormalizeEditor,

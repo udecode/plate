@@ -1,8 +1,6 @@
-import { isDefined } from '@udecode/utils';
 import type { KeyboardEvent } from 'react';
 
 import { getCurrentRuntimeTransforms } from '../../internal/currentRuntimeBridge';
-import { withLegacyTransformOverride } from '../../internal/plugin/withLegacyTransformOverride';
 import { Hotkeys, PliteExtensionPlugin } from '../../lib';
 import { toPlatePlugin } from '../plugin';
 
@@ -17,7 +15,10 @@ type PliteReactKeyDownContext = {
   event: KeyboardEvent;
 };
 
-const onPliteReactKeyDown = ({ editor, event }: PliteReactKeyDownContext) => {
+export const onPliteReactKeyDown = ({
+  editor,
+  event,
+}: PliteReactKeyDownContext) => {
   // React 16.x needs this event to be persistented due to it's event pooling implementation.
   // https://reactjs.org/docs/legacy-event-pooling.html
   event.persist();
@@ -71,32 +72,9 @@ const BasePliteReactExtensionPlugin = toPlatePlugin(PliteExtensionPlugin, {
   },
 }));
 
-export const PliteReactExtensionPlugin = withLegacyTransformOverride(
+export const PliteReactExtensionPlugin = Object.assign(
   BasePliteReactExtensionPlugin,
-  ({ editor, tf }) => {
-    const { normalizeNode, reset, unsetNodes } = tf;
-
-    return {
-      tf: {
-        reset(options: any) {
-          const isFocused = editor.api.isFocused();
-
-          reset(options);
-
-          if (isFocused) {
-            getCurrentRuntimeTransforms(editor).focus({ edge: 'startEditor' });
-          }
-        },
-        normalizeNode(entry: any, options: any) {
-          if (isDefined(entry[0]._memo)) {
-            unsetNodes('_memo', { at: entry[1] });
-
-            return;
-          }
-
-          normalizeNode(entry, options);
-        },
-      },
-    };
+  {
+    runtimeSlateReactOverride: true,
   }
 );

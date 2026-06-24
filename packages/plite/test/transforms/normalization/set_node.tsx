@@ -6,7 +6,8 @@ jsx;
 
 import _ from 'lodash';
 import { ElementApi } from '@platejs/plite';
-import { Editor, getEditorRuntime } from '@platejs/plite/internal';
+import { string as editorString } from '@platejs/plite/internal';
+import { getEditorRuntime } from '@platejs/plite/internal';
 
 export const input = (
   <editor>
@@ -16,28 +17,33 @@ export const input = (
   </editor>
 );
 
-const editor = input as unknown as Editor;
-const runtime = getEditorRuntime(editor);
-const defaultNormalize = runtime.normalizeNode;
-runtime.normalizeNode = (entry) => {
-  const [node, path] = entry;
-  if (
-    ElementApi.isElement(node) &&
-    node.type === 'body' &&
-    Editor.string(editor, path, { voids: true }) === 'one'
-  ) {
-    Editor.setNodes(
-      editor,
-      { attr: { a: false } },
-      { at: path, compare: (p, n) => !_.isEqual(p, n) }
-    );
-  }
-
-  defaultNormalize(entry);
-};
-
 export const run = (editor) => {
-  editor.normalize({ force: true });
+  const runtime = getEditorRuntime(editor);
+  const defaultNormalize = runtime.normalizeNode;
+
+  runtime.normalizeNode = (entry, options) => {
+    const [node, path] = entry;
+
+    if (
+      ElementApi.isElement(node) &&
+      node.type === 'body' &&
+      node.attr?.a !== false &&
+      editorString(editor, path, { voids: true }) === 'one'
+    ) {
+      editor.nodes.set(
+        { attr: { a: false } },
+        { at: path, compare: (p, n) => !_.isEqual(p, n) }
+      );
+    }
+
+    defaultNormalize(entry, options);
+  };
+
+  try {
+    editor.normalize({ force: true });
+  } finally {
+    runtime.normalizeNode = defaultNormalize;
+  }
 };
 
 export const output = (

@@ -221,7 +221,7 @@ export const BlockSelectionAfterEditable: EditableSiblingComponent = () => {
           editor.meta._forceFocus = true;
           editor.update((tx) => {
             tx.nodes.insert(
-              editor.api.create.block({ children: [{ text: e.key }] }),
+              { children: [{ text: e.key }], type: editor.getType(KEYS.p) },
               { at: firstPath }
             );
             tx.selection.set(editor.api.end(firstPath)!);

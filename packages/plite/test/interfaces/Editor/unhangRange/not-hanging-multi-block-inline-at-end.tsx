@@ -1,4 +1,7 @@
-import { Editor } from '@platejs/plite/internal';
+import {
+  getSnapshot as editorGetSnapshot,
+  unhangRange as editorUnhangRange,
+} from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -31,7 +34,7 @@ export const input = (
 );
 
 export const test = (editor) =>
-  Editor.unhangRange(editor, Editor.getSnapshot(editor).selection, {
+  editorUnhangRange(editor, editorGetSnapshot(editor).selection, {
     voids: true,
   });
 

@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { edges as editorEdges } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 export const input = (
@@ -8,7 +8,7 @@ export const input = (
 );
 
 export const test = (editor) =>
-  Editor.edges(editor, { path: [0, 0], offset: 1 });
+  editorEdges(editor, { path: [0, 0], offset: 1 });
 
 export const output = [
   { path: [0, 0], offset: 1 },

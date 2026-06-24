@@ -6,7 +6,14 @@ import {
   type Point,
   PointApi,
 } from '../interfaces';
-import { type Editor, Editor as EditorApi } from '../interfaces/editor';
+import {
+  above as editorAbove,
+  hasPath as editorHasPath,
+  isBlock as editorIsBlock,
+  isEmpty as editorIsEmpty,
+  point as editorPoint,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import { getCurrentNode, isTextNode } from './delete-text-plan';
 
 export const getEmptyEditableInlinePathAtPoint = (
@@ -17,7 +24,7 @@ export const getEmptyEditableInlinePathAtPoint = (
     return null;
   }
 
-  if (!EditorApi.hasPath(editor, at.path as Path)) {
+  if (!editorHasPath(editor, at.path as Path)) {
     return null;
   }
 
@@ -29,7 +36,7 @@ export const getEmptyEditableInlinePathAtPoint = (
 
   const parentPath = at.path.slice(0, -1) as Path;
 
-  if (!EditorApi.hasPath(editor, parentPath)) {
+  if (!editorHasPath(editor, parentPath)) {
     return null;
   }
 
@@ -53,9 +60,9 @@ export const getPreviousEmptyBlockPathAtBlockStart = (
   at: Point,
   voids: boolean
 ): Path | null => {
-  const currentBlock = EditorApi.above(editor, {
+  const currentBlock = editorAbove(editor, {
     at,
-    match: (node) => NodeApi.isElement(node) && EditorApi.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
     mode: 'lowest',
     voids,
   });
@@ -69,7 +76,7 @@ export const getPreviousEmptyBlockPathAtBlockStart = (
   if (
     !PointApi.equals(
       at,
-      EditorApi.point(editor, currentBlockPath, { edge: 'start' })
+      editorPoint(editor, currentBlockPath, { edge: 'start' })
     ) ||
     currentBlockPath.length !== 1 ||
     !PathApi.hasPrevious(currentBlockPath)
@@ -79,17 +86,17 @@ export const getPreviousEmptyBlockPathAtBlockStart = (
 
   const previousBlockPath = PathApi.previous(currentBlockPath);
 
-  if (!EditorApi.hasPath(editor, previousBlockPath)) {
+  if (!editorHasPath(editor, previousBlockPath)) {
     return null;
   }
 
   const previousBlock = getCurrentNode(editor, previousBlockPath);
 
   return NodeApi.isElement(previousBlock) &&
-    EditorApi.isBlock(editor, previousBlock) &&
+    editorIsBlock(editor, previousBlock) &&
     !getEditorSchema(editor).isVoid(previousBlock) &&
     !getEditorSchema(editor).isReadOnly(previousBlock) &&
-    EditorApi.isEmpty(editor, previousBlock)
+    editorIsEmpty(editor, previousBlock)
     ? previousBlockPath
     : null;
 };

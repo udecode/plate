@@ -3,128 +3,49 @@ import { createBasePlateEditor } from '../editor';
 import { createEditorPlugin } from '../plugin';
 
 describe('overrideEditor method', () => {
-  it('override both api and transforms', () => {
-    const basePlugin = createEditorPlugin({
+  it('overrides editor API methods', () => {
+    const plugin = createEditorPlugin({
       key: 'testPlugin',
     })
       .extendEditorApi(() => ({
         method1: () => 'original-api' as string,
       }))
       .overrideEditor(() => ({
-        tf: {
-          transform1: () => 'original-transform' as string,
-        },
-      }))
-      .overrideEditor(() => ({
         api: {
           method1: () => 'override-api',
         },
-        tf: {
-          transform1: () => 'override-transform',
-        },
       }));
 
     const editor = createBasePlateEditor({
-      plugins: [basePlugin],
+      plugins: [plugin],
     });
 
     expect(editor.api.method1()).toBe('override-api');
-    expect(editor.tf.transform1()).toBe('override-transform');
   });
 
-  it('allow overriding only api or transforms', () => {
-    const basePlugin = createEditorPlugin({
-      key: 'testPlugin',
-    })
-      .extendEditorApi(() => ({
-        method1: () => 'original-api' as string,
-      }))
-      .overrideEditor(() => ({
-        tf: {
-          transform1: () => 'original-transform' as string,
-        },
-      }))
-      .overrideEditor(() => ({
-        api: {
-          method1: () => 'override-api',
-        },
-      }))
-      .overrideEditor(() => ({
-        tf: {
-          transform1: () => 'override-transform',
-        },
-      }));
-
-    const editor = createBasePlateEditor({
-      plugins: [basePlugin],
-    });
-
-    expect(editor.api.method1()).toBe('override-api');
-    expect(editor.tf.transform1()).toBe('override-transform');
-  });
-
-  it('maintain type safety for both api and transforms', () => {
-    const basePlugin = createEditorPlugin({
-      key: 'testPlugin',
-    })
-      .extendEditorApi(() => ({
-        apiMethod: (x: number) => x.toString(),
-      }))
-      .overrideEditor(() => ({
-        tf: {
-          transformMethod: (x: number) => x * 2,
-        },
-      }))
-      .overrideEditor(() => ({
-        api: {
-          apiMethod: (x: number) => (x + 1).toString(),
-        },
-        tf: {
-          transformMethod: (x: number) => x * 3,
-        },
-      }));
-
-    const editor = createBasePlateEditor({
-      plugins: [basePlugin],
-    });
-
-    expect(editor.api.apiMethod(5)).toBe('6');
-    expect(editor.tf.transformMethod(5)).toBe(15);
-  });
-
-  it('allow access to original methods in override', () => {
-    const basePlugin = createEditorPlugin({
+  it('keeps access to original API methods in override context', () => {
+    const plugin = createEditorPlugin({
       key: 'testPlugin',
     })
       .extendEditorApi(() => ({
         method1: () => 'base-api' as string,
         method2: () => 'original-api' as string,
       }))
-      .overrideEditor(() => ({
-        tf: {
-          transform1: () => 'base-transform' as string,
-          transform2: () => 'original-transform' as string,
-        },
-      }))
-      .overrideEditor(({ api, tf }) => ({
+      .overrideEditor(({ api }) => ({
         api: {
           method2: () => `override-${api.method1()}`,
-        },
-        tf: {
-          transform2: () => `override-${tf.transform1()}`,
         },
       }));
 
     const editor = createBasePlateEditor({
-      plugins: [basePlugin],
+      plugins: [plugin],
     });
 
     expect(editor.api.method2()).toBe('override-base-api');
-    expect(editor.tf.transform2()).toBe('override-base-transform');
   });
 
-  it('handle nested methods correctly', () => {
-    const basePlugin = createEditorPlugin({
+  it('merges nested API overrides without replacing untouched methods', () => {
+    const plugin = createEditorPlugin({
       key: 'testPlugin',
     })
       .extendEditorApi(() => ({
@@ -134,38 +55,23 @@ describe('overrideEditor method', () => {
         },
       }))
       .overrideEditor(() => ({
-        tf: {
-          nested: {
-            transform1: () => 'original-transform1' as string,
-            transform2: () => 'original-transform2' as string,
-          },
-        },
-      }))
-      .overrideEditor(() => ({
         api: {
           nested: {
             method1: () => 'override-api1',
           },
         },
-        tf: {
-          nested: {
-            transform1: () => 'override-transform1',
-          },
-        },
       }));
 
     const editor = createBasePlateEditor({
-      plugins: [basePlugin],
+      plugins: [plugin],
     });
 
     expect(editor.api.nested.method1()).toBe('override-api1');
     expect(editor.api.nested.method2()).toBe('original-api2');
-    expect(editor.tf.nested.transform1()).toBe('override-transform1');
-    expect(editor.tf.nested.transform2()).toBe('original-transform2');
   });
 
-  it('preserve non-overridden methods', () => {
-    const basePlugin = createEditorPlugin({
+  it('allows multiple API override calls', () => {
+    const plugin = createEditorPlugin({
       key: 'testPlugin',
     })
       .extendEditorApi(() => ({
@@ -174,43 +80,27 @@ describe('overrideEditor method', () => {
         method3: () => 'original-api3' as string,
       }))
       .overrideEditor(() => ({
-        tf: {
-          transform1: () => 'original-transform1' as string,
-          transform2: () => 'original-transform2' as string,
-          transform3: () => 'original-transform3' as string,
-        },
-      }))
-      .overrideEditor(() => ({
         api: {
           method1: () => 'override-api1',
-        },
-        tf: {
-          transform1: () => 'override-transform1',
         },
       }))
       .overrideEditor(() => ({
         api: {
           method2: () => 'override-api2',
         },
-        tf: {
-          transform2: () => 'override-transform2',
-        },
       }));
 
     const editor = createBasePlateEditor({
-      plugins: [basePlugin],
+      plugins: [plugin],
     });
 
     expect(editor.api.method1()).toBe('override-api1');
     expect(editor.api.method2()).toBe('override-api2');
     expect(editor.api.method3()).toBe('original-api3');
-    expect(editor.tf.transform1()).toBe('override-transform1');
-    expect(editor.tf.transform2()).toBe('override-transform2');
-    expect(editor.tf.transform3()).toBe('original-transform3');
   });
 
-  it('handle both api and transforms in a single override call', () => {
-    const basePlugin = createPlatePlugin({
+  it('works through createPlatePlugin', () => {
+    const plugin = createPlatePlugin({
       key: 'testPlugin',
     })
       .extendEditorApi(() => ({
@@ -218,30 +108,16 @@ describe('overrideEditor method', () => {
         method2: () => 'untouched-api' as string,
       }))
       .overrideEditor(() => ({
-        tf: {
-          transform1: () => 'original-transform' as string,
-          transform2: () => 'untouched-transform' as string,
-        },
-      }))
-      .overrideEditor(() => ({
         api: {
           method1: () => 'override-api',
-        },
-        tf: {
-          transform1: () => 'override-transform',
         },
       }));
 
     const editor = createBasePlateEditor({
-      plugins: [basePlugin],
+      plugins: [plugin],
     });
 
-    // Check overridden methods
     expect(editor.api.method1()).toBe('override-api');
-    expect(editor.tf.transform1()).toBe('override-transform');
-
-    // Check untouched methods
     expect(editor.api.method2()).toBe('untouched-api');
-    expect(editor.tf.transform2()).toBe('untouched-transform');
   });
 });

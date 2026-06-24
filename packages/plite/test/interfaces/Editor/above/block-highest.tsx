@@ -1,4 +1,7 @@
-import { Editor } from '@platejs/plite/internal';
+import {
+  above as editorAbove,
+  isBlock as editorIsBlock,
+} from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { ElementApi } from '@platejs/plite';
@@ -11,9 +14,9 @@ export const input = (
   </editor>
 );
 export const test = (editor) =>
-  Editor.above(editor, {
+  editorAbove(editor, {
     at: [0, 0, 0],
-    match: (n) => ElementApi.isElement(n) && Editor.isBlock(editor, n),
+    match: (n) => ElementApi.isElement(n) && editorIsBlock(editor, n),
     mode: 'highest',
   });
 export const output = [

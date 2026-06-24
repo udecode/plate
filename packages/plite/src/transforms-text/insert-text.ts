@@ -8,7 +8,14 @@ import {
 import { getEditorTransformRegistry } from '../core/transform-registry';
 import { elementReadOnly } from '../editor/element-read-only';
 import { LocationApi, RangeApi, type Value } from '../interfaces';
-import { Editor } from '../interfaces/editor';
+import {
+  getChildren as editorGetChildren,
+  pointRef as editorPointRef,
+  range as editorRange,
+  void as editorVoid,
+  withoutNormalizing as editorWithoutNormalizing,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import type {
   TextInsertTextOptions,
   TextMutationMethods,
@@ -26,7 +33,7 @@ const createFullDocumentTextReplacement = (
   text: string,
   marks: TextMarks | null = null
 ) => {
-  const first = Editor.getChildren(editor)[0];
+  const first = editorGetChildren(editor)[0];
   const textNode = marks ? { text, ...marks } : { text };
 
   if (first && 'children' in first) {
@@ -54,7 +61,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
     const defaultAt = options.at ?? getDefaultInsertLocation(editor);
     const preflightAt = (() => {
       if (LocationApi.isPath(defaultAt)) {
-        return Editor.range(editor, defaultAt);
+        return editorRange(editor, defaultAt);
       }
 
       if (LocationApi.isRange(defaultAt) && RangeApi.isCollapsed(defaultAt)) {
@@ -66,7 +73,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
 
     if (
       LocationApi.isPoint(preflightAt) &&
-      ((!voids && Editor.void(editor, { at: preflightAt })) ||
+      ((!voids && editorVoid(editor, { at: preflightAt })) ||
         elementReadOnly(editor, { at: preflightAt }))
     ) {
       return;
@@ -81,7 +88,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
       const replacementMarks = getConsistentRangeTextMarks(editor, defaultAt);
 
       applyOperation(editor, {
-        children: [...Editor.getChildren(editor)] as Value,
+        children: [...editorGetChildren(editor)] as Value,
         index: 0,
         newChildren: createFullDocumentTextReplacement(
           editor,
@@ -104,12 +111,12 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
       return;
     }
 
-    Editor.withoutNormalizing(editor, () => {
+    editorWithoutNormalizing(editor, () => {
       const transforms = getEditorTransformRegistry(editor);
       let { at = getDefaultInsertLocation(editor) } = options;
       const insertAt = () => {
         if (LocationApi.isPath(at)) {
-          at = Editor.range(editor, at);
+          at = editorRange(editor, at);
         }
 
         if (LocationApi.isRange(at)) {
@@ -119,12 +126,12 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
             const replacementMarks =
               text.length > 0 ? getConsistentRangeTextMarks(editor, at) : null;
             const end = RangeApi.end(at);
-            if (!voids && Editor.void(editor, { at: end })) {
+            if (!voids && editorVoid(editor, { at: end })) {
               return;
             }
             const start = RangeApi.start(at);
-            const startRef = Editor.pointRef(editor, start);
-            const endRef = Editor.pointRef(editor, end);
+            const startRef = editorPointRef(editor, start);
+            const endRef = editorPointRef(editor, end);
             transforms.delete({
               at,
               preserveInlineEdge: true,
@@ -175,7 +182,7 @@ export const applyInsertText: TextMutationMethods['insertText'] = (
         }
 
         if (
-          (!voids && Editor.void(editor, { at })) ||
+          (!voids && editorVoid(editor, { at })) ||
           elementReadOnly(editor, { at })
         ) {
           return;

@@ -22,7 +22,12 @@ import {
   TextApi,
   type Text,
 } from '@platejs/plite';
-import { Editor as EditorApi } from '@platejs/plite/internal';
+import {
+  insertNode as editorInsertNode,
+  pointRef as editorPointRef,
+  rangeRef as editorRangeRef,
+  setNodes as editorSetNodes,
+} from '@platejs/plite/internal';
 
 import type { ComputeDiffOptions } from '../../lib/computeDiff';
 
@@ -135,7 +140,7 @@ export const withChangeTracking = (
     const startPoint = { offset: op.offset, path: op.path };
     const endPoint = { offset: op.offset + op.text.length, path: op.path };
     const range = { anchor: startPoint, focus: endPoint };
-    const rangeRef = EditorApi.rangeRef(editor, range);
+    const rangeRef = editorRangeRef(editor, range);
 
     tracker.insertedTexts.push({
       node: {
@@ -152,7 +157,7 @@ export const withChangeTracking = (
     apply(op);
 
     const point = { offset: op.offset, path: op.path };
-    const pointRef = EditorApi.pointRef(editor, point, {
+    const pointRef = editorPointRef(editor, point, {
       affinity: 'backward',
     });
 
@@ -178,7 +183,7 @@ export const withChangeTracking = (
     const startPoint = { offset: prevNode.text.length, path: prevNodePath };
     const endPoint = readEnd(prevNodePath);
     const range = { anchor: startPoint, focus: endPoint };
-    const rangeRef = EditorApi.rangeRef(editor, range);
+    const rangeRef = editorRangeRef(editor, range);
 
     tracker.propsChanges.push({
       newProperties,
@@ -196,7 +201,7 @@ export const withChangeTracking = (
 
     const newNodePath = PathApi.next(op.path);
     const newNodeRange = readRange(newNodePath);
-    const rangeRef = EditorApi.rangeRef(editor, newNodeRange);
+    const rangeRef = editorRangeRef(editor, newNodeRange);
 
     tracker.propsChanges.push({
       newProperties,
@@ -209,7 +214,7 @@ export const withChangeTracking = (
     apply(op);
 
     const range = readRange(op.path);
-    const rangeRef = EditorApi.rangeRef(editor, range);
+    const rangeRef = editorRangeRef(editor, range);
 
     tracker.propsChanges.push({
       newProperties: op.newProperties,
@@ -285,7 +290,7 @@ const commitChangesToDiffs = (
     );
     const insertedTextRefs = insertedTexts.map(({ node, range }) => ({
       node,
-      rangeRef: EditorApi.rangeRef(editor.editor, range),
+      rangeRef: editorRangeRef(editor.editor, range),
     }));
 
     // Reverse the array to prevent path changes.
@@ -321,7 +326,7 @@ const commitChangesToDiffs = (
       const point = pointRef.unref();
 
       if (point) {
-        EditorApi.insertNode(
+        editorInsertNode(
           editor.editor,
           {
             ...node,
@@ -444,7 +449,7 @@ const setTextNodes = (
     return;
   }
 
-  EditorApi.setNodes(editor.editor, props, {
+  editorSetNodes(editor.editor, props, {
     at: normalizedRange,
     match: TextApi.isText,
     split: true,

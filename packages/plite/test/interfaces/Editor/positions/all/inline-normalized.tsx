@@ -1,4 +1,7 @@
-import { Editor } from '@platejs/plite/internal';
+import {
+  positions as editorPositions,
+  range as editorRange,
+} from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../../..';
@@ -17,8 +20,8 @@ export const input = (
 
 export const test = (editor) =>
   Array.from(
-    Editor.positions(editor, {
-      at: Editor.range(editor, []),
+    editorPositions(editor, {
+      at: editorRange(editor, []),
       unit: 'character',
     })
   );

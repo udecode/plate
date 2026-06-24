@@ -5,11 +5,13 @@ import type { BasePlateEditor } from 'platejs';
 import { jsxt } from '@platejs/test-utils';
 import {
   BaseParagraphPlugin,
-  createBasePlateEditor,
   createEditorPlugin,
+  HtmlPlugin,
+  ParserPlugin,
 } from 'platejs';
 
 import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
+import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
 import { CodeBlockPlugin } from './CodeBlockPlugin';
 
 jsxt;
@@ -36,7 +38,9 @@ describe('code block deserialization', () => {
         </editor>
       ) as any as BasePlateEditor;
 
-      const editor = createBasePlateEditor({
+      const editor = createPlateRuntimeEditor({
+        initialSelection: input.selection,
+        initialValue: input.children,
         plugins: [
           BaseParagraphPlugin,
           CodeBlockPlugin,
@@ -50,15 +54,20 @@ describe('code block deserialization', () => {
             },
           }),
         ],
-        selection: input.selection,
-        value: input.children,
       });
 
       getCurrentRuntimeTransforms(editor).insertData({
-        getData: () => `<pre><code>test</code></pre>`,
+        getData: (format: string) =>
+          format === 'text/html'
+            ? `<pre><code>test</code></pre>`
+            : format === 'text/plain'
+              ? 'test'
+              : '',
       } as any);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read((state) => state.value.root())).toEqual(
+        output.children
+      );
     });
   });
 
@@ -80,18 +89,29 @@ describe('code block deserialization', () => {
         </editor>
       ) as any as BasePlateEditor;
 
-      const editor = createBasePlateEditor({
-        plugins: [BaseParagraphPlugin, CodeBlockPlugin],
-        selection: input.selection,
-        value: input.children,
+      const editor = createPlateRuntimeEditor({
+        initialSelection: input.selection,
+        initialValue: input.children,
+        plugins: [
+          ParserPlugin,
+          HtmlPlugin,
+          BaseParagraphPlugin,
+          CodeBlockPlugin,
+        ],
       });
 
       getCurrentRuntimeTransforms(editor).insertData({
         getData: (format: string) =>
-          format === 'text/html' && `<pre><code>test</code></pre>`,
+          format === 'text/html'
+            ? `<pre><code>test</code></pre>`
+            : format === 'text/plain'
+              ? 'test'
+              : '',
       } as any);
 
-      expect(editor.children).toEqual(output.children);
+      expect(editor.read((state) => state.value.root())).toEqual(
+        output.children
+      );
     });
   });
 
@@ -121,14 +141,18 @@ describe('code block deserialization', () => {
         </editor>
       ) as any as BasePlateEditor;
 
-      const editor = createBasePlateEditor({
+      const editor = createPlateRuntimeEditor({
+        initialSelection: input.selection,
+        initialValue: input.children,
         plugins: [BaseParagraphPlugin, CodeBlockPlugin],
-        selection: input.selection,
-        value: input.children,
       });
 
-      getCurrentRuntimeTransforms(editor).deleteBackward('character');
-      expect(editor.children).toEqual(output.children);
+      editor.update((tx) => {
+        tx.text.deleteBackward({ unit: 'character' });
+      });
+      expect(editor.read((state) => state.value.root())).toEqual(
+        output.children
+      );
     });
   });
 });

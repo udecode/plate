@@ -37,14 +37,12 @@ describe('createPlateStore', () => {
   const createScopedWrapper = () => {
     const editor = createPlateEditor({
       id: 'scoped-editor',
-      runtime: 'legacy',
+      selection: {
+        anchor: { offset: 0, path: [0, 0] },
+        focus: { offset: 0, path: [0, 0] },
+      } as Range,
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     });
-
-    editor.selection = {
-      anchor: { offset: 0, path: [0, 0] },
-      focus: { offset: 0, path: [0, 0] },
-    } as Range;
 
     const containerRef = { current: document.createElement('div') };
     const scrollRef = { current: document.createElement('section') };
@@ -146,14 +144,16 @@ describe('createPlateStore', () => {
     expect(result.current.valueVersion).toBe(1);
 
     act(() => {
-      editor.selection = {
-        anchor: { offset: 1, path: [0, 0] },
-        focus: { offset: 1, path: [0, 0] },
-      } as Range;
-      editor.children = [
-        ...editor.children,
-        { children: [{ text: 'two' }], type: 'p' },
-      ];
+      editor.update((tx) => {
+        tx.selection.set({
+          anchor: { offset: 1, path: [0, 0] },
+          focus: { offset: 1, path: [0, 0] },
+        } as Range);
+        tx.nodes.insert(
+          { children: [{ text: 'two' }], type: 'p' },
+          { at: [1] }
+        );
+      });
       result.current.store.set('versionEditor', 2);
       result.current.store.set('versionSelection', 2);
       result.current.store.set('versionValue', 2);

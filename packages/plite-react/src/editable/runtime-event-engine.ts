@@ -25,7 +25,7 @@ import { useRuntimeBrowserHandle } from './runtime-browser-handle-events';
 import { useRuntimeClipboardEvents } from './runtime-clipboard-events';
 import { useRuntimeCompositionEvents } from './runtime-composition-events';
 import { useRuntimeDragEvents } from './runtime-drag-events';
-import type { Editor } from './runtime-editor-api';
+import type { rangeRef as editorRangeRef } from './runtime-editor-api';
 import { useRuntimeFocusMouseEvents } from './runtime-focus-mouse-events';
 import { useRuntimeInputEvents } from './runtime-input-events';
 import type { useRuntimeKernelTraceEngine } from './runtime-kernel-trace';
@@ -135,7 +135,7 @@ export const useEditableEventRuntime = ({
   applyInputRules: ApplyInputRules;
   browserHandleNextId: RefObject<number>;
   browserHandleRangeRefs: RefObject<
-    Map<string, ReturnType<typeof Editor.rangeRef>>
+    Map<string, ReturnType<typeof editorRangeRef>>
   >;
   callbacks: EditableRootCallbackProps;
   deferNativeTextInputRepair?: boolean;

@@ -83,7 +83,7 @@ const ToolbarPlugin = createPlatePlugin({
 })
   .extendEditorApi(({ editor }) => ({
     describeEditor: () =>
-      `${editor.getPluginApi(LayoutPlugin).getVariant()}:${editor.getPluginApi(MentionPlugin).getTrigger()}` as EditorSummary,
+      `${editor.api.getVariant()}:${editor.api.getTrigger()}` as EditorSummary,
   }))
   .extendTx(({ editor }) => () => ({
     setCompact: () => {

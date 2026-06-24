@@ -300,19 +300,6 @@ export function createEditorPlugin(config: any = {}): any {
     );
   };
 
-  plugin.extendTransforms = (extension) => {
-    const newPlugin = { ...plugin };
-    newPlugin.__apiExtensions = [
-      ...(newPlugin.__apiExtensions as any),
-      { extension, isPluginSpecific: true, isTransform: true },
-    ];
-
-    return preserveExtensionArrays(
-      plugin,
-      createEditorPlugin(newPlugin) as any
-    );
-  };
-
   plugin.overrideEditor = (extension) => {
     const newPlugin = { ...plugin };
     newPlugin.__apiExtensions = [

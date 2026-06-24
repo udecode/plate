@@ -42,9 +42,13 @@ import { withProjectedMutationRoot } from './mutation-root-scope';
 import { decodeProjectedClipboardFragment } from './projected-clipboard';
 import { resolveProjectedSelectionTarget } from './projected-selection-target';
 import {
-  Editor,
+  type Editor,
   getEditorExtensionRegistry,
   type Editor as RuntimeEditor,
+  rangeRef as editorRangeRef,
+  before as editorBefore,
+  after as editorAfter,
+  string as editorString,
 } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
 import {
@@ -341,7 +345,7 @@ const applyProjectedViewSelectionDataCommand = ({
 
     runtimeEditor.update((tx) => {
       const rangeRefs = target.ranges.map((range) =>
-        Editor.rangeRef(runtimeEditor, range, { affinity: 'inward' })
+        editorRangeRef(runtimeEditor, range, { affinity: 'inward' })
       );
 
       try {
@@ -392,7 +396,7 @@ const applyProjectedViewSelectionDataCommand = ({
 
   runtimeEditor.update((tx) => {
     const rangeRefs = target.ranges.map((range) =>
-      Editor.rangeRef(runtimeEditor, range, { affinity: 'inward' })
+      editorRangeRef(runtimeEditor, range, { affinity: 'inward' })
     );
 
     try {
@@ -589,7 +593,7 @@ export const applyModelOwnedTransposeCharacterIntent = ({
   }
 
   const cursor = selection.anchor;
-  const before = Editor.before(editor, cursor, { unit: 'character' });
+  const before = editorBefore(editor, cursor, { unit: 'character' });
 
   if (!before) {
     return false;
@@ -597,10 +601,10 @@ export const applyModelOwnedTransposeCharacterIntent = ({
 
   let start = before;
   let middle = cursor;
-  let end = Editor.after(editor, cursor, { unit: 'character' });
+  let end = editorAfter(editor, cursor, { unit: 'character' });
 
   if (!end) {
-    const secondBefore = Editor.before(editor, before, { unit: 'character' });
+    const secondBefore = editorBefore(editor, before, { unit: 'character' });
 
     if (!secondBefore) {
       return false;
@@ -618,8 +622,8 @@ export const applyModelOwnedTransposeCharacterIntent = ({
     return false;
   }
 
-  const left = Editor.string(editor, createRange(start, middle));
-  const right = Editor.string(editor, createRange(middle, end));
+  const left = editorString(editor, createRange(start, middle));
+  const right = editorString(editor, createRange(middle, end));
 
   if (!left || !right) {
     return false;

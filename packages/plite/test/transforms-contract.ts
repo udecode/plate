@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getSnapshot as editorGetSnapshot,
+  insertNodes as editorInsertNodes,
+  removeNodes as editorRemoveNodes,
+  replace as editorReplace,
+  splitNodes as editorSplitNodes,
+} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -19,7 +25,7 @@ describe('plite transforms contract', () => {
   it('moveNodes is a no-op when the source and destination paths are equal', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         { type: 'block', children: [{ text: '1' }] },
         { type: 'block', children: [{ text: '2' }] },
@@ -32,7 +38,7 @@ describe('plite transforms contract', () => {
       tx.nodes.move({ at: [1], to: [1] });
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       { type: 'block', children: [{ text: '1' }] },
       { type: 'block', children: [{ text: '2' }] },
     ]);
@@ -41,7 +47,7 @@ describe('plite transforms contract', () => {
   it('moveNodes can move a top-level block inside the next block container', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'block',
@@ -60,7 +66,7 @@ describe('plite transforms contract', () => {
       tx.nodes.move({ at: [0], to: [1, 1] });
     });
 
-    const after = Editor.getSnapshot(editor);
+    const after = editorGetSnapshot(editor);
 
     assert.deepEqual(after.children, [
       {
@@ -77,7 +83,7 @@ describe('plite transforms contract', () => {
   it('insertText keeps the selected mark when replacing a marked leaf', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -99,7 +105,7 @@ describe('plite transforms contract', () => {
       tx.text.insert('plain');
     });
 
-    const after = Editor.getSnapshot(editor);
+    const after = editorGetSnapshot(editor);
 
     assert.deepEqual(after.children, [
       {
@@ -117,7 +123,7 @@ describe('plite transforms contract', () => {
   it('insertText keeps selected marks when replacing the full document text', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -135,7 +141,7 @@ describe('plite transforms contract', () => {
       tx.text.insert('Next');
     });
 
-    const after = Editor.getSnapshot(editor);
+    const after = editorGetSnapshot(editor);
 
     assert.deepEqual(after.children, [
       {
@@ -149,7 +155,7 @@ describe('plite transforms contract', () => {
   it('insertText replaces a mixed-mark range without removing text before it', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -171,7 +177,7 @@ describe('plite transforms contract', () => {
       tx.text.insert('X');
     });
 
-    const after = Editor.getSnapshot(editor);
+    const after = editorGetSnapshot(editor);
 
     assert.deepEqual(after.children, [
       {
@@ -191,7 +197,7 @@ describe('plite transforms contract', () => {
       })
     );
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -217,7 +223,7 @@ describe('plite transforms contract', () => {
       tx.text.insert('X');
     });
 
-    const after = Editor.getSnapshot(editor);
+    const after = editorGetSnapshot(editor);
 
     assert.deepEqual(after.children, [
       {
@@ -237,7 +243,7 @@ describe('plite transforms contract', () => {
       })
     );
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'callout',
@@ -253,7 +259,7 @@ describe('plite transforms contract', () => {
       tx.nodes.merge({ at: [1] });
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'callout',
         children: [{ type: 'paragraph', children: [{ text: 'inside' }] }],
@@ -271,7 +277,7 @@ describe('plite transforms contract', () => {
       })
     );
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'block',
@@ -295,7 +301,7 @@ describe('plite transforms contract', () => {
       );
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'block',
         children: [
@@ -310,7 +316,7 @@ describe('plite transforms contract', () => {
   it('setNodes accepts typed element props through the transaction API', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -325,7 +331,7 @@ describe('plite transforms contract', () => {
       tx.nodes.set<Element>({ type: 'heading-one' }, { at: [0] });
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'heading-one',
         children: [{ text: 'one' }],
@@ -336,7 +342,7 @@ describe('plite transforms contract', () => {
   it('setNodes preserves existing element attrs and text marks when changing type', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'heading-two',
@@ -352,7 +358,7 @@ describe('plite transforms contract', () => {
       tx.nodes.set<Element>({ type: 'heading-three' }, { at: [0] });
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'heading-three',
         id: 'stable-heading',
@@ -364,7 +370,7 @@ describe('plite transforms contract', () => {
   it('insertNodes can split the highest selected block for root-level insertion', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'section',
@@ -390,7 +396,7 @@ describe('plite transforms contract', () => {
       );
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'section',
         children: [
@@ -415,7 +421,7 @@ describe('plite transforms contract', () => {
       },
     ]);
     assert.deepEqual(
-      Editor.getSnapshot(editor).selection,
+      editorGetSnapshot(editor).selection,
       collapsedSelection([1, 0], 0)
     );
   });
@@ -423,7 +429,7 @@ describe('plite transforms contract', () => {
   it('splitNodes rejects the editor root as a split target', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -435,14 +441,14 @@ describe('plite transforms contract', () => {
     });
 
     assert.throws(() => {
-      Editor.splitNodes(editor, { at: [], position: 0 });
+      editorSplitNodes(editor, { at: [], position: 0 });
     }, /Cannot split the editor root/);
   });
 
   it('insertNodes rejects the editor root as an insertion target', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -454,7 +460,7 @@ describe('plite transforms contract', () => {
     });
 
     assert.throws(() => {
-      Editor.insertNodes(
+      editorInsertNodes(
         editor,
         {
           type: 'embed',
@@ -468,7 +474,7 @@ describe('plite transforms contract', () => {
   it('removeNodes rejects the editor root as a removal target', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -480,14 +486,14 @@ describe('plite transforms contract', () => {
     });
 
     assert.throws(() => {
-      Editor.removeNodes(editor, { at: [] });
+      editorRemoveNodes(editor, { at: [] });
     }, /Cannot remove the editor root/);
   });
 
   it('removeNodes can match children from the editor root', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -502,7 +508,7 @@ describe('plite transforms contract', () => {
       marks: null,
     });
 
-    Editor.removeNodes(editor, {
+    editorRemoveNodes(editor, {
       at: [],
       match: (node) => 'type' in node && node.type === 'slash_input',
     });
@@ -527,7 +533,7 @@ describe('plite transforms contract', () => {
       })
     );
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'block',
@@ -559,7 +565,7 @@ describe('plite transforms contract', () => {
       );
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'block',
         children: [
@@ -585,7 +591,7 @@ describe('plite transforms contract', () => {
   it('wrapNodes can split a selected block range', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         { type: 'block', children: [{ text: 'one' }] },
         { type: 'block', children: [{ text: 'two' }] },
@@ -603,7 +609,7 @@ describe('plite transforms contract', () => {
       });
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       { type: 'block', children: [{ text: 'on' }] },
       {
         type: 'quote',
@@ -619,7 +625,7 @@ describe('plite transforms contract', () => {
   it('wrapNodes can honor match and leave rejected nodes alone', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'block',
@@ -650,7 +656,7 @@ describe('plite transforms contract', () => {
       });
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'block',
         noneditable: true,
@@ -662,7 +668,7 @@ describe('plite transforms contract', () => {
   it('unwrapNodes can honor match with mode all', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'block',
@@ -690,7 +696,7 @@ describe('plite transforms contract', () => {
       });
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       { type: 'block', children: [{ text: 'word' }] },
     ]);
   });
@@ -698,7 +704,7 @@ describe('plite transforms contract', () => {
   it('liftNodes and unwrapNodes no-op when the selection has no valid wrapper target', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         { type: 'block', children: [{ text: 'one' }] },
         { type: 'block', children: [{ text: 'two' }] },
@@ -715,7 +721,7 @@ describe('plite transforms contract', () => {
       tx.nodes.unwrap();
     });
 
-    const after = Editor.getSnapshot(editor);
+    const after = editorGetSnapshot(editor);
 
     assert.deepEqual(after.children, [
       { type: 'block', children: [{ text: 'one' }] },
@@ -743,7 +749,7 @@ describe('plite transforms contract', () => {
       })
     );
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'block',
@@ -759,7 +765,7 @@ describe('plite transforms contract', () => {
       tx.nodes.lift({ at: [0, 0], voids: true });
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       { type: 'block', children: [{ text: 'word' }] },
     ]);
   });

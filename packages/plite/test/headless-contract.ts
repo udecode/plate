@@ -5,7 +5,14 @@ import {
   type Descendant,
   type Editor as EditorType,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  deleteForward as editorDeleteForward,
+  getChildren as editorGetChildren,
+  getFragment as editorGetFragment,
+  getSelection as editorGetSelection,
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 import { History, history } from '@platejs/plite-history';
 import { createHyperscript } from '@platejs/plite-hyperscript';
 
@@ -47,18 +54,18 @@ describe('plite headless contract', () => {
       true
     );
 
-    Editor.replace(editor, {
-      children: Editor.getChildren(input) as Descendant[],
-      selection: Editor.getSelection(input),
+    editorReplace(editor, {
+      children: editorGetChildren(input) as Descendant[],
+      selection: editorGetSelection(input),
       marks: null,
     });
 
-    const inputSelection = Editor.getSelection(input)!;
+    const inputSelection = editorGetSelection(input)!;
     editor.update((tx) => {
       tx.fragment.insert(fragment);
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
 
     assert.deepEqual(snapshot.children, [
       {
@@ -79,10 +86,10 @@ describe('plite headless contract', () => {
     });
 
     assert.deepEqual(
-      Editor.getSnapshot(editor).children,
-      Editor.getChildren(input)
+      editorGetSnapshot(editor).children,
+      editorGetChildren(input)
     );
-    assert.deepEqual(Editor.getSnapshot(editor).selection, inputSelection);
+    assert.deepEqual(editorGetSnapshot(editor).selection, inputSelection);
   });
 
   it('lets hyperscript-built selections drive core fragment extraction without React', () => {
@@ -104,13 +111,13 @@ describe('plite headless contract', () => {
     ) as EditorType;
     const editor = createEditor();
 
-    Editor.replace(editor, {
-      children: Editor.getChildren(input) as Descendant[],
-      selection: Editor.getSelection(input),
+    editorReplace(editor, {
+      children: editorGetChildren(input) as Descendant[],
+      selection: editorGetSelection(input),
       marks: null,
     });
 
-    assert.deepEqual(Editor.getFragment(editor), [
+    assert.deepEqual(editorGetFragment(editor), [
       {
         type: 'paragraph',
         children: [{ text: 'or' }],
@@ -121,7 +128,7 @@ describe('plite headless contract', () => {
   it('lets headless selections drive character deletion without React', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -135,15 +142,15 @@ describe('plite headless contract', () => {
       marks: null,
     });
 
-    Editor.deleteForward(editor);
+    editorDeleteForward(editor);
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'paragraph',
         children: [{ text: 'wrd' }],
       },
     ]);
-    assert.deepEqual(Editor.getSnapshot(editor).selection, {
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });

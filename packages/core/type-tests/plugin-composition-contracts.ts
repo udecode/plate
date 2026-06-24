@@ -82,7 +82,7 @@ const InspectorPlugin = createEditorPlugin({
   key: 'inspector',
 })
   .extendEditorApi(({ editor }) => ({
-    describeFormat: () => editor.getPluginApi(FormatPlugin).format(),
+    describeFormat: () => editor.api.format(),
   }))
   .extendTx(({ editor }) => () => ({
     setFriendly: () => {
@@ -96,9 +96,7 @@ const basePlateEditor = createBasePlateEditor({
 
 const childLevel: 1 | 2 = basePlateEditor.getOptions(ChildPlugin).level;
 const childMode: ChildMode = basePlateEditor.getOptions(ChildPlugin).mode;
-const childLabel: ChildLabel = basePlateEditor
-  .getPluginApi(ChildPlugin)
-  .getLabel();
+const childLabel: ChildLabel = basePlateEditor.api.getLabel();
 const isLevelTwo: boolean = basePlateEditor.getOption(
   ChildPlugin,
   'isLevel',

@@ -59,7 +59,13 @@ import {
   applyEditableCommand,
   consumeModelOwnedHistoryFocusRoot,
 } from './mutation-controller';
-import { Editor } from './runtime-editor-api';
+import {
+  isInline as editorIsInline,
+  isVoid as editorIsVoid,
+  isElementReadOnly as editorIsElementReadOnly,
+  hasPath as editorHasPath,
+  isBlock as editorIsBlock,
+} from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
 
 export type EditableKeyDownResult = {
@@ -191,9 +197,9 @@ const selectionSpansNativeTextInputBoundary = ({
       at: selection,
       match: (node) =>
         NodeApi.isElement(node) &&
-        (Editor.isInline(editor, node) ||
-          Editor.isVoid(editor, node) ||
-          Editor.isElementReadOnly(editor, node)),
+        (editorIsInline(editor, node) ||
+          editorIsVoid(editor, node) ||
+          editorIsElementReadOnly(editor, node)),
       voids: true,
     })
   );
@@ -586,7 +592,7 @@ export const applyEditableKeyDown = ({
       const focusEditor = nestedSelectionContext?.editor ?? editor;
       const focusSelection = nestedSelectionContext?.rawSelection ?? selection;
       const focusNode =
-        focusSelection && Editor.hasPath(focusEditor, focusSelection.focus.path)
+        focusSelection && editorHasPath(focusEditor, focusSelection.focus.path)
           ? NodeApi.parent(focusEditor, focusSelection.focus.path)
           : null;
       const isRTL = focusNode
@@ -1031,9 +1037,9 @@ export const applyEditableKeyDown = ({
           RangeApi.isCollapsed(selection) &&
           currentNode &&
           NodeApi.isElement(currentNode) &&
-          Editor.isVoid(editor, currentNode) &&
-          (Editor.isInline(editor, currentNode) ||
-            Editor.isBlock(editor, currentNode))
+          editorIsVoid(editor, currentNode) &&
+          (editorIsInline(editor, currentNode) ||
+            editorIsBlock(editor, currentNode))
         ) {
           event.preventDefault();
           applyEditableCommand({

@@ -26,7 +26,6 @@ describe('BlockMenuPlugin', () => {
   it('exposes option-state api on the Plite runtime route', () => {
     const editor = createPlateEditor({
       plugins: [BlockSelectionApiFixture, BlockMenuPlugin],
-      runtime: 'plite',
     });
     const api = editor.api as BlockMenuConfig['api'];
 

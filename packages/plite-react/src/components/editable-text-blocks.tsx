@@ -56,7 +56,13 @@ import {
   useSelectionPaths,
   useTopLevelSelectionIndex,
 } from '../editable/root-selector-sources';
-import { Editor } from '../editable/runtime-editor-api';
+import {
+  type Editor,
+  isEditor as editorIsEditor,
+  isInline as editorIsInline,
+  isVoid as editorIsVoid,
+  point as editorPoint,
+} from '../editable/runtime-editor-api';
 import { readRuntimeNode } from '../editable/runtime-live-state';
 import { useEditor } from '../hooks/use-editor';
 import { useEditorReadOnly } from '../hooks/use-editor-read-only';
@@ -591,7 +597,7 @@ const getNearestEditableBlockText = (editor: Editor, path: Path) => {
       continue;
     }
 
-    if (Editor.isEditor(ancestor) || !Editor.isInline(editor, ancestor)) {
+    if (editorIsEditor(ancestor) || !editorIsInline(editor, ancestor)) {
       return NodeApi.string(ancestor);
     }
   }
@@ -788,8 +794,8 @@ const EditableDescendantNodeInner = <T, TElement extends PliteElementNode>({
     );
   }
 
-  const inline = Editor.isInline(editor, node);
-  const voidNode = Editor.isVoid(editor, node);
+  const inline = editorIsInline(editor, node);
+  const voidNode = editorIsVoid(editor, node);
   const attributes = {
     'data-plite-inline': inline ? (true as const) : undefined,
     'data-plite-node': 'element' as const,
@@ -1506,7 +1512,7 @@ const EditableInner = <T, TElement extends PliteElementNode>({
 
       if (options.select && internalSegmentDOMStrategySize != null) {
         try {
-          const start = Editor.point(editor, [startIndex!], { edge: 'start' });
+          const start = editorPoint(editor, [startIndex!], { edge: 'start' });
           editor.update((tx) => {
             tx.selection.set({ anchor: start, focus: start });
           });

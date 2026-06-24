@@ -3,7 +3,10 @@
  */
 
 import { type Range, RangeApi } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  positions as editorPositions,
+  range as editorRange,
+} from '@platejs/plite/internal';
 import { DOMEditor } from '../plugin/dom-editor';
 
 const doRectsIntersect = (rect: DOMRect, compareRect: DOMRect) => {
@@ -39,8 +42,8 @@ export const findCurrentLineRange = (
   editor: DOMEditor<any>,
   parentRange: Range
 ): Range => {
-  const parentRangeBoundary = Editor.range(editor, RangeApi.end(parentRange));
-  const positions = Array.from(Editor.positions(editor, { at: parentRange }));
+  const parentRangeBoundary = editorRange(editor, RangeApi.end(parentRange));
+  const positions = Array.from(editorPositions(editor, { at: parentRange }));
 
   let left = 0;
   let right = positions.length;
@@ -49,22 +52,22 @@ export const findCurrentLineRange = (
   if (
     areRangesSameLine(
       editor,
-      Editor.range(editor, positions[left]),
+      editorRange(editor, positions[left]),
       parentRangeBoundary
     )
   ) {
-    return Editor.range(editor, positions[left], parentRangeBoundary);
+    return editorRange(editor, positions[left], parentRangeBoundary);
   }
 
   if (positions.length < 2) {
-    return Editor.range(editor, positions.at(-1)!, parentRangeBoundary);
+    return editorRange(editor, positions.at(-1)!, parentRangeBoundary);
   }
 
   while (middle !== positions.length && middle !== left) {
     if (
       areRangesSameLine(
         editor,
-        Editor.range(editor, positions[middle]),
+        editorRange(editor, positions[middle]),
         parentRangeBoundary
       )
     ) {
@@ -76,5 +79,5 @@ export const findCurrentLineRange = (
     middle = Math.floor((left + right) / 2);
   }
 
-  return Editor.range(editor, positions[left], parentRangeBoundary);
+  return editorRange(editor, positions[left], parentRangeBoundary);
 };

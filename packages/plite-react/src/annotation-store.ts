@@ -4,7 +4,10 @@ import type {
   RuntimeId,
   Editor as EditorType,
 } from '@platejs/plite';
-import { Editor } from './editable/runtime-editor-api';
+import {
+  projectRange as editorProjectRange,
+  subscribeCommit as editorSubscribeCommit,
+} from './editable/runtime-editor-api';
 import type {
   PliteProjectionEntry,
   PliteProjectionStore,
@@ -280,7 +283,7 @@ const areAnnotationProjectionDataEqual = (left: unknown, right: unknown) => {
 
 const projectAnnotationRange = (editor: EditorType, range: Range) => {
   try {
-    return Editor.projectRange(editor, range);
+    return editorProjectRange(editor, range);
   } catch (error) {
     if (isInvalidAnnotationRangeError(error)) {
       return null;
@@ -898,7 +901,7 @@ export function createPliteAnnotationStore<
     }
   };
 
-  const unsubscribeEditor = Editor.subscribeCommit(editor, (change) => {
+  const unsubscribeEditor = editorSubscribeCommit(editor, (change) => {
     const candidateAnnotationIds = getCandidateAnnotationIds(
       change,
       annotationRuntimeIds

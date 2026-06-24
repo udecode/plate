@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import type { Point } from '@platejs/plite';
 import { describe, expect, it } from 'vitest';
 
-import { Editor } from '../src/editable/runtime-editor-api';
+import { getSnapshot as editorGetSnapshot } from '../src/editable/runtime-editor-api';
 import { createReactEditor } from '../src/plugin/with-react';
 import {
   createPliteProjectionGraph,
@@ -385,7 +385,7 @@ describe('plite view selection', () => {
       })!
     );
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const anchorTextRuntimeId = snapshot.index.pathToId['0.0'];
     const focusTextRuntimeId = snapshot.index.pathToId['4.0'];
     const mountedBlockRuntimeId = snapshot.index.pathToId['2'];

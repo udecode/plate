@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { createEditor, type Descendant, defineEditorExtension } from '../src';
-import { Editor } from '../src/internal';
 
 const children: Descendant[] = [
   {
@@ -20,7 +19,7 @@ describe('extension query middleware', () => {
     const editor = createEditor();
     const seen: string[] = [];
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children,
       selection: {
         anchor: { path: [0, 0], offset: 0 },
@@ -80,7 +79,7 @@ describe('extension query middleware', () => {
       editor.read((state) => state.fragment.get()),
       [{ type: 'paragraph', children: [{ text: 'one' }] }]
     );
-    assert.equal(Editor.string(editor, [1]), 'two!');
+    assert.equal(editorString(editor, [1]), 'two!');
     assert.deepEqual(seen, [
       'nodes.entries',
       'text.string',
@@ -92,7 +91,7 @@ describe('extension query middleware', () => {
   it('uses fragment query middleware to strip transient copy metadata', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -140,7 +139,7 @@ describe('extension query middleware', () => {
         },
       ]
     );
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'paragraph',
         children: [{ bold: true, text: 'alpha', transientPreview: true }],
@@ -153,7 +152,7 @@ describe('extension query middleware', () => {
     const seenOffsets: number[] = [];
     let hasTx = true;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children,
       selection: {
         anchor: { path: [0, 0], offset: 1 },
@@ -183,7 +182,7 @@ describe('extension query middleware', () => {
       })
     );
 
-    assert.equal(Editor.string(editor, [0]), 'one');
+    assert.equal(editorString(editor, [0]), 'one');
     assert.deepEqual(seenOffsets, [1]);
     assert.equal(hasTx, false);
   });
@@ -192,7 +191,7 @@ describe('extension query middleware', () => {
     const editor = createEditor();
     const seen: string[] = [];
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children,
       selection: {
         anchor: { path: [0, 0], offset: 0 },
@@ -524,7 +523,7 @@ describe('extension query middleware', () => {
     const editor = createEditor();
     const seen: string[] = [];
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children,
       selection: null,
       marks: null,
@@ -562,13 +561,13 @@ describe('extension query middleware', () => {
       })
     );
 
-    Editor.path(editor, [0, 0]);
+    editorPath(editor, [0, 0]);
     editor.read((state) => state.nodes.path([0, 0]));
-    Array.from(Editor.positions(editor, { at: [0] }));
+    Array.from(editorPositions(editor, { at: [0] }));
     editor.read((state) => Array.from(state.points.positions({ at: [0] })));
-    Editor.elementReadOnly(editor, { at: [0] });
+    editorElementReadOnly(editor, { at: [0] });
     editor.read((state) => state.nodes.elementReadOnly({ at: [0] }));
-    Editor.shouldMergeNodesRemovePrevNode(
+    editorShouldMergeNodesRemovePrevNode(
       editor,
       [{ text: '' }, [0, 0]],
       [{ text: 'two' }, [1, 0]]
@@ -595,7 +594,7 @@ describe('extension query middleware', () => {
   it('rejects calling query middleware next twice', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children,
       selection: null,
       marks: null,
@@ -620,13 +619,13 @@ describe('extension query middleware', () => {
       })
     );
 
-    assert.equal(Editor.string(editor, [0]), 'handled');
+    assert.equal(editorString(editor, [0]), 'handled');
   });
 
   it('does not allow query middleware to mutate editor state', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children,
       selection: {
         anchor: { path: [0, 0], offset: 0 },
@@ -656,16 +655,16 @@ describe('extension query middleware', () => {
       })
     );
 
-    const operationsBefore = Editor.getOperations(editor).length;
+    const operationsBefore = editorGetOperations(editor).length;
 
-    assert.equal(Editor.string(editor, [0]), 'one');
-    assert.equal(Editor.getOperations(editor).length, operationsBefore);
+    assert.equal(editorString(editor, [0]), 'one');
+    assert.equal(editorGetOperations(editor).length, operationsBefore);
   });
 
   it('does not allow generator cleanup to mutate editor state after iteration stops early', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children,
       selection: {
         anchor: { path: [0, 0], offset: 0 },
@@ -696,10 +695,10 @@ describe('extension query middleware', () => {
     );
 
     assert.throws(() => {
-      for (const _point of Editor.positions(editor, { at: [0] })) {
+      for (const _point of editorPositions(editor, { at: [0] })) {
         break;
       }
     }, /editor\.update cannot be started inside query middleware/);
-    assert.equal(Editor.string(editor, [0]), 'one');
+    assert.equal(editorString(editor, [0]), 'one');
   });
 });

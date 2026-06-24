@@ -7,7 +7,6 @@ describe('single-block runtime plugins', () => {
   it('routes single-block merging and hard breaks through the Plite runtime', () => {
     const editor = createPlateEditor({
       plugins: [SingleBlockPlugin],
-      runtime: 'plite',
       selection: {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
@@ -39,7 +38,6 @@ describe('single-block runtime plugins', () => {
   it('routes single-line filtering, merging, and break prevention through the Plite runtime', () => {
     const editor = createPlateEditor({
       plugins: [SingleLinePlugin],
-      runtime: 'plite',
       selection: {
         anchor: { offset: 5, path: [0, 0] },
         focus: { offset: 5, path: [0, 0] },

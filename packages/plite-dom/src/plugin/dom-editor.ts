@@ -9,7 +9,16 @@ import {
   TextApi,
   type Value,
 } from '@platejs/plite';
-import { Editor, formatDebugValue } from '@platejs/plite/internal';
+import {
+  getSelection as editorGetSelection,
+  hasPath as editorHasPath,
+  isVoid as editorIsVoid,
+  point as editorPoint,
+  range as editorRange,
+  unhangRange as editorUnhangRange,
+  void as editorVoid,
+} from '@platejs/plite/internal';
+import { formatDebugValue } from '@platejs/plite/internal';
 import type { TextDiff } from '../utils/diff-text';
 import {
   closestShadowAware,
@@ -508,11 +517,11 @@ const resolvePlitePointFromDOMCoverageBoundary = (
     targetPath = coveredRange?.anchor;
   }
 
-  if (!targetPath || !Editor.hasPath(editor, targetPath)) {
+  if (!targetPath || !editorHasPath(editor, targetPath)) {
     return null;
   }
 
-  return Editor.point(editor, targetPath, {
+  return editorPoint(editor, targetPath, {
     edge: boundaryPoint.edge === 'focus' ? 'end' : 'start',
   });
 };
@@ -531,11 +540,11 @@ const resolvePliteTextPoint = ({
   pliteNode: Node;
 }): Point | null => {
   if (!TextApi.isText(pliteNode)) {
-    if (!Editor.hasPath(editor, path)) {
+    if (!editorHasPath(editor, path)) {
       return null;
     }
 
-    return Editor.point(editor, path, {
+    return editorPoint(editor, path, {
       edge: offset <= 0 ? 'start' : 'end',
     });
   }
@@ -839,7 +848,7 @@ export const DOMEditor: DOMEditorInterface = {
       : null;
 
     if (targetBoundaryPoint) {
-      return Editor.range(editor, targetBoundaryPoint);
+      return editorRange(editor, targetBoundaryPoint);
     }
 
     const targetIsOwned =
@@ -924,7 +933,7 @@ export const DOMEditor: DOMEditorInterface = {
     );
 
     if (targetPoint && (!range || RangeApi.isCollapsed(range))) {
-      return Editor.range(editor, targetPoint);
+      return editorRange(editor, targetPoint);
     }
 
     if (shouldUseNearestEventPoint({ domRange, range, x })) {
@@ -935,7 +944,7 @@ export const DOMEditor: DOMEditorInterface = {
       );
 
       if (nearestPoint) {
-        return Editor.range(editor, nearestPoint);
+        return editorRange(editor, nearestPoint);
       }
     }
 
@@ -991,7 +1000,7 @@ export const DOMEditor: DOMEditorInterface = {
     const el = DOMEditor.assertDOMNode(editor, editor);
     const root = DOMEditor.findDocumentOrShadowRoot(editor);
 
-    const getLiveSelection = () => Editor.getSelection(editor);
+    const getLiveSelection = () => editorGetSelection(editor);
     const selection = getLiveSelection();
     const selectionAtFocus = selection
       ? {
@@ -1002,7 +1011,7 @@ export const DOMEditor: DOMEditorInterface = {
     // Create a new selection in the top of the document if missing
     if (!selection) {
       editor.update((tx) => {
-        tx.selection.set(Editor.point(editor, [], { edge: 'start' }));
+        tx.selection.set(editorPoint(editor, [], { edge: 'start' }));
       });
     }
 
@@ -1138,7 +1147,7 @@ export const DOMEditor: DOMEditorInterface = {
   hasRange: (editor, range) => {
     const { anchor, focus } = range;
     return (
-      Editor.hasPath(editor, anchor.path) && Editor.hasPath(editor, focus.path)
+      editorHasPath(editor, anchor.path) && editorHasPath(editor, focus.path)
     );
   },
 
@@ -1176,7 +1185,7 @@ export const DOMEditor: DOMEditorInterface = {
     return (
       !!pliteNode &&
       NodeApi.isElement(pliteNode) &&
-      Editor.isVoid(editor, pliteNode)
+      editorIsVoid(editor, pliteNode)
     );
   },
 
@@ -1215,11 +1224,11 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   resolveDOMPoint: (editor, point) => {
-    if (!Editor.hasPath(editor, point.path)) {
+    if (!editorHasPath(editor, point.path)) {
       return null;
     }
 
-    const resolvedPoint = Editor.void(editor, { at: point })
+    const resolvedPoint = editorVoid(editor, { at: point })
       ? { path: point.path, offset: 0 }
       : point;
     const [node] = editor.read((state) => state.nodes.get(resolvedPoint.path));
@@ -1299,7 +1308,7 @@ export const DOMEditor: DOMEditorInterface = {
   },
 
   assertDOMPoint: (editor, point) => {
-    const resolvedPoint = Editor.void(editor, { at: point })
+    const resolvedPoint = editorVoid(editor, { at: point })
       ? { path: point.path, offset: 0 }
       : point;
     const domPoint = DOMEditor.resolveDOMPoint(editor, point);
@@ -1308,7 +1317,7 @@ export const DOMEditor: DOMEditorInterface = {
       return domPoint;
     }
 
-    if (Editor.hasPath(editor, resolvedPoint.path)) {
+    if (editorHasPath(editor, resolvedPoint.path)) {
       const [node] = editor.read((state) =>
         state.nodes.get(resolvedPoint.path)
       );
@@ -1703,7 +1712,7 @@ export const DOMEditor: DOMEditorInterface = {
           return null;
         }
 
-        let { path, offset } = Editor.point(editor, nodePath, {
+        let { path, offset } = editorPoint(editor, nodePath, {
           edge: 'start',
         });
 
@@ -1737,7 +1746,7 @@ export const DOMEditor: DOMEditorInterface = {
         textNode?.getAttribute('data-plite-path') ?? null
       );
 
-      if (fallbackPath && Editor.hasPath(editor, fallbackPath)) {
+      if (fallbackPath && editorHasPath(editor, fallbackPath)) {
         const [fallbackNode] = editor.read((state) =>
           state.nodes.get(fallbackPath)
         );
@@ -1938,9 +1947,9 @@ export const DOMEditor: DOMEditorInterface = {
       RangeApi.isExpanded(range) &&
       RangeApi.isForward(range) &&
       isDOMElement(focusNode) &&
-      Editor.void(editor, { at: range.focus, mode: 'highest' })
+      editorVoid(editor, { at: range.focus, mode: 'highest' })
     ) {
-      range = Editor.unhangRange(editor, range, { voids: true });
+      range = editorUnhangRange(editor, range, { voids: true });
     }
 
     return range;

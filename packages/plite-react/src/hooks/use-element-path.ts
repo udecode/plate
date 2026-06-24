@@ -1,7 +1,7 @@
 import { useCallback, useContext } from 'react';
 import type { EditorCommit, Operation, Path } from '@platejs/plite';
 import { NodeRuntimeIdContext } from '../context';
-import { Editor } from '../editable/runtime-editor-api';
+import { getPathByRuntimeId as editorGetPathByRuntimeId } from '../editable/runtime-editor-api';
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { useEditorSelector } from './use-editor-selector';
 
@@ -22,7 +22,7 @@ export const useElementPath = (): Path | null => {
         return null;
       }
 
-      const path = Editor.getPathByRuntimeId(editor, runtimeId);
+      const path = editorGetPathByRuntimeId(editor, runtimeId);
 
       return path ? ([...path] as Path) : null;
     },

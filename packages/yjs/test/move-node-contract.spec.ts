@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { Descendant, Operation } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import {
   connectYjsPeerAndSync,
@@ -75,7 +77,7 @@ const nestedTexts = (peer: Peer): string[][] =>
   readPeerChildren(peer).map((node, index) =>
     'children' in node
       ? node.children.map((_, childIndex) =>
-          Editor.string(peer.editor, [index, childIndex])
+          editorString(peer.editor, [index, childIndex])
         )
       : []
   );

@@ -5,7 +5,19 @@ import { basename, dirname, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { cloneDeep } from 'lodash';
 import { createEditor, type Descendant } from '@platejs/plite';
-import { Editor, getEditorRuntime } from '@platejs/plite/internal';
+import {
+  getLastCommit as editorGetLastCommit,
+  getOperations as editorGetOperations,
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  insertNodes as editorInsertNodes,
+  isEditor as editorIsEditor,
+  normalize as editorNormalize,
+  replace as editorReplace,
+  withoutNormalizing as editorWithoutNormalizing,
+} from '@platejs/plite/internal';
+import { getEditorRuntime } from '@platejs/plite/internal';
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
 import {
   IMPLICIT_CANONICALIZATION_CUT_REASON,
@@ -97,13 +109,13 @@ const withBatchTest = (editor: Editor, dirties: string[]) => {
 };
 
 const getExpectedSnapshot = (output: any) =>
-  Editor.isEditor(output) ? Editor.getSnapshot(output) : output;
+  editorIsEditor(output) ? editorGetSnapshot(output) : output;
 
 describe('@platejs/plite', () => {
   runFixtureTree(resolve(testsDir, 'interfaces'), (module, fixturePath) => {
     let { input, test, output } = module;
 
-    if (Editor.isEditor(input)) {
+    if (editorIsEditor(input)) {
       input = withTest(input);
     }
 
@@ -112,8 +124,8 @@ describe('@platejs/plite', () => {
     if (process.env.PLITE_FIXTURE_DEBUG === '1') {
       console.log('[actual]', JSON.stringify(actual));
       console.log('[expected]', JSON.stringify(output));
-      if (Editor.isEditor(input)) {
-        const snapshot = Editor.getSnapshot(input);
+      if (editorIsEditor(input)) {
+        const snapshot = editorGetSnapshot(input);
         console.log('[selection]', JSON.stringify(snapshot.selection));
         console.log('[children]', JSON.stringify(snapshot.children));
       }
@@ -127,14 +139,14 @@ describe('@platejs/plite', () => {
     const editor = withTest(input);
 
     runEditorTransaction(editor, (transaction) => {
-      Editor.withoutNormalizing(editor, () => {
+      editorWithoutNormalizing(editor, () => {
         for (const op of operations) {
           transaction.apply(op);
         }
       });
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const expected = getExpectedSnapshot(output);
 
     assert.deepEqual(snapshot.children, expected.children, fixturePath);
@@ -155,10 +167,10 @@ describe('@platejs/plite', () => {
     }
 
     editor.update((tx) => {
-      Editor.normalize(editor, { force: true });
+      editorNormalize(editor, { force: true });
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const expected = getExpectedSnapshot(output);
 
     assert.deepEqual(snapshot.children, expected.children, fixturePath);
@@ -173,7 +185,7 @@ describe('@platejs/plite', () => {
       run(createFixtureTransactionApi(editor, tx));
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const expected = getExpectedSnapshot(output);
 
     assert.deepEqual(snapshot.children, expected.children, fixturePath);
@@ -185,7 +197,7 @@ describe('@platejs/plite', () => {
     (module, fixturePath) => {
       let { input, test, output } = module;
 
-      if (Editor.isEditor(input)) {
+      if (editorIsEditor(input)) {
         input = withTest(input);
       }
 
@@ -206,18 +218,18 @@ describe('@platejs/plite', () => {
       const editor1 = createEditor();
       const editor2 = createEditor();
 
-      Editor.insertNodes(editor1, shared, { at: [0] });
-      assert(Editor.getRuntimeId(editor1, [0]));
+      editorInsertNodes(editor1, shared, { at: [0] });
+      assert(editorGetRuntimeId(editor1, [0]));
 
-      Editor.insertNodes(editor2, shared, { at: [0] });
-      Editor.insertNodes(editor2, other, { at: [1] });
+      editorInsertNodes(editor2, shared, { at: [0] });
+      editorInsertNodes(editor2, other, { at: [1] });
 
       const paths = [[0], [0, 0], [1], [1, 0]];
       const runtimeIds = paths.map((path) => {
-        const runtimeId = Editor.getRuntimeId(editor2, path);
+        const runtimeId = editorGetRuntimeId(editor2, path);
 
         assert(runtimeId);
-        assert.deepEqual(Editor.getPathByRuntimeId(editor2, runtimeId), path);
+        assert.deepEqual(editorGetPathByRuntimeId(editor2, runtimeId), path);
 
         return runtimeId;
       });
@@ -242,7 +254,7 @@ describe('@platejs/plite', () => {
     it('does not emit a selection operation for null-to-null selection updates', () => {
       const editor = createEditor();
 
-      Editor.replace(editor, {
+      editorReplace(editor, {
         children: [
           {
             type: 'paragraph',
@@ -253,15 +265,15 @@ describe('@platejs/plite', () => {
         marks: null,
       });
 
-      const operationCount = Editor.getOperations(editor).length;
-      const lastCommit = Editor.getLastCommit(editor);
+      const operationCount = editorGetOperations(editor).length;
+      const lastCommit = editorGetLastCommit(editor);
 
       runEditorTransaction(editor, (tx) => {
         tx.setSelection(null);
       });
 
-      assert.equal(Editor.getOperations(editor).length, operationCount);
-      assert.equal(Editor.getLastCommit(editor), lastCommit);
+      assert.equal(editorGetOperations(editor).length, operationCount);
+      assert.equal(editorGetLastCommit(editor), lastCommit);
     });
   });
 
@@ -270,9 +282,9 @@ describe('@platejs/plite', () => {
       runFixtureTree(path, (module) => {
         const { input, run } = module;
         const input2 = createEditor();
-        const snapshot = Editor.getSnapshot(input);
+        const snapshot = editorGetSnapshot(input);
 
-        Editor.replace(input2, {
+        editorReplace(input2, {
           children: cloneDeep(snapshot.children),
           selection: cloneDeep(snapshot.selection),
           marks: cloneDeep(snapshot.marks),

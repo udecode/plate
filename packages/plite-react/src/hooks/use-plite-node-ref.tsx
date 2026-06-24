@@ -15,8 +15,10 @@ import {
 } from '@platejs/plite-dom/internal';
 import { EditorContext } from '../context';
 import {
-  Editor,
+  type Editor,
   withOperationRootChildren,
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  hasPath as editorHasPath,
 } from '../editable/runtime-editor-api';
 import { recordPliteReactRender } from '../render-profiler';
 import { useIsomorphicLayoutEffect } from './use-isomorphic-layout-effect';
@@ -143,7 +145,7 @@ export const syncPliteNodePathBindingsToDOM = (
         });
 
   for (const [runtimeId, elements] of entries) {
-    const path = Editor.getPathByRuntimeId(editor, runtimeId);
+    const path = editorGetPathByRuntimeId(editor, runtimeId);
 
     for (const element of [...elements]) {
       if (!element.isConnected) {
@@ -449,7 +451,7 @@ export const syncTextOperationsToDOM = (
     const strings = element?.querySelectorAll('[data-plite-string="true"]');
 
     const text = withOperationRootChildren(editor, operation, () => {
-      if (!Editor.hasPath(editor, path)) {
+      if (!editorHasPath(editor, path)) {
         return;
       }
 
@@ -542,7 +544,7 @@ const bindPliteNodeElement = ({
 }) => {
   const path =
     providedPathKey == null
-      ? Editor.getPathByRuntimeId(editor, runtimeId)
+      ? editorGetPathByRuntimeId(editor, runtimeId)
       : parsePathKey(providedPathKey);
 
   if (!path || !(node instanceof HTMLElement)) {

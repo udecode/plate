@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { path as editorPath } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -12,7 +12,7 @@ export const input = (
   </editor>
 );
 export const test = (editor) =>
-  Editor.path(editor, {
+  editorPath(editor, {
     anchor: { path: [0, 0], offset: 1 },
     focus: { path: [1, 0], offset: 2 },
   });

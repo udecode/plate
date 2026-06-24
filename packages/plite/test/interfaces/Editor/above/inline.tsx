@@ -1,4 +1,7 @@
-import { Editor } from '@platejs/plite/internal';
+import {
+  above as editorAbove,
+  isInline as editorIsInline,
+} from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { ElementApi } from '@platejs/plite';
@@ -12,9 +15,9 @@ export const input = (
 );
 
 export const test = (editor) =>
-  Editor.above(editor, {
+  editorAbove(editor, {
     at: [0, 1, 0],
-    match: (n) => ElementApi.isElement(n) && Editor.isInline(editor, n),
+    match: (n) => ElementApi.isElement(n) && editorIsInline(editor, n),
   });
 
 export const output = [<inline>two</inline>, [0, 1]];

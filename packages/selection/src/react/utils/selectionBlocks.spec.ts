@@ -83,11 +83,6 @@ describe('selection block utils', () => {
       ) as any;
       (editor.api as any).clipboard = { insertData };
       editor.api.end = mock(() => targetPoint) as any;
-      const createBlockSpy = spyOn(editor.api.create, 'block').mockReturnValue({
-        children: [{ text: '' }],
-        type: 'p',
-      } as any);
-
       getEditorPluginSpy.mockReturnValue({
         api: {
           blockSelection: {
@@ -103,7 +98,6 @@ describe('selection block utils', () => {
 
       pasteSelectedBlocks(editor, event);
 
-      expect(createBlockSpy).toHaveBeenCalledWith({}, [1]);
       expect(insertNodes).toHaveBeenCalledWith(
         { children: [{ text: '' }], type: 'p' },
         { at: [1] }

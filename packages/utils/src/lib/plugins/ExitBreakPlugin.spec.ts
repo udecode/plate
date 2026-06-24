@@ -6,7 +6,6 @@ describe('ExitBreakPlugin', () => {
   it('inserts an exit block after the current block', () => {
     const editor = createPlateEditor({
       plugins: [ExitBreakPlugin],
-      runtime: 'plite',
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
@@ -25,7 +24,6 @@ describe('ExitBreakPlugin', () => {
   it('inserts an exit block before the current block', () => {
     const editor = createPlateEditor({
       plugins: [ExitBreakPlugin],
-      runtime: 'plite',
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
@@ -44,7 +42,6 @@ describe('ExitBreakPlugin', () => {
   it('routes insert through the Plite runtime transform', () => {
     const editor = createPlateEditor({
       plugins: [ExitBreakPlugin],
-      runtime: 'plite',
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },

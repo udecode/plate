@@ -33,7 +33,6 @@ describe('CsvPlugin', () => {
   it('exposes the csv api on the Plite runtime route', () => {
     const editor = createPlateEditor({
       plugins: [CsvPlugin],
-      runtime: 'plite',
     });
     const api = editor.api as typeof editor.api & {
       csv: {

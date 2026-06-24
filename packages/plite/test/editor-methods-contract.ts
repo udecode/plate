@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getChildren as editorGetChildren,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 
 import { createEditor, type Descendant } from '../src';
 import { setEditorTargetRuntime } from '../src/internal';
@@ -13,7 +16,7 @@ const paragraph = (text: string): Descendant => ({
 const setupEditor = () => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [paragraph('one'), paragraph('two')],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
@@ -45,7 +48,7 @@ describe('editor methods', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       {
         type: 'paragraph',
@@ -58,7 +61,7 @@ describe('editor methods', () => {
     const editor = createEditor();
     let calls = 0;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         paragraph('one'),
         {
@@ -88,7 +91,7 @@ describe('editor methods', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       paragraph('two'),
     ]);
@@ -97,7 +100,7 @@ describe('editor methods', () => {
   it('toggles marks from the transaction-resolved implicit target', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -124,7 +127,7 @@ describe('editor methods', () => {
       tx.marks.toggle('bold', true);
     });
 
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       {
         type: 'paragraph',
         children: [{ text: 'one', bold: true }],

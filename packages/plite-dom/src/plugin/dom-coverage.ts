@@ -7,7 +7,13 @@ import {
   type Path as PlitePath,
   type Range as PliteRange,
 } from '@platejs/plite';
-import { Editor, getSnapshotVersion } from '@platejs/plite/internal';
+import {
+  after as editorAfter,
+  before as editorBefore,
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  hasPath as editorHasPath,
+} from '@platejs/plite/internal';
+import { getSnapshotVersion } from '@platejs/plite/internal';
 
 import {
   type DOMElement,
@@ -214,11 +220,11 @@ const resolveBoundary = (
       ? boundary.ownerPath.length === 0
         ? []
         : null
-      : Editor.getPathByRuntimeId(editor, boundary.ownerRuntimeId);
+      : editorGetPathByRuntimeId(editor, boundary.ownerRuntimeId);
 
   if (
     !nextOwnerPath ||
-    (nextOwnerPath.length > 0 && !Editor.hasPath(editor, nextOwnerPath))
+    (nextOwnerPath.length > 0 && !editorHasPath(editor, nextOwnerPath))
   ) {
     return null;
   }
@@ -254,9 +260,9 @@ const pathIsInsideOwner = (path: PlitePath, ownerPath: PlitePath) => {
 };
 
 const resolveRuntimePath = (editor: EditorType, runtimeId: RuntimeId) => {
-  const path = Editor.getPathByRuntimeId(editor, runtimeId);
+  const path = editorGetPathByRuntimeId(editor, runtimeId);
 
-  if (!path || !Editor.hasPath(editor, path)) {
+  if (!path || !editorHasPath(editor, path)) {
     return null;
   }
 
@@ -667,8 +673,8 @@ export const DOMCoverage = {
 
       const orderedRange = getOrderedPathRange(rangeMatch.range);
       const nextPoint = options.reverse
-        ? Editor.before(editor, orderedRange.anchor)
-        : Editor.after(editor, orderedRange.focus);
+        ? editorBefore(editor, orderedRange.anchor)
+        : editorAfter(editor, orderedRange.focus);
 
       if (!nextPoint) {
         return null;

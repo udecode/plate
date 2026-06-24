@@ -1,8 +1,7 @@
-import type { Point } from '@platejs/plite';
+import type { EditorUpdateTransaction, Point } from '@platejs/plite';
 import type { BasePlateEditor } from '../../../editor';
 import type { NavigationNavigateOptions } from '../types';
 
-import { getCurrentRuntimeTransforms } from '../../../../internal/currentRuntimeBridge';
 import { flashTarget } from './flashTarget';
 
 const getScrollTarget = (
@@ -19,6 +18,7 @@ const getScrollTarget = (
 
 export const navigate = (
   editor: BasePlateEditor,
+  tx: EditorUpdateTransaction,
   {
     flash,
     focus = true,
@@ -29,13 +29,12 @@ export const navigate = (
   }: NavigationNavigateOptions
 ) => {
   if (!editor.api.node(target.path)) return false;
-  const tf = getCurrentRuntimeTransforms(editor);
 
   if (select) {
     if ('focus' in select) {
-      tf.select(select);
+      tx.selection.set(select);
     } else {
-      tf.select({
+      tx.selection.set({
         anchor: select,
         focus: select,
       });
@@ -43,7 +42,7 @@ export const navigate = (
   }
 
   if (focus) {
-    tf.focus();
+    editor.api.dom?.focus?.();
   }
 
   if (scroll) {

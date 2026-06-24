@@ -1,9 +1,11 @@
 /** @jsx jsxt */
 
 import { jsxt } from '@platejs/test-utils';
-import { createBasePlateEditor } from 'platejs';
+import { BaseParagraphPlugin, createBasePlateEditor } from 'platejs';
 
 import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
+import { InputRulesPlugin } from '../../../core/src/lib/plugins/input-rules/internal/InputRulesPlugin';
+import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
 import { BaseCodeBlockPlugin } from './BaseCodeBlockPlugin';
 import { CodeBlockRules } from './CodeBlockRules';
 
@@ -29,8 +31,12 @@ describe('BaseCodeBlockPlugin input rules', () => {
       value: input,
     } as any);
 
-    getCurrentRuntimeTransforms(editor).insertText('`');
-    getCurrentRuntimeTransforms(editor).insertText('code');
+    editor.update((tx) => {
+      tx.text.insert('`');
+    });
+    editor.update((tx) => {
+      tx.text.insert('code');
+    });
 
     expect(input.children).toEqual(
       (
@@ -57,9 +63,11 @@ describe('BaseCodeBlockPlugin input rules', () => {
       value: [{ children: [{ text: '``' }], type: 'p' }],
     } as any);
 
-    getCurrentRuntimeTransforms(editor).insertText('`');
+    editor.update((tx) => {
+      tx.text.insert('`');
+    });
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read((state) => state.value.root())).toMatchObject([
       {
         children: [
           {
@@ -73,31 +81,24 @@ describe('BaseCodeBlockPlugin input rules', () => {
   });
 
   it('promotes a ``` paragraph on Enter when configured with on: break', () => {
-    const input = (
-      <fragment>
-        <hp>
-          ```
-          <cursor />
-        </hp>
-      </fragment>
-    ) as any;
-
-    const editor = createBasePlateEditor({
+    const editor = createPlateRuntimeEditor({
+      initialSelection: {
+        anchor: { offset: 3, path: [0, 0] },
+        focus: { offset: 3, path: [0, 0] },
+      },
+      initialValue: [{ children: [{ text: '```' }], type: 'p' }],
       plugins: [
+        InputRulesPlugin,
+        BaseParagraphPlugin,
         BaseCodeBlockPlugin.configure({
           inputRules: [CodeBlockRules.markdown({ on: 'break' })],
         }),
       ],
-      value: input,
     } as any);
 
-    getCurrentRuntimeTransforms(editor).select({
-      anchor: { offset: 3, path: [0, 0] },
-      focus: { offset: 3, path: [0, 0] },
-    });
     getCurrentRuntimeTransforms(editor).insertBreak();
 
-    expect(editor.children).toMatchObject([
+    expect(editor.read((state) => state.value.root())).toMatchObject([
       {
         children: [
           {

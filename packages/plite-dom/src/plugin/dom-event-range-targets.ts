@@ -5,7 +5,16 @@ import {
   type Range,
   type Value,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  above as editorAbove,
+  after as editorAfter,
+  before as editorBefore,
+  isBlock as editorIsBlock,
+  isInline as editorIsInline,
+  isVoid as editorIsVoid,
+  point as editorPoint,
+  range as editorRange,
+} from '@platejs/plite/internal';
 
 import { isDOMElement, isDOMNode } from '../utils/dom';
 import { readDOMFragmentData } from './dom-clipboard-runtime';
@@ -26,7 +35,7 @@ export const eventCarriesBlockFragment = <V extends Value>(
 
   return (
     fragment?.some(
-      (node) => NodeApi.isElement(node) && !Editor.isInline(editor, node)
+      (node) => NodeApi.isElement(node) && !editorIsInline(editor, node)
     ) ?? false
   );
 };
@@ -49,12 +58,12 @@ export const resolveBlockFragmentDropRange = <V extends Value>(
 
   const targetNode = NodeApi.get(editor, path);
   const blockMatch =
-    NodeApi.isElement(targetNode) && Editor.isBlock(editor, targetNode)
+    NodeApi.isElement(targetNode) && editorIsBlock(editor, targetNode)
       ? ([targetNode, path] as const)
-      : Editor.above(editor, {
+      : editorAbove(editor, {
           at: path,
           match: (node) =>
-            NodeApi.isElement(node) && Editor.isBlock(editor, node),
+            NodeApi.isElement(node) && editorIsBlock(editor, node),
         });
 
   if (!blockMatch) {
@@ -63,7 +72,7 @@ export const resolveBlockFragmentDropRange = <V extends Value>(
 
   const [block, blockPath] = blockMatch;
 
-  if (!NodeApi.isElement(block) || Editor.isVoid(editor, block)) {
+  if (!NodeApi.isElement(block) || editorIsVoid(editor, block)) {
     return null;
   }
 
@@ -75,14 +84,14 @@ export const resolveBlockFragmentDropRange = <V extends Value>(
 
   const rect = blockElement.getBoundingClientRect();
   const isBefore = y - rect.top < rect.bottom - y;
-  const edge = Editor.point(editor, blockPath, {
+  const edge = editorPoint(editor, blockPath, {
     edge: isBefore ? 'start' : 'end',
   });
   const point = isBefore
-    ? (Editor.before(editor, edge) ?? edge)
-    : (Editor.after(editor, edge) ?? edge);
+    ? (editorBefore(editor, edge) ?? edge)
+    : (editorAfter(editor, edge) ?? edge);
 
-  return Editor.range(editor, point);
+  return editorRange(editor, point);
 };
 
 export const resolveVoidEventRange = <V extends Value>(
@@ -105,7 +114,7 @@ export const resolveVoidEventRange = <V extends Value>(
     !node ||
     !path ||
     !NodeApi.isElement(node) ||
-    !Editor.isVoid(editor, node)
+    !editorIsVoid(editor, node)
   ) {
     return null;
   }
@@ -121,16 +130,14 @@ export const resolveVoidEventRange = <V extends Value>(
   }
 
   const rect = targetElement.getBoundingClientRect();
-  const isPrev = Editor.isInline(editor, node)
+  const isPrev = editorIsInline(editor, node)
     ? x - rect.left < rect.left + rect.width - x
     : y - rect.top < rect.top + rect.height - y;
 
-  const edge = Editor.point(editor, path, {
+  const edge = editorPoint(editor, path, {
     edge: isPrev ? 'start' : 'end',
   });
-  const point = isPrev
-    ? Editor.before(editor, edge)
-    : Editor.after(editor, edge);
+  const point = isPrev ? editorBefore(editor, edge) : editorAfter(editor, edge);
 
-  return point ? Editor.range(editor, point) : null;
+  return point ? editorRange(editor, point) : null;
 };

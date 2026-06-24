@@ -822,11 +822,6 @@ export type PlatePluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferTx<C> & PluginTx<K, InferTxGroup<TGroup>>
     >
   >;
-  extendTransforms: <
-    ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
-  >(
-    extension: (ctx: PlatePluginContext<C> & { tf: Record<string, any> }) => ET
-  ) => PlatePlugin<C>;
   overrideEditor: (override: OverrideEditor<C>) => PlatePlugin<C>;
   /** Returns a new instance of the plugin with the component. */
   withComponent: (component: NodeComponent) => PlatePlugin<C>;

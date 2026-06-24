@@ -1,10 +1,13 @@
 /** @jsx jsxt */
 
+import type { Value } from '@platejs/plite';
 import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
-import { KEYS, createBasePlateEditor } from 'platejs';
+import { KEYS } from 'platejs';
 
 import { getCurrentRuntimeTransforms } from '../../../core/src/internal/currentRuntimeBridge';
+import { BaseParagraphPlugin } from '../../../core/src/lib/plugins/paragraph/BaseParagraphPlugin';
+import { createPlateRuntimeEditor } from '../../../core/src/react/editor/createPlateRuntimeEditor';
 import { BaseListPlugin } from './BaseListPlugin';
 import { BulletedListRules } from './BulletedListRules';
 import { OrderedListRules } from './OrderedListRules';
@@ -14,8 +17,9 @@ jsxt;
 
 describe('list input rules', () => {
   const createEditor = (text: string, offset = text.length) =>
-    createBasePlateEditor({
+    createPlateRuntimeEditor<Value>({
       plugins: [
+        BaseParagraphPlugin,
         BaseIndentPlugin,
         BaseListPlugin.configure({
           inputRules: [
@@ -26,12 +30,12 @@ describe('list input rules', () => {
           ],
         }),
       ],
-      selection: {
+      initialSelection: {
         anchor: { offset, path: [0, 0] },
         focus: { offset, path: [0, 0] },
       },
-      value: [{ children: [{ text }], type: 'p' }],
-    } as any);
+      initialValue: [{ children: [{ text }], type: 'p' }],
+    });
 
   it('creates a bullet list item when markdown group is enabled', () => {
     const editor = createEditor('-', 1);

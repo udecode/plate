@@ -19,7 +19,17 @@ import {
   PathApi,
   RangeApi,
 } from '../interfaces';
-import { Editor } from '../interfaces/editor';
+import {
+  isBlock as editorIsBlock,
+  isEnd as editorIsEnd,
+  isInline as editorIsInline,
+  pathRef as editorPathRef,
+  point as editorPoint,
+  pointRef as editorPointRef,
+  unhangRange as editorUnhangRange,
+  void as editorVoid,
+  withoutNormalizing as editorWithoutNormalizing,
+} from '../interfaces/editor';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
 import { getDefaultInsertLocation } from '../utils';
 
@@ -29,7 +39,7 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
   options = {}
 ) => {
   runEditorTransaction(editor, (tx) => {
-    Editor.withoutNormalizing(editor, () => {
+    editorWithoutNormalizing(editor, () => {
       const transforms = getEditorTransformRegistry(editor);
       const {
         hanging = false,
@@ -70,14 +80,14 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
 
       if (LocationApi.isRange(at)) {
         if (!hanging) {
-          at = Editor.unhangRange(editor, at, { voids });
+          at = editorUnhangRange(editor, at, { voids });
         }
 
         if (RangeApi.isCollapsed(at)) {
           at = at.anchor;
         } else {
           const [, end] = RangeApi.edges(at);
-          const pointRef = Editor.pointRef(editor, end);
+          const pointRef = editorPointRef(editor, end);
           transforms.delete({ at });
           at = pointRef.unref()!;
         }
@@ -93,9 +103,9 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
           ) {
             match = (n) =>
               NodeApi.isText(n) ||
-              (NodeApi.isElement(n) && Editor.isInline(editor, n));
+              (NodeApi.isElement(n) && editorIsInline(editor, n));
           } else {
-            match = (n) => NodeApi.isElement(n) && Editor.isBlock(editor, n);
+            match = (n) => NodeApi.isElement(n) && editorIsBlock(editor, n);
           }
         }
 
@@ -111,8 +121,8 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
         }
 
         const [, matchPath] = entry;
-        const pathRef = Editor.pathRef(editor, matchPath);
-        const isAtEnd = Editor.isEnd(editor, at, matchPath);
+        const pathRef = editorPathRef(editor, matchPath);
+        const isAtEnd = editorIsEnd(editor, at, matchPath);
         transforms.splitNodes({ at, match, mode, voids });
         const path = pathRef.unref()!;
         at = isAtEnd ? PathApi.next(path) : path;
@@ -125,7 +135,7 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
       const parentPath = PathApi.parent(at);
       let index = at.at(-1)!;
 
-      if (!voids && Editor.void(editor, { at: parentPath })) {
+      if (!voids && editorVoid(editor, { at: parentPath })) {
         return;
       }
 
@@ -200,7 +210,7 @@ export const insertNodes: NodeMutationMethods<any>['insertNodes'] = (
       at = PathApi.previous(at);
 
       if (select) {
-        const point = Editor.point(editor, at, { edge: 'end' });
+        const point = editorPoint(editor, at, { edge: 'end' });
 
         if (point) {
           transforms.select(point);

@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { positions as editorPositions } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../../..';
@@ -14,7 +14,7 @@ export const input = (
 );
 export const test = (editor) =>
   Array.from(
-    Editor.positions(editor, { at: [], unit: 'character', reverse: true })
+    editorPositions(editor, { at: [], unit: 'character', reverse: true })
   );
 
 export const output = [

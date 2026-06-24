@@ -7,9 +7,11 @@ import {
   TextApi,
 } from '@platejs/plite';
 import {
-  Editor,
+  type Editor,
   getEditorLiveNode,
   getEditorLiveText,
+  getSnapshot as editorGetSnapshot,
+  getPathByRuntimeId as editorGetPathByRuntimeId,
 } from './runtime-editor-api';
 
 export type RuntimeNodeBinding = {
@@ -55,9 +57,9 @@ export const readRuntimeNodeById = (
     return { node: null, path: null, runtimeId: null };
   }
 
-  const snapshot = Editor.getSnapshot(editor);
+  const snapshot = editorGetSnapshot(editor);
   const path =
-    Editor.getPathByRuntimeId(editor, runtimeId) ??
+    editorGetPathByRuntimeId(editor, runtimeId) ??
     snapshot.index.idToPath[runtimeId] ??
     null;
 

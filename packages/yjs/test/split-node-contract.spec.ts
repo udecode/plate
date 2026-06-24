@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import type { Descendant } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  string as editorString,
+} from '@platejs/plite/internal';
 import * as Y from 'yjs';
 
 import {
@@ -70,7 +72,7 @@ const appendRemoteText = (peer: Peer): void => {
 };
 
 const appendExclamationToFirstParagraph = (peer: Peer): void => {
-  const offset = Editor.string(peer.editor, [0]).length;
+  const offset = editorString(peer.editor, [0]).length;
 
   peer.editor.update((tx) => {
     tx.text.insert('!', { at: { path: [0, 0], offset } });
@@ -78,7 +80,7 @@ const appendExclamationToFirstParagraph = (peer: Peer): void => {
 };
 
 const insertWorldParagraphAfterFirst = (peer: Peer): void => {
-  const offset = Editor.string(peer.editor, [0]).length;
+  const offset = editorString(peer.editor, [0]).length;
 
   peer.editor.update((tx) => {
     tx.selection.set({

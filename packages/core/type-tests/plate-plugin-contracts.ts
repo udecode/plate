@@ -48,9 +48,7 @@ const createdPlateEditor = createPlateEditor({
 });
 
 const floating: boolean = plateEditor.api.toggleFloating();
-const nestedFloating: boolean = plateEditor
-  .getPluginApi(ToolbarPlugin)
-  .plugin.isFloating();
+const nestedFloating: boolean = plateEditor.api.plugin.isFloating();
 const mentionTrigger: '@' = plateEditor.api.getTrigger();
 const createdFloating: boolean = createdPlateEditor.api.toggleFloating();
 const createdMentionTrigger: '@' = createdPlateEditor.api.getTrigger();
@@ -71,7 +69,7 @@ void toolbarFloating;
 plateEditor.api.notReal();
 
 // @ts-expect-error wrong nested plugin api call
-createdPlateEditor.getPluginApi(ToolbarPlugin).plugin.isFloating(true);
+createdPlateEditor.api.plugin.isFloating(true);
 
 // @ts-expect-error literal option type must stay stable
 createdPlateEditor.getOptions(MentionPlugin).trigger = '#';

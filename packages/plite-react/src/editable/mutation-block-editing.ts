@@ -10,7 +10,16 @@ import {
   RangeApi,
   type RootKey,
 } from '@platejs/plite';
-import { Editor, type Editor as RuntimeEditor } from './runtime-editor-api';
+import {
+  type Editor as RuntimeEditor,
+  isBlock as editorIsBlock,
+  isVoid as editorIsVoid,
+  above as editorAbove,
+  hasPath as editorHasPath,
+  isStart as editorIsStart,
+  point as editorPoint,
+  isInline as editorIsInline,
+} from './runtime-editor-api';
 
 export const createDefaultParagraph = (): Descendant =>
   ({
@@ -20,8 +29,8 @@ export const createDefaultParagraph = (): Descendant =>
 
 const isBlockVoid = (editor: RuntimeEditor, node: Node) =>
   NodeApi.isElement(node) &&
-  Editor.isBlock(editor, node) &&
-  Editor.isVoid(editor, node);
+  editorIsBlock(editor, node) &&
+  editorIsVoid(editor, node);
 
 const getCollapsedBlockPath = (
   editor: RuntimeEditor,
@@ -31,9 +40,9 @@ const getCollapsedBlockPath = (
     return null;
   }
 
-  const blockEntry = Editor.above(editor, {
+  const blockEntry = editorAbove(editor, {
     at: selection.anchor,
-    match: (node) => NodeApi.isElement(node) && Editor.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
     mode: 'highest',
     voids: true,
   });
@@ -47,7 +56,7 @@ const getSelectedBlockVoidPath = (
 ) => {
   const blockPath = getCollapsedBlockPath(editor, selection);
 
-  if (!blockPath || !Editor.hasPath(editor, blockPath)) {
+  if (!blockPath || !editorHasPath(editor, blockPath)) {
     return null;
   }
 
@@ -64,7 +73,7 @@ export const applyBackspaceAfterBlockVoid = (
     !selection ||
     !blockPath ||
     !PathApi.hasPrevious(blockPath) ||
-    !Editor.isStart(editor, selection.anchor, blockPath)
+    !editorIsStart(editor, selection.anchor, blockPath)
   ) {
     return false;
   }
@@ -77,7 +86,7 @@ export const applyBackspaceAfterBlockVoid = (
 
   const previousPath = PathApi.previous(blockPath);
 
-  if (!Editor.hasPath(editor, previousPath)) {
+  if (!editorHasPath(editor, previousPath)) {
     return false;
   }
 
@@ -87,7 +96,7 @@ export const applyBackspaceAfterBlockVoid = (
     return false;
   }
 
-  const selectionPoint = Editor.point(editor, previousPath, { edge: 'start' });
+  const selectionPoint = editorPoint(editor, previousPath, { edge: 'start' });
 
   editor.update((tx) => {
     tx.nodes.remove({ at: blockPath });
@@ -127,24 +136,24 @@ export const applyBackspaceAtLeadingInlineVoidBlockBoundary = (
 
         return (
           NodeApi.isElement(node) &&
-          Editor.isInline(editor, node) &&
-          Editor.isVoid(editor, node)
+          editorIsInline(editor, node) &&
+          editorIsVoid(editor, node)
         );
       }
 
-      return !!Editor.above(editor, {
+      return !!editorAbove(editor, {
         at: location,
         match: (node) =>
           NodeApi.isElement(node) &&
-          Editor.isInline(editor, node) &&
-          Editor.isVoid(editor, node),
+          editorIsInline(editor, node) &&
+          editorIsVoid(editor, node),
         mode: 'lowest',
         voids: true,
       });
     };
-    const block = Editor.above(editor, {
+    const block = editorAbove(editor, {
       at: point,
-      match: (node) => NodeApi.isElement(node) && Editor.isBlock(editor, node),
+      match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
       mode: 'lowest',
       voids: true,
     });
@@ -166,13 +175,13 @@ export const applyBackspaceAtLeadingInlineVoidBlockBoundary = (
     if (
       !NodeApi.isElement(blockNode) ||
       !NodeApi.isElement(previousBlockNode) ||
-      !Editor.isBlock(editor, previousBlockNode)
+      !editorIsBlock(editor, previousBlockNode)
     ) {
       return null;
     }
 
     const blockStart = getPointWithRoot(
-      Editor.point(editor, blockPath, { edge: 'start' }),
+      editorPoint(editor, blockPath, { edge: 'start' }),
       point.root
     );
 
@@ -184,7 +193,7 @@ export const applyBackspaceAtLeadingInlineVoidBlockBoundary = (
 
     if (
       !isInlineVoidAt(point) &&
-      (!Editor.hasPath(editor, nextSiblingPath) ||
+      (!editorHasPath(editor, nextSiblingPath) ||
         !isInlineVoidAt(nextSiblingPath))
     ) {
       return null;
@@ -206,7 +215,7 @@ export const applyBackspaceAtLeadingInlineVoidBlockBoundary = (
       insertPath: [...previousBlockPath, previousBlockNode.children.length],
       moveCount,
       previousBlockEnd: getPointWithRoot(
-        Editor.point(editor, previousBlockPath, { edge: 'end' }),
+        editorPoint(editor, previousBlockPath, { edge: 'end' }),
         point.root
       ),
       sourcePath: [...blockPath, sourceChildIndex],

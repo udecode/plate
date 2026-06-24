@@ -4,7 +4,15 @@ import {
   getLiveNode,
   getLiveText,
 } from '../core/public-state';
-import { Editor, type EditorPositionsOptions } from '../interfaces/editor';
+import {
+  above as editorAbove,
+  getChildren as editorGetChildren,
+  hasInlines as editorHasInlines,
+  isInline as editorIsInline,
+  point as editorPoint,
+  range as editorRange,
+} from '../interfaces/editor';
+import type { Editor, EditorPositionsOptions } from '../interfaces/editor';
 import type { Descendant } from '../interfaces/node';
 import { NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
@@ -49,7 +57,7 @@ const getAtomicNonTraversablePoint = (
     return null;
   }
 
-  const atomicEntry = Editor.above(editor, {
+  const atomicEntry = editorAbove(editor, {
     at: path,
     match: (node) =>
       NodeApi.isElement(node) &&
@@ -64,7 +72,7 @@ const getAtomicNonTraversablePoint = (
   }
 
   const [, atomicPath] = atomicEntry;
-  const start = Editor.point(editor, atomicPath, { edge: 'start' });
+  const start = editorPoint(editor, atomicPath, { edge: 'start' });
 
   return {
     isStart: PathApi.equals(start.path, path),
@@ -140,8 +148,8 @@ const getTextBlockPath = (editor: Editor, path: Path): Path => {
     if (
       node &&
       NodeApi.isElement(node) &&
-      !Editor.isInline(editor, node) &&
-      Editor.hasInlines(editor, node)
+      !editorIsInline(editor, node) &&
+      editorHasInlines(editor, node)
     ) {
       return candidatePath;
     }
@@ -172,7 +180,7 @@ const getLiveTextEntriesInRange = (
     return getTextEntriesForTopLevel(editor, start.path[0]);
   }
 
-  return collectTextEntries(Editor.getChildren(editor));
+  return collectTextEntries(editorGetChildren(editor));
 };
 
 const getPositionSegments = (
@@ -523,7 +531,7 @@ export function* positions(
     voids = false,
   } = options;
 
-  const range = Editor.range(editor, at);
+  const range = editorRange(editor, at);
   const [start, end] = RangeApi.edges(range);
 
   if (comparePoints(start, end) === 0) {

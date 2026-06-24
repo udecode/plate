@@ -43,46 +43,49 @@ export const normalizeListStart = <N extends Element = Element>(
   entry: NodeEntry<Element>,
   options?: Partial<GetSiblingListOptions<N>>
 ) =>
-  editor.update((tx) => {
-    const [node, path] = entry;
-    const listStyleType = (node as any)[KEYS.listType];
-    const listStart = (node as Record<string, unknown>)[KEYS.listStart] as
-      | number
-      | undefined;
+  editor.update(
+    (tx) => {
+      const [node, path] = entry;
+      const listStyleType = (node as any)[KEYS.listType];
+      const listStart = (node as Record<string, unknown>)[KEYS.listStart] as
+        | number
+        | undefined;
 
-    if (!listStyleType) return;
+      if (!listStyleType) return;
 
-    if (ULIST_STYLE_TYPES.includes(listStyleType)) {
-      if (isDefined(listStart)) {
+      if (ULIST_STYLE_TYPES.includes(listStyleType)) {
+        if (isDefined(listStart)) {
+          tx.nodes.unset(KEYS.listStart, { at: path });
+
+          return true;
+        }
+
+        return;
+      }
+
+      const prevEntry = getPreviousList(
+        editor,
+        entry,
+        getListSequenceSiblingOptions(editor, {
+          breakOnEqIndentNeqListStyleType: false,
+          ...options,
+        })
+      );
+      const expectedListStart = getListExpectedListStart(entry, prevEntry);
+
+      if (isDefined(listStart) && expectedListStart === 1) {
         tx.nodes.unset(KEYS.listStart, { at: path });
 
         return true;
       }
 
-      return;
-    }
+      if (listStart !== expectedListStart && expectedListStart > 1) {
+        tx.nodes.set({ [KEYS.listStart]: expectedListStart }, { at: path });
 
-    const prevEntry = getPreviousList(
-      editor,
-      entry,
-      getListSequenceSiblingOptions(editor, {
-        breakOnEqIndentNeqListStyleType: false,
-        ...options,
-      })
-    );
-    const expectedListStart = getListExpectedListStart(entry, prevEntry);
+        return true;
+      }
 
-    if (isDefined(listStart) && expectedListStart === 1) {
-      tx.nodes.unset(KEYS.listStart, { at: path });
-
-      return true;
-    }
-
-    if (listStart !== expectedListStart && expectedListStart > 1) {
-      tx.nodes.set({ [KEYS.listStart]: expectedListStart }, { at: path });
-
-      return true;
-    }
-
-    return false;
-  });
+      return false;
+    },
+    { skipNormalize: true }
+  );

@@ -1,6 +1,9 @@
 import { act, render } from '@testing-library/react';
 import type { Range } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getChildren as editorGetChildren,
+  getSelection as editorGetSelection,
+} from '@platejs/plite/internal';
 import { createReactEditor, Editable, Plite } from '../src';
 import {
   createEditableInputController,
@@ -108,11 +111,11 @@ test('Editable target runtime routes implicit block commands to the current DOM 
     });
   });
 
-  expect(Editor.getChildren(editor)).toEqual([
+  expect(editorGetChildren(editor)).toEqual([
     { type: 'paragraph', children: [{ text: 'one' }] },
     { type: 'heading-one', children: [{ text: 'two' }] },
   ]);
-  expect(Editor.getSelection(editor)).toEqual({
+  expect(editorGetSelection(editor)).toEqual({
     anchor: { path: [1, 0], offset: 0 },
     focus: { path: [1, 0], offset: 3 },
   });

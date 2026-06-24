@@ -14,11 +14,14 @@ export const normalizeListNotIndented = (
     !isDefined(nodeProps[KEYS.indent]) &&
     (nodeProps[KEYS.listType] || nodeProps[KEYS.listStart])
   ) {
-    editor.update((tx) => {
-      tx.nodes.unset([KEYS.listType, KEYS.listStart], {
-        at: path,
-      });
-    });
+    editor.update(
+      (tx) => {
+        tx.nodes.unset([KEYS.listType, KEYS.listStart], {
+          at: path,
+        });
+      },
+      { skipNormalize: true }
+    );
 
     return true;
   }

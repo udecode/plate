@@ -7,7 +7,7 @@ import {
   type Path,
   type Text,
 } from '../interfaces';
-import { Editor } from '../interfaces/editor';
+import { getChildren as editorGetChildren } from '../interfaces/editor';
 import { formatDebugValue } from './format-debug-value';
 import { inheritRuntimeId } from './runtime-ids';
 
@@ -21,7 +21,7 @@ const setChildren = (root: Ancestor, children: Descendant[]) => {
 };
 
 const getChildren = (root: Ancestor): Descendant[] =>
-  NodeApi.isEditor(root) ? Editor.getChildren(root) : root.children;
+  NodeApi.isEditor(root) ? editorGetChildren(root) : root.children;
 
 export const insertChildren = <T>(xs: T[], index: number, ...newValues: T[]) =>
   insertChildRange(xs, index, newValues);

@@ -8,7 +8,7 @@ import {
   type PliteBrowserHandleElement,
 } from './browser-handle';
 import type { EditableInputController } from './input-state';
-import type { Editor } from './runtime-editor-api';
+import type { rangeRef as editorRangeRef } from './runtime-editor-api';
 
 type DeferredInputRule = ({
   data,
@@ -38,7 +38,7 @@ export const useRuntimeBrowserHandle = ({
   applyInputRules: DeferredInputRule;
   browserHandleNextId: RefObject<number>;
   browserHandleRangeRefs: RefObject<
-    Map<string, ReturnType<typeof Editor.rangeRef>>
+    Map<string, ReturnType<typeof editorRangeRef>>
   >;
   editor: ReactRuntimeEditor;
   forceRender: () => void;

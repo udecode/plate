@@ -1,15 +1,13 @@
 /** @jsx jsxt */
 
-import {
-  type BasePlateEditor,
-  createBasePlateEditor,
-  createEditorPlugin,
-  KEYS,
-} from 'platejs';
+import type { Value } from '@platejs/plite';
+import { type BasePlateEditor, createEditorPlugin, KEYS } from 'platejs';
 
 import { BaseIndentPlugin } from '@platejs/indent';
 import { jsxt } from '@platejs/test-utils';
 
+import { BaseParagraphPlugin } from '../../../../core/src/lib/plugins/paragraph/BaseParagraphPlugin';
+import { createPlateRuntimeEditor } from '../../../../core/src/react/editor/createPlateRuntimeEditor';
 import { listPluginPage } from '../../__tests__/listPluginPage';
 import { BaseListPlugin } from '../BaseListPlugin';
 import { toggleList } from './toggleList';
@@ -69,13 +67,13 @@ const getToggledEditor = ({
   options: Parameters<typeof toggleList>[1];
   plugins?: any[];
 }) => {
-  const editor = createBasePlateEditor({
-    plugins,
-    selection: input.selection,
-    value: input.children,
+  const editor = createPlateRuntimeEditor<Value>({
+    plugins: [BaseParagraphPlugin, ...plugins],
+    initialSelection: input.selection,
+    initialValue: input.children,
   });
 
-  toggleList(editor, options);
+  toggleList(editor as unknown as BasePlateEditor, options);
 
   return editor;
 };

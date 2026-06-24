@@ -1,4 +1,9 @@
-import { Editor, type EditorLevelsOptions } from '../interfaces/editor';
+import {
+  getSnapshot as editorGetSnapshot,
+  isVoid as editorIsVoid,
+  path as editorPath,
+} from '../interfaces/editor';
+import type { Editor, EditorLevelsOptions } from '../interfaces/editor';
 import { type Node, NodeApi, type NodeEntry } from '../interfaces/node';
 
 export function* levels<T extends Node>(
@@ -6,7 +11,7 @@ export function* levels<T extends Node>(
   options: EditorLevelsOptions<T> = {}
 ): Generator<NodeEntry<T>, void, undefined> {
   const {
-    at = Editor.getSnapshot(editor).selection,
+    at = editorGetSnapshot(editor).selection,
     reverse = false,
     voids = false,
   } = options;
@@ -21,10 +26,10 @@ export function* levels<T extends Node>(
   }
 
   const levels: NodeEntry<T>[] = [];
-  const path = Editor.path(editor, at);
+  const path = editorPath(editor, at);
 
   for (const [n, p] of NodeApi.levels(editor, path)) {
-    const isVoid = !voids && NodeApi.isElement(n) && Editor.isVoid(editor, n);
+    const isVoid = !voids && NodeApi.isElement(n) && editorIsVoid(editor, n);
 
     if (match(n, p)) {
       levels.push([n, p] as NodeEntry<T>);

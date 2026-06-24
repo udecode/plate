@@ -3,7 +3,7 @@ import {
   createEditorView,
   type Descendant,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import { rangeRef as editorRangeRef } from '@platejs/plite/internal';
 import { history } from '@platejs/plite-history';
 
 import { dom } from '../src';
@@ -59,7 +59,7 @@ describe('root operation middleware', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const selectionRef = Editor.rangeRef(headerEditor, {
+    const selectionRef = editorRangeRef(headerEditor, {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 6 },
     });

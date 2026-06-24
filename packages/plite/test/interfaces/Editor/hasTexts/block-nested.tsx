@@ -1,4 +1,7 @@
-import { Editor } from '@platejs/plite/internal';
+import {
+  getChildren as editorGetChildren,
+  hasTexts as editorHasTexts,
+} from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -13,7 +16,7 @@ export const input = (
   </editor>
 );
 export const test = (editor) => {
-  const block = Editor.getChildren(editor)[0];
-  return Editor.hasTexts(editor, block);
+  const block = editorGetChildren(editor)[0];
+  return editorHasTexts(editor, block);
 };
 export const output = false;

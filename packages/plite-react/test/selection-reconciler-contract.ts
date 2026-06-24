@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { createEditor } from '@platejs/plite';
-import { Editor } from '../src/editable/runtime-editor-api';
 import { syncSelectionForBeforeInput } from '../src/editable/selection-reconciler';
 import {
   ReactEditor,
@@ -15,7 +14,7 @@ const createRootWithoutSelection = () =>
 const createTextEditor = () => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
@@ -33,11 +32,11 @@ const createTextEditor = () => {
 describe('selection reconciler', () => {
   it('does not scan the whole document for a valid model-owned text insertion', () => {
     const editor = createTextEditor();
-    const selection = Editor.getSelection(editor);
-    const originalString = Editor.string;
+    const selection = editorGetSelection(editor);
+    const originalString = editorString;
 
     try {
-      Editor.string = () => {
+      editorString = () => {
         throw new Error('unexpected root string scan');
       };
 
@@ -58,13 +57,13 @@ describe('selection reconciler', () => {
       assert.deepEqual(result.selection, selection);
       assert.equal(result.native, false);
     } finally {
-      Editor.string = originalString;
+      editorString = originalString;
     }
   });
 
   it('keeps native text insertion when the model selection is preferred but not forced', () => {
     const editor = createTextEditor();
-    const selection = Editor.getSelection(editor);
+    const selection = editorGetSelection(editor);
 
     const result = syncSelectionForBeforeInput({
       allowDOMSelectionImport: true,
@@ -86,7 +85,7 @@ describe('selection reconciler', () => {
 
   it('forces model-owned text insertion during structural command repair windows', () => {
     const editor = createTextEditor();
-    const selection = Editor.getSelection(editor);
+    const selection = editorGetSelection(editor);
 
     const result = syncSelectionForBeforeInput({
       allowDOMSelectionImport: true,
@@ -109,7 +108,7 @@ describe('selection reconciler', () => {
 
   it('imports expanded delete target ranges from blur-time IME cleanup events', () => {
     const editor = createTextEditor();
-    const selection = Editor.getSelection(editor);
+    const selection = editorGetSelection(editor);
     const targetRange = {} as StaticRange;
     const targetPliteRange = {
       anchor: { path: [0, 0], offset: 0 },
@@ -139,7 +138,7 @@ describe('selection reconciler', () => {
       });
 
       assert.deepEqual(result.selection, targetPliteRange);
-      assert.deepEqual(Editor.getSelection(editor), targetPliteRange);
+      assert.deepEqual(editorGetSelection(editor), targetPliteRange);
     } finally {
       ReactEditor.hasSelectableTarget = originalHasSelectableTarget;
       ReactEditor.resolvePliteRange = originalResolvePliteRange;
@@ -148,7 +147,7 @@ describe('selection reconciler', () => {
 
   it('does not import target ranges while preserving model-owned selection', () => {
     const editor = createTextEditor();
-    const selection = Editor.getSelection(editor);
+    const selection = editorGetSelection(editor);
     const targetRange = {} as StaticRange;
     const targetPliteRange = {
       anchor: { path: [0, 0], offset: 0 },
@@ -178,7 +177,7 @@ describe('selection reconciler', () => {
       });
 
       assert.deepEqual(result.selection, selection);
-      assert.deepEqual(Editor.getSelection(editor), selection);
+      assert.deepEqual(editorGetSelection(editor), selection);
     } finally {
       ReactEditor.hasSelectableTarget = originalHasSelectableTarget;
       ReactEditor.resolvePliteRange = originalResolvePliteRange;
@@ -187,7 +186,7 @@ describe('selection reconciler', () => {
 
   it('imports expanded insertText target ranges for browser text substitutions', () => {
     const editor = createTextEditor();
-    const selection = Editor.getSelection(editor);
+    const selection = editorGetSelection(editor);
     const targetRange = {} as StaticRange;
     const targetPliteRange = {
       anchor: { path: [0, 0], offset: 1 },
@@ -217,7 +216,7 @@ describe('selection reconciler', () => {
       });
 
       assert.deepEqual(result.selection, targetPliteRange);
-      assert.deepEqual(Editor.getSelection(editor), targetPliteRange);
+      assert.deepEqual(editorGetSelection(editor), targetPliteRange);
     } finally {
       ReactEditor.hasSelectableTarget = originalHasSelectableTarget;
       ReactEditor.resolvePliteRange = originalResolvePliteRange;

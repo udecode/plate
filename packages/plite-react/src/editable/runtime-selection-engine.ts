@@ -14,7 +14,7 @@ import {
   recordEditableKernelTrace,
 } from './editing-kernel';
 import type { EditableInputController } from './input-state';
-import { Editor } from './runtime-editor-api';
+import { getSelection as editorGetSelection } from './runtime-editor-api';
 import { readLiveSelection } from './runtime-selection-state';
 import {
   applyEditableDOMSelectionChange,
@@ -119,7 +119,7 @@ const shouldCancelStaleCompositionSelectionChangeFlush = ({
     return false;
   }
 
-  const modelSelection = Editor.getSelection(editor);
+  const modelSelection = editorGetSelection(editor);
 
   if (!modelSelection || !RangeApi.isCollapsed(modelSelection)) {
     return false;

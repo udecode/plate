@@ -12,7 +12,6 @@ import { InputRulesPlugin } from './input-rules/internal/InputRulesPlugin';
 import { LengthPlugin } from './length';
 import {
   type NavigationFeedbackConfig,
-  type NavigationFeedbackTransforms,
   NavigationFeedbackPlugin,
 } from './navigation-feedback';
 import { AffinityPlugin } from './affinity';
@@ -20,7 +19,6 @@ import { type NodeIdConfig, NodeIdPlugin } from './node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from './paragraph';
 import {
   type PliteExtensionConfig,
-  type PliteExtensionTransforms,
   PliteExtensionPlugin,
 } from './plite-extension';
 import { type ChunkingConfig, ChunkingPlugin } from './chunking/ChunkingPlugin';
@@ -114,8 +112,6 @@ export const getCorePlugins = ({
   return corePlugins;
 };
 
-export type CorePluginTransforms = PliteExtensionTransforms &
-  NavigationFeedbackTransforms;
 export type CorePluginApi = PliteExtensionConfig['api'] &
   NavigationFeedbackConfig['api'];
 

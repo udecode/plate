@@ -1,4 +1,7 @@
-import { Editor } from '@platejs/plite/internal';
+import {
+  getSnapshot as editorGetSnapshot,
+  isStart as editorIsStart,
+} from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -14,7 +17,7 @@ export const input = (
   </editor>
 );
 export const test = (editor) => {
-  const { anchor } = Editor.getSnapshot(editor).selection;
-  return Editor.isStart(editor, anchor, [0]);
+  const { anchor } = editorGetSnapshot(editor).selection;
+  return editorIsStart(editor, anchor, [0]);
 };
 export const output = true;

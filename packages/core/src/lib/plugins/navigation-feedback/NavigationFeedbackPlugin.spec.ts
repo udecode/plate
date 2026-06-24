@@ -1,6 +1,5 @@
 import { createBasePlateEditor } from '../../editor';
 import { NavigationFeedbackPlugin } from './NavigationFeedbackPlugin';
-import { getCurrentRuntimeTransforms } from '../../../internal/currentRuntimeBridge';
 
 describe('NavigationFeedbackPlugin', () => {
   afterEach(() => {
@@ -92,10 +91,11 @@ describe('NavigationFeedbackPlugin', () => {
       },
       value: [{ children: [{ text: 'one' }], type: 'p' }],
     } as any);
-    const focusSpy = spyOn(
-      getCurrentRuntimeTransforms(editor),
-      'focus'
-    ).mockImplementation(() => {});
+    const focusSpy = mock(() => {});
+    (editor.api as any).dom = {
+      ...(editor.api as any).dom,
+      focus: focusSpy,
+    };
     const scrollSpy = spyOn(editor.api, 'scrollIntoView').mockImplementation(
       () => {}
     );

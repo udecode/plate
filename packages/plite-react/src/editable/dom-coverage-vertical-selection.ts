@@ -9,7 +9,12 @@ import { DOMCoverage } from '@platejs/plite-dom/internal';
 
 import type { ReactRuntimeEditor } from '../plugin/react-editor';
 import { recordPliteReactRender } from '../render-profiler';
-import { Editor } from './runtime-editor-api';
+import {
+  above as editorAbove,
+  isBlock as editorIsBlock,
+  before as editorBefore,
+  after as editorAfter,
+} from './runtime-editor-api';
 
 type VerticalExtensionEvent = Pick<
   KeyboardEvent,
@@ -258,13 +263,13 @@ const isSameBlockPoint = ({
   left: Point;
   right: Point;
 }) => {
-  const leftBlock = Editor.above(editor, {
+  const leftBlock = editorAbove(editor, {
     at: left,
-    match: (node) => NodeApi.isElement(node) && Editor.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
   });
-  const rightBlock = Editor.above(editor, {
+  const rightBlock = editorAbove(editor, {
     at: right,
-    match: (node) => NodeApi.isElement(node) && Editor.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
   });
 
   return (
@@ -1227,8 +1232,8 @@ export const getPlainVerticalLargeDocumentExtension = ({
     'plain-vertical.resolve-model-line-target',
     () =>
       reverse
-        ? Editor.before(editor, selection.focus, { unit: 'line' })
-        : Editor.after(editor, selection.focus, { unit: 'line' })
+        ? editorBefore(editor, selection.focus, { unit: 'line' })
+        : editorAfter(editor, selection.focus, { unit: 'line' })
   );
 
   const modelLineTargetIsDirectional =
@@ -1322,8 +1327,8 @@ export const getPlainVerticalDOMCoverageExtension = ({
   }
 
   const nextFocus = reverse
-    ? Editor.before(editor, selection.focus, { unit: 'line' })
-    : Editor.after(editor, selection.focus, { unit: 'line' });
+    ? editorBefore(editor, selection.focus, { unit: 'line' })
+    : editorAfter(editor, selection.focus, { unit: 'line' });
 
   if (!nextFocus) {
     return null;
@@ -1357,8 +1362,8 @@ export const getPlainVerticalDOMCoverageExtension = ({
   }
 
   const boundaryFocus = reverse
-    ? Editor.before(editor, nextFocus, { unit: 'line' })
-    : Editor.after(editor, nextFocus, { unit: 'line' });
+    ? editorBefore(editor, nextFocus, { unit: 'line' })
+    : editorAfter(editor, nextFocus, { unit: 'line' });
 
   if (!boundaryFocus) {
     return null;

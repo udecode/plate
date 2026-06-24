@@ -1,5 +1,11 @@
 import { NodeApi } from '../interfaces';
-import { Editor, type EditorStaticApi } from '../interfaces/editor';
+import {
+  above as editorAbove,
+  isBlock as editorIsBlock,
+  point as editorPoint,
+  void as editorVoid,
+} from '../interfaces/editor';
+import type { EditorStaticApi } from '../interfaces/editor';
 import { PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
 import { nodes } from './nodes';
@@ -22,13 +28,13 @@ export const unhangRange: EditorStaticApi['unhangRange'] = (
     return range;
   }
 
-  const endBlock = Editor.above(editor, {
+  const endBlock = editorAbove(editor, {
     at: end,
-    match: (n) => NodeApi.isElement(n) && Editor.isBlock(editor, n),
+    match: (n) => NodeApi.isElement(n) && editorIsBlock(editor, n),
     voids,
   });
   const blockPath = endBlock ? endBlock[1] : [];
-  const first = Editor.point(editor, start, { edge: 'start' });
+  const first = editorPoint(editor, start, { edge: 'start' });
   const before = { anchor: first, focus: end };
   let skip = true;
 
@@ -46,7 +52,7 @@ export const unhangRange: EditorStaticApi['unhangRange'] = (
     if (
       node.text === '' &&
       voids &&
-      Editor.void(editor, { at: path, mode: 'highest' })
+      editorVoid(editor, { at: path, mode: 'highest' })
     ) {
       continue;
     }

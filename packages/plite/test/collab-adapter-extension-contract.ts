@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getLastCommit as editorGetLastCommit,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -29,7 +33,7 @@ const remoteCollabOptions = {
 const createSeededEditor = () => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [paragraph('one')],
     selection: {
       anchor: { path: [0, 0], offset: 3 },
@@ -162,7 +166,7 @@ const insertTextAtEnd = (
 ) => {
   editor.update((tx) => {
     tx.text.insert(text, {
-      at: { path: [0, 0], offset: Editor.string(editor, [0]).length },
+      at: { path: [0, 0], offset: editorString(editor, [0]).length },
     });
   }, options);
 };
@@ -191,35 +195,35 @@ describe('collab adapter extension contract', () => {
       {
         type: 'insert_text',
         path: [0, 0],
-        offset: Editor.string(editor, [0]).length,
+        offset: editorString(editor, [0]).length,
         text: '?',
       },
     ]);
 
-    assert.equal(Editor.string(editor, []), 'one!?');
+    assert.equal(editorString(editor, []), 'one!?');
     assert.equal(adapter.exports().length, 1);
     assert.equal(adapter.remoteImports(), 1);
-    assert.deepEqual(Editor.getLastCommit(editor)?.tags, [
+    assert.deepEqual(editorGetLastCommit(editor)?.tags, [
       'collaboration',
       'remote-import',
     ]);
     assert.deepEqual(
-      Editor.getLastCommit(editor)?.metadata,
+      editorGetLastCommit(editor)?.metadata,
       remoteCollabOptions.metadata
     );
 
     insertTextAtEnd(editor, '#', { tag: 'skip-collab' });
-    assert.equal(Editor.string(editor, []), 'one!?#');
+    assert.equal(editorString(editor, []), 'one!?#');
     assert.equal(adapter.exports().length, 1);
 
     adapter.pause();
     insertTextAtEnd(editor, '$');
-    assert.equal(Editor.string(editor, []), 'one!?#$');
+    assert.equal(editorString(editor, []), 'one!?#$');
     assert.equal(adapter.exports().length, 1);
 
     adapter.connect();
     insertTextAtEnd(editor, '+');
-    assert.equal(Editor.string(editor, []), 'one!?#$+');
+    assert.equal(editorString(editor, []), 'one!?#$+');
     assert.equal(adapter.exports().length, 2);
 
     const listenerEventsBeforeCleanup = adapter.listenerEvents().length;
@@ -227,7 +231,7 @@ describe('collab adapter extension contract', () => {
 
     insertTextAtEnd(editor, '~');
 
-    assert.equal(Editor.string(editor, []), 'one!?#$+~');
+    assert.equal(editorString(editor, []), 'one!?#$+~');
     assert.equal(adapter.listenerEvents().length, listenerEventsBeforeCleanup);
   });
 });

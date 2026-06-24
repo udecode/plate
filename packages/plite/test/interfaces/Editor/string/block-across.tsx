@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { string as editorString } from '@platejs/plite/internal';
 /** @jsx jsx  */
 
 export const input = (
@@ -13,5 +13,5 @@ export const input = (
     </block>
   </editor>
 );
-export const test = (editor) => Editor.string(editor, []);
+export const test = (editor) => editorString(editor, []);
 export const output = 'onetwothreefour';

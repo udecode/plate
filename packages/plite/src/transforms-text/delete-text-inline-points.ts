@@ -6,7 +6,11 @@ import {
   type Point,
   PointApi,
 } from '../interfaces';
-import { type Editor, Editor as EditorApi } from '../interfaces/editor';
+import {
+  hasPath as editorHasPath,
+  point as editorPoint,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import {
   type DeleteRangePlan,
   getCurrentNode,
@@ -35,7 +39,7 @@ export const movePointToFollowingInline = (
 
   const parentPath = livePoint.path.slice(0, -1) as Path;
 
-  if (!EditorApi.hasPath(editor, parentPath)) {
+  if (!editorHasPath(editor, parentPath)) {
     return livePoint;
   }
 
@@ -48,7 +52,7 @@ export const movePointToFollowingInline = (
   const nextSiblingPath =
     parentPath.at(-1) == null ? null : PathApi.next(parentPath);
 
-  if (!nextSiblingPath || !EditorApi.hasPath(editor, nextSiblingPath)) {
+  if (!nextSiblingPath || !editorHasPath(editor, nextSiblingPath)) {
     return livePoint;
   }
 
@@ -58,7 +62,7 @@ export const movePointToFollowingInline = (
     NodeApi.isElement(nextSibling) &&
     getEditorSchema(editor).isInline(nextSibling)
   ) {
-    return EditorApi.point(editor, nextSiblingPath, { edge: 'start' });
+    return editorPoint(editor, nextSiblingPath, { edge: 'start' });
   }
 
   if (!isTextNode(nextSibling) || nextSibling.text !== '') {
@@ -68,7 +72,7 @@ export const movePointToFollowingInline = (
   const nextInlinePath =
     nextSiblingPath.at(-1) == null ? null : PathApi.next(nextSiblingPath);
 
-  if (!nextInlinePath || !EditorApi.hasPath(editor, nextInlinePath)) {
+  if (!nextInlinePath || !editorHasPath(editor, nextInlinePath)) {
     return livePoint;
   }
 
@@ -81,7 +85,7 @@ export const movePointToFollowingInline = (
     return livePoint;
   }
 
-  return EditorApi.point(editor, nextInlinePath, { edge: 'start' });
+  return editorPoint(editor, nextInlinePath, { edge: 'start' });
 };
 
 export const moveLeadingSpacerPointIntoFollowingInline = (
@@ -106,7 +110,7 @@ export const moveLeadingSpacerPointIntoFollowingInline = (
 
   const nextSiblingPath = PathApi.next(livePoint.path as Path);
 
-  if (!EditorApi.hasPath(editor, nextSiblingPath)) {
+  if (!editorHasPath(editor, nextSiblingPath)) {
     return livePoint;
   }
 
@@ -117,7 +121,7 @@ export const moveLeadingSpacerPointIntoFollowingInline = (
     getEditorSchema(editor).isInline(nextSibling) &&
     !getEditorSchema(editor).isVoid(nextSibling)
   ) {
-    return EditorApi.point(editor, nextSiblingPath, { edge: 'start' });
+    return editorPoint(editor, nextSiblingPath, { edge: 'start' });
   }
 
   return livePoint;
@@ -145,7 +149,7 @@ export const moveTrailingTextPointIntoFollowingInline = (
 
   const nextSiblingPath = PathApi.next(livePoint.path as Path);
 
-  if (!EditorApi.hasPath(editor, nextSiblingPath)) {
+  if (!editorHasPath(editor, nextSiblingPath)) {
     return livePoint;
   }
 
@@ -156,7 +160,7 @@ export const moveTrailingTextPointIntoFollowingInline = (
     getEditorSchema(editor).isInline(nextSibling) &&
     !getEditorSchema(editor).isVoid(nextSibling)
   ) {
-    return EditorApi.point(editor, nextSiblingPath, { edge: 'start' });
+    return editorPoint(editor, nextSiblingPath, { edge: 'start' });
   }
 
   return livePoint;
@@ -181,7 +185,7 @@ export const moveExpandedInlineEdgeDeletePointOutsideInline = (
 
   const parentPath = livePoint.path.slice(0, -1) as Path;
 
-  if (!EditorApi.hasPath(editor, parentPath)) {
+  if (!editorHasPath(editor, parentPath)) {
     return livePoint;
   }
 
@@ -211,18 +215,18 @@ export const moveExpandedInlineEdgeDeletePointOutsideInline = (
     return livePoint;
   }
 
-  const parentStart = EditorApi.point(editor, parentPath, { edge: 'start' });
-  const parentEnd = EditorApi.point(editor, parentPath, { edge: 'end' });
+  const parentStart = editorPoint(editor, parentPath, { edge: 'start' });
+  const parentEnd = editorPoint(editor, parentPath, { edge: 'end' });
 
   if (plan.start.offset === 0 && PointApi.equals(livePoint, parentStart)) {
     const previousSiblingPath =
       parentPath.at(-1) === 0 ? null : PathApi.previous(parentPath);
 
-    if (previousSiblingPath && EditorApi.hasPath(editor, previousSiblingPath)) {
+    if (previousSiblingPath && editorHasPath(editor, previousSiblingPath)) {
       const previousSibling = getCurrentNode(editor, previousSiblingPath);
 
       if (isTextNode(previousSibling)) {
-        return EditorApi.point(editor, previousSiblingPath, { edge: 'end' });
+        return editorPoint(editor, previousSiblingPath, { edge: 'end' });
       }
     }
   }
@@ -238,11 +242,11 @@ export const moveExpandedInlineEdgeDeletePointOutsideInline = (
     const nextSiblingPath =
       parentPath.at(-1) == null ? null : PathApi.next(parentPath);
 
-    if (nextSiblingPath && EditorApi.hasPath(editor, nextSiblingPath)) {
+    if (nextSiblingPath && editorHasPath(editor, nextSiblingPath)) {
       const nextSibling = getCurrentNode(editor, nextSiblingPath);
 
       if (isTextNode(nextSibling)) {
-        return EditorApi.point(editor, nextSiblingPath, { edge: 'start' });
+        return editorPoint(editor, nextSiblingPath, { edge: 'start' });
       }
     }
   }

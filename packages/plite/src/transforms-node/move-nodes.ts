@@ -2,7 +2,11 @@ import { runEditorTransaction } from '../core/public-state';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import { LocationApi, NodeApi } from '../interfaces';
-import { Editor } from '../interfaces/editor';
+import {
+  getChildren as editorGetChildren,
+  isBlock as editorIsBlock,
+  pathRef as editorPathRef,
+} from '../interfaces/editor';
 import { type Path, PathApi } from '../interfaces/path';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
 
@@ -35,7 +39,7 @@ export const moveNodes: NodeMutationMethods['moveNodes'] = (
                 Math.min(
                   to.at(-1)!,
                   NodeApi.isEditor(getNode(editor, at.slice(0, -1) as Path)[0])
-                    ? Editor.getChildren(editor).length - 1
+                    ? editorGetChildren(editor).length - 1
                     : (
                         getNode(editor, at.slice(0, -1) as Path)[0] as {
                           children: unknown[];
@@ -55,13 +59,13 @@ export const moveNodes: NodeMutationMethods['moveNodes'] = (
         return;
       }
 
-      match = (n) => NodeApi.isElement(n) && Editor.isBlock(editor, n);
+      match = (n) => NodeApi.isElement(n) && editorIsBlock(editor, n);
     }
 
-    const toRef = Editor.pathRef(editor, to);
+    const toRef = editorPathRef(editor, to);
     const pathRefs = Array.from(
       getNodes(editor, { at, match, mode, voids }),
-      ([, path]) => Editor.pathRef(editor, path)
+      ([, path]) => editorPathRef(editor, path)
     );
 
     for (const pathRef of pathRefs) {

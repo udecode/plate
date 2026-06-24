@@ -3,4 +3,3 @@
  */
 
 export * from './PliteExtensionPlugin';
-export * from './transforms/index';

@@ -1,6 +1,10 @@
 import { act, render } from '@testing-library/react';
 import { useRef } from 'react';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getRuntimeId as editorGetRuntimeId,
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 import {
   DOMCoverage,
   EDITOR_TO_ELEMENT,
@@ -46,7 +50,7 @@ test('beforeinput preserves pending native text repair selection over mismatched
   root.append(textHost);
   document.body.append(root);
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
@@ -57,7 +61,7 @@ test('beforeinput preserves pending native text repair selection over mismatched
     },
   });
 
-  const modelSelection = Editor.getSelection(editor);
+  const modelSelection = editorGetSelection(editor);
 
   try {
     domSelection.removeAllRanges();
@@ -81,7 +85,7 @@ test('beforeinput preserves pending native text repair selection over mismatched
 
     expect(result.native).toBe(false);
     expect(result.selection).toEqual(modelSelection);
-    expect(Editor.getSelection(editor)).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
   } finally {
     root.remove();
     domSelection.removeAllRanges();
@@ -110,7 +114,7 @@ test('beforeinput ignores stale backward target range while model owns insert', 
   root.append(textHost);
   document.body.append(root);
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -123,7 +127,7 @@ test('beforeinput ignores stale backward target range while model owns insert', 
     },
   });
 
-  const modelSelection = Editor.getSelection(editor);
+  const modelSelection = editorGetSelection(editor);
 
   try {
     targetRange.setStart(text, 1);
@@ -150,7 +154,7 @@ test('beforeinput ignores stale backward target range while model owns insert', 
 
     expect(result.native).toBe(false);
     expect(result.selection).toEqual(modelSelection);
-    expect(Editor.getSelection(editor)).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
   } finally {
     root.remove();
     domSelection.removeAllRanges();
@@ -225,7 +229,7 @@ test('beforeinput returns same-path pending native text repair DOM range without
   root.append(textHost);
   document.body.append(root);
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
     selection: {
       anchor: { path: [0, 0], offset: 1 },
@@ -233,7 +237,7 @@ test('beforeinput returns same-path pending native text repair DOM range without
     },
   });
 
-  const modelSelection = Editor.getSelection(editor);
+  const modelSelection = editorGetSelection(editor);
 
   try {
     domSelection.removeAllRanges();
@@ -265,7 +269,7 @@ test('beforeinput returns same-path pending native text repair DOM range without
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     });
-    expect(Editor.getSelection(editor)).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
   } finally {
     root.remove();
     domSelection.removeAllRanges();
@@ -293,7 +297,7 @@ test('beforeinput imports same-path native selection when pending repair owns a 
   root.append(textHost);
   document.body.append(root);
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
     selection: {
       anchor: { path: [0, 0], offset: 1 },
@@ -319,11 +323,11 @@ test('beforeinput imports same-path native selection when pending repair owns a 
       pendingNativeTextInputRepairPathKey: '0,0',
       preferModelSelectionForInput: false,
       root: document,
-      selection: Editor.getSelection(editor),
+      selection: editorGetSelection(editor),
     });
 
     expect(result.native).toBe(false);
-    expect(result.selection).toEqual(Editor.getSelection(editor));
+    expect(result.selection).toEqual(editorGetSelection(editor));
   } finally {
     root.remove();
     domSelection.removeAllRanges();
@@ -351,7 +355,7 @@ test('beforeinput imports backward native text caret when no pending repair owns
   root.append(textHost);
   document.body.append(root);
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'oXXXne' }] }],
     selection: {
       anchor: { path: [0, 0], offset: 4 },
@@ -359,7 +363,7 @@ test('beforeinput imports backward native text caret when no pending repair owns
     },
   });
 
-  const modelSelection = Editor.getSelection(editor);
+  const modelSelection = editorGetSelection(editor);
 
   try {
     domSelection.removeAllRanges();
@@ -385,7 +389,7 @@ test('beforeinput imports backward native text caret when no pending repair owns
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -416,7 +420,7 @@ test('beforeinput ignores repair-induced backward text caret when no pending rep
   root.append(textHost);
   document.body.append(root);
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -429,7 +433,7 @@ test('beforeinput ignores repair-induced backward text caret when no pending rep
     },
   });
 
-  const modelSelection = Editor.getSelection(editor);
+  const modelSelection = editorGetSelection(editor);
 
   try {
     domSelection.removeAllRanges();
@@ -453,7 +457,7 @@ test('beforeinput ignores repair-induced backward text caret when no pending rep
 
     expect(result.native).toBe(false);
     expect(result.selection).toEqual(modelSelection);
-    expect(Editor.getSelection(editor)).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
   } finally {
     root.remove();
     domSelection.removeAllRanges();
@@ -481,7 +485,7 @@ test('beforeinput ignores text host target ranges while the node map is dirty', 
   root.append(textHost);
   document.body.append(root);
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
@@ -492,7 +496,7 @@ test('beforeinput ignores text host target ranges while the node map is dirty', 
     },
   });
 
-  const modelSelection = Editor.getSelection(editor);
+  const modelSelection = editorGetSelection(editor);
   const targetRange = {
     collapsed: false,
     endContainer: text,
@@ -523,7 +527,7 @@ test('beforeinput ignores text host target ranges while the node map is dirty', 
     });
 
     expect(result.selection).toEqual(modelSelection);
-    expect(Editor.getSelection(editor)).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
   } finally {
     IS_NODE_MAP_DIRTY.delete(editor);
     root.remove();
@@ -544,7 +548,7 @@ test('beforeinput keeps current text host target ranges while the node map is di
     throw new Error('Expected document selection');
   }
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
@@ -555,7 +559,7 @@ test('beforeinput keeps current text host target ranges while the node map is di
     },
   });
 
-  const runtimeId = Editor.getRuntimeId(editor, [0, 0]);
+  const runtimeId = editorGetRuntimeId(editor, [0, 0]);
 
   if (!runtimeId) {
     throw new Error('Expected text runtime id');
@@ -599,11 +603,11 @@ test('beforeinput keeps current text host target ranges while the node map is di
       native: false,
       preferModelSelectionForInput: true,
       root: document,
-      selection: Editor.getSelection(editor),
+      selection: editorGetSelection(editor),
     });
 
     expect(result.selection).toEqual(targetPliteRange);
-    expect(Editor.getSelection(editor)).toEqual(targetPliteRange);
+    expect(editorGetSelection(editor)).toEqual(targetPliteRange);
   } finally {
     IS_NODE_MAP_DIRTY.delete(editor);
     root.remove();
@@ -626,7 +630,7 @@ test('beforeinput uses event target range instead of later live DOM selection', 
     throw new Error('Expected document selection');
   }
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
@@ -682,12 +686,12 @@ test('beforeinput uses event target range instead of later live DOM selection', 
       native: true,
       preferModelSelectionForInput: false,
       root: document,
-      selection: Editor.getSelection(editor),
+      selection: editorGetSelection(editor),
     });
 
     expect(result.native).toBe(false);
     expect(result.selection).toEqual(eventSelection);
-    expect(Editor.getSelection(editor)).toEqual(eventSelection);
+    expect(editorGetSelection(editor)).toEqual(eventSelection);
   } finally {
     root.remove();
     domSelection.removeAllRanges();
@@ -714,7 +718,7 @@ test('beforeinput resolves block-spanning element target ranges before live sele
     throw new Error('Expected document selection');
   }
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
@@ -815,7 +819,7 @@ test('beforeinput resolves block-spanning element target ranges before live sele
       native: true,
       preferModelSelectionForInput: false,
       root: document,
-      selection: Editor.getSelection(editor),
+      selection: editorGetSelection(editor),
     });
 
     const eventSelection = {
@@ -825,7 +829,7 @@ test('beforeinput resolves block-spanning element target ranges before live sele
 
     expect(result.native).toBe(false);
     expect(result.selection).toEqual(eventSelection);
-    expect(Editor.getSelection(editor)).toEqual(eventSelection);
+    expect(editorGetSelection(editor)).toEqual(eventSelection);
   } finally {
     root.remove();
     domSelection.removeAllRanges();
@@ -860,7 +864,7 @@ test('beforeinput does not import only the first range from multiple target rang
     throw new Error('Expected document selection');
   }
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
@@ -900,7 +904,7 @@ test('beforeinput does not import only the first range from multiple target rang
     startContainer: secondText,
     startOffset: 0,
   } as unknown as StaticRange;
-  const modelSelection = Editor.getSelection(editor);
+  const modelSelection = editorGetSelection(editor);
 
   try {
     domSelection.removeAllRanges();
@@ -925,7 +929,7 @@ test('beforeinput does not import only the first range from multiple target rang
 
     expect(result.native).toBe(true);
     expect(result.selection).toEqual(modelSelection);
-    expect(Editor.getSelection(editor)).toEqual(modelSelection);
+    expect(editorGetSelection(editor)).toEqual(modelSelection);
   } finally {
     root.remove();
     domSelection.removeAllRanges();
@@ -945,7 +949,7 @@ test('selection reconciler clears the updating guard when DOM export throws', ()
   const androidInputManagerRef = { current: null };
   let renderTick = 0;
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
@@ -1029,7 +1033,7 @@ test('selection reconciler clamps stale DOM range offsets after text shortening'
   const androidInputManagerRef = { current: null };
   let renderTick = 0;
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
     selection: {
       anchor: { path: [0, 0], offset: 4 },
@@ -1110,7 +1114,7 @@ test('selection reconciler keeps DOM coverage skip selections model-owned', () =
   const androidInputManagerRef = { current: null };
   let renderTick = 0;
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'hidden', children: [{ text: 'secret' }] },
@@ -1201,7 +1205,7 @@ test('DOM coverage selection materializes every covered materialize boundary wit
   const editor = createReactEditor();
   const materialized: string[] = [];
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       { type: 'paragraph', children: [{ text: 'anchor' }] },
       { type: 'paragraph', children: [{ text: 'before' }] },
@@ -1244,7 +1248,7 @@ test('DOM coverage selection materializes every covered materialize boundary wit
   });
 
   const domSelection = document.getSelection();
-  const selection = Editor.getSelection(editor);
+  const selection = editorGetSelection(editor);
 
   try {
     if (!domSelection || !selection) {
@@ -1280,7 +1284,7 @@ test('selection reconciler preserves visible anchor text across DOM coverage bou
   const androidInputManagerRef = { current: null };
   let renderTick = 0;
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'hidden', children: [{ text: 'secret' }] },
@@ -1426,7 +1430,7 @@ test('read-only triple-click stays native and does not update model selection', 
     state: createEditableInputControllerState(),
   });
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     selection: {
       anchor: { path: [0, 0], offset: 1 },
@@ -1456,7 +1460,7 @@ test('read-only triple-click stays native and does not update model selection', 
     });
 
     expect(update).not.toHaveBeenCalled();
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });

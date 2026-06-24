@@ -1,6 +1,7 @@
 import type { Element, NodeEntry } from '@platejs/plite';
 import type { BasePlateEditor } from 'platejs';
 
+import { ElementApi } from '@platejs/plite';
 import { getInjectMatch, KEYS } from 'platejs';
 
 import type { ListOptions } from './indentList';
@@ -66,7 +67,19 @@ export const toggleList = (
         editor.getPlugin({ key: KEYS.list })
       );
       const _entries = editor.api.nodes({ block: true, match });
-      const entries = [..._entries] as NodeEntry<Element>[];
+      const entries = [..._entries].filter(
+        (entry): entry is NodeEntry<Element> => {
+          const [node, path] = entry;
+
+          return (
+            path.length > 0 &&
+            ElementApi.isElement(node) &&
+            editor.api.isBlock(node)
+          );
+        }
+      );
+
+      if (entries.length === 0) return null;
 
       const eqListStyleType = areEqListStyleType(editor, entries, {
         listStyleType,
@@ -111,7 +124,7 @@ export const toggleList = (
     return null;
   })();
 
-  // Apply listRestart or listRestartPolite if applicable
+  // Apply listRestart or listRestartPolite if applicable.
   const restartValue = listRestart || listRestartPolite;
   const isRestart = !!listRestart;
 
@@ -139,7 +152,7 @@ export const toggleList = (
       return;
     }
 
-    // If restartValue is 1, only apply listRestart if this is not the first
+    // If restartValue is 1, only apply listRestart if this is not the first.
     if (isRestart && restartValue === 1 && isFirst) {
       normalizeListSequence(editor, entry[1], mergedGetSiblingListOptions);
 

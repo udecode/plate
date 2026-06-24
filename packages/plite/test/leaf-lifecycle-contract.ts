@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getChildren as editorGetChildren,
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import { createEditor, type Descendant, NodeApi, TextApi } from '../src';
 
@@ -20,7 +25,7 @@ const richTextParagraph = (): Descendant => ({
 const setupEditor = () => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [richTextParagraph()],
     selection: {
       anchor: { path: [0, 6], offset: 1 },
@@ -32,7 +37,7 @@ const setupEditor = () => {
 };
 
 const getTextChildren = (editor: ReturnType<typeof createEditor>) => {
-  const block = Editor.getChildren(editor)[0];
+  const block = editorGetChildren(editor)[0];
 
   assert(NodeApi.isElement(block));
 
@@ -53,7 +58,7 @@ describe('leaf lifecycle contract', () => {
     const children = getTextChildren(editor);
 
     assert.equal(
-      Editor.string(editor, [0]),
+      editorString(editor, [0]),
       'This is editable rich text, much '
     );
     assert.deepEqual(
@@ -64,7 +69,7 @@ describe('leaf lifecycle contract', () => {
       children.some((child) => child.text === ''),
       false
     );
-    assert.deepEqual(Editor.getSelection(editor), {
+    assert.deepEqual(editorGetSelection(editor), {
       anchor: { path: [0, 4], offset: 1 },
       focus: { path: [0, 4], offset: 1 },
     });

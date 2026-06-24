@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  bookmark as editorBookmark,
+  rangeRefs as editorRangeRefs,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 import { createEditor, type Descendant } from '../src';
 import { extendTestSchema } from './support/schema';
 
@@ -61,7 +66,7 @@ describe('plite bookmark contract', () => {
   it('round-trips a bookmark on an unchanged snapshot and hides its backing range ref', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
       marks: null,
@@ -71,9 +76,9 @@ describe('plite bookmark contract', () => {
       { path: [0, 0], offset: 1 },
       { path: [0, 0], offset: 4 }
     );
-    const bookmark = Editor.bookmark(editor, range);
+    const bookmark = editorBookmark(editor, range);
 
-    assert.equal(Editor.rangeRefs(editor).size, 0);
+    assert.equal(editorRangeRefs(editor).size, 0);
     assert.deepEqual(bookmark.resolve(), range);
     assert.deepEqual(bookmark.unref(), range);
   });
@@ -81,7 +86,7 @@ describe('plite bookmark contract', () => {
   it('exposes bookmarks through the public read state range group', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: {
         anchor: { path: [0, 0], offset: 1 },
@@ -113,13 +118,13 @@ describe('plite bookmark contract', () => {
   it('maps through text inserted before the anchor range without mounted DOM', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createSplitChildren(),
       selection: null,
       marks: null,
     });
 
-    const bookmark = Editor.bookmark(
+    const bookmark = editorBookmark(
       editor,
       createRange({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 4 })
     );
@@ -134,19 +139,19 @@ describe('plite bookmark contract', () => {
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 5 },
     });
-    assert.equal(Editor.string(editor, bookmark.resolve()!), 'lph');
+    assert.equal(editorString(editor, bookmark.resolve()!), 'lph');
   });
 
   it('defaults bookmark boundary behavior inward for annotation-style anchors', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createSplitChildren(),
       selection: null,
       marks: null,
     });
 
-    const bookmark = Editor.bookmark(
+    const bookmark = editorBookmark(
       editor,
       createRange({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 4 })
     );
@@ -161,19 +166,19 @@ describe('plite bookmark contract', () => {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
-    assert.equal(Editor.string(editor, bookmark.resolve()!), 'lph');
+    assert.equal(editorString(editor, bookmark.resolve()!), 'lph');
   });
 
   it('survives splitNodes block splitting across a bookmarked text span', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createSplitChildren(),
       selection: null,
       marks: null,
     });
 
-    const bookmark = Editor.bookmark(
+    const bookmark = editorBookmark(
       editor,
       createRange({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 4 })
     );
@@ -187,7 +192,7 @@ describe('plite bookmark contract', () => {
     const resolved = bookmark.resolve();
 
     assert.ok(resolved);
-    assert.equal(Editor.string(editor, resolved), 'lph');
+    assert.equal(editorString(editor, resolved), 'lph');
     assert.deepEqual(resolved, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [1, 0], offset: 2 },
@@ -197,13 +202,13 @@ describe('plite bookmark contract', () => {
   it('survives merge_node of the bookmarked block container', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createMergeChildren(),
       selection: null,
       marks: null,
     });
 
-    const bookmark = Editor.bookmark(
+    const bookmark = editorBookmark(
       editor,
       createRange({ path: [1, 0], offset: 1 }, { path: [1, 0], offset: 3 })
     );
@@ -226,19 +231,19 @@ describe('plite bookmark contract', () => {
       anchor: { path: [0, 1], offset: 1 },
       focus: { path: [0, 1], offset: 3 },
     });
-    assert.equal(Editor.string(editor, resolved), 'et');
+    assert.equal(editorString(editor, resolved), 'et');
   });
 
   it('survives move_node of the containing block', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createMoveChildren(),
       selection: null,
       marks: null,
     });
 
-    const bookmark = Editor.bookmark(
+    const bookmark = editorBookmark(
       editor,
       createRange({ path: [1, 0], offset: 1 }, { path: [1, 0], offset: 3 })
     );
@@ -254,19 +259,19 @@ describe('plite bookmark contract', () => {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 3 },
     });
-    assert.equal(Editor.string(editor, resolved), 'et');
+    assert.equal(editorString(editor, resolved), 'et');
   });
 
   it('survives replace_children when fragment insertion preserves the bookmarked text', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createSplitChildren(),
       selection: null,
       marks: null,
     });
 
-    const bookmark = Editor.bookmark(
+    const bookmark = editorBookmark(
       editor,
       createRange({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 4 })
     );
@@ -295,7 +300,7 @@ describe('plite bookmark contract', () => {
       anchor: { path: [1, 0], offset: 8 },
       focus: { path: [1, 0], offset: 11 },
     });
-    assert.equal(Editor.string(editor, resolved), 'lph');
+    assert.equal(editorString(editor, resolved), 'lph');
   });
 
   it('preserves an explicit bookmark root through replace_children', () => {
@@ -305,7 +310,7 @@ describe('plite bookmark contract', () => {
         roots: { header: [paragraph('head')] },
       },
     });
-    const bookmark = Editor.bookmark(editor, {
+    const bookmark = editorBookmark(editor, {
       anchor: { path: [0, 0], offset: 2, root: 'header' },
       focus: { path: [0, 0], offset: 2, root: 'header' },
     });
@@ -347,7 +352,7 @@ describe('plite bookmark contract', () => {
     const editor = createEditor();
     extendTestSchema(editor, { type: 'inline', inline: true });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'block',
@@ -358,7 +363,7 @@ describe('plite bookmark contract', () => {
       marks: null,
     });
 
-    const bookmark = Editor.bookmark(
+    const bookmark = editorBookmark(
       editor,
       createRange({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 4 })
     );
@@ -380,19 +385,19 @@ describe('plite bookmark contract', () => {
       anchor: { path: [0, 2], offset: 1 },
       focus: { path: [0, 2], offset: 4 },
     });
-    assert.equal(Editor.string(editor, resolved), 'amm');
+    assert.equal(editorString(editor, resolved), 'amm');
   });
 
   it('fails closed when the bookmarked content is fully deleted', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
       marks: null,
     });
 
-    const bookmark = Editor.bookmark(
+    const bookmark = editorBookmark(
       editor,
       createRange({ path: [1, 0], offset: 1 }, { path: [1, 0], offset: 3 })
     );

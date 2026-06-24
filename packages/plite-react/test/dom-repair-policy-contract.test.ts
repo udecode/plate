@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { Editor } from '@platejs/plite/internal';
+import { replace as editorReplace } from '@platejs/plite/internal';
 import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
@@ -164,7 +164,7 @@ test('native input repair skips already synced local text inside partial DOM roo
   const editor = createReactEditor();
   const root = mountEditorRoot(editor);
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -225,7 +225,7 @@ test('native input repair imports a burst DOM text delta once', () => {
   const originalText = `${prefix}readiness memo`;
   const domText = `${prefix}${burstText}readiness memo`;
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -286,7 +286,7 @@ test('native input repair does not move selection for pathless clicks outside th
   const originalText = 'alpha';
   const domText = 'alphax';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -369,7 +369,7 @@ test('native input repair reconciles captured burst targets against partially sy
   const domText = `${prefix}${burstText}${suffix}`;
   const nextOffset = prefix.length + burstText.length;
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -442,7 +442,7 @@ test('native input repair moves model selection when the captured target still o
   const domText = `${prefix}${burstText}readiness memo`;
   const nextOffset = prefix.length + burstText.length;
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -516,7 +516,7 @@ test('native input repair guards virtualized DOM replacement selectionchanges', 
       state: createEditableInputControllerState(),
     };
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -580,7 +580,7 @@ test('native text repair keeps model authority inside virtualized pages', () => 
     state: createEditableInputControllerState(),
   };
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -644,7 +644,7 @@ test('native text repair keeps same virtualized target DOM-owned', () => {
 
   inputController.state.selectionSource = 'model-owned';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -734,7 +734,7 @@ test('native text repair advances captured virtualized target when DOM offset la
 
   inputController.state.selectionSource = 'model-owned';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -816,7 +816,7 @@ test('native text repair advances captured virtualized target when DOM caret res
   inputController.state.pendingNativeTextInputRepairOffset = nextOffset;
   inputController.state.pendingNativeTextInputRepairPathKey = '0,0';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'heading',
@@ -895,7 +895,7 @@ test('native text repair keeps model authority when synced virtualized DOM caret
   inputController.state.pendingNativeTextInputRepairOffset = 2;
   inputController.state.pendingNativeTextInputRepairPathKey = '0,0';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -976,7 +976,7 @@ test('text insert caret repair keeps model authority in virtualized DOM', () => 
   inputController.state.pendingNativeTextInputRepairOffset = 2;
   inputController.state.pendingNativeTextInputRepairPathKey = '0,0';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1040,7 +1040,7 @@ test('text insert caret repair keeps model authority for projected DOM sync', ()
   inputController.state.pendingNativeTextInputRepairOffset = 2;
   inputController.state.pendingNativeTextInputRepairPathKey = '0,0';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1102,7 +1102,7 @@ test('text insert caret repair keeps existing model authority for plain DOM text
   inputController.state.pendingNativeTextInputRepairOffset = 2;
   inputController.state.pendingNativeTextInputRepairPathKey = '0,0';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1164,7 +1164,7 @@ test('virtualized text insert caret repair ignores stale frame cancellation when
   inputController.state.pendingNativeTextInputRepairOffset = 2;
   inputController.state.pendingNativeTextInputRepairPathKey = '0,0';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1235,7 +1235,7 @@ test('virtualized text insert caret repair corrects model drift back to pending 
   inputController.state.pendingNativeTextInputRepairOffset = 11;
   inputController.state.pendingNativeTextInputRepairPathKey = '0,0';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'heading',
@@ -1296,7 +1296,7 @@ test('native input repair trusts captured coalesced inserts when projected DOM i
   const repairedText = 'This qrmixed';
   const nextOffset = 'This qr'.length;
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1367,7 +1367,7 @@ test('native input repair rebases later captured same-path inserts against repai
   const firstDOMText = 'Xabc';
   const finalDOMText = 'XabcY';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1459,7 +1459,7 @@ test('native input repair does not repair the caret for stale captured targets',
   const liveOffset = prefix.length + capturedBurst.length + liveSuffix.length;
   let scrollCalls = 0;
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1534,7 +1534,7 @@ test('native input repair does not move selection for stale coalesced targets', 
   const capturedOffset = prefix.length + capturedBurst.length;
   let scrollCalls = 0;
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1620,7 +1620,7 @@ test('native input repair replaces expanded model selections and collapses at th
   const originalText = 'This is editable plain text';
   const replacementText = 'foo';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1699,7 +1699,7 @@ test('text insert caret repair waits until rendered text matches the model', () 
     setTimeout: repairSetTimeout,
   } as unknown as Window);
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1774,7 +1774,7 @@ test('deferred native input repair still fixes a stale caret after text already 
 
   inputController.state.selectionSource = 'model-owned';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'heading',
@@ -1854,7 +1854,7 @@ test('virtualized captured input repair moves selection when DOM selection is ro
 
   inputController.state.selectionSource = 'dom-current';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'heading',
@@ -1929,7 +1929,7 @@ test('native input repair prefers live model continuation over stale captured te
 
   inputController.state.selectionSource = 'dom-current';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'heading',
@@ -2009,7 +2009,7 @@ test('deferred native input repair fixes a stale caret after text already synced
 
   inputController.state.selectionSource = 'dom-current';
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'heading',
@@ -2067,7 +2067,7 @@ test('deferred native input repair rechecks a virtualized synced caret after ini
     .spyOn(window, 'setTimeout')
     .mockImplementation(() => 1);
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'heading',

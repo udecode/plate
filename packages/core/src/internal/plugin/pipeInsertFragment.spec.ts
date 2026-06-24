@@ -43,9 +43,6 @@ describe('pipeInsertFragment', () => {
     });
 
     const editor = createParserEditor([firstPlugin, secondPlugin, thirdPlugin]);
-    const insertFragment = mock();
-
-    editor.tf.insertFragment = insertFragment as any;
 
     const fragment: Descendant[] = [
       { children: [{ text: 'hello' }], type: 'p' },
@@ -59,6 +56,6 @@ describe('pipeInsertFragment', () => {
     });
 
     expect(calls).toEqual(['first:1', 'second:1']);
-    expect(insertFragment).toHaveBeenCalledWith(fragment);
+    expect(editor.children).toEqual(fragment);
   });
 });

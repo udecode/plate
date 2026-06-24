@@ -5,7 +5,8 @@ import { jsx } from '../..';
 jsx;
 
 import { ElementApi } from '@platejs/plite';
-import { Editor, getEditorRuntime } from '@platejs/plite/internal';
+import { insertNodes as editorInsertNodes } from '@platejs/plite/internal';
+import { getEditorRuntime } from '@platejs/plite/internal';
 
 export const input = (
   <editor>
@@ -26,7 +27,7 @@ runtime.normalizeNode = (entry) => {
     node.type === 'body'
   ) {
     const child = { type: 'paragraph', children: [] };
-    Editor.insertNodes(editor, child, {
+    editorInsertNodes(editor, child, {
       at: path.concat(0),
       voids: true,
     });

@@ -12,7 +12,12 @@ import {
   NodeApi,
   type Span,
 } from '../interfaces';
-import { Editor } from '../interfaces/editor';
+import {
+  isBlock as editorIsBlock,
+  pathRef as editorPathRef,
+  unhangRange as editorUnhangRange,
+  withoutNormalizing as editorWithoutNormalizing,
+} from '../interfaces/editor';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
 import { matchPath } from '../utils/match-path';
 
@@ -66,7 +71,7 @@ export const removeNodes: NodeMutationMethods['removeNodes'] = (
     }
 
     if (!hanging && !LocationApi.isSpan(at) && LocationApi.isRange(at)) {
-      at = Editor.unhangRange(editor, at, { voids });
+      at = editorUnhangRange(editor, at, { voids });
     }
 
     if (!LocationApi.isSpan(at) && LocationApi.isPath(at)) {
@@ -84,13 +89,13 @@ export const removeNodes: NodeMutationMethods['removeNodes'] = (
       return;
     }
 
-    Editor.withoutNormalizing(editor, () => {
+    editorWithoutNormalizing(editor, () => {
       if (match == null) {
-        match = (n) => NodeApi.isElement(n) && Editor.isBlock(editor, n);
+        match = (n) => NodeApi.isElement(n) && editorIsBlock(editor, n);
       }
 
       const depths = getNodes(editor, { at, match, mode, voids });
-      const pathRefs = Array.from(depths, ([, p]) => Editor.pathRef(editor, p));
+      const pathRefs = Array.from(depths, ([, p]) => editorPathRef(editor, p));
 
       for (const pathRef of pathRefs) {
         const path = pathRef.unref()!;

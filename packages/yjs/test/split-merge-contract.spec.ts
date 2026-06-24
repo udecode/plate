@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { type Descendant } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import {
   clearYjsTrace,
@@ -59,7 +61,7 @@ const createPeers = (ids: readonly ClientId[]): Peer[] =>
   });
 
 const splitThenDeleteBackwardEmptyParagraph = (peer: Peer): void => {
-  const textLength = Editor.string(peer.editor, [0]).length;
+  const textLength = editorString(peer.editor, [0]).length;
 
   peer.editor.update((tx) => {
     tx.selection.set({

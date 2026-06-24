@@ -10,7 +10,12 @@ import type {
   RuntimeId,
 } from '@platejs/plite';
 import { NodeApi, RangeApi } from '@platejs/plite';
-import { Editor, projectRangeInSnapshot } from './editable/runtime-editor-api';
+import {
+  type Editor,
+  projectRangeInSnapshot,
+  getSnapshot as editorGetSnapshot,
+  subscribeSource as editorSubscribeSource,
+} from './editable/runtime-editor-api';
 import { recordPliteReactRender } from './render-profiler';
 
 export type PliteRangeProjection<T = unknown> = {
@@ -605,7 +610,7 @@ export const createPliteProjectionStore = <T>(
   const sourceListeners = new Map<string, Set<() => void>>();
   const refreshListeners = new Set<PliteProjectionRefreshListener>();
   let destroyed = false;
-  const initialSnapshot = Editor.getSnapshot(editor);
+  const initialSnapshot = editorGetSnapshot(editor);
   const initialContext = {
     reason: 'refresh',
     snapshot: initialSnapshot,
@@ -766,7 +771,7 @@ export const createPliteProjectionStore = <T>(
   const unsubscribeEditorSources = getEditorSourcesForDirtiness(
     options.dirtiness
   ).map((editorSource) =>
-    Editor.subscribeSource(
+    editorSubscribeSource(
       editor,
       editorSource,
       (nextSnapshot: EditorSnapshot, change?: EditorCommit) => {
@@ -822,7 +827,7 @@ export const createPliteProjectionStore = <T>(
             reason: refreshOptions.reason ?? 'refresh',
             requiresDOMSelectionExport:
               refreshOptions.requiresDOMSelectionExport,
-            snapshot: Editor.getSnapshot(editor),
+            snapshot: editorGetSnapshot(editor),
           },
         });
       }
@@ -832,7 +837,7 @@ export const createPliteProjectionStore = <T>(
         forceInvalidate: refreshOptions.forceInvalidate,
         reason: refreshOptions.reason ?? 'refresh',
         requiresDOMSelectionExport: refreshOptions.requiresDOMSelectionExport,
-        snapshot: Editor.getSnapshot(editor),
+        snapshot: editorGetSnapshot(editor),
         sourceId: options.sourceId,
       });
     },

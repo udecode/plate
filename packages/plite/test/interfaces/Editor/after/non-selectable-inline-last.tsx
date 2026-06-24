@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { after as editorAfter } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -16,6 +16,6 @@ export const input = (
 );
 
 export const test = (editor) =>
-  Editor.after(editor, { path: [0, 0], offset: 3 });
+  editorAfter(editor, { path: [0, 0], offset: 3 });
 
 export const output = undefined;

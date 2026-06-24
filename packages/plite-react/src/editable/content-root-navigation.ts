@@ -71,7 +71,10 @@ import {
   isPointOnVisualBoundaryLine,
   resolveVerticalNavigationPoint,
 } from './content-root-vertical-geometry';
-import { Editor } from './runtime-editor-api';
+import {
+  after as editorAfter,
+  before as editorBefore,
+} from './runtime-editor-api';
 
 export {
   type ContentRootOwner,
@@ -460,8 +463,8 @@ const getRootLocalHorizontalSelectionTarget = ({
   const rootedPoint = rootPlitePoint(point, root);
   const nextPoint = sourceEditor.read((state) =>
     direction === 'forward'
-      ? Editor.after(sourceEditor, rootedPoint, unit ? { unit } : undefined)
-      : Editor.before(sourceEditor, rootedPoint, unit ? { unit } : undefined)
+      ? editorAfter(sourceEditor, rootedPoint, unit ? { unit } : undefined)
+      : editorBefore(sourceEditor, rootedPoint, unit ? { unit } : undefined)
   );
 
   if (!nextPoint || getPlitePointRoot(nextPoint, root) !== root) {

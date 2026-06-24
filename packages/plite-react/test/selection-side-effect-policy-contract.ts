@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import type { EditorUpdateOptions } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import { replace as editorReplace } from '@platejs/plite/internal';
 
 import { createEditableInputController } from '../src/editable/input-state';
 import { applyEditableRepairRequest } from '../src/editable/mutation-controller';
@@ -44,7 +44,7 @@ test('editable repair request exposes focused profiler buckets', () => {
 const createRemoteSelectionEditor = () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
     selection: {
       anchor: { path: [0, 0], offset: 3 },

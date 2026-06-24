@@ -13,7 +13,11 @@ import type {
   DOMCoverageSelectionPolicy,
 } from '@platejs/plite-dom/internal';
 import { DOMCoverage, IS_COMPOSING } from '@platejs/plite-dom/internal';
-import { Editor } from '../editable/runtime-editor-api';
+import {
+  getSnapshot as editorGetSnapshot,
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  hasPath as editorHasPath,
+} from '../editable/runtime-editor-api';
 
 import { readRuntimeNode } from '../editable/runtime-live-state';
 import { useEditor } from '../hooks/use-editor';
@@ -204,12 +208,12 @@ export const DOMStrategySegmentPlaceholder = React.memo(
         const nodes: Descendant[] = [];
 
         previewRuntimeIds.forEach((runtimeId) => {
-          const snapshot = Editor.getSnapshot(editorValue);
+          const snapshot = editorGetSnapshot(editorValue);
           const path =
-            Editor.getPathByRuntimeId(editorValue, runtimeId) ??
+            editorGetPathByRuntimeId(editorValue, runtimeId) ??
             snapshot.index.idToPath[runtimeId];
 
-          if (!path || !Editor.hasPath(editorValue, path)) {
+          if (!path || !editorHasPath(editorValue, path)) {
             return;
           }
 

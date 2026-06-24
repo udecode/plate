@@ -21,16 +21,43 @@ import { isNormalizing } from './is-normalizing';
 import { node } from './node';
 import { setNormalizing } from './set-normalizing';
 
-const createSerializablePropSignature = (value: unknown): unknown => {
+const createSerializablePropSignature = (
+  value: unknown,
+  seen = new WeakSet<object>()
+): unknown => {
   if (value === null || typeof value !== 'object') {
     return value;
   }
 
   if (Array.isArray(value)) {
-    return ['array', value.length];
+    return [
+      'array',
+      value.map((item) => createSerializablePropSignature(item, seen)),
+    ];
   }
 
-  return ['object', Object.keys(value).sort()];
+  if (seen.has(value)) {
+    return ['object', 'circular'];
+  }
+
+  seen.add(value);
+
+  const signature = [
+    'object',
+    Object.keys(value)
+      .sort()
+      .map((key) => [
+        key,
+        createSerializablePropSignature(
+          (value as Record<string, unknown>)[key],
+          seen
+        ),
+      ]),
+  ];
+
+  seen.delete(value);
+
+  return signature;
 };
 
 export const normalize: EditorStaticApi['normalize'] = (

@@ -1,4 +1,7 @@
-import { Editor } from '@platejs/plite/internal';
+import {
+  above as editorAbove,
+  isBlock as editorIsBlock,
+} from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { ElementApi } from '@platejs/plite';
@@ -18,9 +21,9 @@ const range = {
   focus: { offset: 0, path: [0, 1, 0] },
 };
 export const test = (editor) =>
-  Editor.above(editor, {
+  editorAbove(editor, {
     at: range,
-    match: (n) => ElementApi.isElement(n) && Editor.isBlock(editor, n),
+    match: (n) => ElementApi.isElement(n) && editorIsBlock(editor, n),
   });
 export const output = [
   <block>

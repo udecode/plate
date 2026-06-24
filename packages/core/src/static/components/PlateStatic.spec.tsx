@@ -151,7 +151,9 @@ describe('PlateStatic Memoization', () => {
     render(<PlateStatic editor={editor} />);
 
     // This will mutate the text but also element reference
-    editor.tf.insertText('+');
+    editor.update((tx) => {
+      tx.text.insert('+');
+    });
 
     // Re-render with the updated children
     // (the reference changed as well as the text)

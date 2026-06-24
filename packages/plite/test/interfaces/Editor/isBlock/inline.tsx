@@ -1,4 +1,7 @@
-import { Editor } from '@platejs/plite/internal';
+import {
+  getChildren as editorGetChildren,
+  isBlock as editorIsBlock,
+} from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -15,7 +18,7 @@ export const input = (
   </editor>
 );
 export const test = (editor) => {
-  const inline = Editor.getChildren(editor)[0].children[1];
-  return ElementApi.isElement(inline) && Editor.isBlock(editor, inline);
+  const inline = editorGetChildren(editor)[0].children[1];
+  return ElementApi.isElement(inline) && editorIsBlock(editor, inline);
 };
 export const output = false;

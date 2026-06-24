@@ -21,7 +21,10 @@ import type {
   InputIntent,
 } from '../editable/input-controller';
 import { useRootInteractionController } from '../editable/root-interaction-controller';
-import { Editor } from '../editable/runtime-editor-api';
+import {
+  isVoid as editorIsVoid,
+  isInline as editorIsInline,
+} from '../editable/runtime-editor-api';
 import { useEditableRootRuntime } from '../editable/runtime-root-engine';
 import { readLiveSelection } from '../editable/runtime-selection-state';
 import { useEditor } from '../hooks/use-editor';
@@ -229,7 +232,7 @@ const getEditableDropCursorRect = ({
     !!voidElement ||
     (!!pliteNode &&
       NodeApi.isElement(pliteNode) &&
-      Editor.isVoid(editor, pliteNode));
+      editorIsVoid(editor, pliteNode));
 
   if (!isVoidTarget) {
     return null;
@@ -264,7 +267,7 @@ const getEditableDropCursorRect = ({
     voidElement?.getAttribute('data-plite-inline') === 'true' ||
     (!!pliteNode &&
       NodeApi.isElement(pliteNode) &&
-      Editor.isInline(editor, pliteNode));
+      editorIsInline(editor, pliteNode));
 
   if (!isInlineVoid) {
     const isBefore =

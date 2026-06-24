@@ -65,7 +65,6 @@ import {
 import type { UnionToIntersection } from '@udecode/utils';
 import clsx from 'clsx';
 import { nanoid } from 'nanoid';
-import cloneDeep from 'lodash/cloneDeep.js';
 
 import {
   getStoredCurrentRuntimeTransforms,
@@ -92,26 +91,17 @@ import type {
   ResolvedInputRule,
   ResolvedInputRulesMeta,
 } from '../../lib/plugins/input-rules/types';
-import {
-  type NodeIdOptions,
-  NodeIdPlugin,
-} from '../../lib/plugins/node-id/NodeIdPlugin';
-import { withNodeId } from '../../lib/plugins/node-id/internal/withNodeId';
-import { withBreakRules } from '../../lib/plugins/override/internal/withBreakRules';
-import { withDeleteRules } from '../../lib/plugins/override/internal/withDeleteRules';
-import { withMergeRules } from '../../lib/plugins/override/internal/withMergeRules';
-import { withNormalizeRules } from '../../lib/plugins/override/internal/withNormalizeRules';
+import { NodeIdPlugin } from '../../lib/plugins/node-id/NodeIdPlugin';
 import { withOverrides } from '../../lib/plugins/override/OverridePlugin';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
-import {
-  type QueryNodeEntry,
-  type QueryNodeOptions,
-  queryNode,
-} from '../../lib/utils/queryNode';
+import { type QueryNodeOptions, queryNode } from '../../lib/utils/queryNode';
 import type { PlatePlugin } from '../plugin/PlatePlugin';
 import { EditorHotkeysEffect } from '../components/EditorHotkeysEffect';
 import { createZustandStore } from '../libs/zustand';
 import { PlateStoreProvider, withElementContext } from '../stores';
+import { installRuntimeInputRules } from './runtimeInputRules';
+import { installRuntimeNodeId } from './runtimeNodeId';
+import { installRuntimeParser } from './runtimeParser';
 
 type PlateRuntimeBreakRuleAction =
   | 'default'
@@ -144,13 +134,13 @@ type PlateRuntimeNormalizeRules = {
   removeEmpty?: boolean;
 };
 
-type PlateRuntimeParserOptions = {
+export type PlateRuntimeParserOptions = {
   data: string;
   dataTransfer: DataTransfer;
   mimeType: string;
 };
 
-type PlateRuntimeParser = {
+export type PlateRuntimeParser = {
   format?: string[] | string;
   mimeTypes?: string[];
   deserialize?: (
@@ -170,19 +160,6 @@ type PlateRuntimeParser = {
   ) => Descendant[];
 };
 
-type RuntimeNodeIdRecord = Record<string, unknown> & {
-  _id?: unknown;
-  children?: readonly Descendant[];
-  type?: unknown;
-};
-
-type RuntimeNodeIdEntry = QueryNodeEntry<RuntimeNodeIdRecord>;
-
-type RuntimeNodeIdNormalizeUpdate<V extends Value = Value> = {
-  at: number[];
-  props: Partial<NodeProps<NodeIn<V>>>;
-};
-
 type PlateRuntimeRuleMatch = (
   ctx: RuntimePluginContext & {
     node: unknown;
@@ -191,7 +168,7 @@ type PlateRuntimeRuleMatch = (
   }
 ) => boolean;
 
-type PlateRuntimePlugin = {
+export type PlateRuntimePlugin = {
   key: string;
   __apiExtensions?: unknown[];
   __configuration?:
@@ -530,7 +507,7 @@ type PlateRuntimeCoreTransforms<
   tab: (options: { reverse: boolean }) => boolean;
 };
 
-type PlateRuntimeTransforms<
+export type PlateRuntimeTransforms<
   V extends Value = Value,
   TExtensions extends readonly unknown[] = readonly [],
 > = PlateRuntimeCoreTransforms<V, TExtensions> & Record<string, unknown>;
@@ -639,7 +616,6 @@ const runtimeNavigationFeedbackTimeout = new WeakMap<
   object,
   ReturnType<typeof setTimeout>
 >();
-const runtimeNavigationFeedbackPulse = new WeakMap<object, number>();
 const runtimeNavigationFeedbackAttributes = [
   'data-nav-cycle',
   'data-nav-highlight',
@@ -694,7 +670,7 @@ type RuntimeNavigationStoredTarget = Omit<
   pathRef: PathRef;
 };
 
-type RuntimePluginContext = {
+export type RuntimePluginContext = {
   api: unknown;
   editor: unknown;
   plugin: PlateRuntimePlugin;
@@ -746,10 +722,6 @@ export type PlateRuntimeEditor<
   meta: PlateRuntimeMeta;
   plugins: Record<string, PlateRuntimePlugin>;
   selection: Selection;
-  getPluginApi: (plugin: { key: string }) => Record<string, unknown>;
-  getTransforms: (plugin: {
-    key: string;
-  }) => PlateRuntimeTransforms<V, TExtensions>;
   getChunkSize?: (ancestor: Ancestor) => number | null;
   getInjectProps: (plugin: { key: string }) => PlateRuntimeInjectNodeProps;
   getOption: <T = unknown>(
@@ -2091,19 +2063,6 @@ const resolveRuntimeNavigationTarget = (
   return { ...rest, path };
 };
 
-const nextRuntimeNavigationPulse = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>
-) => {
-  const pulse = (runtimeNavigationFeedbackPulse.get(editor) ?? 0) + 1;
-
-  runtimeNavigationFeedbackPulse.set(editor, pulse);
-
-  return pulse;
-};
-
 const clearRuntimeNavigationTimeout = <
   V extends Value,
   const TExtensions extends readonly unknown[],
@@ -2156,27 +2115,6 @@ const clearRuntimeNavigationElement = <
   element.style.removeProperty('--plate-nav-feedback-duration');
 };
 
-const setRuntimeNavigationElement = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  target: RuntimeNavigationActiveTarget
-) => {
-  const element = getRuntimeNavigationElement(editor, target);
-
-  if (!element) return;
-
-  element.setAttribute('data-nav-cycle', String(target.cycle));
-  element.setAttribute('data-nav-highlight', target.variant);
-  element.setAttribute('data-nav-pulse', String(target.pulse));
-  element.setAttribute('data-nav-target', 'true');
-  element.style.setProperty(
-    '--plate-nav-feedback-duration',
-    `${target.duration}ms`
-  );
-};
-
 const clearRuntimeNavigationFeedbackTarget = <
   V extends Value,
   const TExtensions extends readonly unknown[],
@@ -2202,92 +2140,6 @@ const clearRuntimeNavigationFeedbackTarget = <
   editor.setOption(plugin, 'activeTarget', null);
 
   return true;
-};
-
-const flashRuntimeNavigationTarget = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  plugin: PlateRuntimePlugin,
-  {
-    duration,
-    target,
-    variant = 'navigated',
-  }: {
-    duration?: number;
-    target: RuntimeNavigationTarget;
-    variant?: string;
-  }
-) => {
-  if (!getRuntimeDescendant(editor, target.path)) return false;
-
-  const pulse = nextRuntimeNavigationPulse(editor);
-  const timeoutMs =
-    duration ?? editor.getOption<number>(plugin, 'duration') ?? 800;
-  const previousTarget = editor.getOption<RuntimeNavigationStoredTarget | null>(
-    plugin,
-    'activeTarget'
-  );
-
-  clearRuntimeNavigationTimeout(editor);
-  clearRuntimeNavigationElement(
-    editor,
-    resolveRuntimeNavigationTarget(previousTarget)
-  );
-  previousTarget?.pathRef.unref();
-
-  const activeTarget: RuntimeNavigationStoredTarget = {
-    cycle: (pulse % 2) as 0 | 1,
-    duration: timeoutMs,
-    pathRef: createRuntimePathRef(editor, target.path),
-    pulse,
-    type: target.type,
-    variant,
-  };
-
-  editor.setOption(plugin, 'activeTarget', activeTarget);
-  setRuntimeNavigationElement(
-    editor,
-    resolveRuntimeNavigationTarget(activeTarget) ?? {
-      cycle: activeTarget.cycle,
-      duration: activeTarget.duration,
-      path: target.path,
-      pulse: activeTarget.pulse,
-      type: activeTarget.type,
-      variant: activeTarget.variant,
-    }
-  );
-
-  const timeoutId = setTimeout(() => {
-    clearRuntimeNavigationFeedbackTarget(editor, plugin, pulse);
-  }, timeoutMs);
-
-  runtimeNavigationFeedbackTimeout.set(editor, timeoutId);
-
-  return true;
-};
-
-const getRuntimeNavigationScrollPoint = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  {
-    scrollTarget,
-    select,
-    target,
-  }: {
-    scrollTarget?: Point;
-    select?: Point | Range;
-    target: RuntimeNavigationTarget;
-  }
-): Point | undefined => {
-  if (scrollTarget) return scrollTarget;
-  if (select && 'focus' in select) return select.focus;
-  if (select && 'path' in select) return select;
-
-  return editor.read((state) => state.points.start(target.path));
 };
 
 const getRuntimeBlockPath = <
@@ -2520,7 +2372,7 @@ const getRuntimeMarkBoundaryAffinity = <
   const marksMatchLeaf = (leaf: PliteElement | Text) =>
     !!marks &&
     areRuntimeMarksEqual(getRuntimeNodeProps(leaf), marks) &&
-    Object.keys(marks).length > 1;
+    Object.keys(marks).length > 0;
 
   const [backwardEntry, forwardEntry] = markBoundary;
 
@@ -2920,6 +2772,62 @@ const shouldRuntimePreserveRemovedMergeTarget = <
   getRuntimeNodeText(node).length === 0 &&
   !shouldRuntimeRemoveEmptyMergeTarget(editor, node, path);
 
+const RUNTIME_NORMALIZE_REMOVE_TARGETS = new WeakMap<object, Set<string>>();
+
+const getRuntimeNormalizeRemoveTargetKey = (
+  path: readonly number[],
+  root?: string
+) => `${root ?? '*'}:${path.join('.')}`;
+
+const markRuntimeNormalizeRemoveTarget = (
+  editor: object,
+  path: readonly number[]
+) => {
+  const targets = RUNTIME_NORMALIZE_REMOVE_TARGETS.get(editor) ?? new Set();
+  const key = getRuntimeNormalizeRemoveTargetKey(path);
+
+  targets.add(key);
+  RUNTIME_NORMALIZE_REMOVE_TARGETS.set(editor, targets);
+
+  return () => {
+    targets.delete(key);
+
+    if (targets.size === 0) {
+      RUNTIME_NORMALIZE_REMOVE_TARGETS.delete(editor);
+    }
+  };
+};
+
+const consumeRuntimeNormalizeRemoveTarget = (
+  editor: object,
+  path: readonly number[],
+  root?: string
+) => {
+  const targets = RUNTIME_NORMALIZE_REMOVE_TARGETS.get(editor);
+
+  if (!targets) return false;
+
+  const keys =
+    root === undefined
+      ? [getRuntimeNormalizeRemoveTargetKey(path)]
+      : [
+          getRuntimeNormalizeRemoveTargetKey(path, root),
+          getRuntimeNormalizeRemoveTargetKey(path),
+        ];
+
+  for (const key of keys) {
+    if (targets.delete(key)) {
+      if (targets.size === 0) {
+        RUNTIME_NORMALIZE_REMOVE_TARGETS.delete(editor);
+      }
+
+      return true;
+    }
+  }
+
+  return false;
+};
+
 const getRuntimeMergeNodeProperties = (node: PliteElement) => {
   const { children: _children, ...properties } = node;
 
@@ -3288,303 +3196,6 @@ const getRuntimeNodeIdKey = <
     ? (editor.getOptions<{ idKey?: string }>(NodeIdPlugin).idKey ?? 'id')
     : 'id';
 
-const getRuntimeNodeIdRecord = (node: unknown): RuntimeNodeIdRecord =>
-  node as RuntimeNodeIdRecord;
-
-const toRuntimeNodeIdEntry = (
-  node: unknown,
-  path: number[]
-): RuntimeNodeIdEntry => [getRuntimeNodeIdRecord(node), path];
-
-function* runtimeNodeIdEntries(
-  children: readonly Descendant[],
-  parentPath: number[] = []
-): Generator<RuntimeNodeIdEntry> {
-  for (const [index, child] of children.entries()) {
-    const path = [...parentPath, index];
-    const node = getRuntimeNodeIdRecord(child);
-
-    yield [node, path];
-
-    if (Array.isArray(node.children)) {
-      yield* runtimeNodeIdEntries(node.children, path);
-    }
-  }
-}
-
-const getRuntimeNodeIdQuery = ({
-  allow,
-  exclude,
-  filter = () => true,
-  filterText,
-}: NodeIdOptions): QueryNodeOptions => ({
-  allow,
-  exclude,
-  filter: (entry) => {
-    const props = getRuntimeNodeIdRecord(entry[0]);
-
-    return filter(entry) && (!filterText || props.type !== undefined);
-  },
-});
-
-const collectRuntimeDuplicateCandidateIds = ({
-  disableInsertOverrides,
-  idKey,
-  nodeEntry,
-  query,
-}: {
-  disableInsertOverrides: boolean | undefined;
-  idKey: string;
-  nodeEntry: RuntimeNodeIdEntry;
-  query: QueryNodeOptions;
-}) => {
-  const duplicateCandidateIds = new Set<unknown>();
-
-  const collectNodeIds = (entry: RuntimeNodeIdEntry) => {
-    const [entryNode, path] = entry;
-
-    if (queryNode(entry, query)) {
-      if (entryNode[idKey] !== undefined) {
-        duplicateCandidateIds.add(entryNode[idKey]);
-      }
-
-      if (!disableInsertOverrides && entryNode._id !== undefined) {
-        duplicateCandidateIds.add(entryNode._id);
-      }
-    }
-
-    const children = Array.isArray(entryNode.children)
-      ? entryNode.children
-      : undefined;
-
-    if (!children) return;
-
-    children.forEach((child, index) => {
-      collectNodeIds([getRuntimeNodeIdRecord(child), [...path, index]]);
-    });
-  };
-
-  collectNodeIds(nodeEntry);
-
-  return duplicateCandidateIds;
-};
-
-const collectRuntimeExistingNodeIds = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  {
-    candidateIds,
-    idKey,
-    onDuplicateIdScan,
-    root,
-  }: {
-    candidateIds: Set<unknown>;
-    idKey: string;
-    onDuplicateIdScan?: NodeIdOptions['onDuplicateIdScan'];
-    root?: string;
-  }
-) => {
-  if (candidateIds.size === 0) return new Set<unknown>();
-
-  const existingIds = new Set<unknown>();
-  const start = performance.now();
-  let visitedCount = 0;
-  const rootValue = editor.read((state) =>
-    state.value.root(getRuntimeReadRoot(root))
-  );
-
-  for (const [entryNode] of runtimeNodeIdEntries(rootValue)) {
-    visitedCount += 1;
-
-    const id = entryNode[idKey];
-
-    if (id === undefined || !candidateIds.has(id)) continue;
-
-    existingIds.add(id);
-
-    if (existingIds.size === candidateIds.size) {
-      break;
-    }
-  }
-
-  onDuplicateIdScan?.({
-    candidateCount: candidateIds.size,
-    duration: performance.now() - start,
-    existingCount: existingIds.size,
-    visitedCount,
-  });
-
-  return existingIds;
-};
-
-const hasRuntimeNodeId = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  {
-    id,
-    idKey,
-    root,
-  }: {
-    id: unknown;
-    idKey: string;
-    root?: string;
-  }
-) =>
-  collectRuntimeExistingNodeIds(editor, {
-    candidateIds: new Set([id]),
-    idKey,
-    root,
-  }).has(id);
-
-const normalizeRuntimeNodeIdInsertedNode = (
-  nodeEntry: RuntimeNodeIdEntry,
-  {
-    disableInsertOverrides,
-    existingIds,
-    idCreator,
-    idKey,
-    query,
-  }: {
-    disableInsertOverrides: boolean | undefined;
-    existingIds: Set<unknown>;
-    idCreator: () => unknown;
-    idKey: string;
-    query: QueryNodeOptions;
-  }
-) => {
-  const [entryNode, path] = nodeEntry;
-
-  if (queryNode(nodeEntry, query)) {
-    if (entryNode[idKey] !== undefined && existingIds.has(entryNode[idKey])) {
-      delete entryNode[idKey];
-    }
-
-    if (entryNode[idKey] === undefined) {
-      entryNode[idKey] = idCreator();
-    }
-
-    if (!disableInsertOverrides && entryNode._id !== undefined) {
-      const id = entryNode._id;
-      entryNode._id = undefined;
-
-      if (!existingIds.has(id)) {
-        entryNode[idKey] = id;
-      }
-    }
-  }
-
-  const children = Array.isArray(entryNode.children)
-    ? entryNode.children
-    : undefined;
-
-  if (!children) return;
-
-  children.forEach((child, index) => {
-    normalizeRuntimeNodeIdInsertedNode(
-      [getRuntimeNodeIdRecord(child), [...path, index]],
-      {
-        disableInsertOverrides,
-        existingIds,
-        idCreator,
-        idKey,
-        query,
-      }
-    );
-  });
-};
-
-const shouldAssignRuntimeNodeId = (
-  entry: RuntimeNodeIdEntry,
-  options: NodeIdOptions & {
-    isBlock: (node: Descendant) => boolean;
-  }
-) => {
-  const {
-    allow,
-    exclude,
-    filter = () => true,
-    filterInline = true,
-    filterText = true,
-    idKey = 'id',
-    isBlock,
-  } = options;
-  const [node] = entry;
-
-  return (
-    !node[idKey] &&
-    queryNode(entry, {
-      allow,
-      exclude,
-      filter: (nextEntry) => {
-        const [entryNode] = nextEntry;
-
-        if (filterText && !ElementApi.isElement(entryNode)) {
-          return false;
-        }
-        if (
-          filterInline &&
-          ElementApi.isElement(entryNode) &&
-          !isBlock(entryNode)
-        ) {
-          return false;
-        }
-
-        return filter(nextEntry);
-      },
-    })
-  );
-};
-
-const createRuntimeNodeIdProps = <V extends Value>(
-  idKey: string,
-  id: unknown
-): Partial<NodeProps<NodeIn<V>>> =>
-  ({ [idKey]: id }) as Partial<NodeProps<NodeIn<V>>>;
-
-const collectRuntimeNodeIdNormalizeUpdates = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  options: NodeIdOptions
-): RuntimeNodeIdNormalizeUpdate<V>[] => {
-  const { idCreator = () => nanoid(10), idKey = 'id' } = options;
-  const updates: RuntimeNodeIdNormalizeUpdate<V>[] = [];
-  const rootValue = editor.read((state) => state.value.root());
-
-  const visit = (node: Descendant, path: number[]) => {
-    const entry = toRuntimeNodeIdEntry(node, path);
-
-    if (
-      shouldAssignRuntimeNodeId(entry, {
-        ...options,
-        isBlock: (node) => isRuntimeBlockElement(editor, node),
-      })
-    ) {
-      updates.push({
-        at: path,
-        props: createRuntimeNodeIdProps(idKey, idCreator()),
-      });
-    }
-
-    if (!ElementApi.isElement(node)) return;
-
-    node.children.forEach((child, index) => {
-      visit(child as Descendant, [...path, index]);
-    });
-  };
-
-  rootValue.forEach((node, index) => {
-    visit(node as Descendant, [index]);
-  });
-
-  return updates;
-};
-
 const scheduleRuntimeScroll = (fn: () => void) => {
   if (typeof requestAnimationFrame === 'function') {
     requestAnimationFrame(fn);
@@ -3730,7 +3341,7 @@ const isRuntimeElementStateEmpty = <
   });
 };
 
-const installPlateRuntimeCompatibilityBridge = <
+const installPlateRuntimeEditorSurface = <
   V extends Value,
   const TExtensions extends readonly unknown[],
   P extends PlateRuntimePluginInput,
@@ -3738,10 +3349,10 @@ const installPlateRuntimeCompatibilityBridge = <
   editor: PlateRuntimeEditor<V, TExtensions, P>
 ) => {
   const api = editor.api as Record<string, any>;
-  const compatApi: Record<string, any> = {};
+  const runtimeApi: Record<string, any> = {};
   const tf = getPlateRuntimeTransforms(editor) as Record<string, any>;
   const setApi = (key: string, value: (...args: any[]) => unknown) => {
-    compatApi[key] = api[key] ?? value;
+    runtimeApi[key] = api[key] ?? value;
   };
   const setTf = (key: string, value: (...args: any[]) => unknown) => {
     tf[key] ??= value;
@@ -4060,6 +3671,7 @@ const installPlateRuntimeCompatibilityBridge = <
 
     return !!selection && RangeApi.isExpanded(selection);
   });
+  setApi('isComposing', () => editor.dom.composing === true);
   setApi('isInline', (element: PliteElement) =>
     editor.read((state) => state.schema.isInline(element))
   );
@@ -4094,7 +3706,7 @@ const installPlateRuntimeCompatibilityBridge = <
   setApi('nodesRange', (nodes: NodeEntry[]) => {
     if (nodes.length === 0) return;
 
-    return compatApi.range(nodes[0][1], nodes.at(-1)![1]);
+    return runtimeApi.range(nodes[0][1], nodes.at(-1)![1]);
   });
   setApi('pathRef', (path: number[]) => createRuntimePathRef(editor, path));
   setApi('pointRef', (point: Point, options = {}) =>
@@ -4163,8 +3775,8 @@ const installPlateRuntimeCompatibilityBridge = <
 
   editor.extend(
     defineEditorExtension({
-      api: compatApi,
-      name: 'plate:runtime-compat-api',
+      api: runtimeApi,
+      name: 'plate:runtime-api',
     })
   );
 
@@ -4531,6 +4143,11 @@ const installRuntimeOverrideMergeRules = <
               isRuntimeElementNode(operation.node) &&
               operation.node.children.length > 0 &&
               operation.path.length > 0 &&
+              !consumeRuntimeNormalizeRemoveTarget(
+                editor,
+                operation.path,
+                operation.root
+              ) &&
               shouldRuntimePreserveRemovedMergeTarget(
                 editor,
                 operation.node,
@@ -4635,7 +4252,14 @@ const installRuntimeOverrideNormalizeRules = <
           getRuntimeNodeText(node).length === 0 &&
           shouldRuntimeRemoveEmptyNormalizeTarget(editor, node, path)
         ) {
-          tx.nodes.remove({ at: path });
+          const cleanup = markRuntimeNormalizeRemoveTarget(editor, path);
+
+          try {
+            tx.nodes.remove({ at: path });
+          } finally {
+            cleanup();
+          }
+
           return;
         }
 
@@ -4765,10 +4389,6 @@ const getRuntimeSetSelectionRange = <
   return RangeApi.isRange(candidate) ? candidate : null;
 };
 
-const hasRuntimePluginTx = (plugin: PlateRuntimePlugin) =>
-  Object.keys(plugin.tx ?? {}).length > 0 ||
-  (plugin.__txExtensions?.length ?? 0) > 0;
-
 const RUNTIME_SINGLE_LINE_BREAK_RE = /[\r\n\u2028\u2029]/;
 
 const RUNTIME_SINGLE_LINE_BREAK_GLOBAL_RE = /[\r\n\u2028\u2029]/g;
@@ -4783,7 +4403,7 @@ const RUNTIME_LIST_RESTART_POLITE_KEY = 'listRestartPolite';
 const RUNTIME_LIST_START_KEY = 'listStart';
 const RUNTIME_LIST_STYLE_TYPE_KEY = 'listStyleType';
 const RUNTIME_LIST_TODO_STYLE_TYPE = 'todo';
-const RUNTIME_CLASSIC_TODO_LIST_KEY = 'action_item';
+const RUNTIME_HEADING_KEYS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'] as const;
 const RUNTIME_UNORDERED_LIST_STYLE_TYPES = new Set([
   'circle',
   'disc',
@@ -6198,6 +5818,21 @@ type RuntimeListMutationTx<V extends Value> = {
   nodes: Pick<EditorUpdateTransaction<V>['nodes'], 'set' | 'unset'>;
 };
 
+type RuntimeListTypeResolver = {
+  getType: (pluginKey: string) => string;
+};
+
+type RuntimeListSiblingNode = PliteElement | Text;
+
+type RuntimeListSiblingOptions = {
+  getNextEntry?: (
+    entry: NodeEntry<RuntimeListSiblingNode>
+  ) => NodeEntry<PliteElement> | undefined;
+  getPreviousEntry?: (
+    entry: NodeEntry<RuntimeListSiblingNode>
+  ) => NodeEntry<PliteElement> | undefined;
+};
+
 const isRuntimeListElement = (node: unknown): node is RuntimeListElement =>
   isRuntimeElementNode(node) &&
   (node as RuntimeListElement)[RUNTIME_LIST_STYLE_TYPE_KEY] !== undefined;
@@ -6236,6 +5871,23 @@ const getRuntimePreviousSiblingElement = <
   return [previousNode, previousPath];
 };
 
+const getRuntimePreviousListSiblingElement = <
+  V extends Value,
+  const TExtensions extends readonly unknown[],
+>(
+  editor: PlateRuntimeEditor<V, TExtensions>,
+  entry: NodeEntry<RuntimeListSiblingNode>,
+  options?: RuntimeListSiblingOptions
+): NodeEntry<PliteElement> | undefined => {
+  const customEntry = options?.getPreviousEntry?.(entry);
+
+  if (customEntry && isRuntimeElementNode(customEntry[0])) {
+    return customEntry;
+  }
+
+  return getRuntimePreviousSiblingElement(editor, entry[1]);
+};
+
 const getRuntimeNextSiblingElement = <
   V extends Value,
   const TExtensions extends readonly unknown[],
@@ -6251,28 +5903,88 @@ const getRuntimeNextSiblingElement = <
   return [nextNode, nextPath];
 };
 
+const getRuntimeNextListSiblingElement = <
+  V extends Value,
+  const TExtensions extends readonly unknown[],
+>(
+  editor: PlateRuntimeEditor<V, TExtensions>,
+  entry: NodeEntry<RuntimeListSiblingNode>,
+  options?: RuntimeListSiblingOptions
+): NodeEntry<PliteElement> | undefined => {
+  const customEntry = options?.getNextEntry?.(entry);
+
+  if (customEntry && isRuntimeElementNode(customEntry[0])) {
+    return customEntry;
+  }
+
+  return getRuntimeNextSiblingElement(editor, entry[1]);
+};
+
 const isRuntimeSameListSequence = (
+  editor: RuntimeListTypeResolver,
   current: RuntimeListElement,
   sibling: RuntimeListElement
 ) =>
   sibling[RUNTIME_LIST_STYLE_TYPE_KEY] ===
     current[RUNTIME_LIST_STYLE_TYPE_KEY] &&
-  getRuntimeListIndent(sibling) === getRuntimeListIndent(current);
+  isRuntimeHeadingListNode(editor, sibling) ===
+    isRuntimeHeadingListNode(editor, current);
+
+const isRuntimeHeadingListNode = (
+  editor: RuntimeListTypeResolver,
+  node: RuntimeListElement
+) => {
+  const type = node.type;
+
+  return (
+    typeof type === 'string' &&
+    RUNTIME_HEADING_KEYS.some(
+      (headingKey) => type === editor.getType(headingKey)
+    )
+  );
+};
+
+const isRuntimeListSequenceBoundary = (
+  editor: RuntimeListTypeResolver,
+  current: RuntimeListElement,
+  sibling: RuntimeListElement
+) =>
+  getRuntimeListIndent(sibling) === getRuntimeListIndent(current) &&
+  sibling[RUNTIME_LIST_STYLE_TYPE_KEY] ===
+    current[RUNTIME_LIST_STYLE_TYPE_KEY] &&
+  isRuntimeHeadingListNode(editor, sibling) !==
+    isRuntimeHeadingListNode(editor, current);
 
 const getRuntimePreviousListEntry = <
   V extends Value,
   const TExtensions extends readonly unknown[],
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
-  entry: NodeEntry<RuntimeListElement>
+  entry: NodeEntry<RuntimeListElement>,
+  options?: RuntimeListSiblingOptions
 ): NodeEntry<RuntimeListElement> | undefined => {
-  const previous = getRuntimePreviousSiblingElement(editor, entry[1]);
+  let previous = getRuntimePreviousListSiblingElement(editor, entry, options);
 
-  if (!previous || !isRuntimeListElement(previous[0])) return;
+  while (previous && isRuntimeElementNode(previous[0])) {
+    const previousNode = previous[0] as RuntimeListElement;
+    const previousIndent = getRuntimeListIndent(previousNode);
+    const currentIndent = getRuntimeListIndent(entry[0]);
 
-  return isRuntimeSameListSequence(entry[0], previous[0])
-    ? (previous as NodeEntry<RuntimeListElement>)
-    : undefined;
+    if (previousIndent < currentIndent) return;
+    if (
+      isRuntimeListElement(previousNode) &&
+      isRuntimeListSequenceBoundary(editor, entry[0], previousNode)
+    )
+      return;
+    if (
+      isRuntimeListElement(previousNode) &&
+      previousIndent === currentIndent &&
+      isRuntimeSameListSequence(editor, entry[0], previousNode)
+    )
+      return previous as NodeEntry<RuntimeListElement>;
+
+    previous = getRuntimePreviousListSiblingElement(editor, previous, options);
+  }
 };
 
 const getRuntimePreviousIndentedListEntry = <
@@ -6280,15 +5992,22 @@ const getRuntimePreviousIndentedListEntry = <
   const TExtensions extends readonly unknown[],
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
-  entry: NodeEntry<RuntimeListElement>
+  entry: NodeEntry<RuntimeListElement>,
+  options?: RuntimeListSiblingOptions
 ): NodeEntry<RuntimeListElement> | undefined => {
-  const previous = getRuntimePreviousSiblingElement(editor, entry[1]);
+  let previous = getRuntimePreviousListSiblingElement(editor, entry, options);
 
-  if (!previous || !isRuntimeListElement(previous[0])) return;
+  while (previous && isRuntimeListElement(previous[0])) {
+    const previousIndent = getRuntimeListIndent(previous[0]);
+    const currentIndent = getRuntimeListIndent(entry[0]);
 
-  return getRuntimeListIndent(previous[0]) === getRuntimeListIndent(entry[0])
-    ? (previous as NodeEntry<RuntimeListElement>)
-    : undefined;
+    if (previousIndent < currentIndent) return;
+    if (previousIndent === currentIndent) {
+      return previous as NodeEntry<RuntimeListElement>;
+    }
+
+    previous = getRuntimePreviousListSiblingElement(editor, previous, options);
+  }
 };
 
 const getRuntimeExpectedListStart = (
@@ -6321,7 +6040,8 @@ const normalizeRuntimeListEntry = <
 >(
   tx: RuntimeListMutationTx<V>,
   editor: PlateRuntimeEditor<V, TExtensions>,
-  entry: NodeEntry<PliteElement>
+  entry: NodeEntry<PliteElement>,
+  options?: RuntimeListSiblingOptions
 ) => {
   const [node, path] = entry;
 
@@ -6341,10 +6061,11 @@ const normalizeRuntimeListEntry = <
 
   if (!isRuntimeListElement(listNode)) return false;
 
-  const previousIndented = getRuntimePreviousIndentedListEntry(editor, [
-    listNode,
-    path,
-  ]);
+  const previousIndented = getRuntimePreviousIndentedListEntry(
+    editor,
+    [listNode, path],
+    options
+  );
 
   if (
     listNode.listStyleType === 'lower-roman' &&
@@ -6380,7 +6101,11 @@ const normalizeRuntimeListEntry = <
     return false;
   }
 
-  const previous = getRuntimePreviousListEntry(editor, [listNode, path]);
+  const previous = getRuntimePreviousListEntry(
+    editor,
+    [listNode, path],
+    options
+  );
   const expectedListStart = getRuntimeExpectedListStart(
     [listNode, path],
     previous
@@ -6407,7 +6132,8 @@ const normalizeRuntimeListFromPath = <
   const TExtensions extends readonly unknown[],
 >(
   editor: PlateRuntimeEditor<V, TExtensions>,
-  path: number[]
+  path: number[],
+  options?: RuntimeListSiblingOptions
 ) => {
   let currentPath = path;
 
@@ -6419,15 +6145,23 @@ const normalizeRuntimeListFromPath = <
     );
 
     if (entry && !isRuntimeListElement(entry[0])) {
-      entry = getRuntimeNextSiblingElement(editor, currentPath);
+      entry = getRuntimeNextListSiblingElement(
+        editor,
+        [entry[0], currentPath],
+        options
+      );
     }
 
     while (entry && isRuntimeListElement(entry[0])) {
-      const normalized = normalizeRuntimeListEntry(tx, editor, entry);
+      const normalized = normalizeRuntimeListEntry(tx, editor, entry, options);
 
       if (normalized) break;
 
-      const nextEntry = getRuntimeNextSiblingElement(editor, entry[1]);
+      const nextEntry = getRuntimeNextListSiblingElement(
+        editor,
+        entry,
+        options
+      );
 
       if (!nextEntry || !isRuntimeListElement(nextEntry[0])) break;
 
@@ -6467,16 +6201,22 @@ const installRuntimeList = <
 
   const previousInsertBreak = getPlateRuntimeTransforms(editor).insertBreak;
   const previousResetBlock = getPlateRuntimeTransforms(editor).resetBlock;
+  const getRuntimeListSiblingOptions = () =>
+    plugin.options?.getSiblingListOptions as
+      | RuntimeListSiblingOptions
+      | undefined;
   const extension = defineEditorExtension({
     name: 'plate:list:runtime',
     normalizers: {
       node({ entry, next, tx }) {
         if (
           ElementApi.isElement(entry[0]) &&
-          normalizeRuntimeListEntry(tx, editor, [
-            entry[0] as PliteElement,
-            entry[1],
-          ])
+          normalizeRuntimeListEntry(
+            tx,
+            editor,
+            [entry[0] as PliteElement, entry[1]],
+            getRuntimeListSiblingOptions()
+          )
         )
           return;
 
@@ -6490,7 +6230,11 @@ const installRuntimeList = <
         next(operation);
 
         affectedPaths.forEach((path) => {
-          normalizeRuntimeListFromPath(editor, path);
+          normalizeRuntimeListFromPath(
+            editor,
+            path,
+            getRuntimeListSiblingOptions()
+          );
         });
       },
     },
@@ -8200,378 +7944,6 @@ const installRuntimeNavigationFeedback = <
       },
     },
   }) as Record<string, unknown>;
-  plugin.runtimeTransforms = mergePlugins(plugin.runtimeTransforms ?? {}, {
-    navigation: {
-      clear: () => clearRuntimeNavigationFeedbackTarget(editor, plugin),
-      flashTarget: (
-        options: Parameters<typeof flashRuntimeNavigationTarget>[2]
-      ) => flashRuntimeNavigationTarget(editor, plugin, options),
-      navigate: ({
-        flash,
-        focus = true,
-        scroll = true,
-        scrollTarget,
-        select,
-        target,
-      }: {
-        flash?: false | { duration?: number; variant?: string };
-        focus?: boolean;
-        scroll?: boolean;
-        scrollTarget?: Point;
-        select?: Point | Range;
-        target: RuntimeNavigationTarget;
-      }) => {
-        if (!getRuntimeDescendant(editor, target.path)) return false;
-
-        if (select) {
-          getPlateRuntimeTransforms(editor).select(
-            'focus' in select ? select : { anchor: select, focus: select }
-          );
-        }
-
-        if (focus) {
-          getPlateRuntimeTransforms(editor).focus();
-        }
-
-        if (scroll) {
-          const point = getRuntimeNavigationScrollPoint(editor, {
-            scrollTarget,
-            select,
-            target,
-          });
-          const scrollIntoView = (
-            editor.api as unknown as PlateRuntimeScrollApi
-          ).scrollIntoView;
-
-          if (point && typeof scrollIntoView === 'function') {
-            scrollIntoView(point);
-          }
-        }
-
-        if (flash !== false) {
-          flashRuntimeNavigationTarget(editor, plugin, {
-            duration: flash?.duration,
-            target,
-            variant: flash?.variant,
-          });
-        }
-
-        return true;
-      },
-    },
-  }) as PlateRuntimeTransforms;
-};
-
-const createRuntimeCachedGetter = <TValue>(compute: () => TValue) => {
-  let hasValue = false;
-  let value: TValue;
-
-  return () => {
-    if (!hasValue) {
-      value = compute();
-      hasValue = true;
-    }
-
-    return value;
-  };
-};
-
-type RuntimeInputRuleSelectionContext<
-  V extends Value,
-  TExtensions extends readonly unknown[],
-> = {
-  editor: PlateRuntimeEditor<V, TExtensions>;
-  getBlockEntry: () => NodeEntry<PliteElement> | undefined;
-  getBlockStartRange: () => Range | undefined;
-  getBlockStartText: () => string | undefined;
-  getBlockTextBeforeSelection: () => string;
-  getCharAfter: () => string | undefined;
-  getCharBefore: () => string | undefined;
-  isCollapsed: boolean;
-  pluginKey: string;
-};
-
-type RuntimeInsertBreakInputRuleContext<
-  V extends Value,
-  TExtensions extends readonly unknown[],
-> = RuntimeInputRuleSelectionContext<V, TExtensions> & {
-  cause: 'insertBreak';
-  insertBreak: () => void;
-};
-
-type RuntimeInsertDataInputRuleContext<
-  V extends Value,
-  TExtensions extends readonly unknown[],
-> = RuntimeInputRuleSelectionContext<V, TExtensions> & {
-  cause: 'insertData';
-  data: DataTransfer;
-  insertData: (data: DataTransfer) => void;
-  text: string | null;
-};
-
-type RuntimeInsertTextInputRuleContext<
-  V extends Value,
-  TExtensions extends readonly unknown[],
-> = RuntimeInputRuleSelectionContext<V, TExtensions> & {
-  cause: 'insertText';
-  insertText: (
-    text: string,
-    options?: TextInsertTextOptions & { marks?: boolean }
-  ) => void;
-  options?: TextInsertTextOptions & { marks?: boolean };
-  text: string;
-};
-
-type RuntimeInputRule<TContext> = {
-  apply: (context: TContext, match: unknown) => boolean | void;
-  enabled?: (context: TContext) => boolean;
-  resolve?: (context: TContext) => unknown;
-};
-
-const createRuntimeInputRuleSelectionContext = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  pluginKey: string
-): RuntimeInputRuleSelectionContext<V, TExtensions> => {
-  const selection = editor.read((state) => state.selection.get());
-  const isCollapsed = !!selection && RangeApi.isCollapsed(selection);
-  const getBlockPath = createRuntimeCachedGetter(() =>
-    selection ? getRuntimeBlockPath(editor, selection) : undefined
-  );
-  const getBlockEntry = createRuntimeCachedGetter(() => {
-    const path = getBlockPath();
-
-    if (!path) return;
-
-    const node = getRuntimeDescendant(editor, path);
-
-    return isRuntimeElementNode(node)
-      ? ([node as PliteElement, path] as NodeEntry<PliteElement>)
-      : undefined;
-  });
-  const getBlockStartRange = createRuntimeCachedGetter(() => {
-    const path = getBlockPath();
-
-    if (!selection || !path) return;
-
-    const focus = RangeApi.start(selection);
-    const anchor = editor.read((state) => state.points.start(path));
-
-    return { anchor, focus };
-  });
-  const getBlockStartText = createRuntimeCachedGetter(() => {
-    const range = getBlockStartRange();
-
-    return range ? editor.read((state) => state.text.string(range)) : undefined;
-  });
-
-  return {
-    editor,
-    getBlockEntry,
-    getBlockStartRange,
-    getBlockStartText,
-    getBlockTextBeforeSelection: createRuntimeCachedGetter(
-      () => getBlockStartText() ?? ''
-    ),
-    getCharAfter: createRuntimeCachedGetter(() => {
-      if (!selection || !isCollapsed) return;
-
-      const afterPoint = editor.read((state) =>
-        state.points.after(selection, { distance: 1, unit: 'character' })
-      );
-
-      if (!afterPoint) return;
-
-      return (
-        editor.read((state) =>
-          state.text.string({ anchor: selection.anchor, focus: afterPoint })
-        ) || undefined
-      );
-    }),
-    getCharBefore: createRuntimeCachedGetter(() => {
-      if (!selection || !isCollapsed) return;
-
-      const beforePoint = editor.read((state) =>
-        state.points.before(selection, { distance: 1, unit: 'character' })
-      );
-
-      if (!beforePoint) return;
-
-      return (
-        editor.read((state) =>
-          state.text.string({ anchor: beforePoint, focus: selection.anchor })
-        ) || undefined
-      );
-    }),
-    isCollapsed,
-    pluginKey,
-  };
-};
-
-const isRuntimeInputRuleTriggerMatch = (
-  trigger: readonly string[] | string,
-  text: string
-) => (Array.isArray(trigger) ? trigger.includes(text) : trigger === text);
-
-const asRuntimeInputRule = <TContext>(
-  rule: ResolvedInputRule
-): RuntimeInputRule<TContext> => rule as unknown as RuntimeInputRule<TContext>;
-
-const runRuntimeInputRule = <TContext>(
-  rule: ResolvedInputRule,
-  context: TContext
-) => {
-  const runtimeRule = asRuntimeInputRule<TContext>(rule);
-
-  if (runtimeRule.enabled?.(context) === false) return false;
-
-  const match = runtimeRule.resolve ? runtimeRule.resolve(context) : true;
-
-  if (match === undefined) return false;
-
-  return runtimeRule.apply(context, match) !== false;
-};
-
-const executeRuntimeInputRulesInsertBreak = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  insertBreak: () => boolean | void
-) => {
-  for (const rule of editor.meta.inputRules.insertBreak) {
-    const context: RuntimeInsertBreakInputRuleContext<V, TExtensions> = {
-      cause: 'insertBreak',
-      insertBreak: () => {
-        insertBreak();
-      },
-      ...createRuntimeInputRuleSelectionContext(editor, rule.pluginKey),
-    };
-
-    if (runRuntimeInputRule(rule, context)) return true;
-  }
-
-  return false;
-};
-
-const executeRuntimeInputRulesInsertData = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  data: DataTransfer,
-  insertData: (data: DataTransfer) => boolean | void
-) => {
-  const text = data.getData('text/plain') || null;
-
-  for (const rule of editor.meta.inputRules.insertData) {
-    const context: RuntimeInsertDataInputRuleContext<V, TExtensions> = {
-      cause: 'insertData',
-      data,
-      insertData: (nextData) => {
-        insertData(nextData);
-      },
-      text,
-      ...createRuntimeInputRuleSelectionContext(editor, rule.pluginKey),
-    };
-
-    if (
-      rule.mimeTypes &&
-      rule.mimeTypes.length > 0 &&
-      !rule.mimeTypes.some((type) => !!context.data.getData(type))
-    ) {
-      continue;
-    }
-
-    if (runRuntimeInputRule(rule, context)) return true;
-  }
-
-  return false;
-};
-
-const executeRuntimeInputRulesInsertText = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  text: string,
-  options: (TextInsertTextOptions & { marks?: boolean }) | undefined,
-  insertText: (
-    text: string,
-    options?: TextInsertTextOptions & { marks?: boolean }
-  ) => boolean | void
-) => {
-  const rules = editor.meta.inputRules.insertText.byTrigger[text] ?? [];
-
-  for (const rule of rules) {
-    if (!isRuntimeInputRuleTriggerMatch(rule.trigger, text)) continue;
-
-    const context: RuntimeInsertTextInputRuleContext<V, TExtensions> = {
-      cause: 'insertText',
-      insertText: (nextText, nextOptions) => {
-        insertText(nextText, nextOptions);
-      },
-      options,
-      text,
-      ...createRuntimeInputRuleSelectionContext(editor, rule.pluginKey),
-    };
-
-    if (runRuntimeInputRule(rule, context)) return true;
-  }
-
-  return false;
-};
-
-const installRuntimeInputRules = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  plugin: PlateRuntimePlugin
-) => {
-  if (!plugin.runtimeInputRules) return;
-
-  const previousInsertBreak = getPlateRuntimeTransforms(editor).insertBreak;
-  const previousInsertData = getPlateRuntimeTransforms(editor).insertData;
-  const previousInsertText = getPlateRuntimeTransforms(editor).insertText;
-
-  plugin.runtimeTransforms = mergePlugins(plugin.runtimeTransforms ?? {}, {
-    insertBreak: () => {
-      if (executeRuntimeInputRulesInsertBreak(editor, previousInsertBreak)) {
-        return true;
-      }
-
-      return previousInsertBreak();
-    },
-    insertData: (data: DataTransfer) => {
-      if (
-        executeRuntimeInputRulesInsertData(editor, data, previousInsertData)
-      ) {
-        return true;
-      }
-
-      return previousInsertData(data);
-    },
-    insertText: (
-      text: string,
-      options?: TextInsertTextOptions & { marks?: boolean }
-    ) => {
-      if (
-        executeRuntimeInputRulesInsertText(
-          editor,
-          text,
-          options,
-          previousInsertText
-        )
-      ) {
-        return true;
-      }
-
-      return previousInsertText(text, options);
-    },
-  }) as PlateRuntimeTransforms;
 };
 
 const installRuntimeLength = <
@@ -8591,10 +7963,9 @@ const installRuntimeLength = <
           apply({ operation, next }) {
             next(operation);
 
-            const maxLength = editor.getOption<number | undefined>(
-              plugin,
-              'maxLength'
-            );
+            const maxLength = (
+              editor.getOptions(plugin) as { maxLength?: number } | undefined
+            )?.maxLength;
 
             if (!maxLength) return;
 
@@ -8641,143 +8012,6 @@ const installRuntimeChunking = <
     (isDefaultQuery ? ancestor === editor : query?.(ancestor))
       ? chunkSize
       : null;
-};
-
-const installRuntimeNodeId = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  plugin: PlateRuntimePlugin
-) => {
-  if (!plugin.runtimeNodeId) return;
-
-  plugin.runtimeTransforms = mergePlugins(plugin.runtimeTransforms ?? {}, {
-    nodeId: {
-      normalize: () => {
-        const updates = collectRuntimeNodeIdNormalizeUpdates(
-          editor,
-          (plugin.options ?? {}) as NodeIdOptions
-        );
-
-        if (updates.length === 0) return;
-
-        editor.update(
-          (tx) => {
-            updates.forEach(({ at, props }) => {
-              tx.nodes.set(props, { at });
-            });
-          },
-          { metadata: { history: { mode: 'skip' } }, skipNormalize: true }
-        );
-      },
-    },
-  }) as PlateRuntimeTransforms;
-
-  const extension = defineEditorExtension({
-    name: 'plate:node-id:runtime',
-    setup() {
-      return {
-        operations: {
-          apply({ operation, next }) {
-            const {
-              disableInsertOverrides,
-              idCreator = () => nanoid(10),
-              idKey = 'id',
-              reuseId,
-            } = (plugin.options ?? {}) as NodeIdOptions;
-            const query = getRuntimeNodeIdQuery(
-              (plugin.options ?? {}) as NodeIdOptions
-            );
-
-            if (operation.type === 'insert_node') {
-              const node = cloneDeep(operation.node) as Descendant;
-              const candidateIds = collectRuntimeDuplicateCandidateIds({
-                disableInsertOverrides,
-                idKey,
-                nodeEntry: toRuntimeNodeIdEntry(node, operation.path),
-                query,
-              });
-              const existingIds = collectRuntimeExistingNodeIds(editor, {
-                candidateIds,
-                idKey,
-                onDuplicateIdScan: ((plugin.options ?? {}) as NodeIdOptions)
-                  .onDuplicateIdScan,
-                root: operation.root,
-              });
-
-              normalizeRuntimeNodeIdInsertedNode(
-                toRuntimeNodeIdEntry(node, operation.path),
-                {
-                  disableInsertOverrides,
-                  existingIds,
-                  idCreator,
-                  idKey,
-                  query,
-                }
-              );
-
-              next({
-                ...operation,
-                node,
-              });
-              return;
-            }
-
-            if (operation.type === 'split_node') {
-              const props = getRuntimeNodeIdRecord(operation.properties);
-              let id = props[idKey];
-
-              if (
-                queryNode(
-                  toRuntimeNodeIdEntry(operation.properties, operation.path),
-                  query
-                )
-              ) {
-                if (
-                  !reuseId ||
-                  id === undefined ||
-                  hasRuntimeNodeId(editor, {
-                    id,
-                    idKey,
-                    root: operation.root,
-                  })
-                ) {
-                  id = idCreator();
-                }
-
-                next({
-                  ...operation,
-                  properties: {
-                    ...operation.properties,
-                    [idKey]: id,
-                  },
-                });
-                return;
-              }
-
-              if (id !== undefined) {
-                const properties = { ...operation.properties };
-
-                delete getRuntimeNodeIdRecord(properties)[idKey];
-
-                next({
-                  ...operation,
-                  properties,
-                });
-                return;
-              }
-            }
-
-            next(operation);
-          },
-        },
-      };
-    },
-  });
-
-  plugin.runtimeNodeIdCleanup = editor.extend(extension);
-  plugin.runtimeNodeIdExtension = extension;
 };
 
 const installRuntimeAffinity = <
@@ -8944,229 +8178,6 @@ const installRuntimeAffinity = <
       }
 
       return previousMove(options);
-    },
-  }) as PlateRuntimeTransforms;
-};
-
-const getRuntimeParserMimeTypes = (parser: PlateRuntimeParser): string[] => {
-  if (parser.mimeTypes) return parser.mimeTypes;
-
-  const formats = Array.isArray(parser.format)
-    ? parser.format
-    : parser.format
-      ? [parser.format]
-      : [];
-
-  return formats.map((format) =>
-    format.includes('/') ? format : `text/${format}`
-  );
-};
-
-const getRuntimeInjectedParserPlugins = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  plugin: PlateRuntimePlugin
-): PlateRuntimePlugin[] => {
-  const injectedPlugins: PlateRuntimePlugin[] = [];
-
-  [...editor.meta.pluginList].reverse().forEach((candidate) => {
-    const injectedPlugin = candidate.inject?.plugins?.[plugin.key];
-
-    if (injectedPlugin) {
-      injectedPlugins.push({
-        ...plugin,
-        ...injectedPlugin,
-        key: injectedPlugin.key ?? plugin.key,
-      } as PlateRuntimePlugin);
-    }
-  });
-
-  return [plugin, ...injectedPlugins];
-};
-
-const createRuntimeParserContext = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  plugin: PlateRuntimePlugin,
-  options: PlateRuntimeParserOptions
-) => ({
-  ...createRuntimePluginContext(editor, plugin),
-  ...options,
-});
-
-const shouldRuntimeInsertParserData = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  plugins: PlateRuntimePlugin[],
-  options: PlateRuntimeParserOptions
-) =>
-  plugins.every((plugin) => {
-    const query = plugin.parser?.query;
-
-    return !query || query(createRuntimeParserContext(editor, plugin, options));
-  });
-
-const transformRuntimeParserData = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  plugins: PlateRuntimePlugin[],
-  options: PlateRuntimeParserOptions
-) => {
-  let data = options.data;
-
-  plugins.forEach((plugin) => {
-    const transformData = plugin.parser?.transformData;
-
-    if (!transformData) return;
-
-    data = transformData(
-      createRuntimeParserContext(editor, plugin, { ...options, data })
-    );
-  });
-
-  return data;
-};
-
-const transformRuntimeParserFragment = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  plugins: PlateRuntimePlugin[],
-  options: PlateRuntimeParserOptions & { fragment: Descendant[] }
-) => {
-  let fragment = options.fragment;
-
-  plugins.forEach((plugin) => {
-    const transformFragment = plugin.parser?.transformFragment;
-
-    if (!transformFragment) return;
-
-    fragment = transformFragment({
-      ...createRuntimeParserContext(editor, plugin, options),
-      fragment,
-    });
-  });
-
-  return fragment;
-};
-
-const insertRuntimeParserFragment = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  plugins: PlateRuntimePlugin[],
-  options: PlateRuntimeParserOptions & { fragment: Descendant[] }
-) => {
-  editor.update((tx) => {
-    const fragment = options.fragment as Parameters<
-      typeof tx.fragment.insert
-    >[0];
-
-    plugins.some(
-      (plugin) =>
-        plugin.parser?.preInsert?.({
-          ...createRuntimeParserContext(editor, plugin, options),
-          fragment: options.fragment,
-        }) === true
-    );
-
-    tx.fragment.insert(fragment);
-  });
-};
-
-const insertRuntimeParserData = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  dataTransfer: DataTransfer
-) =>
-  [...editor.meta.pluginList].reverse().some((plugin) => {
-    const parser = plugin.parser;
-
-    if (!parser) return false;
-
-    const mimeTypes = getRuntimeParserMimeTypes(parser);
-
-    if (mimeTypes.length === 0) return false;
-
-    const injectedPlugins = getRuntimeInjectedParserPlugins(editor, plugin);
-
-    for (const mimeType of mimeTypes) {
-      let data = dataTransfer.getData(mimeType);
-
-      if (
-        (mimeType !== 'Files' && !data) ||
-        (mimeType === 'Files' && dataTransfer.files.length === 0)
-      ) {
-        continue;
-      }
-
-      const parserOptions = { data, dataTransfer, mimeType };
-
-      if (
-        !shouldRuntimeInsertParserData(editor, injectedPlugins, parserOptions)
-      ) {
-        continue;
-      }
-
-      data = transformRuntimeParserData(editor, injectedPlugins, parserOptions);
-
-      let fragment = parser.deserialize?.(
-        createRuntimeParserContext(editor, plugin, {
-          ...parserOptions,
-          data,
-        })
-      );
-
-      if (!fragment?.length) continue;
-
-      fragment = transformRuntimeParserFragment(editor, injectedPlugins, {
-        ...parserOptions,
-        data,
-        fragment,
-      });
-
-      if (fragment.length === 0) continue;
-
-      insertRuntimeParserFragment(editor, injectedPlugins, {
-        ...parserOptions,
-        data,
-        fragment,
-      });
-
-      return true;
-    }
-
-    return false;
-  });
-
-const installRuntimeParser = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  plugin: PlateRuntimePlugin
-) => {
-  if (!plugin.runtimeParser) return;
-
-  const previousInsertData = getPlateRuntimeTransforms(editor).insertData;
-
-  plugin.runtimeTransforms = mergePlugins(plugin.runtimeTransforms ?? {}, {
-    insertData: (dataTransfer: DataTransfer) => {
-      if (insertRuntimeParserData(editor, dataTransfer)) return true;
-
-      return previousInsertData(dataTransfer);
     },
   }) as PlateRuntimeTransforms;
 };
@@ -9518,7 +8529,13 @@ const createPlateRuntimeTransforms = <
       const insertData =
         clipboard.clipboard?.insertData ?? clipboard.dom?.clipboard?.insertData;
 
-      return insertData?.(dataTransfer) ?? false;
+      let handled = false;
+
+      editor.update(() => {
+        handled = insertData?.(dataTransfer) ?? false;
+      });
+
+      return handled;
     },
     insertExitBreak: ({ at, match, reverse } = {}) => {
       const selection = editor.read((state) => state.selection.get());
@@ -9727,10 +8744,6 @@ const resolveRuntimeHandledEditorExtension = (
     return { ...plugin, extendEditor: undefined, runtimeChunking: true };
   }
 
-  if (plugin.key === 'nodeId' && plugin.extendEditor === withNodeId) {
-    return { ...plugin, extendEditor: undefined, runtimeNodeId: true };
-  }
-
   if (plugin.key !== 'history' && plugin.key !== 'dom') return plugin;
 
   return { ...plugin, extendEditor: undefined };
@@ -9801,70 +8814,6 @@ const createRuntimePluginContext = <
   };
 };
 
-const createRuntimeTxTransformFacade = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  plugin: PlateRuntimePlugin
-): Record<string, unknown> => {
-  const facade: Record<string, unknown> = {};
-
-  Object.keys(plugin.tx ?? {}).forEach((groupKey) => {
-    facade[groupKey] = new Proxy(
-      {},
-      {
-        get: (_target, methodKey) => {
-          if (typeof methodKey !== 'string') return;
-
-          return (...args: unknown[]) => {
-            let result: unknown;
-
-            editor.update((tx: Record<string, any>) => {
-              result = tx[groupKey]?.[methodKey]?.(...args);
-            });
-
-            return result;
-          };
-        },
-      }
-    );
-  });
-
-  return facade;
-};
-
-const createRuntimeTransformPluginContext = <
-  V extends Value,
-  const TExtensions extends readonly unknown[],
->(
-  editor: PlateRuntimeEditor<V, TExtensions>,
-  plugin: PlateRuntimePlugin
-) => {
-  const context = createRuntimePluginContext(editor, plugin) as ReturnType<
-    typeof createRuntimePluginContext
-  > & {
-    tf: PlateRuntimeTransforms<V, TExtensions>;
-  };
-  const txTransforms = createRuntimeTxTransformFacade(editor, plugin);
-  const runtimeTransforms = getPlateRuntimeTransforms(editor) as Record<
-    string,
-    unknown
-  >;
-
-  context.tf = new Proxy(runtimeTransforms, {
-    get: (target, property) => {
-      if (typeof property === 'string' && property in txTransforms) {
-        return txTransforms[property];
-      }
-
-      return Reflect.get(target, property);
-    },
-  }) as PlateRuntimeTransforms<V, TExtensions>;
-
-  return context;
-};
-
 const normalizeRuntimePliteExtensions = (extensions: unknown) => {
   if (!extensions) return [];
 
@@ -9932,6 +8881,9 @@ const resolveRuntimePluginConfig = <
   if (plugin.key === 'blockquote') {
     plugin.runtimeBlockquote = true;
   }
+  if (plugin.key === 'caption') {
+    plugin.runtimeCaption = true;
+  }
   if (plugin.key === 'indent') {
     plugin.runtimeIndent = true;
   }
@@ -9980,78 +8932,8 @@ const resolveRuntimePluginConfig = <
         ).__legacyTransformSource ??
         (apiExtension.extension as unknown);
 
-      if (
-        plugin.key === 'chunking' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform &&
-        rawExtension === withChunking
-      ) {
-        plugin.runtimeChunking = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'nodeId' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform &&
-        rawExtension === withNodeId
-      ) {
-        plugin.runtimeNodeId = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'blockquote' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeBlockquote = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'caption' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeCaption = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'comment' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
+      if (plugin.key === 'comment' && !apiExtension.isOverride) {
         plugin.runtimeComment = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'comment' &&
-        !apiExtension.isOverride &&
-        !apiExtension.isTransform
-      ) {
-        plugin.runtimeComment = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'code_block' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeCodeBlock = true;
-        continue;
-      }
-
-      if (
-        plugin.key === RUNTIME_FOOTNOTE_REFERENCE_KEY &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeFootnote = true;
-        plugin.runtimeTriggerCombobox = true;
         continue;
       }
 
@@ -10063,283 +8945,21 @@ const resolveRuntimePluginConfig = <
         continue;
       }
 
-      if (
-        plugin.key === 'tag' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeMultiSelect = true;
+      if (plugin.key === 'override' && rawExtension === withOverrides) {
         continue;
       }
 
-      if (
-        plugin.key === 'column' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeLayoutColumn = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'indent' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeIndent = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'list' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeList = true;
-        continue;
-      }
-
-      if (
-        plugin.key === RUNTIME_CLASSIC_TODO_LIST_KEY &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeClassicTodoList = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'toggle' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeToggle = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'singleBlock' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeSingleBlock = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'singleLine' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeSingleLine = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'normalizeTypes' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeNormalizeTypes = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'trailingBlock' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeTrailingBlock = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'affinity' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeAffinity = true;
-        continue;
-      }
-
-      if (plugin.key === 'navigationFeedback' && apiExtension.isTransform) {
-        plugin.runtimeNavigationFeedback = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'parser' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeParser = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'inputRules' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeInputRules = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'length' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        plugin.runtimeLength = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'override' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform &&
-        (rawExtension === withOverrides ||
-          rawExtension === withBreakRules ||
-          rawExtension === withDeleteRules)
-      ) {
-        continue;
-      }
-
-      if (
-        plugin.key === 'override' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform &&
-        rawExtension === withMergeRules
-      ) {
-        plugin.runtimeOverrideMergeRules = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'override' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform &&
-        rawExtension === withNormalizeRules
-      ) {
-        plugin.runtimeOverrideNormalizeRules = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'dom' &&
-        apiExtension.isTransform &&
-        !apiExtension.isPluginSpecific &&
-        !apiExtension.isOverride
-      ) {
-        plugin.runtimeTransforms = mergePlugins(
-          plugin.runtimeTransforms ?? {},
-          apiExtension.extension(createRuntimePluginContext(editor, plugin))
-        ) as PlateRuntimeTransforms;
-        continue;
-      }
-
-      if (
-        plugin.key === 'pliteExtension' &&
-        apiExtension.isTransform &&
-        !apiExtension.isPluginSpecific &&
-        !apiExtension.isOverride
-      ) {
-        plugin.runtimePliteExtensionPipeline = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'dom' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        const extension = apiExtension.extension(
-          createRuntimePluginContext(editor, plugin)
-        ) as {
-          tf?: Record<string, unknown>;
-        };
-        const tf = extension.tf;
-
-        if (tf?.withScrolling) {
-          plugin.runtimeTransforms = mergePlugins(
-            plugin.runtimeTransforms ?? {},
-            {
-              withScrolling: tf.withScrolling,
-            }
-          ) as PlateRuntimeTransforms;
-        }
-
-        plugin.runtimeDomOperations = true;
-        continue;
-      }
-
-      if (
-        plugin.key === 'pliteExtension' &&
-        apiExtension.isOverride &&
-        apiExtension.isTransform
-      ) {
-        const extension = apiExtension.extension(
-          createRuntimePluginContext(editor, plugin)
-        ) as {
-          tf?: Record<string, unknown>;
-        };
-        const tf = extension.tf;
-
-        if (tf?.apply || tf?.init) {
-          plugin.runtimePliteExtensionPipeline = true;
-        } else {
-          plugin.runtimeSlateReactOverride = true;
-        }
-
-        continue;
-      }
-
-      if (
-        apiExtension.isTransform &&
-        !apiExtension.isPluginSpecific &&
-        !apiExtension.isOverride &&
-        hasRuntimePluginTx(plugin)
-      ) {
-        plugin.runtimeTransforms = mergePlugins(
-          plugin.runtimeTransforms ?? {},
-          apiExtension.extension(
-            createRuntimeTransformPluginContext(editor, plugin)
-          )
-        ) as PlateRuntimeTransforms;
-        continue;
-      }
-
-      if (
-        apiExtension.isTransform &&
-        apiExtension.isPluginSpecific &&
-        !apiExtension.isOverride
-      ) {
-        plugin.runtimeTransforms = mergePlugins(
-          plugin.runtimeTransforms ?? {},
-          {
-            [plugin.key]: apiExtension.extension(
-              createRuntimeTransformPluginContext(editor, plugin)
-            ),
-          }
-        ) as PlateRuntimeTransforms;
+      if (apiExtension.isTransform) {
+        unsupportedExtensions.push(apiExtension);
         continue;
       }
 
       if (apiExtension.isOverride) {
-        const context = createRuntimePluginContext(
-          editor,
-          plugin
-        ) as ReturnType<typeof createRuntimePluginContext> & {
-          tf: PlateRuntimeTransforms<V, TExtensions>;
-        };
-
-        context.tf = getPlateRuntimeTransforms(editor);
-
-        const extension = apiExtension.extension(context) as {
+        const extension = apiExtension.extension(
+          createRuntimePluginContext(editor, plugin)
+        ) as {
           api?: Record<string, unknown>;
-          tf?: Record<string, unknown>;
         };
-        const tf = extension.tf;
 
         if (extension.api) {
           plugin.api = mergePlugins(plugin.api ?? {}, extension.api) as Record<
@@ -10347,18 +8967,7 @@ const resolveRuntimePluginConfig = <
             unknown
           >;
         }
-        if (tf) {
-          plugin.runtimeTransforms = mergePlugins(
-            plugin.runtimeTransforms ?? {},
-            tf
-          ) as PlateRuntimeTransforms;
-        }
 
-        continue;
-      }
-
-      if (apiExtension.isOverride || apiExtension.isTransform) {
-        unsupportedExtensions.push(apiExtension);
         continue;
       }
 
@@ -10623,6 +9232,11 @@ const applyRuntimePluginMetadata = <
     plugins.map((plugin) => [plugin.key, plugin])
   );
   editor.meta.inputRules = createRuntimeInputRulesMeta(plugins);
+  const hasResolvedInputRules =
+    editor.meta.inputRules.insertBreak.length > 0 ||
+    editor.meta.inputRules.insertData.length > 0 ||
+    editor.meta.inputRules.insertText.all.length > 0;
+  let hasRuntimeInputRuleInstaller = false;
 
   const elementSpecs = plugins
     .map(createRuntimeElementSpec)
@@ -10755,7 +9369,14 @@ const applyRuntimePluginMetadata = <
     installRuntimeClassicTodoList(editor, plugin);
     installRuntimeComment(editor, plugin);
     installRuntimeFootnote(editor, plugin);
-    installRuntimeInputRules(editor, plugin);
+    installRuntimeInputRules(editor, plugin, {
+      getBlockPath: getRuntimeBlockPath,
+      getDescendant: getRuntimeDescendant,
+      isElementNode: isRuntimeElementNode,
+      readRuntimeTransforms: getPlateRuntimeTransforms,
+    });
+    hasRuntimeInputRuleInstaller =
+      hasRuntimeInputRuleInstaller || plugin.runtimeInputRules === true;
     installRuntimeIndent(editor, plugin);
     installRuntimeLayoutColumn(editor, plugin);
     installRuntimeList(editor, plugin);
@@ -10765,7 +9386,10 @@ const applyRuntimePluginMetadata = <
     installRuntimeNormalizeTypes(editor, plugin);
     installRuntimeOverrideMergeRules(editor, plugin);
     installRuntimeOverrideNormalizeRules(editor, plugin);
-    installRuntimeParser(editor, plugin);
+    installRuntimeParser(editor, plugin, {
+      createPluginContext: createRuntimePluginContext,
+      readRuntimeTransforms: getPlateRuntimeTransforms,
+    });
     installRuntimePliteExtensionPipeline(editor, plugin);
     installRuntimeSlateReactOverride(editor, plugin);
     installRuntimeSingleBlock(editor, plugin);
@@ -10806,6 +9430,33 @@ const applyRuntimePluginMetadata = <
       );
     }
   });
+
+  if (hasResolvedInputRules && !hasRuntimeInputRuleInstaller) {
+    const inputRulesRuntimePlugin: PlateRuntimePlugin = {
+      key: 'inputRules',
+      runtimeInputRules: true,
+    };
+
+    installRuntimeInputRules(editor, inputRulesRuntimePlugin, {
+      getBlockPath: getRuntimeBlockPath,
+      getDescendant: getRuntimeDescendant,
+      isElementNode: isRuntimeElementNode,
+      readRuntimeTransforms: getPlateRuntimeTransforms,
+    });
+
+    if (
+      inputRulesRuntimePlugin.runtimeTransforms &&
+      Object.keys(inputRulesRuntimePlugin.runtimeTransforms).length > 0
+    ) {
+      setPlateRuntimeTransforms(
+        editor,
+        mergePlugins(
+          getPlateRuntimeTransforms(editor),
+          inputRulesRuntimePlugin.runtimeTransforms
+        ) as PlateRuntimeTransforms<V, TExtensions>
+      );
+    }
+  }
 
   if (Object.keys(pluginTxGroups).length > 0) {
     const tx = Object.fromEntries(
@@ -10941,7 +9592,7 @@ export const createPlateRuntimeEditor = <
   editor.meta = createPlateRuntimeMeta({ uid, userId });
   editor.plugins = {};
   setPlateRuntimeTransforms(editor, createPlateRuntimeTransforms(editor));
-  installPlateRuntimeCompatibilityBridge(editor);
+  installPlateRuntimeEditorSurface(editor);
   Object.defineProperties(editor, {
     children: {
       configurable: true,
@@ -10967,11 +9618,6 @@ export const createPlateRuntimeEditor = <
   };
   editor.getType = (pluginKey) =>
     editor.plugins[pluginKey]?.node?.type ?? pluginKey;
-  editor.getPluginApi = (plugin) =>
-    (editor.getPlugin(plugin).api ??
-      (editor.api as Record<string, unknown>)[plugin.key] ??
-      {}) as Record<string, unknown>;
-  editor.getTransforms = () => getPlateRuntimeTransforms(editor);
   editor.getInjectProps = (plugin) => {
     const installedPlugin = editor.getPlugin(plugin);
     const nodeProps = {

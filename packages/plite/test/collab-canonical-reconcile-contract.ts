@@ -1,6 +1,15 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  bookmark as editorBookmark,
+  getLastCommit as editorGetLastCommit,
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+  subscribe as editorSubscribe,
+} from '@platejs/plite/internal';
 
 import { history } from '@platejs/plite-history';
 
@@ -28,7 +37,7 @@ const remoteCollabOptions = {
 const createCollabEditor = () => {
   const editor = createEditor({ extensions: [history()] });
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [paragraph('one'), paragraph('two')],
     selection: {
       anchor: { path: [0, 0], offset: 3 },
@@ -51,15 +60,15 @@ const collapsed = (path: number[], offset: number): Range =>
 describe('collab canonical remote reconcile contract', () => {
   it('publishes one remote replace commit, skips history, and preserves same-position bookmarks', () => {
     const editor = createCollabEditor();
-    const commits: NonNullable<ReturnType<typeof Editor.getLastCommit>>[] = [];
-    const unsubscribe = Editor.subscribe(editor, (_snapshot, commit) => {
+    const commits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] = [];
+    const unsubscribe = editorSubscribe(editor, (_snapshot, commit) => {
       if (commit) {
         commits.push(commit);
       }
     });
-    const oldBlockRuntimeId = Editor.getRuntimeId(editor, [0]);
-    const oldTextRuntimeId = Editor.getRuntimeId(editor, [0, 0]);
-    const bookmark = Editor.bookmark(
+    const oldBlockRuntimeId = editorGetRuntimeId(editor, [0]);
+    const oldTextRuntimeId = editorGetRuntimeId(editor, [0, 0]);
+    const bookmark = editorBookmark(
       editor,
       range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 3 })
     );
@@ -78,7 +87,7 @@ describe('collab canonical remote reconcile contract', () => {
 
     unsubscribe();
 
-    const commit = Editor.getLastCommit(editor);
+    const commit = editorGetLastCommit(editor);
 
     assert(commit);
     assert.equal(commits.length, 1);
@@ -95,26 +104,26 @@ describe('collab canonical remote reconcile contract', () => {
       editor.read((state) => state.history.undos().length),
       0
     );
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       paragraph('remote'),
       paragraph('canonical'),
     ]);
     assert.deepEqual(
-      Editor.getSnapshot(editor).selection,
+      editorGetSnapshot(editor).selection,
       collapsed([1, 0], 'canonical'.length)
     );
-    assert.deepEqual(Editor.getPathByRuntimeId(editor, oldBlockRuntimeId), [0]);
+    assert.deepEqual(editorGetPathByRuntimeId(editor, oldBlockRuntimeId), [0]);
     assert.deepEqual(
-      Editor.getPathByRuntimeId(editor, oldTextRuntimeId),
+      editorGetPathByRuntimeId(editor, oldTextRuntimeId),
       [0, 0]
     );
-    assert(Editor.getRuntimeId(editor, [0]));
-    assert(Editor.getRuntimeId(editor, [0, 0]));
+    assert(editorGetRuntimeId(editor, [0]));
+    assert(editorGetRuntimeId(editor, [0, 0]));
     assert.deepEqual(
       bookmark.resolve(),
       range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 3 })
     );
-    assert.equal(Editor.string(editor, bookmark.resolve()!), 'em');
+    assert.equal(editorString(editor, bookmark.resolve()!), 'em');
     assert.deepEqual(
       bookmark.unref(),
       range({ path: [0, 0], offset: 1 }, { path: [0, 0], offset: 3 })
@@ -132,10 +141,10 @@ describe('collab canonical remote reconcile contract', () => {
       });
     }, remoteCollabOptions);
 
-    const commit = Editor.getLastCommit(editor);
+    const commit = editorGetLastCommit(editor);
 
     assert(commit);
-    assert.deepEqual(Editor.getSnapshot(editor).selection, null);
+    assert.deepEqual(editorGetSnapshot(editor).selection, null);
     assert.equal(commit.selectionChanged, true);
     assert.deepEqual(commit.metadata.selection, {
       dom: 'preserve',

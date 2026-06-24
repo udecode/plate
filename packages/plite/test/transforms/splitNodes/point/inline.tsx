@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { isInline as editorIsInline } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -10,7 +10,7 @@ import { ElementApi } from '@platejs/plite';
 export const run = (editor) => {
   editor.nodes.split({
     at: { path: [0, 1, 0], offset: 2 },
-    match: (n) => ElementApi.isElement(n) && Editor.isInline(editor, n),
+    match: (n) => ElementApi.isElement(n) && editorIsInline(editor, n),
   });
 };
 export const input = (

@@ -24,7 +24,6 @@ describe('usePluginOption', () => {
     }));
 
     const editor = createPlateEditor({
-      runtime: 'legacy',
       plugins: [CounterPlugin],
     });
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -68,7 +67,6 @@ describe('usePluginOption', () => {
       },
     });
     const editor = createPlateEditor({
-      runtime: 'legacy',
       plugins: [CounterPlugin],
     });
     const externalPlugin = createPlatePlugin({

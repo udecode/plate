@@ -7,7 +7,11 @@ import {
 import { isDOMElement, isDOMText } from '@platejs/plite-dom';
 
 import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
-import { Editor } from './runtime-editor-api';
+import {
+  type Editor,
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  range as editorRange,
+} from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 
 const resolvePliteTextPointFromDOMPoint = (
@@ -42,7 +46,7 @@ const resolvePliteTextPointFromDOMPoint = (
       'data-plite-runtime-id'
     ) as RuntimeId | null;
     const currentPath = runtimeId
-      ? Editor.getPathByRuntimeId(editor, runtimeId)
+      ? editorGetPathByRuntimeId(editor, runtimeId)
       : null;
 
     if (!currentPath || !PathApi.equals(currentPath, path)) {
@@ -138,7 +142,7 @@ export const resolvePliteRangeFromDOMSelection = (
     const end = Math.max(domSelection.anchorOffset, domSelection.focusOffset);
 
     if (start === 0 && end >= editorElement.childNodes.length) {
-      return Editor.range(editor, []);
+      return editorRange(editor, []);
     }
   }
 
@@ -146,7 +150,7 @@ export const resolvePliteRangeFromDOMSelection = (
   const editorText = editorElement.textContent?.replace(/\uFEFF/g, '') ?? '';
 
   if (selectedText && selectedText === editorText) {
-    return Editor.range(editor, []);
+    return editorRange(editor, []);
   }
 
   return null;

@@ -5,9 +5,9 @@ import {
   type Range,
   type BasePlateEditor,
   defineEditorExtension,
-  Editor as EditorApi,
   RangeApi,
 } from 'platejs';
+import { registerCommand as editorRegisterCommand } from '@platejs/plite/internal';
 import type { PlatePluginContext } from 'platejs/react';
 
 import type { CopilotPluginConfig } from './CopilotPlugin';
@@ -66,7 +66,7 @@ export const createCopilotExtension = ({
       },
     },
     setup() {
-      const unregisterRedo = EditorApi.registerCommand<HistoryCommand>(
+      const unregisterRedo = editorRegisterCommand<HistoryCommand>(
         editor,
         'history_redo',
         (_context, next) => {
@@ -98,7 +98,7 @@ export const createCopilotExtension = ({
         { priority: 100 }
       );
 
-      const unregisterUndo = EditorApi.registerCommand<HistoryCommand>(
+      const unregisterUndo = editorRegisterCommand<HistoryCommand>(
         editor,
         'history_undo',
         (_context, next) => {

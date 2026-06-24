@@ -9,13 +9,18 @@ import {
   type Operation,
   RangeApi,
 } from '../interfaces';
-import { Editor } from '../interfaces/editor';
+import {
+  getChildren as editorGetChildren,
+  isBlock as editorIsBlock,
+  pathRef as editorPathRef,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import { type Path, PathApi } from '../interfaces/path';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
 import { matchPath } from '../utils/match-path';
 
 const getChildren = (editor: Editor, node: Ancestor) =>
-  NodeApi.isEditor(node) ? Editor.getChildren(editor) : node.children;
+  NodeApi.isEditor(node) ? editorGetChildren(editor) : node.children;
 
 export const liftNodes: NodeMutationMethods['liftNodes'] = (
   editor,
@@ -102,7 +107,7 @@ export const liftNodes: NodeMutationMethods['liftNodes'] = (
       if (match == null) {
         match = LocationApi.isPath(target)
           ? matchPath(editor, target)
-          : (node) => NodeApi.isElement(node) && Editor.isBlock(editor, node);
+          : (node) => NodeApi.isElement(node) && editorIsBlock(editor, node);
       }
 
       if (LocationApi.isPath(target) && options.match == null) {
@@ -117,7 +122,7 @@ export const liftNodes: NodeMutationMethods['liftNodes'] = (
 
       const pathRefs = Array.from(
         getNodes(editor, { at: target, match, mode, voids }),
-        ([, path]) => Editor.pathRef(editor, path)
+        ([, path]) => editorPathRef(editor, path)
       );
 
       for (const pathRef of pathRefs) {

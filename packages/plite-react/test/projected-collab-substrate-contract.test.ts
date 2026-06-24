@@ -5,7 +5,7 @@ import {
   type Operation,
   type Range,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import { getLastCommit as editorGetLastCommit } from '@platejs/plite/internal';
 import { history } from '@platejs/plite-history';
 import { describe, expect, it } from 'vitest';
 
@@ -70,7 +70,7 @@ const replayRemote = (
 };
 
 const lastOperations = (editor: ReturnType<typeof createProjectedEditor>) => {
-  const commit = Editor.getLastCommit(editor);
+  const commit = editorGetLastCommit(editor);
 
   expect(commit).not.toBe(null);
   return commit!.operations;

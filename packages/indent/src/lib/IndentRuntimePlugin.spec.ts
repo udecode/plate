@@ -15,7 +15,6 @@ describe('BaseIndentPlugin Plite runtime', () => {
           options: { indentMax: 2 },
         }),
       ],
-      runtime: 'plite',
       value: [{ children: [{ text: 'One' }], indent: 4, type: 'p' }],
     });
 
@@ -31,7 +30,6 @@ describe('BaseIndentPlugin Plite runtime', () => {
   it('unsets indent when the block no longer matches target types', () => {
     const editor = createPlateEditor<Value, IndentRuntimePlugin>({
       plugins: [BaseParagraphPlugin, BaseIndentPlugin],
-      runtime: 'plite',
       value: [{ children: [{ text: 'One' }], indent: 2, type: 'quote' }],
     });
 

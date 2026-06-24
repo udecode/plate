@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { render, waitFor } from '@testing-library/react';
 import React from 'react';
-import { Editor } from '@platejs/plite/internal';
+import { replace as editorReplace } from '@platejs/plite/internal';
 
 import {
   createReactEditor,
@@ -96,7 +96,7 @@ test('Editable virtualized strategy owns deferred native text repair', () => {
 test('Editable domStrategy virtualized mode uses page layout items as the retained range unit', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -152,7 +152,7 @@ test('Editable domStrategy virtualized mode uses page layout items as the retain
 test('Editable domStrategy virtualized mode retains expanded selection endpoints outside the visible page window', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 8 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `endpoint-block-${index + 1}` }],
@@ -242,7 +242,7 @@ test('Editable domStrategy virtualized mode maps a selected split-table row path
 test('Editable domStrategy virtualized mode can share a layout-owned visible page window', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `shared-window-block-${index + 1}` }],
@@ -290,7 +290,7 @@ test('Editable domStrategy virtualized mode can share a layout-owned visible pag
 test('Editable domStrategy virtualized mode can use an outer scroll container', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 4 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `outer-scroll-block-${index + 1}` }],
@@ -327,7 +327,7 @@ test('Editable domStrategy metrics do not re-emit unchanged virtualized metrics 
   const editor = createReactEditor();
   const metrics: EditableDOMStrategyMetrics[] = [];
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 4 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `metrics-block-${index + 1}` }],

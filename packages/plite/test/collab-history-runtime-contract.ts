@@ -1,6 +1,16 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  bookmark as editorBookmark,
+  getLastCommit as editorGetLastCommit,
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  registerCommitListener as editorRegisterCommitListener,
+  replace as editorReplace,
+  string as editorString,
+  subscribe as editorSubscribe,
+} from '@platejs/plite/internal';
 
 import { history } from '@platejs/plite-history';
 
@@ -14,7 +24,7 @@ const paragraph = (text: string): Descendant => ({
 const createCollabEditor = () => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [paragraph('one'), paragraph('two'), paragraph('three')],
     selection: {
       anchor: { path: [0, 0], offset: 3 },
@@ -29,7 +39,7 @@ const createCollabEditor = () => {
 const createHistoryCollabEditor = () => {
   const editor = createEditor({ extensions: [history()] });
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [paragraph('one'), paragraph('two'), paragraph('three')],
     selection: {
       anchor: { path: [0, 0], offset: 3 },
@@ -43,10 +53,10 @@ const createHistoryCollabEditor = () => {
 
 type CollabEditor = ReturnType<typeof createCollabEditor>;
 type HistoryCollabEditor = ReturnType<typeof createHistoryCollabEditor>;
-type CollabCommit = NonNullable<ReturnType<typeof Editor.getLastCommit>>;
+type CollabCommit = NonNullable<ReturnType<typeof editorGetLastCommit>>;
 
 const lastCommit = (editor: CollabEditor): CollabCommit => {
-  const commit = Editor.getLastCommit(editor);
+  const commit = editorGetLastCommit(editor);
 
   assert(commit);
 
@@ -85,7 +95,7 @@ describe('collab and history runtime contract', () => {
   it('publishes one commit truth for collab subscribers, extension listeners, and history', () => {
     const editor = createEditor({ extensions: [history()] });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
         anchor: { path: [0, 0], offset: 3 },
@@ -94,15 +104,15 @@ describe('collab and history runtime contract', () => {
       marks: null,
     });
 
-    const runtimeId = Editor.getRuntimeId(editor, [0, 0]);
+    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
     const subscribedCommits: NonNullable<
-      ReturnType<typeof Editor.getLastCommit>
+      ReturnType<typeof editorGetLastCommit>
     >[] = [];
     const extensionCommits: NonNullable<
-      ReturnType<typeof Editor.getLastCommit>
+      ReturnType<typeof editorGetLastCommit>
     >[] = [];
 
-    const unsubscribeSubscribe = Editor.subscribe(
+    const unsubscribeSubscribe = editorSubscribe(
       editor,
       (_snapshot, commit) => {
         if (commit) {
@@ -110,12 +120,9 @@ describe('collab and history runtime contract', () => {
         }
       }
     );
-    const unsubscribeCommit = Editor.registerCommitListener(
-      editor,
-      (commit) => {
-        extensionCommits.push(commit);
-      }
-    );
+    const unsubscribeCommit = editorRegisterCommitListener(editor, (commit) => {
+      extensionCommits.push(commit);
+    });
 
     editor.update(
       (tx) => {
@@ -134,7 +141,7 @@ describe('collab and history runtime contract', () => {
     const commit = subscribedCommits[0]!;
 
     assert.equal(extensionCommits[0], commit);
-    assert.equal(Editor.getLastCommit(editor), commit);
+    assert.equal(editorGetLastCommit(editor), commit);
     assert.deepEqual(commit.classes, ['text']);
     assert.deepEqual(
       commit.operations.map((operation) => operation.type),
@@ -175,10 +182,9 @@ describe('collab and history runtime contract', () => {
   it('replays local operations remotely with deterministic snapshot and metadata', () => {
     const source = createCollabEditor();
     const remote = createCollabEditor();
-    const remoteCommits: NonNullable<
-      ReturnType<typeof Editor.getLastCommit>
-    >[] = [];
-    const unsubscribe = Editor.subscribe(remote, (_snapshot, commit) => {
+    const remoteCommits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] =
+      [];
+    const unsubscribe = editorSubscribe(remote, (_snapshot, commit) => {
       if (commit) {
         remoteCommits.push(commit);
       }
@@ -191,7 +197,7 @@ describe('collab and history runtime contract', () => {
       { tag: 'local-edit' }
     );
 
-    const sourceCommit = Editor.getLastCommit(source);
+    const sourceCommit = editorGetLastCommit(source);
 
     assert(sourceCommit);
 
@@ -201,8 +207,8 @@ describe('collab and history runtime contract', () => {
     unsubscribe();
 
     assert.deepEqual(
-      Editor.getSnapshot(remote).children,
-      Editor.getSnapshot(source).children
+      editorGetSnapshot(remote).children,
+      editorGetSnapshot(source).children
     );
     assert.equal(remoteCommits.length, 1);
     assert.deepEqual(remoteCommits[0]?.tags, ['remote-import']);
@@ -233,10 +239,10 @@ describe('collab and history runtime contract', () => {
     });
 
     assert.deepEqual(
-      Editor.getSnapshot(remote).children,
-      Editor.getSnapshot(source).children
+      editorGetSnapshot(remote).children,
+      editorGetSnapshot(source).children
     );
-    assert.deepEqual(Editor.getSnapshot(remote).children[0], paragraph('one0'));
+    assert.deepEqual(editorGetSnapshot(remote).children[0], paragraph('one0'));
   });
 
   it('uses typed remote collaboration metadata to skip local undo history', () => {
@@ -250,7 +256,7 @@ describe('collab and history runtime contract', () => {
       { tag: 'local-edit' }
     );
 
-    const sourceCommit = Editor.getLastCommit(source);
+    const sourceCommit = editorGetLastCommit(source);
 
     assert(sourceCommit);
 
@@ -268,7 +274,7 @@ describe('collab and history runtime contract', () => {
       }
     );
 
-    const remoteCommit = Editor.getLastCommit(remote);
+    const remoteCommit = editorGetLastCommit(remote);
 
     assert(remoteCommit);
     assert.deepEqual(remoteCommit.tags, ['collaboration', 'remote-import']);
@@ -279,8 +285,8 @@ describe('collab and history runtime contract', () => {
     assert.deepEqual(remoteCommit.metadata.history, { mode: 'skip' });
     assert.equal(historyUndoCount(remote), 0);
     assert.deepEqual(
-      Editor.getSnapshot(remote).children,
-      Editor.getSnapshot(source).children
+      editorGetSnapshot(remote).children,
+      editorGetSnapshot(source).children
     );
   });
 
@@ -305,14 +311,14 @@ describe('collab and history runtime contract', () => {
       replayRemoteCommit(peerB, sourceCommit, `${tag}-peer-b`);
       replayRemoteCommit(peerC, sourceCommit, `${tag}-peer-c`);
 
-      assert.deepEqual(Editor.getSnapshot(source).children, expectedChildren);
+      assert.deepEqual(editorGetSnapshot(source).children, expectedChildren);
       assert.deepEqual(
-        Editor.getSnapshot(peerB).children,
-        Editor.getSnapshot(source).children
+        editorGetSnapshot(peerB).children,
+        editorGetSnapshot(source).children
       );
       assert.deepEqual(
-        Editor.getSnapshot(peerC).children,
-        Editor.getSnapshot(source).children
+        editorGetSnapshot(peerC).children,
+        editorGetSnapshot(source).children
       );
       assert.equal(historyUndoCount(source), 1);
       assert.equal(historyUndoCount(peerB), 0);
@@ -340,8 +346,8 @@ describe('collab and history runtime contract', () => {
 
     assertThreePeerConvergence({
       edit(source) {
-        Editor.replace(source, {
-          children: Editor.getSnapshot(source).children,
+        editorReplace(source, {
+          children: editorGetSnapshot(source).children,
           marks: null,
           selection: {
             anchor: { path: [1, 0], offset: 0 },
@@ -407,8 +413,8 @@ describe('collab and history runtime contract', () => {
     const source = createCollabEditor();
     const remote = createHistoryCollabEditor();
 
-    Editor.replace(source, {
-      children: Editor.getSnapshot(source).children,
+    editorReplace(source, {
+      children: editorGetSnapshot(source).children,
       selection: {
         anchor: { path: [0, 0], offset: 0 },
         focus: { path: [0, 0], offset: 'one'.length },
@@ -437,7 +443,7 @@ describe('collab and history runtime contract', () => {
       { tag: ['local-edit', 'collab-export'] }
     );
 
-    const sourceCommit = Editor.getLastCommit(source);
+    const sourceCommit = editorGetLastCommit(source);
 
     assert(sourceCommit);
     assert.deepEqual(
@@ -459,7 +465,7 @@ describe('collab and history runtime contract', () => {
       }
     );
 
-    const remoteCommit = Editor.getLastCommit(remote);
+    const remoteCommit = editorGetLastCommit(remote);
 
     assert(remoteCommit);
     assert.deepEqual(
@@ -467,19 +473,19 @@ describe('collab and history runtime contract', () => {
       ['replace_children']
     );
     assert.deepEqual(
-      Editor.getSnapshot(remote).children,
-      Editor.getSnapshot(source).children
+      editorGetSnapshot(remote).children,
+      editorGetSnapshot(source).children
     );
     assert.deepEqual(
-      Editor.getSnapshot(remote).selection,
-      Editor.getSnapshot(source).selection
+      editorGetSnapshot(remote).selection,
+      editorGetSnapshot(source).selection
     );
     assert.equal(historyUndoCount(remote), 0);
   });
 
   it('stores replace_children range delete as one undoable history batch', () => {
     const editor = createHistoryCollabEditor();
-    const before = Editor.getSnapshot(editor);
+    const before = editorGetSnapshot(editor);
 
     editor.update((tx) => {
       tx.text.delete({
@@ -490,7 +496,7 @@ describe('collab and history runtime contract', () => {
       });
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [paragraph('three')]);
+    assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('three')]);
     assert.equal(historyUndoCount(editor), 1);
     assert.deepEqual(
       firstUndoOperations(editor)?.map((operation) => operation.type),
@@ -501,14 +507,14 @@ describe('collab and history runtime contract', () => {
       tx.history.undo();
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, before.children);
-    assert.deepEqual(Editor.getSnapshot(editor).selection, before.selection);
+    assert.deepEqual(editorGetSnapshot(editor).children, before.children);
+    assert.deepEqual(editorGetSnapshot(editor).selection, before.selection);
   });
 
   it('undoes selected text replacement while collaboration metadata is present', () => {
     const editor = createHistoryCollabEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraph('hello world')],
       selection: {
         anchor: { path: [0, 0], offset: 'hello '.length },
@@ -524,15 +530,15 @@ describe('collab and history runtime contract', () => {
       { tag: ['local-edit', 'collab-active'] }
     );
 
-    assert.equal(Editor.string(editor, []), 'hello test');
+    assert.equal(editorString(editor, []), 'hello test');
     assert.equal(historyUndoCount(editor), 1);
 
     editor.update((tx) => {
       tx.history.undo();
     });
 
-    assert.equal(Editor.string(editor, []), 'hello world');
-    assert.deepEqual(Editor.getSnapshot(editor).selection, {
+    assert.equal(editorString(editor, []), 'hello world');
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
       anchor: { path: [0, 0], offset: 'hello '.length },
       focus: { path: [0, 0], offset: 'hello world'.length },
     });
@@ -565,7 +571,7 @@ describe('collab and history runtime contract', () => {
       }
     );
 
-    assert.equal(Editor.string(editor, [0]), '?one!');
+    assert.equal(editorString(editor, [0]), '?one!');
     assert.equal(firstUndoOperations(editor)?.[0]?.type, 'insert_text');
     assert.equal(firstUndoOperations(editor)?.[0]?.offset, 4);
 
@@ -573,8 +579,8 @@ describe('collab and history runtime contract', () => {
       tx.history.undo();
     });
 
-    assert.equal(Editor.string(editor, [0]), '?one');
-    assert.deepEqual(Editor.getSnapshot(editor).selection, {
+    assert.equal(editorString(editor, [0]), '?one');
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
       anchor: { path: [0, 0], offset: 4 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -583,12 +589,12 @@ describe('collab and history runtime contract', () => {
       tx.history.redo();
     });
 
-    assert.equal(Editor.string(editor, [0]), '?one!');
+    assert.equal(editorString(editor, [0]), '?one!');
   });
 
   it('replays remote operations without losing local bookmark ranges', () => {
     const remote = createCollabEditor();
-    const bookmark = Editor.bookmark(remote, {
+    const bookmark = editorBookmark(remote, {
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 3 },
     });
@@ -607,7 +613,7 @@ describe('collab and history runtime contract', () => {
       );
     });
 
-    const commit = Editor.getLastCommit(remote);
+    const commit = editorGetLastCommit(remote);
 
     assert(commit);
     assert.deepEqual(commit.tags, ['remote-import']);
@@ -615,16 +621,16 @@ describe('collab and history runtime contract', () => {
       anchor: { path: [1, 0], offset: 2 },
       focus: { path: [1, 0], offset: 4 },
     });
-    assert.equal(Editor.string(remote, bookmark.resolve()!), 'wo');
+    assert.equal(editorString(remote, bookmark.resolve()!), 'wo');
 
     bookmark.unref();
   });
 
   it('keeps runtime targets local while remote remove and move operations rebase or null them', () => {
     const removeEditor = createCollabEditor();
-    const removedBlockId = Editor.getRuntimeId(removeEditor, [1]);
-    const removedTextId = Editor.getRuntimeId(removeEditor, [1, 0]);
-    const removedNode = Editor.getSnapshot(removeEditor).children[1]!;
+    const removedBlockId = editorGetRuntimeId(removeEditor, [1]);
+    const removedTextId = editorGetRuntimeId(removeEditor, [1, 0]);
+    const removedNode = editorGetSnapshot(removeEditor).children[1]!;
 
     assert(removedBlockId);
     assert(removedTextId);
@@ -644,16 +650,16 @@ describe('collab and history runtime contract', () => {
       tx.operations.replay([removeOperation], { tag: 'remote-remove' });
     });
 
-    const removeCommit = Editor.getLastCommit(removeEditor);
+    const removeCommit = editorGetLastCommit(removeEditor);
 
     assert(removeCommit);
     assert.deepEqual(removeCommit.tags, ['remote-remove']);
-    assert.equal(Editor.getPathByRuntimeId(removeEditor, removedBlockId), null);
-    assert.equal(Editor.getPathByRuntimeId(removeEditor, removedTextId), null);
+    assert.equal(editorGetPathByRuntimeId(removeEditor, removedBlockId), null);
+    assert.equal(editorGetPathByRuntimeId(removeEditor, removedTextId), null);
 
     const moveEditor = createCollabEditor();
-    const movedBlockId = Editor.getRuntimeId(moveEditor, [2]);
-    const movedTextId = Editor.getRuntimeId(moveEditor, [2, 0]);
+    const movedBlockId = editorGetRuntimeId(moveEditor, [2]);
+    const movedTextId = editorGetRuntimeId(moveEditor, [2, 0]);
     const moveOperation: Operation = {
       type: 'move_node',
       path: [2],
@@ -668,15 +674,12 @@ describe('collab and history runtime contract', () => {
       tx.operations.replay([moveOperation], { tag: 'remote-move' });
     });
 
-    const moveCommit = Editor.getLastCommit(moveEditor);
+    const moveCommit = editorGetLastCommit(moveEditor);
 
     assert(moveCommit);
     assert.deepEqual(moveCommit.tags, ['remote-move']);
-    assert.deepEqual(Editor.getPathByRuntimeId(moveEditor, movedBlockId), [0]);
-    assert.deepEqual(
-      Editor.getPathByRuntimeId(moveEditor, movedTextId),
-      [0, 0]
-    );
-    assert.equal(Editor.string(moveEditor, [0]), 'three');
+    assert.deepEqual(editorGetPathByRuntimeId(moveEditor, movedBlockId), [0]);
+    assert.deepEqual(editorGetPathByRuntimeId(moveEditor, movedTextId), [0, 0]);
+    assert.equal(editorString(moveEditor, [0]), 'three');
   });
 });

@@ -44,7 +44,6 @@ describe('MarkdownPlugin', () => {
   it('exposes the markdown api on the Plite runtime route', () => {
     const editor = createPlateEditor({
       plugins: [MarkdownPlugin],
-      runtime: 'plite',
     });
     const api = editor.api as typeof editor.api & {
       markdown: {

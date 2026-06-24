@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { previous as editorPrevious } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -11,5 +11,5 @@ export const input = (
     <block>two</block>
   </editor>
 );
-export const test = (editor) => Editor.previous(editor, { at: [1] });
+export const test = (editor) => editorPrevious(editor, { at: [1] });
 export const output = [<block>one</block>, [0]];

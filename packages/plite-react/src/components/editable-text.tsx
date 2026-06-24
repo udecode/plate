@@ -16,7 +16,7 @@ import {
   type DOMTextSyncOptOutReason,
   getDOMTextSyncCapability,
 } from '../dom-text-sync';
-import { Editor } from '../editable/runtime-editor-api';
+import { getRuntimeId as editorGetRuntimeId } from '../editable/runtime-editor-api';
 import { useEditor } from '../hooks/use-editor';
 import {
   type EditorTextSelectorContext,
@@ -567,9 +567,7 @@ const BoundEditableText = <T,>({
   ...props
 }: EditableTextProps<T>) => {
   const editor = useEditor();
-  const selectorRuntimeId = path
-    ? Editor.getRuntimeId(editor, path)
-    : runtimeId;
+  const selectorRuntimeId = path ? editorGetRuntimeId(editor, path) : runtimeId;
   const selectBoundText = useCallback(
     ({
       path: selectorPath,

@@ -6,7 +6,7 @@ import type {
   Range,
 } from '@platejs/plite';
 import { createEditor, NodeApi, OperationApi } from '@platejs/plite';
-import { Editor as EditorApi } from '@platejs/plite/internal';
+import { getSnapshot as editorGetSnapshot, replace as editorReplace } from '@platejs/plite/internal';
 
 export type YjsEditorAdapter = {
   readonly importing: () => boolean;
@@ -105,7 +105,7 @@ export const createYjsEditorAdapter = (editor: Editor): YjsEditorAdapter => {
   ): Element[] => {
     const baselineEditor = createEditor();
 
-    EditorApi.replace(baselineEditor, {
+    editorReplace(baselineEditor, {
       children: readChildren(),
       marks: null,
       selection: null,
@@ -131,7 +131,7 @@ export const createYjsEditorAdapter = (editor: Editor): YjsEditorAdapter => {
       tx.operations.replay(inverseOperations);
     });
 
-    return EditorApi.getSnapshot(baselineEditor).children;
+    return editorGetSnapshot(baselineEditor).children;
   };
 
   const replaceValue = (

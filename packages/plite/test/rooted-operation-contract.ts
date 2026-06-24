@@ -11,7 +11,6 @@ import {
   PointApi,
   RangeApi,
 } from '../src';
-import { Editor } from '../src/interfaces/editor';
 
 const paragraph = (text: string) =>
   ({
@@ -38,7 +37,7 @@ describe('rooted operation contract', () => {
       });
     });
 
-    const commit = Editor.getLastCommit(editor);
+    const commit = editorGetLastCommit(editor);
     assert(commit);
     assert.equal(Object.hasOwn(commit.operations[0]!, 'root'), false);
     assert.deepEqual(commit.operations, [
@@ -86,7 +85,7 @@ describe('rooted operation contract', () => {
     });
     const mainEditor = createEditorView(runtime);
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const ref = Editor.pathRef(headerEditor, [0]);
+    const ref = editorPathRef(headerEditor, [0]);
 
     assert.equal('root' in ref, false);
 
@@ -195,7 +194,7 @@ describe('rooted operation contract', () => {
       }
     );
     assert.equal(
-      Editor.getLastCommit(editor)?.operations.every(
+      editorGetLastCommit(editor)?.operations.every(
         (operation) => operation.root === 'header'
       ),
       true
@@ -229,7 +228,7 @@ describe('rooted operation contract', () => {
       }
     );
     assert.equal(
-      Editor.getLastCommit(editor)?.operations.every(
+      editorGetLastCommit(editor)?.operations.every(
         (operation) => operation.root === 'header'
       ),
       true
@@ -262,7 +261,7 @@ describe('rooted operation contract', () => {
         roots: { header: [paragraph('X')] },
       }
     );
-    assert.equal(Editor.getLastCommit(editor)?.operations[0]?.root, 'header');
+    assert.equal(editorGetLastCommit(editor)?.operations[0]?.root, 'header');
   });
 
   it('checks explicit point inserts against the target root', () => {
@@ -289,7 +288,7 @@ describe('rooted operation contract', () => {
         roots: { header: [paragraph('heXad')] },
       }
     );
-    assert.equal(Editor.getLastCommit(editor)?.operations[0]?.root, 'header');
+    assert.equal(editorGetLastCommit(editor)?.operations[0]?.root, 'header');
   });
 
   it('normalizes repairs inside the operation root', () => {
@@ -326,7 +325,7 @@ describe('rooted operation contract', () => {
       }
     );
     assert.equal(
-      Editor.getLastCommit(editor)?.operations.every(
+      editorGetLastCommit(editor)?.operations.every(
         (operation) => operation.root === 'header'
       ),
       true
@@ -374,7 +373,7 @@ describe('rooted operation contract', () => {
       }
     );
     assert.deepEqual(
-      Editor.getLastCommit(editor)?.operations.map(
+      editorGetLastCommit(editor)?.operations.map(
         (operation) => operation.root
       ),
       ['header', undefined, 'header']
@@ -413,7 +412,7 @@ describe('rooted operation contract', () => {
         },
       }
     );
-    assert.deepEqual(Editor.getLastCommit(editor)?.operations, [
+    assert.deepEqual(editorGetLastCommit(editor)?.operations, [
       {
         children: [],
         index: 0,
@@ -450,7 +449,7 @@ describe('rooted operation contract', () => {
         },
       }
     );
-    assert.deepEqual(Editor.getLastCommit(editor)?.operations, [
+    assert.deepEqual(editorGetLastCommit(editor)?.operations, [
       {
         children: [],
         index: 0,
@@ -478,7 +477,7 @@ describe('rooted operation contract', () => {
         },
       }
     );
-    assert.deepEqual(Editor.getLastCommit(editor)?.operations, [
+    assert.deepEqual(editorGetLastCommit(editor)?.operations, [
       {
         children: [paragraph('child')],
         index: 0,
@@ -503,7 +502,7 @@ describe('rooted operation contract', () => {
         children: [paragraph('body')],
       }
     );
-    assert.deepEqual(Editor.getLastCommit(editor)?.operations, [
+    assert.deepEqual(editorGetLastCommit(editor)?.operations, [
       {
         children: [paragraph('updated')],
         index: 0,
@@ -577,7 +576,7 @@ describe('rooted operation contract', () => {
       }
     );
     assert.equal(
-      Editor.getLastCommit(editor)?.operations.every(
+      editorGetLastCommit(editor)?.operations.every(
         (operation) => operation.root === 'header'
       ),
       true
@@ -607,7 +606,7 @@ describe('rooted operation contract', () => {
       }
     );
     assert.equal(
-      Editor.getLastCommit(editor)?.operations.every(
+      editorGetLastCommit(editor)?.operations.every(
         (operation) => operation.root === 'header'
       ),
       true
@@ -624,7 +623,7 @@ describe('rooted operation contract', () => {
       },
     });
 
-    Editor.insertNodes(editor, paragraph('new'), {
+    editorInsertNodes(editor, paragraph('new'), {
       at: { path: [0, 0], offset: 2, root: 'header' },
     });
 
@@ -636,7 +635,7 @@ describe('rooted operation contract', () => {
       }
     );
     assert.equal(
-      Editor.getLastCommit(editor)?.operations.every(
+      editorGetLastCommit(editor)?.operations.every(
         (operation) => operation.root === 'header'
       ),
       true
@@ -721,7 +720,7 @@ describe('rooted operation contract', () => {
       editor.read((state) => state.selection.get()),
       headerSelection
     );
-    assert.equal(Editor.getLastCommit(editor)?.operations[0]?.root, 'header');
+    assert.equal(editorGetLastCommit(editor)?.operations[0]?.root, 'header');
   });
 
   it('replays inverted selection operations through the restored root', () => {
@@ -749,7 +748,7 @@ describe('rooted operation contract', () => {
       tx.selection.set(headerSelection);
     });
 
-    const selectionOperation = Editor.getLastCommit(editor)?.operations.find(
+    const selectionOperation = editorGetLastCommit(editor)?.operations.find(
       (operation) => operation.type === 'set_selection'
     );
 

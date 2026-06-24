@@ -9,7 +9,12 @@ import {
   type Path,
   TextApi,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 import {
   createReactEditor,
   Editable,
@@ -98,7 +103,7 @@ const renderProjectedEditor = (
   children: Descendant[],
   source: PliteProjectionSource<Record<string, unknown>>
 ): RenderedProjectionEditor => {
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children,
     selection: null,
   });
@@ -204,7 +209,7 @@ describe('plite-react projections and selection contract', () => {
   test('registers product-noun decoration sources without a projectionStore prop', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           children: [{ text: 'Hello' }, { text: 'world' }],
@@ -250,7 +255,7 @@ describe('plite-react projections and selection contract', () => {
   test('creates decoration sources from plain ranges', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           children: [{ text: 'Hello world' }],
@@ -283,7 +288,7 @@ describe('plite-react projections and selection contract', () => {
   test('supports simple Editable decorate ranges without a decoration source', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ children: [{ text: 'Hello world!' }] }],
       selection: null,
     });
@@ -322,7 +327,7 @@ describe('plite-react projections and selection contract', () => {
       elements: [{ inline: true, type: 'link' }],
       name: 'inline-decoration-boundary',
     });
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           children: [
@@ -463,7 +468,7 @@ describe('plite-react projections and selection contract', () => {
   test('renderLeaf receives text marks and overlapping projection metadata without flattening', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ children: [{ bold: true, text: 'Hello world!' }] }],
       selection: null,
     });
@@ -719,12 +724,12 @@ describe('plite-react projections and selection contract', () => {
   test('mapped projection runtime buckets follow structural path changes through the source bus', async () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ children: [{ text: 'A' }] }, { children: [{ text: 'B' }] }],
       selection: null,
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const firstRuntimeId = snapshot.index.pathToId['0.0'];
     const secondRuntimeId = snapshot.index.pathToId['1.0'];
 
@@ -791,7 +796,7 @@ describe('plite-react projections and selection contract', () => {
       });
     });
 
-    expect(Editor.getPathByRuntimeId(editor, secondRuntimeId)).toEqual([0, 0]);
+    expect(editorGetPathByRuntimeId(editor, secondRuntimeId)).toEqual([0, 0]);
     expect(store.getRuntimeSnapshot(secondRuntimeId)).toEqual([
       {
         data: { blockIndex: 0 },
@@ -816,7 +821,7 @@ describe('plite-react projections and selection contract', () => {
   test('mapped projection runtime buckets follow nested nodes moved across levels', async () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'section',
@@ -830,7 +835,7 @@ describe('plite-react projections and selection contract', () => {
       selection: null,
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const firstRuntimeId = snapshot.index.pathToId['0.0.0'];
     const movedRuntimeId = snapshot.index.pathToId['0.1.0'];
     const trailingRuntimeId = snapshot.index.pathToId['1.0'];
@@ -876,7 +881,7 @@ describe('plite-react projections and selection contract', () => {
       });
     });
 
-    expect(Editor.getPathByRuntimeId(editor, movedRuntimeId)).toEqual([1, 0]);
+    expect(editorGetPathByRuntimeId(editor, movedRuntimeId)).toEqual([1, 0]);
     expect(store.getRuntimeSnapshot(movedRuntimeId)).toEqual([
       {
         data: { bold: true },
@@ -901,12 +906,12 @@ describe('plite-react projections and selection contract', () => {
   test('notifies only subscribers for runtime ids whose projection slices changed', async () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ children: [{ text: 'A' }] }, { children: [{ text: 'B' }] }],
       selection: null,
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const firstRuntimeId = snapshot.index.pathToId['0.0'];
     const secondRuntimeId = snapshot.index.pathToId['1.0'];
 
@@ -990,12 +995,12 @@ describe('plite-react projections and selection contract', () => {
   test('useDecorationSelector derives one runtime id without rerendering for sibling projections', async () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ children: [{ text: 'A' }] }, { children: [{ text: 'B' }] }],
       selection: null,
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const firstRuntimeId = snapshot.index.pathToId['0.0'];
     const secondRuntimeId = snapshot.index.pathToId['1.0'];
 
@@ -1092,12 +1097,12 @@ describe('plite-react projections and selection contract', () => {
   test('skips source recompute when decoration impact misses the source runtime scope', async () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ children: [{ text: 'A' }] }, { children: [{ text: 'B' }] }],
       selection: null,
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const firstRuntimeId = snapshot.index.pathToId['0.0'];
 
     if (!firstRuntimeId) {
@@ -1168,12 +1173,12 @@ describe('plite-react projections and selection contract', () => {
   test('passes resolved runtime scope into projection source reads', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ children: [{ text: 'A' }] }, { children: [{ text: 'B' }] }],
       selection: null,
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const firstRuntimeId = snapshot.index.pathToId['0.0'];
     const secondRuntimeId = snapshot.index.pathToId['1.0'];
 
@@ -1224,12 +1229,12 @@ describe('plite-react projections and selection contract', () => {
   test('Editable decorate walks only the scoped runtime subtree', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ children: [{ text: 'A' }] }, { children: [{ text: 'B' }] }],
       selection: null,
     });
 
-    const firstBlockRuntimeId = Editor.getSnapshot(editor).index.pathToId['0'];
+    const firstBlockRuntimeId = editorGetSnapshot(editor).index.pathToId['0'];
 
     if (!firstBlockRuntimeId) {
       throw new Error('Expected block runtime id for scoped decorate proof');
@@ -1256,7 +1261,7 @@ describe('plite-react projections and selection contract', () => {
   test('projection stores receive editor changes through the source bus', async () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ children: [{ text: 'A' }] }],
       selection: null,
     });
@@ -1319,14 +1324,14 @@ describe('plite-react projections and selection contract', () => {
   test('runtime-scoped projection stores avoid projecting full-document ranges into every bucket', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: Array.from({ length: 5 }, (_, index) => ({
         children: [{ text: `block-${index}` }],
       })),
       selection: null,
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const anchorTextRuntimeId = snapshot.index.pathToId['0.0'];
     const focusTextRuntimeId = snapshot.index.pathToId['4.0'];
     const mountedBlockRuntimeId = snapshot.index.pathToId['2'];
@@ -1396,7 +1401,7 @@ describe('plite-react projections and selection contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const runtimeId = Editor.getRuntimeId(headerEditor as never, [0, 0]);
+    const runtimeId = editorGetRuntimeId(headerEditor as never, [0, 0]);
 
     if (!runtimeId) {
       throw new Error('Expected runtime id for header root projection proof');
@@ -1464,12 +1469,12 @@ describe('plite-react projections and selection contract', () => {
   test('targeted source refresh only recomputes and notifies the matching source id', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ children: [{ text: 'A' }] }],
       selection: null,
     });
 
-    const runtimeId = Editor.getRuntimeId(editor, [0, 0]);
+    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
 
     if (!runtimeId) {
       throw new Error('Expected runtime id for source subscription proof');
@@ -1596,12 +1601,12 @@ describe('plite-react projections and selection contract', () => {
   test('external projection refresh requests DOM selection export only when explicit', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ children: [{ text: 'A' }] }],
       selection: null,
     });
 
-    const runtimeId = Editor.getRuntimeId(editor, [0, 0]);
+    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
 
     if (!runtimeId) {
       throw new Error('Expected runtime id for selection export proof');
@@ -1656,12 +1661,12 @@ describe('plite-react projections and selection contract', () => {
   test('projection metadata uses reference equality for non-JSON data', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ children: [{ text: 'A' }] }],
       selection: null,
     });
 
-    const runtimeId = Editor.getRuntimeId(editor, [0, 0]);
+    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
 
     if (!runtimeId) {
       throw new Error('Expected runtime id for projection metadata proof');
@@ -1708,12 +1713,12 @@ describe('plite-react projections and selection contract', () => {
   test('force refresh invalidates mounted runtime subscribers even when slices are unchanged', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ children: [{ text: 'A' }] }],
       selection: null,
     });
 
-    const runtimeId = Editor.getRuntimeId(editor, [0, 0]);
+    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
 
     if (!runtimeId) {
       throw new Error(

@@ -18,7 +18,18 @@ import {
   RangeApi,
   type Element as PliteElement,
 } from '../interfaces';
-import { type Editor, Editor as EditorApi } from '../interfaces/editor';
+import {
+  above as editorAbove,
+  after as editorAfter,
+  before as editorBefore,
+  getChildren as editorGetChildren,
+  hasPath as editorHasPath,
+  isBlock as editorIsBlock,
+  leaf as editorLeaf,
+  point as editorPoint,
+  unhangRange as editorUnhangRange,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import type { TextMutationMethods } from '../interfaces/transforms/text';
 import { getConsistentRangeTextMarks } from '../internal/range-text-marks';
 import { getLocationRoot, stripLocationRoots } from '../internal/root-location';
@@ -76,7 +87,7 @@ const shouldRemoveEmptyForwardStartBlock = (
     !plan.effectiveEndBlockPath ||
     plan.effectiveStartBlockPath.length !== 1 ||
     plan.effectiveEndBlockPath.length !== 1 ||
-    !EditorApi.hasPath(editor, plan.effectiveStartBlockPath)
+    !editorHasPath(editor, plan.effectiveStartBlockPath)
   ) {
     return false;
   }
@@ -85,11 +96,11 @@ const shouldRemoveEmptyForwardStartBlock = (
 
   return (
     NodeApi.isElement(startBlock) &&
-    EditorApi.isBlock(editor, startBlock) &&
+    editorIsBlock(editor, startBlock) &&
     NodeApi.string(startBlock) === '' &&
     PointApi.equals(
       plan.start,
-      EditorApi.point(editor, plan.effectiveStartBlockPath, { edge: 'end' })
+      editorPoint(editor, plan.effectiveStartBlockPath, { edge: 'end' })
     )
   );
 };
@@ -99,7 +110,7 @@ const getClosestIsolatingAncestor = (
   at: Point,
   voids: boolean
 ) =>
-  EditorApi.above(editor, {
+  editorAbove(editor, {
     at,
     match: (node) =>
       NodeApi.isElement(node) && getEditorSchema(editor).isIsolating(node),
@@ -141,7 +152,7 @@ const resolveMergePoint = (
   }
 
   return (
-    EditorApi.after(editor, liveStartPoint, {
+    editorAfter(editor, liveStartPoint, {
       distance: 1,
       unit: 'offset',
       voids: plan.voids,
@@ -193,8 +204,8 @@ const resolveDeleteTarget = (
           kind: 'path',
           path: emptyInlinePath,
           fallbackPoint:
-            EditorApi.before(editor, emptyInlinePath, { voids: true }) ??
-            EditorApi.after(editor, emptyInlinePath, { voids: true }),
+            editorBefore(editor, emptyInlinePath, { voids: true }) ??
+            editorAfter(editor, emptyInlinePath, { voids: true }),
           initialAt,
         };
       }
@@ -244,8 +255,8 @@ const resolveDeleteTarget = (
       (pathContainsPoint(at, selection.anchor) ||
         pathContainsPoint(at, selection.focus));
     const fallbackPoint = selectionInside
-      ? (EditorApi.before(editor, at, { voids: true }) ??
-        EditorApi.after(editor, at, { voids: true }))
+      ? (editorBefore(editor, at, { voids: true }) ??
+        editorAfter(editor, at, { voids: true }))
       : undefined;
 
     return {
@@ -262,35 +273,35 @@ const resolveDeleteTarget = (
 
   if (!hanging) {
     const [, end] = RangeApi.edges(at);
-    const endOfDocument = EditorApi.point(editor, [], { edge: 'end' });
+    const endOfDocument = editorPoint(editor, [], { edge: 'end' });
 
     if (!PointApi.equals(end, endOfDocument)) {
-      at = EditorApi.unhangRange(editor, at, { voids });
+      at = editorUnhangRange(editor, at, { voids });
     }
   }
 
   let [start, end] = RangeApi.edges(at);
-  const startBlock = EditorApi.above(editor, {
+  const startBlock = editorAbove(editor, {
     at: start,
-    match: (node) => NodeApi.isElement(node) && EditorApi.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
     mode: 'highest',
     voids,
   });
-  const endBlock = EditorApi.above(editor, {
+  const endBlock = editorAbove(editor, {
     at: end,
-    match: (node) => NodeApi.isElement(node) && EditorApi.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
     mode: 'highest',
     voids,
   });
-  const startMergeBlock = EditorApi.above(editor, {
+  const startMergeBlock = editorAbove(editor, {
     at: start,
-    match: (node) => NodeApi.isElement(node) && EditorApi.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
     mode: 'lowest',
     voids,
   });
-  const endMergeBlock = EditorApi.above(editor, {
+  const endMergeBlock = editorAbove(editor, {
     at: end,
-    match: (node) => NodeApi.isElement(node) && EditorApi.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
     mode: 'lowest',
     voids,
   });
@@ -314,7 +325,7 @@ const resolveDeleteTarget = (
   const endNonEditable = voids ? undefined : getHighestNonEditable(editor, end);
 
   if (startNonEditable) {
-    const before = EditorApi.before(editor, start);
+    const before = editorBefore(editor, start);
 
     if (
       before &&
@@ -326,7 +337,7 @@ const resolveDeleteTarget = (
   }
 
   if (endNonEditable) {
-    const after = EditorApi.after(editor, end);
+    const after = editorAfter(editor, end);
 
     if (after && endBlock && PathApi.isAncestor(endBlock[1], after.path)) {
       end = after;
@@ -339,7 +350,7 @@ const resolveDeleteTarget = (
     !!effectiveEndBlock &&
     PointApi.equals(
       end,
-      EditorApi.point(editor, effectiveEndBlock[1], { edge: 'start' })
+      editorPoint(editor, effectiveEndBlock[1], { edge: 'start' })
     );
   const originalHangingBlockRange =
     !!initialAt &&
@@ -347,10 +358,9 @@ const resolveDeleteTarget = (
     !RangeApi.isCollapsed(initialAt) &&
     (() => {
       const [, originalEnd] = RangeApi.edges(initialAt);
-      const originalEndBlock = EditorApi.above(editor, {
+      const originalEndBlock = editorAbove(editor, {
         at: originalEnd,
-        match: (node) =>
-          NodeApi.isElement(node) && EditorApi.isBlock(editor, node),
+        match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
         mode: 'highest',
         voids,
       });
@@ -361,7 +371,7 @@ const resolveDeleteTarget = (
         !PathApi.equals(effectiveStartBlock[1], originalEndBlock[1]) &&
         PointApi.equals(
           originalEnd,
-          EditorApi.point(editor, originalEndBlock[1], { edge: 'start' })
+          editorPoint(editor, originalEndBlock[1], { edge: 'start' })
         )
       );
     })();
@@ -533,7 +543,7 @@ const resolveDeleteSelection = (
     currentSelection &&
     (plan.startNonEditable != null || plan.endNonEditable != null)
       ? currentSelection.anchor
-      : !plan.isCollapsed && EditorApi.hasPath(editor, plan.start.path)
+      : !plan.isCollapsed && editorHasPath(editor, plan.start.path)
         ? { path: [...plan.start.path], offset: plan.start.offset }
         : (startPoint ?? endPoint);
   let point = normalizeFinalDeletePoint(editor, collapseTarget, {
@@ -567,7 +577,7 @@ const resolveDeleteSelection = (
   ) {
     const parentPath = point.path.slice(0, -1) as Path;
 
-    if (EditorApi.hasPath(editor, parentPath)) {
+    if (editorHasPath(editor, parentPath)) {
       const parent = getCurrentNode(editor, parentPath);
 
       if (
@@ -575,23 +585,20 @@ const resolveDeleteSelection = (
         getEditorSchema(editor).isInline(parent) &&
         PointApi.equals(
           point,
-          EditorApi.point(editor, parentPath, { edge: 'start' })
+          editorPoint(editor, parentPath, { edge: 'start' })
         )
       ) {
         const previousSiblingPath =
           parentPath.at(-1) === 0 ? null : PathApi.previous(parentPath);
 
-        if (
-          previousSiblingPath &&
-          EditorApi.hasPath(editor, previousSiblingPath)
-        ) {
+        if (previousSiblingPath && editorHasPath(editor, previousSiblingPath)) {
           const previousSibling = getCurrentNode(editor, previousSiblingPath);
 
           if (isTextNode(previousSibling) && previousSibling.text === '') {
             const nextSiblingPath =
               parentPath.at(-1) == null ? null : PathApi.next(parentPath);
 
-            if (nextSiblingPath && EditorApi.hasPath(editor, nextSiblingPath)) {
+            if (nextSiblingPath && editorHasPath(editor, nextSiblingPath)) {
               const nextSibling = getCurrentNode(editor, nextSiblingPath);
 
               if (isTextNode(nextSibling) && nextSibling.text === '') {
@@ -685,9 +692,9 @@ const normalizeFinalDeletePoint = (
     return point;
   }
 
-  if (!EditorApi.hasPath(editor, point.path as Path)) {
-    return EditorApi.getChildren(editor).length > 0
-      ? EditorApi.point(editor, [], { edge: 'start' })
+  if (!editorHasPath(editor, point.path as Path)) {
+    return editorGetChildren(editor).length > 0
+      ? editorPoint(editor, [], { edge: 'start' })
       : point;
   }
 
@@ -695,7 +702,7 @@ const normalizeFinalDeletePoint = (
     const previousSiblingPath =
       point.path.at(-1) === 0 ? null : PathApi.previous(point.path as Path);
 
-    if (previousSiblingPath && EditorApi.hasPath(editor, previousSiblingPath)) {
+    if (previousSiblingPath && editorHasPath(editor, previousSiblingPath)) {
       const previousSibling = getCurrentNode(editor, previousSiblingPath);
 
       if (
@@ -704,14 +711,14 @@ const normalizeFinalDeletePoint = (
         !getEditorSchema(editor).isVoid(previousSibling) &&
         NodeApi.string(previousSibling) === ''
       ) {
-        return EditorApi.point(editor, previousSiblingPath, { edge: 'start' });
+        return editorPoint(editor, previousSiblingPath, { edge: 'start' });
       }
     }
 
     const nextSiblingPath =
       point.path.at(-1) == null ? null : PathApi.next(point.path as Path);
 
-    if (nextSiblingPath && EditorApi.hasPath(editor, nextSiblingPath)) {
+    if (nextSiblingPath && editorHasPath(editor, nextSiblingPath)) {
       const nextSibling = getCurrentNode(editor, nextSiblingPath);
 
       if (
@@ -720,7 +727,7 @@ const normalizeFinalDeletePoint = (
         !getEditorSchema(editor).isVoid(nextSibling) &&
         NodeApi.string(nextSibling) === ''
       ) {
-        return EditorApi.point(editor, nextSiblingPath, { edge: 'start' });
+        return editorPoint(editor, nextSiblingPath, { edge: 'start' });
       }
     }
   }
@@ -729,13 +736,13 @@ const normalizeFinalDeletePoint = (
     if (
       !options.allowForwardBoundaryJump &&
       point.path.length >= 2 &&
-      EditorApi.hasPath(editor, point.path as Path) &&
+      editorHasPath(editor, point.path as Path) &&
       isTextNode(getCurrentNode(editor, point.path as Path))
     ) {
       const currentTextNode = getCurrentNode(editor, point.path as Path);
       const parentPath = point.path.slice(0, -1) as Path;
 
-      if (EditorApi.hasPath(editor, parentPath)) {
+      if (editorHasPath(editor, parentPath)) {
         const parent = getCurrentNode(editor, parentPath);
 
         if (
@@ -747,24 +754,21 @@ const normalizeFinalDeletePoint = (
           const spacerPath =
             parentPath.at(-1) == null ? null : PathApi.next(parentPath);
 
-          if (spacerPath && EditorApi.hasPath(editor, spacerPath)) {
+          if (spacerPath && editorHasPath(editor, spacerPath)) {
             const spacer = getCurrentNode(editor, spacerPath);
 
             if (isTextNode(spacer) && spacer.text === '') {
               const nextSiblingPath =
                 spacerPath.at(-1) == null ? null : PathApi.next(spacerPath);
 
-              if (
-                nextSiblingPath &&
-                EditorApi.hasPath(editor, nextSiblingPath)
-              ) {
+              if (nextSiblingPath && editorHasPath(editor, nextSiblingPath)) {
                 const nextSibling = getCurrentNode(editor, nextSiblingPath);
 
                 if (
                   NodeApi.isElement(nextSibling) &&
                   getEditorSchema(editor).isInline(nextSibling)
                 ) {
-                  return EditorApi.point(editor, nextSiblingPath, {
+                  return editorPoint(editor, nextSiblingPath, {
                     edge: 'start',
                   });
                 }
@@ -777,12 +781,12 @@ const normalizeFinalDeletePoint = (
 
     if (
       point.path.length > 0 &&
-      EditorApi.hasPath(editor, point.path as Path) &&
+      editorHasPath(editor, point.path as Path) &&
       isTextNode(getCurrentNode(editor, point.path as Path))
     ) {
       const parentPath = point.path.slice(0, -1) as Path;
 
-      if (EditorApi.hasPath(editor, parentPath)) {
+      if (editorHasPath(editor, parentPath)) {
         const parent = getCurrentNode(editor, parentPath);
 
         if (
@@ -791,7 +795,7 @@ const normalizeFinalDeletePoint = (
           getEditorSchema(editor).isVoid(parent) &&
           PointApi.equals(
             point,
-            EditorApi.point(editor, parentPath, { edge: 'start' })
+            editorPoint(editor, parentPath, { edge: 'start' })
           )
         ) {
           const previousSiblingPath =
@@ -799,9 +803,9 @@ const normalizeFinalDeletePoint = (
 
           if (
             previousSiblingPath &&
-            EditorApi.hasPath(editor, previousSiblingPath)
+            editorHasPath(editor, previousSiblingPath)
           ) {
-            return EditorApi.point(editor, previousSiblingPath, {
+            return editorPoint(editor, previousSiblingPath, {
               edge: 'end',
             });
           }
@@ -822,7 +826,7 @@ const normalizeFinalDeletePoint = (
         isTextNode(currentNode) &&
         point.offset === currentNode.text.length &&
         nextSiblingPath &&
-        EditorApi.hasPath(editor, nextSiblingPath)
+        editorHasPath(editor, nextSiblingPath)
       ) {
         const nextSibling = getCurrentNode(editor, nextSiblingPath);
 
@@ -831,14 +835,14 @@ const normalizeFinalDeletePoint = (
           (!getEditorSchema(editor).isInline(nextSibling) ||
             getEditorSchema(editor).isVoid(nextSibling))
         ) {
-          return EditorApi.point(editor, nextSiblingPath, { edge: 'start' });
+          return editorPoint(editor, nextSiblingPath, { edge: 'start' });
         }
       }
 
       if (point.path.length >= 2) {
         const parentPath = point.path.slice(0, -1) as Path;
 
-        if (EditorApi.hasPath(editor, parentPath)) {
+        if (editorHasPath(editor, parentPath)) {
           const parent = getCurrentNode(editor, parentPath);
 
           if (
@@ -846,7 +850,7 @@ const normalizeFinalDeletePoint = (
             parentPath.length > 1 &&
             PointApi.equals(
               point,
-              EditorApi.point(editor, parentPath, { edge: 'end' })
+              editorPoint(editor, parentPath, { edge: 'end' })
             )
           ) {
             if (
@@ -860,8 +864,8 @@ const normalizeFinalDeletePoint = (
             const afterParentPath =
               parentPath.at(-1) == null ? null : PathApi.next(parentPath);
 
-            if (afterParentPath && EditorApi.hasPath(editor, afterParentPath)) {
-              return EditorApi.point(editor, afterParentPath, {
+            if (afterParentPath && editorHasPath(editor, afterParentPath)) {
+              return editorPoint(editor, afterParentPath, {
                 edge: 'start',
               });
             }
@@ -874,13 +878,13 @@ const normalizeFinalDeletePoint = (
   }
 
   if (
-    EditorApi.hasPath(editor, point.path as Path) &&
+    editorHasPath(editor, point.path as Path) &&
     point.path.length >= 2 &&
     isTextNode(getCurrentNode(editor, point.path as Path)) &&
     (() => {
       const parentPath = point.path.slice(0, -1) as Path;
 
-      if (!EditorApi.hasPath(editor, parentPath) || parentPath.at(-1) === 0) {
+      if (!editorHasPath(editor, parentPath) || parentPath.at(-1) === 0) {
         return false;
       }
 
@@ -894,10 +898,7 @@ const normalizeFinalDeletePoint = (
           NodeApi.string(parent) === ''
         ) &&
         parentPath.length > 1 &&
-        PointApi.equals(
-          point,
-          EditorApi.point(editor, parentPath, { edge: 'end' })
-        )
+        PointApi.equals(point, editorPoint(editor, parentPath, { edge: 'end' }))
       );
     })()
   ) {
@@ -905,11 +906,11 @@ const normalizeFinalDeletePoint = (
     const nextSiblingPath =
       parentPath.at(-1) == null ? null : PathApi.next(parentPath);
 
-    if (nextSiblingPath && EditorApi.hasPath(editor, nextSiblingPath)) {
+    if (nextSiblingPath && editorHasPath(editor, nextSiblingPath)) {
       const nextSibling = getCurrentNode(editor, nextSiblingPath);
 
       if (isTextNode(nextSibling) && nextSibling.text.length > 0) {
-        return EditorApi.point(editor, nextSiblingPath, { edge: 'start' });
+        return editorPoint(editor, nextSiblingPath, { edge: 'start' });
       }
     }
   }
@@ -919,7 +920,7 @@ const normalizeFinalDeletePoint = (
       return point;
     }
 
-    const currentNode = EditorApi.hasPath(editor, point.path as Path)
+    const currentNode = editorHasPath(editor, point.path as Path)
       ? getCurrentNode(editor, point.path as Path)
       : null;
 
@@ -930,7 +931,7 @@ const normalizeFinalDeletePoint = (
     const nextSiblingPath =
       point.path.at(-1) == null ? null : PathApi.next(point.path);
 
-    if (!nextSiblingPath || !EditorApi.hasPath(editor, nextSiblingPath)) {
+    if (!nextSiblingPath || !editorHasPath(editor, nextSiblingPath)) {
       return point;
     }
 
@@ -939,13 +940,13 @@ const normalizeFinalDeletePoint = (
     return NodeApi.isElement(nextSibling) &&
       getEditorSchema(editor).isInline(nextSibling) &&
       nextSibling.children.length > 0
-      ? EditorApi.point(editor, nextSiblingPath, { edge: 'start' })
+      ? editorPoint(editor, nextSiblingPath, { edge: 'start' })
       : point;
   }
 
   const parentPath = point.path.slice(0, -1) as Path;
 
-  if (!EditorApi.hasPath(editor, parentPath) || parentPath.at(-1) === 0) {
+  if (!editorHasPath(editor, parentPath) || parentPath.at(-1) === 0) {
     return point;
   }
 
@@ -969,14 +970,14 @@ const normalizeFinalDeletePoint = (
     const previousSiblingPath =
       parentPath.at(-1) === 0 ? null : PathApi.previous(parentPath);
 
-    if (previousSiblingPath && EditorApi.hasPath(editor, previousSiblingPath)) {
+    if (previousSiblingPath && editorHasPath(editor, previousSiblingPath)) {
       const previousSibling = getCurrentNode(editor, previousSiblingPath);
 
       if (isTextNode(previousSibling) && previousSibling.text === '') {
         const nextSiblingPath =
           parentPath.at(-1) == null ? null : PathApi.next(parentPath);
 
-        if (nextSiblingPath && EditorApi.hasPath(editor, nextSiblingPath)) {
+        if (nextSiblingPath && editorHasPath(editor, nextSiblingPath)) {
           const nextSibling = getCurrentNode(editor, nextSiblingPath);
 
           if (isTextNode(nextSibling) && nextSibling.text === '') {
@@ -991,23 +992,23 @@ const normalizeFinalDeletePoint = (
 
   if (
     isTextNode(getCurrentNode(editor, point.path as Path)) &&
-    PointApi.equals(point, EditorApi.point(editor, point.path, { edge: 'end' }))
+    PointApi.equals(point, editorPoint(editor, point.path, { edge: 'end' }))
   ) {
     const nextSiblingPath =
       parentPath.at(-1) == null ? null : PathApi.next(parentPath);
 
-    if (nextSiblingPath && EditorApi.hasPath(editor, nextSiblingPath)) {
+    if (nextSiblingPath && editorHasPath(editor, nextSiblingPath)) {
       const nextSibling = getCurrentNode(editor, nextSiblingPath);
 
       if (isTextNode(nextSibling) && nextSibling.text.length > 0) {
-        return EditorApi.point(editor, nextSiblingPath, { edge: 'start' });
+        return editorPoint(editor, nextSiblingPath, { edge: 'start' });
       }
     }
   }
 
   const previousSiblingPath = PathApi.previous(parentPath);
 
-  if (!EditorApi.hasPath(editor, previousSiblingPath)) {
+  if (!editorHasPath(editor, previousSiblingPath)) {
     return point;
   }
 
@@ -1040,10 +1041,10 @@ const getCollapsedDeleteTarget = (
   const { reverse, distance, unit, voids } = options;
   const pointTarget = matchPointRootVisibility(
     reverse
-      ? (EditorApi.before(editor, at, { distance, unit, voids }) ??
-          EditorApi.point(editor, [], { edge: 'start' }))
-      : (EditorApi.after(editor, at, { distance, unit, voids }) ??
-          EditorApi.point(editor, [], { edge: 'end' })),
+      ? (editorBefore(editor, at, { distance, unit, voids }) ??
+          editorPoint(editor, [], { edge: 'start' }))
+      : (editorAfter(editor, at, { distance, unit, voids }) ??
+          editorPoint(editor, [], { edge: 'end' })),
     at
   );
 
@@ -1051,7 +1052,7 @@ const getCollapsedDeleteTarget = (
     return pointTarget;
   }
 
-  const [leaf] = EditorApi.leaf(editor, at);
+  const [leaf] = editorLeaf(editor, at);
   const atBoundary = reverse ? at.offset === 0 : at.offset === leaf.text.length;
 
   if (!atBoundary) {
@@ -1059,8 +1060,8 @@ const getCollapsedDeleteTarget = (
   }
 
   const offsetTarget = reverse
-    ? EditorApi.before(editor, at, { distance, unit: 'offset', voids })
-    : EditorApi.after(editor, at, { distance, unit: 'offset', voids });
+    ? editorBefore(editor, at, { distance, unit: 'offset', voids })
+    : editorAfter(editor, at, { distance, unit: 'offset', voids });
 
   if (!offsetTarget) {
     return pointTarget;
@@ -1072,15 +1073,15 @@ const getCollapsedDeleteTarget = (
     return at;
   }
 
-  const currentBlock = EditorApi.above(editor, {
+  const currentBlock = editorAbove(editor, {
     at,
-    match: (node) => NodeApi.isElement(node) && EditorApi.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
     mode: 'lowest',
     voids,
   });
-  const targetBlock = EditorApi.above(editor, {
+  const targetBlock = editorAbove(editor, {
     at: pointTarget,
-    match: (node) => NodeApi.isElement(node) && EditorApi.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
     mode: 'lowest',
     voids,
   });
@@ -1089,7 +1090,7 @@ const getCollapsedDeleteTarget = (
     targetBlock &&
     PathApi.equals(currentBlock[1], targetBlock[1]) &&
     !PathApi.equals(at.path, pointTarget.path) &&
-    EditorApi.hasPath(editor, pointTarget.path)
+    editorHasPath(editor, pointTarget.path)
       ? getCurrentNode(editor, pointTarget.path)
       : null;
 
@@ -1101,7 +1102,7 @@ const getCollapsedDeleteTarget = (
       reverse &&
       pointTarget.offset === sameBlockTextBoundaryTarget.text.length
     ) {
-      const target = EditorApi.before(editor, pointTarget, {
+      const target = editorBefore(editor, pointTarget, {
         distance: 1,
         unit: 'character',
         voids,
@@ -1111,7 +1112,7 @@ const getCollapsedDeleteTarget = (
     }
 
     if (!reverse && pointTarget.offset === 0) {
-      const target = EditorApi.after(editor, pointTarget, {
+      const target = editorAfter(editor, pointTarget, {
         distance: 1,
         unit: 'character',
         voids,
@@ -1127,12 +1128,12 @@ const getCollapsedDeleteTarget = (
     ((reverse &&
       PointApi.equals(
         at,
-        EditorApi.point(editor, currentBlock[1], { edge: 'start' })
+        editorPoint(editor, currentBlock[1], { edge: 'start' })
       )) ||
       (!reverse &&
         PointApi.equals(
           at,
-          EditorApi.point(editor, currentBlock[1], { edge: 'end' })
+          editorPoint(editor, currentBlock[1], { edge: 'end' })
         ))) &&
     !PathApi.equals(currentBlock[1], targetBlock[1])
   ) {

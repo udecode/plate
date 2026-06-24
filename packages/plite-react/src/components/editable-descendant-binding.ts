@@ -7,7 +7,11 @@ import type {
   Text as PliteTextNode,
 } from '@platejs/plite';
 
-import { Editor } from '../editable/runtime-editor-api';
+import {
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  isEditor as editorIsEditor,
+} from '../editable/runtime-editor-api';
 
 import { getSnapshotPathKey } from './editable-dom-strategy-helpers';
 
@@ -41,7 +45,7 @@ export const readEditableDescendantBinding = ({
   renderSegment?: unknown;
   renderText?: unknown;
 }): EditableDescendantBinding => {
-  if (!path || !node || Editor.isEditor(node)) {
+  if (!path || !node || editorIsEditor(node)) {
     return {
       childRuntimeIds: EMPTY_RUNTIME_IDS,
       directTextChildNodes: EMPTY_DIRECT_TEXT_CHILD_NODES,
@@ -51,7 +55,7 @@ export const readEditableDescendantBinding = ({
   }
 
   const descendant = node as Descendant;
-  const snapshot = Editor.getSnapshot(editor);
+  const snapshot = editorGetSnapshot(editor);
   const usesDirectTextChildren =
     !isEditableTextNode(descendant) &&
     !renderLeaf &&
@@ -67,7 +71,7 @@ export const readEditableDescendantBinding = ({
 
             return (
               snapshot.index.pathToId[getSnapshotPathKey(childPath)] ??
-              Editor.getRuntimeId(editor, childPath) ??
+              editorGetRuntimeId(editor, childPath) ??
               ''
             );
           })

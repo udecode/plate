@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getChildren as editorGetChildren,
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 
 import { createEditor, type Descendant, NodeApi } from '../src';
 
@@ -16,7 +20,7 @@ const paragraph = (text: string, props: Record<string, unknown> = {}) =>
 const setupEditor = () => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [paragraph('one'), paragraph('two')],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
@@ -58,9 +62,9 @@ describe('transaction target runtime', () => {
     });
 
     assert.equal(calls, 1);
-    assert.equal(getElementType(Editor.getChildren(editor)[0]!), 'paragraph');
-    assert.equal(getElementType(Editor.getChildren(editor)[1]!), 'heading-one');
-    assert.deepEqual(Editor.getSelection(editor), {
+    assert.equal(getElementType(editorGetChildren(editor)[0]!), 'paragraph');
+    assert.equal(getElementType(editorGetChildren(editor)[1]!), 'heading-one');
+    assert.deepEqual(editorGetSelection(editor), {
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -82,8 +86,8 @@ describe('transaction target runtime', () => {
     });
 
     assert.equal(calls, 0);
-    assert.equal(getElementType(Editor.getChildren(editor)[0]!), 'paragraph');
-    assert.equal(getElementType(Editor.getChildren(editor)[1]!), 'heading-one');
+    assert.equal(getElementType(editorGetChildren(editor)[0]!), 'paragraph');
+    assert.equal(getElementType(editorGetChildren(editor)[1]!), 'heading-one');
   });
 
   it('does not invoke target runtime for explicit primitive targets', () => {
@@ -177,7 +181,7 @@ describe('transaction target runtime', () => {
   it('exposes model selection reads without target freshness', () => {
     const editor = setupEditor();
     let calls = 0;
-    let selection = null as ReturnType<typeof Editor.getSelection>;
+    let selection = null as ReturnType<typeof editorGetSelection>;
 
     setEditorTargetRuntime(editor, {
       resolveImplicitTarget() {

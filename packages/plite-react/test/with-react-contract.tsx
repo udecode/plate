@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createEditor } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  insertText as editorInsertText,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 
 const withNavigator = async (userAgent: string, run: () => Promise<void>) => {
   const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
@@ -32,7 +35,7 @@ test('react() clears pending selection before Android insertText bridge calls', 
       ]);
       const editor = createEditor({ extensions: [react()] });
 
-      Editor.replace(editor, {
+      editorReplace(editor, {
         children: [
           {
             type: 'paragraph',
@@ -51,7 +54,7 @@ test('react() clears pending selection before Android insertText bridge calls', 
       });
 
       editor.update((tx) => {
-        Editor.insertText(editor, '!');
+        editorInsertText(editor, '!');
       });
 
       assert.equal(EDITOR_TO_PENDING_SELECTION.has(editor), false);

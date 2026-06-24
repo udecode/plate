@@ -36,10 +36,10 @@ export const insertEmptyCodeBlock = (
 
     editor.update((tx) => {
       tx.nodes.insert(
-        editor.api.create.block({
+        {
           children: [{ text: '' }],
           type: defaultType,
-        }),
+        },
         {
           at: nextPath,
           select: true,

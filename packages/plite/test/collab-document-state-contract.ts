@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getCollabStatePatches as editorGetCollabStatePatches,
+  getLastCommit as editorGetLastCommit,
+} from '@platejs/plite/internal';
 
 import { history } from '@platejs/plite-history';
 
@@ -72,7 +75,7 @@ describe('collab document state contract', () => {
       { tag: ['local-edit', 'collab-export'] }
     );
 
-    const sourceCommit = Editor.getLastCommit(source);
+    const sourceCommit = editorGetLastCommit(source);
     assert(sourceCommit);
     assert.deepEqual(sourceCommit.operations, []);
     assert.deepEqual(sourceCommit.statePatches, [
@@ -89,7 +92,7 @@ describe('collab document state contract', () => {
       tx.statePatches.replay(sourceCommit.statePatches);
     }, remoteCollabOptions);
 
-    const remoteCommit = Editor.getLastCommit(remote);
+    const remoteCommit = editorGetLastCommit(remote);
     assert(remoteCommit);
     assert.equal(readTitle(remote), 'Q3 Plan');
     assert.deepEqual(remoteCommit.operations, []);
@@ -114,7 +117,7 @@ describe('collab document state contract', () => {
       { tag: ['local-edit', 'collab-export'] }
     );
 
-    const sourceCommit = Editor.getLastCommit(source);
+    const sourceCommit = editorGetLastCommit(source);
     assert(sourceCommit);
     assert.deepEqual(sourceCommit.statePatches, [
       {
@@ -128,7 +131,7 @@ describe('collab document state contract', () => {
         value: 'draft only',
       },
     ]);
-    assert.deepEqual(Editor.getCollabStatePatches(source, sourceCommit), [
+    assert.deepEqual(editorGetCollabStatePatches(source, sourceCommit), [
       {
         key: documentTitle.key,
         previousValue: 'Q2 Plan',

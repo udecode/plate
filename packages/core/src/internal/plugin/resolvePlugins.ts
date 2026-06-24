@@ -1,10 +1,7 @@
 import {
   assignCurrentRuntimeApi,
-  assignCurrentRuntimeTransforms,
-  getCurrentRuntimeTransforms,
   syncCurrentRuntimeMethods,
 } from '../currentRuntimeBridge';
-import { installLegacyRuntimePluginTxTransformBridge } from '../editor/legacyRuntimeUpdateBridge';
 import { isDefined } from '@udecode/utils';
 import merge from 'lodash/merge.js';
 import { createVanillaStore } from 'zustand-x/vanilla';
@@ -239,15 +236,7 @@ const resolvePluginStores = (
 };
 
 const resolvePluginMethods = (editor: BasePlateEditor, plugin: any) => {
-  const legacyTransforms = getCurrentRuntimeTransforms(editor);
   plugin.runtimeTransforms ??= {};
-  const hasTransformExtensions = plugin.__apiExtensions?.some(
-    (extension: any) => extension.isTransform
-  );
-
-  if (hasTransformExtensions) {
-    installLegacyRuntimePluginTxTransformBridge(editor, plugin);
-  }
 
   // Merge APIs
   Object.entries(plugin.api).forEach(([apiKey, apiFunction]) => {
@@ -258,47 +247,24 @@ const resolvePluginMethods = (editor: BasePlateEditor, plugin: any) => {
   if (plugin.__apiExtensions && plugin.__apiExtensions.length > 0) {
     plugin.__apiExtensions.forEach(
       ({ extension, isOverride, isPluginSpecific, isTransform }: any) => {
+        if (isTransform) {
+          throw new Error(
+            `[Plate] Plugin "${plugin.key}" extends legacy editor transforms. Use extendTx or extendTxGroup instead.`
+          );
+        }
+
         const context = {
           ...(getEditorPlugin(editor, plugin) as any),
           api: editor.api,
         };
 
-        if (isOverride || isTransform) {
-          context.tf = legacyTransforms;
-        }
-
         const newExtensions = extension(context);
 
         if (isOverride) {
-          // Handle combined API and editor transform overrides
           if (newExtensions.api) {
             merge(editor.api, newExtensions.api);
             merge(plugin.api, newExtensions.api);
             assignCurrentRuntimeApi(editor, editor.api);
-          }
-          if (newExtensions.tf) {
-            merge(legacyTransforms, newExtensions.tf);
-            merge(plugin.runtimeTransforms, newExtensions.tf);
-            assignCurrentRuntimeTransforms(editor, newExtensions.tf);
-          }
-        } else if (isTransform) {
-          // Handle transforms
-          if (isPluginSpecific) {
-            // Plugin-specific transform
-            if (!(legacyTransforms as any)[plugin.key]) {
-              (legacyTransforms as any)[plugin.key] = {};
-            }
-            if (!(plugin.runtimeTransforms as any)[plugin.key]) {
-              (plugin.runtimeTransforms as any)[plugin.key] = {};
-            }
-
-            merge((legacyTransforms as any)[plugin.key], newExtensions);
-            merge((plugin.runtimeTransforms as any)[plugin.key], newExtensions);
-          } else {
-            // Editor-wide transform
-            merge(legacyTransforms, newExtensions);
-            merge(plugin.runtimeTransforms, newExtensions);
-            assignCurrentRuntimeTransforms(editor, newExtensions);
           }
         } else if (isPluginSpecific) {
           // Handle APIs - Plugin-specific API

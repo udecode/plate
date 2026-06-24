@@ -1,7 +1,10 @@
 import { executeCommand } from '../core/command-registry';
 import { getCurrentSelection } from '../core/public-state';
 import { getEditorTransformRegistry } from '../core/transform-registry';
-import { Editor } from '../interfaces/editor';
+import {
+  after as editorAfter,
+  before as editorBefore,
+} from '../interfaces/editor';
 import { type Range, RangeApi } from '../interfaces/range';
 import type { SelectionMutationMethods } from '../interfaces/transforms/selection';
 
@@ -33,8 +36,8 @@ const applyMove: SelectionMutationMethods['move'] = (editor, options = {}) => {
 
   if (edge == null || edge === 'anchor') {
     const point = reverse
-      ? Editor.before(editor, anchor, opts)
-      : Editor.after(editor, anchor, opts);
+      ? editorBefore(editor, anchor, opts)
+      : editorAfter(editor, anchor, opts);
 
     if (point) {
       props.anchor = point;
@@ -43,8 +46,8 @@ const applyMove: SelectionMutationMethods['move'] = (editor, options = {}) => {
 
   if (edge == null || edge === 'focus') {
     const point = reverse
-      ? Editor.before(editor, focus, opts)
-      : Editor.after(editor, focus, opts);
+      ? editorBefore(editor, focus, opts)
+      : editorAfter(editor, focus, opts);
 
     if (point) {
       props.focus = point;

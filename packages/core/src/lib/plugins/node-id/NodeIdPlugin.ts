@@ -1,19 +1,22 @@
-import { type Descendant, type Value, ElementApi } from '@platejs/plite';
+import {
+  type Descendant,
+  type EditorUpdateTransaction,
+  type Value,
+  ElementApi,
+} from '@platejs/plite';
 import { nanoid } from 'nanoid';
 
+import type { BasePlateEditor } from '../../editor/BasePlateEditor';
 import type { PluginConfig } from '../../plugin/BasePlugin';
 
-import { getCurrentRuntimeTransforms } from '../../../internal/currentRuntimeBridge';
-import { withLegacyTransformOverride } from '../../../internal/plugin/withLegacyTransformOverride';
 import { createEditorPlugin } from '../../plugin/createEditorPlugin';
 import { type QueryNodeOptions, queryNode } from '../../utils/queryNode';
-import { withNodeId } from './internal/withNodeId';
 
 export type NodeIdOptions = {
   /**
-   * By default, when a node inserted with the legacy insert-node transform has an id,
-   * it will be used instead of the id generator, except if it already exists in
-   * the document. Set this option to true to disable this behavior.
+   * By default, inserted nodes reuse their existing id when that id is not
+   * already present in the document. Set this option to true to always assign a
+   * fresh id.
    */
   disableInsertOverrides?: boolean;
   /**
@@ -161,6 +164,24 @@ const resolveInitialValueIds = (
   options: Pick<NodeIdOptions, 'initialValueIds'>
 ): false | 'always' | 'if-needed' => options.initialValueIds ?? 'if-needed';
 
+const setNodeIdBatch = (
+  editor: Pick<BasePlateEditor, 'update'>,
+  tx: EditorUpdateTransaction,
+  updates: NodeIdBatchUpdate[]
+) => {
+  if (updates.length === 0) return;
+
+  editor.update(() => {}, {
+    metadata: {
+      history: { mode: 'skip' },
+    },
+  });
+
+  for (const { at, props } of updates) {
+    tx.nodes.set(props, { at });
+  }
+};
+
 /**
  * Normalize node IDs in a value without using editor operations. This is a pure
  * function that returns the normalized value and preserves references for
@@ -304,7 +325,6 @@ export type NodeIdConfig = PluginConfig<
   }
 >;
 
-/** @see {@link withNodeId} */
 const BaseNodeIdPlugin = createEditorPlugin<NodeIdConfig>({
   key: 'nodeId',
   options: {
@@ -320,7 +340,7 @@ const BaseNodeIdPlugin = createEditorPlugin<NodeIdConfig>({
       isMetadataProp: ({ key }) => key === (getOptions().idKey ?? 'id'),
     },
   }))
-  .extendTx(({ editor, getOptions }) => () => ({
+  .extendTx(({ editor, getOptions }) => (tx) => ({
     normalize() {
       const options = getOptions();
       const { idCreator, idKey } = options;
@@ -355,13 +375,7 @@ const BaseNodeIdPlugin = createEditorPlugin<NodeIdConfig>({
           path.pop();
         });
 
-        if (updates.length === 0) return;
-
-        const tf = getCurrentRuntimeTransforms(editor);
-
-        tf.withoutSaving(() => {
-          tf.setNodesBatch(updates);
-        });
+        setNodeIdBatch(editor, tx, updates);
 
         return;
       }
@@ -391,13 +405,7 @@ const BaseNodeIdPlugin = createEditorPlugin<NodeIdConfig>({
         addNodeId([node, [index]]);
       });
 
-      if (updates.length === 0) return;
-
-      const tf = getCurrentRuntimeTransforms(editor);
-
-      tf.withoutSaving(() => {
-        tf.setNodesBatch(updates);
-      });
+      setNodeIdBatch(editor, tx, updates);
     },
   }))
   .extend({
@@ -424,7 +432,6 @@ const BaseNodeIdPlugin = createEditorPlugin<NodeIdConfig>({
     },
   });
 
-export const NodeIdPlugin = withLegacyTransformOverride(
-  BaseNodeIdPlugin,
-  withNodeId
-);
+export const NodeIdPlugin = Object.assign(BaseNodeIdPlugin, {
+  runtimeNodeId: true,
+});

@@ -87,9 +87,10 @@ export const normalizeListItem = (
   if (!firstLiChild || !editor.api.isBlock(firstLiChild[0])) {
     editor.update((tx) => {
       tx.nodes.insert(
-        editor.api.create.block({
+        {
+          children: [{ text: '' }],
           type: editor.getType(KEYS.lic),
-        }),
+        },
         {
           at: liPath.concat([0]),
         }

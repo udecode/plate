@@ -1,11 +1,18 @@
-import { Editor, type EditorStaticApi } from '../interfaces/editor';
+import {
+  before as editorBefore,
+  first as editorFirst,
+  getChildren as editorGetChildren,
+  getSnapshot as editorGetSnapshot,
+  parent as editorParent,
+} from '../interfaces/editor';
+import type { EditorStaticApi } from '../interfaces/editor';
 import { LocationApi, type Span } from '../interfaces/location';
 import { NodeApi } from '../interfaces/node';
 import { nodes } from './nodes';
 
 export const previous: EditorStaticApi['previous'] = (editor, options = {}) => {
   const { mode = 'lowest', voids = false } = options;
-  let { match, at = Editor.getSnapshot(editor).selection } = options;
+  let { match, at = editorGetSnapshot(editor).selection } = options;
 
   if (!at) {
     return;
@@ -15,13 +22,13 @@ export const previous: EditorStaticApi['previous'] = (editor, options = {}) => {
     return;
   }
 
-  const pointBeforeLocation = Editor.before(editor, at, { voids });
+  const pointBeforeLocation = editorBefore(editor, at, { voids });
 
   if (!pointBeforeLocation) {
     return;
   }
 
-  const [, to] = Editor.first(editor, []);
+  const [, to] = editorFirst(editor, []);
 
   // The search location is from the start of the document to the path of
   // the point before the location passed in
@@ -29,9 +36,9 @@ export const previous: EditorStaticApi['previous'] = (editor, options = {}) => {
 
   if (match == null) {
     if (LocationApi.isPath(at)) {
-      const [parent] = Editor.parent(editor, at);
+      const [parent] = editorParent(editor, at);
       const children = NodeApi.isEditor(parent)
-        ? Editor.getChildren(editor)
+        ? editorGetChildren(editor)
         : parent.children;
       match = (n) => !NodeApi.isEditor(n) && children.includes(n);
     } else {

@@ -7,7 +7,6 @@ describe('MultiSelectPlugin', () => {
   it('routes duplicate tag cleanup through the Plite runtime', () => {
     const editor = createPlateEditor({
       plugins: [MultiSelectPlugin],
-      runtime: 'plite',
       value: [
         {
           children: [
@@ -41,7 +40,6 @@ describe('MultiSelectPlugin', () => {
   it('keeps selected Plite search text and trims leading whitespace', () => {
     const editor = createPlateEditor({
       plugins: [MultiSelectPlugin],
-      runtime: 'plite',
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 7, path: [0, 0] },

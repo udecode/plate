@@ -9,7 +9,7 @@ import type {
   PliteAnnotationStore,
   PliteResolvedAnnotation,
 } from './annotation-store';
-import { Editor } from './editable/runtime-editor-api';
+import { getSnapshot as editorGetSnapshot } from './editable/runtime-editor-api';
 import { isPliteSourceDirty } from './projection-store';
 
 export type PliteWidgetAnchor =
@@ -158,7 +158,7 @@ const shouldRecomputeForEditorChange = <T extends Record<string, unknown>>(
     return true;
   }
 
-  const snapshot = Editor.getSnapshot(editor);
+  const snapshot = editorGetSnapshot(editor);
 
   return widgets.some((widget) => {
     switch (widget.anchor.type) {
@@ -191,7 +191,7 @@ const buildWidgetSnapshot = <
   editor: EditorType,
   annotationStore?: PliteAnnotationStore<TAnnotation> | null
 ) => {
-  const editorSnapshot = Editor.getSnapshot(editor);
+  const editorSnapshot = editorGetSnapshot(editor);
   const annotationSnapshot = annotationStore?.getSnapshot() ?? null;
   const allIds = widgets.map((widget) => widget.id);
   const byId = new Map<string, PliteResolvedWidget<T, TAnnotation>>();

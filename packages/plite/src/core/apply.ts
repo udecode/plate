@@ -1,6 +1,11 @@
 import { transformBookmarks } from '../editor/bookmark';
 import { allRangeRefs, publishRangeRefDrafts } from '../editor/range-ref';
-import { Editor } from '../interfaces/editor';
+import {
+  getDirtyPaths as editorGetDirtyPaths,
+  pathRefs as editorPathRefs,
+  pointRefs as editorPointRefs,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import type { Operation } from '../interfaces/operation';
 import { type Path, PathApi } from '../interfaces/path';
 import { PathRefApi } from '../interfaces/path-ref';
@@ -50,7 +55,7 @@ export const apply = (editor: Editor, op: Operation) => {
       previousSnapshot?.selection ?? getCurrentSelection(editor);
     const previousMarks = previousSnapshot?.marks ?? getCurrentMarks(editor);
 
-    for (const ref of Editor.pointRefs(editor)) {
+    for (const ref of editorPointRefs(editor)) {
       PointRefApi.transform(ref, op);
     }
 
@@ -123,13 +128,13 @@ export const apply = (editor: Editor, op: Operation) => {
       : callback();
 
   profileReplaceChildrenPhase('path-refs', () => {
-    for (const ref of Editor.pathRefs(editor)) {
+    for (const ref of editorPathRefs(editor)) {
       PathRefApi.transform(ref, op);
     }
   });
 
   profileReplaceChildrenPhase('point-refs', () => {
-    for (const ref of Editor.pointRefs(editor)) {
+    for (const ref of editorPointRefs(editor)) {
       PointRefApi.transform(ref, op);
     }
   });
@@ -158,7 +163,7 @@ export const apply = (editor: Editor, op: Operation) => {
           : undefined;
       const dirtyPaths = cachedFullRootReplace
         ? [op.path]
-        : Editor.getDirtyPaths(editor, op);
+        : editorGetDirtyPaths(editor, op);
 
       updateDirtyPaths(editor, dirtyPaths, transform, {
         root: getOperationRoot(op),

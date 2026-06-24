@@ -1,5 +1,9 @@
 import type { Node, Path, RuntimeId, Value } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getRuntimeId as editorGetRuntimeId,
+  hasPath as editorHasPath,
+} from '@platejs/plite/internal';
 
 import { isDOMElement } from '../utils/dom';
 import {
@@ -28,7 +32,7 @@ export const getPliteDOMRuntimePath = <V extends Value>(
     'data-plite-runtime-id'
   ) as RuntimeId | null;
 
-  return runtimeId ? Editor.getPathByRuntimeId(editor, runtimeId) : null;
+  return runtimeId ? editorGetPathByRuntimeId(editor, runtimeId) : null;
 };
 
 export const isSamePath = (left: Path, right: Path) =>
@@ -41,7 +45,7 @@ export const resolveMountedDOMPath = <V extends Value>(
 ): Path | null => {
   const runtimePath = getPliteDOMRuntimePath(editor, element);
 
-  if (runtimePath && Editor.hasPath(editor, runtimePath)) {
+  if (runtimePath && editorHasPath(editor, runtimePath)) {
     return runtimePath;
   }
 
@@ -49,7 +53,7 @@ export const resolveMountedDOMPath = <V extends Value>(
     element.getAttribute('data-plite-path')
   );
 
-  if (attributePath && Editor.hasPath(editor, attributePath)) {
+  if (attributePath && editorHasPath(editor, attributePath)) {
     return attributePath;
   }
 
@@ -67,7 +71,7 @@ export const findMountedDOMNodeByPath = <V extends Value>(
   }
 
   const pathAttr = path.join(',');
-  const runtimeId = Editor.getRuntimeId(editor, path);
+  const runtimeId = editorGetRuntimeId(editor, path);
   const elements = Array.from(
     editorEl.querySelectorAll(`[data-plite-path="${pathAttr}"]`)
   );
@@ -102,7 +106,7 @@ export const resolvePliteNodePath = <V extends Value>(
 ): Path | null => {
   const runtimeId = NODE_TO_RUNTIME_ID.get(node);
   const runtimePath = runtimeId
-    ? Editor.getPathByRuntimeId(editor, runtimeId)
+    ? editorGetPathByRuntimeId(editor, runtimeId)
     : null;
 
   if (runtimePath) {

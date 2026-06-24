@@ -34,7 +34,14 @@ import {
   applyModelOwnedHistoryIntent,
 } from './mutation-controller';
 import { getProjectedNativeAffordanceMatrix } from './projected-native-affordance';
-import { Editor } from './runtime-editor-api';
+import {
+  rangeRef as editorRangeRef,
+  getLastCommit as editorGetLastCommit,
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  string as editorString,
+} from './runtime-editor-api';
 import { readRuntimeText } from './runtime-live-state';
 import { readRuntimeSelection } from './runtime-selection-state';
 import {
@@ -172,7 +179,7 @@ export const attachPliteBrowserHandle = ({
   }) => boolean;
   browserHandleNextId: RefBox<number>;
   browserHandleRangeRefs: RefBox<
-    Map<string, ReturnType<typeof Editor.rangeRef>>
+    Map<string, ReturnType<typeof editorRangeRef>>
   >;
   editor: ReactRuntimeEditor;
   element: PliteBrowserHandleElement;
@@ -289,7 +296,7 @@ export const attachPliteBrowserHandle = ({
     },
     createRangeRef: (selection, affinity) => {
       const id = String(browserHandleNextId.current++);
-      const rangeRef = Editor.rangeRef(editor, selection, {
+      const rangeRef = editorRangeRef(editor, selection, {
         affinity,
       });
 
@@ -416,12 +423,12 @@ export const attachPliteBrowserHandle = ({
           undos: history?.undos?.().map(summarizeBatch) ?? [],
         };
       }),
-    getLastCommit: () => Editor.getLastCommit(editor),
+    getLastCommit: () => editorGetLastCommit(editor),
     getElementByPath: (path) => getPliteNodeElementByPath(editor, path),
     getPathByRuntimeId: (runtimeId) =>
-      Editor.getPathByRuntimeId(editor, runtimeId),
+      editorGetPathByRuntimeId(editor, runtimeId),
     getProjectedNativeAffordanceMatrix,
-    getRuntimeId: (path) => Editor.getRuntimeId(editor, path),
+    getRuntimeId: (path) => editorGetRuntimeId(editor, path),
     getSelection: () => {
       const selection = readRuntimeSelection(editor);
 
@@ -455,17 +462,17 @@ export const attachPliteBrowserHandle = ({
       selectionSource: inputController.state.selectionSource,
     }),
     getBlockText: (index) => {
-      const snapshot = Editor.getSnapshot(editor);
+      const snapshot = editorGetSnapshot(editor);
 
       if (index < 0 || index >= snapshot.children.length) {
         return null;
       }
 
-      return Editor.string(editor, [index]);
+      return editorString(editor, [index]);
     },
     getBlockTexts: () =>
-      Editor.getSnapshot(editor).children.map((_child, index) =>
-        Editor.string(editor, [index])
+      editorGetSnapshot(editor).children.map((_child, index) =>
+        editorString(editor, [index])
       ),
     getDOMSelection: () => {
       const root = ReactEditor.findDocumentOrShadowRoot(editor);
@@ -483,7 +490,7 @@ export const attachPliteBrowserHandle = ({
         return null;
       }
     },
-    getText: () => Editor.string(editor, []),
+    getText: () => editorString(editor, []),
     getViewSelection: () => readPliteViewSelection(editor),
     importDOMSelection: () => {
       flushPendingNativeTextInput?.();

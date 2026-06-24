@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getLastCommit as editorGetLastCommit,
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import { history } from '@platejs/plite-history';
 
@@ -37,7 +42,7 @@ const createCollabEditor = ({
 }) => {
   const editor = createEditor({ extensions: [history()] });
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children,
     selection,
     marks: null,
@@ -75,21 +80,21 @@ const insertLocal = (
 const assertSelectionValidOrNull = (
   editor: ReturnType<typeof createCollabEditor>
 ) => {
-  const { selection } = Editor.getSnapshot(editor);
+  const { selection } = editorGetSnapshot(editor);
 
   if (!selection) {
     return;
   }
 
   assert.doesNotThrow(() => {
-    Editor.string(editor, selection);
+    editorString(editor, selection);
   });
 };
 
 const assertLastRemoteCommit = (
   editor: ReturnType<typeof createCollabEditor>
 ) => {
-  const commit = Editor.getLastCommit(editor);
+  const commit = editorGetLastCommit(editor);
 
   assert(commit);
   assert.deepEqual(commit.tags, ['collaboration', 'remote-import']);
@@ -110,7 +115,7 @@ describe('collab remote selection stress contract', () => {
 
     assertSelectionValidOrNull(editor);
     assert.deepEqual(
-      Editor.getSnapshot(editor).selection,
+      editorGetSnapshot(editor).selection,
       collapsed([0, 0], 53)
     );
     assertLastRemoteCommit(editor);
@@ -121,7 +126,7 @@ describe('collab remote selection stress contract', () => {
 
     insertLocal(editor, '!');
 
-    assert.equal(Editor.string(editor, [0]).endsWith('one!'), true);
+    assert.equal(editorString(editor, [0]).endsWith('one!'), true);
     assert.equal(
       editor.read((state) => state.history.undos().length),
       1
@@ -140,16 +145,16 @@ describe('collab remote selection stress contract', () => {
     assertSelectionValidOrNull(editor);
     assertLastRemoteCommit(editor);
 
-    const selectionAfterRemote = Editor.getSnapshot(editor).selection;
+    const selectionAfterRemote = editorGetSnapshot(editor).selection;
 
     assert(selectionAfterRemote);
     insertLocal(editor, '!');
 
-    const localCommit = Editor.getLastCommit(editor);
+    const localCommit = editorGetLastCommit(editor);
 
     assert(localCommit);
     assert.deepEqual(localCommit.selectionBefore, selectionAfterRemote);
-    assert.equal(Editor.string(editor, [0]), 'oCBA!ne');
+    assert.equal(editorString(editor, [0]), 'oCBA!ne');
   });
 
   it('does not move a collapsed selection for remote suffix inserts after the local point', () => {
@@ -160,14 +165,11 @@ describe('collab remote selection stress contract', () => {
     ]);
 
     assertSelectionValidOrNull(editor);
-    assert.deepEqual(
-      Editor.getSnapshot(editor).selection,
-      collapsed([0, 0], 1)
-    );
+    assert.deepEqual(editorGetSnapshot(editor).selection, collapsed([0, 0], 1));
 
     insertLocal(editor, '!');
 
-    assert.equal(Editor.string(editor, [0]), 'o!neXYZ');
+    assert.equal(editorString(editor, [0]), 'o!neXYZ');
   });
 
   it('rebases local typing through remote split and merge operations around the local point', () => {
@@ -182,14 +184,11 @@ describe('collab remote selection stress contract', () => {
     ]);
 
     assertSelectionValidOrNull(editor);
-    assert.deepEqual(
-      Editor.getSnapshot(editor).selection,
-      collapsed([0, 0], 2)
-    );
+    assert.deepEqual(editorGetSnapshot(editor).selection, collapsed([0, 0], 2));
 
     insertLocal(editor, '!');
 
-    assert.equal(Editor.string(editor, [0]), 'ab!cd');
+    assert.equal(editorString(editor, [0]), 'ab!cd');
   });
 
   it('resolves selection instead of leaving stale paths when remote remove deletes the selected node', () => {
@@ -197,7 +196,7 @@ describe('collab remote selection stress contract', () => {
       children: [paragraph('one'), paragraph('two')],
       selection: collapsed([1, 0], 1),
     });
-    const removedNode = Editor.getSnapshot(editor).children[1]!;
+    const removedNode = editorGetSnapshot(editor).children[1]!;
 
     replayRemote(editor, [
       {
@@ -207,10 +206,7 @@ describe('collab remote selection stress contract', () => {
       },
     ]);
 
-    assert.deepEqual(
-      Editor.getSnapshot(editor).selection,
-      collapsed([0, 0], 3)
-    );
+    assert.deepEqual(editorGetSnapshot(editor).selection, collapsed([0, 0], 3));
     assertLastRemoteCommit(editor);
     assert.equal(
       editor.read((state) => state.history.undos().length),
@@ -221,7 +217,7 @@ describe('collab remote selection stress contract', () => {
       tx.text.insert('!');
     });
 
-    assert.equal(Editor.string(editor, [0]), 'one!');
+    assert.equal(editorString(editor, [0]), 'one!');
     assert.equal(
       editor.read((state) => state.history.undos().length),
       1

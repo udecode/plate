@@ -100,17 +100,6 @@ describe('withComponent method', () => {
     expect(plugin.extendTx(() => () => ({})).__txExtensions).toHaveLength(2);
   });
 
-  it('extendTransforms keeps the Plate plugin wrapper chain', () => {
-    const plugin = createPlatePlugin({ key: 'transformPlugin' })
-      .extendTransforms(() => ({
-        replace: () => undefined,
-      }))
-      .configure({ options: { enabled: true } });
-
-    expect(plugin.__apiExtensions).toHaveLength(1);
-    expect(plugin.extendTransforms(() => ({})).__apiExtensions).toHaveLength(2);
-  });
-
   it('infers Plate tx groups on createPlateEditor update callbacks', () => {
     const TxPlugin = createPlatePlugin({ key: 'txPlugin' }).extendTx(
       () => () => ({

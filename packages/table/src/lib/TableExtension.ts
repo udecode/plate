@@ -213,18 +213,10 @@ const replaceChildrenAtPath = (
 const createTableCellBlock = (
   editor: BasePlateEditor,
   options: { children?: Descendant[] } = {}
-): Element => {
-  const createBlock = (
-    editor.api.create as { block?: typeof editor.api.create.block }
-  ).block;
-
-  if (createBlock) return createBlock(options);
-
-  return {
-    children: options.children ?? [{ text: '' }],
-    type: editor.getType(KEYS.p),
-  };
-};
+): Element => ({
+  children: options.children ?? [{ text: '' }],
+  type: editor.getType(KEYS.p),
+});
 
 const applyPastedTableToTableNode = ({
   api,

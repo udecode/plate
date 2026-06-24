@@ -1,4 +1,7 @@
-import { Editor } from '@platejs/plite/internal';
+import {
+  getSnapshot as editorGetSnapshot,
+  isEdge as editorIsEdge,
+} from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -14,7 +17,7 @@ export const input = (
   </editor>
 );
 export const test = (editor) => {
-  const { anchor } = Editor.getSnapshot(editor).selection;
-  return Editor.isEdge(editor, anchor, [0]);
+  const { anchor } = editorGetSnapshot(editor).selection;
+  return editorIsEdge(editor, anchor, [0]);
 };
 export const output = true;

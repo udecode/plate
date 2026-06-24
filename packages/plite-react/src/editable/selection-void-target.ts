@@ -4,7 +4,12 @@ import { getPliteNodePathFromDOMElement } from '../hooks/use-plite-node-ref';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { writePliteViewSelection } from '../view-selection';
 import type { EditableInputController } from './input-controller';
-import { Editor } from './runtime-editor-api';
+import {
+  hasPath as editorHasPath,
+  isVoid as editorIsVoid,
+  point as editorPoint,
+  range as editorRange,
+} from './runtime-editor-api';
 import { readRuntimeNode } from './runtime-live-state';
 import { setEditableModelSelectionPreference } from './selection-controller';
 
@@ -34,7 +39,7 @@ export const resolveEditableClickTarget = (
       return { node: liveNode, path };
     }
 
-    if (Editor.hasPath(editor, path)) {
+    if (editorHasPath(editor, path)) {
       const [node] = editor.read((state) => state.nodes.get(path));
       return { node, path };
     }
@@ -48,7 +53,7 @@ export const resolveEditableClickTarget = (
     if (
       !node ||
       !fallbackPath ||
-      !Editor.hasPath(editor, fallbackPath) ||
+      !editorHasPath(editor, fallbackPath) ||
       NodeApi.get(editor, fallbackPath) !== node
     ) {
       return null;
@@ -69,7 +74,7 @@ export const resolveEditableVoidClickTarget = (
   if (
     resolvedTarget &&
     NodeApi.isElement(resolvedTarget.node) &&
-    Editor.isVoid(editor, resolvedTarget.node)
+    editorIsVoid(editor, resolvedTarget.node)
   ) {
     return resolvedTarget;
   }
@@ -112,13 +117,13 @@ export const selectEditableVoidPath = ({
   inputController: EditableInputController;
   path: Path;
 }) => {
-  if (!Editor.hasPath(editor, path)) {
+  if (!editorHasPath(editor, path)) {
     return null;
   }
 
   const [node] = editor.read((state) => state.nodes.get(path));
 
-  if (!NodeApi.isElement(node) || !Editor.isVoid(editor, node)) {
+  if (!NodeApi.isElement(node) || !editorIsVoid(editor, node)) {
     return null;
   }
 
@@ -130,8 +135,8 @@ export const selectEditableVoidPath = ({
   });
   inputController.state.selectionChangeOrigin = 'programmatic-export';
 
-  const start = Editor.point(editor, path, { edge: 'start' });
-  const range = Editor.range(editor, start);
+  const start = editorPoint(editor, path, { edge: 'start' });
+  const range = editorRange(editor, start);
 
   ReactEditor.focus(editor);
   writePliteViewSelection(editor, null);

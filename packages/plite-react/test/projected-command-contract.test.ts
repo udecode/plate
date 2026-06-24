@@ -7,7 +7,14 @@ import {
   type Point,
   type RootKey,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getLastCommit as editorGetLastCommit,
+  getOperations as editorGetOperations,
+  getSelection as editorGetSelection,
+  insertText as editorInsertText,
+  rangeRefs as editorRangeRefs,
+  string as editorString,
+} from '@platejs/plite/internal';
 import { dom } from '@platejs/plite-dom';
 import { setDOMClipboardFormatKey } from '@platejs/plite-dom/internal';
 import { history } from '@platejs/plite-history';
@@ -224,7 +231,7 @@ describe('projected editable commands', () => {
       focus: { path: [0, 0], offset: 'BefX'.length },
     });
     expect(readPliteViewSelection(editor)).toBe(null);
-    const textOperations = Editor.getLastCommit(editor)?.operations.filter(
+    const textOperations = editorGetLastCommit(editor)?.operations.filter(
       (operation) =>
         operation.type === 'insert_text' || operation.type === 'remove_text'
     );
@@ -316,7 +323,7 @@ describe('projected editable commands', () => {
       children: [paragraph('Before'), contentCard(), paragraph('ter')],
       roots: { [SHARED_ROOT]: [paragraph('InZ')] },
     });
-    expect(Editor.getSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+    expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
       anchor: { path: [0, 0], offset: 'InZ'.length, root: SHARED_ROOT },
       focus: { path: [0, 0], offset: 'InZ'.length, root: SHARED_ROOT },
     });
@@ -469,7 +476,7 @@ describe('projected editable commands', () => {
       clipboard: {
         insertData(_data, { editor: receivedEditor }) {
           insertCount++;
-          Editor.insertText(receivedEditor, 'H');
+          editorInsertText(receivedEditor, 'H');
 
           return true;
         },
@@ -506,7 +513,7 @@ describe('projected editable commands', () => {
       clipboard: {
         insertData(_data, { editor: receivedEditor }) {
           insertCount++;
-          Editor.insertText(receivedEditor, 'H');
+          editorInsertText(receivedEditor, 'H');
 
           return true;
         },
@@ -557,7 +564,7 @@ describe('projected editable commands', () => {
       })
     ).toThrow(pasteError);
 
-    expect(Editor.rangeRefs(getCanonicalRuntimeEditor(editor)).size).toBe(0);
+    expect(editorRangeRefs(getCanonicalRuntimeEditor(editor)).size).toBe(0);
     expect(readPliteViewSelection(editor)).not.toBe(null);
   });
 
@@ -665,7 +672,7 @@ describe('projected editable commands', () => {
       children: [paragraph('Before'), contentCard(), paragraph('ter')],
       roots: { [SHARED_ROOT]: [paragraph('In')] },
     });
-    expect(Editor.getSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+    expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
       anchor: { path: [0, 0], offset: 'In'.length, root: SHARED_ROOT },
       focus: { path: [0, 0], offset: 'In'.length, root: SHARED_ROOT },
     });
@@ -693,7 +700,7 @@ describe('projected editable commands', () => {
       ],
       roots: { [SHARED_ROOT]: [paragraph('side'), paragraph('More')] },
     });
-    expect(Editor.getSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+    expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -731,7 +738,7 @@ describe('projected editable commands', () => {
       children: [paragraph('Before'), contentCard(), paragraph('ter')],
       roots: { [SHARED_ROOT]: [paragraph('In'), paragraph('')] },
     });
-    expect(Editor.getSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+    expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
       anchor: { path: [1, 0], offset: 0, root: SHARED_ROOT },
       focus: { path: [1, 0], offset: 0, root: SHARED_ROOT },
     });
@@ -769,7 +776,7 @@ describe('projected editable commands', () => {
       children: [paragraph('Before'), contentCard(), paragraph('ter')],
       roots: { [SHARED_ROOT]: [paragraph(''), paragraph('In')] },
     });
-    expect(Editor.getSelection(getCanonicalRuntimeEditor(editor))).toEqual({
+    expect(editorGetSelection(getCanonicalRuntimeEditor(editor))).toEqual({
       anchor: { path: [0, 0], offset: 0, root: SHARED_ROOT },
       focus: { path: [0, 0], offset: 0, root: SHARED_ROOT },
     });
@@ -816,7 +823,7 @@ describe('projected editable commands', () => {
     ).toBe(true);
 
     expect(seenDirections).toEqual([undefined]);
-    expect(Editor.string(editor, [0])).toBe(' beta');
+    expect(editorString(editor, [0])).toBe(' beta');
     expect(editor.read((state) => state.selection.get())).toEqual({
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
@@ -849,7 +856,7 @@ describe('projected editable commands', () => {
       })
     ).toBe(true);
 
-    expect(Editor.string(editor, [0])).toBe('alpha');
+    expect(editorString(editor, [0])).toBe('alpha');
   });
 
   it('delete-fragment over a whole single paragraph keeps the block', () => {
@@ -910,7 +917,7 @@ describe('projected editable commands', () => {
       initialValue,
     });
     const editor = createEditorView(runtime) as unknown as ReactRuntimeEditor;
-    const operationsBefore = Editor.getOperations(editor).length;
+    const operationsBefore = editorGetOperations(editor).length;
 
     expect(
       applyEditableCommand({
@@ -934,7 +941,7 @@ describe('projected editable commands', () => {
       focus: { path: [0, 0], offset: 0 },
     });
     expect(
-      Editor.getOperations(editor)
+      editorGetOperations(editor)
         .slice(operationsBefore)
         .map((operation) => operation.type)
     ).toEqual(['replace_children']);

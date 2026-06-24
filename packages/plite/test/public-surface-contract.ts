@@ -1518,7 +1518,7 @@ describe('public predicate input types', () => {
     });
   }
 
-  it('keeps EditorStaticApi.isEditor on unknown input without banning mark values', () => {
+  it('keeps isEditor accepting unknown input without banning mark values', () => {
     const source = readFileSync(
       resolve(repoRoot, 'packages/plite/src/interfaces/editor.ts'),
       'utf8'
@@ -3139,7 +3139,7 @@ describe('primary plite package surface', () => {
 
     assert.equal(rootSource.includes("export * from './interfaces'"), false);
     assert.equal(rootSource.includes('EditorStaticApi'), false);
-    assert.equal(rootSource.includes('InternalEditorStaticApi'), false);
+    assert.equal(rootSource.includes('EditorInternalApiTable'), false);
     assert.equal(rootSource.includes('EditorElementReadOnlyOptions'), false);
   });
 
@@ -3153,7 +3153,7 @@ describe('primary plite package surface', () => {
     assert.match(rootSource, /\bEditorUpdateTransaction\b/);
   });
 
-  it('does not export the editor-state static namespace as a value', () => {
+  it('does not export Editor as a root package value', () => {
     assert.equal('Editor' in Plite, false);
   });
 
@@ -3311,7 +3311,7 @@ describe('primary plite package surface', () => {
       'export interface EditorStaticApi'
     );
     const staticApiEnd = editorSource.indexOf(
-      '\nexport interface InternalEditorStaticApi',
+      '\ntype EditorInternalApiTable',
       staticApiStart
     );
     const staticApiSource = editorSource.slice(staticApiStart, staticApiEnd);

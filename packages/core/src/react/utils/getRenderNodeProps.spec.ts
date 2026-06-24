@@ -34,7 +34,7 @@ describe('getRenderNodeProps', () => {
 
     expect(result.api).toBe(editor.api);
     expect(result.editor).toBe(editor);
-    expect(result.tf).toBe(editor.tf);
+    expect('tf' in result).toBe(false);
     expect(result.attributes?.className).toContain('plite-p');
     expect(result.attributes?.className).toContain('attr-class');
     expect(result.attributes?.className).toContain('user-class');

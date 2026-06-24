@@ -8,7 +8,7 @@ import { isRangeAcrossContentRootOwners } from './content-root-owners';
 import type { DOMRepairQueue } from './dom-repair-queue';
 import { createEditableInputControllerState } from './input-controller';
 import type { DeferredOperation } from './model-input-strategy';
-import type { Editor } from './runtime-editor-api';
+import type { rangeRef as editorRangeRef } from './runtime-editor-api';
 import { readRuntimeSelection } from './runtime-selection-state';
 
 export const useEditableRootRuntimeState = ({
@@ -21,7 +21,7 @@ export const useEditableRootRuntimeState = ({
   const [isComposing, setIsComposing] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const browserHandleRangeRefs = useRef(
-    new Map<string, ReturnType<typeof Editor.rangeRef>>()
+    new Map<string, ReturnType<typeof editorRangeRef>>()
   );
   const browserHandleNextId = useRef(0);
   const deferredOperations = useRef<DeferredOperation[]>([]);

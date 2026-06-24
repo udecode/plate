@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { isBlock as editorIsBlock } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -9,7 +9,7 @@ import { ElementApi } from '@platejs/plite';
 
 export const run = (editor) => {
   editor.nodes.move({
-    match: (n) => ElementApi.isElement(n) && Editor.isBlock(editor, n),
+    match: (n) => ElementApi.isElement(n) && editorIsBlock(editor, n),
     to: [2],
   });
 };

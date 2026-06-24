@@ -1,7 +1,14 @@
 import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import type { Descendant } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  point as editorPoint,
+  range as editorRange,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 import {
   DOMCoverage,
   EDITOR_TO_ELEMENT,
@@ -51,7 +58,7 @@ const getRuntimeId = (
   editor: ReturnType<typeof createReactEditor>,
   path: number[]
 ) => {
-  const runtimeId = Editor.getRuntimeId(editor, path);
+  const runtimeId = editorGetRuntimeId(editor, path);
 
   if (!runtimeId) {
     throw new Error(`Missing runtime id at ${path.join('.')}`);
@@ -89,7 +96,7 @@ const fireEditorPaste = (
 test('Editable full DOM Ctrl+A keeps select-all native-owned', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       { type: 'paragraph', children: [{ text: 'one' }] },
       { type: 'paragraph', children: [{ text: 'two' }] },
@@ -110,9 +117,9 @@ test('Editable full DOM Ctrl+A keeps select-all native-owned', async () => {
     fireEditorSelectAll(root!);
   });
 
-  expect(Editor.getSnapshot(editor).selection).toEqual({
-    anchor: Editor.point(editor, [], { edge: 'start' }),
-    focus: Editor.point(editor, [], { edge: 'end' }),
+  expect(editorGetSnapshot(editor).selection).toEqual({
+    anchor: editorPoint(editor, [], { edge: 'start' }),
+    focus: editorPoint(editor, [], { edge: 'end' }),
   });
   expect(root!.getAttribute('data-plite-dom-strategy-selection')).toBe(null);
   expect(
@@ -123,7 +130,7 @@ test('Editable full DOM Ctrl+A keeps select-all native-owned', async () => {
 test('Editable domStrategy partial-DOMs far segments without mounting editable descendants', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -206,7 +213,7 @@ test('Editable domStrategy partial-DOM defaults to smaller promotion segments', 
   const editor = createReactEditor();
   const metrics: EditableDOMStrategyMetrics[] = [];
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 120 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -247,7 +254,7 @@ test('Editable domStrategy partial-DOM defaults to smaller promotion segments', 
 test('Editable domStrategy partial-DOM updates coverage when the hidden tail runtime changes', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 8 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -320,7 +327,7 @@ test('Editable domStrategy partial-DOM updates coverage when the hidden tail run
 test('Editable domStrategy partial-DOM refreshes hidden preview text after model text changes', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 8 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -360,7 +367,7 @@ test('Editable domStrategy partial-DOM refreshes hidden preview text after model
 test('Editable domStrategy mounts active radius corridor segments', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -406,7 +413,7 @@ test('Editable domStrategy mounts active radius corridor segments', async () => 
 test('Editable domStrategy experimental virtualized mode uses viewport DOM coverage and materializes selected segments', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -488,7 +495,7 @@ test('Editable domStrategy experimental virtualized mode uses viewport DOM cover
 test('Editable domStrategy experimental virtualized mode can use layout-backed item geometry', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 4 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -556,7 +563,7 @@ test('Editable domStrategy experimental virtualized mode can use layout-backed i
 test('Editable domStrategy experimental virtualized mode preserves layout gaps between consecutive rows', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 4 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -644,7 +651,7 @@ test('Editable domStrategy experimental virtualized mode preserves layout gaps b
 test('Editable domStrategy experimental virtualized mode materializes layout-backed targets through exact offsets', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 8 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -756,7 +763,7 @@ test('Editable domStrategy experimental virtualized mode materializes layout-bac
 test('Editable domStrategy experimental virtualized mode materializes estimated targets through virtualizer index scrolling', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 8 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -877,7 +884,7 @@ test('Editable domStrategy experimental virtualized mode estimates layout-backed
 test('Editable domStrategy experimental virtualized mode keeps broad selections model-backed', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -909,15 +916,15 @@ test('Editable domStrategy experimental virtualized mode keeps broad selections 
     fireEditorSelectAll(root!);
   });
 
-  expect(Editor.getSnapshot(editor).selection).toEqual({
-    anchor: Editor.point(editor, [], { edge: 'start' }),
-    focus: Editor.point(editor, [], { edge: 'end' }),
+  expect(editorGetSnapshot(editor).selection).toEqual({
+    anchor: editorPoint(editor, [], { edge: 'start' }),
+    focus: editorPoint(editor, [], { edge: 'end' }),
   });
   expect(root!.getAttribute('data-plite-dom-strategy-selection')).toBe(
     'partial-dom-backed'
   );
   expect(
-    DOMCoverage.getBoundariesForRange(editor, Editor.range(editor, []))
+    DOMCoverage.getBoundariesForRange(editor, editorRange(editor, []))
       .filter((boundary) => boundary.reason === 'viewport-virtualization')
       .every((boundary) => boundary.copyPolicy === 'model')
   ).toBe(true);
@@ -927,7 +934,7 @@ test('Editable reports domStrategy metrics for experimental virtualized surfaces
   const editor = createReactEditor();
   const recordedMetrics: EditableDOMStrategyMetrics[] = [];
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -985,7 +992,7 @@ test('Editable reports domStrategy metrics for staged active DOM group surfaces'
   const editor = createReactEditor();
   const recordedMetrics: EditableDOMStrategyMetrics[] = [];
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 1001 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -1030,7 +1037,7 @@ test('Editable auto keeps large documents DOM-bounded instead of staged backgrou
   const editor = createReactEditor();
   const recordedMetrics: EditableDOMStrategyMetrics[] = [];
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 1001 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -1096,11 +1103,11 @@ test('Editable reports domStrategy degradation mode for plain and internal parti
     children: [{ text: `block-${index + 1}` }],
   }));
 
-  Editor.replace(plainEditor, {
+  editorReplace(plainEditor, {
     children,
     selection: null,
   });
-  Editor.replace(partialDOMPlaceholderEditor, {
+  editorReplace(partialDOMPlaceholderEditor, {
     children,
     selection: null,
   });
@@ -1149,7 +1156,7 @@ test('Editable reports domStrategy degradation mode for plain and internal parti
 test('Editable marks only default plain text as DOM-sync capable', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1187,7 +1194,7 @@ test('Editable marks only default plain text as DOM-sync capable', async () => {
 test('Editable disables DOM text sync for app-owned text renderers', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1237,7 +1244,7 @@ test('Editable disables DOM text sync for custom leaf renderers', async () => {
     },
   ];
 
-  Editor.replace(leafEditor, {
+  editorReplace(leafEditor, {
     children,
     selection: null,
   });
@@ -1275,7 +1282,7 @@ test('Editable disables DOM text sync for custom leaf renderers', async () => {
 test('Editable enables DOM text sync for text-invariant custom leaf renderers', async () => {
   const leafEditor = createReactEditor();
 
-  Editor.replace(leafEditor, {
+  editorReplace(leafEditor, {
     children: [
       {
         type: 'paragraph',
@@ -1318,7 +1325,7 @@ test('Editable enables DOM text sync for text-invariant custom leaf renderers', 
 test('Editable disables DOM text sync for app-owned segment renderers', async () => {
   const segmentEditor = createReactEditor();
 
-  Editor.replace(segmentEditor, {
+  editorReplace(segmentEditor, {
     children: [
       {
         type: 'paragraph',
@@ -1359,7 +1366,7 @@ test('Editable disables DOM text sync for app-owned segment renderers', async ()
 test('Editable disables DOM text sync when projections affect the text node', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1413,7 +1420,7 @@ test('Editable disables DOM text sync when projections affect the text node', as
 test('Editable treats native-updated projected text as synced without rewriting DOM', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1487,7 +1494,7 @@ test('Editable treats native-updated projected text as synced without rewriting 
 test('Editable syncs projected leaf strings for Plite-owned text input', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1553,7 +1560,7 @@ test('Editable syncs projected leaf strings for Plite-owned text input', async (
 test('Editable disables DOM text sync for empty zero-width text', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1595,7 +1602,7 @@ test('Editable disables DOM text sync for empty zero-width text', async () => {
 test('Editable falls back to React when text sync reaches empty text', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1652,7 +1659,7 @@ test('Editable falls back to React when text sync reaches empty text', async () 
 test('Editable falls back to React updates while composing', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1695,7 +1702,7 @@ test('Editable falls back to React updates while composing', async () => {
 test('Editable staged full-document replacement removes stale far DOM immediately', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 1001 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `line ${index}` }],
@@ -1742,7 +1749,7 @@ test('Editable staged full-document replacement removes stale far DOM immediatel
     });
   });
 
-  expect(Editor.string(editor, [])).toBe('replacement marker');
+  expect(editorString(editor, [])).toBe('replacement marker');
   expect(rendered.container.textContent).toContain('replacement marker');
   expect(rendered.container.textContent).not.toContain('line 1000');
   expect(
@@ -1755,7 +1762,7 @@ test('Editable staged full-document replacement removes stale far DOM immediatel
 test('Editable staged full-document replacement resets staged coverage without stale far DOM', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 1001 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `old line ${index}` }],
@@ -1793,7 +1800,7 @@ test('Editable staged full-document replacement resets staged coverage without s
     });
   });
 
-  expect(Editor.string(editor, [])).toContain('fresh line 1000');
+  expect(editorString(editor, [])).toContain('fresh line 1000');
   expect(rendered.container.textContent).toContain('fresh line 0');
   expect(rendered.container.textContent).toContain('fresh line 15');
   expect(rendered.container.textContent).not.toContain('fresh line 16');
@@ -1824,7 +1831,7 @@ test('Editable staged full-document replacement resets staged coverage without s
 test('Editable staged stages far root groups without partial-DOM placeholders', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 1001 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `line ${index}` }],
@@ -1869,7 +1876,7 @@ test('Editable staged stages far root groups without partial-DOM placeholders', 
 test('Editable staged registers pending root groups as DOM coverage boundaries', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 1001 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `line ${index}` }],
@@ -1916,7 +1923,7 @@ test('Editable staged selection export consults DOM coverage before raw DOM look
     focus: { offset: 0, path: [1, 0] },
   };
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -1995,7 +2002,7 @@ test('Editable staged selection export consults DOM coverage before raw DOM look
 test('Editable staged materializes pending root groups through DOM coverage', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 1001 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `line ${index}` }],
@@ -2029,7 +2036,7 @@ test('Editable staged materializes pending root groups through DOM coverage', as
 test('Editable staged materializes the selected root group urgently', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 1001 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `line ${index}` }],
@@ -2067,7 +2074,7 @@ test('Editable staged materializes the selected root group urgently', async () =
 test('Editable domStrategy promotes a partial-DOM segment on mouse down', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2126,7 +2133,7 @@ test('Editable domStrategy promotes a partial-DOM segment on mouse down', async 
   expect(
     rendered.container.querySelectorAll('[data-plite-node="text"]').length
   ).toBe(2);
-  expect(Editor.getSnapshot(editor).selection).toEqual({
+  expect(editorGetSnapshot(editor).selection).toEqual({
     anchor: { offset: 0, path: [2, 0] },
     focus: { offset: 0, path: [2, 0] },
   });
@@ -2135,7 +2142,7 @@ test('Editable domStrategy promotes a partial-DOM segment on mouse down', async 
 test('Editable domStrategy mounts only the target partial-DOM segment during the promotion frame', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 8 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2178,7 +2185,7 @@ test('Editable domStrategy mounts only the target partial-DOM segment during the
   expect(
     rendered.container.querySelectorAll('[data-plite-node="text"]').length
   ).toBe(2);
-  expect(Editor.getSnapshot(editor).selection).toEqual({
+  expect(editorGetSnapshot(editor).selection).toEqual({
     anchor: { offset: 0, path: [4, 0] },
     focus: { offset: 0, path: [4, 0] },
   });
@@ -2198,7 +2205,7 @@ test('Editable domStrategy promotes partial-DOM segments without a second root-p
   const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
   let rendered: ReturnType<typeof render> | null = null;
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 8 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2237,7 +2244,7 @@ test('Editable domStrategy promotes partial-DOM segments without a second root-p
       );
     });
 
-    expect(Editor.getSnapshot(editor).selection).toEqual({
+    expect(editorGetSnapshot(editor).selection).toEqual({
       anchor: { offset: 0, path: [4, 0] },
       focus: { offset: 0, path: [4, 0] },
     });
@@ -2263,7 +2270,7 @@ test('Editable domStrategy keeps model inserts stable after partial-DOM promotio
   const editor = createReactEditor();
   const blockIndex = 2496;
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 5000 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2296,7 +2303,7 @@ test('Editable domStrategy keeps model inserts stable after partial-DOM promotio
     );
   });
 
-  expect(Editor.getSnapshot(editor).selection).toEqual({
+  expect(editorGetSnapshot(editor).selection).toEqual({
     anchor: { offset: 0, path: [blockIndex, 0] },
     focus: { offset: 0, path: [blockIndex, 0] },
   });
@@ -2309,15 +2316,13 @@ test('Editable domStrategy keeps model inserts stable after partial-DOM promotio
     });
   }
 
-  expect(Editor.string(editor, [blockIndex]).match(/X/g) ?? []).toHaveLength(
-    10
-  );
+  expect(editorString(editor, [blockIndex]).match(/X/g) ?? []).toHaveLength(10);
 });
 
 test('Editable domStrategy promotes large partial-DOM segments as bounded windows with tail coverage', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 96 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2352,7 +2357,7 @@ test('Editable domStrategy promotes large partial-DOM segments as bounded window
     );
   });
 
-  expect(Editor.getSnapshot(editor).selection).toEqual({
+  expect(editorGetSnapshot(editor).selection).toEqual({
     anchor: { offset: 0, path: [64, 0] },
     focus: { offset: 0, path: [64, 0] },
   });
@@ -2391,7 +2396,7 @@ test('Editable domStrategy promotes large partial-DOM segments as bounded window
     );
   });
 
-  expect(Editor.getSnapshot(editor).selection).toEqual({
+  expect(editorGetSnapshot(editor).selection).toEqual({
     anchor: { offset: 0, path: [72, 0] },
     focus: { offset: 0, path: [72, 0] },
   });
@@ -2403,7 +2408,7 @@ test('Editable domStrategy promotes large partial-DOM segments as bounded window
 test('Editable domStrategy partial-DOM focus does not activate or change model selection', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2444,13 +2449,13 @@ test('Editable domStrategy partial-DOM focus does not activate or change model s
       '[data-plite-dom-strategy-placeholder="true"][data-plite-dom-strategy-segment="1"]'
     )
   ).toBeTruthy();
-  expect(Editor.getSnapshot(editor).selection).toBe(null);
+  expect(editorGetSnapshot(editor).selection).toBe(null);
 });
 
 test('Editable domStrategy partial-DOM interaction does not promote during composition', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2493,7 +2498,7 @@ test('Editable domStrategy partial-DOM interaction does not promote during compo
         '[data-plite-dom-strategy-placeholder="true"][data-plite-dom-strategy-segment="1"]'
       )
     ).toBeTruthy();
-    expect(Editor.getSnapshot(editor).selection).toBe(null);
+    expect(editorGetSnapshot(editor).selection).toBe(null);
   } finally {
     IS_COMPOSING.set(editor, false);
   }
@@ -2502,7 +2507,7 @@ test('Editable domStrategy partial-DOM interaction does not promote during compo
 test('Editable domStrategy promotes a partial-DOM segment with keyboard activation', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2551,7 +2556,7 @@ test('Editable domStrategy promotes a partial-DOM segment with keyboard activati
       '[data-plite-dom-strategy-placeholder="true"][data-plite-dom-strategy-segment="1"]'
     )
   ).toBe(null);
-  expect(Editor.getSnapshot(editor).selection).toEqual({
+  expect(editorGetSnapshot(editor).selection).toEqual({
     anchor: { offset: 0, path: [2, 0] },
     focus: { offset: 0, path: [2, 0] },
   });
@@ -2560,7 +2565,7 @@ test('Editable domStrategy promotes a partial-DOM segment with keyboard activati
 test('Editable domStrategy promotes a partial-DOM segment with Space keyboard activation', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2605,7 +2610,7 @@ test('Editable domStrategy promotes a partial-DOM segment with Space keyboard ac
       '[data-plite-dom-strategy-placeholder="true"][data-plite-dom-strategy-segment="1"]'
     )
   ).toBe(null);
-  expect(Editor.getSnapshot(editor).selection).toEqual({
+  expect(editorGetSnapshot(editor).selection).toEqual({
     anchor: { offset: 0, path: [2, 0] },
     focus: { offset: 0, path: [2, 0] },
   });
@@ -2614,7 +2619,7 @@ test('Editable domStrategy promotes a partial-DOM segment with Space keyboard ac
 test('Editable domStrategy maps Ctrl+A to a full-document model selection without expanding partial-DOM placeholders', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2645,11 +2650,11 @@ test('Editable domStrategy maps Ctrl+A to a full-document model selection withou
     fireEditorSelectAll(root!);
   });
 
-  const snapshot = Editor.getSnapshot(editor);
+  const snapshot = editorGetSnapshot(editor);
 
   expect(snapshot.selection).toEqual({
-    anchor: Editor.point(editor, [], { edge: 'start' }),
-    focus: Editor.point(editor, [], { edge: 'end' }),
+    anchor: editorPoint(editor, [], { edge: 'start' }),
+    focus: editorPoint(editor, [], { edge: 'end' }),
   });
   expect(root!.getAttribute('data-plite-dom-strategy-selection')).toBe(
     'partial-dom-backed'
@@ -2664,7 +2669,7 @@ test('Editable domStrategy maps Ctrl+A to a full-document model selection withou
 test('Editable domStrategy derives partial-dom-backed state for programmatic broad selections', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2695,8 +2700,8 @@ test('Editable domStrategy derives partial-dom-backed state for programmatic bro
   await act(async () => {
     editor.update((tx) => {
       tx.selection.set({
-        anchor: Editor.point(editor, [], { edge: 'start' }),
-        focus: Editor.point(editor, [], { edge: 'end' }),
+        anchor: editorPoint(editor, [], { edge: 'start' }),
+        focus: editorPoint(editor, [], { edge: 'end' }),
       });
     });
   });
@@ -2712,7 +2717,7 @@ test('Editable domStrategy keeps broad select-all from replanning the active seg
   const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
   let rendered: ReturnType<typeof render> | null = null;
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 200 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2747,11 +2752,11 @@ test('Editable domStrategy keeps broad select-all from replanning the active seg
       fireEditorSelectAll(root!);
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
 
     expect(snapshot.selection).toEqual({
-      anchor: Editor.point(editor, [], { edge: 'start' }),
-      focus: Editor.point(editor, [], { edge: 'end' }),
+      anchor: editorPoint(editor, [], { edge: 'start' }),
+      focus: editorPoint(editor, [], { edge: 'end' }),
     });
     expect(root!.getAttribute('data-plite-dom-strategy-selection')).toBe(
       'partial-dom-backed'
@@ -2768,7 +2773,7 @@ test('Editable domStrategy keeps broad select-all from replanning the active seg
 test('Editable staged domStrategy keeps broad select-all model-backed', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 1200 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2794,9 +2799,9 @@ test('Editable staged domStrategy keeps broad select-all model-backed', async ()
     fireEditorSelectAll(root!);
   });
 
-  expect(Editor.getSnapshot(editor).selection).toEqual({
-    anchor: Editor.point(editor, [], { edge: 'start' }),
-    focus: Editor.point(editor, [], { edge: 'end' }),
+  expect(editorGetSnapshot(editor).selection).toEqual({
+    anchor: editorPoint(editor, [], { edge: 'start' }),
+    focus: editorPoint(editor, [], { edge: 'end' }),
   });
   expect(root!.getAttribute('data-plite-dom-strategy-selection')).toBe(
     'partial-dom-backed'
@@ -2806,7 +2811,7 @@ test('Editable staged domStrategy keeps broad select-all model-backed', async ()
 test('Editable domStrategy preserves multiline plain text over a full-document partial-dom-backed selection', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2852,7 +2857,7 @@ test('Editable domStrategy preserves multiline plain text over a full-document p
       '[data-plite-dom-strategy-placeholder="true"]'
     ).length
   ).toBe(0);
-  expect(Editor.getSnapshot(editor).children).toEqual([
+  expect(editorGetSnapshot(editor).children).toEqual([
     {
       type: 'paragraph',
       children: [{ text: 'one' }],
@@ -2867,7 +2872,7 @@ test('Editable domStrategy preserves multiline plain text over a full-document p
 test('Editable domStrategy preserves Plite fragment data for partial-dom-backed paste', async () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: Array.from({ length: 6 }, (_, index) => ({
       type: 'paragraph',
       children: [{ text: `block-${index + 1}` }],
@@ -2921,14 +2926,14 @@ test('Editable domStrategy preserves Plite fragment data for partial-dom-backed 
     });
   });
 
-  expect(Editor.string(editor, [])).toBe('fragment marker');
+  expect(editorString(editor, [])).toBe('fragment marker');
 });
 
 test('Editable forwards scrollSelectionIntoView to app-owned code', async () => {
   const editor = createReactEditor();
   const seen: string[] = [];
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',

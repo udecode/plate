@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getChildren as editorGetChildren,
+  rangeRef as editorRangeRef,
+  rangeRefs as editorRangeRefs,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -40,13 +45,13 @@ describe('plite range ref contract', () => {
   it('publishes range ref updates at transaction commit', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
       marks: null,
     });
 
-    const ref = Editor.rangeRef(editor, {
+    const ref = editorRangeRef(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -71,13 +76,13 @@ describe('plite range ref contract', () => {
   it('defaults rangeRef affinity inward', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
       marks: null,
     });
 
-    const ref = Editor.rangeRef(editor, {
+    const ref = editorRangeRef(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -97,13 +102,13 @@ describe('plite range ref contract', () => {
   it('rebases range ref paths when top-level blocks move', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
       marks: null,
     });
 
-    const ref = Editor.rangeRef(editor, {
+    const ref = editorRangeRef(editor, {
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 3 },
     });
@@ -124,13 +129,13 @@ describe('plite range ref contract', () => {
   it('rebases range refs inside the moved top-level block when moveNodes targets a later slot', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
       marks: null,
     });
 
-    const ref = Editor.rangeRef(editor, {
+    const ref = editorRangeRef(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -151,13 +156,13 @@ describe('plite range ref contract', () => {
   it('rebases nested range ref paths when nested blocks move', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createNestedChildren(),
       selection: null,
       marks: null,
     });
 
-    const ref = Editor.rangeRef(editor, {
+    const ref = editorRangeRef(editor, {
       anchor: { path: [0, 1, 0], offset: 1 },
       focus: { path: [0, 1, 0], offset: 3 },
     });
@@ -178,7 +183,7 @@ describe('plite range ref contract', () => {
   it('rebases range refs across split_node text branches', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -189,7 +194,7 @@ describe('plite range ref contract', () => {
       marks: null,
     });
 
-    const ref = Editor.rangeRef(editor, {
+    const ref = editorRangeRef(editor, {
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 7 },
     });
@@ -214,7 +219,7 @@ describe('plite range ref contract', () => {
   it('rebases range refs through merge_node into the surviving text branch', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -229,7 +234,7 @@ describe('plite range ref contract', () => {
       marks: null,
     });
 
-    const ref = Editor.rangeRef(editor, {
+    const ref = editorRangeRef(editor, {
       anchor: { path: [0, 1], offset: 0 },
       focus: { path: [0, 2], offset: 1 },
     });
@@ -255,13 +260,13 @@ describe('plite range ref contract', () => {
     const editor = createEditor();
     const children = createChildren();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children,
       selection: null,
       marks: null,
     });
 
-    const ref = Editor.rangeRef(editor, {
+    const ref = editorRangeRef(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -273,8 +278,8 @@ describe('plite range ref contract', () => {
       });
     }, /rollback/);
 
-    assert.deepEqual(Editor.getChildren(editor), children);
-    assert.equal(Editor.rangeRefs(editor).size, 1);
+    assert.deepEqual(editorGetChildren(editor), children);
+    assert.equal(editorRangeRefs(editor).size, 1);
     assert.deepEqual(ref.current, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
@@ -289,10 +294,10 @@ describe('plite range ref contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    let ref: ReturnType<typeof Editor.rangeRef>;
+    let ref: ReturnType<typeof editorRangeRef>;
 
     headerEditor.update((tx) => {
-      ref = Editor.rangeRef(runtime.editor, {
+      ref = editorRangeRef(runtime.editor, {
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 4 },
       });
@@ -318,7 +323,7 @@ describe('plite range ref contract', () => {
         roots: { header: createChildren() },
       },
     });
-    const ref = Editor.rangeRef(editor, {
+    const ref = editorRangeRef(editor, {
       anchor: { path: [0, 0], offset: 1, root: 'header' },
       focus: { path: [0, 0], offset: 4, root: 'header' },
     });
@@ -350,10 +355,10 @@ describe('plite range ref contract', () => {
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const mainEditor = createEditorView(runtime);
-    let ref: ReturnType<typeof Editor.rangeRef>;
+    let ref: ReturnType<typeof editorRangeRef>;
 
     headerEditor.update(() => {
-      ref = Editor.rangeRef(runtime.editor, {
+      ref = editorRangeRef(runtime.editor, {
         anchor: { path: [0, 0], offset: 1 },
         focus: { path: [0, 0], offset: 4 },
       });

@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { isEdge as editorIsEdge } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -13,7 +13,7 @@ export const input = (
 export const test = (editor) => {
   const point = { path: [0, 0], offset: 2 };
 
-  return Editor.isEdge(editor, point, {
+  return editorIsEdge(editor, point, {
     anchor: point,
     focus: { path: [0, 0], offset: 3 },
   });

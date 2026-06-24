@@ -1,5 +1,10 @@
 import { getEditorSchema } from '../core/editor-runtime';
-import { Editor, type EditorStaticApi } from '../interfaces/editor';
+import {
+  above as editorAbove,
+  point as editorPoint,
+  positions as editorPositions,
+} from '../interfaces/editor';
+import type { EditorStaticApi } from '../interfaces/editor';
 import { NodeApi } from '../interfaces/node';
 import type { Point } from '../interfaces/point';
 import {
@@ -8,7 +13,7 @@ import {
 } from './adjacent-character-point';
 
 export const after: EditorStaticApi['after'] = (editor, at, options = {}) => {
-  const anchor = Editor.point(editor, at, { edge: 'end' });
+  const anchor = editorPoint(editor, at, { edge: 'end' });
   const { distance = 1, unit = 'offset', voids = false } = options;
 
   if (unit === 'character' && canUseAdjacentCharacterFastPath(editor, anchor)) {
@@ -19,16 +24,16 @@ export const after: EditorStaticApi['after'] = (editor, at, options = {}) => {
     });
   }
 
-  const focus = Editor.point(editor, [], { edge: 'end' });
+  const focus = editorPoint(editor, [], { edge: 'end' });
   const range = { anchor, focus };
   let d = 0;
   let target: Point | undefined;
 
-  for (const p of Editor.positions(editor, {
+  for (const p of editorPositions(editor, {
     ...options,
     at: range,
   })) {
-    const insideNonSelectable = Editor.above(editor, {
+    const insideNonSelectable = editorAbove(editor, {
       at: p,
       match: (node) =>
         NodeApi.isElement(node) && !getEditorSchema(editor).isSelectable(node),

@@ -462,12 +462,12 @@ describe('core benchmark scripts contract', () => {
     assert.ok(getSelectionStart > getChildrenStart);
     assert.ok(selectStart > getSelectionStart);
     assert.ok(
-      getChildrenSource.indexOf('Editor.getChildren') <
-        getChildrenSource.indexOf('Editor.getSnapshot')
+      getChildrenSource.indexOf('editorGetChildren') <
+        getChildrenSource.indexOf('editorGetSnapshot')
     );
     assert.ok(
-      getSelectionSource.indexOf('Editor.getSelection') <
-        getSelectionSource.indexOf('Editor.getSnapshot')
+      getSelectionSource.indexOf('editorGetSelection') <
+        getSelectionSource.indexOf('editorGetSnapshot')
     );
   });
 
@@ -1149,8 +1149,8 @@ describe('core benchmark scripts contract', () => {
     assert.ok(getChildrenStart >= 0);
     assert.ok(insertTextStart > getChildrenStart);
     assert.ok(
-      getChildrenSource.indexOf('Editor.getChildren') <
-        getChildrenSource.indexOf('Editor.getSnapshot')
+      getChildrenSource.indexOf('editorGetChildren') <
+        getChildrenSource.indexOf('editorGetSnapshot')
     );
   });
 
@@ -1163,8 +1163,8 @@ describe('core benchmark scripts contract', () => {
     assert.ok(getChildrenStart >= 0);
     assert.ok(normalizeStart > getChildrenStart);
     assert.ok(
-      getChildrenSource.indexOf('Editor.getChildren') <
-        getChildrenSource.indexOf('Editor.getSnapshot')
+      getChildrenSource.indexOf('editorGetChildren') <
+        getChildrenSource.indexOf('editorGetSnapshot')
     );
   });
 });

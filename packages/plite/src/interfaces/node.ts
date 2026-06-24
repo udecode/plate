@@ -9,7 +9,11 @@ import {
 import { formatDebugValue } from '../utils/format-debug-value';
 import { modifyChildren, modifyLeaf, removeChildren } from '../utils/modify';
 import type { Editor as EditorType, Value } from './editor';
-import { Editor } from './editor';
+import {
+  getChildren as editorGetChildren,
+  isEditor as editorIsEditor,
+} from './editor';
+import type { Editor } from './editor';
 import {
   type Element,
   ElementApi,
@@ -347,7 +351,7 @@ export interface NodeInterface {
 }
 
 const getAncestorChildren = (node: Ancestor): Descendant[] =>
-  NodeApi.isEditor(node) ? Editor.getChildren(node) : node.children;
+  NodeApi.isEditor(node) ? editorGetChildren(node) : node.children;
 
 const getWholeTopLevelChildFragment = (
   root: Ancestor,
@@ -389,7 +393,7 @@ const getTextRangeChildren = (
   node: Ancestor | NodeTextRangeRoot
 ): Descendant[] =>
   NodeApi.isEditor(node as Node)
-    ? Editor.getChildren(node as Editor)
+    ? editorGetChildren(node as Editor)
     : (node as Element | NodeTextRangeRoot).children;
 
 const getStringMatches = (
@@ -820,11 +824,11 @@ export const NodeApi: NodeInterface = {
   },
 
   isEditor(node: Node): node is Editor {
-    return Editor.isEditor(node);
+    return editorIsEditor(node);
   },
 
   isElement(node: Node): node is Element {
-    return Array.isArray((node as Element).children) && !Editor.isEditor(node);
+    return Array.isArray((node as Element).children) && !editorIsEditor(node);
   },
 
   isNode(
@@ -834,7 +838,7 @@ export const NodeApi: NodeInterface = {
     return (
       TextApi.isText(value) ||
       ElementApi.isElement(value, { deep }) ||
-      Editor.isEditor(value, { deep })
+      editorIsEditor(value, { deep })
     );
   },
 

@@ -1,6 +1,18 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  deleteBackward as editorDeleteBackward,
+  deleteForward as editorDeleteForward,
+  deleteFragment as editorDeleteFragment,
+  getChildren as editorGetChildren,
+  getLastCommit as editorGetLastCommit,
+  getSelection as editorGetSelection,
+  insertBreak as editorInsertBreak,
+  insertText as editorInsertText,
+  range as editorRange,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 import { createEditor, type Descendant, NodeApi } from '../src';
 import { setEditorTargetRuntime } from '../src/internal';
 import { extendTestSchema } from './support/schema';
@@ -18,7 +30,7 @@ const quote = (text: string): Descendant => ({
 const setupEditor = () => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [paragraph('one'), paragraph('two')],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
@@ -32,7 +44,7 @@ const setupEditor = () => {
 const setupCollapsedEditor = () => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [paragraph('one'), paragraph('two')],
     selection: {
       anchor: { path: [0, 0], offset: 1 },
@@ -46,7 +58,7 @@ const setupCollapsedEditor = () => {
 const setupWrappedEditor = () => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [quote('one'), quote('two')],
     selection: {
       anchor: { path: [0, 0, 0], offset: 0 },
@@ -60,7 +72,7 @@ const setupWrappedEditor = () => {
 const setupThreeBlockEditor = () => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [paragraph('one'), paragraph('two'), paragraph('three')],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
@@ -74,7 +86,7 @@ const setupThreeBlockEditor = () => {
 const setupSplitTextEditor = () => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -111,7 +123,7 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       quote('two'),
     ]);
@@ -137,7 +149,7 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [paragraph('one')]);
+    assert.deepEqual(editorGetChildren(editor), [paragraph('one')]);
   });
 
   it('splitNodes uses the transaction target when at is omitted inside editor.update', () => {
@@ -160,7 +172,7 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       paragraph('t'),
       paragraph('wo'),
@@ -187,11 +199,11 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       paragraph('tXwo'),
     ]);
-    assert.deepEqual(Editor.getSelection(editor), {
+    assert.deepEqual(editorGetSelection(editor), {
       anchor: { path: [1, 0], offset: 2 },
       focus: { path: [1, 0], offset: 2 },
     });
@@ -200,19 +212,19 @@ describe('primitive method runtime contract', () => {
   it('insertText appends at the document end when selection is null and at is omitted', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraph('one'), paragraph('two')],
       selection: null,
       marks: null,
     });
 
-    Editor.insertText(editor, '!');
+    editorInsertText(editor, '!');
 
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       paragraph('two!'),
     ]);
-    assert.deepEqual(Editor.getSelection(editor), {
+    assert.deepEqual(editorGetSelection(editor), {
       anchor: { path: [1, 0], offset: 4 },
       focus: { path: [1, 0], offset: 4 },
     });
@@ -221,24 +233,24 @@ describe('primitive method runtime contract', () => {
   it('insertText keeps null selection when an explicit full-document range is used on a deselected editor', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraph('one'), paragraph('two')],
       selection: null,
       marks: null,
     });
 
-    Editor.insertText(editor, 'replacement', {
-      at: Editor.range(editor, []),
+    editorInsertText(editor, 'replacement', {
+      at: editorRange(editor, []),
     });
 
-    assert.deepEqual(Editor.getChildren(editor), [paragraph('replacement')]);
-    assert.equal(Editor.getSelection(editor), null);
+    assert.deepEqual(editorGetChildren(editor), [paragraph('replacement')]);
+    assert.equal(editorGetSelection(editor), null);
   });
 
   it('insertText in an empty block remains an operation commit, not a replacement', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraph('')],
       selection: {
         anchor: { path: [0, 0], offset: 0 },
@@ -250,9 +262,9 @@ describe('primitive method runtime contract', () => {
       tx.text.insert('U');
     });
 
-    const commit = Editor.getLastCommit(editor);
+    const commit = editorGetLastCommit(editor);
 
-    assert.equal(Editor.string(editor, []), 'U');
+    assert.equal(editorString(editor, []), 'U');
     assert.deepEqual(commit?.classes, ['text']);
     assert.deepEqual(commit?.operations, [
       {
@@ -294,14 +306,14 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       {
         type: 'paragraph',
         children: [{ text: 't' }, { bold: true, text: 'MARK' }, { text: 'wo' }],
       },
     ]);
-    assert.deepEqual(Editor.getSelection(editor), {
+    assert.deepEqual(editorGetSelection(editor), {
       anchor: { path: [1, 1], offset: 4 },
       focus: { path: [1, 1], offset: 4 },
     });
@@ -310,7 +322,7 @@ describe('primitive method runtime contract', () => {
   it('insertText inherits consistent marks from a replaced selected range', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -332,7 +344,7 @@ describe('primitive method runtime contract', () => {
       tx.text.insert('strong');
     });
 
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       {
         type: 'paragraph',
         children: [
@@ -342,7 +354,7 @@ describe('primitive method runtime contract', () => {
         ],
       },
     ]);
-    assert.deepEqual(Editor.getSelection(editor), {
+    assert.deepEqual(editorGetSelection(editor), {
       anchor: { path: [0, 1], offset: 6 },
       focus: { path: [0, 1], offset: 6 },
     });
@@ -354,7 +366,7 @@ describe('primitive method runtime contract', () => {
 
     extendTestSchema(editor, { type: 'read-only', readOnly: true });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         paragraph('one'),
         {
@@ -385,7 +397,7 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       {
         type: 'read-only',
@@ -414,7 +426,7 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       { type: 'heading-one', children: [{ text: 'two' }] },
     ]);
@@ -424,7 +436,7 @@ describe('primitive method runtime contract', () => {
     const editor = createEditor();
     let calls = 0;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         paragraph('one'),
         { type: 'paragraph', align: 'center', children: [{ text: 'two' }] },
@@ -451,7 +463,7 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       paragraph('two'),
     ]);
@@ -477,7 +489,7 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       paragraph(''),
     ]);
@@ -503,7 +515,7 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       paragraph('tXwo'),
     ]);
@@ -531,7 +543,7 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       quote('one'),
       paragraph('two'),
     ]);
@@ -559,7 +571,7 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       quote('one'),
       paragraph('two'),
     ]);
@@ -585,7 +597,7 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('two'),
       paragraph('one'),
       paragraph('three'),
@@ -612,7 +624,7 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       {
         type: 'paragraph',
         children: [{ text: 'onetwo' }],
@@ -640,7 +652,7 @@ describe('primitive method runtime contract', () => {
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       {
         type: 'paragraph',
@@ -665,11 +677,11 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      Editor.insertBreak(editor);
+      editorInsertBreak(editor);
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       paragraph('t'),
       paragraph('wo'),
@@ -692,11 +704,11 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      Editor.deleteBackward(editor, 'character');
+      editorDeleteBackward(editor, 'character');
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       paragraph('wo'),
     ]);
@@ -718,11 +730,11 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      Editor.deleteForward(editor, 'character');
+      editorDeleteForward(editor, 'character');
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       paragraph('to'),
     ]);
@@ -744,11 +756,11 @@ describe('primitive method runtime contract', () => {
     });
 
     editor.update((tx) => {
-      Editor.deleteFragment(editor);
+      editorDeleteFragment(editor);
     });
 
     assert.equal(calls, 1);
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       paragraph(''),
     ]);

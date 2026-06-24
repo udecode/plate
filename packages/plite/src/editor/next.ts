@@ -1,11 +1,18 @@
-import { Editor, type EditorStaticApi } from '../interfaces/editor';
+import {
+  after as editorAfter,
+  getChildren as editorGetChildren,
+  getSnapshot as editorGetSnapshot,
+  last as editorLast,
+  parent as editorParent,
+} from '../interfaces/editor';
+import type { EditorStaticApi } from '../interfaces/editor';
 import { LocationApi, type Span } from '../interfaces/location';
 import { NodeApi } from '../interfaces/node';
 import { nodes } from './nodes';
 
 export const next: EditorStaticApi['next'] = (editor, options = {}) => {
   const { mode = 'lowest', voids = false } = options;
-  let { match, at = Editor.getSnapshot(editor).selection } = options;
+  let { match, at = editorGetSnapshot(editor).selection } = options;
 
   if (!at) {
     return;
@@ -15,19 +22,19 @@ export const next: EditorStaticApi['next'] = (editor, options = {}) => {
     return;
   }
 
-  const pointAfterLocation = Editor.after(editor, at, { voids });
+  const pointAfterLocation = editorAfter(editor, at, { voids });
 
   if (!pointAfterLocation) return;
 
-  const [, to] = Editor.last(editor, []);
+  const [, to] = editorLast(editor, []);
 
   const span: Span = [pointAfterLocation.path, to];
 
   if (match == null) {
     if (LocationApi.isPath(at)) {
-      const [parent] = Editor.parent(editor, at);
+      const [parent] = editorParent(editor, at);
       const children = NodeApi.isEditor(parent)
-        ? Editor.getChildren(editor)
+        ? editorGetChildren(editor)
         : parent.children;
       match = (n) => !NodeApi.isEditor(n) && children.includes(n);
     } else {

@@ -9,7 +9,16 @@ import {
   PointApi,
   RangeApi,
 } from '../interfaces';
-import { type Editor, Editor as EditorApi } from '../interfaces/editor';
+import {
+  after as editorAfter,
+  getChildren as editorGetChildren,
+  hasPath as editorHasPath,
+  leaf as editorLeaf,
+  pathRef as editorPathRef,
+  point as editorPoint,
+  pointRef as editorPointRef,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import {
   type DeletePathTarget,
   type DeleteRangePlan,
@@ -34,12 +43,12 @@ const resolveRemovalEndPoint = (
   const liveStartPoint = getLivePoint(editor, startPoint);
 
   if (!liveStartPoint) {
-    return EditorApi.getChildren(editor).length > 0
-      ? EditorApi.point(editor, [], { edge: 'start' })
+    return editorGetChildren(editor).length > 0
+      ? editorPoint(editor, [], { edge: 'start' })
       : null;
   }
 
-  const nextPoint = EditorApi.after(editor, liveStartPoint, {
+  const nextPoint = editorAfter(editor, liveStartPoint, {
     distance: 1,
     unit: 'offset',
     voids: true,
@@ -62,7 +71,7 @@ export const deletePathTarget = (
   tx: TransactionWriter
 ) => {
   const fallbackRef = target.fallbackPoint
-    ? EditorApi.pointRef(editor, target.fallbackPoint)
+    ? editorPointRef(editor, target.fallbackPoint)
     : null;
 
   tx.apply({
@@ -71,7 +80,7 @@ export const deletePathTarget = (
     node: getCurrentNode(editor, target.path) as Descendant,
   });
 
-  if (EditorApi.hasPath(editor, target.path)) {
+  if (editorHasPath(editor, target.path)) {
     maybeMergeAdjacentTextAt(editor, target.path);
   }
 
@@ -95,7 +104,7 @@ const collectDeleteMatchPaths = (editor: Editor, plan: DeleteRangePlan) => {
     lastPath = path;
   };
   const maybeAddFullySelectedInline = (path: Path) => {
-    if (!EditorApi.hasPath(editor, path)) {
+    if (!editorHasPath(editor, path)) {
       return;
     }
 
@@ -105,8 +114,8 @@ const collectDeleteMatchPaths = (editor: Editor, plan: DeleteRangePlan) => {
       return;
     }
 
-    const inlineStart = EditorApi.point(editor, path, { edge: 'start' });
-    const inlineEnd = EditorApi.point(editor, path, { edge: 'end' });
+    const inlineStart = editorPoint(editor, path, { edge: 'start' });
+    const inlineEnd = editorPoint(editor, path, { edge: 'end' });
     const [rangeStart, rangeEnd] = RangeApi.edges(plan.effectiveRange);
 
     if (
@@ -137,8 +146,8 @@ const collectDeleteMatchPaths = (editor: Editor, plan: DeleteRangePlan) => {
     }
 
     if (NodeApi.isElement(node) && getEditorSchema(editor).isInline(node)) {
-      const inlineStart = EditorApi.point(editor, path, { edge: 'start' });
-      const inlineEnd = EditorApi.point(editor, path, { edge: 'end' });
+      const inlineStart = editorPoint(editor, path, { edge: 'start' });
+      const inlineEnd = editorPoint(editor, path, { edge: 'end' });
       const [rangeStart, rangeEnd] = RangeApi.edges(plan.effectiveRange);
 
       if (
@@ -191,16 +200,14 @@ export const removeDeleteContents = (
   const skipEndText = deleteMatchPaths.some((path) =>
     PathApi.isCommon(path, plan.end.path)
   );
-  const pathRefs = deleteMatchPaths.map((path) =>
-    EditorApi.pathRef(editor, path)
-  );
-  const startRef = EditorApi.pointRef(editor, plan.start);
-  const endRef = EditorApi.pointRef(editor, plan.end);
+  const pathRefs = deleteMatchPaths.map((path) => editorPathRef(editor, path));
+  const startRef = editorPointRef(editor, plan.start);
+  const endRef = editorPointRef(editor, plan.end);
   let removedText = '';
 
   if (!plan.isSingleText && !plan.startNonEditable && !skipStartText) {
     const point = startRef.current!;
-    const [node] = EditorApi.leaf(editor, point);
+    const [node] = editorLeaf(editor, point);
     const text = node.text.slice(plan.start.offset);
 
     if (text.length > 0) {
@@ -236,7 +243,7 @@ export const removeDeleteContents = (
       throw new Error('deleteAt could not resolve a surviving end point');
     }
 
-    const [node] = EditorApi.leaf(editor, point);
+    const [node] = editorLeaf(editor, point);
     const offset = plan.isSingleText ? plan.start.offset : 0;
     const text = node.text.slice(offset, plan.end.offset);
 

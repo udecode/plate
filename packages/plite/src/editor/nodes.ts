@@ -1,4 +1,10 @@
-import { Editor, type EditorNodesOptions } from '../interfaces/editor';
+import {
+  getSnapshot as editorGetSnapshot,
+  isElementReadOnly as editorIsElementReadOnly,
+  isVoid as editorIsVoid,
+  path as editorPath,
+} from '../interfaces/editor';
+import type { Editor, EditorNodesOptions } from '../interfaces/editor';
 import { LocationApi } from '../interfaces/location';
 import { type Node, NodeApi, type NodeEntry } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
@@ -8,7 +14,7 @@ export function* nodes<T extends Node>(
   options: EditorNodesOptions<T> = {}
 ): Generator<NodeEntry<T>, void, undefined> {
   const {
-    at = Editor.getSnapshot(editor).selection,
+    at = editorGetSnapshot(editor).selection,
     mode = 'all',
     universal = false,
     reverse = false,
@@ -33,8 +39,8 @@ export function* nodes<T extends Node>(
     from = PathApi.isBefore(last, first) ? last : first;
     to = PathApi.isBefore(last, first) ? first : last;
   } else {
-    const first = Editor.path(editor, at, { edge: 'start' });
-    const last = Editor.path(editor, at, { edge: 'end' });
+    const first = editorPath(editor, at, { edge: 'start' });
+    const last = editorPath(editor, at, { edge: 'end' });
     from = first;
     to = last;
   }
@@ -47,7 +53,7 @@ export function* nodes<T extends Node>(
       if (!NodeApi.isElement(node)) return false;
       if (
         !voids &&
-        (Editor.isVoid(editor, node) || Editor.isElementReadOnly(editor, node))
+        (editorIsVoid(editor, node) || editorIsElementReadOnly(editor, node))
       )
         return true;
 

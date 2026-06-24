@@ -10,7 +10,11 @@ import {
   type Selection,
   type Editor as BasePlateEditor,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 import type {} from '@platejs/plite-history';
 import * as Y from 'yjs';
 
@@ -85,7 +89,7 @@ export const createYjsPeer = ({
 }): Peer => {
   const editor: TestEditor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [...children],
     marks: null,
     selection: null,
@@ -150,13 +154,13 @@ export const createSeededYjsPeers = ({
 };
 
 export const readPeerChildren = (peer: Peer): readonly Descendant[] =>
-  Editor.getSnapshot(peer.editor).children;
+  editorGetSnapshot(peer.editor).children;
 
 export const readPeerSelection = (peer: Peer): Selection =>
-  Editor.getSnapshot(peer.editor).selection;
+  editorGetSnapshot(peer.editor).selection;
 
 export const getPeerTopLevelTexts = (peer: Peer): string[] =>
-  readPeerChildren(peer).map((_, index) => Editor.string(peer.editor, [index]));
+  readPeerChildren(peer).map((_, index) => editorString(peer.editor, [index]));
 
 export const getPeerTopLevelTypes = (peer: Peer): string[] =>
   readPeerChildren(peer).map((node) =>

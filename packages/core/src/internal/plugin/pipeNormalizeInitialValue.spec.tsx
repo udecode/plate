@@ -108,7 +108,7 @@ describe('pipeTransformInitialValue', () => {
         ]);
       });
 
-      it('use create.value when children is empty', () => {
+      it('keeps the current editor value when children are empty', () => {
         const editor = createPlateEditor({
           plugins,
           value: [{ children: [{ text: 'Factory' }], count: 0, type: 'p' }],

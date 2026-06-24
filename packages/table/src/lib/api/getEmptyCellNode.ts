@@ -9,10 +9,6 @@ export const getEmptyCellNode = (
   editor: BasePlateEditor,
   { children, header, row }: CreateCellOptions = {}
 ) => {
-  const createBlock = (
-    editor.api.create as { block?: typeof editor.api.create.block }
-  ).block;
-
   header =
     header ??
     (row
@@ -23,7 +19,7 @@ export const getEmptyCellNode = (
 
   return {
     children: children ?? [
-      createBlock?.() ?? {
+      {
         children: [{ text: '' }],
         type: editor.getType(KEYS.p),
       },

@@ -6,7 +6,9 @@ import {
   type Operation,
   type Range,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 
 import {
   assertPeerTexts,
@@ -59,7 +61,7 @@ const collectDeleteFragmentOperations = (
 ): Operation['type'][] => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: initialValue(),
     marks: null,
     selection: null,

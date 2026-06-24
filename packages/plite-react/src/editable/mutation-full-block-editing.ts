@@ -16,10 +16,12 @@ import {
 import { profileEditableMutationDuration } from './mutation-profiler';
 import { withProjectedMutationRoot } from './mutation-root-scope';
 import {
-  Editor,
   getEditorCurrentMarks,
   markInternalOwnedReplayOperation,
   type Editor as RuntimeEditor,
+  above as editorAbove,
+  isBlock as editorIsBlock,
+  point as editorPoint,
 } from './runtime-editor-api';
 
 const MULTILINE_TEXT_PATTERN = /[\n\r]/;
@@ -260,14 +262,14 @@ const getFullySelectedBlockPaths = (
   }
 
   const [start, end] = RangeApi.edges(selection);
-  const startBlock = Editor.above(editor, {
+  const startBlock = editorAbove(editor, {
     at: start,
-    match: (node) => NodeApi.isElement(node) && Editor.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
     mode: 'highest',
   });
-  const endBlock = Editor.above(editor, {
+  const endBlock = editorAbove(editor, {
     at: end,
-    match: (node) => NodeApi.isElement(node) && Editor.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
     mode: 'highest',
   });
 
@@ -279,14 +281,14 @@ const getFullySelectedBlockPaths = (
   const [, endBlockPath] = endBlock;
 
   if (
-    !PointApi.equals(start, Editor.point(editor, blockPath, { edge: 'start' }))
+    !PointApi.equals(start, editorPoint(editor, blockPath, { edge: 'start' }))
   ) {
     return null;
   }
 
   if (PathApi.equals(blockPath, endBlockPath)) {
     if (
-      !PointApi.equals(end, Editor.point(editor, blockPath, { edge: 'end' }))
+      !PointApi.equals(end, editorPoint(editor, blockPath, { edge: 'end' }))
     ) {
       return null;
     }
@@ -309,17 +311,17 @@ const getFullySelectedBlockPaths = (
     return parentChildCount > 1 || includeOnlyChild ? [blockPath] : null;
   }
 
-  if (PointApi.equals(end, Editor.point(editor, blockPath, { edge: 'end' }))) {
+  if (PointApi.equals(end, editorPoint(editor, blockPath, { edge: 'end' }))) {
     return [blockPath];
   }
 
   const endsAtEndBlockStart = PointApi.equals(
     end,
-    Editor.point(editor, endBlockPath, { edge: 'start' })
+    editorPoint(editor, endBlockPath, { edge: 'start' })
   );
   const endsAtEndBlockEnd = PointApi.equals(
     end,
-    Editor.point(editor, endBlockPath, { edge: 'end' })
+    editorPoint(editor, endBlockPath, { edge: 'end' })
   );
 
   if (!endsAtEndBlockStart && !endsAtEndBlockEnd) {
@@ -381,12 +383,12 @@ const getFullySelectedTopLevelBlockPaths = (
   const lastPath = [childCount - 1];
 
   if (
-    !PointApi.equals(start, Editor.point(editor, firstPath, { edge: 'start' }))
+    !PointApi.equals(start, editorPoint(editor, firstPath, { edge: 'start' }))
   ) {
     return null;
   }
 
-  if (!PointApi.equals(end, Editor.point(editor, lastPath, { edge: 'end' }))) {
+  if (!PointApi.equals(end, editorPoint(editor, lastPath, { edge: 'end' }))) {
     return null;
   }
 

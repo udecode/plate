@@ -1,3 +1,5 @@
+import { describe, expect, it, mock } from 'bun:test';
+
 import { getTransientSuggestionKey } from '@platejs/suggestion';
 
 import { AI_PREVIEW_KEY, beginAIPreview } from './aiStreamSnapshot';
@@ -72,35 +74,6 @@ describe('undoAI', () => {
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
-      },
-      tf: {
-        deselect: mock(() => {
-          editor.selection = null;
-        }),
-        insertNodes: mock((nodes: any, options: any = {}) => {
-          editor.children.splice(
-            options.at?.[0] ?? editor.children.length,
-            0,
-            ...(Array.isArray(nodes) ? nodes : [nodes])
-          );
-        }),
-        removeNodes: mock((options: any = {}) => {
-          if (options.match) {
-            editor.children = editor.children.filter(
-              (node: any) => !options.match(node)
-            );
-
-            return;
-          }
-
-          editor.children.splice(options.at[0], 1);
-        }),
-        select: mock((selection: any) => {
-          editor.selection = selection;
-        }),
-        withoutSaving: mock((fn: () => void) => {
-          fn();
-        }),
       },
       update: mock((fn: (tx: any) => void) => {
         fn({

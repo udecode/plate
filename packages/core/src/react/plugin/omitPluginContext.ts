@@ -11,7 +11,6 @@ export const omitPluginContext = <T extends PlatePluginContext<AnyPlatePlugin>>(
   | 'plugin'
   | 'setOption'
   | 'setOptions'
-  | 'tf'
   | 'type'
 > => {
   const {
@@ -22,10 +21,9 @@ export const omitPluginContext = <T extends PlatePluginContext<AnyPlatePlugin>>(
     plugin,
     setOption,
     setOptions,
-    tf: _tf,
     type,
     ...rest
-  } = ctx as T & { tf?: unknown };
+  } = ctx;
 
   return rest as Omit<
     T,
@@ -36,7 +34,6 @@ export const omitPluginContext = <T extends PlatePluginContext<AnyPlatePlugin>>(
     | 'plugin'
     | 'setOption'
     | 'setOptions'
-    | 'tf'
     | 'type'
   >;
 };

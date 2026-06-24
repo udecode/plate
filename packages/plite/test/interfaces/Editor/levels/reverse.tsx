@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { levels as editorLevels } from '@platejs/plite/internal';
 /** @jsx jsx  */
 
 export const input = (
@@ -10,7 +10,7 @@ export const input = (
 );
 export const test = (editor) =>
   Array.from(
-    Editor.levels(editor, {
+    editorLevels(editor, {
       at: [0, 0],
       reverse: true,
     })

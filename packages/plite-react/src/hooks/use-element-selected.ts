@@ -6,7 +6,11 @@ import {
   RangeApi,
 } from '@platejs/plite';
 import { ElementPathContext, NodeRuntimeIdContext } from '../context';
-import { Editor } from '../editable/runtime-editor-api';
+import {
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  hasPath as editorHasPath,
+  range as editorRange,
+} from '../editable/runtime-editor-api';
 import { readRuntimeSelection } from '../editable/runtime-selection-state';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { useEditorSelector } from './use-editor-selector';
@@ -41,13 +45,13 @@ export const useElementSelected = ({
         return false;
       const selectedPath =
         path ??
-        (runtimeId ? Editor.getPathByRuntimeId(editor, runtimeId) : null) ??
+        (runtimeId ? editorGetPathByRuntimeId(editor, runtimeId) : null) ??
         contextPath ??
         (element ? ReactEditor.resolvePath(editor, element) : null);
       if (!selectedPath) return false;
-      if (!Editor.hasPath(editor, selectedPath)) return false;
+      if (!editorHasPath(editor, selectedPath)) return false;
 
-      const range = Editor.range(editor, selectedPath);
+      const range = editorRange(editor, selectedPath);
       return !!RangeApi.intersection(range, selection);
     },
     [contextPath, element, mode, path, runtimeId]

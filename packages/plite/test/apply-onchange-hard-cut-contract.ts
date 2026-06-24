@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  type getLastCommit as editorGetLastCommit,
+  registerCommitListener as editorRegisterCommitListener,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -37,14 +42,14 @@ describe('apply/onChange hard cuts', () => {
 
   it('imports operations through tx.operations.replay and publishes one commit', () => {
     const editor = createEditor();
-    const commits: NonNullable<ReturnType<typeof Editor.getLastCommit>>[] = [];
+    const commits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] = [];
     const unsubscribe = editor.subscribe((_snapshot, commit) => {
       if (commit) {
         commits.push(commit);
       }
     });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
         anchor: { path: [0, 0], offset: 3 },
@@ -70,7 +75,7 @@ describe('apply/onChange hard cuts', () => {
 
     unsubscribe();
 
-    assert.equal(Editor.string(editor, []), 'one!');
+    assert.equal(editorString(editor, []), 'one!');
     assert.equal(commits.length, 1);
     assert.deepEqual(commits[0]?.tags, ['remote-import']);
     assert.deepEqual(
@@ -83,7 +88,7 @@ describe('apply/onChange hard cuts', () => {
     const editor = createEditor();
     const events: string[] = [];
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraph('one')],
       selection: {
         anchor: { path: [0, 0], offset: 3 },
@@ -97,12 +102,9 @@ describe('apply/onChange hard cuts', () => {
         events.push(`subscribe:${commit.operations.length}`);
       }
     });
-    const unsubscribeCommit = Editor.registerCommitListener(
-      editor,
-      (commit) => {
-        events.push(`commit:${commit.operations.length}`);
-      }
-    );
+    const unsubscribeCommit = editorRegisterCommitListener(editor, (commit) => {
+      events.push(`commit:${commit.operations.length}`);
+    });
 
     editor.update((tx) => {
       tx.text.insert('!');

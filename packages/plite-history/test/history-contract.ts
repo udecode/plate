@@ -13,7 +13,16 @@ import {
   createEditorRuntime,
   createEditorView,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  deleteBackward as editorDeleteBackward,
+  deleteFragment as editorDeleteFragment,
+  getSnapshot as editorGetSnapshot,
+  insertBreak as editorInsertBreak,
+  moveNodes as editorMoveNodes,
+  registerCommand as editorRegisterCommand,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import { History, history } from '../src';
 
@@ -48,7 +57,7 @@ const replace = (
   children: Descendant[],
   selection: Selection = null
 ) => {
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: structuredClone(children),
     selection: structuredClone(selection),
     marks: null,
@@ -56,7 +65,7 @@ const replace = (
 };
 
 const getVisibleState = (editor: EditorType) => {
-  const snapshot = Editor.getSnapshot(editor);
+  const snapshot = editorGetSnapshot(editor);
 
   return {
     children: snapshot.children,
@@ -457,7 +466,7 @@ describe('plite-history contract', () => {
     );
 
     assert.equal(getHistory(editor).undos.length, 1);
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       paragraph('alpha'),
       paragraph('beta'),
       paragraph('gamma'),
@@ -502,7 +511,7 @@ describe('plite-history contract', () => {
 
     undo(editor);
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [paragraph('aXbcd')]);
+    assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('aXbcd')]);
   });
 
   it('does not restore a primary selection into a sibling root undo batch', () => {
@@ -617,7 +626,7 @@ describe('plite-history contract', () => {
       tx.text.insert('Z', { at: selection });
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [paragraph('Z')]);
+    assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('Z')]);
     assert.equal(getHistory(editor).undos.length, 1);
     assert.deepEqual(
       getHistory(editor).undos[0]?.operations.map(
@@ -649,7 +658,7 @@ describe('plite-history contract', () => {
       tx.fragment.delete({ direction: 'backward' });
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [paragraph('')]);
+    assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('')]);
     assert.equal(getHistory(editor).undos.length, 1);
     assert.deepEqual(
       getHistory(editor).undos[0]?.operations.map(
@@ -839,7 +848,7 @@ describe('plite-history contract', () => {
 
     undo(editor);
 
-    assert.equal(Editor.string(editor, [0]), 'Yabcdef');
+    assert.equal(editorString(editor, [0]), 'Yabcdef');
   });
 
   it('drops saved undo batches deleted by local withoutSaving edits', () => {
@@ -854,7 +863,7 @@ describe('plite-history contract', () => {
       tx.text.insert('X');
     });
 
-    assert.equal(Editor.string(editor, [0]), 'aXb');
+    assert.equal(editorString(editor, [0]), 'aXb');
     assert.equal(getHistory(editor).undos.length, 1);
 
     editor.api.history.withoutSaving(() => {
@@ -868,12 +877,12 @@ describe('plite-history contract', () => {
       });
     });
 
-    assert.equal(Editor.string(editor, [0]), 'b');
+    assert.equal(editorString(editor, [0]), 'b');
     assert.equal(getHistory(editor).undos.length, 0);
 
     undo(editor);
 
-    assert.equal(Editor.string(editor, [0]), 'b');
+    assert.equal(editorString(editor, [0]), 'b');
     assert.equal(getHistory(editor).undos.length, 0);
     assert.equal(getHistory(editor).redos.length, 0);
   });
@@ -935,7 +944,7 @@ describe('plite-history contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribeUndo = Editor.registerCommand(
+    const unsubscribeUndo = editorRegisterCommand(
       editor,
       'history_undo',
       (context, next) => {
@@ -943,7 +952,7 @@ describe('plite-history contract', () => {
         return next();
       }
     );
-    const unsubscribeRedo = Editor.registerCommand(
+    const unsubscribeRedo = editorRegisterCommand(
       editor,
       'history_redo',
       (context, next) => {
@@ -961,7 +970,7 @@ describe('plite-history contract', () => {
     unsubscribeRedo();
 
     assert.deepEqual(commands, ['history_undo', 'history_redo']);
-    assert.equal(Editor.string(editor, [0]), 'one!');
+    assert.equal(editorString(editor, [0]), 'one!');
   });
 
   it('merges contiguous insertText commits into one undo unit', () => {
@@ -1011,7 +1020,7 @@ describe('plite-history contract', () => {
     }
 
     assert.equal(getHistory(editor).undos.length, 1);
-    assert.equal(Editor.string(editor, [0]), 'This is editable simpletext');
+    assert.equal(editorString(editor, [0]), 'This is editable simpletext');
 
     undo(editor);
 
@@ -1048,7 +1057,7 @@ describe('plite-history contract', () => {
     }
 
     assert.equal(getHistory(editor).undos.length, 1);
-    assert.equal(Editor.string(editor, [0]), 'This is example, much better');
+    assert.equal(editorString(editor, [0]), 'This is example, much better');
 
     undo(editor);
 
@@ -1138,11 +1147,11 @@ describe('plite-history contract', () => {
 
     assert.equal(getHistory(editor).undos.length, 1);
     assert.equal(getHistory(editor).redos.length, 0);
-    assert.equal(Editor.string(editor, [0]), 'oneb');
+    assert.equal(editorString(editor, [0]), 'oneb');
 
     redo(editor);
 
-    assert.equal(Editor.string(editor, [0]), 'oneb');
+    assert.equal(editorString(editor, [0]), 'oneb');
 
     undo(editor);
 
@@ -1162,7 +1171,7 @@ describe('plite-history contract', () => {
       tx.nodes.set<Element>({ type: 'quote' }, { at: [0] });
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'quote',
         children: [{ text: 'AAA' }],
@@ -1176,7 +1185,7 @@ describe('plite-history contract', () => {
 
     redo(editor);
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'quote',
         children: [{ text: 'AAA' }],
@@ -1202,7 +1211,7 @@ describe('plite-history contract', () => {
     });
 
     assert.equal(getHistory(editor).undos.length, 1);
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       paragraph('AAA', { status: 'published' }),
     ]);
 
@@ -1233,7 +1242,7 @@ describe('plite-history contract', () => {
       ]);
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'paragraph',
         children: [{ text: 'Styled text', className: 'highlight' }],
@@ -1246,7 +1255,7 @@ describe('plite-history contract', () => {
 
     redo(editor);
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'paragraph',
         children: [{ text: 'Styled text', className: 'highlight' }],
@@ -1279,7 +1288,7 @@ describe('plite-history contract', () => {
     });
 
     assert.equal(getHistory(editor).undos.length, 1);
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'paragraph',
         role: 'updated',
@@ -1308,7 +1317,7 @@ describe('plite-history contract', () => {
     });
 
     assert.equal(getHistory(editor).undos.length, 0);
-    assert.deepEqual(Editor.getSnapshot(editor).children, [paragraph('')]);
+    assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('')]);
   });
 
   it('merges contiguous text commits when selection import shares a text commit', () => {
@@ -1382,7 +1391,7 @@ describe('plite-history contract', () => {
       ]);
     });
 
-    assert.equal(Editor.string(editor, [0]), 'abcXdef');
+    assert.equal(editorString(editor, [0]), 'abcXdef');
 
     undo(editor);
 
@@ -1475,7 +1484,7 @@ describe('plite-history contract', () => {
     );
 
     assert.equal(getHistory(editor).undos.length, 1);
-    assert.equal(Editor.string(editor, [0]), 'This is すしeditable');
+    assert.equal(editorString(editor, [0]), 'This is すしeditable');
 
     undo(editor);
 
@@ -1550,7 +1559,7 @@ describe('plite-history contract', () => {
     });
 
     write(editor, (tx) => {
-      Editor.insertBreak(editor);
+      editorInsertBreak(editor);
       tx.text.insert('Beta');
     });
     const afterStructuralBatch = getVisibleState(editor);
@@ -1575,14 +1584,12 @@ describe('plite-history contract', () => {
     });
 
     write(editor, () => {
-      Editor.deleteFragment(editor);
+      editorDeleteFragment(editor);
     });
     undo(editor);
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
-      paragraph('abcdef'),
-    ]);
-    assert.deepEqual(Editor.getSnapshot(editor).selection, {
+    assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('abcdef')]);
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -1610,7 +1617,7 @@ describe('plite-history contract', () => {
     });
 
     write(editor, () => {
-      Editor.deleteFragment(editor);
+      editorDeleteFragment(editor);
     });
     write(editor, (tx) => {
       tx.selection.clear();
@@ -1624,8 +1631,8 @@ describe('plite-history contract', () => {
 
     undo(editor);
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [paragraph('Hello')]);
-    assert.deepEqual(Editor.getSnapshot(editor).selection, {
+    assert.deepEqual(editorGetSnapshot(editor).children, [paragraph('Hello')]);
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
       anchor: { path: [0, 0], offset: 5 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -1642,7 +1649,7 @@ describe('plite-history contract', () => {
     const before = getVisibleState(editor);
 
     write(editor, () => {
-      Editor.insertBreak(editor);
+      editorInsertBreak(editor);
     });
     undo(editor);
 
@@ -1668,10 +1675,10 @@ describe('plite-history contract', () => {
     const before = getVisibleState(editor);
 
     write(editor, () => {
-      Editor.insertBreak(editor);
+      editorInsertBreak(editor);
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'paragraph',
         children: [{ text: 'hey ' }],
@@ -1681,7 +1688,7 @@ describe('plite-history contract', () => {
         children: [{ text: '' }, { bold: true, text: 'you' }],
       },
     ]);
-    assert.deepEqual(Editor.getSnapshot(editor).selection, {
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -1702,7 +1709,7 @@ describe('plite-history contract', () => {
     const before = getVisibleState(editor);
 
     write(editor, () => {
-      Editor.moveNodes(editor, { at: [0], to: [3] });
+      editorMoveNodes(editor, { at: [0], to: [3] });
     });
     undo(editor);
 
@@ -1720,7 +1727,7 @@ describe('plite-history contract', () => {
     const before = getVisibleState(editor);
 
     write(editor, () => {
-      Editor.deleteBackward(editor);
+      editorDeleteBackward(editor);
     });
     undo(editor);
 
@@ -1748,7 +1755,7 @@ describe('plite-history contract', () => {
     const before = getVisibleState(editor);
 
     write(editor, () => {
-      Editor.deleteBackward(editor);
+      editorDeleteBackward(editor);
     });
     undo(editor);
 
@@ -1815,7 +1822,7 @@ describe('plite-history contract', () => {
     const before = getVisibleState(editor);
 
     write(editor, () => {
-      Editor.insertBreak(editor);
+      editorInsertBreak(editor);
     });
     undo(editor);
 

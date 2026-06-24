@@ -11,7 +11,14 @@ import { updateDirtyPaths } from '../core/update-dirty-paths';
 import { nodes as getNodes } from '../editor/nodes';
 import { createInternalRangeRef } from '../editor/range-ref';
 import { LocationApi } from '../interfaces';
-import { Editor } from '../interfaces/editor';
+import {
+  getChildren as editorGetChildren,
+  isBlock as editorIsBlock,
+  isEnd as editorIsEnd,
+  isStart as editorIsStart,
+  leaf as editorLeaf,
+  unhangRange as editorUnhangRange,
+} from '../interfaces/editor';
 import { type Descendant, type Node, NodeApi } from '../interfaces/node';
 import type { Operation } from '../interfaces/operation';
 import { PathApi } from '../interfaces/path';
@@ -107,7 +114,7 @@ const applySetNodeBatch = (
   operations: readonly SetNodeOperation[]
 ) => {
   const root = getEditorOperationRoot(editor);
-  const children = Editor.getChildren(editor);
+  const children = editorGetChildren(editor);
   const nextChildren = [...children];
 
   for (const operation of operations) {
@@ -171,17 +178,17 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
     if (match == null) {
       match = LocationApi.isPath(at)
         ? matchPath(editor, at)
-        : (n) => NodeApi.isElement(n) && Editor.isBlock(editor, n);
+        : (n) => NodeApi.isElement(n) && editorIsBlock(editor, n);
     }
 
     if (!hanging && LocationApi.isRange(at)) {
-      at = Editor.unhangRange(editor, at, { voids });
+      at = editorUnhangRange(editor, at, { voids });
     }
 
     if (split && LocationApi.isRange(at)) {
       if (
         RangeApi.isCollapsed(at) &&
-        Editor.leaf(editor, at.anchor)[0].text.length > 0
+        editorLeaf(editor, at.anchor)[0].text.length > 0
       ) {
         // If the range is collapsed in a non-empty node and 'split' is true, there's nothing to
         // set that won't get normalized away
@@ -192,7 +199,7 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
       });
       const [start, end] = RangeApi.edges(at);
       const splitMode = mode === 'lowest' ? 'lowest' : 'highest';
-      const endAtEndOfNode = Editor.isEnd(editor, end, end.path);
+      const endAtEndOfNode = editorIsEnd(editor, end, end.path);
       transforms.splitNodes({
         at: end,
         match,
@@ -200,7 +207,7 @@ export const setNodes: NodeMutationMethods['setNodes'] = (
         voids,
         always: !endAtEndOfNode,
       });
-      const startAtStartOfNode = Editor.isStart(editor, start, start.path);
+      const startAtStartOfNode = editorIsStart(editor, start, start.path);
       transforms.splitNodes({
         at: start,
         match,

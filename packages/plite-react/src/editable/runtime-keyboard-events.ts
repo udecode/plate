@@ -19,7 +19,7 @@ import { prepareEditableKeyDownKernel } from './editing-kernel';
 import { useEditableKeyboardHandler } from './input-router';
 import type { EditableInputController } from './input-state';
 import { applyEditableKeyDown } from './keyboard-input-strategy';
-import { Editor } from './runtime-editor-api';
+import { getSnapshot as editorGetSnapshot } from './runtime-editor-api';
 import type { EditableEventRuntimeCore } from './runtime-event-engine';
 
 const WHITESPACE_KEY_RE = /\s/;
@@ -184,7 +184,7 @@ export const isNativeVerticalKeyFastPathFullyMounted = ({
     return false;
   }
 
-  const topLevelCount = Editor.getSnapshot(editor).children.length;
+  const topLevelCount = editorGetSnapshot(editor).children.length;
 
   if (topLevelCount === 0) {
     return true;
@@ -251,7 +251,7 @@ export const useRuntimeKeyboardEvents = ({
         event.key === 'ArrowUp' || event.key === 'ArrowDown';
       const snapshotSelection = measureRuntimeKeyDownPhase(
         'keydown.snapshot-selection',
-        () => Editor.getSnapshot(editor).selection
+        () => editorGetSnapshot(editor).selection
       );
       const modelOwnsVerticalShift = measureRuntimeKeyDownPhase(
         'keydown.model-owns-vertical-shift',
@@ -437,7 +437,7 @@ export const useRuntimeKeyboardEvents = ({
         decision.targetOwner === 'internal-control' &&
         isProjectedSelectionCaptureKey(event) &&
         (() => {
-          const selection = Editor.getSnapshot(editor).selection;
+          const selection = editorGetSnapshot(editor).selection;
 
           if (!selection) {
             return false;

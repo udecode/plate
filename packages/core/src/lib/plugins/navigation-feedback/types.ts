@@ -46,7 +46,7 @@ export type NavigationNavigateOptions = {
   target: NavigationFeedbackTarget;
 };
 
-export type NavigationFeedbackTransforms = {
+export type NavigationFeedbackTx = {
   navigation: {
     clear: () => void;
     flashTarget: (options: NavigationFlashTargetOptions) => boolean;
@@ -69,5 +69,5 @@ export type NavigationFeedbackConfig = PluginConfig<
   },
   {},
   {},
-  NavigationFeedbackTransforms
+  NavigationFeedbackTx
 >;

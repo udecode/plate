@@ -1,4 +1,4 @@
-import { type BasePlateEditor, getEditorPlugin, PathApi } from 'platejs';
+import { type BasePlateEditor, getEditorPlugin, KEYS, PathApi } from 'platejs';
 
 import { BlockSelectionPlugin } from '../BlockSelectionPlugin';
 import { selectInsertedBlocks } from './selectInsertedBlocks';
@@ -19,7 +19,10 @@ export const pasteSelectedBlocks = (
       const at = PathApi.next(path);
 
       editor.update((tx) => {
-        tx.nodes.insert(editor.api.create.block({}, at), { at });
+        tx.nodes.insert(
+          { children: [{ text: '' }], type: editor.getType(KEYS.p) },
+          { at }
+        );
         tx.selection.set(editor.api.end(at)!);
       });
     }

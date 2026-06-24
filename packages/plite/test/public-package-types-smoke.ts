@@ -20,7 +20,6 @@ type PublicPackageModules = [
 type PublicPackageNamedExports = [
   typeof import('@platejs/plite').createEditor,
   typeof import('@platejs/plite').createEditorRuntime,
-  import('@platejs/plite').Editor,
   import('@platejs/plite').EditorCommit,
   typeof import('@platejs/plite').isEditor,
   typeof import('@platejs/yjs').createYjsExtension,
@@ -119,7 +118,7 @@ type ExpectTrue<T extends true> = T;
 type PublicUnknownPredicateInputs = [
   ExpectTrue<
     IsUnknownPredicateInput<
-      FirstArgument<typeof import('@platejs/plite').Editor.isEditor>
+      FirstArgument<typeof import('@platejs/plite').isEditor>
     >
   >,
   ExpectTrue<

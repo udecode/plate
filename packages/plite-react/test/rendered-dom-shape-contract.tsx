@@ -1,7 +1,7 @@
 import { act, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import type { Descendant } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import { replace as editorReplace } from '@platejs/plite/internal';
 
 import { createReactEditor, Editable, Plite } from '../src';
 
@@ -48,7 +48,7 @@ describe('rendered DOM shape contract', () => {
   test('custom element and text renderers include mounted path metadata', () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -116,7 +116,7 @@ describe('rendered DOM shape contract', () => {
   test('non-empty blocks do not render empty marked leaves as visual line breaks', () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -155,7 +155,7 @@ describe('rendered DOM shape contract', () => {
       name: 'rendered-dom-shape-inline-link',
     });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -199,7 +199,7 @@ describe('rendered DOM shape contract', () => {
   test('empty blocks still render one line-break placeholder', () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -245,7 +245,7 @@ describe('rendered DOM shape contract', () => {
     };
 
     try {
-      Editor.replace(editor, {
+      editorReplace(editor, {
         children: [
           {
             type: 'paragraph',
@@ -308,7 +308,7 @@ describe('rendered DOM shape contract', () => {
     };
 
     try {
-      Editor.replace(editor, {
+      editorReplace(editor, {
         children: [
           {
             type: 'paragraph',

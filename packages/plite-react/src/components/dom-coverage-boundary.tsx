@@ -13,7 +13,7 @@ import type {
 import { DOMCoverage } from '@platejs/plite-dom/internal';
 
 import { ElementPathContext, NodeRuntimeIdContext } from '../context';
-import { Editor } from '../editable/runtime-editor-api';
+import { getRuntimeId as editorGetRuntimeId } from '../editable/runtime-editor-api';
 import { useEditor } from '../hooks/use-editor';
 import { useIsomorphicLayoutEffect } from '../hooks/use-isomorphic-layout-effect';
 
@@ -60,10 +60,10 @@ export const DOMCoverageBoundaryRange = ({
   const anchorPath = ownerPath ? [...ownerPath, from] : null;
   const focusPath = ownerPath ? [...ownerPath, to] : null;
   const anchorRuntimeId = anchorPath
-    ? Editor.getRuntimeId(editor, anchorPath)
+    ? editorGetRuntimeId(editor, anchorPath)
     : null;
   const focusRuntimeId = focusPath
-    ? Editor.getRuntimeId(editor, focusPath)
+    ? editorGetRuntimeId(editor, focusPath)
     : null;
   const boundary =
     ownerPath && ownerRuntimeId

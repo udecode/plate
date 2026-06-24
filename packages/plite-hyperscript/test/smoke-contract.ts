@@ -1,5 +1,8 @@
 import { createEditor as createBaseEditor } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getChildren as editorGetChildren,
+  getSelection as editorGetSelection,
+} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -12,8 +15,8 @@ describe('plite-hyperscript smoke contract', () => {
   it('creates an empty editor tree through the default jsx factory', () => {
     const editor = pliteJsx('editor');
 
-    expect(Editor.getChildren(editor)).toEqual([]);
-    expect(Editor.getSelection(editor)).toBeNull();
+    expect(editorGetChildren(editor)).toEqual([]);
+    expect(editorGetSelection(editor)).toBeNull();
   });
 
   it('creates a custom element shorthand through createHyperscript', () => {
@@ -39,7 +42,7 @@ describe('plite-hyperscript smoke contract', () => {
     const makeEditor = createEditor(createBaseEditor);
     const editor = makeEditor('editor', {}, []);
 
-    expect(Editor.getChildren(editor)).toEqual([]);
-    expect(Editor.getSelection(editor)).toBeNull();
+    expect(editorGetChildren(editor)).toEqual([]);
+    expect(editorGetSelection(editor)).toBeNull();
   });
 });

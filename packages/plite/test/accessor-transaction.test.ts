@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getChildren as editorGetChildren,
+  getSelection as editorGetSelection,
+  getSnapshot as editorGetSnapshot,
+  isEditor as editorIsEditor,
+  replace as editorReplace,
+  string as editorString,
+  subscribe as editorSubscribe,
+} from '@platejs/plite/internal';
 
 import { createEditor, type Descendant, type Operation } from '../src';
 import { runEditorTransaction as runInternalEditorTransaction } from '../src/core/public-state';
@@ -30,7 +38,7 @@ const replaceChildren = (
   editor: ReturnType<typeof createEditor>,
   children: Descendant[]
 ) => {
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: clone(children),
     selection: null,
     marks: null,
@@ -50,7 +58,7 @@ const runManualTransaction = (
 
 const setSelection = (
   editor: ReturnType<typeof createEditor>,
-  selection: NonNullable<ReturnType<typeof Editor.getSelection>>
+  selection: NonNullable<ReturnType<typeof editorGetSelection>>
 ) => {
   editor.update((tx) => {
     tx.selection.set(selection);
@@ -58,7 +66,7 @@ const setSelection = (
 };
 
 const getVisibleState = (editor: ReturnType<typeof createEditor>) => {
-  const snapshot = Editor.getSnapshot(editor);
+  const snapshot = editorGetSnapshot(editor);
 
   return {
     children: snapshot.children,
@@ -73,12 +81,12 @@ describe('plite public accessor + transaction boundary', () => {
     const editor = createEditor();
     const value = [paragraph('one')];
 
-    Editor.replace(editor, { children: value, selection: null, marks: null });
+    editorReplace(editor, { children: value, selection: null, marks: null });
     const currentValue = editor.read((state) => state.value.get());
 
     assert.deepEqual(currentValue, { children: value });
-    assert.equal(Editor.isEditor(editor, { deep: true }), true);
-    assert.deepEqual(Editor.getChildren(editor), value);
+    assert.equal(editorIsEditor(editor, { deep: true }), true);
+    assert.deepEqual(editorGetChildren(editor), value);
     assert.equal('children' in editor, false);
     assert.equal('getChildren' in editor, false);
   });
@@ -88,10 +96,9 @@ describe('plite public accessor + transaction boundary', () => {
     const value = [paragraph('set')];
 
     assert.equal('setChildren' in editor, false);
-    assert.equal('setChildren' in Editor, false);
 
-    Editor.replace(editor, { children: value, selection: null, marks: null });
-    assert.deepEqual(Editor.getChildren(editor), value);
+    editorReplace(editor, { children: value, selection: null, marks: null });
+    assert.deepEqual(editorGetChildren(editor), value);
   });
 
   it('internal transaction keeps direct replacement draft-visible and publishes once on exit', () => {
@@ -100,21 +107,21 @@ describe('plite public accessor + transaction boundary', () => {
 
     replaceChildren(editor, [paragraph('one'), paragraph('two')]);
 
-    const unsubscribe = Editor.subscribe(editor, () => {
+    const unsubscribe = editorSubscribe(editor, () => {
       publishedStates.push(getVisibleState(editor));
     });
 
     publishedStates.length = 0;
 
     runEditorTransaction(editor, (transaction) => {
-      Editor.replace(editor, {
+      editorReplace(editor, {
         children: [paragraph('replacement')],
         selection: null,
         marks: null,
       });
 
       assert.equal(publishedStates.length, 0);
-      assert.equal(Editor.string(editor, [0]), 'replacement');
+      assert.equal(editorString(editor, [0]), 'replacement');
 
       transaction.apply({
         type: 'set_node',
@@ -124,7 +131,7 @@ describe('plite public accessor + transaction boundary', () => {
       });
 
       assert.equal(publishedStates.length, 0);
-      assert.deepEqual(Editor.getChildren(editor), [
+      assert.deepEqual(editorGetChildren(editor), [
         {
           type: 'paragraph',
           id: 'p0',
@@ -136,7 +143,7 @@ describe('plite public accessor + transaction boundary', () => {
     unsubscribe();
 
     assert.equal(publishedStates.length, 1);
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'paragraph',
         id: 'p0',
@@ -193,14 +200,14 @@ describe('plite public accessor + transaction boundary', () => {
       getVisibleState(batchEditor),
       getVisibleState(manualEditor)
     );
-    assert.deepEqual(Editor.getSnapshot(batchEditor).children, [
+    assert.deepEqual(editorGetSnapshot(batchEditor).children, [
       {
         type: 'paragraph',
         id: 'p0',
         children: [{ text: 'aXbcd' }],
       },
     ]);
-    assert.deepEqual(Editor.getSnapshot(batchEditor).selection, {
+    assert.deepEqual(editorGetSnapshot(batchEditor).selection, {
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     });
@@ -237,7 +244,7 @@ describe('plite public accessor + transaction boundary', () => {
       getVisibleState(batchEditor),
       getVisibleState(manualEditor)
     );
-    assert.deepEqual(Editor.getSnapshot(batchEditor).children, [
+    assert.deepEqual(editorGetSnapshot(batchEditor).children, [
       {
         type: 'paragraph',
         id: 'final',
@@ -284,7 +291,7 @@ describe('plite public accessor + transaction boundary', () => {
       getVisibleState(batchEditor),
       getVisibleState(manualEditor)
     );
-    assert.deepEqual(Editor.getSnapshot(batchEditor).children, [
+    assert.deepEqual(editorGetSnapshot(batchEditor).children, [
       paragraph('two'),
       {
         type: 'paragraph',

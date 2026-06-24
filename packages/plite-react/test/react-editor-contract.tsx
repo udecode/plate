@@ -1,5 +1,8 @@
 import { act, render, waitFor } from '@testing-library/react';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getSelection as editorGetSelection,
+  string as editorString,
+} from '@platejs/plite/internal';
 import { createReactEditor, Editable, Plite } from '../src';
 import { ReactEditor } from '../src/plugin/react-editor';
 
@@ -34,13 +37,13 @@ describe('plite-react DOM capability contract', () => {
       );
     });
 
-    expect(Editor.getSelection(editor)).toBe(null);
+    expect(editorGetSelection(editor)).toBe(null);
 
     await act(async () => {
       editor.api.dom.focus();
     });
 
-    expect(Editor.getSelection(editor)).toEqual(expectedSelection);
+    expect(editorGetSelection(editor)).toEqual(expectedSelection);
 
     const windowSelection = editor.api.dom.getWindow().getSelection();
 
@@ -79,13 +82,13 @@ describe('plite-react DOM capability contract', () => {
       editor.api.dom.focus();
     });
 
-    expect(Editor.getSelection(editor)).toEqual(expectedSelection);
+    expect(editorGetSelection(editor)).toEqual(expectedSelection);
 
     await act(async () => {
       editor.api.dom.focus();
     });
 
-    expect(Editor.getSelection(editor)).toEqual(expectedSelection);
+    expect(editorGetSelection(editor)).toEqual(expectedSelection);
   });
 
   test('editor.api.dom.focus reports a selection change without a value change', async () => {
@@ -112,7 +115,7 @@ describe('plite-react DOM capability contract', () => {
       editor.api.dom.focus();
     });
 
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -256,7 +259,7 @@ describe('plite-react DOM capability contract', () => {
     });
 
     expect(first.defaultPrevented).toBe(true);
-    await waitFor(() => expect(Editor.string(editor, [])).toBe('Xalpha'));
+    await waitFor(() => expect(editorString(editor, [])).toBe('Xalpha'));
 
     const second = createInsertTextBeforeInput('Y');
     await act(async () => {
@@ -264,7 +267,7 @@ describe('plite-react DOM capability contract', () => {
     });
 
     expect(second.defaultPrevented).toBe(true);
-    await waitFor(() => expect(Editor.string(editor, [])).toBe('XYalpha'));
+    await waitFor(() => expect(editorString(editor, [])).toBe('XYalpha'));
   });
 
   test('browser handle resolves mounted elements by Plite path without DOM scans', () => {

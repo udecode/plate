@@ -13,7 +13,6 @@ export const normalizeRoot = ({
 }) => {
   const editor = createPlateEditor({
     plugins,
-    runtime: 'plite',
     selection,
     ...(value.length > 0 ? { value } : {}),
   });

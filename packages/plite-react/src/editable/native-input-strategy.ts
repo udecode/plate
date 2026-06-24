@@ -3,7 +3,11 @@ import type { DOMText } from '@platejs/plite-dom';
 import { IS_NODE_MAP_DIRTY } from '@platejs/plite-dom/internal';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import { getInputEventData } from './dom-input-event';
-import { Editor } from './runtime-editor-api';
+import {
+  string as editorString,
+  above as editorAbove,
+  isBlock as editorIsBlock,
+} from './runtime-editor-api';
 
 const NATIVE_CHAR_RE = /^[ -~]$/;
 
@@ -78,7 +82,7 @@ export const canUseNativeSingleCharacterInput = ({
     if (
       !allowDirtyDOMText &&
       textHost.textContent?.replace(/\uFEFF/g, '') !==
-        Editor.string(editor, anchor.path)
+        editorString(editor, anchor.path)
     ) {
       return false;
     }
@@ -106,9 +110,9 @@ export const canUseNativeSingleCharacterInput = ({
     node.parentElement &&
     window?.getComputedStyle(node.parentElement)?.whiteSpace === 'pre'
   ) {
-    const block = Editor.above(editor, {
+    const block = editorAbove(editor, {
       at: anchor.path,
-      match: (n) => NodeApi.isElement(n) && Editor.isBlock(editor, n),
+      match: (n) => NodeApi.isElement(n) && editorIsBlock(editor, n),
     });
 
     if (block && NodeApi.string(block[0]).includes('\t')) {

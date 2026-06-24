@@ -52,7 +52,7 @@ import type {
 } from './input-state';
 import { isEditableOutsideFocusBoundarySettling } from './input-state';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
-import { Editor } from './runtime-editor-api';
+import { getSelection as editorGetSelection } from './runtime-editor-api';
 import {
   readLiveSelection,
   readRuntimeSelection,
@@ -460,7 +460,7 @@ export const syncEditorSelectionFromDOM = ({
   }
 
   if (range && (!selection || !RangeApi.equals(selection, range))) {
-    const modelSelection = Editor.getSelection(editor);
+    const modelSelection = editorGetSelection(editor);
 
     if (
       modelSelection &&
@@ -1098,7 +1098,7 @@ export const applyEditableDOMSelectionChange = ({
   const currentSelection = readLiveSelection(editor);
 
   if (selectionChangeOrigin === 'native-user' && RangeApi.isRange(range)) {
-    const modelSelection = Editor.getSelection(editor);
+    const modelSelection = editorGetSelection(editor);
 
     if (
       modelSelection &&

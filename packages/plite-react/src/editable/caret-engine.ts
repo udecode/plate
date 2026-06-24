@@ -22,7 +22,10 @@ import {
 } from './dom-coverage-vertical-selection';
 import { getDocumentBoundaryKeyboardMove } from './input-controller';
 import type { EditableRepairRequest } from './mutation-controller';
-import { Editor } from './runtime-editor-api';
+import {
+  before as editorBefore,
+  after as editorAfter,
+} from './runtime-editor-api';
 
 export type EditableCaretMovementResult = {
   handled: boolean;
@@ -246,8 +249,8 @@ const getPointPastBoundarySkip = ({
 
   for (let index = 0; index < 128; index++) {
     const next = reverse
-      ? Editor.before(editor, current, { unit })
-      : Editor.after(editor, current, { unit });
+      ? editorBefore(editor, current, { unit })
+      : editorAfter(editor, current, { unit });
 
     if (!next) {
       return current;

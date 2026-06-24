@@ -8,7 +8,16 @@ import {
   type RuntimeId,
   TextApi,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getLastCommit as editorGetLastCommit,
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  insertBreak as editorInsertBreak,
+  isEditor as editorIsEditor,
+  moveNodes as editorMoveNodes,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 import {
   createReactEditor,
   Editable,
@@ -218,7 +227,7 @@ describe('plite-react provider hooks contract', () => {
 
   test('useEditorSelector replays subscription errors during render with context', async () => {
     const editor = createReactEditor({ initialValue });
-    const initialVersion = Editor.getLastCommit(editor)?.version ?? 0;
+    const initialVersion = editorGetLastCommit(editor)?.version ?? 0;
     const onError = jest.fn();
     const consoleError = jest
       .spyOn(console, 'error')
@@ -226,7 +235,7 @@ describe('plite-react provider hooks contract', () => {
 
     const ThrowingSelector = () => {
       const version = useEditorSelector((nextEditor) => {
-        const nextVersion = Editor.getLastCommit(nextEditor)?.version ?? 0;
+        const nextVersion = editorGetLastCommit(nextEditor)?.version ?? 0;
 
         if (nextVersion > initialVersion) {
           throw new Error('selector exploded');
@@ -393,7 +402,7 @@ describe('plite-react provider hooks contract', () => {
 
   test('deferred editor selectors preserve profiler markers while coalescing renders', async () => {
     const editor = createReactEditor({ initialValue });
-    const selector = jest.fn(() => Editor.getLastCommit(editor)?.version ?? 0);
+    const selector = jest.fn(() => editorGetLastCommit(editor)?.version ?? 0);
     const counter = createPliteReactRenderCounter();
     const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
     globalThis.__PLITE_REACT_RENDER_PROFILER__ = counter.profiler;
@@ -430,7 +439,7 @@ describe('plite-react provider hooks contract', () => {
       });
 
       expect(selector).toBeCalledTimes(3);
-      expect(result.current).toBe(Editor.getLastCommit(editor)?.version);
+      expect(result.current).toBe(editorGetLastCommit(editor)?.version);
 
       const profile = counter.snapshot();
       expect(profile.byKey['selector:selector-deferred-proof-check']).toBe(2);
@@ -443,22 +452,22 @@ describe('plite-react provider hooks contract', () => {
   test('useEditorSelector passes commit facts to shouldUpdate', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         { type: 'block', children: [{ text: 'one' }] },
         { type: 'block', children: [{ text: 'two' }] },
       ],
     });
 
-    const targetRuntimeId = Editor.getSnapshot(editor).index.pathToId['1.0'];
-    const selector = jest.fn(() => Editor.getLastCommit(editor)?.version ?? 0);
+    const targetRuntimeId = editorGetSnapshot(editor).index.pathToId['1.0'];
+    const selector = jest.fn(() => editorGetLastCommit(editor)?.version ?? 0);
     const shouldUpdate = jest.fn(
       (_operations?: readonly Operation[], change?: EditorCommit) =>
         Boolean(
           change?.selectionImpactRuntimeIds?.includes(targetRuntimeId ?? '')
         )
     );
-    const initialVersion = Editor.getLastCommit(editor)?.version ?? 0;
+    const initialVersion = editorGetLastCommit(editor)?.version ?? 0;
 
     const { result } = renderHook(
       () => useEditorSelector(selector, undefined, { shouldUpdate }),
@@ -492,13 +501,13 @@ describe('plite-react provider hooks contract', () => {
     });
 
     expect(selector).toBeCalledTimes(3);
-    expect(result.current).toBe(Editor.getLastCommit(editor)?.version);
+    expect(result.current).toBe(editorGetLastCommit(editor)?.version);
   });
 
   test('useEditorState reads through editor.read and filters by commit facts', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         { type: 'block', children: [{ text: 'one' }] },
         { type: 'block', children: [{ text: 'two' }] },
@@ -506,7 +515,7 @@ describe('plite-react provider hooks contract', () => {
       selection: null,
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const blockRuntimeId = snapshot.index.pathToId['0'];
     const textRuntimeId = snapshot.index.pathToId['0.0'];
     const selector = jest.fn((state) => state.selection.get());
@@ -571,7 +580,7 @@ describe('plite-react provider hooks contract', () => {
   test('runtime selector hooks skip unrelated runtime id commits', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         { type: 'block', children: [{ text: 'one' }] },
         { type: 'block', children: [{ text: 'two' }] },
@@ -579,7 +588,7 @@ describe('plite-react provider hooks contract', () => {
       selection: null,
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const blockRuntimeId = snapshot.index.pathToId['0'];
     const textRuntimeId = snapshot.index.pathToId['0.0'];
 
@@ -641,7 +650,7 @@ describe('plite-react provider hooks contract', () => {
   test('runtime selector listeners do not fan out to unrelated runtime ids', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         { type: 'block', children: [{ text: 'one' }] },
         { type: 'block', children: [{ text: 'two' }] },
@@ -649,7 +658,7 @@ describe('plite-react provider hooks contract', () => {
       selection: null,
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const firstBlockRuntimeId = snapshot.index.pathToId['0'];
     const secondTextRuntimeId = snapshot.index.pathToId['1.0'];
 
@@ -657,7 +666,7 @@ describe('plite-react provider hooks contract', () => {
       throw new Error('Expected runtime ids for listener fanout contract');
     }
 
-    const selector = jest.fn(() => Editor.getLastCommit(editor)?.version ?? 0);
+    const selector = jest.fn(() => editorGetLastCommit(editor)?.version ?? 0);
     const shouldUpdate = jest.fn(() => true);
     const counter = createPliteReactRenderCounter();
     const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
@@ -715,7 +724,7 @@ describe('plite-react provider hooks contract', () => {
       );
 
       expect(shouldUpdate).toBeCalledTimes(1);
-      expect(result.current).toBe(Editor.getLastCommit(editor)?.version);
+      expect(result.current).toBe(editorGetLastCommit(editor)?.version);
       expect(
         targetSelectorEvents.filter(
           (event) => event.id === 'selector-runtime-check'
@@ -740,7 +749,7 @@ describe('plite-react provider hooks contract', () => {
         },
       ],
     });
-    const runtimeId = Editor.getRuntimeId(editor, [0]);
+    const runtimeId = editorGetRuntimeId(editor, [0]);
 
     if (!runtimeId) {
       throw new Error('Expected runtime id for top-level split contract');
@@ -775,10 +784,10 @@ describe('plite-react provider hooks contract', () => {
       editor.update((tx) => {
         tx.selection.set({ path: [0, 1], offset: 0 });
       });
-      Editor.insertBreak(editor);
+      editorInsertBreak(editor);
     });
 
-    expect(Editor.getLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
     expect(result.current).toBe('Hello ');
   });
 
@@ -792,7 +801,7 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'sibling' }] },
       ],
     });
-    const siblingRuntimeId = Editor.getRuntimeId(editor, [1]);
+    const siblingRuntimeId = editorGetRuntimeId(editor, [1]);
 
     if (!siblingRuntimeId) {
       throw new Error('Expected runtime id for shifted split sibling contract');
@@ -821,10 +830,10 @@ describe('plite-react provider hooks contract', () => {
       editor.update((tx) => {
         tx.selection.set({ path: [0, 0], offset: 5 });
       });
-      Editor.insertBreak(editor);
+      editorInsertBreak(editor);
     });
 
-    expect(Editor.getLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
     expect(result.current).toBe('2');
   });
 
@@ -835,7 +844,7 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'target' }] },
       ],
     });
-    const runtimeId = Editor.getRuntimeId(editor, [1]);
+    const runtimeId = editorGetRuntimeId(editor, [1]);
 
     if (!runtimeId) {
       throw new Error('Expected runtime id for top-level move contract');
@@ -866,7 +875,7 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(Editor.getLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
     expect(result.current).toBe('0');
   });
 
@@ -885,7 +894,7 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'sibling' }] },
       ],
     });
-    const runtimeId = Editor.getRuntimeId(editor, [0, 0]);
+    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
 
     if (!runtimeId) {
       throw new Error('Expected runtime id for nested-to-top-level move');
@@ -916,7 +925,7 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(Editor.getLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
     expect(result.current).toBe('1');
   });
 
@@ -939,7 +948,7 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'sibling' }] },
       ],
     });
-    const sourceParentRuntimeId = Editor.getRuntimeId(editor, [0]);
+    const sourceParentRuntimeId = editorGetRuntimeId(editor, [0]);
 
     if (!sourceParentRuntimeId) {
       throw new Error('Expected source parent runtime id for nested move');
@@ -972,7 +981,7 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(Editor.getLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
     expect(result.current).toBe(1);
   });
 
@@ -991,7 +1000,7 @@ describe('plite-react provider hooks contract', () => {
         },
       ],
     });
-    const runtimeId = Editor.getRuntimeId(editor, [0]);
+    const runtimeId = editorGetRuntimeId(editor, [0]);
 
     if (!runtimeId) {
       throw new Error('Expected runtime id for top-level-to-nested move');
@@ -1022,7 +1031,7 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(Editor.getLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
     expect(result.current).toBe('0.0');
   });
 
@@ -1042,7 +1051,7 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'target' }] },
       ],
     });
-    const destinationParentRuntimeId = Editor.getRuntimeId(editor, [0]);
+    const destinationParentRuntimeId = editorGetRuntimeId(editor, [0]);
 
     if (!destinationParentRuntimeId) {
       throw new Error('Expected destination parent runtime id for nested move');
@@ -1075,7 +1084,7 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(Editor.getLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
     expect(result.current).toBe(2);
   });
 
@@ -1086,7 +1095,7 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'two' }] },
       ],
     });
-    const runtimeId = Editor.getRuntimeId(editor, [0]);
+    const runtimeId = editorGetRuntimeId(editor, [0]);
 
     if (!runtimeId) {
       throw new Error('Expected runtime id for element path contract');
@@ -1106,10 +1115,10 @@ describe('plite-react provider hooks contract', () => {
     expect(result.current).toEqual([0]);
 
     await act(async () => {
-      Editor.moveNodes(editor, { at: [0], to: [2] });
+      editorMoveNodes(editor, { at: [0], to: [2] });
     });
 
-    expect(Editor.getPathByRuntimeId(editor, runtimeId)).toEqual([1]);
+    expect(editorGetPathByRuntimeId(editor, runtimeId)).toEqual([1]);
     expect(result.current).toEqual([1]);
   });
 
@@ -1120,7 +1129,7 @@ describe('plite-react provider hooks contract', () => {
     }));
     const editor = createReactEditor({ initialValue: value });
     const runtimeIds = value.map((_value, index) =>
-      Editor.getRuntimeId(editor, [index])
+      editorGetRuntimeId(editor, [index])
     ) as RuntimeId[];
     const counter = createPliteReactRenderCounter();
     const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
@@ -1332,7 +1341,7 @@ describe('plite-react provider hooks contract', () => {
       children: [{ text: `line ${index}` }],
     }));
     const editor = createReactEditor({ initialValue: value });
-    const trackedRuntimeId = Editor.getRuntimeId(editor, [10]);
+    const trackedRuntimeId = editorGetRuntimeId(editor, [10]);
     const counter = createPliteReactRenderCounter();
     const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
     let rendered: ReturnType<typeof render> | null = null;
@@ -1393,7 +1402,7 @@ describe('plite-react provider hooks contract', () => {
         { type: 'block', children: [{ text: 'tracked' }] },
       ],
     });
-    const trackedRuntimeId = Editor.getRuntimeId(editor, [1]);
+    const trackedRuntimeId = editorGetRuntimeId(editor, [1]);
 
     if (!trackedRuntimeId) {
       throw new Error(
@@ -1429,7 +1438,7 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(Editor.getLastCommit(editor)?.topLevelOrderChanged).toBe(true);
+    expect(editorGetLastCommit(editor)?.topLevelOrderChanged).toBe(true);
     expect(result.current).toBe('2');
   });
 
@@ -1486,12 +1495,12 @@ describe('plite-react provider hooks contract', () => {
     const counter = createPliteReactRenderCounter();
     const previousProfiler = globalThis.__PLITE_REACT_RENDER_PROFILER__;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'block', children: [{ text: 'one' }] }],
       selection: null,
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const blockRuntimeId = snapshot.index.pathToId['0'];
     const textRuntimeId = snapshot.index.pathToId['0.0'];
 
@@ -1500,7 +1509,7 @@ describe('plite-react provider hooks contract', () => {
     }
 
     const nodeSelector = jest.fn(({ node }) => {
-      if (!node || Editor.isEditor(node) || !('children' in node)) {
+      if (!node || editorIsEditor(node) || !('children' in node)) {
         return null;
       }
 
@@ -1585,12 +1594,12 @@ describe('plite-react provider hooks contract', () => {
   test('mounted render selector hooks update when DOM text sync is disabled', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'block', children: [{ text: 'one' }] }],
       selection: null,
     });
 
-    const textRuntimeId = Editor.getSnapshot(editor).index.pathToId['0.0'];
+    const textRuntimeId = editorGetSnapshot(editor).index.pathToId['0.0'];
 
     if (!textRuntimeId) {
       throw new Error('Expected text runtime id for mounted selector contract');
@@ -1636,7 +1645,7 @@ describe('plite-react provider hooks contract', () => {
   test('root selector sources track structural ids and selected top-level index', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         { type: 'block', children: [{ text: 'one' }] },
         { type: 'block', children: [{ text: 'two' }] },
@@ -1697,7 +1706,7 @@ describe('plite-react provider hooks contract', () => {
   test('root selector sources track broad selection index changes', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: Array.from({ length: 200 }, (_value, index) => ({
         type: 'block',
         children: [{ text: `block ${index}` }],
@@ -1728,14 +1737,14 @@ describe('plite-react provider hooks contract', () => {
       });
     });
 
-    expect(Editor.getLastCommit(editor)?.selectionImpactRuntimeIds).toBe(null);
+    expect(editorGetLastCommit(editor)?.selectionImpactRuntimeIds).toBe(null);
     expect(result.current).toBe(50);
   });
 
   test('placeholder root source tracks empty editor state', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'block', children: [{ text: '' }] }],
       selection: null,
     });
@@ -1776,7 +1785,7 @@ describe('plite-react provider hooks contract', () => {
   test('placeholder root source tracks structural edits inside the first block', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'block', children: [{ text: '' }] }],
       selection: null,
     });
@@ -1817,7 +1826,7 @@ describe('plite-react provider hooks contract', () => {
   test('placeholder root source ignores selection-only commits', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'block', children: [{ text: '' }] }],
       selection: null,
     });

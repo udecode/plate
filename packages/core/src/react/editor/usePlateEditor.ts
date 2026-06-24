@@ -4,10 +4,8 @@ import type { Value } from '@platejs/plite';
 
 import type { AnyPluginConfig, InferPlugins } from '../../lib';
 
-import type { TPlateEditor } from './PlateEditor';
 import type { PlateRuntimeEditor } from './createPlateRuntimeEditor';
 import {
-  type CreatePlateEditorOptions,
   type CreatePlateEditorRuntimeOptions,
   type PlateCorePlugin,
   createPlateEditor,
@@ -67,52 +65,17 @@ export function usePlateEditor<
   P extends AnyPluginConfig = PlateCorePlugin,
   TEnabled extends boolean | undefined = undefined,
 >(
-  options?: CreatePlateEditorOptions<V, P> & { enabled?: TEnabled },
-  deps?: React.DependencyList
-): UsePlateEditorReturn<TEnabled, TPlateEditor<V, P>>;
-
-export function usePlateEditor<
-  V extends Value = Value,
-  P extends AnyPluginConfig = PlateCorePlugin,
-  TEnabled extends boolean | undefined = undefined,
->(
-  options:
-    | (CreatePlateEditorOptions<V, P> & { enabled?: TEnabled })
-    | (CreatePlateEditorRuntimeOptions<V, P> & { enabled?: TEnabled }) = {},
+  options: CreatePlateEditorRuntimeOptions<V, P> & { enabled?: TEnabled } = {},
   deps: React.DependencyList = []
 ): UsePlateEditorReturn<
   TEnabled,
-  PlateRuntimeEditor<V, readonly [], InferPlugins<P[]>> | TPlateEditor<V, P>
+  PlateRuntimeEditor<V, readonly [], InferPlugins<P[]>>
 > {
-  const [, forceRender] = React.useState({});
-  const isMountedRef = React.useRef(false);
   const { enabled, ...editorOptions } = options;
-
-  React.useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
 
   return React.useMemo(
     () => {
       if (enabled === false) return null;
-
-      if (editorOptions.runtime === 'legacy') {
-        const legacyOptions = editorOptions as CreatePlateEditorOptions<V, P>;
-        const editor = createPlateEditor({
-          ...legacyOptions,
-          onReady: (ctx) => {
-            if (ctx.isAsync && isMountedRef.current) {
-              forceRender({});
-            }
-            legacyOptions.onReady?.(ctx);
-          },
-        });
-
-        return editor;
-      }
 
       const runtimeOptions = editorOptions as CreatePlateEditorRuntimeOptions<
         V,
@@ -126,6 +89,6 @@ export function usePlateEditor<
     [editorOptions.id, enabled, ...deps]
   ) as UsePlateEditorReturn<
     TEnabled,
-    PlateRuntimeEditor<V, readonly [], InferPlugins<P[]>> | TPlateEditor<V, P>
+    PlateRuntimeEditor<V, readonly [], InferPlugins<P[]>>
   >;
 }

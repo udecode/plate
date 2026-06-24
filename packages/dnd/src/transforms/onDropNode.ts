@@ -47,7 +47,10 @@ export const getDropPath = (
   let dropEntry: NodeEntry<Element> | undefined;
 
   if ('element' in dragItem) {
-    const dragPath = getElementEntryById(editor, dragItem.element.id as string)?.[1];
+    const dragPath = getElementEntryById(
+      editor,
+      dragItem.element.id as string
+    )?.[1];
     const hoveredPath = getElementEntryById(editor, element.id as string)?.[1];
 
     if (!dragPath || !hoveredPath) return;

@@ -4,10 +4,7 @@ import type { AnyPlatePlugin } from '../plugin';
 import type { EventEditorPlugin, PliteReactExtensionPlugin } from '../plugins';
 import type { PlateEditor, TPlateEditor } from './PlateEditor';
 import { createPlatePlugin } from '../plugin/createPlatePlugin';
-import {
-  createCurrentRuntimeEditor,
-  type CurrentRuntimeEditor as Editor,
-} from '../../internal/currentRuntimeBridge';
+import type { CurrentRuntimeEditor as Editor } from '../../internal/currentRuntimeBridge';
 
 import {
   type AnyPluginConfig,
@@ -107,19 +104,6 @@ export const withPlate = <
   return editor;
 };
 
-export type CreatePlateEditorOptions<
-  V extends Value = Value,
-  P extends AnyPluginConfig = PlateCorePlugin,
-> = WithPlateOptions<V, P> & {
-  /**
-   * Initial editor to be extended with `withPlate`.
-   *
-   * @default createEditor()
-   */
-  editor?: Editor;
-  runtime: 'legacy';
-};
-
 export type CreatePlateEditorRuntimeOptions<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
@@ -156,7 +140,6 @@ export type CreatePlateEditorRuntimeOptions<
   override?: AnyPlatePlugin['override'];
   render?: AnyPlatePlugin['render'];
   rootPlugin?: (plugin: AnyPlatePlugin) => AnyPlatePlugin;
-  runtime?: 'plite';
   shortcuts?: AnyPlatePlugin['shortcuts'];
   transformInitialValue?: AnyPlatePlugin['transformInitialValue'];
   useHooks?: AnyPlatePlugin['useHooks'];
@@ -191,7 +174,7 @@ const assertSupportedPlateRuntimeOptions = (
 
   if (unsupportedKeys.length > 0) {
     throw new Error(
-      `[Plate] createPlateEditor({ runtime: 'plite' }) does not support these options yet: ${unsupportedKeys.join(', ')}.`
+      `[Plate] createPlateEditor() does not support these options yet: ${unsupportedKeys.join(', ')}.`
     );
   }
 
@@ -200,7 +183,7 @@ const assertSupportedPlateRuntimeOptions = (
     typeof options.value === 'string'
   ) {
     throw new Error(
-      "[Plate] createPlateEditor({ runtime: 'plite' }) currently accepts only array values or null."
+      '[Plate] createPlateEditor() currently accepts only array values or null.'
     );
   }
 };
@@ -371,48 +354,31 @@ export function createPlateEditor<
 export function createPlateEditor<
   V extends Value = Value,
   P extends AnyPluginConfig = PlateCorePlugin,
->(options: CreatePlateEditorOptions<V, P>): TPlateEditor<V, InferPlugins<P[]>>;
-
-export function createPlateEditor<
-  V extends Value = Value,
-  P extends AnyPluginConfig = PlateCorePlugin,
 >(
-  options:
-    | CreatePlateEditorOptions<V, P>
-    | CreatePlateEditorRuntimeOptions<V, P> = {}
-): RuntimePlateEditor<V, P> | TPlateEditor<V, InferPlugins<P[]>> {
-  if (options.runtime !== 'legacy') {
-    assertSupportedPlateRuntimeOptions(options as Record<string, unknown>);
+  options: CreatePlateEditorRuntimeOptions<V, P> = {}
+): RuntimePlateEditor<V, P> {
+  assertSupportedPlateRuntimeOptions(options as Record<string, unknown>);
 
-    const { id, optionsStoreFactory, readOnly, selection, userId, value } =
-      options;
+  const { id, optionsStoreFactory, readOnly, selection, userId, value } =
+    options;
 
-    const editor = createPlateRuntimeEditor<V, readonly [], InferPlugins<P[]>>({
-      id,
-      initialSelection: selection,
-      initialValue: value ?? undefined,
-      optionsStoreFactory,
-      plugins: createPlateRuntimePluginList(
-        options
-      ) as CreatePlateRuntimeEditorOptions<
-        V,
-        readonly [],
-        InferPlugins<P[]>
-      >['plugins'],
-      readOnly,
-      userId,
-    });
+  const editor = createPlateRuntimeEditor<V, readonly [], InferPlugins<P[]>>({
+    id,
+    initialSelection: selection,
+    initialValue: value ?? undefined,
+    optionsStoreFactory,
+    plugins: createPlateRuntimePluginList(
+      options
+    ) as CreatePlateRuntimeEditorOptions<
+      V,
+      readonly [],
+      InferPlugins<P[]>
+    >['plugins'],
+    readOnly,
+    userId,
+  });
 
-    applyPlateRuntimeInitializationOptions(editor, options);
+  applyPlateRuntimeInitializationOptions(editor, options);
 
-    return editor;
-  }
-
-  const {
-    editor = createCurrentRuntimeEditor(),
-    runtime: _runtime,
-    ...legacyOptions
-  } = options;
-
-  return withPlate<V, P>(editor, legacyOptions);
+  return editor;
 }

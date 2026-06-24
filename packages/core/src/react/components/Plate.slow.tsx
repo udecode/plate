@@ -2,17 +2,15 @@
 
 import React from 'react';
 
-import type { Value } from '@platejs/plite';
+import { defineEditorExtension, type Value } from '@platejs/plite';
 
 import { act, render, renderHook } from '@testing-library/react';
 import { useAtomStoreValue } from 'jotai-x';
-import isEqual from 'lodash/isEqual';
-import memoize from 'lodash/memoize';
 
 import type { PlatePlugins } from '../plugin';
 import type { PlateElementProps, PlateLeafProps } from './plate-nodes';
 
-import { type EditorPlugins, createEditorPlugin } from '../../lib';
+import { createEditorPlugin } from '../../lib';
 import { createPlateEditor, usePlateEditor } from '../editor';
 import { createPlatePlugin } from '../plugin/createPlatePlugin';
 import {
@@ -120,7 +118,9 @@ describe('Plate', () => {
         );
         const { result } = renderHook(() => useEditorValue(), { wrapper });
 
-        expect(result.current).toEqual(editor.api.create.value());
+        expect(result.current).toEqual([
+          { children: [{ text: '' }], type: 'p' },
+        ]);
       });
     });
   });
@@ -275,26 +275,31 @@ describe('Plate', () => {
 
   describe('when editor normalization is disabled', () => {
     it('does not normalize on mount', () => {
-      const fn = mock((e, [node, path]) => {
-        if (e.api.isBlock(node) && path?.length && !isEqual(node.path, path)) {
-          e.tf.setNodes({ path }, { at: path });
-        }
-      });
+      const fn = mock();
 
-      const plugins: EditorPlugins = memoize(
-        (): EditorPlugins => [
-          createEditorPlugin({ key: 'a' }).overrideEditor(
-            ({ editor, tf: { normalizeNode } }) => ({
-              tf: {
-                normalizeNode(node) {
-                  fn(editor, node);
-                  normalizeNode(node);
+      const plugins = [
+        createEditorPlugin({
+          editorExtensions: [
+            defineEditorExtension({
+              name: 'test:path-normalizer',
+              normalizers: {
+                node({ entry, next, tx }) {
+                  const [node, path] = entry;
+
+                  if (path.length && node.path !== path) {
+                    fn();
+                    tx.nodes.set({ path }, { at: path });
+                    return;
+                  }
+
+                  next();
                 },
               },
-            })
-          ),
-        ]
-      )();
+            }),
+          ],
+          key: 'a',
+        }),
+      ];
 
       const editor = createPlateEditor({
         plugins,
@@ -314,7 +319,6 @@ describe('Plate', () => {
       ]);
     });
   });
-
   describe('when render abovePlite renders null', () => {
     it('renders without normalizing editor children', () => {
       const plugins: PlatePlugins = [

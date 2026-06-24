@@ -1,8 +1,12 @@
-import { Editor, type EditorStaticApi } from '../interfaces/editor';
+import {
+  above as editorAbove,
+  isVoid as editorIsVoid,
+} from '../interfaces/editor';
+import type { EditorStaticApi } from '../interfaces/editor';
 import { NodeApi } from '../interfaces/node';
 
 export const getVoid: EditorStaticApi['void'] = (editor, options = {}) =>
-  Editor.above(editor, {
+  editorAbove(editor, {
     ...options,
-    match: (n) => NodeApi.isElement(n) && Editor.isVoid(editor, n),
+    match: (n) => NodeApi.isElement(n) && editorIsVoid(editor, n),
   });

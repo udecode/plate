@@ -6,7 +6,11 @@ import {
   type Point,
   ElementApi as PliteElement,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getRuntimeId as editorGetRuntimeId,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 
 import { dom } from '../src/index';
 import {
@@ -24,7 +28,7 @@ import {
 const createParagraphEditor = (text = 'alpha beta') => {
   const editor = createEditor({ extensions: [dom()] });
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -167,7 +171,7 @@ describe('plite-dom bridge', () => {
       owner.setAttribute('data-plite-path', '0,0');
       owner.setAttribute(
         'data-plite-runtime-id',
-        Editor.getRuntimeId(editor, [0, 0])!
+        editorGetRuntimeId(editor, [0, 0])!
       );
       leaf.setAttribute('data-plite-leaf', 'true');
       string.setAttribute('data-plite-string', 'true');
@@ -205,7 +209,7 @@ describe('plite-dom bridge', () => {
   it('resolves Plite node paths by runtime id before stale weak-map indexes', () => {
     const editor = createEditor({ extensions: [dom()] });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         { type: 'paragraph', children: [{ text: 'first' }] },
         { type: 'paragraph', children: [{ text: 'target' }] },
@@ -222,7 +226,7 @@ describe('plite-dom bridge', () => {
     );
 
     const [targetNode] = editor.read((state) => state.nodes.get([1]));
-    const runtimeId = Editor.getRuntimeId(editor, [1]);
+    const runtimeId = editorGetRuntimeId(editor, [1]);
 
     expect(runtimeId).toBeTruthy();
     NODE_TO_RUNTIME_ID.set(targetNode, runtimeId!);
@@ -234,7 +238,7 @@ describe('plite-dom bridge', () => {
       );
     });
 
-    expect(Editor.getPathByRuntimeId(editor, runtimeId!)).toEqual([2]);
+    expect(editorGetPathByRuntimeId(editor, runtimeId!)).toEqual([2]);
     expect(editor.api.dom.assertPath(targetNode)).toEqual([2]);
   });
 
@@ -252,7 +256,7 @@ describe('plite-dom bridge', () => {
       owner.setAttribute('data-plite-path', '0,0');
       owner.setAttribute(
         'data-plite-runtime-id',
-        Editor.getRuntimeId(editor, [0, 0])!
+        editorGetRuntimeId(editor, [0, 0])!
       );
       leaf.setAttribute('data-plite-leaf', 'true');
       string.setAttribute('data-plite-string', 'true');
@@ -274,7 +278,7 @@ describe('plite-dom bridge', () => {
     withDom(({ document }) => {
       const editor = createEditor({ extensions: [dom()] });
 
-      Editor.replace(editor, {
+      editorReplace(editor, {
         children: [
           { type: 'paragraph', children: [{ text: 'first' }] },
           { type: 'paragraph', children: [{ text: 'target' }] },
@@ -296,7 +300,7 @@ describe('plite-dom bridge', () => {
       const leaf = document.createElement('span');
       const string = document.createElement('span');
       const domText = document.createTextNode('target');
-      const targetRuntimeId = Editor.getRuntimeId(editor, [1, 0]);
+      const targetRuntimeId = editorGetRuntimeId(editor, [1, 0]);
 
       expect(targetRuntimeId).toBeTruthy();
       owner.setAttribute('data-plite-node', 'text');
@@ -317,7 +321,7 @@ describe('plite-dom bridge', () => {
         );
       });
 
-      expect(Editor.getPathByRuntimeId(editor, targetRuntimeId!)).toEqual([
+      expect(editorGetPathByRuntimeId(editor, targetRuntimeId!)).toEqual([
         2, 0,
       ]);
       expect(
@@ -482,7 +486,7 @@ describe('plite-dom bridge', () => {
       owner.setAttribute('data-plite-path', '0,0');
       owner.setAttribute(
         'data-plite-runtime-id',
-        Editor.getRuntimeId(editor, [0, 0])!
+        editorGetRuntimeId(editor, [0, 0])!
       );
       leaf.setAttribute('data-plite-leaf', 'true');
       string.setAttribute('data-plite-string', 'true');
@@ -818,7 +822,7 @@ describe('plite-dom bridge', () => {
     withDom(({ document, window }) => {
       const editor = createEditor({ extensions: [dom()] });
 
-      Editor.replace(editor, {
+      editorReplace(editor, {
         children: [
           {
             type: 'paragraph',

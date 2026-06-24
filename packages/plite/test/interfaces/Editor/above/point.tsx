@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { above as editorAbove } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 export const input = (
@@ -10,6 +10,6 @@ export const input = (
 );
 
 export const test = (editor) =>
-  Editor.above(editor, { at: { path: [0, 0, 0], offset: 1 } });
+  editorAbove(editor, { at: { path: [0, 0, 0], offset: 1 } });
 
 export const output = [<block>one</block>, [0, 0]];

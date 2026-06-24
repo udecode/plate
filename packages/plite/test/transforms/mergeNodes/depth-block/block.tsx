@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { isBlock as editorIsBlock } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -18,7 +18,7 @@ export const input = (
 );
 export const run = (editor) => {
   editor.nodes.merge({
-    match: (n) => ElementApi.isElement(n) && Editor.isBlock(editor, n),
+    match: (n) => ElementApi.isElement(n) && editorIsBlock(editor, n),
   });
 };
 export const output = (

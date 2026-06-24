@@ -51,7 +51,18 @@ import {
   syncEditableDOMSelectionToEditor,
 } from './input-controller';
 import { readModelSelectionDOMPreference } from './model-selection-dom-preference';
-import { Editor } from './runtime-editor-api';
+import {
+  isVoid as editorIsVoid,
+  isBlock as editorIsBlock,
+  above as editorAbove,
+  range as editorRange,
+  isInline as editorIsInline,
+  point as editorPoint,
+  void as editorVoid,
+  rangeRef as editorRangeRef,
+  hasPath as editorHasPath,
+  string as editorString,
+} from './runtime-editor-api';
 import { writeRuntimeSelection } from './runtime-mutation-state';
 import { readRuntimeSelection } from './runtime-selection-state';
 import {
@@ -250,7 +261,7 @@ export const applyEditableBlur = ({
     try {
       const node = ReactEditor.resolvePliteNode(editor, relatedTarget);
 
-      if (node && NodeApi.isElement(node) && !Editor.isVoid(editor, node)) {
+      if (node && NodeApi.isElement(node) && !editorIsVoid(editor, node)) {
         return;
       }
     } catch {
@@ -365,16 +376,16 @@ export const applyEditableClick = ({
 
     if (event.detail === TRIPLE_CLICK && path.length >= 1) {
       let blockPath = path;
-      if (!(NodeApi.isElement(node) && Editor.isBlock(editor, node))) {
-        const block = Editor.above(editor, {
-          match: (n) => NodeApi.isElement(n) && Editor.isBlock(editor, n),
+      if (!(NodeApi.isElement(node) && editorIsBlock(editor, node))) {
+        const block = editorAbove(editor, {
+          match: (n) => NodeApi.isElement(n) && editorIsBlock(editor, n),
           at: path,
         });
 
         blockPath = block?.[1] ?? path.slice(0, 1);
       }
 
-      const range = Editor.range(editor, blockPath);
+      const range = editorRange(editor, blockPath);
       writePliteViewSelection(editor, null);
       setEditableModelSelectionPreference({
         inputController,
@@ -392,9 +403,9 @@ export const applyEditableClick = ({
       const range = editor.api.dom.resolveEventRange(event.nativeEvent);
       const clickedInline =
         range && RangeApi.isCollapsed(range)
-          ? Editor.above(editor, {
+          ? editorAbove(editor, {
               at: range.anchor,
-              match: (n) => NodeApi.isElement(n) && Editor.isInline(editor, n),
+              match: (n) => NodeApi.isElement(n) && editorIsInline(editor, n),
             })
           : null;
 
@@ -412,13 +423,13 @@ export const applyEditableClick = ({
       }
     }
 
-    const start = Editor.point(editor, path, { edge: 'start' });
-    const end = Editor.point(editor, path, { edge: 'end' });
-    const startVoid = Editor.void(editor, { at: start });
-    const endVoid = Editor.void(editor, { at: end });
+    const start = editorPoint(editor, path, { edge: 'start' });
+    const end = editorPoint(editor, path, { edge: 'end' });
+    const startVoid = editorVoid(editor, { at: start });
+    const endVoid = editorVoid(editor, { at: end });
 
     if (startVoid && endVoid && PathApi.equals(startVoid[1], endVoid[1])) {
-      const range = Editor.range(editor, start);
+      const range = editorRange(editor, start);
       ReactEditor.focus(editor);
       writePliteViewSelection(editor, null);
       editor.update((tx) => {
@@ -644,7 +655,7 @@ export const syncSelectionForBeforeInput = ({
           !isCompositionChange &&
           type !== 'insertText' &&
           nextSelection &&
-          Editor.rangeRef(editor, nextSelection);
+          editorRangeRef(editor, nextSelection);
 
         writePliteViewSelection(editor, null);
         editor.update((tx) => {
@@ -773,14 +784,14 @@ export const syncSelectionForBeforeInput = ({
   if (
     type === 'insertText' &&
     typeof data === 'string' &&
-    (!nextSelection || !Editor.hasPath(editor, nextSelection.anchor.path)) &&
-    Editor.string(editor, []) === ''
+    (!nextSelection || !editorHasPath(editor, nextSelection.anchor.path)) &&
+    editorString(editor, []) === ''
   ) {
     const firstText = Array.from(NodeApi.texts(editor))[0];
 
     if (firstText) {
       const [, path] = firstText;
-      const range = Editor.range(editor, { path, offset: 0 });
+      const range = editorRange(editor, { path, offset: 0 });
       writePliteViewSelection(editor, null);
       editor.update((tx) => {
         tx.selection.set(range);

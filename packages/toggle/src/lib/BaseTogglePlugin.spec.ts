@@ -33,7 +33,6 @@ describe('BaseTogglePlugin', () => {
   it('tracks open ids on the Plite runtime route', () => {
     const editor = createPlateEditor({
       plugins: [BaseTogglePlugin],
-      runtime: 'plite',
     });
     const getOpenIds = () =>
       editor.getOptions<{ openIds?: Set<string> }>(BaseTogglePlugin).openIds ??

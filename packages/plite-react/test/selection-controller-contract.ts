@@ -1,5 +1,8 @@
 import { createEditorRuntime, createEditorView } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
@@ -218,7 +221,7 @@ test('failed DOM selection export clears the updating guard', () => {
   domRange.setStart(textNode, 0);
   domRange.setEnd(textNode, 1);
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
@@ -281,7 +284,7 @@ test('view selection export clears stale native selection ranges', () => {
   domSelection.removeAllRanges();
   domSelection.addRange(staleRange);
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'model selection' }] }],
     selection: {
       anchor: { path: [0, 0], offset: 0 },
@@ -391,7 +394,7 @@ test('model selection export preserves preferred collapsed DOM point', () => {
   editorElement.append(firstLine, secondLine);
   document.body.append(editorElement);
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -759,7 +762,7 @@ test('selectionchange ignores detached DOM endpoints before resolving Plite rang
     },
   });
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     selection: {
       anchor: { path: [0, 0], offset: 1 },
@@ -817,7 +820,7 @@ test('selectionchange ignores detached DOM endpoints before resolving Plite rang
     });
 
     expect(resolvePliteRange).not.toHaveBeenCalled();
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -856,7 +859,7 @@ test('selectionchange ignores host-removal collapse outside the editor', () => {
     throw new Error('Expected document selection');
   }
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     selection: {
       anchor: { path: [0, 0], offset: 1 },
@@ -902,7 +905,7 @@ test('selectionchange ignores host-removal collapse outside the editor', () => {
     });
 
     expect(resolvePliteRange).not.toHaveBeenCalled();
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -939,7 +942,7 @@ test('selectionchange ignores removed shadow host empty native selection', () =>
     },
   });
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text: 'abc' }] }],
     selection: {
       anchor: { path: [0, 0], offset: 1 },
@@ -991,7 +994,7 @@ test('selectionchange ignores removed shadow host empty native selection', () =>
     });
 
     expect(resolvePliteRange).not.toHaveBeenCalled();
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });

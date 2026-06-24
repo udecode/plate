@@ -1,6 +1,9 @@
 import type { CompositionEvent } from 'react';
 import { createEditor } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -13,7 +16,7 @@ import { ReactEditor } from '../src/plugin/react-editor';
 const createTextEditor = (text = 'abcd') => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [{ type: 'paragraph', children: [{ text }] }],
     marks: null,
     selection: {
@@ -74,7 +77,7 @@ describe('composition state', () => {
       expect(androidInputManager.handleCompositionStart).not.toHaveBeenCalled();
       expect(onCompositionStart).not.toHaveBeenCalled();
       expect(setComposing).not.toHaveBeenCalled();
-      expect(Editor.string(editor, [])).toBe('abcd');
+      expect(editorString(editor, [])).toBe('abcd');
     } finally {
       hasEditableTarget.mockRestore();
     }
@@ -111,7 +114,7 @@ describe('composition state', () => {
       expect(androidInputManager.handleCompositionEnd).not.toHaveBeenCalled();
       expect(onCompositionEnd).not.toHaveBeenCalled();
       expect(setComposing).toHaveBeenCalledWith(false);
-      expect(Editor.string(editor, [])).toBe('stable');
+      expect(editorString(editor, [])).toBe('stable');
     } finally {
       hasEditableTarget.mockRestore();
       isComposing.mockRestore();
@@ -140,7 +143,7 @@ describe('composition state', () => {
       expect(event.stopPropagation).toHaveBeenCalled();
       expect(onCompositionUpdate).not.toHaveBeenCalled();
       expect(setComposing).not.toHaveBeenCalled();
-      expect(Editor.string(editor, [])).toBe('abcd');
+      expect(editorString(editor, [])).toBe('abcd');
     } finally {
       hasEditableTarget.mockRestore();
     }

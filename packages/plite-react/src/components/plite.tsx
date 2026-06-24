@@ -20,7 +20,11 @@ import {
   composeProjectionSources,
   type PliteDecorationSource,
 } from '../decoration-source';
-import { Editor, getOperationCount } from '../editable/runtime-editor-api';
+import {
+  getOperationCount,
+  getLastCommit as editorGetLastCommit,
+  getSnapshot as editorGetSnapshot,
+} from '../editable/runtime-editor-api';
 import {
   createRootSelectionCache,
   getSelectionRoot,
@@ -295,14 +299,14 @@ const usePliteChangeCallbacks = <V extends Value>({
   const onValueChangeRef = useRef(onValueChange);
   const editorBaseline = useMemo(
     () => ({
-      commitVersion: Editor.getLastCommit(editor)?.version ?? 0,
-      snapshot: Editor.getSnapshot(editor),
+      commitVersion: editorGetLastCommit(editor)?.version ?? 0,
+      snapshot: editorGetSnapshot(editor),
     }),
     [editor]
   );
-  const lastSnapshotRef = useRef(Editor.getSnapshot(editor));
+  const lastSnapshotRef = useRef(editorGetSnapshot(editor));
   const lastCommitVersionRef = useRef(
-    Editor.getLastCommit(editor)?.version ?? 0
+    editorGetLastCommit(editor)?.version ?? 0
   );
   const hasCallbacks = !!(onChange || onSelectionChange || onValueChange);
 
@@ -323,7 +327,7 @@ const usePliteChangeCallbacks = <V extends Value>({
     const onContextChange: Parameters<
       ReactRuntimeEditor<V>['subscribeCommit']
     >[0] = (commit) => {
-      const snapshot = Editor.getSnapshot(editor);
+      const snapshot = editorGetSnapshot(editor);
       const previousSnapshot = lastSnapshotRef.current as EditorSnapshot<V>;
       const valueChanged =
         isRootValueChanged(root, commit) &&
@@ -365,7 +369,7 @@ const usePliteChangeCallbacks = <V extends Value>({
     };
 
     const unsubscribe = editor.subscribeCommit(onContextChange);
-    const latestCommit = Editor.getLastCommit(editor);
+    const latestCommit = editorGetLastCommit(editor);
 
     if (latestCommit && latestCommit.version > lastCommitVersionRef.current) {
       onContextChange(latestCommit);
@@ -404,7 +408,7 @@ const PliteSingleEditor = <
   const onValueChangeRef = useRef(onValueChange);
   const lastOperationCountRef = useRef(getOperationCount(editor));
   const lastCommitVersionRef = useRef(
-    Editor.getLastCommit(editor)?.version ?? 0
+    editorGetLastCommit(editor)?.version ?? 0
   );
   const lastEditorRef = useRef(editor);
   const mountedViewEditorsRef = useRef(
@@ -430,7 +434,7 @@ const PliteSingleEditor = <
   if (lastEditorRef.current !== editor) {
     lastEditorRef.current = editor;
     lastOperationCountRef.current = getOperationCount(editor);
-    lastCommitVersionRef.current = Editor.getLastCommit(editor)?.version ?? 0;
+    lastCommitVersionRef.current = editorGetLastCommit(editor)?.version ?? 0;
   }
 
   const runtime = useMemo(
@@ -679,7 +683,7 @@ const PliteSingleEditor = <
 
           const snapshot = profileRuntimeDuration(
             'change-callbacks-snapshot',
-            () => Editor.getSnapshot(editor)
+            () => editorGetSnapshot(editor)
           );
           const value = snapshot.children as V;
           const change: PliteChange<V> = {
@@ -719,7 +723,7 @@ const PliteSingleEditor = <
     };
 
     const unsubscribe = editor.subscribeCommit(onContextChange);
-    const latestCommit = Editor.getLastCommit(editor);
+    const latestCommit = editorGetLastCommit(editor);
 
     if (latestCommit && latestCommit.version > lastCommitVersionRef.current) {
       onContextChange(latestCommit);

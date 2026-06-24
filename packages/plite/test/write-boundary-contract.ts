@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getLastCommit as editorGetLastCommit,
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import { createEditor } from '../src';
 
@@ -8,7 +13,7 @@ describe('editor write boundary', () => {
   const createSeededEditor = () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -32,8 +37,8 @@ describe('editor write boundary', () => {
       const editor = createSeededEditor();
 
       assert.equal(name in editor, false, name);
-      assert.equal(Editor.string(editor, []), 'one', name);
-      assert.equal(Editor.getLastCommit(editor)?.classes[0], 'replace', name);
+      assert.equal(editorString(editor, []), 'one', name);
+      assert.equal(editorGetLastCommit(editor)?.classes[0], 'replace', name);
     }
   });
 
@@ -55,10 +60,10 @@ describe('editor write boundary', () => {
       ]);
     });
 
-    const commit = Editor.getLastCommit(editor);
+    const commit = editorGetLastCommit(editor);
 
     assert(commit);
-    assert.equal(Editor.string(editor, []), 'one!');
+    assert.equal(editorString(editor, []), 'one!');
     assert.deepEqual(commit.classes, ['text']);
     assert.equal(commit.operations.length, 1);
   });
@@ -66,7 +71,7 @@ describe('editor write boundary', () => {
   it('routes implicit writes through editor.update and tx methods', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -89,11 +94,11 @@ describe('editor write boundary', () => {
       tx.text.insert('TWO');
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
 
     assert.equal(snapshot.children[0].type, 'paragraph');
     assert.equal(snapshot.children[1].type, 'heading-one');
-    assert.equal(Editor.string(editor, [1]), 'TWO');
+    assert.equal(editorString(editor, [1]), 'TWO');
     assert.deepEqual(snapshot.selection, {
       anchor: { path: [1, 0], offset: 3 },
       focus: { path: [1, 0], offset: 3 },

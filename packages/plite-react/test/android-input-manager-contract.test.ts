@@ -1,5 +1,10 @@
 import { createEditor, defineEditorExtension } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  addMark as editorAddMark,
+  getSnapshot as editorGetSnapshot,
+  select as editorSelect,
+  string as editorString,
+} from '@platejs/plite/internal';
 import {
   EDITOR_TO_PENDING_ACTION,
   EDITOR_TO_PENDING_DIFFS,
@@ -200,7 +205,7 @@ describe('Android input manager stored text diffs', () => {
       scheduleOnDOMSelectionChange,
     });
 
-    Editor.select(editor, range(0, 3));
+    editorSelect(editor, range(0, 3));
     manager.handleDOMBeforeInput(
       beforeInputEvent('insertReplacementText', 'axc')
     );
@@ -244,7 +249,7 @@ describe('Android input manager stored text diffs', () => {
 
     manager.flush();
 
-    expect(Editor.string(editor, [])).toBe('Beta!');
+    expect(editorString(editor, [])).toBe('Beta!');
     expect(EDITOR_TO_PENDING_DIFFS.get(editor)).toEqual([]);
     expect(inputController.state.recentTextInputRepairEcho).toBeNull();
   });
@@ -286,7 +291,7 @@ describe('Android input manager stored text diffs', () => {
 
     manager.flush();
 
-    expect(Editor.string(editor, [])).toBe('Beta!x');
+    expect(editorString(editor, [])).toBe('Beta!x');
   });
 
   it('stores real follow-up text at a pending native repair caret', () => {
@@ -312,11 +317,11 @@ describe('Android input manager stored text diffs', () => {
       scheduleOnDOMSelectionChange,
     });
 
-    Editor.select(editor, range(0));
+    editorSelect(editor, range(0));
     manager.handleDOMBeforeInput(beforeInputEvent('insertText', 'x'));
     manager.flush();
 
-    expect(Editor.string(editor, [])).toBe('x');
+    expect(editorString(editor, [])).toBe('x');
   });
 
   it('flushes pending text diffs on input while selection is model-owned', () => {
@@ -346,7 +351,7 @@ describe('Android input manager stored text diffs', () => {
 
     manager.handleInput();
 
-    expect(Editor.string(editor, [])).toBe('A');
+    expect(editorString(editor, [])).toBe('A');
   });
 
   it('keeps pending text diffs deferred while Android composition is active', () => {
@@ -377,7 +382,7 @@ describe('Android input manager stored text diffs', () => {
 
     manager.handleInput();
 
-    expect(Editor.string(editor, [])).toBe('');
+    expect(editorString(editor, [])).toBe('');
     expect(EDITOR_TO_PENDING_DIFFS.get(editor)).toHaveLength(1);
   });
 
@@ -409,7 +414,7 @@ describe('Android input manager stored text diffs', () => {
 
     manager.handleInput();
 
-    expect(Editor.string(editor, [])).toBe('');
+    expect(editorString(editor, [])).toBe('');
     expect(EDITOR_TO_PENDING_DIFFS.get(editor)).toHaveLength(1);
   });
 
@@ -444,11 +449,11 @@ describe('Android input manager stored text diffs', () => {
       scheduleOnDOMSelectionChange,
     });
 
-    Editor.select(editor, range(0));
+    editorSelect(editor, range(0));
     manager.handleDOMBeforeInput(beforeInputEvent('insertText', 'f'));
     manager.flush();
 
-    expect(Editor.string(editor, [])).toBe('Af');
+    expect(editorString(editor, [])).toBe('Af');
   });
 
   it('keeps a same-node native user caret over a live repair echo', () => {
@@ -484,11 +489,11 @@ describe('Android input manager stored text diffs', () => {
       scheduleOnDOMSelectionChange,
     });
 
-    Editor.select(editor, range(1));
+    editorSelect(editor, range(1));
     manager.handleDOMBeforeInput(beforeInputEvent('insertText', 'x'));
     manager.flush();
 
-    expect(Editor.string(editor, [])).toBe('Bxeta!');
+    expect(editorString(editor, [])).toBe('Bxeta!');
   });
 
   it('preserves native-user DOM order for same-offset inserts while a pending diff is live', () => {
@@ -527,12 +532,12 @@ describe('Android input manager stored text diffs', () => {
     });
 
     try {
-      Editor.select(editor, range(1));
+      editorSelect(editor, range(1));
       manager.handleDOMBeforeInput(beforeInputEvent('insertText', 'Y'));
       IS_COMPOSING.set(editor, false);
       manager.flush();
 
-      expect(Editor.string(editor, [])).toBe('aYXbc');
+      expect(editorString(editor, [])).toBe('aYXbc');
     } finally {
       IS_COMPOSING.set(editor, false);
     }
@@ -569,11 +574,11 @@ describe('Android input manager stored text diffs', () => {
       scheduleOnDOMSelectionChange,
     });
 
-    Editor.select(editor, range(3));
+    editorSelect(editor, range(3));
     manager.handleDOMBeforeInput(beforeInputEvent('insertText', 'x'));
     manager.flush();
 
-    expect(Editor.string(editor, [])).toBe('axbc');
+    expect(editorString(editor, [])).toBe('axbc');
   });
 
   it('does not drop repair-echo-looking text after a fresh native caret move', () => {
@@ -610,7 +615,7 @@ describe('Android input manager stored text diffs', () => {
 
     manager.flush();
 
-    expect(Editor.string(editor, [])).toBe('Beta!!');
+    expect(editorString(editor, [])).toBe('Beta!!');
   });
 
   it('remaps follow-up text through the repaired runtime caret before the echo is live', () => {
@@ -640,13 +645,13 @@ describe('Android input manager stored text diffs', () => {
       scheduleOnDOMSelectionChange,
     });
 
-    Editor.select(editor, range(1));
+    editorSelect(editor, range(1));
     manager.handleDOMBeforeInput(
       beforeInputEvent('insertText', 'f', [{} as StaticRange])
     );
     manager.flush();
 
-    expect(Editor.string(editor, [])).toBe('Af');
+    expect(editorString(editor, [])).toBe('Af');
   });
 
   it('keeps a valid native target range when the model-owned caret is stale', () => {
@@ -675,13 +680,13 @@ describe('Android input manager stored text diffs', () => {
       scheduleOnDOMSelectionChange,
     });
 
-    Editor.select(editor, range(5));
+    editorSelect(editor, range(5));
     manager.handleDOMBeforeInput(
       beforeInputEvent('insertText', 'x', [{} as StaticRange])
     );
     manager.flush();
 
-    expect(Editor.string(editor, [])).toBe('xABCDE');
+    expect(editorString(editor, [])).toBe('xABCDE');
   });
 
   it('flushes a pending text insert before reading the next insert target', () => {
@@ -711,7 +716,7 @@ describe('Android input manager stored text diffs', () => {
       scheduleOnDOMSelectionChange,
     });
 
-    Editor.select(editor, range(0));
+    editorSelect(editor, range(0));
     manager.handleDOMBeforeInput(beforeInputEvent('insertText', 'A'));
     resolvePliteRange.mockReturnValue(range(0));
     manager.handleDOMBeforeInput(
@@ -719,7 +724,7 @@ describe('Android input manager stored text diffs', () => {
     );
     manager.flush();
 
-    expect(Editor.string(editor, [])).toBe('Af');
+    expect(editorString(editor, [])).toBe('Af');
   });
 
   it('keeps applying pending diffs after the text repair echo expires', () => {
@@ -754,7 +759,7 @@ describe('Android input manager stored text diffs', () => {
 
     manager.flush();
 
-    expect(Editor.string(editor, [])).toBe('Beta!!');
+    expect(editorString(editor, [])).toBe('Beta!!');
   });
 });
 
@@ -786,14 +791,14 @@ describe('Android input manager SwiftKey insert-position hint', () => {
       scheduleOnDOMSelectionChange,
     });
 
-    Editor.select(editor, range(1));
-    Editor.addMark(editor, 'bold', true);
+    editorSelect(editor, range(1));
+    editorAddMark(editor, 'bold', true);
     EDITOR_TO_PENDING_INSERTION_MARKS.set(editor, { bold: true });
 
     manager.handleDOMBeforeInput(beforeInputEvent('insertText', 'w'));
     manager.flush();
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     expect(snapshot.children).toEqual([
       { children: [{ text: 'a' }, { bold: true, text: 'w' }] },
     ]);
@@ -832,7 +837,7 @@ describe('Android input manager SwiftKey insert-position hint', () => {
       scheduleOnDOMSelectionChange,
     });
 
-    Editor.select(editor, range(0));
+    editorSelect(editor, range(0));
     EDITOR_TO_PENDING_INSERTION_MARKS.set(editor, { bold: true });
     EDITOR_TO_PENDING_DIFFS.set(editor, [
       {
@@ -843,9 +848,9 @@ describe('Android input manager SwiftKey insert-position hint', () => {
     ]);
 
     manager.flush();
-    expect(Editor.string(editor, [])).toBe('some ');
+    expect(editorString(editor, [])).toBe('some ');
 
-    Editor.select(editor, range(5));
+    editorSelect(editor, range(5));
     manager.handleDOMBeforeInput(beforeInputEvent('insertText', 'text'));
 
     resolvePliteRange.mockReturnValueOnce(range(6, 9));
@@ -854,6 +859,6 @@ describe('Android input manager SwiftKey insert-position hint', () => {
     );
     manager.flush();
 
-    expect(Editor.string(editor, [])).toBe('some text');
+    expect(editorString(editor, [])).toBe('some text');
   });
 });

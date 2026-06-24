@@ -16,7 +16,12 @@ import {
   type Range,
   type Element as PliteElement,
 } from '../interfaces';
-import { type Editor, Editor as EditorApi } from '../interfaces/editor';
+import {
+  above as editorAbove,
+  hasPath as editorHasPath,
+  point as editorPoint,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import type { TextMutationMethods } from '../interfaces/transforms/text';
 import { getLocationRoot, stripLocationRoots } from '../internal/root-location';
 
@@ -62,7 +67,7 @@ export const getTransactionRoot = (
 };
 
 export const getHighestNonEditable = (editor: Editor, at: Path | Point) =>
-  EditorApi.above(editor, {
+  editorAbove(editor, {
     at,
     match: (node) =>
       NodeApi.isElement(node) &&
@@ -90,7 +95,7 @@ export const getLivePoint = (
   editor: Editor,
   point: Point | null | undefined
 ) => {
-  if (!point || !EditorApi.hasPath(editor, point.path)) {
+  if (!point || !editorHasPath(editor, point.path)) {
     return null;
   }
 
@@ -113,7 +118,7 @@ export const shouldKeepSplitTextAfterInteriorElementRemoval = (
   (() => {
     const parentPath = start.path.slice(0, -1) as Path;
 
-    if (!EditorApi.hasPath(editor, parentPath)) {
+    if (!editorHasPath(editor, parentPath)) {
       return false;
     }
 
@@ -152,7 +157,7 @@ export const shouldPreserveEmptyStartBlockForHangingRange = (
   effectiveStartBlock &&
   NodeApi.isElement(effectiveStartBlock[0]) &&
   !getEditorSchema(editor).isVoid(effectiveStartBlock[0]) &&
-  PointApi.equals(start, EditorApi.point(editor, start.path, { edge: 'start' }))
+  PointApi.equals(start, editorPoint(editor, start.path, { edge: 'start' }))
     ? effectiveStartBlock[1]
     : null;
 

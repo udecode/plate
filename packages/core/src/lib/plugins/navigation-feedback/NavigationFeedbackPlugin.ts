@@ -1,6 +1,5 @@
 import { PathApi } from '@platejs/plite';
 
-import { withLegacyTransformOverride } from '../../../internal/plugin/withLegacyTransformOverride';
 import { createEditorPlugin } from '../../plugin';
 import {
   clearNavigationFeedbackTarget,
@@ -15,7 +14,7 @@ import type {
 } from './types';
 import { NAVIGATION_FEEDBACK_KEY, NavigationFeedbackPluginKey } from './types';
 
-export const NavigationFeedbackPlugin = withLegacyTransformOverride(
+export const NavigationFeedbackPlugin = Object.assign(
   createEditorPlugin<NavigationFeedbackConfig>({
     key: NAVIGATION_FEEDBACK_KEY,
     options: {
@@ -52,22 +51,14 @@ export const NavigationFeedbackPlugin = withLegacyTransformOverride(
         },
       };
     })
-    .extendTxGroup('navigation', ({ editor }) => () => ({
+    .extendTxGroup('navigation', ({ editor }) => (tx) => ({
       clear: () => clearNavigationFeedbackTarget(editor),
       flashTarget: (options: NavigationFlashTargetOptions) =>
         flashTarget(editor, options),
       navigate: (options: NavigationNavigateOptions) =>
-        navigate(editor, options),
+        navigate(editor, tx, options),
     })),
-  ({ editor }) => ({
-    tf: {
-      navigation: {
-        clear: () => clearNavigationFeedbackTarget(editor),
-        flashTarget: (options: NavigationFlashTargetOptions) =>
-          flashTarget(editor, options),
-        navigate: (options: NavigationNavigateOptions) =>
-          navigate(editor, options),
-      },
-    },
-  })
+  {
+    runtimeNavigationFeedback: true,
+  }
 );

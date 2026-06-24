@@ -1,4 +1,13 @@
 import {
+  above as editorAbove,
+  elementReadOnly as editorElementReadOnly,
+  getExtensionRegistry as editorGetExtensionRegistry,
+  getSnapshot as editorGetSnapshot,
+  isBlock as editorIsBlock,
+  isInline as editorIsInline,
+  void as editorVoid,
+} from '@platejs/plite/internal';
+import {
   type DescendantIn,
   RangeApi,
   NodeApi as PliteNode,
@@ -7,7 +16,6 @@ import {
 } from '@platejs/plite';
 import {
   applyOperation,
-  Editor,
   getEditorCurrentMarks,
   getEditorTransformRegistry,
   setEditorMarks,
@@ -84,7 +92,7 @@ const replaceSingleEmptyBlockWithPlainTextLines = (
   lines: string[],
   activeMarks: ReturnType<typeof getEditorCurrentMarks>
 ) => {
-  const snapshot = Editor.getSnapshot(editor);
+  const snapshot = editorGetSnapshot(editor);
   const { selection } = snapshot;
 
   if (
@@ -97,8 +105,8 @@ const replaceSingleEmptyBlockWithPlainTextLines = (
   }
 
   if (
-    Editor.void(editor, { at: selection.anchor }) ||
-    Editor.elementReadOnly(editor, { at: selection.anchor })
+    editorVoid(editor, { at: selection.anchor }) ||
+    editorElementReadOnly(editor, { at: selection.anchor })
   ) {
     return false;
   }
@@ -143,7 +151,7 @@ const insertPlainTextLinesAsFragment = (
   lines: string[],
   activeMarks: ReturnType<typeof getEditorCurrentMarks>
 ) => {
-  const snapshot = Editor.getSnapshot(editor);
+  const snapshot = editorGetSnapshot(editor);
   const { selection } = snapshot;
 
   if (!selection) {
@@ -153,15 +161,15 @@ const insertPlainTextLinesAsFragment = (
   const [start] = RangeApi.edges(selection);
 
   if (
-    Editor.void(editor, { at: start }) ||
-    Editor.elementReadOnly(editor, { at: start })
+    editorVoid(editor, { at: start }) ||
+    editorElementReadOnly(editor, { at: start })
   ) {
     return false;
   }
 
-  const blockMatch = Editor.above(editor, {
+  const blockMatch = editorAbove(editor, {
     at: start,
-    match: (node) => PliteNode.isElement(node) && Editor.isBlock(editor, node),
+    match: (node) => PliteNode.isElement(node) && editorIsBlock(editor, node),
   });
 
   if (!blockMatch) {
@@ -185,7 +193,7 @@ const insertPlainTextLinesAsFragment = (
 };
 
 const isSelectedInlineTextRange = (editor: DOMEditor<any>) => {
-  const selection = Editor.getSnapshot(editor).selection;
+  const selection = editorGetSnapshot(editor).selection;
 
   if (!selection || RangeApi.isCollapsed(selection)) {
     return false;
@@ -202,9 +210,9 @@ const isSelectedInlineTextRange = (editor: DOMEditor<any>) => {
     return false;
   }
 
-  const inlineMatch = Editor.above(editor, {
+  const inlineMatch = editorAbove(editor, {
     at: start,
-    match: (node) => PliteNode.isElement(node) && Editor.isInline(editor, node),
+    match: (node) => PliteNode.isElement(node) && editorIsInline(editor, node),
   });
 
   if (!inlineMatch) {
@@ -284,8 +292,8 @@ export const writeDOMSelectionData = <V extends Value>(
   }
 
   const [start, end] = RangeApi.edges(selection);
-  const startVoid = Editor.void(editor, { at: start.path });
-  const endVoid = Editor.void(editor, { at: end.path });
+  const startVoid = editorVoid(editor, { at: start.path });
+  const endVoid = editorVoid(editor, { at: end.path });
 
   if (RangeApi.isCollapsed(selection) && !startVoid) {
     return;
@@ -445,7 +453,7 @@ export const insertDOMData = <V extends Value>(
   editor: DOMEditor<V>,
   data: DataTransfer
 ): boolean => {
-  const handlers = Editor.getExtensionRegistry(editor).capabilities.get(
+  const handlers = editorGetExtensionRegistry(editor).capabilities.get(
     'clipboard.insertData'
   ) as DOMClipboardInsertDataHandler<V>[] | undefined;
 

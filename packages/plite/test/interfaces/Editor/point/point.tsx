@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { point as editorPoint } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -11,5 +11,5 @@ export const input = (
   </editor>
 );
 export const test = (editor) =>
-  Editor.point(editor, { path: [0, 0], offset: 1 });
+  editorPoint(editor, { path: [0, 0], offset: 1 });
 export const output = { path: [0, 0], offset: 1 };

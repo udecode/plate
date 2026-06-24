@@ -10,10 +10,12 @@ import {
   type Editor as EditorType,
 } from '@platejs/plite';
 import {
-  Editor,
-  getOperationRoot,
-  MAIN_ROOT_KEY,
+  above as editorAbove,
+  hasPath as editorHasPath,
+  isBlock as editorIsBlock,
+  next as editorNext,
 } from '@platejs/plite/internal';
+import { getOperationRoot, MAIN_ROOT_KEY } from '@platejs/plite/internal';
 import { EDITOR_TO_PENDING_DIFFS } from './weak-maps';
 
 export type StringDiff = {
@@ -40,7 +42,7 @@ export function verifyDiffState(
   textDiff: TextDiff
 ): boolean {
   const { path, diff } = textDiff;
-  if (!Editor.hasPath(editor, path)) {
+  if (!editorHasPath(editor, path)) {
     return false;
   }
 
@@ -56,7 +58,7 @@ export function verifyDiffState(
   }
 
   const nextPath = PathApi.next(path);
-  if (!Editor.hasPath(editor, nextPath)) {
+  if (!editorHasPath(editor, nextPath)) {
     return false;
   }
 
@@ -179,7 +181,7 @@ export function normalizePoint(
   point: Point
 ): Point | null {
   let { path, offset } = point;
-  if (!Editor.hasPath(editor, path)) {
+  if (!editorHasPath(editor, path)) {
     return null;
   }
 
@@ -188,8 +190,8 @@ export function normalizePoint(
     return null;
   }
 
-  const parentBlock = Editor.above(editor, {
-    match: (n) => NodeApi.isElement(n) && Editor.isBlock(editor, n),
+  const parentBlock = editorAbove(editor, {
+    match: (n) => NodeApi.isElement(n) && editorIsBlock(editor, n),
     at: path,
   });
 
@@ -198,7 +200,7 @@ export function normalizePoint(
   }
 
   while (offset > leaf.text.length) {
-    const entry = Editor.next(editor, { at: path, match: NodeApi.isText });
+    const entry = editorNext(editor, { at: path, match: NodeApi.isText });
     if (!entry || !PathApi.isDescendant(entry[1], parentBlock[1])) {
       return null;
     }
@@ -238,10 +240,7 @@ export function normalizeRange(
 const getPendingPointRoot = (editor: EditorType<any>, point: Point) =>
   point.root ?? editor.read((state) => state.view.root());
 
-const withPendingPointRoot = (
-  editor: EditorType<any>,
-  point: Point
-): Point => {
+const withPendingPointRoot = (editor: EditorType<any>, point: Point): Point => {
   const root = getPendingPointRoot(editor, point);
 
   return point.root === undefined && root !== MAIN_ROOT_KEY

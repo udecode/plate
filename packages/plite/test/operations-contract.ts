@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getOperations as editorGetOperations,
+  getSnapshot as editorGetSnapshot,
+  pathRef as editorPathRef,
+  pointRef as editorPointRef,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 import {
   createEditor,
   type Descendant,
@@ -65,7 +71,7 @@ describe('plite operations contract', () => {
 
     assert.equal(OperationApi.isOperation(operation), true);
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children,
       selection,
       marks: null,
@@ -73,13 +79,13 @@ describe('plite operations contract', () => {
 
     applyOperation(editor, operation);
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, newChildren);
-    assert.deepEqual(Editor.getSnapshot(editor).selection, newSelection);
+    assert.deepEqual(editorGetSnapshot(editor).children, newChildren);
+    assert.deepEqual(editorGetSnapshot(editor).selection, newSelection);
 
     applyOperation(editor, OperationApi.inverse(operation));
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, children);
-    assert.deepEqual(Editor.getSnapshot(editor).selection, selection);
+    assert.deepEqual(editorGetSnapshot(editor).children, children);
+    assert.deepEqual(editorGetSnapshot(editor).selection, selection);
   });
 
   it('applies and inverts replace_children as one parent child-range replacement', () => {
@@ -115,7 +121,7 @@ describe('plite operations contract', () => {
 
     assert.equal(OperationApi.isOperation(operation), true);
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children,
       selection,
       marks: null,
@@ -123,17 +129,17 @@ describe('plite operations contract', () => {
 
     applyOperation(editor, operation);
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       children[0],
       newChildren[0],
       children[3],
     ]);
-    assert.deepEqual(Editor.getSnapshot(editor).selection, newSelection);
+    assert.deepEqual(editorGetSnapshot(editor).selection, newSelection);
 
     applyOperation(editor, OperationApi.inverse(operation));
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, children);
-    assert.deepEqual(Editor.getSnapshot(editor).selection, selection);
+    assert.deepEqual(editorGetSnapshot(editor).children, children);
+    assert.deepEqual(editorGetSnapshot(editor).selection, selection);
   });
 
   it('applies and inverts huge replace_children ranges without argument spreading', () => {
@@ -162,7 +168,7 @@ describe('plite operations contract', () => {
       type: 'replace_children',
     };
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children,
       selection: null,
       marks: null,
@@ -170,12 +176,12 @@ describe('plite operations contract', () => {
 
     applyOperation(editor, operation);
 
-    assert.equal(Editor.getSnapshot(editor).children.length, 1);
-    assert.deepEqual(Editor.getSnapshot(editor).children[0], newChildren[0]);
+    assert.equal(editorGetSnapshot(editor).children.length, 1);
+    assert.deepEqual(editorGetSnapshot(editor).children[0], newChildren[0]);
 
     applyOperation(editor, OperationApi.inverse(operation));
 
-    const snapshotChildren = Editor.getSnapshot(editor).children;
+    const snapshotChildren = editorGetSnapshot(editor).children;
 
     assert.equal(snapshotChildren.length, childCount);
     assert.deepEqual(snapshotChildren[0], children[0]);
@@ -185,7 +191,7 @@ describe('plite operations contract', () => {
   it('rejects unknown operation-like records during replay', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: moveChildren(),
       selection: collapsedSelection([0, 0], 0),
       marks: null,
@@ -204,7 +210,7 @@ describe('plite operations contract', () => {
     }, /Cannot replay an unknown Plite operation/);
 
     assert.deepEqual(
-      Editor.getOperations(editor).map((operation) => operation.type),
+      editorGetOperations(editor).map((operation) => operation.type),
       []
     );
   });
@@ -218,7 +224,7 @@ describe('plite operations contract', () => {
       },
     ];
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children,
       selection: collapsedSelection([0, 0], 0),
       marks: null,
@@ -235,7 +241,7 @@ describe('plite operations contract', () => {
       }, /set_node newProperties cannot remove properties with nullish values/);
     }
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, children);
+    assert.deepEqual(editorGetSnapshot(editor).children, children);
 
     applyOperation(editor, {
       type: 'set_node',
@@ -244,7 +250,7 @@ describe('plite operations contract', () => {
       newProperties: {},
     } as PliteOperation);
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'element',
         children: [{ text: '' }],
@@ -255,7 +261,7 @@ describe('plite operations contract', () => {
   it('rebases refs after replace_children and nulls refs inside the replaced window', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'element',
@@ -271,10 +277,10 @@ describe('plite operations contract', () => {
       marks: null,
     });
 
-    const beforeRef = Editor.pathRef(editor, [0]);
-    const insidePathRef = Editor.pathRef(editor, [1]);
-    const insidePointRef = Editor.pointRef(editor, { path: [2, 0], offset: 0 });
-    const afterRef = Editor.pathRef(editor, [3, 0]);
+    const beforeRef = editorPathRef(editor, [0]);
+    const insidePathRef = editorPathRef(editor, [1]);
+    const insidePointRef = editorPointRef(editor, { path: [2, 0], offset: 0 });
+    const afterRef = editorPathRef(editor, [3, 0]);
 
     applyOperation(editor, {
       type: 'replace_children',
@@ -300,7 +306,7 @@ describe('plite operations contract', () => {
   it('keeps a ref to the non-root replace_fragment parent', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'element',
@@ -315,10 +321,10 @@ describe('plite operations contract', () => {
       marks: null,
     });
 
-    const parentRef = Editor.pathRef(editor, [0]);
-    const childPathRef = Editor.pathRef(editor, [0, 0]);
-    const childPointRef = Editor.pointRef(editor, { path: [0, 0], offset: 0 });
-    const siblingRef = Editor.pathRef(editor, [1, 0]);
+    const parentRef = editorPathRef(editor, [0]);
+    const childPathRef = editorPathRef(editor, [0, 0]);
+    const childPointRef = editorPointRef(editor, { path: [0, 0], offset: 0 });
+    const siblingRef = editorPathRef(editor, [1, 0]);
 
     applyOperation(editor, {
       type: 'replace_fragment',
@@ -338,7 +344,7 @@ describe('plite operations contract', () => {
   it('treats move_node as a no-op when path equals newPath', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: moveChildren(),
       selection: null,
       marks: null,
@@ -350,13 +356,13 @@ describe('plite operations contract', () => {
       newPath: [0],
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, moveChildren());
+    assert.deepEqual(editorGetSnapshot(editor).children, moveChildren());
   });
 
   it('moves a node when move_node targets the post-removal destination path', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: moveChildren(),
       selection: null,
       marks: null,
@@ -368,7 +374,7 @@ describe('plite operations contract', () => {
       newPath: [2],
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'element',
         children: [{ text: '2' }],
@@ -383,7 +389,7 @@ describe('plite operations contract', () => {
   it('rebases selection with the effective move_node target when moving to a later sibling slot', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: moveChildren(),
       selection: collapsedSelection([0, 0], 0),
       marks: null,
@@ -395,7 +401,7 @@ describe('plite operations contract', () => {
       newPath: [2],
     });
 
-    const after = Editor.getSnapshot(editor);
+    const after = editorGetSnapshot(editor);
 
     assert.deepEqual(after.children, [
       {
@@ -413,7 +419,7 @@ describe('plite operations contract', () => {
   it('rebases selection when insert_node inserts before the selected node', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: moveChildren(),
       selection: collapsedSelection([0, 0], 0),
       marks: null,
@@ -428,7 +434,7 @@ describe('plite operations contract', () => {
       },
     });
 
-    const after = Editor.getSnapshot(editor);
+    const after = editorGetSnapshot(editor);
 
     assert.deepEqual(after.children, [
       {
@@ -517,23 +523,23 @@ describe('plite operations contract', () => {
     for (const operation of operations) {
       const editor = createEditor();
 
-      Editor.replace(editor, {
+      editorReplace(editor, {
         children,
         selection: null,
         marks: null,
       });
 
-      const before = Editor.getSnapshot(editor);
+      const before = editorGetSnapshot(editor);
 
       assert.throws(() => applyOperation(editor, operation), /Cannot apply/);
-      assert.deepEqual(Editor.getSnapshot(editor), before);
+      assert.deepEqual(editorGetSnapshot(editor), before);
     }
   });
 
   it('rejects remove_text replay when operation text does not match the current text', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'element',
@@ -544,7 +550,7 @@ describe('plite operations contract', () => {
       marks: null,
     });
 
-    const before = Editor.getSnapshot(editor);
+    const before = editorGetSnapshot(editor);
 
     assert.throws(
       () =>
@@ -556,13 +562,13 @@ describe('plite operations contract', () => {
         }),
       /does not match/
     );
-    assert.deepEqual(Editor.getSnapshot(editor), before);
+    assert.deepEqual(editorGetSnapshot(editor), before);
   });
 
   it('applies partial set_selection patches against the current selection', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: moveChildren(),
       selection: {
         anchor: { path: [0, 0], offset: 0 },
@@ -582,7 +588,7 @@ describe('plite operations contract', () => {
       },
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).selection, {
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -591,7 +597,7 @@ describe('plite operations contract', () => {
   it('rejects partial set_selection patches when the editor has no live selection', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: moveChildren(),
       selection: null,
       marks: null,
@@ -613,7 +619,7 @@ describe('plite operations contract', () => {
   it('splits a text node with split_node then splits its parent element', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'element',
@@ -640,7 +646,7 @@ describe('plite operations contract', () => {
       properties: {},
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'element',
         children: [{ text: 'some ', bold: true }],
@@ -655,7 +661,7 @@ describe('plite operations contract', () => {
   it('rebases expanded selections across split_node text branches', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'element',
@@ -676,7 +682,7 @@ describe('plite operations contract', () => {
       properties: {},
     });
 
-    const after = Editor.getSnapshot(editor);
+    const after = editorGetSnapshot(editor);
 
     assert.deepEqual(after.children, [
       {
@@ -717,7 +723,7 @@ describe('plite operations contract', () => {
       },
     ];
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children,
       selection,
       marks: null,
@@ -727,7 +733,7 @@ describe('plite operations contract', () => {
       tx.operations.replay(operations);
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'element',
         children: [
@@ -736,7 +742,7 @@ describe('plite operations contract', () => {
         ],
       },
     ]);
-    assert.deepEqual(Editor.getSnapshot(editor).selection, {
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 1], offset: 3 },
     });
@@ -745,14 +751,14 @@ describe('plite operations contract', () => {
       tx.operations.replay(operations.map(OperationApi.inverse).reverse());
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, children);
-    assert.deepEqual(Editor.getSnapshot(editor).selection, selection);
+    assert.deepEqual(editorGetSnapshot(editor).children, children);
+    assert.deepEqual(editorGetSnapshot(editor).selection, selection);
   });
 
   it('rebases selection inside merged text to the surviving branch', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'element',
@@ -774,7 +780,7 @@ describe('plite operations contract', () => {
       properties: { bold: true },
     });
 
-    const after = Editor.getSnapshot(editor);
+    const after = editorGetSnapshot(editor);
 
     assert.deepEqual(after.children, [
       {
@@ -789,7 +795,7 @@ describe('plite operations contract', () => {
     const editor = createEditor();
     extendTestSchema(editor, { type: 'inline', inline: true });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'element',
@@ -817,7 +823,7 @@ describe('plite operations contract', () => {
       },
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'element',
         data: true,
@@ -841,7 +847,7 @@ describe('plite operations contract', () => {
   it('rebases selection to the next text when remove_node deletes the selected leading empty text', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'element',
@@ -858,7 +864,7 @@ describe('plite operations contract', () => {
       node: { text: '' },
     });
 
-    const after = Editor.getSnapshot(editor);
+    const after = editorGetSnapshot(editor);
 
     assert.deepEqual(after.children, [
       {
@@ -872,7 +878,7 @@ describe('plite operations contract', () => {
   it('rebases selection to the previous text end when remove_node deletes the selected trailing empty text', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'element',
@@ -889,7 +895,7 @@ describe('plite operations contract', () => {
       node: { text: '' },
     });
 
-    const after = Editor.getSnapshot(editor);
+    const after = editorGetSnapshot(editor);
 
     assert.deepEqual(after.children, [
       {
@@ -904,7 +910,7 @@ describe('plite operations contract', () => {
     const editor = createEditor();
     extendTestSchema(editor, { type: 'inline', inline: true });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'element',
@@ -928,7 +934,7 @@ describe('plite operations contract', () => {
       node: { text: '' },
     });
 
-    const after = Editor.getSnapshot(editor);
+    const after = editorGetSnapshot(editor);
 
     assert.deepEqual(after.children, [
       {
@@ -949,7 +955,7 @@ describe('plite operations contract', () => {
   it('rebases expanded selections inward when remove_text deletes text inside the range', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'element',
@@ -970,7 +976,7 @@ describe('plite operations contract', () => {
       text: 'or',
     });
 
-    const after = Editor.getSnapshot(editor);
+    const after = editorGetSnapshot(editor);
 
     assert.equal(after.children[0]?.children[0]?.text, 'wd');
     assert.deepEqual(after.selection, {
@@ -982,7 +988,7 @@ describe('plite operations contract', () => {
   it('removes omitted text props through raw set_node', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'element',
@@ -1000,7 +1006,7 @@ describe('plite operations contract', () => {
       newProperties: {},
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'element',
         children: [{ text: 'a' }],
@@ -1011,7 +1017,7 @@ describe('plite operations contract', () => {
   it('rejects raw set_node patches that omit protected node properties', () => {
     const textEditor = createEditor();
 
-    Editor.replace(textEditor, {
+    editorReplace(textEditor, {
       children: [
         {
           type: 'element',
@@ -1022,7 +1028,7 @@ describe('plite operations contract', () => {
       marks: null,
     });
 
-    const beforeText = Editor.getSnapshot(textEditor);
+    const beforeText = editorGetSnapshot(textEditor);
 
     assert.throws(
       () =>
@@ -1034,11 +1040,11 @@ describe('plite operations contract', () => {
         }),
       /Cannot set the "text" property of nodes!/
     );
-    assert.deepEqual(Editor.getSnapshot(textEditor), beforeText);
+    assert.deepEqual(editorGetSnapshot(textEditor), beforeText);
 
     const childrenEditor = createEditor();
 
-    Editor.replace(childrenEditor, {
+    editorReplace(childrenEditor, {
       children: [
         {
           type: 'element',
@@ -1049,7 +1055,7 @@ describe('plite operations contract', () => {
       marks: null,
     });
 
-    const beforeChildren = Editor.getSnapshot(childrenEditor);
+    const beforeChildren = editorGetSnapshot(childrenEditor);
 
     assert.throws(
       () =>
@@ -1061,13 +1067,13 @@ describe('plite operations contract', () => {
         }),
       /set_node does not update child content/
     );
-    assert.deepEqual(Editor.getSnapshot(childrenEditor), beforeChildren);
+    assert.deepEqual(editorGetSnapshot(childrenEditor), beforeChildren);
   });
 
   it('splits a text node with empty split_node properties and clears the right branch props', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'element',
@@ -1085,7 +1091,7 @@ describe('plite operations contract', () => {
       properties: {},
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'element',
         children: [{ text: 'some ', bold: true }, { text: 'text' }],
@@ -1097,7 +1103,7 @@ describe('plite operations contract', () => {
     const editor = createEditor();
     extendTestSchema(editor, { type: 'inline', inline: true });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'element',
@@ -1123,7 +1129,7 @@ describe('plite operations contract', () => {
       properties: {},
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'element',
         data: true,

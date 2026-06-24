@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { createEditor, type Descendant, defineStateField } from '../src';
-import { Editor } from '../src/interfaces/editor';
 
 const paragraph = (text: string) =>
   ({
@@ -26,10 +25,10 @@ describe('document state patch contract', () => {
         state: { [documentTitle.key]: 'Q2 Plan' },
       },
     });
-    const stateCommits: NonNullable<ReturnType<typeof Editor.getLastCommit>>[] =
+    const stateCommits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] =
       [];
 
-    const unsubscribe = Editor.subscribeSource(
+    const unsubscribe = editorSubscribeSource(
       editor,
       'state',
       (_snapshot, commit) => {
@@ -45,7 +44,7 @@ describe('document state patch contract', () => {
 
     unsubscribe();
 
-    const commit = Editor.getLastCommit(editor);
+    const commit = editorGetLastCommit(editor);
     assert(commit);
     assert.deepEqual(
       editor.read((state) => state.getField(documentTitle)),
@@ -187,7 +186,7 @@ describe('document state patch contract', () => {
       }));
     });
 
-    const commit = Editor.getLastCommit(source);
+    const commit = editorGetLastCommit(source);
 
     assert(commit);
     assert.deepEqual(commit.statePatches, [
@@ -244,7 +243,7 @@ describe('document state patch contract', () => {
       editor.read((state) => state.getField(documentTitle)),
       'Q2 Plan'
     );
-    assert.deepEqual(Editor.getLastCommit(editor)?.statePatches ?? [], []);
+    assert.deepEqual(editorGetLastCommit(editor)?.statePatches ?? [], []);
     assert.equal(commits, 0);
   });
 });

@@ -13,7 +13,6 @@ export const omitPluginContext = <
   | 'plugin'
   | 'setOption'
   | 'setOptions'
-  | 'tf'
   | 'type'
 > => {
   const {
@@ -24,10 +23,9 @@ export const omitPluginContext = <
     plugin,
     setOption,
     setOptions,
-    tf: _tf,
     type,
     ...rest
-  } = ctx as T & { tf?: unknown };
+  } = ctx;
 
   return rest as Omit<
     T,
@@ -38,7 +36,6 @@ export const omitPluginContext = <
     | 'plugin'
     | 'setOption'
     | 'setOptions'
-    | 'tf'
     | 'type'
   >;
 };

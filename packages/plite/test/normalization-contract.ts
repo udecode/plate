@@ -1,19 +1,30 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor, getEditorRuntime } from '@platejs/plite/internal';
+import {
+  getChildren as editorGetChildren,
+  getExtensionRegistry as editorGetExtensionRegistry,
+  getSnapshot as editorGetSnapshot,
+  insertNodes as editorInsertNodes,
+  isEditor as editorIsEditor,
+  normalize as editorNormalize,
+  removeNodes as editorRemoveNodes,
+  replace as editorReplace,
+  setNodes as editorSetNodes,
+} from '@platejs/plite/internal';
+import { getEditorRuntime } from '@platejs/plite/internal';
 import { createEditor, type Descendant } from '../src';
 
 describe('plite normalization contract', () => {
   it('repairs an empty block with an empty text child', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'block', children: [] } as Descendant],
       selection: null,
       marks: null,
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       { type: 'block', children: [{ text: '' }] },
     ]);
   });
@@ -49,15 +60,15 @@ describe('plite normalization contract', () => {
       },
     ]);
 
-    assert.equal(Editor.getExtensionRegistry(editor).normalizers.size, 2);
+    assert.equal(editorGetExtensionRegistry(editor).normalizers.size, 2);
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'block', children: [] } as Descendant],
       selection: null,
       marks: null,
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       { type: 'block', children: [{ text: '' }] },
     ]);
     assert.deepEqual(seen.slice(0, 2), ['first', 'second']);
@@ -81,13 +92,13 @@ describe('plite normalization contract', () => {
       },
     });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'block', children: [] } as Descendant],
       selection: null,
       marks: null,
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       { type: 'block', children: [{ text: '' }] },
     ]);
     assert.equal(seen.includes('editor'), true);
@@ -127,11 +138,11 @@ describe('plite normalization contract', () => {
     ]);
 
     assert.deepEqual(
-      [...Editor.getExtensionRegistry(editor).normalizers.keys()],
+      [...editorGetExtensionRegistry(editor).normalizers.keys()],
       ['same-lane-a:normalizers.node', 'same-lane-b:normalizers.node']
     );
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'block', children: [] } as Descendant],
       selection: null,
       marks: null,
@@ -166,7 +177,7 @@ describe('plite normalization contract', () => {
       },
     });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -177,7 +188,7 @@ describe('plite normalization contract', () => {
       marks: null,
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'paragraph',
         children: [{ text: 'alpha' }],
@@ -209,13 +220,13 @@ describe('plite normalization contract', () => {
       },
     });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ text: 'stray' } as Descendant],
       selection: null,
       marks: null,
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'paragraph',
         children: [{ text: 'stray' }],
@@ -226,9 +237,9 @@ describe('plite normalization contract', () => {
     unextend();
     calls = 0;
 
-    Editor.normalize(editor);
+    editorNormalize(editor);
 
-    assert.equal(Editor.getExtensionRegistry(editor).normalizers.size, 0);
+    assert.equal(editorGetExtensionRegistry(editor).normalizers.size, 0);
     assert.equal(calls, 0);
   });
 
@@ -248,7 +259,7 @@ describe('plite normalization contract', () => {
       },
     });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'block', children: [] } as Descendant],
       selection: null,
       marks: null,
@@ -258,7 +269,7 @@ describe('plite normalization contract', () => {
   it('removes stray top-level text during replace-time block-only cleanup', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         { text: 'one' } as Descendant,
         { type: 'block', children: [{ text: 'two' }] } as Descendant,
@@ -269,7 +280,7 @@ describe('plite normalization contract', () => {
       marks: null,
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       { type: 'block', children: [{ text: 'two' }] },
       { type: 'block', children: [{ text: 'four' }] },
     ]);
@@ -278,7 +289,7 @@ describe('plite normalization contract', () => {
   it('removes stray top-level text during node-op block-only cleanup', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'block',
@@ -297,7 +308,7 @@ describe('plite normalization contract', () => {
       tx.nodes.insert({ text: 'stray' }, { at: [0] });
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'block',
         children: [{ text: 'alpha' }],
@@ -312,7 +323,7 @@ describe('plite normalization contract', () => {
   it('explicitly merges adjacent compatible text children in inline-style containers', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -326,9 +337,9 @@ describe('plite normalization contract', () => {
       marks: null,
     });
 
-    Editor.normalize(editor);
+    editorNormalize(editor);
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'paragraph',
         children: [{ text: 'alpha', bold: true }],
@@ -339,7 +350,7 @@ describe('plite normalization contract', () => {
   it('explicitly removes empty adjacent text in inline-style containers', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -354,9 +365,9 @@ describe('plite normalization contract', () => {
       marks: null,
     });
 
-    Editor.normalize(editor);
+    editorNormalize(editor);
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'paragraph',
         children: [{ text: 'alphabeta', bold: true }],
@@ -367,7 +378,7 @@ describe('plite normalization contract', () => {
   it('flattens a direct block child inserted into an inline-style container without merging unrelated text runs', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -388,7 +399,7 @@ describe('plite normalization contract', () => {
       );
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'paragraph',
         children: [{ text: 'alpha' }, { text: 'beta' }, { text: 'gamma' }],
@@ -402,12 +413,12 @@ describe('plite normalization contract', () => {
     getEditorRuntime(editor).normalizeNode = (entry) => {
       const [node] = entry;
 
-      if (!Editor.isEditor(node)) {
+      if (!editorIsEditor(node)) {
         return;
       }
 
-      if (Editor.getChildren(editor).length === 1) {
-        Editor.insertNodes(
+      if (editorGetChildren(editor).length === 1) {
+        editorInsertNodes(
           editor,
           {
             type: 'paragraph',
@@ -418,7 +429,7 @@ describe('plite normalization contract', () => {
         return;
       }
 
-      Editor.removeNodes(editor, { at: [1] });
+      editorRemoveNodes(editor, { at: [1] });
     };
 
     assert.throws(() => {
@@ -446,22 +457,22 @@ describe('plite normalization contract', () => {
 
       if (
         path.length === 1 &&
-        !Editor.isEditor(node) &&
+        !editorIsEditor(node) &&
         'children' in node &&
         node.type === 'heading'
       ) {
-        Editor.setNodes(editor, { type: 'paragraph' }, { at: path });
+        editorSetNodes(editor, { type: 'paragraph' }, { at: path });
         return;
       }
 
       if (
         path.length === 1 &&
-        !Editor.isEditor(node) &&
+        !editorIsEditor(node) &&
         'children' in node &&
         node.type === 'paragraph' &&
         (node as Descendant & { normalized?: boolean }).normalized !== true
       ) {
-        Editor.setNodes(editor, { normalized: true }, { at: path });
+        editorSetNodes(editor, { normalized: true }, { at: path });
         return;
       }
 
@@ -481,7 +492,7 @@ describe('plite normalization contract', () => {
       });
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         type: 'paragraph',
         normalized: true,

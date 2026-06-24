@@ -45,8 +45,11 @@ import {
 import type { EditableInputController } from '../../editable/input-state';
 import { applyEditableCommand } from '../../editable/mutation-controller';
 import {
-  Editor,
   hasEditorTransformMiddleware,
+  range as editorRange,
+  rangeRef as editorRangeRef,
+  leaf as editorLeaf,
+  next as editorNext,
 } from '../../editable/runtime-editor-api';
 import { writeRuntimeMarks } from '../../editable/runtime-mutation-state';
 import { readRuntimeSelection } from '../../editable/runtime-selection-state';
@@ -170,7 +173,7 @@ export function createAndroidInputManager({
         return;
       }
 
-      const targetRange = Editor.range(editor, target);
+      const targetRange = editorRange(editor, target);
       const selection = readRuntimeSelection(editor);
       if (!selection || !RangeApi.equals(selection, targetRange)) {
         editor.update((tx) => {
@@ -210,7 +213,7 @@ export function createAndroidInputManager({
     const liveSelection = readRuntimeSelection(editor);
     const selectionRef =
       liveSelection &&
-      Editor.rangeRef(editor, liveSelection, { affinity: 'forward' });
+      editorRangeRef(editor, liveSelection, { affinity: 'forward' });
     EDITOR_TO_USER_MARKS.set(
       editor,
       editor.read((state) => state.marks.get())
@@ -654,14 +657,14 @@ export function createAndroidInputManager({
     if (type.startsWith('delete')) {
       const direction = type.endsWith('Backward') ? 'backward' : 'forward';
       let [start, end] = RangeApi.edges(targetRange);
-      let [leaf, path] = Editor.leaf(editor, start.path);
+      let [leaf, path] = editorLeaf(editor, start.path);
 
       if (
         RangeApi.isExpanded(targetRange) &&
         leaf.text.length === start.offset &&
         end.offset === 0
       ) {
-        const next = Editor.next(editor, {
+        const next = editorNext(editor, {
           at: start.path,
           match: NodeApi.isText,
         });
@@ -707,7 +710,7 @@ export function createAndroidInputManager({
           PathApi.equals(targetRange.anchor.path, targetRange.focus.path)
         ) {
           const point = { path: targetRange.anchor.path, offset: start.offset };
-          const range = Editor.range(editor, point, point);
+          const range = editorRange(editor, point, point);
           handleUserSelect(range);
 
           storeDiff(targetRange.anchor.path, {

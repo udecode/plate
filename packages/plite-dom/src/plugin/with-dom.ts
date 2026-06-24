@@ -9,7 +9,10 @@ import {
   type Editor as EditorType,
 } from '@platejs/plite';
 import {
-  Editor,
+  levels as editorLevels,
+  pathRef as editorPathRef,
+} from '@platejs/plite/internal';
+import {
   getEditorTransformRegistry,
   setEditorTransformRegistry,
   withOperationRootChildren,
@@ -215,7 +218,7 @@ export const installDOM = <
 
               const changedNode = NodeApi.get(e, PathApi.parent(changedPath));
               const changedNodeKey = DOMEditor.findKey(e, changedNode);
-              const changedPathRef = Editor.pathRef(
+              const changedPathRef = editorPathRef(
                 e,
                 PathApi.parent(changedPath)
               );
@@ -284,7 +287,7 @@ export const dom = (options: DOMEditorOptions = {}) =>
 
 const getMatches = (e: DOMEditor<any>, path: Path) => {
   const matches: [Path, Key][] = [];
-  for (const [n, p] of Editor.levels(e, { at: path })) {
+  for (const [n, p] of editorLevels(e, { at: path })) {
     const key = DOMEditor.findKey(e, n);
     matches.push([p, key]);
   }
@@ -304,7 +307,7 @@ const getPathRefMatches = (e: DOMEditor<any>, path: Path) => {
 
   for (const [n, p] of entries) {
     const key = DOMEditor.findKey(e, n);
-    const pathRef = Editor.pathRef(e, p);
+    const pathRef = editorPathRef(e, p);
 
     matches.push([pathRef, key]);
   }

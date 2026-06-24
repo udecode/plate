@@ -10,7 +10,11 @@ import {
   type Range,
   type Editor as EditorType,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getLastCommit as editorGetLastCommit,
+  rangeRef as editorRangeRef,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import { history } from '../src';
 
@@ -77,7 +81,7 @@ describe('document state history contract', () => {
 
     undo(editor);
 
-    const undoCommit = Editor.getLastCommit(editor);
+    const undoCommit = editorGetLastCommit(editor);
     assert.equal(readTitle(), 'Q2 Plan');
     assert.deepEqual(undoCommit?.operations, []);
     assert.deepEqual(undoCommit?.statePatches, [
@@ -99,7 +103,7 @@ describe('document state history contract', () => {
 
     redo(editor);
 
-    const redoCommit = Editor.getLastCommit(editor);
+    const redoCommit = editorGetLastCommit(editor);
     assert.equal(readTitle(), 'Q3 Plan');
     assert.deepEqual(redoCommit?.operations, []);
     assert.deepEqual(redoCommit?.statePatches, [
@@ -169,7 +173,7 @@ describe('document state history contract', () => {
     });
     const readPreview = () =>
       editor.read((state) => state.getField(previewReplacement));
-    const readText = () => Editor.string(editor, [0]);
+    const readText = () => editorString(editor, [0]);
 
     editor.update((tx) => {
       tx.setField(previewReplacement, 'Draft body');
@@ -417,7 +421,7 @@ describe('document state history contract', () => {
 
     undo(editor);
 
-    const undoCommit = Editor.getLastCommit(editor);
+    const undoCommit = editorGetLastCommit(editor);
     assert.deepEqual(
       editor.read((state) => state.selection.get()),
       currentSelection
@@ -439,14 +443,14 @@ describe('document state history contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    let ref: ReturnType<typeof Editor.rangeRef>;
+    let ref: ReturnType<typeof editorRangeRef>;
 
     headerEditor.update((tx) => {
       tx.selection.set({
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       });
-      ref = Editor.rangeRef(runtime.editor, {
+      ref = editorRangeRef(runtime.editor, {
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       });

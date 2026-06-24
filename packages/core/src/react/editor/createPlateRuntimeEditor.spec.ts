@@ -15,10 +15,6 @@ import { act, fireEvent, render, waitFor } from '@testing-library/react';
 import * as reactHotkeysModule from '@udecode/react-hotkeys';
 
 import { getCurrentRuntimeTransforms } from '../../internal/currentRuntimeBridge';
-import {
-  type LegacyTransformOverride,
-  withLegacyTransformOverride,
-} from '../../internal/plugin/withLegacyTransformOverride';
 import { createEditorPlugin } from '../../lib/plugin/createEditorPlugin';
 import { AffinityPlugin } from '../../lib/plugins/affinity/AffinityPlugin';
 import { ChunkingPlugin } from '../../lib/plugins/chunking/ChunkingPlugin';
@@ -30,11 +26,7 @@ import { LengthPlugin } from '../../lib/plugins/length/LengthPlugin';
 import { NodeIdPlugin } from '../../lib/plugins/node-id/NodeIdPlugin';
 import { BaseParagraphPlugin } from '../../lib/plugins/paragraph/BaseParagraphPlugin';
 import { ParserPlugin } from '../../lib/plugins/ParserPlugin';
-import { withBreakRules } from '../../lib/plugins/override/internal/withBreakRules';
-import { withDeleteRules } from '../../lib/plugins/override/internal/withDeleteRules';
-import { withMergeRules } from '../../lib/plugins/override/internal/withMergeRules';
-import { withNormalizeRules } from '../../lib/plugins/override/internal/withNormalizeRules';
-import { withOverrides } from '../../lib/plugins/override/OverridePlugin';
+import { OverridePlugin } from '../../lib/plugins/override/OverridePlugin';
 import { PliteExtensionPlugin } from '../../lib/plugins/plite-extension/PliteExtensionPlugin';
 import { NavigationFeedbackPlugin } from '../plugins/navigation-feedback/NavigationFeedbackPlugin';
 import { ReactPlugin } from '../plugins/react/ReactPlugin';
@@ -56,21 +48,6 @@ describe('createPlateRuntimeEditor', () => {
     let id = start;
 
     return () => `id-${id++}`;
-  };
-
-  type RuntimeDomTransforms = {
-    withScrolling: (
-      fn: () => void,
-      options?: {
-        operations?: { insert_text?: boolean };
-      }
-    ) => void;
-  };
-
-  type NodeIdRuntimeTransforms = {
-    nodeId: {
-      normalize: () => void;
-    };
   };
 
   type ExtendedRuntimePlugin = {
@@ -101,87 +78,38 @@ describe('createPlateRuntimeEditor', () => {
     };
   };
 
-  type NavigationRuntimeTransforms = {
-    navigation: {
-      clear: () => void;
-      flashTarget: (options: {
-        duration?: number;
-        target: { path: number[]; type: 'node' };
-        variant?: string;
-      }) => boolean;
-      navigate: (options: {
-        flash?: false | { duration?: number; variant?: string };
-        focus?: boolean;
-        scroll?: boolean;
-        select?: {
-          anchor: { offset: number; path: number[] };
-          focus: { offset: number; path: number[] };
-        };
-        target: { path: number[]; type: 'node' };
-      }) => boolean;
-    };
-  };
-
   const getRuntimeTransforms = <T>(editor: PlateRuntimeEditor) =>
     getCurrentRuntimeTransforms(editor) as T;
 
-  const createRuntimeOverridePlugin = (
-    ...overrides: LegacyTransformOverride[]
-  ) => {
-    let plugin = createEditorPlugin({ key: 'override' }).overrideEditor(
-      withOverrides
-    );
-
-    overrides.forEach((override) => {
-      plugin = withLegacyTransformOverride(plugin, override);
-    });
-
-    return plugin;
-  };
+  const createRuntimeOverridePlugin = () => OverridePlugin;
 
   const createRuntimeBlockquotePlugin = () =>
-    withLegacyTransformOverride(
-      createEditorPlugin({
-        key: 'blockquote',
-        node: { isElement: true, type: 'blockquote' },
-      }),
-      ({ tf: { normalizeNode, tab } }) => ({
-        tf: { normalizeNode, tab },
-      })
-    );
+    createEditorPlugin({
+      key: 'blockquote',
+      node: { isElement: true, type: 'blockquote' },
+    });
 
   const createRuntimeCaptionPlugin = () =>
-    withLegacyTransformOverride(
-      createEditorPlugin({
-        key: 'caption',
-        options: {
-          focusEndPath: null,
-          focusStartPath: null,
-          query: { allow: ['media'] },
-          visibleId: null,
-        },
-      }),
-      ({ tf: { apply, moveLine } }) => ({
-        tf: { apply, moveLine },
-      })
-    );
+    createEditorPlugin({
+      key: 'caption',
+      options: {
+        focusEndPath: null,
+        focusStartPath: null,
+        query: { allow: ['media'] },
+        visibleId: null,
+      },
+    });
 
   const createRuntimeMultiSelectPlugin = () =>
-    withLegacyTransformOverride(
-      createEditorPlugin({
-        key: 'tag',
-        node: {
-          isElement: true,
-          isInline: true,
-          isVoid: true,
-          type: 'tag',
-        },
-      }),
-      ({ api: { onChange }, tf: { deleteBackward, normalizeNode } }) => ({
-        api: { onChange },
-        tf: { deleteBackward, normalizeNode },
-      })
-    );
+    createEditorPlugin({
+      key: 'tag',
+      node: {
+        isElement: true,
+        isInline: true,
+        isVoid: true,
+        type: 'tag',
+      },
+    });
 
   const MediaPlugin = createEditorPlugin({
     key: 'media',
@@ -374,7 +302,9 @@ describe('createPlateRuntimeEditor', () => {
       ],
     });
 
-    getRuntimeTransforms<NodeIdRuntimeTransforms>(editor).nodeId.normalize();
+    editor.update((tx) => {
+      tx.nodeId.normalize();
+    });
 
     const root = editor.read((state) => state.value.root()) as Array<{
       children: Array<{ id?: string; text?: string; type?: string }>;
@@ -391,7 +321,6 @@ describe('createPlateRuntimeEditor', () => {
 
   it('routes createPlateEditor opt-in through the v2 runtime', () => {
     const editor = createPlateEditor({
-      runtime: 'plite',
       nodeId: {
         idCreator: createIdFactory(),
         initialValueIds: false,
@@ -424,7 +353,6 @@ describe('createPlateRuntimeEditor', () => {
     const editor = createPlateEditor({
       autoSelect: 'end',
       onReady,
-      runtime: 'plite',
       shouldNormalizeEditor: true,
       transformInitialValue: ({ value: initialValue }) =>
         initialValue.map((node) => ({
@@ -485,7 +413,6 @@ describe('createPlateRuntimeEditor', () => {
         ];
       },
       plugins: [RuntimePlugin],
-      runtime: 'plite',
       value: [{ children: [{ text: 'runtime' }], type: 'decorated' }],
     });
     const { container } = render(
@@ -566,7 +493,6 @@ describe('createPlateRuntimeEditor', () => {
         targetPlugins: [RuntimeBlockPlugin.key],
       },
       plugins: [RuntimeBlockPlugin, AlignInjectPlugin],
-      runtime: 'plite',
       value: [
         {
           align: 'center',
@@ -594,18 +520,18 @@ describe('createPlateRuntimeEditor', () => {
 
   it('runs hook-backed createPlateEditor plite inject transformProps', async () => {
     const editor = createPlateEditor({
-      runtime: 'plite',
       value: [{ children: [{ text: 'target' }], type: 'p' }],
     });
-    const navigationTf =
-      getRuntimeTransforms<NavigationRuntimeTransforms>(editor);
+    let didFlash = false;
 
-    expect(
-      navigationTf.navigation.flashTarget({
+    editor.update((tx) => {
+      didFlash = tx.navigation.flashTarget({
         duration: 1000,
         target: { path: [0], type: 'node' },
-      })
-    ).toBe(true);
+      });
+    });
+
+    expect(didFlash).toBe(true);
 
     const { container } = render(
       React.createElement(PlateRuntimeContent, { editor })
@@ -630,7 +556,6 @@ describe('createPlateRuntimeEditor', () => {
     }> = [];
     const editor = createPlateEditor({
       options: { answer: 42 },
-      runtime: 'plite',
       useHooks: ({ editor: runtimeEditor, getOption, plugin }) => {
         hookCalls.push({
           answer: getOption('answer'),
@@ -664,7 +589,6 @@ describe('createPlateRuntimeEditor', () => {
 
     try {
       const editor = createPlateEditor({
-        runtime: 'plite',
         shortcuts: {
           jump: {
             handler: shortcutHandler,
@@ -747,7 +671,6 @@ describe('createPlateRuntimeEditor', () => {
         afterEditable: AfterEditable,
         beforeEditable: BeforeEditable,
       },
-      runtime: 'plite',
       value,
     });
 
@@ -808,7 +731,6 @@ describe('createPlateRuntimeEditor', () => {
             String(element.type)
           ),
       },
-      runtime: 'plite',
       value: [
         { children: [{ text: 'wrapped text' }], type: 'runtime_element' },
       ],
@@ -864,7 +786,6 @@ describe('createPlateRuntimeEditor', () => {
     const editor = createPlateEditor({
       components: { runtimeElement: OverrideElement },
       plugins: [RuntimePlugin],
-      runtime: 'plite',
       value: [
         { children: [{ text: 'override text' }], type: 'runtime_element' },
       ],
@@ -889,7 +810,6 @@ describe('createPlateRuntimeEditor', () => {
     const editor = createPlateEditor({
       override: { enabled: { runtimeElement: false } },
       plugins: [RuntimePlugin],
-      runtime: 'plite',
       value: [
         { children: [{ text: 'override text' }], type: 'runtime_element' },
       ],
@@ -951,7 +871,6 @@ describe('createPlateRuntimeEditor', () => {
           return true;
         },
       },
-      runtime: 'plite',
       value,
     });
 
@@ -989,7 +908,6 @@ describe('createPlateRuntimeEditor', () => {
     const Probe = () => {
       const editor = usePlateEditor<Value, typeof TxPlugin>({
         plugins: [TxPlugin],
-        runtime: 'plite',
         value,
       });
       const assertHookTxInference = (
@@ -1035,7 +953,6 @@ describe('createPlateRuntimeEditor', () => {
           .configurePlugin(RuntimePlugin, {
             render: { as: 'article' },
           }),
-      runtime: 'plite',
       value: [{ children: [{ text: 'configured' }], type: 'runtime_element' }],
     });
 
@@ -1045,7 +962,6 @@ describe('createPlateRuntimeEditor', () => {
 
   it('rejects unsupported createPlateEditor plite root plugin mutations', () => {
     const unsupportedOptions = {
-      runtime: 'plite' as const,
       rootPlugin: (plugin) =>
         plugin.configure({
           extendEditor: () => ({}),
@@ -1061,16 +977,14 @@ describe('createPlateRuntimeEditor', () => {
     expect(() =>
       createPlateEditor({
         api: { root: { command: () => null } },
-        runtime: 'plite',
-        tf: { root: { command: () => null } },
         value,
       } as never)
     ).toThrow(
-      "[Plate] createPlateEditor({ runtime: 'plite' }) does not support these options yet: api."
+      '[Plate] createPlateEditor() does not support these options yet: api.'
     );
   });
 
-  it('preserves legacy focus edge selection semantics on the runtime transform facade', () => {
+  it('preserves focus edge selection semantics on the runtime transform registry', () => {
     const editor = createPlateRuntimeEditor({
       initialValue: [
         { children: [{ text: 'first' }], type: 'p' },
@@ -1853,6 +1767,82 @@ describe('createPlateRuntimeEditor', () => {
     ]);
   });
 
+  it('routes AffinityPlugin hard-edge forward movement through v2 transactions', () => {
+    const CodePlugin = createEditorPlugin({
+      key: 'code',
+      node: { isLeaf: true, type: 'code' },
+      rules: { selection: { affinity: 'hard' } },
+    });
+    const editor = createPlateRuntimeEditor({
+      initialValue: [
+        {
+          children: [{ text: 'before' }, { code: true, text: 'code' }],
+          type: 'p',
+        },
+      ],
+      plugins: [AffinityPlugin, CodePlugin],
+    });
+
+    editor.update((tx) => {
+      tx.selection.set({ offset: 4, path: [0, 1] });
+    });
+
+    expect(
+      getRuntimeTransforms(editor).move({ distance: 1, unit: 'character' })
+    ).toBe(true);
+    expect(getRuntimeTransforms(editor).insertText('x')).toBe(true);
+    expect(editor.read((state) => state.value.root())).toEqual([
+      {
+        children: [
+          { text: 'before' },
+          { code: true, text: 'code' },
+          { text: 'x' },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
+
+  it('routes AffinityPlugin hard-edge reverse movement through v2 transactions', () => {
+    const CodePlugin = createEditorPlugin({
+      key: 'code',
+      node: { isLeaf: true, type: 'code' },
+      rules: { selection: { affinity: 'hard' } },
+    });
+    const editor = createPlateRuntimeEditor({
+      initialValue: [
+        {
+          children: [{ code: true, text: 'code' }, { text: 'after' }],
+          type: 'p',
+        },
+      ],
+      plugins: [AffinityPlugin, CodePlugin],
+    });
+
+    editor.update((tx) => {
+      tx.selection.set({ offset: 0, path: [0, 0] });
+    });
+
+    expect(
+      getRuntimeTransforms(editor).move({
+        distance: 1,
+        reverse: true,
+        unit: 'character',
+      })
+    ).toBe(true);
+    expect(getRuntimeTransforms(editor).insertText('x')).toBe(true);
+    expect(editor.read((state) => state.value.root())).toEqual([
+      {
+        children: [
+          { text: 'x' },
+          { code: true, text: 'code' },
+          { text: 'after' },
+        ],
+        type: 'p',
+      },
+    ]);
+  });
+
   it('registers plugin api capabilities without legacy api mutation', () => {
     const ApiPlugin = createEditorPlugin({
       key: 'apiPlugin',
@@ -1989,18 +1979,18 @@ describe('createPlateRuntimeEditor', () => {
     ).toBe('function');
 
     let wasScrolling = false;
-    getRuntimeTransforms<RuntimeDomTransforms>(editor).withScrolling(
-      () => {
-        wasScrolling = (
-          editor.api as { isScrolling: () => boolean }
-        ).isScrolling();
+    editor.update((tx) => {
+      tx.dom.withScrolling(
+        (scrollTx) => {
+          wasScrolling = (
+            editor.api as { isScrolling: () => boolean }
+          ).isScrolling();
 
-        editor.update((tx) => {
-          tx.text.insert('!', { at: { path: [0, 0], offset: 7 } });
-        });
-      },
-      { operations: { insert_text: false } }
-    );
+          scrollTx.text.insert('!', { at: { path: [0, 0], offset: 7 } });
+        },
+        { operations: { insert_text: false } }
+      );
+    });
 
     expect(wasScrolling).toBe(true);
     expect((editor.api as { isScrolling: () => boolean }).isScrolling()).toBe(
@@ -2058,6 +2048,29 @@ describe('createPlateRuntimeEditor', () => {
       { children: [{ text: '' }], type: 'p' },
     ]);
     expect(editor.read((state) => state.selection.get())).toBeNull();
+  });
+
+  it('refocuses after runtime reset when the editor was focused', () => {
+    const FocusedReactPlugin = createEditorPlugin({
+      key: 'focusedReact',
+    }).extendEditorApi(() => ({
+      react: {
+        isFocused: () => true,
+      },
+    }));
+    const editor = createPlateRuntimeEditor({
+      initialValue: [{ children: [{ text: 'custom' }], type: 'heading' }],
+      plugins: [PliteReactExtensionPlugin, FocusedReactPlugin],
+    });
+    const focus = mock();
+
+    getRuntimeTransforms(editor).focus = focus;
+
+    act(() => {
+      getRuntimeTransforms(editor).reset();
+    });
+
+    expect(focus).toHaveBeenCalledWith({ edge: 'startEditor' });
   });
 
   it('cleans PliteReactExtension _memo markers through a v2 normalizer', () => {
@@ -2631,8 +2644,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes OverridePlugin empty break reset through runtime node transactions', () => {
-    const RuntimeOverrideBreakPlugin =
-      createRuntimeOverridePlugin(withBreakRules);
+    const RuntimeOverrideBreakPlugin = createRuntimeOverridePlugin();
     const HeadingPlugin = createEditorPlugin({
       key: 'heading',
       node: { isElement: true, type: 'heading' },
@@ -2654,8 +2666,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('preserves Plate lineBreak rules as newline insertion', () => {
-    const RuntimeOverrideBreakPlugin =
-      createRuntimeOverridePlugin(withBreakRules);
+    const RuntimeOverrideBreakPlugin = createRuntimeOverridePlugin();
     const CalloutPlugin = createEditorPlugin({
       key: 'callout',
       node: { isElement: true, type: 'callout' },
@@ -2681,8 +2692,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes emptyLineEnd deleteExit break rules through v2 delete and insert transactions', () => {
-    const RuntimeOverrideBreakPlugin =
-      createRuntimeOverridePlugin(withBreakRules);
+    const RuntimeOverrideBreakPlugin = createRuntimeOverridePlugin();
     const CalloutPlugin = createEditorPlugin({
       key: 'callout',
       node: { isElement: true, type: 'callout' },
@@ -2709,8 +2719,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('resets splitReset continuations after the v2 break transaction', () => {
-    const RuntimeOverrideBreakPlugin =
-      createRuntimeOverridePlugin(withBreakRules);
+    const RuntimeOverrideBreakPlugin = createRuntimeOverridePlugin();
     const HeadingPlugin = createEditorPlugin({
       key: 'heading',
       node: { isElement: true, type: 'heading' },
@@ -2733,10 +2742,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes OverridePlugin start delete reset through runtime node transactions', () => {
-    const RuntimeOverrideDeletePlugin = createRuntimeOverridePlugin(
-      withBreakRules,
-      withDeleteRules
-    );
+    const RuntimeOverrideDeletePlugin = createRuntimeOverridePlugin();
     const CalloutPlugin = createEditorPlugin({
       key: 'callout',
       node: { isElement: true, type: 'callout' },
@@ -2758,10 +2764,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes OverridePlugin empty delete reset after start falls through', () => {
-    const RuntimeOverrideDeletePlugin = createRuntimeOverridePlugin(
-      withBreakRules,
-      withDeleteRules
-    );
+    const RuntimeOverrideDeletePlugin = createRuntimeOverridePlugin();
     const EmptyPlugin = createEditorPlugin({
       key: 'emptyBlock',
       node: { isElement: true, type: 'emptyBlock' },
@@ -2783,10 +2786,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('lifts matched delete rules through the runtime liftBlock route', () => {
-    const RuntimeOverrideDeletePlugin = createRuntimeOverridePlugin(
-      withBreakRules,
-      withDeleteRules
-    );
+    const RuntimeOverrideDeletePlugin = createRuntimeOverridePlugin();
     const BlockquotePlugin = createEditorPlugin({
       key: 'blockquote',
       node: { isElement: true, type: 'blockquote' },
@@ -2859,10 +2859,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('uses normal v2 backward deletion away from the block start', () => {
-    const RuntimeOverrideDeletePlugin = createRuntimeOverridePlugin(
-      withBreakRules,
-      withDeleteRules
-    );
+    const RuntimeOverrideDeletePlugin = createRuntimeOverridePlugin();
     const HeadingPlugin = createEditorPlugin({
       key: 'heading',
       node: { isElement: true, type: 'heading' },
@@ -2913,8 +2910,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes OverridePlugin merge removeEmpty rules through the Plite merge query', () => {
-    const RuntimeOverrideMergePlugin =
-      createRuntimeOverridePlugin(withMergeRules);
+    const RuntimeOverrideMergePlugin = createRuntimeOverridePlugin();
     const ParagraphPlugin = createEditorPlugin({
       key: 'paragraph',
       node: { isElement: true, type: 'p' },
@@ -2943,8 +2939,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('keeps empty custom merge targets by default in the runtime merge query', () => {
-    const RuntimeOverrideMergePlugin =
-      createRuntimeOverridePlugin(withMergeRules);
+    const RuntimeOverrideMergePlugin = createRuntimeOverridePlugin();
     const CustomPlugin = createEditorPlugin({
       key: 'custom',
       node: { isElement: true, type: 'custom' },
@@ -2972,8 +2967,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('lets match override rules veto runtime empty-target merge removal', () => {
-    const RuntimeOverrideMergePlugin =
-      createRuntimeOverridePlugin(withMergeRules);
+    const RuntimeOverrideMergePlugin = createRuntimeOverridePlugin();
     const ParagraphPlugin = createEditorPlugin({
       key: 'paragraph',
       node: { isElement: true, type: 'p' },
@@ -3026,8 +3020,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('routes OverridePlugin normalize removeEmpty rules through v2 node normalizers', () => {
-    const RuntimeOverrideNormalizePlugin =
-      createRuntimeOverridePlugin(withNormalizeRules);
+    const RuntimeOverrideNormalizePlugin = createRuntimeOverridePlugin();
     const EmptyBlockPlugin = createEditorPlugin({
       key: 'emptyBlock',
       node: { isElement: true, type: 'emptyBlock' },
@@ -3051,8 +3044,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('keeps empty normalized targets by default on the runtime route', () => {
-    const RuntimeOverrideNormalizePlugin =
-      createRuntimeOverridePlugin(withNormalizeRules);
+    const RuntimeOverrideNormalizePlugin = createRuntimeOverridePlugin();
     const EmptyBlockPlugin = createEditorPlugin({
       key: 'emptyBlock',
       node: { isElement: true, type: 'emptyBlock' },
@@ -3076,8 +3068,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('lets match override rules force runtime empty-target normalization', () => {
-    const RuntimeOverrideNormalizePlugin =
-      createRuntimeOverridePlugin(withNormalizeRules);
+    const RuntimeOverrideNormalizePlugin = createRuntimeOverridePlugin();
     const ParagraphPlugin = createEditorPlugin({
       key: 'paragraph',
       node: { isElement: true, type: 'paragraph' },
@@ -3116,8 +3107,7 @@ describe('createPlateRuntimeEditor', () => {
   });
 
   it('lets match override rules veto runtime empty-target normalization', () => {
-    const RuntimeOverrideNormalizePlugin =
-      createRuntimeOverridePlugin(withNormalizeRules);
+    const RuntimeOverrideNormalizePlugin = createRuntimeOverridePlugin();
     const ParagraphPlugin = createEditorPlugin({
       key: 'paragraph',
       node: { isElement: true, type: 'paragraph' },
@@ -3157,24 +3147,25 @@ describe('createPlateRuntimeEditor', () => {
     ]);
   });
 
-  it('routes NavigationFeedbackPlugin api and transforms through the runtime facade', () => {
+  it('routes NavigationFeedbackPlugin api and tx through the runtime route', () => {
     const editor = createPlateRuntimeEditor({
       initialValue: [{ children: [{ text: 'one' }], type: 'p' }],
       plugins: [NavigationFeedbackPlugin],
     });
     const navigationApi = editor.api as typeof editor.api &
       NavigationRuntimeApi;
-    const navigationTf =
-      getRuntimeTransforms<NavigationRuntimeTransforms>(editor);
 
     expect(navigationApi.navigation.activeTarget()).toBeNull();
 
-    expect(
-      navigationTf.navigation.flashTarget({
+    let didFlash = false;
+    editor.update((tx) => {
+      didFlash = tx.navigation.flashTarget({
         duration: 1000,
         target: { path: [0], type: 'node' },
-      })
-    ).toBe(true);
+      });
+    });
+
+    expect(didFlash).toBe(true);
     expect(navigationApi.navigation.activeTarget()).toEqual({
       cycle: 1,
       duration: 1000,
@@ -3192,8 +3183,9 @@ describe('createPlateRuntimeEditor', () => {
     expect(navigationApi.navigation.isTarget([1])).toBe(true);
     expect(navigationApi.navigation.isTarget([0])).toBe(false);
 
-    expect(
-      navigationTf.navigation.navigate({
+    let didNavigate = false;
+    editor.update((tx) => {
+      didNavigate = tx.navigation.navigate({
         flash: false,
         focus: false,
         scroll: false,
@@ -3202,14 +3194,18 @@ describe('createPlateRuntimeEditor', () => {
           focus: { offset: 1, path: [1, 0] },
         },
         target: { path: [1], type: 'node' },
-      })
-    ).toBe(true);
+      });
+    });
+
+    expect(didNavigate).toBe(true);
     expect(editor.read((state) => state.selection.get())).toEqual({
       anchor: { offset: 1, path: [1, 0] },
       focus: { offset: 1, path: [1, 0] },
     });
 
-    navigationTf.navigation.clear();
+    editor.update((tx) => {
+      tx.navigation.clear();
+    });
     expect(navigationApi.navigation.activeTarget()).toBeNull();
   });
 
@@ -3312,7 +3308,6 @@ describe('createPlateRuntimeEditor', () => {
 
     const publicEditor = createPlateEditor<Value, typeof TxPlugin>({
       plugins: [TxPlugin],
-      runtime: 'plite',
       value,
     });
     const assertPublicTxInference = (
@@ -3579,39 +3574,6 @@ describe('createPlateRuntimeEditor', () => {
     transformEditor.update((tx) => tx.transform.replace());
     expect(transformEditor.read((state) => state.value.root())).toEqual([
       { children: [{ text: 'ok' }], type: 'p' },
-    ]);
-  });
-
-  it('lets plugin-specific transform facades wrap tx groups', () => {
-    let wrapped = false;
-    const FacadePlugin = createEditorPlugin({
-      key: 'facade',
-    })
-      .extendTx(() => (tx) => ({
-        replace: () => {
-          tx.value.replace({
-            children: [{ children: [{ text: 'wrapped' }], type: 'p' }],
-          });
-        },
-      }))
-      .extendTransforms(({ tf }) => ({
-        replace: () => {
-          wrapped = true;
-
-          return (tf.facade as any).replace();
-        },
-      }));
-
-    const editor = createPlateRuntimeEditor({
-      initialValue: value,
-      plugins: [FacadePlugin],
-    });
-
-    (getRuntimeTransforms(editor).facade as any).replace();
-
-    expect(wrapped).toBe(true);
-    expect(editor.read((state) => state.value.root())).toEqual([
-      { children: [{ text: 'wrapped' }], type: 'p' },
     ]);
   });
 });

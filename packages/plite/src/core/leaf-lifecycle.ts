@@ -10,14 +10,20 @@ import {
   PathApi,
   TextApi,
 } from '../interfaces';
-import { Editor } from '../interfaces/editor';
+import {
+  after as editorAfter,
+  before as editorBefore,
+  getChildren as editorGetChildren,
+  hasPath as editorHasPath,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import { removeNodes } from '../transforms-node';
 import { getEditorSchema } from './editor-runtime';
 import { getLiveSelection } from './public-state';
 import { getEditorTransformRegistry } from './transform-registry';
 
 const getChildren = (editor: Editor, node: Editor | Element): Descendant[] =>
-  NodeApi.isEditor(node) ? Editor.getChildren(editor) : node.children;
+  NodeApi.isEditor(node) ? editorGetChildren(editor) : node.children;
 
 const isInlineElement = (editor: Editor, node: Node | undefined) =>
   ElementApi.isElement(node) && getEditorSchema(editor).isInline(node);
@@ -39,10 +45,13 @@ const pathToPoint = (
   affinity: 'backward' | 'forward'
 ) => {
   const parentPath = path.slice(0, -1);
-  const isInSameParent = (point: ReturnType<typeof Editor.before>) =>
+  const isInSameParent = (point: ReturnType<typeof editorBefore>) =>
     point ? PathApi.equals(point.path.slice(0, -1), parentPath) : false;
-  const after = Editor.after(editor, path, { unit: 'offset', voids: true });
-  const before = Editor.before(editor, path, { unit: 'offset', voids: true });
+  const after = editorAfter(editor, path, { unit: 'offset', voids: true });
+  const before = editorBefore(editor, path, {
+    unit: 'offset',
+    voids: true,
+  });
 
   if (affinity === 'forward') {
     return isInSameParent(after) ? after : (before ?? after ?? null);
@@ -98,7 +107,7 @@ export const cleanupTextLeafLifecycle = (
   );
 
   for (const path of elementPaths) {
-    if (!Editor.hasPath(editor, path)) {
+    if (!editorHasPath(editor, path)) {
       continue;
     }
 

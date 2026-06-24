@@ -1,7 +1,12 @@
 import { getEditorSchema } from '../core/editor-runtime';
 import { getCurrentSelection, profileCoreDuration } from '../core/public-state';
 import { NodeApi, PointApi } from '../interfaces';
-import { type Editor, Editor as EditorApi } from '../interfaces/editor';
+import {
+  getChildren as editorGetChildren,
+  isBlock as editorIsBlock,
+  point as editorPoint,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import type { DeleteRangePlan, TransactionWriter } from './delete-text-plan';
 
 type WholeTopLevelBlockRange = {
@@ -26,7 +31,7 @@ export const getWholeTopLevelBlockRange = (
 
   const startIndex = plan.start.path[0];
   const endIndex = plan.end.path[0];
-  const editorChildren = EditorApi.getChildren(editor);
+  const editorChildren = editorGetChildren(editor);
   const deletesWholeDocument =
     startIndex === 0 && endIndex === editorChildren.length - 1;
 
@@ -39,11 +44,11 @@ export const getWholeTopLevelBlockRange = (
     () =>
       PointApi.equals(
         plan.start,
-        EditorApi.point(editor, [startIndex], { edge: 'start' })
+        editorPoint(editor, [startIndex], { edge: 'start' })
       ) &&
       PointApi.equals(
         plan.end,
-        EditorApi.point(editor, [endIndex], { edge: 'end' })
+        editorPoint(editor, [endIndex], { edge: 'end' })
       )
   );
 
@@ -57,7 +62,7 @@ export const getWholeTopLevelBlockRange = (
       for (let index = startIndex; index <= endIndex; index += 1) {
         const node = editorChildren[index];
 
-        if (!NodeApi.isElement(node) || !EditorApi.isBlock(editor, node)) {
+        if (!NodeApi.isElement(node) || !editorIsBlock(editor, node)) {
           return false;
         }
       }
@@ -78,7 +83,7 @@ export const deleteWholeTopLevelBlockRange = (
   range: WholeTopLevelBlockRange,
   tx: TransactionWriter
 ) => {
-  const children = EditorApi.getChildren(editor);
+  const children = editorGetChildren(editor);
   const startBlock = children[range.startIndex];
 
   if (range.deletesWholeDocument) {
@@ -125,7 +130,7 @@ export const deleteWholeTopLevelBlockRange = (
   const selectionPath = preferNext
     ? [range.endIndex + 1]
     : [range.startIndex - 1];
-  const selectionPoint = EditorApi.point(editor, selectionPath, {
+  const selectionPoint = editorPoint(editor, selectionPath, {
     edge: preferNext ? 'start' : 'end',
   });
   const newSelectionPoint = {

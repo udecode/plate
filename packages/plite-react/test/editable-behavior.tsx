@@ -1,6 +1,6 @@
 import { act, fireEvent, render } from '@testing-library/react';
 import { TextApi } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import { replace as editorReplace } from '@platejs/plite/internal';
 import { createRef } from 'react';
 import {
   createReactEditor,
@@ -357,7 +357,7 @@ describe('plite-react editable behavior', () => {
   test('default scroll restores leaf measurement after scrolling a collapsed range', () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'block', children: [{ text: 'test' }] }],
       selection: {
         anchor: { path: [0, 0], offset: 4 },
@@ -406,7 +406,7 @@ describe('plite-react editable behavior', () => {
   test('default scroll crosses a shadow root to reach an outer scroll container', () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'block', children: [{ text: 'test' }] }],
       selection: {
         anchor: { path: [0, 0], offset: 4 },

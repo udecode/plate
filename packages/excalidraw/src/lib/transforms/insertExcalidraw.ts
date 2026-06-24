@@ -1,4 +1,8 @@
-import type { NodeInsertNodesOptions, NodeProps, BasePlateEditor } from 'platejs';
+import type {
+  NodeInsertNodesOptions,
+  NodeProps,
+  BasePlateEditor,
+} from 'platejs';
 
 import { KEYS, PathApi } from 'platejs';
 

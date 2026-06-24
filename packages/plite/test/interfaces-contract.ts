@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getSelection as editorGetSelection,
+  hasPath as editorHasPath,
+  isEditor as editorIsEditor,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -246,7 +252,7 @@ describe('plite interfaces contract', () => {
       Array.isArray(editor.read((state) => state.runtime.snapshot().children)),
       true
     );
-    assert.equal(Editor.getSelection(editor), null);
+    assert.equal(editorGetSelection(editor), null);
     assert.equal('children' in editor, false);
     assert.equal('selection' in editor, false);
   });
@@ -256,7 +262,7 @@ describe('plite interfaces contract', () => {
       operations?: unknown[];
     };
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'paragraph', children: [{ text: 'one' }] }],
       selection: null,
     });
@@ -268,9 +274,9 @@ describe('plite interfaces contract', () => {
       },
     ];
 
-    assert.equal(Editor.isEditor(editor), true);
-    assert.equal(Editor.hasPath(editor, [0, 0]), true);
-    assert.equal(Editor.string(editor, []), 'one');
+    assert.equal(editorIsEditor(editor), true);
+    assert.equal(editorHasPath(editor, [0, 0]), true);
+    assert.equal(editorString(editor, []), 'one');
     assert.equal(NodeApi.isNode(editor), true);
   });
 });

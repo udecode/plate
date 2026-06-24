@@ -7,7 +7,14 @@ import {
   type Range,
   ElementApi as PliteElement,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  addMark as editorAddMark,
+  getOperations as editorGetOperations,
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 import { history } from '@platejs/plite-history';
 
 import { dom } from '../src/index';
@@ -87,7 +94,7 @@ const createClipboardEditor = (
 
   configureEditor?.(editor);
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children,
     selection,
   });
@@ -368,7 +375,7 @@ const decodeFragmentPayload = (document: Document, payload: string) =>
   JSON.parse(decodeURIComponent(document.defaultView!.atob(payload)));
 
 const getRuntimeId = (editor: Editor, path: number[]) => {
-  const runtimeId = Editor.getRuntimeId(editor, path);
+  const runtimeId = editorGetRuntimeId(editor, path);
 
   if (!runtimeId) {
     throw new Error(`Missing runtime id at ${path.join('.')}`);
@@ -448,7 +455,7 @@ describe('plite-dom clipboard boundary', () => {
       ).toBe(true);
     });
 
-    expect(Editor.string(editor, [0])).toBe('Card: Ada!beta');
+    expect(editorString(editor, [0])).toBe('Card: Ada!beta');
     expect(seen).toEqual(['consume:0', 'delegate:9']);
   });
 
@@ -480,7 +487,7 @@ describe('plite-dom clipboard boundary', () => {
         target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
       });
 
-      expect(Editor.getSnapshot(target).children).toEqual([
+      expect(editorGetSnapshot(target).children).toEqual([
         {
           type: 'paragraph',
           children: [{ text: 'alpha' }],
@@ -490,7 +497,7 @@ describe('plite-dom clipboard boundary', () => {
           children: [{ text: 'alpha' }],
         },
       ]);
-      expect(Editor.getSnapshot(target).selection).toEqual({
+      expect(editorGetSnapshot(target).selection).toEqual({
         anchor: { path: [1, 0], offset: 5 },
         focus: { path: [1, 0], offset: 5 },
       });
@@ -676,13 +683,13 @@ describe('plite-dom clipboard boundary', () => {
         target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
       });
 
-      expect(Editor.getSnapshot(target).children).toEqual([
+      expect(editorGetSnapshot(target).children).toEqual([
         {
           type: 'heading',
           children: [{ text: 'alpha' }],
         },
       ]);
-      expect(Editor.getSnapshot(target).selection).toEqual({
+      expect(editorGetSnapshot(target).selection).toEqual({
         anchor: { path: [0, 0], offset: 5 },
         focus: { path: [0, 0], offset: 5 },
       });
@@ -733,13 +740,13 @@ describe('plite-dom clipboard boundary', () => {
       expect(clipboard.getData('text/html')).toContain('data-plite-fragment=');
       expect(clipboard.getData('text/plain').trimEnd()).toBe('one\ntwo');
 
-      const operationsBefore = Editor.getOperations(target).length;
+      const operationsBefore = editorGetOperations(target).length;
 
       target.update(() => {
         target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
       });
 
-      expect(Editor.getSnapshot(target).children).toEqual([
+      expect(editorGetSnapshot(target).children).toEqual([
         {
           type: 'paragraph',
           children: [{ text: 'before one' }],
@@ -749,11 +756,11 @@ describe('plite-dom clipboard boundary', () => {
           children: [{ text: 'twoafter' }],
         },
       ]);
-      expect(Editor.getSnapshot(target).selection).toEqual({
+      expect(editorGetSnapshot(target).selection).toEqual({
         anchor: { path: [1, 0], offset: 'two'.length },
         focus: { path: [1, 0], offset: 'two'.length },
       });
-      expect(Editor.getOperations(target).length - operationsBefore).toBe(1);
+      expect(editorGetOperations(target).length - operationsBefore).toBe(1);
     });
   });
 
@@ -797,13 +804,13 @@ describe('plite-dom clipboard boundary', () => {
 
       source.api.clipboard.writeSelection(clipboard as unknown as DataTransfer);
 
-      const operationsBefore = Editor.getOperations(target).length;
+      const operationsBefore = editorGetOperations(target).length;
 
       target.update(() => {
         target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
       });
 
-      expect(Editor.getSnapshot(target).children).toEqual([
+      expect(editorGetSnapshot(target).children).toEqual([
         {
           type: 'block-quote',
           children: [{ text: 'Hello world' }],
@@ -813,11 +820,11 @@ describe('plite-dom clipboard boundary', () => {
           children: [{ text: 'Some text' }],
         },
       ]);
-      expect(Editor.getSnapshot(target).selection).toEqual({
+      expect(editorGetSnapshot(target).selection).toEqual({
         anchor: { path: [1, 0], offset: 'Some text'.length },
         focus: { path: [1, 0], offset: 'Some text'.length },
       });
-      expect(Editor.getOperations(target).length - operationsBefore).toBe(1);
+      expect(editorGetOperations(target).length - operationsBefore).toBe(1);
     });
   });
 
@@ -865,7 +872,7 @@ describe('plite-dom clipboard boundary', () => {
         target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
       });
 
-      expect(Editor.getSnapshot(target).children).toEqual([
+      expect(editorGetSnapshot(target).children).toEqual([
         {
           type: 'paragraph',
           children: [{ text: 'first block' }],
@@ -922,13 +929,13 @@ describe('plite-dom clipboard boundary', () => {
         target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
       });
 
-      expect(Editor.getSnapshot(target).children).toEqual([
+      expect(editorGetSnapshot(target).children).toEqual([
         {
           type: 'paragraph',
           children: [{ text: 'replacement' }],
         },
       ]);
-      expect(Editor.getSnapshot(target).selection).toEqual({
+      expect(editorGetSnapshot(target).selection).toEqual({
         anchor: { path: [0, 0], offset: 'replacement'.length },
         focus: { path: [0, 0], offset: 'replacement'.length },
       });
@@ -983,7 +990,7 @@ describe('plite-dom clipboard boundary', () => {
         target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
       });
 
-      expect(Editor.getSnapshot(target).children).toEqual([
+      expect(editorGetSnapshot(target).children).toEqual([
         {
           type: 'paragraph',
           children: [{ text: 'first replacement' }],
@@ -993,7 +1000,7 @@ describe('plite-dom clipboard boundary', () => {
           children: [{ text: 'second replacement' }],
         },
       ]);
-      expect(Editor.getSnapshot(target).selection).toEqual({
+      expect(editorGetSnapshot(target).selection).toEqual({
         anchor: { path: [1, 0], offset: 'second replacement'.length },
         focus: { path: [1, 0], offset: 'second replacement'.length },
       });
@@ -1036,7 +1043,7 @@ describe('plite-dom clipboard boundary', () => {
       });
 
       expect(
-        (Editor.getSnapshot(target).children[1] as PliteElement).children[0]
+        (editorGetSnapshot(target).children[1] as PliteElement).children[0]
       ).toEqual({ text: 'alpha' });
     });
   });
@@ -1070,7 +1077,7 @@ describe('plite-dom clipboard boundary', () => {
       });
 
       expect(
-        (Editor.getSnapshot(target).children[1] as PliteElement).children[0]
+        (editorGetSnapshot(target).children[1] as PliteElement).children[0]
       ).toEqual({ text: 'alpha' });
     });
   });
@@ -1113,7 +1120,7 @@ describe('plite-dom clipboard boundary', () => {
       });
 
       expect(
-        (Editor.getSnapshot(target).children[1] as PliteElement).children[0]
+        (editorGetSnapshot(target).children[1] as PliteElement).children[0]
       ).toEqual({ text: 'alpha' });
     });
   });
@@ -1152,7 +1159,7 @@ describe('plite-dom clipboard boundary', () => {
       });
 
       expect(
-        (Editor.getSnapshot(target).children[1] as PliteElement).children[0]
+        (editorGetSnapshot(target).children[1] as PliteElement).children[0]
       ).toEqual({ text: 'plain fallback' });
     });
   });
@@ -1175,7 +1182,7 @@ describe('plite-dom clipboard boundary', () => {
     });
 
     expect(
-      (Editor.getSnapshot(editor).children[1] as PliteElement).children[0]
+      (editorGetSnapshot(editor).children[1] as PliteElement).children[0]
     ).toEqual({ text: 'hello' });
   });
 
@@ -1186,7 +1193,7 @@ describe('plite-dom clipboard boundary', () => {
     });
     const clipboard = new FakeDataTransfer();
 
-    Editor.addMark(editor, 'bold', true);
+    editorAddMark(editor, 'bold', true);
     clipboard.setData('text/plain', 'hello');
 
     editor.update(() => {
@@ -1194,9 +1201,9 @@ describe('plite-dom clipboard boundary', () => {
     });
 
     expect(
-      (Editor.getSnapshot(editor).children[1] as PliteElement).children
+      (editorGetSnapshot(editor).children[1] as PliteElement).children
     ).toEqual([{ text: 'beta' }, { bold: true, text: 'hello' }]);
-    expect(Editor.getSnapshot(editor).selection).toEqual({
+    expect(editorGetSnapshot(editor).selection).toEqual({
       anchor: { path: [1, 1], offset: 'hello'.length },
       focus: { path: [1, 1], offset: 'hello'.length },
     });
@@ -1217,14 +1224,14 @@ describe('plite-dom clipboard boundary', () => {
     );
     const clipboard = new FakeDataTransfer();
 
-    Editor.addMark(editor, 'bold', true);
+    editorAddMark(editor, 'bold', true);
     clipboard.setData('text/plain', 'world\nNext');
 
     editor.update(() => {
       editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
-    expect(Editor.getSnapshot(editor).children).toEqual([
+    expect(editorGetSnapshot(editor).children).toEqual([
       {
         type: 'paragraph',
         children: [{ text: 'Hello ' }, { bold: true, text: 'world' }],
@@ -1234,7 +1241,7 @@ describe('plite-dom clipboard boundary', () => {
         children: [{ bold: true, text: 'Next' }],
       },
     ]);
-    expect(Editor.getSnapshot(editor).selection).toEqual({
+    expect(editorGetSnapshot(editor).selection).toEqual({
       anchor: { path: [1, 0], offset: 'Next'.length },
       focus: { path: [1, 0], offset: 'Next'.length },
     });
@@ -1255,14 +1262,14 @@ describe('plite-dom clipboard boundary', () => {
     );
     const clipboard = new FakeDataTransfer();
 
-    Editor.addMark(editor, 'bold', true);
+    editorAddMark(editor, 'bold', true);
     clipboard.setData('text/plain', 'One\nTwo');
 
     editor.update(() => {
       editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
-    expect(Editor.getSnapshot(editor).children).toEqual([
+    expect(editorGetSnapshot(editor).children).toEqual([
       {
         type: 'paragraph',
         children: [{ bold: true, text: 'One' }],
@@ -1272,7 +1279,7 @@ describe('plite-dom clipboard boundary', () => {
         children: [{ bold: true, text: 'Two' }],
       },
     ]);
-    expect(Editor.getSnapshot(editor).selection).toEqual({
+    expect(editorGetSnapshot(editor).selection).toEqual({
       anchor: { path: [1, 0], offset: 'Two'.length },
       focus: { path: [1, 0], offset: 'Two'.length },
     });
@@ -1315,7 +1322,7 @@ describe('plite-dom clipboard boundary', () => {
       editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
-    expect(Editor.getSnapshot(editor).children).toEqual([
+    expect(editorGetSnapshot(editor).children).toEqual([
       {
         type: 'paragraph',
         children: [
@@ -1329,7 +1336,7 @@ describe('plite-dom clipboard boundary', () => {
         ],
       },
     ]);
-    expect(Editor.getSnapshot(editor).selection).toEqual({
+    expect(editorGetSnapshot(editor).selection).toEqual({
       anchor: { path: [0, 0], offset: 'Hello replaced'.length },
       focus: { path: [0, 0], offset: 'Hello replaced'.length },
     });
@@ -1356,7 +1363,7 @@ describe('plite-dom clipboard boundary', () => {
       editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
-    expect(Editor.getSnapshot(editor).children).toEqual([
+    expect(editorGetSnapshot(editor).children).toEqual([
       {
         type: 'heading',
         children: [{ text: 'Hello world' }],
@@ -1366,7 +1373,7 @@ describe('plite-dom clipboard boundary', () => {
         children: [{ text: 'And text below' }],
       },
     ]);
-    expect(Editor.getSnapshot(editor).selection).toEqual({
+    expect(editorGetSnapshot(editor).selection).toEqual({
       anchor: { path: [1, 0], offset: 'And text below'.length },
       focus: { path: [1, 0], offset: 'And text below'.length },
     });
@@ -1394,7 +1401,7 @@ describe('plite-dom clipboard boundary', () => {
       editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
-    expect(Editor.getSnapshot(editor).children).toEqual([
+    expect(editorGetSnapshot(editor).children).toEqual([
       {
         type: 'paragraph',
         children: [{ text: 'hello\tworld' }],
@@ -1404,7 +1411,7 @@ describe('plite-dom clipboard boundary', () => {
         children: [{ text: 'hello\tworld' }],
       },
     ]);
-    expect(Editor.getSnapshot(editor).selection).toEqual({
+    expect(editorGetSnapshot(editor).selection).toEqual({
       anchor: { path: [1, 0], offset: 'hello\tworld'.length },
       focus: { path: [1, 0], offset: 'hello\tworld'.length },
     });
@@ -1432,15 +1439,15 @@ describe('plite-dom clipboard boundary', () => {
       editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
-    expect(Editor.getSnapshot(editor).children).toEqual([
+    expect(editorGetSnapshot(editor).children).toEqual([
       {
         type: 'paragraph',
         children: [{ text: 'ABD\tEFG' }],
       },
     ]);
 
-    Editor.replace(editor, {
-      children: Editor.getSnapshot(editor).children,
+    editorReplace(editor, {
+      children: editorGetSnapshot(editor).children,
       marks: null,
       selection: {
         anchor: { path: [0, 0], offset: 2 },
@@ -1453,13 +1460,13 @@ describe('plite-dom clipboard boundary', () => {
       tx.text.deleteForward({ unit: 'word' });
     });
 
-    expect(Editor.getSnapshot(editor).children).toEqual([
+    expect(editorGetSnapshot(editor).children).toEqual([
       {
         type: 'paragraph',
         children: [{ text: 'ABC\tEFG' }],
       },
     ]);
-    expect(Editor.getSnapshot(editor).selection).toEqual({
+    expect(editorGetSnapshot(editor).selection).toEqual({
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -1484,7 +1491,7 @@ describe('plite-dom clipboard boundary', () => {
       }).not.toThrow();
 
       expect(
-        (Editor.getSnapshot(editor).children[1] as PliteElement).children[0]
+        (editorGetSnapshot(editor).children[1] as PliteElement).children[0]
       ).toEqual({ text: 'fallback' });
     });
   });
@@ -1511,7 +1518,7 @@ describe('plite-dom clipboard boundary', () => {
       }).not.toThrow();
 
       expect(
-        (Editor.getSnapshot(editor).children[1] as PliteElement).children[0]
+        (editorGetSnapshot(editor).children[1] as PliteElement).children[0]
       ).toEqual({ text: 'fallback' });
     });
   });
@@ -1544,7 +1551,7 @@ describe('plite-dom clipboard boundary', () => {
         }).not.toThrow();
 
         expect(
-          (Editor.getSnapshot(editor).children[1] as PliteElement).children[0]
+          (editorGetSnapshot(editor).children[1] as PliteElement).children[0]
         ).toEqual({ text: `fallback ${index}` });
       });
     });
@@ -1556,7 +1563,7 @@ describe('plite-dom clipboard boundary', () => {
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 4 },
       });
-      const before = Editor.getSnapshot(editor);
+      const before = editorGetSnapshot(editor);
       const clipboard = new FakeDataTransfer();
 
       mountEditorRoot(editor, document);
@@ -1568,7 +1575,7 @@ describe('plite-dom clipboard boundary', () => {
         });
       }).not.toThrow();
 
-      expect(Editor.getSnapshot(editor)).toEqual(before);
+      expect(editorGetSnapshot(editor)).toEqual(before);
     });
   });
 
@@ -1680,13 +1687,13 @@ describe('plite-dom clipboard boundary', () => {
       expect(clipboard.getData('text/plain')).not.toContain('alpha');
       expect(clipboard.getData('text/plain')).not.toContain('omega');
 
-      const operationsBefore = Editor.getOperations(target).length;
+      const operationsBefore = editorGetOperations(target).length;
 
       target.update(() => {
         target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
       });
 
-      expect(Editor.getSnapshot(target).children).toEqual([
+      expect(editorGetSnapshot(target).children).toEqual([
         {
           type: 'paragraph',
           children: [
@@ -1700,17 +1707,17 @@ describe('plite-dom clipboard boundary', () => {
           ],
         },
       ]);
-      expect(Editor.getSnapshot(target).selection).toEqual({
+      expect(editorGetSnapshot(target).selection).toEqual({
         anchor: { path: [0, 2], offset: 0 },
         focus: { path: [0, 2], offset: 0 },
       });
-      expect(Editor.getOperations(target).length - operationsBefore).toBe(1);
+      expect(editorGetOperations(target).length - operationsBefore).toBe(1);
 
       target.update(() => {
         target.api.clipboard.insertData(clipboard as unknown as DataTransfer);
       });
 
-      expect(Editor.getSnapshot(target).children).toEqual([
+      expect(editorGetSnapshot(target).children).toEqual([
         {
           type: 'paragraph',
           children: [
@@ -1730,23 +1737,23 @@ describe('plite-dom clipboard boundary', () => {
           ],
         },
       ]);
-      expect(Editor.getSnapshot(target).selection).toEqual({
+      expect(editorGetSnapshot(target).selection).toEqual({
         anchor: { path: [0, 4], offset: 0 },
         focus: { path: [0, 4], offset: 0 },
       });
-      expect(Editor.getOperations(target).length - operationsBefore).toBe(2);
+      expect(editorGetOperations(target).length - operationsBefore).toBe(2);
 
       source.update((tx) => {
         tx.text.delete();
       });
 
-      expect(Editor.getSnapshot(source).children).toEqual([
+      expect(editorGetSnapshot(source).children).toEqual([
         {
           type: 'paragraph',
           children: [{ text: 'alpha  omega' }],
         },
       ]);
-      expect(Editor.getSnapshot(source).selection).toEqual({
+      expect(editorGetSnapshot(source).selection).toEqual({
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       });
@@ -1871,7 +1878,7 @@ describe('plite-dom clipboard boundary', () => {
       editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
-    expect(Editor.getSnapshot(editor).children).toEqual([
+    expect(editorGetSnapshot(editor).children).toEqual([
       {
         type: 'heading',
         children: [{ text: 'heA' }],
@@ -1906,7 +1913,7 @@ describe('plite-dom clipboard boundary', () => {
       undefined
     );
     const clipboard = new FakeDataTransfer();
-    const operationsBefore = Editor.getOperations(editor).length;
+    const operationsBefore = editorGetOperations(editor).length;
 
     clipboard.setData('text/plain', 'one\ntwo\nthree');
 
@@ -1914,7 +1921,7 @@ describe('plite-dom clipboard boundary', () => {
       editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
-    expect(Editor.getSnapshot(editor).children).toEqual([
+    expect(editorGetSnapshot(editor).children).toEqual([
       {
         type: 'paragraph',
         children: [{ text: 'alpha' }],
@@ -1936,11 +1943,11 @@ describe('plite-dom clipboard boundary', () => {
         children: [{ text: 'omega' }],
       },
     ]);
-    expect(Editor.getSnapshot(editor).selection).toEqual({
+    expect(editorGetSnapshot(editor).selection).toEqual({
       anchor: { path: [3, 0], offset: 'three'.length },
       focus: { path: [3, 0], offset: 'three'.length },
     });
-    expect(Editor.getOperations(editor).length - operationsBefore).toBe(1);
+    expect(editorGetOperations(editor).length - operationsBefore).toBe(1);
   });
 
   it('replaces an expanded selection with every line from multiline plain-text fallback', () => {
@@ -1965,7 +1972,7 @@ describe('plite-dom clipboard boundary', () => {
       editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
-    expect(Editor.getSnapshot(editor).children).toEqual([
+    expect(editorGetSnapshot(editor).children).toEqual([
       {
         type: 'paragraph',
         children: [{ text: 'paste one' }],
@@ -1992,7 +1999,7 @@ describe('plite-dom clipboard boundary', () => {
       undefined
     );
     const clipboard = new FakeDataTransfer();
-    const operationsBefore = Editor.getOperations(editor).length;
+    const operationsBefore = editorGetOperations(editor).length;
 
     clipboard.setData('text/plain', 'one\ntwo\nthree');
 
@@ -2000,7 +2007,7 @@ describe('plite-dom clipboard boundary', () => {
       editor.api.clipboard.insertData(clipboard as unknown as DataTransfer);
     });
 
-    expect(Editor.getSnapshot(editor).children).toEqual([
+    expect(editorGetSnapshot(editor).children).toEqual([
       {
         type: 'paragraph',
         children: [{ text: 'one' }],
@@ -2014,12 +2021,12 @@ describe('plite-dom clipboard boundary', () => {
         children: [{ text: 'three' }],
       },
     ]);
-    expect(Editor.getSnapshot(editor).selection).toEqual({
+    expect(editorGetSnapshot(editor).selection).toEqual({
       anchor: { path: [2, 0], offset: 'three'.length },
       focus: { path: [2, 0], offset: 'three'.length },
     });
     expect(
-      Editor.getOperations(editor).length - operationsBefore
+      editorGetOperations(editor).length - operationsBefore
     ).toBeLessThanOrEqual(1);
   });
 
@@ -2027,7 +2034,7 @@ describe('plite-dom clipboard boundary', () => {
     const editor = createEditor({ extensions: [history(), dom()] });
     const clipboard = new FakeDataTransfer();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -2052,13 +2059,13 @@ describe('plite-dom clipboard boundary', () => {
 
     undo(editor);
 
-    expect(Editor.getSnapshot(editor).children).toEqual([
+    expect(editorGetSnapshot(editor).children).toEqual([
       {
         type: 'paragraph',
         children: [{ text: '' }],
       },
     ]);
-    expect(Editor.getSnapshot(editor).selection).toEqual({
+    expect(editorGetSnapshot(editor).selection).toEqual({
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });

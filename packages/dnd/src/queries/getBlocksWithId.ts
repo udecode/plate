@@ -9,7 +9,7 @@ export type BlocksWithIdOptions<E extends PlateEditor> = NonNullable<
 export const getBlocksWithId = <E extends PlateEditor>(
   editor: E,
   options: BlocksWithIdOptions<E>
-) : NodeEntry<Element>[] => {
+): NodeEntry<Element>[] => {
   const _nodes = editor.api.nodes({
     match: (n: Element) => editor.api.isBlock(n) && !!n.id,
     ...options,

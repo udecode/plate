@@ -660,11 +660,6 @@ export type EditorPluginMethods<C extends AnyPluginConfig = PluginConfig> = {
       InferTx<C> & PluginTx<K, InferTxGroup<TGroup>>
     >
   >;
-  extendTransforms: <
-    ET extends Record<string, (...args: any[]) => any> = Record<string, never>,
-  >(
-    extension: (ctx: EditorPluginContext<C> & { tf: Record<string, any> }) => ET
-  ) => EditorPlugin<C>;
   overrideEditor: (override: OverrideEditor<C>) => EditorPlugin<C>;
   /** Returns a new instance of the plugin with the component. */
   withComponent: (component: NodeComponent) => EditorPlugin<C>;

@@ -310,7 +310,7 @@ test('root selector source ownership is fenced to named source modules', () => {
   );
 
   expectSourceOwnershipInventory(
-    /\bEditor\.getSnapshot\(/g,
+    /\beditorGetSnapshot\(/g,
     editableRootRuntimeFiles,
     {
       'packages/plite-react/src/components/editable-descendant-binding.ts': {

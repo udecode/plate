@@ -4,7 +4,25 @@ import { getEditorTransformRegistry } from '../core/transform-registry';
 import { nodes as getNodes } from '../editor/nodes';
 import { LocationApi } from '../interfaces';
 import type { Value } from '../interfaces/editor';
-import { Editor } from '../interfaces/editor';
+import {
+  above as editorAbove,
+  after as editorAfter,
+  before as editorBefore,
+  elementReadOnly as editorElementReadOnly,
+  getChildren as editorGetChildren,
+  isBlock as editorIsBlock,
+  isEnd as editorIsEnd,
+  isInline as editorIsInline,
+  isStart as editorIsStart,
+  normalize as editorNormalize,
+  pathRef as editorPathRef,
+  point as editorPoint,
+  pointRef as editorPointRef,
+  unhangRange as editorUnhangRange,
+  void as editorVoid,
+  withoutNormalizing as editorWithoutNormalizing,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import type { Element } from '../interfaces/element';
 import { type Ancestor, type Descendant, NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
@@ -68,15 +86,15 @@ const getTopLevelStructuralBlockFragmentReplacement = (
   }
 
   if (
-    Editor.void(editor, { at: start }) ||
-    Editor.elementReadOnly(editor, { at: start })
+    editorVoid(editor, { at: start }) ||
+    editorElementReadOnly(editor, { at: start })
   ) {
     return null;
   }
 
-  const blockMatch = Editor.above(editor, {
+  const blockMatch = editorAbove(editor, {
     at: start,
-    match: (node) => NodeApi.isElement(node) && Editor.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
   });
 
   if (!blockMatch) {
@@ -247,15 +265,15 @@ const getNestedTextBlockFragmentReplacement = (
   }
 
   if (
-    Editor.void(editor, { at: start }) ||
-    Editor.elementReadOnly(editor, { at: start })
+    editorVoid(editor, { at: start }) ||
+    editorElementReadOnly(editor, { at: start })
   ) {
     return null;
   }
 
-  const blockMatch = Editor.above(editor, {
+  const blockMatch = editorAbove(editor, {
     at: start,
-    match: (node) => NodeApi.isElement(node) && Editor.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
   });
 
   if (!blockMatch) {
@@ -672,7 +690,7 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
 
     if (LocationApi.isRange(fastAt)) {
       if (!hanging) {
-        fastAt = Editor.unhangRange(editor, fastAt, { voids });
+        fastAt = editorUnhangRange(editor, fastAt, { voids });
       }
 
       const topLevelStructuralBlockReplacement =
@@ -692,7 +710,7 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
       }
     }
 
-    Editor.withoutNormalizing(editor, () => {
+    editorWithoutNormalizing(editor, () => {
       const transforms = getEditorTransformRegistry(editor);
       const { batchDirty = true } = options;
       let at = tx.resolveTarget({ at: options.at });
@@ -711,7 +729,7 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
 
       if (LocationApi.isRange(at)) {
         if (!hanging) {
-          at = Editor.unhangRange(editor, at, { voids });
+          at = editorUnhangRange(editor, at, { voids });
         }
 
         const topLevelStructuralBlockReplacement =
@@ -785,7 +803,7 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
         }
 
         if (isFullDocumentRange(editor, at)) {
-          const editorChildren = Editor.getChildren(editor);
+          const editorChildren = editorGetChildren(editor);
 
           applyReplaceChildren({
             children: editorChildren,
@@ -855,27 +873,27 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
         } else {
           const [, end] = RangeApi.edges(at);
 
-          if (!voids && Editor.void(editor, { at: end })) {
+          if (!voids && editorVoid(editor, { at: end })) {
             return;
           }
 
-          const pointRef = Editor.pointRef(editor, end);
+          const pointRef = editorPointRef(editor, end);
           transforms.delete({ at });
           at = pointRef.unref()!;
         }
       } else if (LocationApi.isPath(at)) {
-        at = Editor.point(editor, at, { edge: 'start' });
+        at = editorPoint(editor, at, { edge: 'start' });
       }
 
-      if (!voids && Editor.void(editor, { at })) {
+      if (!voids && editorVoid(editor, { at })) {
         return;
       }
 
       // If the insert point is at the edge of an inline node, move it outside
       // instead since it will need to be split otherwise.
-      const inlineElementMatch = Editor.above(editor, {
+      const inlineElementMatch = editorAbove(editor, {
         at,
-        match: (n) => NodeApi.isElement(n) && Editor.isInline(editor, n),
+        match: (n) => NodeApi.isElement(n) && editorIsInline(editor, n),
         mode: 'highest',
         voids,
       });
@@ -883,23 +901,23 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
       if (inlineElementMatch) {
         const [, inlinePath] = inlineElementMatch;
 
-        if (Editor.isEnd(editor, at, inlinePath)) {
-          const after = Editor.after(editor, inlinePath)!;
+        if (editorIsEnd(editor, at, inlinePath)) {
+          const after = editorAfter(editor, inlinePath)!;
           at = after;
-        } else if (Editor.isStart(editor, at, inlinePath)) {
-          const before = Editor.before(editor, inlinePath)!;
+        } else if (editorIsStart(editor, at, inlinePath)) {
+          const before = editorBefore(editor, inlinePath)!;
           at = before;
         }
       }
 
-      const blockMatch = Editor.above(editor, {
-        match: (n) => NodeApi.isElement(n) && Editor.isBlock(editor, n),
+      const blockMatch = editorAbove(editor, {
+        match: (n) => NodeApi.isElement(n) && editorIsBlock(editor, n),
         at,
         voids,
       })!;
       const [, blockPath] = blockMatch;
-      const isBlockStart = Editor.isStart(editor, at, blockPath);
-      const isBlockEnd = Editor.isEnd(editor, at, blockPath);
+      const isBlockStart = editorIsStart(editor, at, blockPath);
+      const isBlockEnd = editorIsEnd(editor, at, blockPath);
       const isBlockEmpty = isBlockStart && isBlockEnd;
       const fragmentRoot = { children: fragment } as Ancestor;
       const [, firstLeafPath] = NodeApi.first(fragmentRoot, []);
@@ -926,21 +944,21 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
         at,
         match: (n) =>
           NodeApi.isText(n) ||
-          (NodeApi.isElement(n) && Editor.isInline(editor, n)),
+          (NodeApi.isElement(n) && editorIsInline(editor, n)),
         mode: 'highest',
         voids,
       })!;
 
       const [, inlinePath] = inlineMatch;
-      const isInlineStart = Editor.isStart(editor, at, inlinePath);
-      const isInlineEnd = Editor.isEnd(editor, at, inlinePath);
+      const isInlineStart = editorIsStart(editor, at, inlinePath);
+      const isInlineEnd = editorIsEnd(editor, at, inlinePath);
 
-      const middleRef = Editor.pathRef(
+      const middleRef = editorPathRef(
         editor,
         isBlockEnd && !ends.length ? PathApi.next(blockPath) : blockPath
       );
 
-      const endRef = Editor.pathRef(
+      const endRef = editorPathRef(
         editor,
         isInlineEnd ? PathApi.next(inlinePath) : inlinePath
       );
@@ -953,9 +971,9 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
         at,
         match: (n) =>
           splitBlock
-            ? NodeApi.isElement(n) && Editor.isBlock(editor, n)
+            ? NodeApi.isElement(n) && editorIsBlock(editor, n)
             : NodeApi.isText(n) ||
-              (NodeApi.isElement(n) && Editor.isInline(editor, n)),
+              (NodeApi.isElement(n) && editorIsInline(editor, n)),
         mode: splitBlock ? 'lowest' : 'highest',
         always:
           splitBlock &&
@@ -964,7 +982,7 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
         voids,
       });
 
-      const startRef = Editor.pathRef(
+      const startRef = editorPathRef(
         editor,
         !isInlineStart || (isInlineStart && isInlineEnd)
           ? PathApi.next(inlinePath)
@@ -975,7 +993,7 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
         at: startRef.current!,
         match: (n) =>
           NodeApi.isText(n) ||
-          (NodeApi.isElement(n) && Editor.isInline(editor, n)),
+          (NodeApi.isElement(n) && editorIsInline(editor, n)),
         mode: 'highest',
         voids,
         batchDirty,
@@ -987,7 +1005,7 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
 
       transforms.insertNodes(middles, {
         at: middleRef.current!,
-        match: (n) => NodeApi.isElement(n) && Editor.isBlock(editor, n),
+        match: (n) => NodeApi.isElement(n) && editorIsBlock(editor, n),
         mode: 'lowest',
         voids,
         batchDirty,
@@ -997,7 +1015,7 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
         at: endRef.current!,
         match: (n) =>
           NodeApi.isText(n) ||
-          (NodeApi.isElement(n) && Editor.isInline(editor, n)),
+          (NodeApi.isElement(n) && editorIsInline(editor, n)),
         mode: 'highest',
         voids,
         batchDirty,
@@ -1015,7 +1033,7 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
         }
 
         if (path) {
-          const end = Editor.point(editor, path, { edge: 'end' });
+          const end = editorPoint(editor, path, { edge: 'end' });
           transforms.select(end);
         }
       }
@@ -1029,7 +1047,7 @@ const applyInsertFragment: TextMutationMethods['insertFragment'] = (
       !usedReplaceChildrenFastPath &&
       getOperationCount(editor) > operationCount
     ) {
-      Editor.normalize(editor);
+      editorNormalize(editor);
     }
   });
 };

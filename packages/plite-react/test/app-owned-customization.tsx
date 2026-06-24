@@ -6,7 +6,10 @@ import {
   type EditorUpdateOptions,
   NodeApi,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  isEditor as editorIsEditor,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 
 import {
   createReactEditor,
@@ -309,7 +312,7 @@ describe('plite-react app-owned customization', () => {
       return projections;
     };
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -351,7 +354,7 @@ describe('plite-react app-owned customization', () => {
     ).toBe('**bold**');
 
     await act(async () => {
-      Editor.replace(editor, {
+      editorReplace(editor, {
         children: [
           {
             type: 'paragraph',
@@ -386,7 +389,7 @@ describe('plite-react app-owned customization', () => {
       });
     };
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -436,7 +439,7 @@ describe('plite-react app-owned customization', () => {
     expect(rendered.container.querySelectorAll('blockquote').length).toBe(1);
 
     await act(async () => {
-      Editor.replace(editor, {
+      editorReplace(editor, {
         children: [
           {
             type: 'paragraph',
@@ -483,7 +486,7 @@ describe('plite-react app-owned customization', () => {
         ? node.text.replace(/\uFEFF/g, '')
         : node.children.map(getNodeText).join('');
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [createTitle(), createParagraph()],
       selection: null,
     });
@@ -493,7 +496,7 @@ describe('plite-react app-owned customization', () => {
 
       if (
         node &&
-        Editor.isEditor(node) &&
+        editorIsEditor(node) &&
         Array.isArray((node as any).children) &&
         node.children.length >= 2
       ) {
@@ -508,7 +511,7 @@ describe('plite-react app-owned customization', () => {
           second &&
           getNodeText(second as Descendant) === ''
         ) {
-          Editor.replace(editor, {
+          editorReplace(editor, {
             children: [createTitle(), createParagraph()],
             selection: null,
           });
@@ -541,7 +544,7 @@ describe('plite-react app-owned customization', () => {
     ).toBeGreaterThan(0);
 
     await act(async () => {
-      Editor.replace(editor, {
+      editorReplace(editor, {
         children: [
           {
             type: 'title',
@@ -563,7 +566,7 @@ describe('plite-react app-owned customization', () => {
     const editor = createReactEditor();
     const seen: string[] = [];
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
@@ -594,7 +597,7 @@ describe('plite-react app-owned customization', () => {
     const editor = createReactEditor();
     const seen: string[] = [];
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });

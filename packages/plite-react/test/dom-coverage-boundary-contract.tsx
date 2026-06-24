@@ -1,7 +1,10 @@
 import { act, render, waitFor } from '@testing-library/react';
 import React from 'react';
 import { type Descendant, NodeApi } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 import { DOMCoverage } from '@platejs/plite-dom/internal';
 import { createReactEditor, Editable, EditableElement, Plite } from '../src';
 import {
@@ -99,7 +102,7 @@ describe('DOM coverage private boundary harness', () => {
   test('BoundaryRange registers a hidden child range and omits its stale DOM', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createNestedChildren(),
       selection: null,
     });
@@ -161,7 +164,7 @@ describe('DOM coverage private boundary harness', () => {
         errors.push(String(message));
       });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createNestedChildren(),
       selection: null,
     });
@@ -216,7 +219,7 @@ describe('DOM coverage private boundary harness', () => {
   test('BoundaryRange unregisters and renders current model content when expanded', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createNestedChildren(),
       selection: null,
     });
@@ -267,7 +270,7 @@ describe('DOM coverage private boundary harness', () => {
   test('SelfBoundary covers hidden first and last root nodes', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createHeaderFooterChildren(),
       selection: null,
     });
@@ -345,7 +348,7 @@ describe('DOM coverage private boundary harness', () => {
     const editor = createReactEditor();
     const materialized: string[] = [];
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createHeaderFooterChildren(),
       selection: null,
     });
@@ -361,7 +364,7 @@ describe('DOM coverage private boundary harness', () => {
                   mounted={false}
                   onMaterialize={({ boundary, range, reason }) => {
                     materialized.push(
-                      `${boundary.boundaryId}:${reason}:${range ? Editor.string(editor, range) : 'no-range'}`
+                      `${boundary.boundaryId}:${reason}:${range ? editorString(editor, range) : 'no-range'}`
                     );
                   }}
                   scope={{ type: 'self' }}
@@ -409,7 +412,7 @@ describe('DOM coverage private boundary harness', () => {
   test('renderElement slots expose contentBoundary for child ranges and self coverage', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createHeaderFooterChildren(),
       selection: null,
     });
@@ -472,7 +475,7 @@ describe('DOM coverage private boundary harness', () => {
   test('renderElement slots cover child ranges without exposing runtime ids', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createNestedChildren(),
       selection: null,
     });
@@ -528,7 +531,7 @@ describe('DOM coverage private boundary harness', () => {
     }));
     let renderedItemCount = 0;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'section',
@@ -583,7 +586,7 @@ describe('DOM coverage private boundary harness', () => {
   test('BoundaryRange does not leak duplicate boundaries in StrictMode', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createNestedChildren(),
       selection: null,
     });
@@ -640,7 +643,7 @@ describe('DOM coverage private boundary harness', () => {
   test('BoundaryRange replaces stale boundary ids across rerenders', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createNestedChildren(),
       selection: null,
     });
@@ -697,7 +700,7 @@ describe('DOM coverage private boundary harness', () => {
   test('BoundaryRange follows owner path after structural insert before owner', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createNestedChildren(),
       selection: null,
     });
@@ -765,7 +768,7 @@ describe('DOM coverage private boundary harness', () => {
   test('BoundaryRange follows owner path after structural move', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createNestedChildren(),
       selection: null,
     });
@@ -827,7 +830,7 @@ describe('DOM coverage private boundary harness', () => {
   test('BoundaryRange unregisters when its owner is structurally removed', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createNestedChildren(),
       selection: null,
     });
@@ -884,7 +887,7 @@ describe('DOM coverage private boundary harness', () => {
       outsideSibling: 0,
     };
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createLargeHiddenBoundaryChildren(hiddenCount),
       selection: null,
     });
@@ -963,7 +966,7 @@ describe('DOM coverage private boundary harness', () => {
       visibleSibling: 0,
     };
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createNestedChildren(),
       selection: null,
     });
@@ -1039,7 +1042,7 @@ describe('DOM coverage private boundary harness', () => {
         errors.push(String(message));
       });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createNestedChildren(),
       selection: null,
     });

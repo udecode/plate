@@ -1,6 +1,14 @@
 import { getEditorSchema } from '../core/editor-runtime';
 import { getLiveNode, getLiveText } from '../core/public-state';
-import { type Editor, Editor as EditorApi } from '../interfaces/editor';
+import {
+  above as editorAbove,
+  getChildren as editorGetChildren,
+  isEditor as editorIsEditor,
+  isElementReadOnly as editorIsElementReadOnly,
+  isInline as editorIsInline,
+  isVoid as editorIsVoid,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import { type Descendant, NodeApi } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
@@ -16,8 +24,8 @@ const getChildren = (
   editor: Editor,
   node: unknown
 ): readonly Descendant[] | null => {
-  if (EditorApi.isEditor(node)) {
-    return EditorApi.getChildren(editor);
+  if (editorIsEditor(node)) {
+    return editorGetChildren(editor);
   }
 
   return node &&
@@ -50,9 +58,9 @@ export const canUseAdjacentCharacterFastPath = (
   if (
     !parent ||
     !NodeApi.isElement(parent) ||
-    EditorApi.isInline(editor, parent) ||
-    EditorApi.isVoid(editor, parent) ||
-    EditorApi.isElementReadOnly(editor, parent) ||
+    editorIsInline(editor, parent) ||
+    editorIsVoid(editor, parent) ||
+    editorIsElementReadOnly(editor, parent) ||
     parentChildren?.some((child) => !NodeApi.isText(child))
   ) {
     return false;
@@ -64,9 +72,9 @@ export const canUseAdjacentCharacterFastPath = (
     if (
       ancestor &&
       NodeApi.isElement(ancestor) &&
-      (EditorApi.isInline(editor, ancestor) ||
-        EditorApi.isVoid(editor, ancestor) ||
-        EditorApi.isElementReadOnly(editor, ancestor))
+      (editorIsInline(editor, ancestor) ||
+        editorIsVoid(editor, ancestor) ||
+        editorIsElementReadOnly(editor, ancestor))
     ) {
       return false;
     }
@@ -201,7 +209,7 @@ const isSelectablePoint = (editor: Editor, point: Point, voids: boolean) => {
     return true;
   }
 
-  return !EditorApi.above(editor, {
+  return !editorAbove(editor, {
     at: point,
     match: (node) =>
       NodeApi.isElement(node) && !getEditorSchema(editor).isSelectable(node),

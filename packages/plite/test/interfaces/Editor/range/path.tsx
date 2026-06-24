@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { range as editorRange } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -10,7 +10,7 @@ export const input = (
     <block>one</block>
   </editor>
 );
-export const test = (editor) => Editor.range(editor, [0]);
+export const test = (editor) => editorRange(editor, [0]);
 export const output = {
   anchor: { path: [0, 0], offset: 0 },
   focus: { path: [0, 0], offset: 3 },

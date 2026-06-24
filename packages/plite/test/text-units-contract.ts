@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import { getSnapshot as editorGetSnapshot } from '@platejs/plite/internal';
 
 import { createEditor, type Descendant, NodeApi } from '../src';
 import { getCharacterDistance, getWordDistance } from '../src/text-units';
@@ -130,7 +130,7 @@ const createTextEditor = (text: string, offset: number) => {
 };
 
 const getEditorText = (editor: ReturnType<typeof createEditor>) =>
-  NodeApi.string(Editor.getSnapshot(editor));
+  NodeApi.string(editorGetSnapshot(editor));
 
 const collectCharacterDistances = (text: string, reverse = false) => {
   const distances: number[] = [];
@@ -171,7 +171,7 @@ const assertUnitCharacterDeletion = (
     });
 
     assert.equal(getEditorText(editor), expected, testCase.description);
-    assert.deepEqual(Editor.getSnapshot(editor).selection, {
+    assert.deepEqual(editorGetSnapshot(editor).selection, {
       anchor: point(expectedOffset),
       focus: point(expectedOffset),
     });
@@ -203,7 +203,7 @@ const assertUnitCharacterMovement = (
     });
 
     assert.deepEqual(
-      Editor.getSnapshot(editor).selection,
+      editorGetSnapshot(editor).selection,
       {
         anchor: point(expectedOffset),
         focus: point(expectedOffset),
@@ -272,7 +272,7 @@ describe('plite text-units contract', () => {
       tx.selection.move({ unit: 'word' });
     });
 
-    assert.deepEqual(Editor.getSnapshot(forward).selection, {
+    assert.deepEqual(editorGetSnapshot(forward).selection, {
       anchor: point(7),
       focus: point(7),
     });
@@ -283,7 +283,7 @@ describe('plite text-units contract', () => {
       tx.selection.move({ reverse: true, unit: 'word' });
     });
 
-    assert.deepEqual(Editor.getSnapshot(backward).selection, {
+    assert.deepEqual(editorGetSnapshot(backward).selection, {
       anchor: point(0),
       focus: point(0),
     });
@@ -296,7 +296,7 @@ describe('plite text-units contract', () => {
       tx.selection.move({ unit: 'word' });
     });
 
-    assert.deepEqual(Editor.getSnapshot(forward).selection, {
+    assert.deepEqual(editorGetSnapshot(forward).selection, {
       anchor: point(8),
       focus: point(8),
     });
@@ -307,7 +307,7 @@ describe('plite text-units contract', () => {
       tx.selection.move({ reverse: true, unit: 'word' });
     });
 
-    assert.deepEqual(Editor.getSnapshot(backward).selection, {
+    assert.deepEqual(editorGetSnapshot(backward).selection, {
       anchor: point(0),
       focus: point(0),
     });
@@ -323,7 +323,7 @@ describe('plite text-units contract', () => {
         tx.selection.move({ reverse: true, unit: 'word' });
       });
 
-      assert.deepEqual(Editor.getSnapshot(editor).selection, {
+      assert.deepEqual(editorGetSnapshot(editor).selection, {
         anchor: point(offset),
         focus: point(offset),
       });
@@ -339,7 +339,7 @@ describe('plite text-units contract', () => {
         tx.selection.move({ reverse: true, unit: 'word' });
       });
 
-      assert.deepEqual(Editor.getSnapshot(editor).selection, {
+      assert.deepEqual(editorGetSnapshot(editor).selection, {
         anchor: point(offset),
         focus: point(offset),
       });
@@ -350,7 +350,7 @@ describe('plite text-units contract', () => {
         tx.selection.move({ unit: 'word' });
       });
 
-      assert.deepEqual(Editor.getSnapshot(editor).selection, {
+      assert.deepEqual(editorGetSnapshot(editor).selection, {
         anchor: point(offset),
         focus: point(offset),
       });

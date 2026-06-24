@@ -1,6 +1,11 @@
 import { act, render } from '@testing-library/react';
 import { createEditor } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  bookmark as editorBookmark,
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 import {
   createReactEditor,
   Plite,
@@ -76,7 +81,7 @@ const createChildren = () => [
 
 const AnnotationOverlaySlices = () => {
   const editor = useEditor();
-  const leftId = Editor.getSnapshot(editor).index.pathToId['0.0'] ?? '';
+  const leftId = editorGetSnapshot(editor).index.pathToId['0.0'] ?? '';
   const comment = usePliteAnnotation<CommentData, CommentProjection>(
     'comment-1'
   );
@@ -175,12 +180,12 @@ describe('plite-react annotation store contract', () => {
   test('one annotation entity drives inline projection and sidebar state from one store', async () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
 
-    const bookmark = Editor.bookmark(editor, {
+    const bookmark = editorBookmark(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -236,12 +241,12 @@ describe('plite-react annotation store contract', () => {
   test('annotation hook projector options refresh without caller memoization', async () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
 
-    const bookmark = Editor.bookmark(editor, {
+    const bookmark = editorBookmark(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -292,12 +297,12 @@ describe('plite-react annotation store contract', () => {
     const editor = createEditor();
     let notifications = 0;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
 
-    const bookmark = Editor.bookmark(editor, {
+    const bookmark = editorBookmark(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -372,12 +377,12 @@ describe('plite-react annotation store contract', () => {
   test('annotation stores normalize stale resolved ranges that no longer fit committed text', async () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
 
-    const runtimeId = Editor.getRuntimeId(editor, [0, 0]);
+    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
     const staleRange = {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
@@ -437,12 +442,12 @@ describe('plite-react annotation store contract', () => {
   test('annotation stores refresh when root runtime order changes', async () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
 
-    const bookmark = Editor.bookmark(editor, {
+    const bookmark = editorBookmark(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -489,12 +494,12 @@ describe('plite-react annotation store contract', () => {
   test('annotation stores receive editor changes through the source bus', async () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
 
-    const bookmark = Editor.bookmark(editor, {
+    const bookmark = editorBookmark(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -543,7 +548,7 @@ describe('plite-react annotation store contract', () => {
       label: 'Comment 1',
     };
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -557,9 +562,9 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const middleId = snapshot.index.pathToId['0.1'];
-    const bookmark = Editor.bookmark(editor, {
+    const bookmark = editorBookmark(editor, {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 2], offset: 2 },
     });
@@ -619,16 +624,16 @@ describe('plite-react annotation store contract', () => {
     let annotationNotifications = 0;
     let unrelatedNotifications = 0;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
 
-    const commentBookmark = Editor.bookmark(editor, {
+    const commentBookmark = editorBookmark(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
-    const unrelatedBookmark = Editor.bookmark(editor, {
+    const unrelatedBookmark = editorBookmark(editor, {
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 3 },
     });
@@ -709,18 +714,18 @@ describe('plite-react annotation store contract', () => {
     let projectionNotifications = 0;
     let runtimeNotifications = 0;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
 
-    const runtimeId = Editor.getRuntimeId(editor, [0, 0]);
+    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
 
     if (!runtimeId) {
       throw new Error('Expected runtime id for projection split proof');
     }
 
-    const bookmark = Editor.bookmark(editor, {
+    const bookmark = editorBookmark(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
@@ -789,22 +794,22 @@ describe('plite-react annotation store contract', () => {
   test('partial annotation projection refresh preserves annotation order in shared runtime buckets', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
 
-    const runtimeId = Editor.getRuntimeId(editor, [0, 0]);
+    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
 
     if (!runtimeId) {
       throw new Error('Expected runtime id for annotation order proof');
     }
 
-    const firstBookmark = Editor.bookmark(editor, {
+    const firstBookmark = editorBookmark(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
-    const secondBookmark = Editor.bookmark(editor, {
+    const secondBookmark = editorBookmark(editor, {
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 5 },
     });
@@ -880,12 +885,12 @@ describe('plite-react annotation store contract', () => {
     let projectionNotifications = 0;
     let runtimeNotifications = 0;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
 
-    const runtimeId = Editor.getRuntimeId(editor, [0, 0]);
+    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
 
     if (!runtimeId) {
       throw new Error('Expected runtime id for annotation metadata proof');
@@ -978,23 +983,23 @@ describe('plite-react annotation store contract', () => {
     let commentRuntimeNotifications = 0;
     let unrelatedRuntimeNotifications = 0;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
 
-    const commentRuntimeId = Editor.getRuntimeId(editor, [0, 0]);
-    const unrelatedRuntimeId = Editor.getRuntimeId(editor, [1, 0]);
+    const commentRuntimeId = editorGetRuntimeId(editor, [0, 0]);
+    const unrelatedRuntimeId = editorGetRuntimeId(editor, [1, 0]);
 
     if (!commentRuntimeId || !unrelatedRuntimeId) {
       throw new Error('Expected runtime ids for scoped annotation proof');
     }
 
-    const commentBookmark = Editor.bookmark(editor, {
+    const commentBookmark = editorBookmark(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });
-    const unrelatedBookmark = Editor.bookmark(editor, {
+    const unrelatedBookmark = editorBookmark(editor, {
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 3 },
     });
@@ -1126,7 +1131,7 @@ describe('plite-react annotation store contract', () => {
     let targetRuntimeNotifications = 0;
     let unrelatedRuntimeNotifications = 0;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: Array.from({ length: blockCount }, (_, index) => ({
         type: 'paragraph',
         children: [{ text: `block-${index}` }],
@@ -1134,8 +1139,8 @@ describe('plite-react annotation store contract', () => {
       selection: null,
     });
 
-    const targetRuntimeId = Editor.getRuntimeId(editor, [targetIndex, 0]);
-    const unrelatedRuntimeId = Editor.getRuntimeId(editor, [0, 0]);
+    const targetRuntimeId = editorGetRuntimeId(editor, [targetIndex, 0]);
+    const unrelatedRuntimeId = editorGetRuntimeId(editor, [0, 0]);
 
     if (!targetRuntimeId || !unrelatedRuntimeId) {
       throw new Error(
@@ -1144,7 +1149,7 @@ describe('plite-react annotation store contract', () => {
     }
 
     const bookmarks = Array.from({ length: blockCount }, (_, index) =>
-      Editor.bookmark(editor, {
+      editorBookmark(editor, {
         anchor: { path: [index, 0], offset: 1 },
         focus: { path: [index, 0], offset: 4 },
       })
@@ -1228,18 +1233,18 @@ describe('plite-react annotation store contract', () => {
   test('annotation metrics count changed ids and runtime subscriber wakes', async () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
 
-    const runtimeId = Editor.getRuntimeId(editor, [0, 0]);
+    const runtimeId = editorGetRuntimeId(editor, [0, 0]);
 
     if (!runtimeId) {
       throw new Error('Expected runtime id for annotation metrics proof');
     }
 
-    const bookmark = Editor.bookmark(editor, {
+    const bookmark = editorBookmark(editor, {
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 4 },
     });

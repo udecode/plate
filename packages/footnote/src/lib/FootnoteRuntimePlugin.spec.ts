@@ -22,7 +22,6 @@ const createFootnoteRuntimeEditor = ({
     typeof BaseFootnoteReferencePlugin | typeof BaseFootnoteDefinitionPlugin
   >({
     plugins: [BaseFootnoteReferencePlugin, BaseFootnoteDefinitionPlugin],
-    runtime: 'plite',
     selection,
     value,
   });

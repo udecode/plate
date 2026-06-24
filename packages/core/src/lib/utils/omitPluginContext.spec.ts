@@ -12,7 +12,6 @@ describe('omitPluginContext (slate)', () => {
       plugin: { key: 'plugin' },
       setOption: () => {},
       setOptions: () => {},
-      tf: { insert: true },
       type: 'plugin',
     };
 

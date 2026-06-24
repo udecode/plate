@@ -10,7 +10,12 @@ import {
   type Element as PliteElement,
   type Text,
 } from '../interfaces';
-import { type Editor, Editor as EditorApi } from '../interfaces/editor';
+import {
+  getChildren as editorGetChildren,
+  hasPath as editorHasPath,
+  isBlock as editorIsBlock,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import { mergeNodes } from '../transforms-node';
 
 export type DeleteStructuralCleanupPlan = {
@@ -68,7 +73,7 @@ export const maybeMergeAdjacentTextAt = (
 ) => {
   if (
     !path ||
-    !EditorApi.hasPath(editor, path) ||
+    !editorHasPath(editor, path) ||
     path.length === 0 ||
     path.at(-1) === 0
   ) {
@@ -77,7 +82,7 @@ export const maybeMergeAdjacentTextAt = (
 
   const previousPath = PathApi.previous(path);
 
-  if (!EditorApi.hasPath(editor, previousPath)) {
+  if (!editorHasPath(editor, previousPath)) {
     return;
   }
 
@@ -115,7 +120,7 @@ const hasSingleChildNest = (
 };
 
 export const mergeAdjacentTextRuns = (editor: Editor) => {
-  if (EditorApi.getChildren(editor).length === 0) {
+  if (editorGetChildren(editor).length === 0) {
     return;
   }
 
@@ -131,7 +136,7 @@ export const mergeAdjacentTextRuns = (editor: Editor) => {
 
   textPaths.forEach((path) => {
     if (
-      !EditorApi.hasPath(editor, path) ||
+      !editorHasPath(editor, path) ||
       path.length === 0 ||
       path.at(-1) === 0
     ) {
@@ -140,7 +145,7 @@ export const mergeAdjacentTextRuns = (editor: Editor) => {
 
     const previousPath = PathApi.previous(path);
 
-    if (!EditorApi.hasPath(editor, previousPath)) {
+    if (!editorHasPath(editor, previousPath)) {
       return;
     }
 
@@ -170,7 +175,7 @@ export const removeEmptyStructuralArtifacts = (
   );
 
   elementPaths.forEach((path) => {
-    if (!EditorApi.hasPath(editor, path) || path.length === 0) {
+    if (!editorHasPath(editor, path) || path.length === 0) {
       return;
     }
 
@@ -199,11 +204,9 @@ export const removeEmptyStructuralArtifacts = (
     const isTopLevelBlock =
       NodeApi.isElement(node) &&
       path.length === 1 &&
-      EditorApi.isBlock(editor, node);
+      editorIsBlock(editor, node);
     const isNestedBlock =
-      NodeApi.isElement(node) &&
-      path.length > 1 &&
-      EditorApi.isBlock(editor, node);
+      NodeApi.isElement(node) && path.length > 1 && editorIsBlock(editor, node);
     const isInteriorTopLevelBlock =
       isTopLevelBlock &&
       !!pruneTopLevelRange &&
@@ -264,9 +267,9 @@ export const restorePreservedEmptyStartBlock = (
   }
 
   const shouldRestore =
-    (EditorApi.getChildren(editor).length === 1 &&
-      NodeApi.string(EditorApi.getChildren(editor)[0]!) !== '') ||
-    !EditorApi.hasPath(editor, preservePath) ||
+    (editorGetChildren(editor).length === 1 &&
+      NodeApi.string(editorGetChildren(editor)[0]!) !== '') ||
+    !editorHasPath(editor, preservePath) ||
     NodeApi.string(getCurrentNode(editor, preservePath)) !== '';
 
   if (!shouldRestore) {

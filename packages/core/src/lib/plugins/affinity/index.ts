@@ -3,6 +3,3 @@
  */
 
 export * from './AffinityPlugin';
-export * from './types';
-export * from './queries/index';
-export * from './transforms/index';

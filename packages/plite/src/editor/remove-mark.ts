@@ -2,7 +2,8 @@ import { executeCommand } from '../core/command-registry';
 import { getEditorSchema } from '../core/editor-runtime';
 import { getCurrentMarks, runEditorTransaction } from '../core/public-state';
 import { getEditorTransformRegistry } from '../core/transform-registry';
-import { Editor, type EditorStaticApi } from '../interfaces/editor';
+import { parent as editorParent } from '../interfaces/editor';
+import type { EditorStaticApi } from '../interfaces/editor';
 import { type Node, NodeApi } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
@@ -25,7 +26,7 @@ const applyRemoveMark: EditorStaticApi['removeMark'] = (editor, key) => {
       if (!NodeApi.isText(node)) {
         return false; // marks can only be applied to text
       }
-      const [parentNode] = Editor.parent(editor, path);
+      const [parentNode] = editorParent(editor, path);
       if (!NodeApi.isElement(parentNode)) {
         return false;
       }
@@ -39,7 +40,7 @@ const applyRemoveMark: EditorStaticApi['removeMark'] = (editor, key) => {
     if (!expandedSelection) {
       const [selectedNode, selectedPath] = node(editor, selection);
       if (selectedNode && match(selectedNode, selectedPath)) {
-        const [parentNode] = Editor.parent(editor, selectedPath);
+        const [parentNode] = editorParent(editor, selectedPath);
         markAcceptingVoidSelected =
           NodeApi.isElement(parentNode) &&
           getEditorSchema(editor).markableVoid(parentNode);

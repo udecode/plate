@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { getSnapshot as editorGetSnapshot } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -16,4 +16,4 @@ export const input = (
     </block>
   </editor>
 );
-export const output = Editor.getSnapshot(input);
+export const output = editorGetSnapshot(input);

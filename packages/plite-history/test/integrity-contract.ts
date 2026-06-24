@@ -7,7 +7,15 @@ import type {
   Editor as EditorType,
 } from '@platejs/plite';
 import { createEditor } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  addMark as editorAddMark,
+  getLastCommit as editorGetLastCommit,
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  registerCommand as editorRegisterCommand,
+  replace as editorReplace,
+  subscribe as editorSubscribe,
+} from '@platejs/plite/internal';
 
 import { history } from '../src';
 
@@ -32,7 +40,7 @@ const replace = (
   children: Descendant[],
   selection: Selection = null
 ) => {
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: structuredClone(children),
     selection: structuredClone(selection),
     marks: null,
@@ -40,11 +48,11 @@ const replace = (
 };
 
 const getText = (editor: EditorType) =>
-  ((Editor.getSnapshot(editor).children[0] as any)?.children?.[0]?.text ??
+  ((editorGetSnapshot(editor).children[0] as any)?.children?.[0]?.text ??
     null) as string | null;
 
 const getVisibleState = (editor: EditorType) => {
-  const snapshot = Editor.getSnapshot(editor);
+  const snapshot = editorGetSnapshot(editor);
 
   return {
     children: snapshot.children,
@@ -52,10 +60,7 @@ const getVisibleState = (editor: EditorType) => {
   };
 };
 
-const write = (
-  editor: EditorType,
-  fn: Parameters<EditorType['update']>[0]
-) => {
+const write = (editor: EditorType, fn: Parameters<EditorType['update']>[0]) => {
   editor.update(fn);
 };
 
@@ -171,7 +176,7 @@ describe('plite-history integrity contract', () => {
       focus: { path: [0, 0], offset: 0 },
     });
 
-    const unsubscribe = Editor.registerCommand(
+    const unsubscribe = editorRegisterCommand(
       editor,
       'set_selection',
       (context, next) => {
@@ -190,7 +195,7 @@ describe('plite-history integrity contract', () => {
 
     assert.deepEqual(seenCommands, ['set_selection']);
     assert.equal(getHistory(editor).undos.length, 0);
-    assert.deepEqual(Editor.getLastCommit(editor)?.classes, ['selection']);
+    assert.deepEqual(editorGetLastCommit(editor)?.classes, ['selection']);
   });
 
   it('does not save movement command commits to history', () => {
@@ -202,7 +207,7 @@ describe('plite-history integrity contract', () => {
       focus: { path: [0, 0], offset: 0 },
     });
 
-    const unsubscribe = Editor.registerCommand(
+    const unsubscribe = editorRegisterCommand(
       editor,
       'move_selection',
       (context, next) => {
@@ -218,7 +223,7 @@ describe('plite-history integrity contract', () => {
 
     assert.deepEqual(seenCommands, ['move_selection']);
     assert.equal(getHistory(editor).undos.length, 0);
-    assert.deepEqual(Editor.getLastCommit(editor)?.classes, ['selection']);
+    assert.deepEqual(editorGetLastCommit(editor)?.classes, ['selection']);
   });
 
   it('does not save collapsed mark command commits to history', () => {
@@ -230,7 +235,7 @@ describe('plite-history integrity contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const unsubscribe = Editor.registerCommand(
+    const unsubscribe = editorRegisterCommand(
       editor,
       'add_mark',
       (context, next) => {
@@ -239,12 +244,12 @@ describe('plite-history integrity contract', () => {
       }
     );
 
-    Editor.addMark(editor, 'bold', true);
+    editorAddMark(editor, 'bold', true);
     unsubscribe();
 
     assert.deepEqual(seenCommands, ['add_mark']);
     assert.equal(getHistory(editor).undos.length, 0);
-    assert.deepEqual(Editor.getLastCommit(editor)?.classes, ['mark']);
+    assert.deepEqual(editorGetLastCommit(editor)?.classes, ['mark']);
   });
 
   it('tx.history.undo moves the current undo batch onto the redo stack', () => {
@@ -279,11 +284,11 @@ describe('plite-history integrity contract', () => {
 
     replace(editor, [paragraph('one')]);
 
-    const unsubscribe = Editor.subscribe(editor, () => {
+    const unsubscribe = editorSubscribe(editor, () => {
       if (reentered) return;
       reentered = true;
 
-      const snapshot = Editor.getSnapshot(editor);
+      const snapshot = editorGetSnapshot(editor);
       const offset = ((snapshot.children[0] as any)?.children?.[0]?.text
         .length ?? 0) as number;
 
@@ -336,12 +341,12 @@ describe('plite-history integrity contract', () => {
       focus: { path: [0, 0], offset: 3 },
     });
 
-    const textRuntimeId = Editor.getRuntimeId(editor, [0, 0]);
+    const textRuntimeId = editorGetRuntimeId(editor, [0, 0]);
     const selectionBefore = structuredClone(
-      Editor.getSnapshot(editor).selection
+      editorGetSnapshot(editor).selection
     );
-    const commits: NonNullable<ReturnType<typeof Editor.getLastCommit>>[] = [];
-    const unsubscribe = Editor.subscribe(editor, (_snapshot, commit) => {
+    const commits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] = [];
+    const unsubscribe = editorSubscribe(editor, (_snapshot, commit) => {
       if (commit) {
         commits.push(commit);
       }
@@ -355,7 +360,7 @@ describe('plite-history integrity contract', () => {
     assert.equal(commits.length, 1);
 
     const commit = commits[0]!;
-    assert.equal(Editor.getLastCommit(editor), commit);
+    assert.equal(editorGetLastCommit(editor), commit);
     assert.deepEqual(commit.classes, ['text']);
     assert.equal(commit.previousVersion, 1);
     assert.equal(commit.version, 2);
@@ -374,7 +379,7 @@ describe('plite-history integrity contract', () => {
     assert.deepEqual(commit.selectionBefore, selectionBefore);
     assert.deepEqual(
       commit.selectionAfter,
-      Editor.getSnapshot(editor).selection
+      editorGetSnapshot(editor).selection
     );
     assert.deepEqual(commit.dirty.paths, [[], [0], [0, 0]]);
     assert.deepEqual(commit.dirty.runtimeIds, [textRuntimeId]);

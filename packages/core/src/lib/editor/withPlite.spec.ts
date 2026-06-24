@@ -84,7 +84,9 @@ describe('withPlate', () => {
         (editor.getPlugin(PliteExtensionPlugin).handlers as any).onKeyDown
       ).toBeDefined();
 
-      expect(editor.tf.init).toBeDefined();
+      expect(editor.read((state) => state.value.root())).toEqual([
+        { children: [{ text: '' }], type: 'p' },
+      ]);
       expect(editor.dom.prevSelection).toBeNull();
     });
 
@@ -550,9 +552,9 @@ describe('withPlate', () => {
 
     // Test empty children
     const editorWithEmptyChildren = withPlite(createEditor());
-    expect(editorWithEmptyChildren.children).toEqual(
-      editorWithEmptyChildren.api.create.value()
-    );
+    expect(editorWithEmptyChildren.children).toEqual([
+      { children: [{ text: '' }], type: 'p' },
+    ]);
 
     // Test pipeNormalizeInitialValue and normalizeEditor
     const editor2 = withPlite(createEditor(), {

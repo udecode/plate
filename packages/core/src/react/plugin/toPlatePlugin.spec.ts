@@ -159,7 +159,6 @@ describe('toPlatePlugin type tests', () => {
     const CodeBlockPlugin = toPlatePlugin(BaseCodeBlockPlugin, {
       handlers: {},
       options: { hotkey: ['mod+opt+8', 'mod+shift+8'] },
-      extendEditor: ({ editor }) => editor,
     }).extendEditorApi(() => ({
       plugin: {
         getLanguage: () => 'javascript' as string,
@@ -171,7 +170,6 @@ describe('toPlatePlugin type tests', () => {
 
     const editor = createPlateEditor({
       plugins: [CodeBlockPlugin],
-      runtime: 'legacy',
     });
 
     editor.api.plugin.getSyntaxState();
@@ -330,22 +328,17 @@ describe('toTPlatePlugin type tests', () => {
           hotkey: ['mod+opt+8', 'mod+shift+8'],
         },
       }
-    )
-      .extendEditorApi(() => ({
-        plugin: {
-          getLanguage: () => 'javascript',
-        },
-        plugin2: {
-          setLanguage: (_: string) => {},
-        },
-      }))
-      .extend({
-        extendEditor: ({ editor }) => editor,
-      });
+    ).extendEditorApi(() => ({
+      plugin: {
+        getLanguage: () => 'javascript',
+      },
+      plugin2: {
+        setLanguage: (_: string) => {},
+      },
+    }));
 
     const editor = createPlateEditor({
       plugins: [CodeBlockPlugin],
-      runtime: 'legacy',
     });
 
     editor.api.plugin.getLanguage();

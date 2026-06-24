@@ -6522,8 +6522,7 @@ export default function EditorPerfPage() {
             <p className="mt-2 text-muted-foreground text-sm">
               This lane times real <code>insertFragment</code> work against raw
               import data and duplicate-id paste data. That is the only honest
-              way to see whether <code>withNodeId</code> still has money on the
-              table.
+              way to see whether NodeId normalization still has money on the table.
             </p>
 
             <div className="mt-4 grid gap-4 xl:grid-cols-2">

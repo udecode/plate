@@ -1,4 +1,7 @@
-import { Editor } from '@platejs/plite/internal';
+import {
+  isBlock as editorIsBlock,
+  previous as editorPrevious,
+} from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -14,8 +17,8 @@ export const input = (
   </editor>
 );
 export const test = (editor) =>
-  Editor.previous(editor, {
+  editorPrevious(editor, {
     at: [1],
-    match: (n) => ElementApi.isElement(n) && Editor.isBlock(editor, n),
+    match: (n) => ElementApi.isElement(n) && editorIsBlock(editor, n),
   });
 export const output = [<block>one</block>, [0]];

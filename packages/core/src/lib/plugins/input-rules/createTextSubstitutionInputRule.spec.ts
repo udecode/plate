@@ -15,14 +15,23 @@ const createEditor = (
   } as any);
 
 describe('createTextSubstitutionInputRule', () => {
+  const insertText = (
+    editor: ReturnType<typeof createEditor>,
+    text: string
+  ) => {
+    editor.update((tx) => {
+      tx.text.insert(text);
+    });
+  };
+
   it('substitutes a flat match on its final character (`->` → `→`)', () => {
     const rule = createTextSubstitutionInputRule({
       patterns: [{ format: '→', match: '->' }],
     });
     const editor = createEditor(rule);
 
-    editor.tf.insertText('-');
-    editor.tf.insertText('>');
+    insertText(editor, '-');
+    insertText(editor, '>');
 
     expect(editor.children).toEqual([{ children: [{ text: '→' }], type: 'p' }]);
   });
@@ -33,7 +42,7 @@ describe('createTextSubstitutionInputRule', () => {
     });
     const editor = createEditor(rule);
 
-    editor.tf.insertText('-');
+    insertText(editor, '-');
 
     expect(editor.children).toEqual([{ children: [{ text: '-' }], type: 'p' }]);
   });
@@ -44,9 +53,9 @@ describe('createTextSubstitutionInputRule', () => {
     });
     const editor = createEditor(rule);
 
-    editor.tf.insertText('(');
-    editor.tf.insertText('c');
-    editor.tf.insertText(')');
+    insertText(editor, '(');
+    insertText(editor, 'c');
+    insertText(editor, ')');
 
     expect(editor.children).toEqual([{ children: [{ text: '©' }], type: 'p' }]);
   });
@@ -57,10 +66,10 @@ describe('createTextSubstitutionInputRule', () => {
     });
     const editor = createEditor(rule);
 
-    editor.tf.insertText('"');
-    editor.tf.insertText('h');
-    editor.tf.insertText('i');
-    editor.tf.insertText('"');
+    insertText(editor, '"');
+    insertText(editor, 'h');
+    insertText(editor, 'i');
+    insertText(editor, '"');
 
     expect(editor.children).toEqual([
       { children: [{ text: '“hi”' }], type: 'p' },
@@ -73,10 +82,10 @@ describe('createTextSubstitutionInputRule', () => {
     });
     const editor = createEditor(rule);
 
-    editor.tf.insertText('f');
-    editor.tf.insertText('o');
-    editor.tf.insertText('o');
-    editor.tf.insertText(' ');
+    insertText(editor, 'f');
+    insertText(editor, 'o');
+    insertText(editor, 'o');
+    insertText(editor, ' ');
 
     expect(editor.children).toEqual([
       { children: [{ text: 'FOO' }], type: 'p' },

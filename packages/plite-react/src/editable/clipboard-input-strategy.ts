@@ -24,7 +24,19 @@ import {
 import { applyEditableCommand } from './mutation-controller';
 import { writeProjectedViewSelectionClipboardData } from './projected-clipboard';
 import { resolveProjectedSelectionTarget } from './projected-selection-target';
-import { Editor } from './runtime-editor-api';
+import {
+  hasPath as editorHasPath,
+  void as editorVoid,
+  isInline as editorIsInline,
+  isBlock as editorIsBlock,
+  above as editorAbove,
+  isVoid as editorIsVoid,
+  point as editorPoint,
+  before as editorBefore,
+  after as editorAfter,
+  range as editorRange,
+  pointRef as editorPointRef,
+} from './runtime-editor-api';
 import { readRuntimeNode } from './runtime-live-state';
 import { readRuntimeSelection } from './runtime-selection-state';
 
@@ -146,7 +158,7 @@ const resolveDragTarget = (editor: ReactRuntimeEditor, target: EventTarget) => {
   if (
     !node ||
     !fallbackPath ||
-    !Editor.hasPath(editor, fallbackPath) ||
+    !editorHasPath(editor, fallbackPath) ||
     NodeApi.get(editor, fallbackPath) !== node
   ) {
     return null;
@@ -156,7 +168,7 @@ const resolveDragTarget = (editor: ReactRuntimeEditor, target: EventTarget) => {
 };
 
 const isBlockVoidRange = (editor: ReactRuntimeEditor, range: Range) => {
-  const voidMatch = Editor.void(editor, { at: range, voids: true });
+  const voidMatch = editorVoid(editor, { at: range, voids: true });
 
   if (!voidMatch) {
     return false;
@@ -164,7 +176,7 @@ const isBlockVoidRange = (editor: ReactRuntimeEditor, range: Range) => {
 
   const [node] = voidMatch;
 
-  return NodeApi.isElement(node) && !Editor.isInline(editor, node);
+  return NodeApi.isElement(node) && !editorIsInline(editor, node);
 };
 
 const resolveBlockDropRangeFromEvent = (
@@ -178,12 +190,12 @@ const resolveBlockDropRangeFromEvent = (
   }
 
   const blockMatch =
-    NodeApi.isElement(target.node) && Editor.isBlock(editor, target.node)
+    NodeApi.isElement(target.node) && editorIsBlock(editor, target.node)
       ? ([target.node, target.path] as const)
-      : Editor.above(editor, {
+      : editorAbove(editor, {
           at: target.path,
           match: (node) =>
-            NodeApi.isElement(node) && Editor.isBlock(editor, node),
+            NodeApi.isElement(node) && editorIsBlock(editor, node),
         });
 
   if (!blockMatch) {
@@ -192,7 +204,7 @@ const resolveBlockDropRangeFromEvent = (
 
   const [block, blockPath] = blockMatch;
 
-  if (!NodeApi.isElement(block) || Editor.isVoid(editor, block)) {
+  if (!NodeApi.isElement(block) || editorIsVoid(editor, block)) {
     return null;
   }
 
@@ -206,14 +218,14 @@ const resolveBlockDropRangeFromEvent = (
   const isBefore =
     event.nativeEvent.clientY - rect.top <
     rect.bottom - event.nativeEvent.clientY;
-  const edge = Editor.point(editor, blockPath, {
+  const edge = editorPoint(editor, blockPath, {
     edge: isBefore ? 'start' : 'end',
   });
   const point = isBefore
-    ? (Editor.before(editor, edge) ?? edge)
-    : (Editor.after(editor, edge) ?? edge);
+    ? (editorBefore(editor, edge) ?? edge)
+    : (editorAfter(editor, edge) ?? edge);
 
-  return Editor.range(editor, point);
+  return editorRange(editor, point);
 };
 
 const isClipboardEventTargetInput = ({
@@ -355,16 +367,16 @@ export const applyEditableCut = ({
     if (selection) {
       if (RangeApi.isExpanded(selection)) {
         const command: EditableCommand = { kind: 'delete-fragment' };
-        const inlineEntry = Editor.above(editor, {
+        const inlineEntry = editorAbove(editor, {
           at: RangeApi.start(selection),
           match: (node) =>
-            NodeApi.isElement(node) && Editor.isInline(editor, node),
+            NodeApi.isElement(node) && editorIsInline(editor, node),
         });
         const inlinePath = inlineEntry?.[1];
         const inlineBeforePoint = inlinePath
-          ? Editor.before(editor, inlinePath)
+          ? editorBefore(editor, inlinePath)
           : null;
-        const collapsePointRef = Editor.pointRef(
+        const collapsePointRef = editorPointRef(
           editor,
           RangeApi.start(selection)
         );
@@ -373,14 +385,14 @@ export const applyEditableCut = ({
         const collapsePoint = collapsePointRef.unref();
         const shouldRemoveEmptyInline =
           inlinePath &&
-          Editor.hasPath(editor, inlinePath) &&
+          editorHasPath(editor, inlinePath) &&
           (() => {
             const [inlineNode] = editor.read((state) =>
               state.nodes.get(inlinePath)
             );
             return (
               NodeApi.isElement(inlineNode) &&
-              Editor.isInline(editor, inlineNode) &&
+              editorIsInline(editor, inlineNode) &&
               NodeApi.string(inlineNode) === ''
             );
           })();
@@ -444,7 +456,7 @@ export const applyEditableCut = ({
         return clipboardResult({ command });
       }
       const node = NodeApi.parent(editor, selection.anchor.path);
-      if (NodeApi.isElement(node) && Editor.isVoid(editor, node)) {
+      if (NodeApi.isElement(node) && editorIsVoid(editor, node)) {
         const command: EditableCommand = { kind: 'delete-fragment' };
 
         editor.update((tx) => {
@@ -520,7 +532,7 @@ export const applyEditableDragOver = ({
     const target = resolveDragTarget(editor, event.target);
     const node = target?.node;
 
-    if (node && NodeApi.isElement(node) && Editor.isVoid(editor, node)) {
+    if (node && NodeApi.isElement(node) && editorIsVoid(editor, node)) {
       event.preventDefault();
     }
   }
@@ -555,9 +567,9 @@ export const applyEditableDragStart = ({
 
     const { node, path } = target;
     const voidEntry =
-      NodeApi.isElement(node) && Editor.isVoid(editor, node)
+      NodeApi.isElement(node) && editorIsVoid(editor, node)
         ? ([node, path] as const)
-        : Editor.void(editor, { at: path, voids: true });
+        : editorVoid(editor, { at: path, voids: true });
     let draggedBlock = false;
     let draggedRange = readRuntimeSelection(editor);
 
@@ -565,13 +577,13 @@ export const applyEditableDragStart = ({
     // so that it shows up in the selection's fragment.
     if (voidEntry) {
       const [voidNode, voidPath] = voidEntry;
-      const range = Editor.range(editor, voidPath);
+      const range = editorRange(editor, voidPath);
       applyEditableCommand({
         command: { kind: 'select', selection: range },
         editor,
       });
       draggedBlock =
-        NodeApi.isElement(voidNode) && !Editor.isInline(editor, voidNode);
+        NodeApi.isElement(voidNode) && !editorIsInline(editor, voidNode);
       draggedRange = range;
     }
 
@@ -648,7 +660,7 @@ export const applyEditableDrop = ({
       state.isDraggingInternally &&
       draggedRange &&
       !RangeApi.equals(draggedRange, range) &&
-      !Editor.void(editor, { at: range, voids: true })
+      !editorVoid(editor, { at: range, voids: true })
     ) {
       editor.update((tx) => {
         tx.text.delete({

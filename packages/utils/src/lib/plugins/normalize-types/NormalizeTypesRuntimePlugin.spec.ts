@@ -16,7 +16,6 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
           },
         }),
       ],
-      runtime: 'plite',
       value: [{ children: [], type: 'element' }],
     });
 
@@ -44,7 +43,6 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
           },
         }),
       ],
-      runtime: 'plite',
       value: [{ children: [{ text: 'title' }], type: 'h2' }],
     });
 
@@ -71,7 +69,6 @@ describe('NormalizeTypesPlugin Plite runtime', () => {
           },
         }),
       ],
-      runtime: 'plite',
       value: [{ children: [{ text: 'x' }], type: 'p' }],
     });
 

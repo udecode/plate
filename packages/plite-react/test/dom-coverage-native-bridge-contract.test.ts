@@ -1,6 +1,11 @@
 import type { ClipboardEvent, DragEvent } from 'react';
 import { type Descendant } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 import {
   DOMCoverage,
   EDITOR_TO_ELEMENT,
@@ -63,7 +68,7 @@ const createChildren = (): Descendant[] => [
 ];
 
 const getRuntimeId = (editor: ReactRuntimeEditor, path: number[]) => {
-  const runtimeId = Editor.getRuntimeId(editor, path);
+  const runtimeId = editorGetRuntimeId(editor, path);
 
   if (!runtimeId) {
     throw new Error(`Missing runtime id at ${path.join('.')}`);
@@ -121,7 +126,7 @@ const decodeFragmentPayload = (payload: string) =>
 const createHiddenSelectionEditor = () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: createChildren(),
     selection: {
       anchor: { offset: 0, path: [0, 1, 0] },
@@ -155,7 +160,7 @@ const createHiddenSelectionEditor = () => {
 const createStagedSelectionEditor = () => {
   const editor = createReactEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       {
         type: 'paragraph',
@@ -269,7 +274,7 @@ describe('DOM coverage native bridge', () => {
       });
 
       expect(result.command).toMatchObject({ kind: 'insert-data' });
-      expect(Editor.string(editor, [0, 1])).toBe('Pasted alpha');
+      expect(editorString(editor, [0, 1])).toBe('Pasted alpha');
       expect(staleDom.textContent).toBe('STALE HIDDEN DOM');
     } finally {
       staleDom.remove();
@@ -328,7 +333,7 @@ describe('DOM coverage native bridge', () => {
   test('drop inserts plain text data at the resolved event range', () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -363,8 +368,8 @@ describe('DOM coverage native bridge', () => {
 
       expect(event.preventDefault).toHaveBeenCalled();
       expect(result.command).toMatchObject({ kind: 'insert-data' });
-      expect(Editor.string(editor, [])).toBe('Dropped textOriginal text');
-      expect(Editor.getSnapshot(editor).selection).toEqual({
+      expect(editorString(editor, [])).toBe('Dropped textOriginal text');
+      expect(editorGetSnapshot(editor).selection).toEqual({
         anchor: { offset: 'Dropped text'.length, path: [0, 0] },
         focus: { offset: 'Dropped text'.length, path: [0, 0] },
       });
@@ -377,7 +382,7 @@ describe('DOM coverage native bridge', () => {
   test('repeated external plain text drops preserve earlier inserted text', () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -420,8 +425,8 @@ describe('DOM coverage native bridge', () => {
         expect(result.command).toMatchObject({ kind: 'insert-data' });
       }
 
-      expect(Editor.string(editor, [])).toBe('First Second Original text');
-      expect(Editor.getSnapshot(editor).selection).toEqual({
+      expect(editorString(editor, [])).toBe('First Second Original text');
+      expect(editorGetSnapshot(editor).selection).toEqual({
         anchor: { offset: 'First Second '.length, path: [0, 0] },
         focus: { offset: 'First Second '.length, path: [0, 0] },
       });
@@ -434,7 +439,7 @@ describe('DOM coverage native bridge', () => {
   test('drag and drop on internal controls does not run editor-owned handling', () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -474,8 +479,8 @@ describe('DOM coverage native bridge', () => {
       expect(dragData.types).toEqual([]);
       expect(dropEvent.preventDefault).not.toHaveBeenCalled();
       expect(result.command).toBe(null);
-      expect(Editor.string(editor, [])).toBe('Original text');
-      expect(Editor.getSnapshot(editor).selection).toEqual({
+      expect(editorString(editor, [])).toBe('Original text');
+      expect(editorGetSnapshot(editor).selection).toEqual({
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 'Original text'.length, path: [0, 0] },
       });
@@ -487,7 +492,7 @@ describe('DOM coverage native bridge', () => {
   test('drop is ignored when the editor is read-only', () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -516,8 +521,8 @@ describe('DOM coverage native bridge', () => {
 
       expect(event.preventDefault).toHaveBeenCalled();
       expect(result.command).toBe(null);
-      expect(Editor.string(editor, [])).toBe('Original text');
-      expect(Editor.getSnapshot(editor).selection).toEqual({
+      expect(editorString(editor, [])).toBe('Original text');
+      expect(editorGetSnapshot(editor).selection).toEqual({
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 'Original text'.length, path: [0, 0] },
       });
@@ -529,7 +534,7 @@ describe('DOM coverage native bridge', () => {
   test('paste is ignored when the editor is read-only', () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -558,8 +563,8 @@ describe('DOM coverage native bridge', () => {
 
       expect(event.preventDefault).toHaveBeenCalled();
       expect(result.command).toBe(null);
-      expect(Editor.string(editor, [])).toBe('Original text');
-      expect(Editor.getSnapshot(editor).selection).toEqual({
+      expect(editorString(editor, [])).toBe('Original text');
+      expect(editorGetSnapshot(editor).selection).toEqual({
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 'Original text'.length, path: [0, 0] },
       });
@@ -571,7 +576,7 @@ describe('DOM coverage native bridge', () => {
   test('read-only paste prevents native default even when custom handler returns handled', () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -603,7 +608,7 @@ describe('DOM coverage native bridge', () => {
       expect(onPaste).toHaveBeenCalledWith(event);
       expect(event.preventDefault).toHaveBeenCalled();
       expect(result.command).toBe(null);
-      expect(Editor.string(editor, [])).toBe('Original text');
+      expect(editorString(editor, [])).toBe('Original text');
     } finally {
       cleanupEditorRoot(editor, root);
     }
@@ -612,7 +617,7 @@ describe('DOM coverage native bridge', () => {
   test('paste is ignored when the application handler owns the event', () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -642,8 +647,8 @@ describe('DOM coverage native bridge', () => {
 
       expect(event.preventDefault).not.toHaveBeenCalled();
       expect(result.command).toBe(null);
-      expect(Editor.string(editor, [])).toBe('Original text');
-      expect(Editor.getSnapshot(editor).selection).toEqual({
+      expect(editorString(editor, [])).toBe('Original text');
+      expect(editorGetSnapshot(editor).selection).toEqual({
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 'Original text'.length, path: [0, 0] },
       });
@@ -655,7 +660,7 @@ describe('DOM coverage native bridge', () => {
   test('paste uses clipboard data mutated by an unhandled app paste callback', () => {
     const editor = createReactEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -688,7 +693,7 @@ describe('DOM coverage native bridge', () => {
 
       expect(event.preventDefault).toHaveBeenCalled();
       expect(result.command).toMatchObject({ kind: 'insert-data' });
-      expect(Editor.string(editor, [])).toBe('New text');
+      expect(editorString(editor, [])).toBe('New text');
     } finally {
       cleanupEditorRoot(editor, root);
     }
@@ -705,7 +710,7 @@ describe('DOM coverage native bridge', () => {
     document.body.append(staleDom);
     DOMCoverage.setMaterializeHandler(editor, (boundary, reason, options) => {
       materialized.push(
-        `${boundary.boundaryId}:${reason}:${options.range ? Editor.string(editor, options.range) : ''}`
+        `${boundary.boundaryId}:${reason}:${options.range ? editorString(editor, options.range) : ''}`
       );
       return true;
     });
@@ -741,7 +746,7 @@ describe('DOM coverage native bridge', () => {
     document.body.append(staleDom);
     DOMCoverage.setMaterializeHandler(editor, (boundary, reason, options) => {
       materialized.push(
-        `${boundary.boundaryId}:${reason}:${options.range ? Editor.string(editor, options.range) : ''}`
+        `${boundary.boundaryId}:${reason}:${options.range ? editorString(editor, options.range) : ''}`
       );
       return true;
     });
@@ -758,7 +763,7 @@ describe('DOM coverage native bridge', () => {
         'rendering-staged:pending:paste:Pending omega',
       ]);
       expect(result.command).toMatchObject({ kind: 'insert-data' });
-      expect(Editor.string(editor, [1])).toBe('Pasted omega');
+      expect(editorString(editor, [1])).toBe('Pasted omega');
       expect(staleDom.textContent).toBe('STALE PENDING DOM');
     } finally {
       staleDom.remove();
@@ -773,7 +778,7 @@ describe('DOM coverage native bridge', () => {
       elements: [{ type: 'image', void: 'block' }],
       name: 'block-void-cut',
     });
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -817,7 +822,7 @@ describe('DOM coverage native bridge', () => {
           children: [{ text: '' }],
         },
       ]);
-      expect(Editor.getSnapshot(editor).children).toEqual([
+      expect(editorGetSnapshot(editor).children).toEqual([
         {
           type: 'paragraph',
           children: [{ text: 'before' }],
@@ -827,7 +832,7 @@ describe('DOM coverage native bridge', () => {
           children: [{ text: 'after' }],
         },
       ]);
-      expect(Editor.getSnapshot(editor).selection).toEqual({
+      expect(editorGetSnapshot(editor).selection).toEqual({
         anchor: { offset: 'before'.length, path: [0, 0] },
         focus: { offset: 'before'.length, path: [0, 0] },
       });

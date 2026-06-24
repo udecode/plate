@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { parent as editorParent } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -10,5 +10,5 @@ export const input = (
     <block>one</block>
   </editor>
 );
-export const test = (editor) => Editor.parent(editor, [0, 0]);
+export const test = (editor) => editorParent(editor, [0, 0]);
 export const output = [<block>one</block>, [0]];

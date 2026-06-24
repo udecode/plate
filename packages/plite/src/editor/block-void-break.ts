@@ -1,19 +1,23 @@
 import { getEditorTransformRegistry } from '../core/transform-registry';
 import type { EditorStaticApi } from '../interfaces/editor';
-import { Editor } from '../interfaces/editor';
+import {
+  getSelection as editorGetSelection,
+  isInline as editorIsInline,
+  void as editorVoid,
+} from '../interfaces/editor';
 import { PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
 
 type BreakEditor = Parameters<EditorStaticApi['insertBreak']>[0];
 
 export const insertParagraphAfterSelectedBlockVoid = (editor: BreakEditor) => {
-  const selection = Editor.getSelection(editor);
+  const selection = editorGetSelection(editor);
 
   if (!selection || !RangeApi.isCollapsed(selection)) {
     return false;
   }
 
-  const voidEntry = Editor.void(editor, {
+  const voidEntry = editorVoid(editor, {
     at: selection.anchor,
     mode: 'highest',
   });
@@ -24,7 +28,7 @@ export const insertParagraphAfterSelectedBlockVoid = (editor: BreakEditor) => {
 
   const [voidNode, voidPath] = voidEntry;
 
-  if (Editor.isInline(editor, voidNode)) {
+  if (editorIsInline(editor, voidNode)) {
     return false;
   }
 

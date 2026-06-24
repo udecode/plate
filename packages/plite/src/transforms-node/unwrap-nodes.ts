@@ -13,14 +13,21 @@ import {
   NodeApi,
   RangeApi,
 } from '../interfaces';
-import { Editor } from '../interfaces/editor';
+import {
+  getChildren as editorGetChildren,
+  hasPath as editorHasPath,
+  isBlock as editorIsBlock,
+  pathRef as editorPathRef,
+  range as editorRange,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
 import type { NodeMutationMethods } from '../interfaces/transforms/node';
 import { matchPath } from '../utils/match-path';
 
 const getChildren = (editor: Editor, node: Ancestor): Descendant[] =>
-  NodeApi.isEditor(node) ? Editor.getChildren(editor) : node.children;
+  NodeApi.isEditor(node) ? editorGetChildren(editor) : node.children;
 
 const comparePoints = (left: Point, right: Point) => {
   const pathComparison = PathApi.compare(left.path, right.path);
@@ -50,7 +57,7 @@ const mergeAdjacentTextRuns = (editor: Editor) => {
 
   textPaths.forEach((path) => {
     if (
-      !Editor.hasPath(editor, path) ||
+      !editorHasPath(editor, path) ||
       path.length === 0 ||
       path.at(-1) === 0
     ) {
@@ -59,7 +66,7 @@ const mergeAdjacentTextRuns = (editor: Editor) => {
 
     const previousPath = PathApi.previous(path);
 
-    if (!Editor.hasPath(editor, previousPath)) {
+    if (!editorHasPath(editor, previousPath)) {
       return;
     }
 
@@ -130,11 +137,11 @@ export const unwrapNodes: NodeMutationMethods['unwrapNodes'] = (
       if (match == null) {
         match = LocationApi.isPath(target)
           ? matchPath(editor, target)
-          : (node) => NodeApi.isElement(node) && Editor.isBlock(editor, node);
+          : (node) => NodeApi.isElement(node) && editorIsBlock(editor, node);
       }
 
       if (LocationApi.isPath(target)) {
-        target = Editor.range(editor, target);
+        target = editorRange(editor, target);
       }
 
       const rangeRef = LocationApi.isRange(target)
@@ -142,7 +149,7 @@ export const unwrapNodes: NodeMutationMethods['unwrapNodes'] = (
         : null;
       const pathRefs = Array.from(
         getNodes(editor, { at: target, match, mode, voids }),
-        ([, path]) => Editor.pathRef(editor, path)
+        ([, path]) => editorPathRef(editor, path)
       ).reverse();
 
       for (const pathRef of pathRefs) {
@@ -153,7 +160,7 @@ export const unwrapNodes: NodeMutationMethods['unwrapNodes'] = (
         }
 
         const [node] = getNode(editor, path);
-        let range = Editor.range(editor, path);
+        let range = editorRange(editor, path);
 
         if (
           !split &&

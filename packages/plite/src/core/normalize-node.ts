@@ -12,7 +12,8 @@ import {
   TextApi,
   type Value,
 } from '../interfaces';
-import { Editor } from '../interfaces/editor';
+import { getChildren as editorGetChildren } from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import {
   insertNodes,
   mergeNodes,
@@ -29,7 +30,7 @@ const resolveFallbackElement = (
   typeof fallbackElement === 'function' ? fallbackElement() : fallbackElement;
 
 const getNodeChildren = (editor: Editor, node: Editor | Element) =>
-  NodeApi.isEditor(node) ? Editor.getChildren(editor) : node.children;
+  NodeApi.isEditor(node) ? editorGetChildren(editor) : node.children;
 
 const shouldHaveInlineChildren = (editor: Editor, node: Editor | Element) => {
   if (NodeApi.isEditor(node)) {

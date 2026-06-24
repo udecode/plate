@@ -153,10 +153,6 @@ export type CurrentRuntimeEditorTransforms<TValue extends Value = Value> =
 export type CurrentRuntimeOperation<_TNode extends Descendant = Descendant> =
   Operation;
 
-export type CurrentRuntimeTransformHost<TValue extends Value = Value> = {
-  tf: CurrentRuntimeEditorTransforms<TValue>;
-};
-
 const currentRuntimeInputRuleExtensions = new WeakSet<object>();
 
 const createCachedGetter = <T>(fn: () => T) => {
@@ -278,24 +274,12 @@ export const getCurrentRuntimeTransforms = <TValue extends Value = Value>(
     return stored;
   }
 
-  try {
-    return getEditorTransformRegistry(
-      editor as CurrentRuntimeEditor<TValue>
-    ) as CurrentRuntimeEditorTransforms<TValue>;
-  } catch (error) {
-    const descriptor = Object.getOwnPropertyDescriptor(editor as object, 'tf');
-
-    if (descriptor && 'value' in descriptor && descriptor.value) {
-      return descriptor.value as CurrentRuntimeEditorTransforms<TValue>;
-    }
-
-    throw error;
-  }
+  return getEditorTransformRegistry(
+    editor as CurrentRuntimeEditor<TValue>
+  ) as CurrentRuntimeEditorTransforms<TValue>;
 };
 
-export const installCurrentRuntimeTransformFacade = <
-  TValue extends Value = Value,
->(
+export const installCurrentRuntimeTransforms = <TValue extends Value = Value>(
   editor: unknown
 ) => {
   const existing =
@@ -952,15 +936,6 @@ export const installCurrentRuntimeTransformFacade = <
   };
 
   setStoredCurrentRuntimeTransforms(editor, transforms);
-
-  Object.defineProperty(editor as object, 'tf', {
-    configurable: true,
-    enumerable: false,
-    get: () => getCurrentRuntimeTransforms<TValue>(editor),
-    set: (next: CurrentRuntimeEditorTransforms<TValue>) => {
-      setStoredCurrentRuntimeTransforms(editor, next);
-    },
-  });
 };
 
 export const assignCurrentRuntimeApi = <TValue extends Value = Value>(

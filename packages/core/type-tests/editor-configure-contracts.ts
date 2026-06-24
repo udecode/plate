@@ -70,15 +70,13 @@ const plateEditor = createPlateEditor<
 });
 
 const nestedLevel: 1 | 2 = basePlateEditor.getOptions(ChildPlugin).level;
-const nestedApiLevel: 1 | 2 = basePlateEditor
-  .getPluginApi(ChildPlugin)
-  .plugin.getLevel();
+const nestedApiLevel: 1 | 2 = basePlateEditor.api.plugin.getLevel();
 const plateValue: [{ children: [{ text: string }]; type: 'p' }] =
   plateEditor.children;
 const plateLabel: 'body' | 'title' = plateEditor.api.getLabel();
 
-basePlateEditor.getPluginApi(ChildPlugin).setLevel(1);
-basePlateEditor.getPluginApi(ChildPlugin).setLevel(2);
+basePlateEditor.api.setLevel(1);
+basePlateEditor.api.setLevel(2);
 
 void nestedApiLevel;
 void nestedLevel;
@@ -93,7 +91,7 @@ ParentPlugin.configurePlugin(ChildPlugin, {
 });
 
 // @ts-expect-error invalid nested editor api argument
-basePlateEditor.getPluginApi(ChildPlugin).setLevel(3);
+basePlateEditor.api.setLevel(3);
 
 DisplayPlugin.configure({
   options: {

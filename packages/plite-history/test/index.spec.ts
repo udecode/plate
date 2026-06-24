@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { Editor, getEditorTransformRegistry } from '@platejs/plite/internal';
+import {
+  getSnapshot as editorGetSnapshot,
+  isEditor as editorIsEditor,
+} from '@platejs/plite/internal';
+import { getEditorTransformRegistry } from '@platejs/plite/internal';
 import * as PliteHistory from '../src';
 import { History, history } from '../src';
 
@@ -117,7 +121,7 @@ describe('@platejs/plite-history', () => {
   runFixtureTree(resolve(testsDir, 'undo'), (module) => {
     const { input, output, run } = module;
     const editor = withTest(input);
-    const initialSnapshot = Editor.getSnapshot(editor);
+    const initialSnapshot = editorGetSnapshot(editor);
     const initialExpected = {
       children: structuredClone(initialSnapshot.children),
       selection: structuredClone(initialSnapshot.selection),
@@ -128,9 +132,9 @@ describe('@platejs/plite-history', () => {
       tx.history.undo();
     });
 
-    const snapshot = Editor.getSnapshot(editor);
-    const expected = Editor.isEditor(output)
-      ? Editor.getSnapshot(output)
+    const snapshot = editorGetSnapshot(editor);
+    const expected = editorIsEditor(output)
+      ? editorGetSnapshot(output)
       : output?.children !== undefined || output?.selection !== undefined
         ? output
         : initialExpected;

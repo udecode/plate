@@ -11,7 +11,6 @@ import {
   NodeApi,
 } from '../src';
 import { getDirtyPathsForRoot } from '../src/core/update-dirty-paths';
-import { Editor } from '../src/interfaces/editor';
 import { setEditorTargetRuntime } from '../src/internal';
 
 const paragraph = (text: string) =>
@@ -54,7 +53,7 @@ describe('editor runtime/view contract', () => {
       );
     });
 
-    Editor.replace(headerEditor, {
+    editorReplace(headerEditor, {
       children: [paragraph('replaced header')],
       selection: {
         anchor: { path: [0, 0], offset: 8 },
@@ -77,7 +76,7 @@ describe('editor runtime/view contract', () => {
       }
     );
 
-    Editor.reset(headerEditor, {
+    editorReset(headerEditor, {
       children: [paragraph('reset header')],
       selection: null,
     });
@@ -114,7 +113,7 @@ describe('editor runtime/view contract', () => {
     });
 
     assert.notEqual(mainEditor, headerEditor);
-    assert.equal(Editor.isEditor(mainEditor), true);
+    assert.equal(editorIsEditor(mainEditor), true);
     assert.equal(NodeApi.isEditor(headerEditor), true);
     assert.equal(mainEditor.runtime, runtime);
     assert.equal(headerEditor.runtime, runtime);
@@ -166,7 +165,7 @@ describe('editor runtime/view contract', () => {
       mainEditor.read((state) => state.value.get())
     );
     assert.equal(
-      Editor.getLastCommit(runtime.editor)?.operations[0]?.root,
+      editorGetLastCommit(runtime.editor)?.operations[0]?.root,
       'header'
     );
   });
@@ -189,8 +188,8 @@ describe('editor runtime/view contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const runtimeRegistry = Editor.getExtensionRegistry(runtime.editor);
-    const viewRegistry = Editor.getExtensionRegistry(headerEditor);
+    const runtimeRegistry = editorGetExtensionRegistry(runtime.editor);
+    const viewRegistry = editorGetExtensionRegistry(headerEditor);
 
     assert.equal(viewRegistry, runtimeRegistry);
     assert.equal(
@@ -388,7 +387,7 @@ describe('editor runtime/view contract', () => {
       }),
       node: state.nodes.get(headerRange.anchor)[0],
       positions: [...state.points.positions({ at: headerRange })],
-      staticText: Editor.string(runtime.editor, headerRange),
+      staticText: editorString(runtime.editor, headerRange),
       text: state.text.string(headerRange),
     }));
 
@@ -425,7 +424,7 @@ describe('editor runtime/view contract', () => {
       above: state.nodes.above({ match: NodeApi.isElement }),
       entries: state.nodes.toArray({ match: NodeApi.isText }),
       positions: [...state.points.positions()],
-      staticAbove: Editor.above(runtime.editor, { match: NodeApi.isElement }),
+      staticAbove: editorAbove(runtime.editor, { match: NodeApi.isElement }),
     }));
 
     assert.deepEqual(read.above?.[0], paragraph('header'));
@@ -731,7 +730,7 @@ describe('editor runtime/view contract', () => {
       }
     );
     assert.deepEqual(
-      Editor.getLastCommit(runtime.editor)?.operations.map(
+      editorGetLastCommit(runtime.editor)?.operations.map(
         (operation) => operation.root
       ),
       ['header', 'header']
@@ -766,7 +765,7 @@ describe('editor runtime/view contract', () => {
       }
     );
     assert.equal(
-      Editor.getLastCommit(runtime.editor)?.operations.at(-1)?.root,
+      editorGetLastCommit(runtime.editor)?.operations.at(-1)?.root,
       'header'
     );
   });
@@ -909,8 +908,8 @@ describe('editor runtime/view contract', () => {
       },
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
-    const mainRef = Editor.pathRef(runtime.editor, [1]);
-    const headerRef = Editor.pathRef(
+    const mainRef = editorPathRef(runtime.editor, [1]);
+    const headerRef = editorPathRef(
       headerEditor as unknown as typeof runtime.editor,
       [0]
     );
@@ -989,7 +988,7 @@ describe('editor runtime/view contract', () => {
     let refPath: unknown = null;
 
     headerEditor.update((tx) => {
-      const ref = Editor.pathRef(runtime.editor, [1]);
+      const ref = editorPathRef(runtime.editor, [1]);
 
       tx.nodes.remove({ at: [0] });
       refPath = ref.unref();
@@ -1017,11 +1016,11 @@ describe('editor runtime/view contract', () => {
     let range: unknown = null;
 
     headerEditor.update((tx) => {
-      const pointRef = Editor.pointRef(runtime.editor, {
+      const pointRef = editorPointRef(runtime.editor, {
         path: [1, 0],
         offset: 0,
       });
-      const rangeRef = Editor.rangeRef(runtime.editor, {
+      const rangeRef = editorRangeRef(runtime.editor, {
         anchor: { path: [1, 0], offset: 0 },
         focus: { path: [1, 0], offset: 3 },
       });
@@ -1106,14 +1105,14 @@ describe('editor runtime/view contract', () => {
     });
     const headerEditor = createEditorView(runtime, { root: 'header' });
     const mainEditor = createEditorView(runtime);
-    const viewBookmark = Editor.bookmark(headerEditor, {
+    const viewBookmark = editorBookmark(headerEditor, {
       anchor: { path: [0, 0], offset: 6 },
       focus: { path: [0, 0], offset: 6 },
     });
-    let activeRootBookmark: ReturnType<typeof Editor.bookmark> | null = null;
+    let activeRootBookmark: ReturnType<typeof editorBookmark> | null = null;
 
     headerEditor.update((tx) => {
-      activeRootBookmark = Editor.bookmark(runtime.editor, {
+      activeRootBookmark = editorBookmark(runtime.editor, {
         anchor: { path: [0, 0], offset: 6 },
         focus: { path: [0, 0], offset: 6 },
       });
@@ -1165,7 +1164,7 @@ describe('editor runtime/view contract', () => {
       null
     );
 
-    Editor.insertText(headerEditor, '!');
+    editorInsertText(headerEditor, '!');
 
     assert.deepEqual(
       runtime.read((state) => state.value.get()),
@@ -1175,7 +1174,7 @@ describe('editor runtime/view contract', () => {
       }
     );
 
-    Editor.insertText(headerEditor, '!', {
+    editorInsertText(headerEditor, '!', {
       at: { path: [0, 0], offset: 6 },
     });
 
@@ -1357,7 +1356,7 @@ describe('editor runtime/view contract', () => {
       null
     );
     assert.equal(
-      Editor.getLastCommit(runtime.editor)?.operations.some(
+      editorGetLastCommit(runtime.editor)?.operations.some(
         (operation) =>
           operation.type === 'set_selection' && operation.root === 'header'
       ),
@@ -1523,7 +1522,7 @@ describe('editor runtime/view contract', () => {
       ]);
     });
 
-    const operations = Editor.getLastCommit(source.editor)?.operations;
+    const operations = editorGetLastCommit(source.editor)?.operations;
     assert.deepEqual(operations, [
       {
         offset: 4,
@@ -1553,7 +1552,7 @@ describe('editor runtime/view contract', () => {
         roots: { header: [paragraph('header')] },
       }
     );
-    assert.deepEqual(Editor.getLastCommit(target.editor)?.operations, [
+    assert.deepEqual(editorGetLastCommit(target.editor)?.operations, [
       {
         offset: 4,
         path: [0, 0],
@@ -1594,7 +1593,7 @@ describe('editor runtime/view contract', () => {
         },
       }
     );
-    assert.deepEqual(Editor.getLastCommit(runtime.editor)?.operations.at(-1), {
+    assert.deepEqual(editorGetLastCommit(runtime.editor)?.operations.at(-1), {
       offset: 6,
       path: [0, 0],
       root: 'footer',
@@ -1811,7 +1810,7 @@ describe('editor runtime/view contract', () => {
       ).children[0].text;
     });
 
-    Editor.insertText(runtime.editor, '!');
+    editorInsertText(runtime.editor, '!');
     unsubscribe();
 
     assert.equal(listenerText, 'body');
@@ -1846,7 +1845,7 @@ describe('editor runtime/view contract', () => {
       ).children[0].text;
     });
 
-    Editor.deleteBackward(runtime.editor);
+    editorDeleteBackward(runtime.editor);
     unsubscribe();
 
     assert.equal(listenerText, 'body');

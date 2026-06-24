@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
 import { createEditor, type Descendant } from '../src';
-import { Editor } from '../src/interfaces/editor';
 import { replaceEditorValue } from './support/snapshot';
 
 const paragraph = (text: string, props: Record<string, unknown> = {}) =>
@@ -262,7 +261,7 @@ describe('state/tx public API contract', () => {
 
     assert.deepEqual(fragments.selected, [paragraph('one')]);
     assert.deepEqual(fragments.explicit, [paragraph('two')]);
-    assert.deepEqual(Editor.getSelection(editor), {
+    assert.deepEqual(editorGetSelection(editor), {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -311,7 +310,7 @@ describe('state/tx public API contract', () => {
       });
     }, /rollback/);
 
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       paragraph('one'),
       paragraph('two'),
     ]);
@@ -481,7 +480,7 @@ describe('state/tx public API contract', () => {
   it('passes grouped tx writes into editor.update and reads the live draft', () => {
     const editor = createSeededEditor();
     let draftText = '';
-    let draftSelection = null as ReturnType<typeof Editor.getSelection>;
+    let draftSelection = null as ReturnType<typeof editorGetSelection>;
 
     editor.update((tx) => {
       tx.text.insert('!');
@@ -500,8 +499,8 @@ describe('state/tx public API contract', () => {
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 3 },
     });
-    assert.equal(Editor.string(editor, []), 'one!two');
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.equal(editorString(editor, []), 'one!two');
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       paragraph('one!', { role: 'edited' }),
       paragraph('two'),
     ]);
@@ -534,7 +533,7 @@ describe('state/tx public API contract', () => {
 
     assert.deepEqual(before, [paragraph('one')]);
     assert.deepEqual(after, [paragraph('z')]);
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       paragraph('z'),
       paragraph('two'),
     ]);
@@ -552,8 +551,8 @@ describe('state/tx public API contract', () => {
     });
 
     assert.equal(hasRootBreak, false);
-    assert.equal(Editor.string(editor, []), 'onztwo');
-    assert.deepEqual(Editor.getSelection(editor), {
+    assert.equal(editorString(editor, []), 'onztwo');
+    assert.deepEqual(editorGetSelection(editor), {
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
     });
@@ -576,7 +575,7 @@ describe('state/tx public API contract', () => {
     });
 
     assert.equal(txValueHasSnapshot, false);
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
 
     assert.deepEqual(snapshot.children, [paragraph('replacement')]);
     assert.deepEqual(snapshot.marks, { bold: true });
@@ -601,7 +600,7 @@ describe('state/tx public API contract', () => {
     });
 
     assert.equal(primitiveCalls, 0);
-    assert.equal(Editor.string(editor, []), 'one!two');
+    assert.equal(editorString(editor, []), 'one!two');
   });
 
   it('keeps tx reads coherent after mark writes in the same update', () => {
@@ -633,7 +632,7 @@ describe('state/tx public API contract', () => {
       tx.text.insert('!');
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         children: [{ text: 'one' }, { bold: true, text: '!' }],
         type: 'paragraph',
@@ -658,7 +657,7 @@ describe('state/tx public API contract', () => {
       tx.text.insert('!');
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         children: [{ bold: true, text: 'one' }, { text: '!' }],
         type: 'paragraph',
@@ -683,7 +682,7 @@ describe('state/tx public API contract', () => {
       tx.text.insert('!');
     });
 
-    assert.deepEqual(Editor.getSnapshot(editor).children, [
+    assert.deepEqual(editorGetSnapshot(editor).children, [
       {
         children: [{ bold: true, text: 'one!' }],
         type: 'paragraph',
@@ -705,7 +704,7 @@ describe('state/tx public API contract', () => {
       ]);
     });
 
-    assert.equal(Editor.string(editor, []), 'one!two');
-    assert.equal(Editor.getLastCommit(editor)?.operations.length, 1);
+    assert.equal(editorString(editor, []), 'one!two');
+    assert.equal(editorGetLastCommit(editor)?.operations.length, 1);
   });
 });

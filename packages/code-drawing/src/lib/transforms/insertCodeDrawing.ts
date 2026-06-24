@@ -1,4 +1,8 @@
-import type { NodeInsertNodesOptions, NodeProps, BasePlateEditor } from 'platejs';
+import type {
+  NodeInsertNodesOptions,
+  NodeProps,
+  BasePlateEditor,
+} from 'platejs';
 import { PathApi } from 'platejs';
 
 import type { CodeDrawingElement } from '../BaseCodeDrawingPlugin';

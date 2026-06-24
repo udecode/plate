@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { replace as editorReplace } from '@platejs/plite/internal';
 import {
   EDITOR_TO_ELEMENT,
   EDITOR_TO_WINDOW,
@@ -99,7 +99,7 @@ describe('focusPliteEditable', () => {
     ELEMENT_TO_NODE.set(element, editor);
     NODE_TO_ELEMENT.set(editor, element);
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',

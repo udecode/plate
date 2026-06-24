@@ -6,7 +6,10 @@ import {
   type Range,
   type Editor as BasePlateEditor,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 import { history } from '@platejs/plite-history';
 import * as Y from 'yjs';
 
@@ -163,7 +166,7 @@ const seedProviderDoc = (
 const insertFirstBlockTextAtEnd = (editor: BasePlateEditor, text = '!'): void => {
   editor.update((tx) => {
     tx.text.insert(text, {
-      at: { path: [0, 0], offset: Editor.string(editor, [0]).length },
+      at: { path: [0, 0], offset: editorString(editor, [0]).length },
     });
   });
 };
@@ -171,7 +174,7 @@ const insertFirstBlockTextAtEnd = (editor: BasePlateEditor, text = '!'): void =>
 const createInitialEditor = (): BasePlateEditor => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: initialValue(),
     marks: null,
     selection: null,
@@ -387,11 +390,11 @@ describe('@platejs/yjs provider contract', () => {
 
     applyProviderDoc(provider, [paragraph('remote')]);
 
-    assert.equal(Editor.string(editor, [0]), 'remote');
+    assert.equal(editorString(editor, [0]), 'remote');
 
     provider.emitSync(true);
 
-    assert.equal(Editor.string(editor, [0]), 'remote');
+    assert.equal(editorString(editor, [0]), 'remote');
     assert.equal(root.length, 1);
 
     cleanup();
@@ -406,7 +409,7 @@ describe('@platejs/yjs provider contract', () => {
       yjs.reconcile();
     });
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 0);
 
     cleanup();
@@ -423,12 +426,12 @@ describe('@platejs/yjs provider contract', () => {
       insertFirstBlockTextAtEnd(editor);
       await Promise.resolve();
 
-      assert.equal(Editor.string(editor, [0]), 'alpha', order);
+      assert.equal(editorString(editor, [0]), 'alpha', order);
       assert.equal(getHistoryUndoCount(editor), 0, order);
 
       undoEditorHistory(editor);
 
-      assert.equal(Editor.string(editor, [0]), 'alpha', order);
+      assert.equal(editorString(editor, [0]), 'alpha', order);
 
       cleanup();
     }
@@ -441,16 +444,16 @@ describe('@platejs/yjs provider contract', () => {
 
     applyProviderDoc(provider, [paragraph('remote')]);
 
-    assert.equal(Editor.string(editor, [0]), 'remote');
+    assert.equal(editorString(editor, [0]), 'remote');
     assert.equal(root.length, 1);
 
     insertFirstBlockTextAtEnd(editor);
 
-    assert.equal(Editor.string(editor, [0]), 'remote!');
+    assert.equal(editorString(editor, [0]), 'remote!');
 
     provider.emitSync(true);
 
-    assert.equal(Editor.string(editor, [0]), 'remote!');
+    assert.equal(editorString(editor, [0]), 'remote!');
     assert.equal(root.length, 1);
 
     cleanup();
@@ -464,12 +467,12 @@ describe('@platejs/yjs provider contract', () => {
     assert.equal(root.length, 0);
     provider.emitSync(true);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 2);
 
     insertFirstBlockTextAtEnd(editor);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha!');
+    assert.equal(editorString(editor, [0]), 'alpha!');
     assert.equal(root.length, 2);
 
     cleanup();
@@ -484,12 +487,12 @@ describe('@platejs/yjs provider contract', () => {
 
     provider.emitSync(true);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 0);
 
     insertFirstBlockTextAtEnd(editor);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 0);
 
     cleanup();
@@ -504,17 +507,17 @@ describe('@platejs/yjs provider contract', () => {
     assert.doesNotThrow(() => {
       insertFirstBlockTextAtEnd(editor);
     });
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 0);
 
     provider.emitSync(true);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 2);
 
     insertFirstBlockTextAtEnd(editor);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha!');
+    assert.equal(editorString(editor, [0]), 'alpha!');
     assert.equal(root.length, 2);
 
     cleanup();
@@ -527,17 +530,17 @@ describe('@platejs/yjs provider contract', () => {
 
     insertFirstBlockTextAtEnd(editor);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 0);
 
     applyProviderDoc(provider, [paragraph('remote')]);
 
-    assert.equal(Editor.string(editor, [0]), 'remote');
+    assert.equal(editorString(editor, [0]), 'remote');
     assert.equal(root.length, 1);
 
     provider.emitSync(true);
 
-    assert.equal(Editor.string(editor, [0]), 'remote');
+    assert.equal(editorString(editor, [0]), 'remote');
     assert.equal(root.length, 1);
 
     cleanup();
@@ -552,7 +555,7 @@ describe('@platejs/yjs provider contract', () => {
 
     insertFirstBlockTextAtEnd(editor);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 0);
 
     cleanup();
@@ -569,12 +572,12 @@ describe('@platejs/yjs provider contract', () => {
 
     insertFirstBlockTextAtEnd(editor);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 0);
 
     provider.emitSync(true);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 2);
 
     cleanup();
@@ -592,12 +595,12 @@ describe('@platejs/yjs provider contract', () => {
 
     insertFirstBlockTextAtEnd(editor);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 0);
 
     provider.emitSync(true);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 2);
 
     cleanup();
@@ -616,12 +619,12 @@ describe('@platejs/yjs provider contract', () => {
 
     insertFirstBlockTextAtEnd(editor);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 0);
 
     provider.emitSync(true);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 2);
 
     cleanup();
@@ -637,18 +640,18 @@ describe('@platejs/yjs provider contract', () => {
     assert.equal(root.length, 0);
     provider.emitSync(true);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
     assert.equal(root.length, 2);
 
     insertFirstBlockTextAtEnd(editor);
 
-    assert.equal(Editor.string(editor, [0]), 'alpha!');
+    assert.equal(editorString(editor, [0]), 'alpha!');
 
     runEditorYjsUpdate(editor, (yjs) => {
       yjs.undo();
     });
 
-    assert.equal(Editor.string(editor, [0]), 'alpha');
+    assert.equal(editorString(editor, [0]), 'alpha');
 
     cleanup();
   });

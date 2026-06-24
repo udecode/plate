@@ -25,9 +25,8 @@ export type WithAutoScrollOptions = {
   scrollOptions?: ScrollIntoViewOptions;
 };
 
-export const withScrolling = (
+export const beginScrolling = (
   editor: DomScrollingEditor,
-  fn: () => void,
   options?: WithAutoScrollOptions
 ) => {
   const prevOptions = editor.getOptions(DOM_PLUGIN);
@@ -64,10 +63,22 @@ export const withScrolling = (
 
   AUTO_SCROLL.set(editor, true);
 
+  return () => {
+    AUTO_SCROLL.set(editor, prevAutoScroll);
+    editor.setOptions(DOM_PLUGIN, prevOptions);
+  };
+};
+
+export const withScrolling = (
+  editor: DomScrollingEditor,
+  fn: () => void,
+  options?: WithAutoScrollOptions
+) => {
+  const restore = beginScrolling(editor, options);
+
   try {
     fn();
   } finally {
-    AUTO_SCROLL.set(editor, prevAutoScroll);
-    editor.setOptions(DOM_PLUGIN, prevOptions);
+    restore();
   }
 };

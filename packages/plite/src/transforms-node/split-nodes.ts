@@ -8,7 +8,21 @@ import { getEditorTransformRegistry } from '../core/transform-registry';
 import { node as getNode } from '../editor/node';
 import { nodes as getNodes } from '../editor/nodes';
 import { LocationApi } from '../interfaces';
-import { Editor } from '../interfaces/editor';
+import {
+  after as editorAfter,
+  isBlock as editorIsBlock,
+  isEdge as editorIsEdge,
+  isEnd as editorIsEnd,
+  isStart as editorIsStart,
+  isVoid as editorIsVoid,
+  levels as editorLevels,
+  parent as editorParent,
+  point as editorPoint,
+  pointRef as editorPointRef,
+  void as editorVoid,
+  withoutNormalizing as editorWithoutNormalizing,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import { type Node, NodeApi } from '../interfaces/node';
 import { type Path, PathApi } from '../interfaces/path';
 import type { Point } from '../interfaces/point';
@@ -22,7 +36,7 @@ const deleteRange = (editor: Editor, range: Range): Point | null => {
   }
 
   const [, end] = RangeApi.edges(range);
-  const pointRef = Editor.pointRef(editor, end);
+  const pointRef = editorPointRef(editor, end);
   getEditorTransformRegistry(editor).delete({ at: range });
   return pointRef.unref();
 };
@@ -52,7 +66,7 @@ const getTextEndForwardPoint = (
     return null;
   }
 
-  return Editor.point(editor, nextPath, { edge: 'start' });
+  return editorPoint(editor, nextPath, { edge: 'start' });
 };
 
 const isTextStartSplit = (node: Node, point: Point, path: Path) =>
@@ -68,7 +82,7 @@ const isInlineStartSplit = (
 ) =>
   NodeApi.isElement(node) &&
   getEditorSchema(editor).isInline(node) &&
-  Editor.isStart(editor, point, path);
+  editorIsStart(editor, point, path);
 
 const ensureStartPointAfterHighestSplit = (
   editor: Editor,
@@ -105,7 +119,7 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
 ) => {
   runEditorTransaction(editor, (tx) => {
     profileCoreDuration('split-nodes-without-normalizing', () => {
-      Editor.withoutNormalizing(editor, () => {
+      editorWithoutNormalizing(editor, () => {
         const transforms = getEditorTransformRegistry(editor);
         const { mode = 'lowest', voids = false } = options;
         let { match, height = 0, always = false } = options;
@@ -118,7 +132,7 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
         }
 
         if (match == null) {
-          match = (n) => NodeApi.isElement(n) && Editor.isBlock(editor, n);
+          match = (n) => NodeApi.isElement(n) && editorIsBlock(editor, n);
         }
 
         if (LocationApi.isRange(at)) {
@@ -153,10 +167,10 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
 
           const path = at;
           const point = profileCoreDuration('split-nodes-path-point', () =>
-            Editor.point(editor, path)
+            editorPoint(editor, path)
           );
           const [parent] = profileCoreDuration('split-nodes-path-parent', () =>
-            Editor.parent(editor, path)
+            editorParent(editor, path)
           );
 
           match = (n) => n === parent;
@@ -173,7 +187,7 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
         const beforeRef = profileCoreDuration(
           'split-nodes-before-point-ref',
           () =>
-            Editor.pointRef(editor, splitPoint, {
+            editorPointRef(editor, splitPoint, {
               affinity: 'backward',
             })
         );
@@ -196,7 +210,7 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
           }
 
           const voidMatch = profileCoreDuration('split-nodes-void-match', () =>
-            Editor.void(editor, {
+            editorVoid(editor, {
               at: splitPoint,
               mode: 'highest',
             })
@@ -206,13 +220,13 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
             const [voidNode, voidPath] = voidMatch;
 
             if (getEditorSchema(editor).isInline(voidNode)) {
-              let after = Editor.after(editor, voidPath);
+              let after = editorAfter(editor, voidPath);
 
               if (!after) {
                 const text = { text: '' };
                 const afterPath = PathApi.next(voidPath);
                 transforms.insertNodes(text, { at: afterPath, voids });
-                after = Editor.point(editor, afterPath)!;
+                after = editorPoint(editor, afterPath)!;
               }
 
               splitPoint = after;
@@ -232,7 +246,7 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
               )
             : null;
           afterRef = profileCoreDuration('split-nodes-after-point-ref', () =>
-            Editor.pointRef(editor, textEndForwardPoint ?? splitPoint, {
+            editorPointRef(editor, textEndForwardPoint ?? splitPoint, {
               affinity: 'forward',
             })
           );
@@ -242,7 +256,7 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
             height === 0 ? splitPoint.offset : splitPoint.path[depth]!;
 
           profileCoreDuration('split-nodes-levels-loop', () => {
-            for (const [node, path] of Editor.levels(editor, {
+            for (const [node, path] of editorLevels(editor, {
               at: lowestPath,
               reverse: true,
               voids,
@@ -254,13 +268,13 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
                 path.length === 0 ||
                 (!voids &&
                   NodeApi.isElement(node) &&
-                  Editor.isVoid(editor, node))
+                  editorIsVoid(editor, node))
               ) {
                 break;
               }
 
               const point = beforeRef.current!;
-              const isEnd = Editor.isEnd(editor, point, path);
+              const isEnd = editorIsEnd(editor, point, path);
 
               if (
                 (textEndForwardPoint &&
@@ -271,7 +285,7 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
                       isInlineStartSplit(editor, node, splitPoint, path))))
               ) {
                 split = false;
-              } else if (always || !Editor.isEdge(editor, point, path)) {
+              } else if (always || !editorIsEdge(editor, point, path)) {
                 split = true;
                 applyOperation(editor, {
                   type: 'split_node',
@@ -298,7 +312,7 @@ export const splitNodes: NodeMutationMethods['splitNodes'] = (
               const point =
                 rightHighestPoint ||
                 afterRef?.current ||
-                Editor.point(editor, [], { edge: 'end' });
+                editorPoint(editor, [], { edge: 'end' });
               transforms.select(point);
             });
           }

@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { previous as editorPrevious } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -14,5 +14,5 @@ export const input = (
   </editor>
 );
 export const test = (editor) =>
-  Editor.previous(editor, { at: [1], match: TextApi.isText });
+  editorPrevious(editor, { at: [1], match: TextApi.isText });
 export const output = [<text>one</text>, [0, 0]];

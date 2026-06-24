@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getLastCommit as editorGetLastCommit,
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getRuntimeId as editorGetRuntimeId,
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 import {
   createEditor,
   type Descendant,
@@ -18,7 +25,7 @@ const paragraph = (text: string): Descendant => ({
 const createFoundationEditor = () => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [paragraph('one'), paragraph('two'), paragraph('three')],
     marks: null,
     selection: {
@@ -157,7 +164,7 @@ describe('editor foundation contract', () => {
       mentionIsMarkableVoid: true,
       rowCountAfterInsert: 4,
     });
-    assert.equal(Editor.string(editor, [3]), 'four');
+    assert.equal(editorString(editor, [3]), 'four');
 
     const editorSurface = editor as unknown as Record<string, unknown>;
 
@@ -172,9 +179,8 @@ describe('editor foundation contract', () => {
   it('replays deterministic operations with commit metadata and local-only runtime targets', () => {
     const source = createFoundationEditor();
     const remote = createFoundationEditor();
-    const remoteCommits: NonNullable<
-      ReturnType<typeof Editor.getLastCommit>
-    >[] = [];
+    const remoteCommits: NonNullable<ReturnType<typeof editorGetLastCommit>>[] =
+      [];
     const unsubscribe = remote.subscribe((_snapshot, commit) => {
       if (commit) {
         remoteCommits.push(commit);
@@ -189,7 +195,7 @@ describe('editor foundation contract', () => {
       { tag: ['local-edit', 'collab-export'] }
     );
 
-    const sourceCommit = Editor.getLastCommit(source);
+    const sourceCommit = editorGetLastCommit(source);
 
     assert(sourceCommit);
     assert.deepEqual(sourceCommit.tags, ['local-edit', 'collab-export']);
@@ -200,8 +206,8 @@ describe('editor foundation contract', () => {
     unsubscribe();
 
     assert.deepEqual(
-      Editor.getSnapshot(remote).children,
-      Editor.getSnapshot(source).children
+      editorGetSnapshot(remote).children,
+      editorGetSnapshot(source).children
     );
     assert.equal(remoteCommits.length, 1);
     assert.deepEqual(remoteCommits[0]?.tags, ['remote-import']);
@@ -211,8 +217,8 @@ describe('editor foundation contract', () => {
     );
 
     const targetEditor = createFoundationEditor();
-    const removedId = Editor.getRuntimeId(targetEditor, [1]);
-    const removedNode = Editor.getSnapshot(targetEditor).children[1]!;
+    const removedId = editorGetRuntimeId(targetEditor, [1]);
+    const removedNode = editorGetSnapshot(targetEditor).children[1]!;
 
     assert(removedId);
 
@@ -228,10 +234,10 @@ describe('editor foundation contract', () => {
       tx.operations.replay([removeOperation], { tag: 'remote-remove' });
     });
 
-    const removeCommit = Editor.getLastCommit(targetEditor);
+    const removeCommit = editorGetLastCommit(targetEditor);
 
     assert(removeCommit);
     assert.deepEqual(removeCommit.tags, ['remote-remove']);
-    assert.equal(Editor.getPathByRuntimeId(targetEditor, removedId), null);
+    assert.equal(editorGetPathByRuntimeId(targetEditor, removedId), null);
   });
 });

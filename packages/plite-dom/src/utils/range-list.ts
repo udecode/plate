@@ -1,5 +1,5 @@
 import { type DecoratedRange, type Range, RangeApi } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import { isEditor as editorIsEditor } from '@platejs/plite/internal';
 import { DOMEditor } from '../plugin/dom-editor';
 import { PLACEHOLDER_SYMBOL } from './weak-maps';
 
@@ -116,7 +116,7 @@ export const splitDecorationsByChild = (
   node: import('@platejs/plite').Ancestor,
   decorations: DecoratedRange[]
 ): DecoratedRange[][] => {
-  const children = Editor.isEditor(node)
+  const children = editorIsEditor(node)
     ? editor.read((state) => state.nodes.children())
     : node.children;
   const decorationsByChild = Array.from(children, (): DecoratedRange[] => []);

@@ -1,5 +1,6 @@
 import { createEditor } from '@platejs/plite';
-import { Editor, getEditorRuntime } from '@platejs/plite/internal';
+import { replace as editorReplace } from '@platejs/plite/internal';
+import { getEditorRuntime } from '@platejs/plite/internal';
 
 export const input = createEditor() as any;
 const runtime = getEditorRuntime(input);
@@ -23,7 +24,7 @@ runtime.shouldNormalize = (options: any) => {
   return shouldNormalize(options);
 };
 
-Editor.replace(input, {
+editorReplace(input, {
   children: [
     {
       type: 'paragraph',

@@ -6,7 +6,6 @@ import {
 } from '@platejs/plite/internal';
 
 export {
-  Editor,
   getCachedFullRootReplaceTopLevelRuntimeIds,
   getEditorCurrentMarks,
   getEditorExtensionRegistry,
@@ -40,3 +39,35 @@ export const inheritEditorTransformRegistry = (
 ) => {
   writeEditorTransformRegistry(editor, readEditorTransformRegistry(source));
 };
+
+export {
+  above,
+  after,
+  before,
+  defineEditorExtension,
+  getLastCommit,
+  getPathByRuntimeId,
+  getRuntimeId,
+  getSelection,
+  getSnapshot,
+  hasPath,
+  isBlock,
+  isEditor,
+  isElementReadOnly,
+  isInline,
+  isStart,
+  isVoid,
+  leaf,
+  next,
+  point,
+  pointRef,
+  projectRange,
+  range,
+  rangeRef,
+  string,
+  subscribeCommit,
+  subscribeSource,
+  void,
+} from '@platejs/plite/internal';
+
+export type Editor = EditorType;

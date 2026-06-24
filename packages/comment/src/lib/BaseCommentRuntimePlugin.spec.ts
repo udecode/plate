@@ -34,7 +34,6 @@ const createCommentRuntimeEditor = ({
 }) =>
   createPlateEditor<Value, typeof BaseCommentPlugin>({
     plugins: [BaseCommentPlugin],
-    runtime: 'plite',
     selection,
     value,
   });

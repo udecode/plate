@@ -1,5 +1,11 @@
 import { createEditor, defineEditorExtension } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getChildren as editorGetChildren,
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+  select as editorSelect,
+  string as editorString,
+} from '@platejs/plite/internal';
 import { describe, expect, it, vi } from 'vitest';
 import type { ReactEditor } from '../src';
 
@@ -13,7 +19,7 @@ import { applyModelOwnedDataTransferInput } from '../src/editable/mutation-contr
 const createTextEditor = (text = '', offset = 0, type = 'paragraph') => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [{ type, children: [{ text }] }],
     marks: null,
     selection: {
@@ -32,7 +38,7 @@ const createTwoBlockTextEditor = (
 ) => {
   const editor = createEditor();
 
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [
       { type: 'paragraph', children: [{ text: firstText }] },
       { type: 'paragraph', children: [{ text: secondText }] },
@@ -100,7 +106,7 @@ describe('model input strategy', () => {
         editor: editor as ReactEditor,
         inputType: 'insertFromPaste',
         native: false,
-        selection: Editor.getSelection(editor),
+        selection: editorGetSelection(editor),
         setComposing: () => {},
       })
     ).toEqual({ kind: 'repair-caret' });
@@ -121,16 +127,16 @@ describe('model input strategy', () => {
       editor: editor as ReactEditor,
       inputType: 'insertText',
       native: false,
-      selection: Editor.getSelection(editor),
+      selection: editorGetSelection(editor),
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('kernel');
+    expect(editorString(editor, [])).toBe('kernel');
   });
 
   it('uses the synced collapsed selection for model-owned insertText', () => {
     const editor = createTextEditor('abcd', 2);
-    const selection = Editor.getSelection(editor);
+    const selection = editorGetSelection(editor);
 
     applyModelOwnedBeforeInputOperation({
       command: {
@@ -147,8 +153,8 @@ describe('model input strategy', () => {
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('ab!cd');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [])).toBe('ab!cd');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -185,7 +191,7 @@ describe('model input strategy', () => {
         editor: editor as ReactEditor,
         inputType: 'insertText',
         native: false,
-        selection: Editor.getSelection(editor),
+        selection: editorGetSelection(editor),
         setComposing: () => {},
       });
     } finally {
@@ -196,7 +202,7 @@ describe('model input strategy', () => {
       ).__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
-    expect(Editor.string(editor, [])).toBe('ab!cd');
+    expect(editorString(editor, [])).toBe('ab!cd');
     expect(
       events.some((event) => event.id === 'model-text-input-read-marks')
     ).toBe(false);
@@ -241,7 +247,7 @@ describe('model input strategy', () => {
         editor: editor as ReactEditor,
         inputType: 'insertText',
         native: false,
-        selection: Editor.getSelection(editor),
+        selection: editorGetSelection(editor),
         setComposing: () => {},
       });
     } finally {
@@ -252,7 +258,7 @@ describe('model input strategy', () => {
       ).__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
-    expect(Editor.string(editor, [])).toBe('a');
+    expect(editorString(editor, [])).toBe('a');
     expect(
       events.some((event) => event.id === 'model-text-input-read-marks')
     ).toBe(false);
@@ -275,7 +281,7 @@ describe('model input strategy', () => {
       }
     ).__PLITE_REACT_RENDER_PROFILER__;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'quote',
@@ -311,7 +317,7 @@ describe('model input strategy', () => {
         editor: editor as ReactEditor,
         inputType: 'insertText',
         native: false,
-        selection: Editor.getSelection(editor),
+        selection: editorGetSelection(editor),
         setComposing: () => {},
       });
     } finally {
@@ -322,7 +328,7 @@ describe('model input strategy', () => {
       ).__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
-    expect(Editor.string(editor, [])).toBe('a');
+    expect(editorString(editor, [])).toBe('a');
     expect(
       events.some((event) => event.id === 'model-text-input-read-marks')
     ).toBe(false);
@@ -349,7 +355,7 @@ describe('model input strategy', () => {
       }
     ).__PLITE_REACT_RENDER_PROFILER__;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -382,7 +388,7 @@ describe('model input strategy', () => {
         editor: editor as ReactEditor,
         inputType: 'insertText',
         native: false,
-        selection: Editor.getSelection(editor),
+        selection: editorGetSelection(editor),
         setComposing: () => {},
       });
     } finally {
@@ -393,7 +399,7 @@ describe('model input strategy', () => {
       ).__PLITE_REACT_RENDER_PROFILER__ = previousProfiler;
     }
 
-    expect(Editor.getChildren(editor)).toEqual([
+    expect(editorGetChildren(editor)).toEqual([
       {
         type: 'paragraph',
         children: [{ text: 'Bold', bold: true }, { text: ' Plain' }],
@@ -416,7 +422,7 @@ describe('model input strategy', () => {
       focus: { path: [1, 0], offset: 3 },
     };
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         { type: 'paragraph', children: [{ text: 'one' }] },
         { type: 'paragraph', children: [{ text: 'two' }] },
@@ -440,8 +446,8 @@ describe('model input strategy', () => {
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('X');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [])).toBe('X');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -479,7 +485,7 @@ describe('model input strategy', () => {
       editor: editor as ReactEditor,
       inputType: 'insertText',
       native: false,
-      selection: Editor.getSelection(editor),
+      selection: editorGetSelection(editor),
       setComposing: () => {},
     });
 
@@ -496,7 +502,7 @@ describe('model input strategy', () => {
       focus: { path: [0, 0], offset: 'alpha beta'.length },
     };
 
-    Editor.select(editor, selection);
+    editorSelect(editor, selection);
 
     const repair = applyModelOwnedBeforeInputOperation({
       data: 'omega',
@@ -508,8 +514,8 @@ describe('model input strategy', () => {
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('alpha omega');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [])).toBe('alpha omega');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 'alpha omega'.length },
       focus: { path: [0, 0], offset: 'alpha omega'.length },
     });
@@ -518,7 +524,7 @@ describe('model input strategy', () => {
 
   it('replaces an autocorrect prefix without appending after it', () => {
     const editor = createTextEditor('i', 1);
-    const insertSelection = Editor.getSelection(editor);
+    const insertSelection = editorGetSelection(editor);
 
     applyModelOwnedBeforeInputOperation({
       data: 'S',
@@ -535,7 +541,7 @@ describe('model input strategy', () => {
       focus: { path: [0, 0], offset: 1 },
     };
 
-    Editor.select(editor, replacementSelection);
+    editorSelect(editor, replacementSelection);
 
     const repair = applyModelOwnedBeforeInputOperation({
       data: 'I',
@@ -547,8 +553,8 @@ describe('model input strategy', () => {
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('IS');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [])).toBe('IS');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -572,8 +578,8 @@ describe('model input strategy', () => {
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('IS');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [])).toBe('IS');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -589,12 +595,12 @@ describe('model input strategy', () => {
       editor: editor as ReactEditor,
       inputType: 'insertTranspose',
       native: false,
-      selection: Editor.getSelection(editor),
+      selection: editorGetSelection(editor),
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('bac');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [])).toBe('bac');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 2 },
       focus: { path: [0, 0], offset: 2 },
     });
@@ -614,12 +620,12 @@ describe('model input strategy', () => {
       editor: editor as ReactEditor,
       inputType: 'insertTranspose',
       native: false,
-      selection: Editor.getSelection(editor),
+      selection: editorGetSelection(editor),
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('bca');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [])).toBe('bca');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 3 },
       focus: { path: [0, 0], offset: 3 },
     });
@@ -628,7 +634,7 @@ describe('model input strategy', () => {
 
   it('splits a custom block on Enter without dropping follow-up text', () => {
     const editor = createTextEditor('Heading', 'Heading'.length, 'heading-one');
-    const selection = Editor.getSelection(editor);
+    const selection = editorGetSelection(editor);
 
     const repair = applyModelOwnedBeforeInputOperation({
       data: null,
@@ -640,13 +646,13 @@ describe('model input strategy', () => {
       setComposing: () => {},
     });
 
-    const [heading, paragraph] = Editor.getChildren(editor) as any[];
+    const [heading, paragraph] = editorGetChildren(editor) as any[];
 
     expect(heading.type).toBe('heading-one');
-    expect(Editor.string(editor, [0])).toBe('Heading');
+    expect(editorString(editor, [0])).toBe('Heading');
     expect(paragraph.type).toBe('heading-one');
-    expect(Editor.string(editor, [1])).toBe('');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [1])).toBe('');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -667,12 +673,12 @@ describe('model input strategy', () => {
       editor: editor as ReactEditor,
       inputType: 'insertText',
       native: false,
-      selection: Editor.getSelection(editor),
+      selection: editorGetSelection(editor),
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [1])).toBe('A');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [1])).toBe('A');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [1, 0], offset: 1 },
       focus: { path: [1, 0], offset: 1 },
     });
@@ -680,7 +686,7 @@ describe('model input strategy', () => {
 
   it('routes Android-style first-line autocorrect through empty-state replacement text', () => {
     const editor = createTextEditor();
-    const selection = Editor.getSelection(editor);
+    const selection = editorGetSelection(editor);
 
     const repair = applyModelOwnedBeforeInputOperation({
       data: 'hello',
@@ -692,8 +698,8 @@ describe('model input strategy', () => {
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('hello');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [])).toBe('hello');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 'hello'.length },
       focus: { path: [0, 0], offset: 'hello'.length },
     });
@@ -709,11 +715,11 @@ describe('model input strategy', () => {
       editor: editor as ReactEditor,
       inputType: 'insertFromComposition',
       native: false,
-      selection: Editor.getSelection(editor),
+      selection: editorGetSelection(editor),
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [0])).toBe('hello');
+    expect(editorString(editor, [0])).toBe('hello');
 
     applyModelOwnedBeforeInputOperation({
       data: null,
@@ -721,16 +727,16 @@ describe('model input strategy', () => {
       editor: editor as ReactEditor,
       inputType: 'insertParagraph',
       native: false,
-      selection: Editor.getSelection(editor),
+      selection: editorGetSelection(editor),
       setComposing: () => {},
     });
 
-    const [first, second] = Editor.getChildren(editor) as any[];
+    const [first, second] = editorGetChildren(editor) as any[];
 
     expect(first.type).toBe('paragraph');
     expect(second.type).toBe('paragraph');
-    expect(Editor.string(editor, [0])).toBe('hello');
-    expect(Editor.string(editor, [1])).toBe('');
+    expect(editorString(editor, [0])).toBe('hello');
+    expect(editorString(editor, [1])).toBe('');
 
     applyModelOwnedBeforeInputOperation({
       data: 'world',
@@ -738,12 +744,12 @@ describe('model input strategy', () => {
       editor: editor as ReactEditor,
       inputType: 'insertText',
       native: false,
-      selection: Editor.getSelection(editor),
+      selection: editorGetSelection(editor),
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [1])).toBe('world');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [1])).toBe('world');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [1, 0], offset: 'world'.length },
       focus: { path: [1, 0], offset: 'world'.length },
     });
@@ -751,7 +757,7 @@ describe('model input strategy', () => {
 
   it('routes Android-style backspace through model-owned beforeinput', () => {
     const editor = createTextEditor('abcd', 2);
-    const selection = Editor.getSelection(editor);
+    const selection = editorGetSelection(editor);
 
     const repair = applyModelOwnedBeforeInputOperation({
       data: null,
@@ -763,7 +769,7 @@ describe('model input strategy', () => {
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('acd');
+    expect(editorString(editor, [])).toBe('acd');
     expect(repair).toEqual({
       focus: true,
       forceRender: true,
@@ -782,7 +788,7 @@ describe('model input strategy', () => {
   ] as const)('deletes the selected fragment from %s beforeinput', (inputType) => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'paragraph', children: [{ text: 'abcd' }] }],
       marks: null,
       selection: {
@@ -797,12 +803,12 @@ describe('model input strategy', () => {
       editor: editor as ReactEditor,
       inputType,
       native: false,
-      selection: Editor.getSelection(editor),
+      selection: editorGetSelection(editor),
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('ad');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [])).toBe('ad');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -820,7 +826,7 @@ describe('model input strategy', () => {
 
   it('deletes the current hard line backward without touching the previous block', () => {
     const editor = createTwoBlockTextEditor('foobar', 'baz');
-    const selection = Editor.getSelection(editor);
+    const selection = editorGetSelection(editor);
 
     const repair = applyModelOwnedBeforeInputOperation({
       data: null,
@@ -832,9 +838,9 @@ describe('model input strategy', () => {
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [0])).toBe('foobar');
-    expect(Editor.string(editor, [1])).toBe('');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [0])).toBe('foobar');
+    expect(editorString(editor, [1])).toBe('');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [1, 0], offset: 0 },
       focus: { path: [1, 0], offset: 0 },
     });
@@ -853,7 +859,7 @@ describe('model input strategy', () => {
   it('deletes forward to the current line end without touching the next block', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         { type: 'paragraph', children: [{ text: 'foobar' }] },
         { type: 'paragraph', children: [{ text: 'baz' }] },
@@ -871,13 +877,13 @@ describe('model input strategy', () => {
       editor: editor as ReactEditor,
       inputType: 'deleteSoftLineForward',
       native: false,
-      selection: Editor.getSelection(editor),
+      selection: editorGetSelection(editor),
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [0])).toBe('foo');
-    expect(Editor.string(editor, [1])).toBe('baz');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [0])).toBe('foo');
+    expect(editorString(editor, [1])).toBe('baz');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 'foo'.length },
       focus: { path: [0, 0], offset: 'foo'.length },
     });
@@ -895,7 +901,7 @@ describe('model input strategy', () => {
 
   it('keeps Android-style empty-state backspace from mutating placeholder text', () => {
     const editor = createTextEditor();
-    const selection = Editor.getSelection(editor);
+    const selection = editorGetSelection(editor);
 
     const repair = applyModelOwnedBeforeInputOperation({
       data: null,
@@ -907,8 +913,8 @@ describe('model input strategy', () => {
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [])).toBe('');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -931,7 +937,7 @@ describe('model input strategy', () => {
       focus: { path: [0, 0], offset: 'prefix stale'.length },
     };
 
-    Editor.select(editor, selection);
+    editorSelect(editor, selection);
 
     const repair = applyModelOwnedBeforeInputOperation({
       data: '中文',
@@ -943,8 +949,8 @@ describe('model input strategy', () => {
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('prefix 中文 suffix');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [])).toBe('prefix 中文 suffix');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 'prefix 中文'.length },
       focus: { path: [0, 0], offset: 'prefix 中文'.length },
     });
@@ -958,7 +964,7 @@ describe('model input strategy', () => {
       focus: { path: [0, 0], offset: 2 },
     };
 
-    Editor.select(editor, selection);
+    editorSelect(editor, selection);
 
     const repair = applyModelOwnedBeforeInputOperation({
       data: null,
@@ -970,8 +976,8 @@ describe('model input strategy', () => {
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('中');
-    expect(Editor.getSelection(editor)).toEqual({
+    expect(editorString(editor, [])).toBe('中');
+    expect(editorGetSelection(editor)).toEqual({
       anchor: { path: [0, 0], offset: 1 },
       focus: { path: [0, 0], offset: 1 },
     });
@@ -994,7 +1000,7 @@ describe('model input strategy', () => {
       focus: { path: [0, 0], offset: 3 },
     };
 
-    Editor.select(editor, selection);
+    editorSelect(editor, selection);
 
     applyModelOwnedBeforeInputOperation({
       command: { direction: 'backward', kind: 'delete' },
@@ -1007,7 +1013,7 @@ describe('model input strategy', () => {
       setComposing: () => {},
     });
 
-    expect(Editor.string(editor, [])).toBe('ad');
+    expect(editorString(editor, [])).toBe('ad');
   });
 
   it('ignores native history beforeinput while read-only', () => {
@@ -1024,7 +1030,7 @@ describe('model input strategy', () => {
 
     expect(handled).toBe(false);
     expect(undo).not.toHaveBeenCalled();
-    expect(Editor.string(editor, [])).toBe('stable');
+    expect(editorString(editor, [])).toBe('stable');
   });
 
   it('ignores native history input while read-only', () => {
@@ -1050,7 +1056,7 @@ describe('model input strategy', () => {
 
     expect(result.repairs).toEqual([]);
     expect(undo).not.toHaveBeenCalled();
-    expect(Editor.string(editor, [])).toBe('stable');
+    expect(editorString(editor, [])).toBe('stable');
   });
 
   it('does not read full editor or DOM text when native input repair already handled the event', () => {

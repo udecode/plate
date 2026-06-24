@@ -1,6 +1,6 @@
 /** @jsx jsx */
 
-import { Editor } from '@platejs/plite/internal';
+import { deleteFragment as editorDeleteFragment } from '@platejs/plite/internal';
 import { jsx } from '../..';
 
 jsx;
@@ -22,7 +22,7 @@ export const run = (editor) => {
   });
   // remove
   editor.update(() => {
-    Editor.deleteFragment(editor);
+    editorDeleteFragment(editor);
   });
   // blur
   editor.update(() => {

@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getChildren as editorGetChildren,
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import { createEditor, type Descendant } from '../src';
 
@@ -30,7 +35,7 @@ describe('selection rebase contract', () => {
   it('rebases selection out of a removable empty marked leaf during destructive cleanup', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraphWithEmptySuffixLeaves()],
       selection: {
         anchor: { path: [0, 5], offset: 0 },
@@ -42,11 +47,8 @@ describe('selection rebase contract', () => {
       tx.text.delete({ reverse: true, unit: 'character' });
     });
 
-    assert.equal(
-      Editor.string(editor, [0]),
-      'This is editable rich text, much'
-    );
-    assert.deepEqual(Editor.getSelection(editor), {
+    assert.equal(editorString(editor, [0]), 'This is editable rich text, much');
+    assert.deepEqual(editorGetSelection(editor), {
       anchor: { path: [0, 3], offset: 4 },
       focus: { path: [0, 3], offset: 4 },
     });
@@ -55,7 +57,7 @@ describe('selection rebase contract', () => {
   it('rebases forward delete of a suffix leaf to the previous surviving point in the same block', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         paragraphWithPunctuationSuffixLeaf(),
         {
@@ -73,8 +75,8 @@ describe('selection rebase contract', () => {
       tx.text.delete({ unit: 'character' });
     });
 
-    assert.equal(Editor.string(editor, [0]), 'This is editable <textarea>');
-    assert.deepEqual(Editor.getSelection(editor), {
+    assert.equal(editorString(editor, [0]), 'This is editable <textarea>');
+    assert.deepEqual(editorGetSelection(editor), {
       anchor: { path: [0, 1], offset: '<textarea>'.length },
       focus: { path: [0, 1], offset: '<textarea>'.length },
     });
@@ -87,7 +89,7 @@ describe('selection rebase contract', () => {
       name: 'selection-rebase-inline-link',
     });
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -111,7 +113,7 @@ describe('selection rebase contract', () => {
       tx.nodes.remove({ at: [0, 2] });
     });
 
-    assert.deepEqual(Editor.getSelection(editor), {
+    assert.deepEqual(editorGetSelection(editor), {
       anchor: { path: [0, 1, 0], offset: 'link'.length },
       focus: { path: [0, 1, 0], offset: 'link'.length },
     });
@@ -120,7 +122,7 @@ describe('selection rebase contract', () => {
   it('rebases selection to the next top-level block when the selected block is removed', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -141,13 +143,13 @@ describe('selection rebase contract', () => {
       tx.nodes.remove({ at: [0] });
     });
 
-    assert.deepEqual(Editor.getChildren(editor), [
+    assert.deepEqual(editorGetChildren(editor), [
       {
         type: 'paragraph',
         children: [{ text: 'survives' }],
       },
     ]);
-    assert.deepEqual(Editor.getSelection(editor), {
+    assert.deepEqual(editorGetSelection(editor), {
       anchor: { path: [0, 0], offset: 0 },
       focus: { path: [0, 0], offset: 0 },
     });
@@ -156,7 +158,7 @@ describe('selection rebase contract', () => {
   it('clears selection when the selected only top-level block is removed', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -173,7 +175,7 @@ describe('selection rebase contract', () => {
       tx.nodes.remove({ at: [0] });
     });
 
-    assert.deepEqual(Editor.getChildren(editor), []);
-    assert.equal(Editor.getSelection(editor), null);
+    assert.deepEqual(editorGetChildren(editor), []);
+    assert.equal(editorGetSelection(editor), null);
   });
 });

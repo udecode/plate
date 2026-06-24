@@ -81,7 +81,6 @@ describe('BaseTodoListPlugin', () => {
       typeof BaseParagraphPlugin | typeof BaseTodoListPlugin
     >({
       plugins: [BaseParagraphPlugin, BaseTodoListPlugin],
-      runtime: 'plite',
       selection: {
         anchor: { offset: 0, path: [0, 0] },
         focus: { offset: 0, path: [0, 0] },
@@ -105,7 +104,6 @@ describe('BaseTodoListPlugin', () => {
   it('routes todo line-end insertBreak through the Plite runtime', () => {
     const editor = createPlateEditor<Value, typeof BaseTodoListPlugin>({
       plugins: [BaseTodoListPlugin],
-      runtime: 'plite',
       selection: {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },
@@ -144,7 +142,6 @@ describe('BaseTodoListPlugin', () => {
       typeof BaseParagraphPlugin | typeof BaseTodoListPlugin
     >({
       plugins: [BaseParagraphPlugin, BaseTodoListPlugin],
-      runtime: 'plite',
       selection: {
         anchor: { offset: 4, path: [0, 0] },
         focus: { offset: 4, path: [0, 0] },

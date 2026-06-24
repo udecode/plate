@@ -1,5 +1,6 @@
 import type { BasePlateEditor, TCodeBlockElement } from 'platejs';
 
+import { NodeApi } from 'platejs';
 import { formatJson, isValidJson } from './jsonFormatter';
 import { setCodeBlockContent } from '../transforms/setCodeBlockContent';
 
@@ -37,7 +38,7 @@ export const formatCodeBlock = (
     return;
   }
 
-  const code = editor.api.string(element);
+  const code = NodeApi.string(element);
 
   if (isValidSyntax(code, lang)) {
     const formattedCode = formatCode(code, lang);

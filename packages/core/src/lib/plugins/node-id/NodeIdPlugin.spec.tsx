@@ -323,34 +323,4 @@ describe('NodeIdPlugin', () => {
     expect(editor.children[1].foo).toBeUndefined();
     expect(editor.children[2].foo).toBe('last');
   });
-
-  it('assigns ids to inserted nodes through editor transforms', () => {
-    const input = (
-      <editor>
-        <hp id={10}>
-          test
-          <cursor />
-        </hp>
-      </editor>
-    ) as any;
-
-    const editor = createBasePlateEditor({
-      plugins: [
-        NodeIdPlugin.configure({
-          options: {
-            idCreator: createIdFactory(),
-          },
-        }),
-      ],
-      selection: input.selection,
-      value: input.children,
-    });
-
-    editor.tf.insertNode((<hp>inserted</hp>) as any);
-
-    expect(editor.children).toMatchObject([
-      { id: 10, type: 'p' },
-      { id: 1, type: 'p' },
-    ]);
-  });
 });

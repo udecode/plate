@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import {
   createEditor,
@@ -19,7 +23,7 @@ const paragraph = (text: string): Descendant => ({
 const seedEditor = <TEditor extends ReturnType<typeof createEditor>>(
   editor: TEditor = createEditor() as TEditor
 ) => {
-  Editor.replace(editor, {
+  editorReplace(editor, {
     children: [paragraph('one')],
     marks: null,
     selection: {
@@ -40,7 +44,7 @@ describe('editor.update afterCommit', () => {
       afterCommit(({ commit, snapshot }) => {
         assert.equal(commit.operations.length, 1);
         assert.equal(snapshot.version, commit.version);
-        events.push(`after:${Editor.string(editor, [])}`);
+        events.push(`after:${editorString(editor, [])}`);
       });
 
       tx.text.insert('!');
@@ -61,7 +65,7 @@ describe('editor.update afterCommit', () => {
     });
 
     assert.deepEqual(events, []);
-    assert.equal(Editor.string(editor, []), 'one');
+    assert.equal(editorString(editor, []), 'one');
   });
 
   it('drops registered effects when an update rolls back', () => {
@@ -80,7 +84,7 @@ describe('editor.update afterCommit', () => {
     }, /boom/);
 
     assert.deepEqual(events, []);
-    assert.equal(Editor.string(editor, []), 'one');
+    assert.equal(editorString(editor, []), 'one');
   });
 
   it('collects nested update effects on the outer commit in registration order', () => {
@@ -107,7 +111,7 @@ describe('editor.update afterCommit', () => {
       });
     });
 
-    assert.equal(Editor.string(editor, []), 'one!?');
+    assert.equal(editorString(editor, []), 'one!?');
     assert.deepEqual(events, ['outer-before', 'inner', 'outer-after']);
   });
 
@@ -124,14 +128,14 @@ describe('editor.update afterCommit', () => {
 
       afterCommit(({ commit, snapshot }) => {
         versions.push(
-          `commit:${commit.version}:snapshot:${snapshot.version}:live:${Editor.getSnapshot(editor).version}`
+          `commit:${commit.version}:snapshot:${snapshot.version}:live:${editorGetSnapshot(editor).version}`
         );
       });
 
       tx.text.insert('!');
     });
 
-    assert.equal(Editor.string(editor, []), 'one!?');
+    assert.equal(editorString(editor, []), 'one!?');
     assert.deepEqual(versions, ['commit:2:snapshot:2:live:3']);
   });
 
@@ -164,14 +168,14 @@ describe('editor.update afterCommit', () => {
     editor.update((tx, { afterCommit }) => {
       afterCommit(({ commit, snapshot }) => {
         versions.push(
-          `commit:${commit.version}:snapshot:${snapshot.version}:live:${Editor.getSnapshot(editor).version}`
+          `commit:${commit.version}:snapshot:${snapshot.version}:live:${editorGetSnapshot(editor).version}`
         );
       });
 
       tx.text.insert('!');
     });
 
-    assert.equal(Editor.string(editor, []), 'one!?');
+    assert.equal(editorString(editor, []), 'one!?');
     assert.deepEqual(versions, ['commit:2:snapshot:2:live:3']);
   });
 

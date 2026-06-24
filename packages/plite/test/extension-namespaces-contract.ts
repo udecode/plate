@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import { createEditor, defineEditorExtension } from '../src';
 
@@ -13,7 +17,7 @@ describe('editor extension namespaces', () => {
   const createSeededEditor = () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [paragraph('one'), paragraph('two')],
       selection: {
         anchor: { path: [0, 0], offset: 0 },
@@ -66,7 +70,7 @@ describe('editor extension namespaces', () => {
 
     assert.equal('table' in editor, false);
     assert.equal(selectedText, 'one');
-    assert.equal(Editor.getSnapshot(editor).children[0]?.type, 'heading-one');
+    assert.equal(editorGetSnapshot(editor).children[0]?.type, 'heading-one');
   });
 
   it('lets plugin-style tx groups read transaction-local state', () => {
@@ -122,7 +126,7 @@ describe('editor extension namespaces', () => {
 
     assert.equal(rowCount, 2);
     assert.deepEqual(observedCounts, [2, 3]);
-    assert.equal(Editor.string(editor, [2]), 'three');
+    assert.equal(editorString(editor, [2]), 'three');
     assert.equal('table' in editor, false);
   });
 

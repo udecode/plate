@@ -1,5 +1,14 @@
 import type { Value } from '../interfaces/editor';
-import { Editor } from '../interfaces/editor';
+import {
+  above as editorAbove,
+  elementReadOnly as editorElementReadOnly,
+  getChildren as editorGetChildren,
+  isBlock as editorIsBlock,
+  isInline as editorIsInline,
+  point as editorPoint,
+  void as editorVoid,
+} from '../interfaces/editor';
+import type { Editor } from '../interfaces/editor';
 import type { Element } from '../interfaces/element';
 import { type Descendant, NodeApi } from '../interfaces/node';
 import type { Path } from '../interfaces/path';
@@ -30,7 +39,7 @@ export const getSingleEmptyBlockFragmentReplacement = (
     return null;
   }
 
-  const editorChildren = Editor.getChildren(editor);
+  const editorChildren = editorGetChildren(editor);
   const [onlyEditorNode] = editorChildren;
 
   if (
@@ -100,15 +109,15 @@ export const getTopLevelBlockFragmentReplacement = (
     return null;
   }
 
-  const editorChildren = Editor.getChildren(editor);
+  const editorChildren = editorGetChildren(editor);
 
   if (startIndex === 0 && endIndex === editorChildren.length - 1) {
     return null;
   }
 
   if (
-    !samePoint(start, Editor.point(editor, [startIndex], { edge: 'start' })) ||
-    !samePoint(end, Editor.point(editor, [endIndex], { edge: 'end' }))
+    !samePoint(start, editorPoint(editor, [startIndex], { edge: 'start' })) ||
+    !samePoint(end, editorPoint(editor, [endIndex], { edge: 'end' }))
   ) {
     return null;
   }
@@ -160,15 +169,15 @@ export const getSingleTextBlockFragmentReplacement = (
   }
 
   if (
-    Editor.void(editor, { at: start }) ||
-    Editor.elementReadOnly(editor, { at: start })
+    editorVoid(editor, { at: start }) ||
+    editorElementReadOnly(editor, { at: start })
   ) {
     return null;
   }
 
-  const blockMatch = Editor.above(editor, {
+  const blockMatch = editorAbove(editor, {
     at: start,
-    match: (node) => NodeApi.isElement(node) && Editor.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
   });
 
   if (!blockMatch) {
@@ -256,10 +265,7 @@ export const getSingleTextBlockFragmentReplacement = (
     };
   }
 
-  if (
-    !NodeApi.isElement(targetChild) ||
-    !Editor.isInline(editor, targetChild)
-  ) {
+  if (!NodeApi.isElement(targetChild) || !editorIsInline(editor, targetChild)) {
     return null;
   }
 
@@ -361,9 +367,9 @@ export const getEmptyTopLevelTextBlockFragmentReplacement = (
     return null;
   }
 
-  const blockMatch = Editor.above(editor, {
+  const blockMatch = editorAbove(editor, {
     at,
-    match: (node) => NodeApi.isElement(node) && Editor.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
   });
 
   if (!blockMatch) {
@@ -441,15 +447,15 @@ export const getTopLevelTextBlockFragmentReplacement = (
   }
 
   if (
-    Editor.void(editor, { at: start }) ||
-    Editor.elementReadOnly(editor, { at: start })
+    editorVoid(editor, { at: start }) ||
+    editorElementReadOnly(editor, { at: start })
   ) {
     return null;
   }
 
-  const blockMatch = Editor.above(editor, {
+  const blockMatch = editorAbove(editor, {
     at: start,
-    match: (node) => NodeApi.isElement(node) && Editor.isBlock(editor, node),
+    match: (node) => NodeApi.isElement(node) && editorIsBlock(editor, node),
   });
 
   if (!blockMatch) {

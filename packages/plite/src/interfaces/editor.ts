@@ -2388,23 +2388,6 @@ export interface EditorStaticApi {
     listener: EditorCommitListener<V>
   ) => () => void;
 
-  /**
-   * Define a typed command token.
-   */
-  defineCommand: <TCommand extends EditorCommand>(
-    type: TCommand['type']
-  ) => EditorCommandDefinition<TCommand>;
-
-  /**
-   * Register a command middleware handler for the editor.
-   */
-  registerCommand: <TCommand extends EditorCommand>(
-    editor: Editor,
-    command: EditorCommandReference<TCommand>,
-    handler: EditorCommandHandler<TCommand>,
-    options?: EditorCommandOptions
-  ) => () => void;
-
   extend: <TEditor extends Editor>(
     editor: TEditor,
     extension: EditorExtensionInput<TEditor>
@@ -2533,7 +2516,17 @@ export interface EditorStaticApi {
   ) => boolean;
 }
 
-export interface InternalEditorStaticApi extends EditorStaticApi {}
+type EditorInternalApiTable = EditorStaticApi & {
+  defineCommand: <TCommand extends EditorCommand>(
+    type: TCommand['type']
+  ) => EditorCommandDefinition<TCommand>;
+  registerCommand: <TCommand extends EditorCommand>(
+    editor: Editor,
+    command: EditorCommandReference<TCommand>,
+    handler: EditorCommandHandler<TCommand>,
+    options?: EditorCommandOptions
+  ) => () => void;
+};
 
 const getImplicitSelectionRoot = (editor: Editor) =>
   getCurrentSelection(editor) ? getCurrentSelectionRoot(editor) : undefined;
@@ -2621,7 +2614,7 @@ const replaceEditorSnapshot = (editor: Editor, input: SnapshotInput) => {
   replaceSnapshot(editor, input);
 };
 
-const InternalEditor: InternalEditorStaticApi = {
+const editorInternalApi: EditorInternalApiTable = {
   above(editor, options) {
     return getEditorRuntime(editor).above(options);
   },
@@ -3176,9 +3169,213 @@ const InternalEditor: InternalEditorStaticApi = {
     getEditorRuntime(editor).shouldMergeNodesRemovePrevNode(prevNode, curNode),
 };
 
-const Editor: EditorStaticApi = InternalEditor;
+const {
+  above,
+  addMark,
+  bookmark,
+  after,
+  before,
+  deleteBackward,
+  deleteForward,
+  deleteFragment,
+  collapse,
+  deselect,
+  edges,
+  elementReadOnly,
+  first,
+  fragment,
+  getFragment,
+  getChildren,
+  getLastCommit,
+  getCollabStatePatches,
+  getOperationDirtiness,
+  getDirtyPaths,
+  getExtensionRegistry,
+  getSnapshot,
+  getOperations,
+  getPathByRuntimeId,
+  getRuntimeId,
+  read,
+  getSelection,
+  hasBlocks,
+  hasInlines,
+  hasPath,
+  hasTexts,
+  insertBreak,
+  insertFragment,
+  insertNode,
+  insertNodes,
+  insertSoftBreak,
+  insertText,
+  isBlock,
+  isEdge,
+  isEditor,
+  isElementReadOnly,
+  isEmpty,
+  isEnd,
+  isInline,
+  isNormalizing,
+  isSelectable,
+  isStart,
+  isVoid,
+  last,
+  leaf,
+  liftNodes,
+  levels,
+  next,
+  normalize,
+  mergeNodes,
+  move,
+  moveNodes,
+  parent,
+  path,
+  pathRef,
+  pathRefs,
+  point,
+  pointRef,
+  pointRefs,
+  projectRange,
+  positions,
+  previous,
+  range,
+  rangeRef,
+  rangeRefs,
+  defineCommand,
+  registerCommand,
+  registerCapability,
+  registerNormalizer,
+  registerCommitListener,
+  extend,
+  defineEditorExtension,
+  replace,
+  reset,
+  removeMark,
+  removeNodes,
+  select,
+  setPoint,
+  setNodes,
+  setSelection,
+  splitNodes,
+  toggleMark,
+  unsetNodes,
+  unwrapNodes,
+  wrapNodes,
+  setNormalizing,
+  string,
+  subscribe,
+  subscribeCommit,
+  subscribeSource,
+  update,
+  unhangRange,
+  withoutNormalizing,
+  shouldMergeNodesRemovePrevNode,
+} = editorInternalApi;
 
-export { Editor, InternalEditor };
+const deleteEditor = editorInternalApi.delete;
+const voidEditor = editorInternalApi.void;
+
+export {
+  above,
+  addMark,
+  after,
+  before,
+  bookmark,
+  collapse,
+  defineCommand,
+  defineEditorExtension,
+  deleteBackward,
+  deleteEditor as delete,
+  deleteForward,
+  deleteFragment,
+  deselect,
+  edges,
+  elementReadOnly,
+  extend,
+  first,
+  fragment,
+  getChildren,
+  getCollabStatePatches,
+  getDirtyPaths,
+  getExtensionRegistry,
+  getFragment,
+  getLastCommit,
+  getOperationDirtiness,
+  getOperations,
+  getPathByRuntimeId,
+  getRuntimeId,
+  getSelection,
+  getSnapshot,
+  hasBlocks,
+  hasInlines,
+  hasPath,
+  hasTexts,
+  insertBreak,
+  insertFragment,
+  insertNode,
+  insertNodes,
+  insertSoftBreak,
+  insertText,
+  isBlock,
+  isEdge,
+  isEditor,
+  isElementReadOnly,
+  isEmpty,
+  isEnd,
+  isInline,
+  isNormalizing,
+  isSelectable,
+  isStart,
+  isVoid,
+  last,
+  leaf,
+  levels,
+  liftNodes,
+  mergeNodes,
+  move,
+  moveNodes,
+  next,
+  normalize,
+  parent,
+  path,
+  pathRef,
+  pathRefs,
+  point,
+  pointRef,
+  pointRefs,
+  positions,
+  previous,
+  projectRange,
+  range,
+  rangeRef,
+  rangeRefs,
+  read,
+  registerCapability,
+  registerCommand,
+  registerCommitListener,
+  registerNormalizer,
+  removeMark,
+  removeNodes,
+  replace,
+  reset,
+  select,
+  setNodes,
+  setNormalizing,
+  setPoint,
+  setSelection,
+  shouldMergeNodesRemovePrevNode,
+  splitNodes,
+  string,
+  subscribe,
+  subscribeCommit,
+  subscribeSource,
+  toggleMark,
+  unhangRange,
+  unsetNodes,
+  update,
+  voidEditor as void,
+  withoutNormalizing,
+  wrapNodes,
+};
 
 /**
  * A helper type for narrowing matched nodes with a predicate.

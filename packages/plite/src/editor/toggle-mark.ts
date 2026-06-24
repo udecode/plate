@@ -1,7 +1,8 @@
 import { executeCommand } from '../core/command-registry';
 import { runEditorTransaction } from '../core/public-state';
 import { getEditorTransformRegistry } from '../core/transform-registry';
-import { Editor, type EditorStaticApi } from '../interfaces/editor';
+import { leaf as editorLeaf } from '../interfaces/editor';
+import type { EditorStaticApi } from '../interfaces/editor';
 import { RangeApi } from '../interfaces/range';
 
 type ToggleMarkCommand = {
@@ -28,7 +29,7 @@ const applyToggleMark: EditorStaticApi['toggleMark'] = (
     > | null;
     const inheritedCollapsedMark =
       marks === null && RangeApi.isCollapsed(selection)
-        ? Editor.leaf(editor, selection.anchor)[0]
+        ? editorLeaf(editor, selection.anchor)[0]
         : null;
     const isActive =
       marks?.[key] === value ||

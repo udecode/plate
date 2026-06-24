@@ -3,6 +3,7 @@ import type { Value } from '@platejs/plite';
 import type { InferPlugins } from '../../lib/editor/BasePlateEditor';
 
 import { createBasePlateEditor } from '../../lib/editor/withPlite';
+import { createCurrentRuntimeEditor } from '../../internal/currentRuntimeBridge';
 import { createEditorPlugin } from '../../lib/plugin/createEditorPlugin';
 import { DebugPlugin } from '../../lib/plugins/debug/DebugPlugin';
 import { someHtmlElement } from '../../lib/plugins/html/utils/findHtmlElement';
@@ -154,10 +155,7 @@ describe('TPlateEditor core package', () => {
 
     it('extends a plate editor with additional plugins', () => {
       const plugins = [TextFormattingPlugin, ListPlugin];
-      const editor1 = createPlateEditor({
-        plugins,
-        runtime: 'legacy',
-      });
+      const editor1 = withPlate(createCurrentRuntimeEditor(), { plugins });
 
       const editor = withPlate<
         Value,

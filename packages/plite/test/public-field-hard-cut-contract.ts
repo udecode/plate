@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getOperations as editorGetOperations,
+  getSelection as editorGetSelection,
+  replace as editorReplace,
+  string as editorString,
+} from '@platejs/plite/internal';
 
 import {
   type BaseEditor,
@@ -180,7 +185,7 @@ describe('public editor field hard cuts', () => {
   it('keeps tx methods as the normal public write path', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [
         {
           type: 'paragraph',
@@ -198,12 +203,12 @@ describe('public editor field hard cuts', () => {
       tx.text.insert('!');
     });
 
-    assert.equal(Editor.string(editor, []), 'alpha!');
-    assert.deepEqual(Editor.getSelection(editor), {
+    assert.equal(editorString(editor, []), 'alpha!');
+    assert.deepEqual(editorGetSelection(editor), {
       anchor: { path: [0, 0], offset: 6 },
       focus: { path: [0, 0], offset: 6 },
     });
-    assert.equal(Editor.getOperations(editor).length, 1);
+    assert.equal(editorGetOperations(editor).length, 1);
   });
 
   it('does not expose editor-state query helpers on the Editor namespace', () => {

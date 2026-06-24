@@ -14,7 +14,6 @@ describe('TrailingBlockPlugin Plite runtime', () => {
           options: { level: 0, type: 'p' },
         }),
       ],
-      runtime: 'plite',
       value: [
         { children: [{ text: 'one' }], type: 'h1' },
         { children: [{ text: 'two' }], type: 'h1' },
@@ -39,7 +38,6 @@ describe('TrailingBlockPlugin Plite runtime', () => {
           options: { level: 1, type: 'p' },
         }),
       ],
-      runtime: 'plite',
       value: [
         {
           children: [
@@ -74,7 +72,6 @@ describe('TrailingBlockPlugin Plite runtime', () => {
           options: { exclude: ['h1'], level: 0, type: 'p' },
         }),
       ],
-      runtime: 'plite',
       value: [{ children: [{ text: 'one' }], type: 'h1' }],
     });
 
@@ -102,7 +99,6 @@ describe('TrailingBlockPlugin Plite runtime', () => {
           options: { insert, level: 0, type: 'p' },
         }),
       ],
-      runtime: 'plite',
       value: [{ children: [{ text: 'one' }], type: 'h1' }],
     });
 

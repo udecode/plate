@@ -1,7 +1,11 @@
 import { act, render } from '@testing-library/react';
 import React from 'react';
 import type { Element as PliteElementNode } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getRuntimeId as editorGetRuntimeId,
+  moveNodes as editorMoveNodes,
+} from '@platejs/plite/internal';
 import { createReactEditor, PliteElement } from '../src';
 import {
   EditorContext,
@@ -27,7 +31,7 @@ describe('PliteElement node ref binding', () => {
         { type: 'block', children: [{ text: 'two' }] },
       ],
     });
-    const runtimeId = Editor.getRuntimeId(editor, [0]);
+    const runtimeId = editorGetRuntimeId(editor, [0]);
 
     if (!runtimeId) {
       throw new Error('Missing runtime id at 0');
@@ -52,10 +56,10 @@ describe('PliteElement node ref binding', () => {
     expect(getPliteNodePathFromDOMElement(element)).toEqual([0]);
 
     act(() => {
-      Editor.moveNodes(editor, { at: [0], to: [2] });
+      editorMoveNodes(editor, { at: [0], to: [2] });
     });
 
-    expect(Editor.getPathByRuntimeId(editor, runtimeId)).toEqual([1]);
+    expect(editorGetPathByRuntimeId(editor, runtimeId)).toEqual([1]);
 
     rendered.rerender(renderElement([1]));
 
@@ -70,7 +74,7 @@ describe('PliteElement node ref binding', () => {
     const editor = createReactEditor({
       initialValue: [{ type: 'block', children: [{ text: 'one' }] }],
     });
-    const runtimeId = Editor.getRuntimeId(editor, [0]);
+    const runtimeId = editorGetRuntimeId(editor, [0]);
 
     if (!runtimeId) {
       throw new Error('Missing runtime id at 0');

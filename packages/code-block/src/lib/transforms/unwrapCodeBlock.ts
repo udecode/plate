@@ -37,7 +37,6 @@ export const unwrapCodeBlock = (editor: BasePlateEditor) => {
         at: codeBlockPath,
         match: (node: unknown) =>
           ElementApi.isElement(node) && node.type === codeBlockType,
-        split: true,
       });
     }
   });

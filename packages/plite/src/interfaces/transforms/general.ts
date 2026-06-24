@@ -33,7 +33,8 @@ import {
   replaceChildren,
 } from '../../utils/modify';
 import { inheritRuntimeId } from '../../utils/runtime-ids';
-import { Editor } from '../editor';
+import { getChildren as editorGetChildren } from '../editor';
+import type { Editor } from '../editor';
 
 /**
  * The set of properties that cannot be set using set_node.
@@ -119,7 +120,7 @@ const getChildContainerChildren = (
   const node = NodeApi.get(editor, path);
 
   if (NodeApi.isEditor(node)) {
-    return Editor.getChildren(editor);
+    return editorGetChildren(editor);
   }
 
   if (NodeApi.isText(node)) {
@@ -135,7 +136,7 @@ const mutateTopLevelChildren = (
   editor: Editor,
   mutate: (children: Descendant[]) => void
 ) => {
-  const children = Editor.getChildren(editor);
+  const children = editorGetChildren(editor);
 
   mutate(children);
   setEditorChildren(editor, children);

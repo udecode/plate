@@ -44,7 +44,10 @@ const getRegistry = (editor: BasePlateEditor) => {
   return registry;
 };
 
-const rebuildRegistry = (editor: BasePlateEditor, registry: FootnoteRegistry) => {
+const rebuildRegistry = (
+  editor: BasePlateEditor,
+  registry: FootnoteRegistry
+) => {
   cleanupRegistry(registry);
 
   const definitionType = editor.getType(KEYS.footnoteDefinition);

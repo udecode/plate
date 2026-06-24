@@ -47,7 +47,6 @@ const methodsToWrap = [
   'extendApi',
   'extendTx',
   'extendTxGroup',
-  'extendTransforms',
   'overrideEditor',
   'extend',
   'extendPlugin',

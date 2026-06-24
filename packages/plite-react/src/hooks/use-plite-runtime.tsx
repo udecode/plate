@@ -28,12 +28,12 @@ import {
 
 import { PliteEditableRootContext } from '../context';
 import {
-  Editor,
   getEditorRuntime,
   getOperationCount,
   inheritEditorExtensionRegistry,
   inheritEditorTransformRegistry,
   setEditorRuntime,
+  getLastCommit as editorGetLastCommit,
 } from '../editable/runtime-editor-api';
 import { ReactEditor, type ReactRuntimeEditor } from '../plugin/react-editor';
 import {
@@ -396,7 +396,7 @@ export function PliteRuntime<
     useEditorSelectorContext();
   const lastOperationCountRef = useRef(getOperationCount(runtime.editor));
   const lastCommitVersionRef = useRef(
-    Editor.getLastCommit(runtime.editor)?.version ?? 0
+    editorGetLastCommit(runtime.editor)?.version ?? 0
   );
   const reactEditor = runtime.editor as unknown as ReactRuntimeEditor<V>;
   const mountedViewEditorsRef = useRef(
@@ -625,7 +625,7 @@ export function PliteRuntime<
     };
 
     const unsubscribe = runtime.subscribeCommit(onContextChange);
-    const latestCommit = Editor.getLastCommit(runtime.editor);
+    const latestCommit = editorGetLastCommit(runtime.editor);
 
     if (latestCommit && latestCommit.version > lastCommitVersionRef.current) {
       onContextChange(latestCommit);

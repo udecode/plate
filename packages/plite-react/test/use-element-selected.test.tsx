@@ -1,6 +1,6 @@
 import { act, render } from '@testing-library/react';
 import { useEffect } from 'react';
-import { Editor } from '@platejs/plite/internal';
+import { hasPath as editorHasPath } from '@platejs/plite/internal';
 import {
   createReactEditor,
   Editable,
@@ -228,7 +228,7 @@ describe('useElementSelected', () => {
     expect(selectedById['2']).toBe(true);
     expect(removedIds.has('2')).toBe(true);
     expect(unmountedIds.has('2')).toBe(true);
-    expect(Editor.hasPath(editor, [2])).toBe(false);
+    expect(editorHasPath(editor, [2])).toBe(false);
   });
 
   it('returns false when an explicit watched path is removed', async () => {
@@ -271,7 +271,7 @@ describe('useElementSelected', () => {
       });
     });
 
-    expect(Editor.hasPath(editor, watchedPath)).toBe(false);
+    expect(editorHasPath(editor, watchedPath)).toBe(false);
     expect(selectedValues.at(-1)).toBe(false);
   });
 

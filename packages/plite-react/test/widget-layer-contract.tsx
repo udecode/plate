@@ -1,7 +1,11 @@
 import { act, render } from '@testing-library/react';
 import React from 'react';
 import { createEditor } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getPathByRuntimeId as editorGetPathByRuntimeId,
+  getRuntimeId as editorGetRuntimeId,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 
 import {
   Plite,
@@ -231,7 +235,7 @@ describe('plite-react widget layer contract', () => {
     const editor = createEditor();
     const counts = createRenderCounts();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
@@ -301,7 +305,7 @@ describe('plite-react widget layer contract', () => {
     const editor = createEditor();
     const counts = createRenderCounts();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: {
         anchor: { path: [0, 0], offset: 0 },
@@ -340,7 +344,7 @@ describe('plite-react widget layer contract', () => {
     const editor = createEditor();
     const counts = createRenderCounts();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: {
         anchor: { path: [0, 0], offset: 0 },
@@ -374,7 +378,7 @@ describe('plite-react widget layer contract', () => {
   test('whole widget snapshots refresh from empty to populated', async () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: {
         anchor: { path: [0, 0], offset: 0 },
@@ -404,7 +408,7 @@ describe('plite-react widget layer contract', () => {
   test('annotation-backed widget snapshots refresh from empty to populated', async () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
@@ -437,7 +441,7 @@ describe('plite-react widget layer contract', () => {
     const editor = createEditor();
     let notifications = 0;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
@@ -490,7 +494,7 @@ describe('plite-react widget layer contract', () => {
     let commitSubscriptions = 0;
     let snapshotSubscriptions = 0;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
@@ -529,12 +533,12 @@ describe('plite-react widget layer contract', () => {
     const editor = createEditor();
     let notifications = 0;
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });
 
-    const runtimeId = Editor.getRuntimeId(editor, [1]);
+    const runtimeId = editorGetRuntimeId(editor, [1]);
 
     if (!runtimeId) {
       throw new Error('Expected runtime id for node widget move proof');
@@ -569,7 +573,7 @@ describe('plite-react widget layer contract', () => {
       });
     });
 
-    expect(Editor.getPathByRuntimeId(editor, runtimeId)).toEqual([0]);
+    expect(editorGetPathByRuntimeId(editor, runtimeId)).toEqual([0]);
     expect(store.getWidget('node-widget')).toMatchObject({
       id: 'node-widget',
       visible: true,
@@ -594,7 +598,7 @@ describe('plite-react widget layer contract', () => {
   test('widget metrics count changed ids and widget subscriber wakes', async () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: createChildren(),
       selection: null,
     });

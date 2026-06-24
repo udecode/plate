@@ -4,7 +4,7 @@ import {
 } from '../core/public-state';
 import { getEditorTransformRegistry } from '../core/transform-registry';
 import { type Location, LocationApi } from '../interfaces';
-import { Editor } from '../interfaces/editor';
+import { range as editorRange } from '../interfaces/editor';
 import type { SelectionMutationMethods } from '../interfaces/transforms/selection';
 import {
   getPointRoot,
@@ -51,7 +51,7 @@ export const select: SelectionMutationMethods['select'] = (editor, target) => {
     target,
     getEditorOperationRoot(editor)
   );
-  const range = Editor.range(editor, target);
+  const range = editorRange(editor, target);
   const commandRange = stripImplicitRangeRoots(range, commandRangeRootMeta);
 
   if (selection) {

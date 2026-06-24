@@ -4,7 +4,10 @@ import {
   createEditorView,
   TextApi,
 } from '@platejs/plite';
-import { Editor } from '@platejs/plite/internal';
+import {
+  getSnapshot as editorGetSnapshot,
+  replace as editorReplace,
+} from '@platejs/plite/internal';
 import {
   readRuntimeNode,
   readRuntimeNodeById,
@@ -40,12 +43,12 @@ describe('plite-react runtime live state facade', () => {
   test('resolves live nodes, texts, and runtime ids through one owner', () => {
     const editor = createEditor();
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'block', children: [{ text: 'alpha' }] }],
       selection: null,
     });
 
-    const snapshot = Editor.getSnapshot(editor);
+    const snapshot = editorGetSnapshot(editor);
     const blockRuntimeId = snapshot.index.pathToId['0'];
     const textRuntimeId = snapshot.index.pathToId['0.0'];
 
@@ -74,7 +77,7 @@ describe('plite-react runtime live state facade', () => {
       focus: { path: [0, 0], offset: 1 },
     };
 
-    Editor.replace(editor, {
+    editorReplace(editor, {
       children: [{ type: 'block', children: [{ text: 'alpha' }] }],
       selection: null,
     });

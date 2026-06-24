@@ -1,12 +1,13 @@
 import { NodeApi } from '../interfaces';
-import { Editor, type EditorStaticApi } from '../interfaces/editor';
+import { range as editorRange } from '../interfaces/editor';
+import type { EditorStaticApi } from '../interfaces/editor';
 import { PathApi } from '../interfaces/path';
 import { RangeApi } from '../interfaces/range';
 import { nodes } from './nodes';
 
 export const string: EditorStaticApi['string'] = (editor, at, options = {}) => {
   const { voids = false } = options;
-  const range = Editor.range(editor, at);
+  const range = editorRange(editor, at);
   const [start, end] = RangeApi.edges(range);
   let text = '';
 

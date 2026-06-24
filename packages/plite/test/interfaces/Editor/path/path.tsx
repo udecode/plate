@@ -1,4 +1,4 @@
-import { Editor } from '@platejs/plite/internal';
+import { path as editorPath } from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { jsx } from '../../..';
@@ -10,5 +10,5 @@ export const input = (
     <block>one</block>
   </editor>
 );
-export const test = (editor) => Editor.path(editor, [0]);
+export const test = (editor) => editorPath(editor, [0]);
 export const output = [0];

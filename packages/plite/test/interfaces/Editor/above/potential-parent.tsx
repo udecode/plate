@@ -1,4 +1,7 @@
-import { Editor } from '@platejs/plite/internal';
+import {
+  above as editorAbove,
+  isBlock as editorIsBlock,
+} from '@platejs/plite/internal';
 /** @jsx jsx */
 
 import { ElementApi } from '@platejs/plite';
@@ -20,9 +23,9 @@ export const input = (
 const path = [0, 0, 1];
 
 export const test = (editor) =>
-  Editor.above(editor, {
+  editorAbove(editor, {
     at: path,
-    match: (n) => ElementApi.isElement(n) && Editor.isBlock(editor, n),
+    match: (n) => ElementApi.isElement(n) && editorIsBlock(editor, n),
   });
 
 export const output = [

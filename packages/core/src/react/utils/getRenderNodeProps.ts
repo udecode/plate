@@ -49,11 +49,12 @@ export const getRenderNodeProps = ({
           api: editor.api,
           editor,
         };
+  const renderPluginContext = resolvedPluginContext as AnyObject;
   const { className } = props;
 
   let newProps = {
     ...props,
-    ...resolvedPluginContext,
+    ...renderPluginContext,
   };
 
   if (canSkipPluginNodeProps) {

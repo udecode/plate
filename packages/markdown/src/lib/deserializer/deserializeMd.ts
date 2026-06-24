@@ -73,8 +73,9 @@ export const markdownToPliteNodes = (
       (token) => {
         if (token.type === 'space') {
           return {
-            ...editor.api.create.block(),
+            children: [{ text: '' }],
             _memo: token.raw,
+            type: getPluginKey(editor, KEYS.p) ?? KEYS.p,
           };
         }
 
