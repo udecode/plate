@@ -2,6 +2,7 @@ import type { Locator } from '@playwright/test';
 
 import { PLITE_BROWSER_HANDLE_KEY } from './constants';
 
+/** Evaluate a method exposed by the mounted Plite browser handle. */
 export const evaluatePliteBrowserHandle = async <T>(
   root: Locator,
   method: string,

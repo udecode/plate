@@ -49,6 +49,7 @@ The package is subpath-only. Import exactly the layer you need:
   - displayed-selection getter for native and projected selection proof
   - screenshot attachment helper for visual proof artifacts
   - file-backed JSON attachment helper for replayable proof artifacts
+  - low-level handle evaluator: `evaluatePliteBrowserHandle`
   - native event trace helpers for `selectionchange`, `beforeinput`, `input`,
     composition, target ranges, DOM deltas, and anomaly labels
   - block-text getter and assertion helpers
@@ -61,7 +62,8 @@ The package is subpath-only. Import exactly the layer you need:
   - double-highlight selection assertion
   - normalized html equality assertions
   - iframe and scoped-surface support
-  - block/text locator helpers
+  - block/text locator helpers: `getPliteBrowserEditable`,
+    `locatePliteBrowserBlock`, `locatePliteBrowserText`
   - replayable scenario steps, including direct DOM text mutation import for
     contenteditable repair proof
   - replayable selection-contract assertions for model, native selected text,

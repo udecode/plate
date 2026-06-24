@@ -1,7 +1,11 @@
 import type { Locator, Page } from '@playwright/test';
 import { PLITE_BROWSER_HANDLE_KEY } from './constants';
 import { takeDisplayedSelectionSnapshotForRoot } from './displayed-selection';
-import { getEditable, locateBlock, locateText } from './dom-locators';
+import {
+  getPliteBrowserEditable,
+  locatePliteBrowserBlock,
+  locatePliteBrowserText,
+} from './dom-locators';
 import { getRenderedBlockDOMShapes } from './dom-shape';
 import { getBlockTexts, getSelectedText } from './dom-text';
 import {
@@ -80,7 +84,7 @@ export const createEditorHarness = (
   surfaceOptions: EditorSurfaceOptions = {},
   explicitRoot?: Locator
 ): PliteBrowserEditorHarness => {
-  const root = explicitRoot ?? getEditable(surface, surfaceOptions);
+  const root = explicitRoot ?? getPliteBrowserEditable(surface, surfaceOptions);
   const activateNestedContentRootForDOMSelection = async () => {
     const isNestedContentRoot = await root
       .evaluate((element: HTMLElement) =>
@@ -402,8 +406,8 @@ export const createEditorHarness = (
       },
     },
     locator: {
-      block: (path: number[]) => locateBlock(root, path),
-      text: (path: number[]) => locateText(root, path),
+      block: (path: number[]) => locatePliteBrowserBlock(root, path),
+      text: (path: number[]) => locatePliteBrowserText(root, path),
     },
     ready: async (options: ReadyOptions) => {
       await waitForReady(harness, surface, options);

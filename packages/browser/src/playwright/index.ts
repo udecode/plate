@@ -29,6 +29,12 @@ export {
 export { withExclusiveClipboardAccess } from './clipboard';
 export { takeDisplayedSelectionSnapshotForRoot } from './displayed-selection';
 export {
+  getPliteBrowserEditable,
+  locatePliteBrowserBlock,
+  locatePliteBrowserText,
+} from './dom-locators';
+export { evaluatePliteBrowserHandle } from './handle';
+export {
   resetPliteBrowserNativeEventTrace,
   startPliteBrowserNativeEventTrace,
   stopPliteBrowserNativeEventTrace,

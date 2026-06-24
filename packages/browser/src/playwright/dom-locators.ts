@@ -3,7 +3,8 @@ import type { Locator } from '@playwright/test';
 import type { SurfaceTarget } from './surface';
 import type { EditorSurfaceOptions } from './types';
 
-export const getEditable = (
+/** Locate the first editor root for a Playwright page or frame surface. */
+export const getPliteBrowserEditable = (
   surface: SurfaceTarget,
   options: EditorSurfaceOptions = {}
 ) => {
@@ -13,7 +14,8 @@ export const getEditable = (
   return scope.getByRole('textbox').first();
 };
 
-export const locateBlock = (root: Locator, path: number[]) => {
+/** Locate a rendered block element by Plite model path. */
+export const locatePliteBrowserBlock = (root: Locator, path: number[]) => {
   if (path.length === 0) {
     throw new Error('Block path cannot be empty');
   }
@@ -31,14 +33,16 @@ export const locateBlock = (root: Locator, path: number[]) => {
   return locator;
 };
 
-export const locateText = (root: Locator, path: number[]) => {
+/** Locate a rendered text element by Plite model path. */
+export const locatePliteBrowserText = (root: Locator, path: number[]) => {
   if (path.length === 0) {
     throw new Error('Text path cannot be empty');
   }
 
   const textIndex = path.at(-1)!;
   const parentPath = path.slice(0, -1);
-  const parent = parentPath.length > 0 ? locateBlock(root, parentPath) : root;
+  const parent =
+    parentPath.length > 0 ? locatePliteBrowserBlock(root, parentPath) : root;
 
   return parent.locator('[data-plite-node="text"]').nth(textIndex);
 };
